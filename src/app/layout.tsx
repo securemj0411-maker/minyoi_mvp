@@ -80,6 +80,40 @@ export default function RootLayout({
           crossOrigin="anonymous"
           async
         />
+        {/* Wave launch-114 (2026-05-24): SEO 강화 — WebSite + Organization JSON-LD.
+            구글 rich snippet (사이트 검색 박스 + 브랜드 카드) 노출 가능. CTR +10~30%. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  "@id": "https://minyoi-mvp.vercel.app/#website",
+                  url: "https://minyoi-mvp.vercel.app/",
+                  name: "득템잡이",
+                  description: "중고 매물 시세 비교 — AI가 알려주는 알뜰 득템 정보",
+                  inLanguage: "ko-KR",
+                  publisher: { "@id": "https://minyoi-mvp.vercel.app/#org" },
+                },
+                {
+                  "@type": "Organization",
+                  "@id": "https://minyoi-mvp.vercel.app/#org",
+                  name: "득템잡이",
+                  url: "https://minyoi-mvp.vercel.app/",
+                  logo: {
+                    "@type": "ImageObject",
+                    url: "https://minyoi-mvp.vercel.app/new_balance.jpeg",
+                    width: 1200,
+                    height: 630,
+                  },
+                  sameAs: [],
+                },
+              ],
+            }),
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col">
         {/* Wave 743 (2026-05-24): URL ?ref= 잡아서 sessionStorage 저장 — middleware fallback */}
