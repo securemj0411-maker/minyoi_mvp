@@ -879,7 +879,9 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     modelName: "Converse Chuck Taylor All Star (척테일러 일반, 척70 아님)",
     aliases: ["Chuck Taylor All Star", "척테일러", "올스타"],
     mustContain: [["컨버스", "converse"], ["올스타", "all star", "척테일러", "chuck taylor"]],
-    mustNotContain: [...COMMON_NOISE, "70", "1970", "chuck 70", "ct70", "cdg", "꼼데", "stussy", "스투시", "ader error", "아더에러", "carhartt", "칼하트", "펑첸왕"],
+    // Wave 737 leak fix: mustNotContain "70" 단독 제거 — 사이즈 "270mm/280mm"에 매칭되어 519건 leak.
+    //   "70" 자체가 substring 검색이라 사이즈 표기 다 차단됨. "chuck 70/척 70/ct70/1970" specific만 유지.
+    mustNotContain: [...COMMON_NOISE, "1970", "chuck 70", "척 70", "척70", "ct70", "ct 70", "1970s", "cdg", "꼼데", "stussy", "스투시", "ader error", "아더에러", "carhartt", "칼하트", "펑첸왕"],
     msrpKrw: 79000, released: 1923,
     defaultProductType: "sneaker",
   },
