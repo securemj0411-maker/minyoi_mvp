@@ -7478,6 +7478,14 @@ export const CATALOG: Sku[] = [
       "골돌이", "곰동이",  // 곰돌이 typo
       "희귀상품", "rare", "희귀",  // 한정
       "헬멧", "tote bear",  // 추가
+      // Wave 800 (2026-05-24) bias-free 의류 14 brand sweep Phase 1:
+      // bait listing — 모든 collab token을 한꺼번에 박은 셀러 매물 (8K outlier).
+      "stc 어항", "어항 진리", "버터플라이 베이비베어", "stc솜",
+      "솜버터플라이", "베이비베어항구피클럽", "항구피클럽",
+      // 양말 변형 (n켤레)
+      "3켤레", "5켤레", "2켤레", "양말 3", "양말 5", "양말 2",
+      // 의류 X (브랜드 그릇/접시/잡화)
+      "그릇", "접시", "디쉬", "dish", "tray", "트레이",
     ],
     msrpKrw: 159000, released: 2020,
   },
@@ -7805,6 +7813,18 @@ export const CATALOG: Sku[] = [
       "워크", "워크자켓", "초어", "초어자켓", "chore", "chore jacket", "work jacket",
       "wool mackinaw", "맥키노", "wool 자켓",
       "트러커", "trucker", "denim jacket",  // trucker는 별도 SKU (Polo RRL Denim Jacket)
+      // Wave 800 (2026-05-24) Pareto 의류 14 brand sweep Phase 1: 124x spread 추가 차단.
+      // 셀럽 매물 / 전세계 1개 unique / 모터사이클 라이더 라인.
+      "류준열 착용", "류준열착용", "정해인 착용", "공유 착용", "박서준 착용",
+      "전세계 1개", "전세계1개", "world's only", "unique piece", "1 of 1",
+      "원피스 한정", "single piece", "유일",
+      "오웬스 자켓", "rick owens",
+      // 라이더 자켓 / 모터사이클 라인 (별도 시세군 ~3M)
+      "라이더 자켓", "라이더자켓", "rider jacket",
+      "모터사이클 자켓", "모터사이클자켓", "motorcycle jacket",
+      "웨스턴 자켓", "western jacket", "카우보이 자켓",
+      // RRL 한정 sweater 재킷
+      "제프렌-m", "제프렌m", "jeffren", "스웨터 재킷",
     ],
     msrpKrw: 1500000, released: 2020,
     // jacket + coat 둘 다 가능. defaultProductType 안 박음 — text 추출 의존 (regex 가 jacket/coat 구분).

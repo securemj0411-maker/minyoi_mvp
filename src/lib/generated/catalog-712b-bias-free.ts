@@ -503,6 +503,12 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       "베르베르진", "vere", "자미로콰이", "jamiroquai",
       "carimor", "karimor", "카리모어",  // Junya × Karimor
       "newmanual", "뉴매뉴얼", "new manual",
+      // Wave 800 (2026-05-24) bias-free Phase 1: 베이츠 / m65 파카 / by cdg 더블코트 차단.
+      "bates", "베이츠",  // Junya × Bates 가죽 라이더 (3.2M)
+      "m65 파카", "m65파카", "m-65 파카", "m65 jacket",  // Junya × CP M65
+      "by cdg", "by 꼼데", "junya watanabe by",  // CDG sub-line (별도 시세군 2M+)
+      "더블코트", "double coat", "싱글코트", "single coat",  // 코트 sub-lines
+      "해외발송", "직배송",  // overseas-listing pattern (가격 부풀려짐)
     ],
     msrpKrw: 590000, released: 2018,
   },

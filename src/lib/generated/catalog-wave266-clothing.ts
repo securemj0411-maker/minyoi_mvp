@@ -1186,6 +1186,17 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "maya", "마야",  // → moncler_maya
       "grenoble", "그르노블", "그레노블", "그르노블르",  // → moncler_grenoble
       "tricot", "트리코",  // → moncler_tricot
+      // Wave 800 (2026-05-24) Pareto 의류 14 brand sweep Phase 1: 추가 collab 차단.
+      "chloe", "클로에", // Chloé collab (2.5M outlier)
+      "loewe", "로에베", // Loewe collab
+      "off-white", "오프화이트", "off white",
+      "valentino", "발렌티노",
+      "dior", "디올",
+      "celine", "셀린느",
+      "허드슨", "hudson", // 허드슨 라인 (별도 시세군)
+      "리바후르", "ribafur", // RIBAFUR 라인
+      "캔비", "canby", // 캔비 long down
+      "달레스", "dalles", // Dalles 후드 숏
     ],
     msrpKrw: 1490000,
     released: 1952,
