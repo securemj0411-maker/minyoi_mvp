@@ -82,8 +82,9 @@ export default function ManualDepositClient() {
     return () => window.clearInterval(interval);
   }, [stage]);
 
-  // Wave launch-97: waiting 상태에서 3초마다 status polling.
+  // Wave launch-97 + launch-97b: waiting 상태에서 2초마다 status polling.
   //   status = approved | auto_approved → setStage("approved") + credits-changed event.
+  //   token 가 stale 일 가능성 대비 — credentials:"include" 로 cookies 명시 + token fallback.
   useEffect(() => {
     if (stage !== "waiting" || requestId == null) return;
     let cancelled = false;
@@ -91,12 +92,17 @@ export default function ManualDepositClient() {
     const poll = async () => {
       try {
         const supabase = getSupabaseBrowserClient();
-        const token = supabase ? (await supabase.auth.getSession()).data.session?.access_token : null;
+        const session = supabase ? (await supabase.auth.getSession()).data.session : null;
+        const token = session?.access_token ?? null;
         const res = await fetch(`/api/billing/manual-deposit/${requestId}`, {
           cache: "no-store",
+          credentials: "include",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
-        if (!res.ok) return;
+        if (!res.ok) {
+          console.warn("[manual-deposit poll] non-ok", res.status);
+          return;
+        }
         const data = (await res.json()) as { status?: string; decidedBy?: string | null };
         if (cancelled) return;
         if (data.status === "approved" || data.status === "auto_approved") {
@@ -108,12 +114,12 @@ export default function ManualDepositClient() {
           setErrorMessage("운영자가 신청을 거절했어요. 입금이 확인되지 않아요.");
           setStage("error");
         }
-      } catch {
-        // 일시적 network fail — 다음 polling 에서 재시도.
+      } catch (err) {
+        console.warn("[manual-deposit poll] threw", err instanceof Error ? err.message : String(err));
       }
     };
     void poll();
-    timer = window.setInterval(poll, 3000);
+    timer = window.setInterval(poll, 2000);
     return () => {
       cancelled = true;
       if (timer != null) window.clearInterval(timer);
@@ -329,8 +335,8 @@ export default function ManualDepositClient() {
               {plan.monthlyCredits.toLocaleString("ko-KR")} 크레딧
             </div>
             <p className="mt-4 text-center text-[12.5px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-              운영자가 통장 확인 중이에요.<br/>
-              카운트가 0이 되면 자동으로 크레딧을 받아요.
+              운영자가 통장을 확인 중이에요.<br/>
+              잠시만 기다려주세요.
             </p>
             <div className="mt-3 flex items-center gap-1">
               <span className="h-1.5 w-1.5 animate-bounce-high rounded-full bg-[#3182f6] [animation-delay:-0.32s]" />
