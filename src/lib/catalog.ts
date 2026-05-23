@@ -8164,7 +8164,18 @@ export const CATALOG: Sku[] = [
     modelName: "Dior × Stüssy (FW21 한정)",
     aliases: ["Dior Stussy", "디올 스투시"],
     mustContain: [["dior", "디올"], ["stussy", "스투시", "stüssy"]],
-    mustNotContain: ["nike", "나이키", "키즈", "kids", "복각", "rep ", "replica"],
+    mustNotContain: [
+      "nike", "나이키", "키즈", "kids", "복각", "rep ", "replica",
+      // Wave 717 (2026-05-23): pool audit 발견 — 가방 매물 (디올옴므 스투시 새들백/호보백) 흡수 차단.
+      // 가방은 별도 시세군 (clothing SKU에 들어오면 안 됨).
+      "새들백", "saddle bag", "saddle",
+      "호보백", "호보 백", "hobo bag", "hobo",
+      "백팩", "backpack", "메신저", "messenger",
+      "토트백", "tote bag", "토트 백",
+      "숄더백", "shoulder bag", "숄더 백", "크로스백", "crossbody",
+      "지갑", "wallet", "월렛", "카드지갑", "card holder",
+      "가방", "bag",
+    ],
     msrpKrw: 1200000, released: 2021,
   },
   // Wave 199 (2026-05-18): 의류 brand 신발 매물 mining 발견 — 폴로/TNF 신발 SKU 추가.
