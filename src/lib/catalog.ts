@@ -5197,7 +5197,13 @@ export const CATALOG: Sku[] = [
     aliases: ["에어팟 4세대", "AirPods 4", "에어팟4"],
     mustContain: [["에어팟", "airpods"], ["4세대", "4 세대", "4th"]],
     // ANC 매물은 airpods-4-anc SKU로만 분류 (별도 제품).
-    mustNotContain: ["프로", "pro", "max", "맥스", "2세대", "3세대", "anc", "노이즈 캔슬", "노캔", "노이즈캔슬"],
+    // Wave 753 (2026-05-24) Pareto: 275x audit — case+brand collab + 케으스 typo + mix listing 차단.
+    mustNotContain: ["프로", "pro", "max", "맥스", "2세대", "3세대", "anc", "노이즈 캔슬", "노캔", "노이즈캔슬",
+      "마이멜로디", "쿠로미", "산리오", "sanrio", "포차코", "리락쿠마",
+      "케으스", "케이스만", "보호 케이스", "보호케이스",
+      "에어팟 프류", // typo "프로" 같은 mix listing
+      ...HEADPHONE_NOISE,
+    ],
     msrpKrw: 199000,
     released: 2024,
   },
@@ -5982,9 +5988,21 @@ export const CATALOG: Sku[] = [
     mustContain: [["애플워치", "apple watch", "applewatch"], ["울트라", "ultra"]],
     // Wave 90 (2026-05-15): Ultra 3 차단 추가. 사용자 코멘트로 발견 — Ultra 3 매물이
     // Ultra 1로 잘못 매핑되어 시세 비교에 섞임. Ultra 3 출시 시 별도 SKU 분리 필요.
+    // Wave 753 (2026-05-24) Pareto: 1800x audit — 밴드/루프 단품 + Urvoi 호환 brand 차단.
     mustNotContain: [
       "울트라 2", "ultra 2", "울트라2", "ultra2",
       "울트라 3", "ultra 3", "울트라3", "ultra3",
+      // Wave 753 — 밴드/루프 단품 차단 (Apple Watch Ultra 500원 outlier)
+      "밀레니즈 루프", "밀레니즈루프", "milanese loop",
+      "스포츠 루프", "스포츠루프", "sport loop",
+      "오션 밴드", "오션밴드", "ocean band", "ocean band단품",
+      "트레일 루프", "트레일루프", "trail loop",
+      "알파인 루프", "알파인루프", "alpine loop",
+      "마그네틱 밴드", "마그네틱밴드", "magnetic band",
+      "밴드만", "밴드 단품", "스트랩만", "스트랩 단품",
+      "urvoi", "유르보이", "유로보이", // 호환 밴드 brand
+      // case/스킨 단품
+      "보호 케이스", "보호케이스", "스킨만", "강화유리",
     ],
     msrpKrw: 1149000,
     released: 2022,
@@ -6019,6 +6037,13 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["울트라 2", "ultra 2", "울트라2", "ultra2", "울트라 1", "ultra 1",
       // Wave 646: 에르메스 에디션은 별도 시세군 (1.5-2.1M, 일반 700-900k 대비 2-3배 outlier).
       "에르메스", "hermes", "사티네", "satine",
+      // Wave 753 (2026-05-24) Pareto: 20000x audit — 밴드 단품 + 교환 dummy 차단.
+      "밀레니즈 루프", "밀레니즈루프", "milanese loop",
+      "스포츠 루프", "스포츠루프", "sport loop", "오션 밴드", "오션밴드",
+      "트레일 루프", "트레일루프", "알파인 루프", "알파인루프",
+      "밴드만", "밴드 단품", "스트랩만", "스트랩 단품", "루프만",
+      "urvoi", "유르보이",
+      "보호 케이스", "보호케이스", "강화유리",
     ],
     msrpKrw: 1199000,
     released: 2025,
@@ -10896,9 +10921,13 @@ export const CATALOG: Sku[] = [
     modelName: "Vans Authentic (Canvas Classic)",
     aliases: ["Vans Authentic", "반스 어센틱", "Authentic"],
     mustContain: [["반스", "vans"], ["어센틱", "authentic"]],
+    // Wave 753 (2026-05-24) Pareto: 266x audit — 양말/뮬/vintage 차단.
     mustNotContain: [
       "키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품",
       "vault", "볼트", "lx", "베이프", "bape", "fragment", "프래그먼트",
+      "양말", "삭스", "socks", "크루삭스", "크루 삭스",
+      "뮬", "mule", // Vans Authentic Mule은 별도 라인
+      "빈티지 어센틱", "vintage authentic", "두하빈티지",
     ],
     msrpKrw: 79000, released: 1966,
   },
@@ -10924,12 +10953,17 @@ export const CATALOG: Sku[] = [
     modelName: "Vans Slip-On (Checkerboard / Classic)",
     aliases: ["Vans Slip-On", "반스 슬립온", "Slip On", "체커보드"],
     mustContain: [["반스", "vans"], ["슬립온", "slip on", "slip-on", "체커보드", "checkerboard"]],
+    // Wave 753 (2026-05-24) Pareto: 256x audit — 양말/체커보드 양말 false match + 뮬.
     mustNotContain: [
       "키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품",
       // Wave 235 Vault/Vintage/collab
       "vault", "볼트", "lx", "타카 하야시", "taka hayashi", "타카하야시",
       "70s 반스", "80s 반스", "90s 반스", "70s반스", "80s반스", "90s반스",
       "fear of god", "fog", "피오갓", "피어오브갓", "fragment", "프래그먼트",
+      // Wave 753: 양말/뮬 false match
+      "양말", "삭스", "socks", "크루삭스", "크루 삭스", "체커보드 양말", "체커보드 삭스",
+      "체커보드 미드", "체커보드 크루", // 체커보드 삭스 (Vans 양말)
+      "뮬", "mule",
     ],
     msrpKrw: 79000, released: 1979,
   },
