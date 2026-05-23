@@ -7591,7 +7591,10 @@ export const CATALOG: Sku[] = [
       "벨트", "지갑", "wallet", "월렛", "모자", "캡\\b", "넥타이", "키링",
       "목걸이", "925", "팔찌", "bracelet", "반지",
       // denim 모델명 (denim lane 으로)
-      "빈파포", "파이브포켓", "파이브 포켓", "5포켓", "기빈스", "미드랜드", "이스트웨스트", "에이버리", "브룸필드", "힐스뷰", "벤튼", "클리어빌"],
+      "빈파포", "파이브포켓", "파이브 포켓", "5포켓", "기빈스", "미드랜드", "이스트웨스트", "에이버리", "브룸필드", "힐스뷰", "벤튼", "클리어빌",
+      // Wave 800 (2026-05-24) Phase 3: 40x — Robe/Western Robe (1.5M outlier).
+      "로브", "robe", "웨스턴 로브", "western robe",
+    ],
     msrpKrw: 290000, released: 2020,
     defaultProductType: "shirt", // Wave 236d — RRL 옥스포드/체크/버튼다운 = shirt 라인.
   },
@@ -7868,6 +7871,15 @@ export const CATALOG: Sku[] = [
       "oxford", "옥스포드", "버튼다운", "버튼 다운", "체크셔츠", "체크 셔츠", "샴브레이", "chambray",
       "워크셔츠", "워크 셔츠", "린넨 셔츠", "린넨셔츠", "헨리 셔츠", "henley", "플란넬", "flannel",
       "남방", "다이아 체크", "윈드페인",
+      // Wave 800 (2026-05-24) Phase 3: 70x — 가방/액세서리 broad fallback 차단.
+      // RRL 시그니처 가방: Overnight bag / Briefcase (의류 SKU 와 시세군 다름)
+      "오버나이트백", "오버나이트 백", "overnight bag", "overnight",
+      "브리프케이스", "브리프 케이스", "briefcase",
+      "rrl 가방", "rrl bag",
+      // RRL 무스탕 / 시어링 (premium 라인)
+      "무스탕", "시어링", "mustang",
+      // RRL 가방류 추가
+      "토트", "더플", "duffle", "메신저",
     ],
     msrpKrw: 350000, released: 2020,
   },

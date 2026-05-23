@@ -15,6 +15,7 @@ import { detectBrandDepth } from "@/lib/category-brand-depth";
 import type { DetailEventType } from "@/lib/detail-analytics";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 // Wave 338+339 (Phase 1a + 1b — Freemium /explore):
 // 무료 사용자 매물 풀 browsing. 30개 풀 + 2h cooldown.
@@ -1269,6 +1270,9 @@ export default function ExploreClient({
   // Wave launch-53 (사용자 짚음 "하루 1번이면 button 비활성/알림"):
   //   cooldown 상태 mount 시 fetch. cooldown 안이면 button 비활성 + "N시간 후 다시" 카피.
   const [kakaoShareCooldownHours, setKakaoShareCooldownHours] = useState<number>(0);
+  // Wave 738 (2026-05-24): 카톡 공유 → webhook → DB UPDATE → Supabase Realtime → 토스트.
+  //   "크레딧 N개 지급됐어요!" 1.8초 표시 + app-nav "minyoi:credits-changed" event 발생.
+  const [kakaoShareToast, setKakaoShareToast] = useState<string | null>(null);
 
   // mount 시 cooldown 상태 fetch (인증 안 됐으면 fail → 0 으로 가정)
   useEffect(() => {
@@ -1288,6 +1292,47 @@ export default function ExploreClient({
       }
     })();
   }, []);
+
+  // Wave 738 (2026-05-24): mvp_user_credits 본인 row UPDATE Realtime 구독.
+  //   카톡 공유 → 친구 클릭 → 카카오 webhook → DB UPDATE balance += 3 → Realtime push → 토스트.
+  //   storageScope = auth.user.id (me-dashboard-client 에서 전달). 익명은 skip.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!storageScope || storageScope === "anonymous") return;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+
+    const channel = supabase
+      .channel(`credits-realtime-${storageScope}`)
+      .on(
+        "postgres_changes" as never,
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "mvp_user_credits",
+          filter: `auth_user_id=eq.${storageScope}`,
+        },
+        (payload: { new?: { balance?: number }; old?: { balance?: number } }) => {
+          const newBalance = Number(payload.new?.balance ?? 0);
+          const oldBalance = Number(payload.old?.balance ?? 0);
+          if (newBalance > oldBalance) {
+            const gained = newBalance - oldBalance;
+            // 토스트 1.8초 표시
+            setKakaoShareToast(`크레딧 ${gained}개 지급됐어요! 🎁`);
+            window.setTimeout(() => setKakaoShareToast(null), 1800);
+            // app-nav (이미 listener 박힘) → 자동 refetch + nav UI 갱신
+            window.dispatchEvent(new CustomEvent("minyoi:credits-changed"));
+            // cooldown 24h 갱신 — 공유 보너스 받았으면 button 비활성
+            setKakaoShareCooldownHours(24);
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [storageScope]);
 
   // SDK init — script tag 로드 끝나면 window.Kakao 사용 가능. polling 으로 확인 (script async).
   useEffect(() => {
@@ -1368,11 +1413,9 @@ export default function ExploreClient({
         },
       });
 
-      // Wave 734: 즉시 fetch 제거 — 친구가 메시지 클릭해야 webhook → 보상.
-      //   Wave 736 정정: 보상 3 크레딧 (1 아님).
-      if (typeof window !== "undefined") {
-        window.alert("공유해주셔서 감사해요!\n친구한테 메시지가 도달하면 크레딧 3개를 받아요.");
-      }
+      // Wave 738 (2026-05-24): 다이얼로그 닫힘 → Supabase Realtime 이 webhook→DB UPDATE 감지 시
+      //   클라이언트로 즉시 push (useEffect 의 subscription 이 처리). polling 불필요.
+      //   app-nav 가 "minyoi:credits-changed" event listen → 자동 refetch + UI 갱신.
       setRefreshModalOpen(false);
     } catch (err) {
       console.error("kakao share failed", err);
@@ -2980,6 +3023,17 @@ export default function ExploreClient({
             - 점 크기 키움 (h-3 → h-2.5/4 staggered = 더 dynamic)
             - "상품을 확인중입니다" + sub text 추가
             - dots 흰색 + drop-shadow 로 다크 배경에서도 또렷 */}
+      {/* Wave 738 (2026-05-24): 카톡 공유 보상 토스트 — Realtime UPDATE 감지 시 1.8초 표시. */}
+      {kakaoShareToast && (
+        <div
+          className="fixed bottom-6 left-1/2 z-[96] -translate-x-1/2 rounded-full bg-[#191f28] px-5 py-3 text-sm font-black text-white shadow-[0_8px_24px_rgba(0,0,0,0.25)] animate-[fade-in_200ms_ease-out] dark:bg-white dark:text-zinc-950"
+          role="status"
+          aria-live="polite"
+        >
+          {kakaoShareToast}
+        </div>
+      )}
+
       {detailAccessLoadingPid != null ? (
         <div
           className="fixed inset-0 z-[94] flex items-center justify-center bg-black/55 backdrop-blur-[1px]"
