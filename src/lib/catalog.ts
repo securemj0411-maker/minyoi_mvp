@@ -1266,7 +1266,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 11 Pro",
     aliases: ["아이폰 11 프로", "아이폰11프로", "iPhone 11 Pro"],
-    mustContain: [["아이폰 11 프로", "아이폰11프로", "iphone 11 pro"]],
+    // Wave 749e: mid-space 보강.
+    mustContain: [["아이폰 11 프로", "아이폰11프로", "아이폰 11프로", "아이폰11 프로", "iphone 11 pro", "iphone11 pro", "iphone 11pro"]],
     mustNotContain: ["맥스", "max", "프로맥스", "promax", "프로 맥스", "프맥", ...PHONE_NOISE],
     msrpKrw: 1390000,
     released: 2019,
@@ -1277,7 +1278,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 11 Pro Max",
     aliases: ["아이폰 11 프로맥스", "아이폰11프로맥스", "iPhone 11 Pro Max"],
-    mustContain: [["아이폰 11 프로맥스", "아이폰11프로맥스", "아이폰 11 프로 맥스", "iphone 11 pro max"]],
+    // Wave 749e: mid-space 보강.
+    mustContain: [["아이폰 11 프로맥스", "아이폰11프로맥스", "아이폰 11 프로 맥스", "아이폰 11프로맥스", "아이폰11 프로맥스", "아이폰11 프로 맥스", "아이폰 11프로 맥스", "iphone 11 pro max", "iphone11 pro max", "iphone 11pro max"]],
     mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1550000,
     released: 2019,
@@ -1289,7 +1291,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 12 Pro",
     aliases: ["아이폰 12 프로", "아이폰12프로", "iPhone 12 Pro"],
-    mustContain: [["아이폰 12 프로", "아이폰12프로", "iphone 12 pro"]],
+    // Wave 749e: mid-space 보강.
+    mustContain: [["아이폰 12 프로", "아이폰12프로", "아이폰 12프로", "아이폰12 프로", "iphone 12 pro", "iphone12 pro", "iphone 12pro"]],
     mustNotContain: ["맥스", "max", "프로맥스", "promax", "프로 맥스", "프맥", ...PHONE_NOISE],
     msrpKrw: 1350000,
     released: 2020,
@@ -1300,7 +1303,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 12 Pro Max",
     aliases: ["아이폰 12 프로맥스", "아이폰12프로맥스", "iPhone 12 Pro Max"],
-    mustContain: [["아이폰 12 프로맥스", "아이폰12프로맥스", "아이폰 12 프로 맥스", "iphone 12 pro max"]],
+    // Wave 749e: mid-space 보강.
+    mustContain: [["아이폰 12 프로맥스", "아이폰12프로맥스", "아이폰 12 프로 맥스", "아이폰 12프로맥스", "아이폰12 프로맥스", "아이폰12 프로 맥스", "아이폰 12프로 맥스", "iphone 12 pro max", "iphone12 pro max", "iphone 12pro max"]],
     mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1490000,
     released: 2020,
@@ -5079,7 +5083,8 @@ export const CATALOG: Sku[] = [
     category: "earphone",
     modelName: "AirPods Pro 1st gen",
     aliases: ["에어팟 프로 1세대", "AirPods Pro 1"],
-    mustContain: [["에어팟", "airpods"], ["프로", "pro"], ["1세대", "1 세대", "1st"]],
+    // Wave 749e: 한국 셀러 표기 "프로1" / "프로 1" / "에어팟프로1" no-space 변형 보강.
+    mustContain: [["에어팟", "airpods"], ["프로", "pro"], ["1세대", "1 세대", "1st", "프로1", "프로 1", "pro1", "pro 1"]],
     // Wave 179 (2026-05-17): HEADPHONE_NOISE 추가 — 단품/유닛/케이스만 차단 일관성.
     mustNotContain: [
       "2세대", "2nd", "max", "맥스", "usb-c", "usbc", "c타입", "타입c",
@@ -5685,10 +5690,11 @@ export const CATALOG: Sku[] = [
     category: "earphone",
     laneKey: "galaxy_buds_4_pro",
     modelName: "Galaxy Buds 4 Pro",
-    aliases: ["갤럭시 버즈 4 프로", "갤버즈4프로", "Galaxy Buds 4 Pro", "갤럭시버즈4프로"],
+    aliases: ["갤럭시 버즈 4 프로", "갤버즈4프로", "Galaxy Buds 4 Pro", "갤럭시버즈4프로", "버즈 프로 4", "버즈프로4"],
+    // Wave 749e: 한국 셀러 "프로 4" / "프로4" 순서 변형 catch (사용자 발견 320k 미개봉 매물).
     mustContain: [
-      ["갤럭시 버즈", "갤버즈", "galaxy buds"],
-      ["4 프로", "4프로", "4 pro"],
+      ["갤럭시 버즈", "갤버즈", "galaxy buds", "버즈"],
+      ["4 프로", "4프로", "4 pro", "프로 4", "프로4", "pro 4"],
     ],
     mustNotContain: [
       "1세대", "2세대", "3세대",
