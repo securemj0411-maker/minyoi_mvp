@@ -7146,7 +7146,9 @@ export const CATALOG: Sku[] = [
     aliases: ["Polo Pony Tee", "폴로 포니 티셔츠", "Ralph Lauren T-Shirt"],
     // Wave 223 (2026-05-19): "타이틀리스트 골프 폴로티" 매물 잘못 매칭 → mustNotContain 강화.
     //   polo SKU 가 다른 brand 의 "폴로" 단어 매물에 매칭됨. brand 한정 필요.
-    mustContain: [["폴로 랄프로렌", "polo ralph", "ralph lauren", "랄프로렌"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "크루넥"]],
+    // Wave 737 leak fix: group 0 "폴로 랄프로렌" compound → 분리. 한국 셀러 "폴로" 단독 표기 많음.
+    //   pony_tee + tee bucket 726건 unmatched. mustNotContain 이미 비폴로 brand 다 차단.
+    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌", "랄프 로렌"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "크루넥"]],
     mustNotContain: ["RRL", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "pique", "긴팔", "롱슬리브", "키즈", "kids", "토들러",
       // Wave 223: 다른 brand 의 "폴로/Polo" 단어 매물 차단.
       "타이틀리스트", "titleist", "캘러웨이", "callaway", "푸마 폴로", "puma polo",
