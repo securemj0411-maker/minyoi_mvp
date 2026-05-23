@@ -205,34 +205,32 @@ export default function InviteClient() {
         </p>
       </div>
 
-      {/* 추천 현황 (작게) */}
-      {(info.stats.signupCount > 0 || info.stats.totalCredits > 0) && (
-        <div className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-            지금까지 내가 초대한 친구
-          </div>
-          <dl className="mt-2 grid grid-cols-3 gap-2 text-center">
-            <div>
-              <dt className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">가입</dt>
-              <dd className="mt-1 text-lg font-black tabular-nums text-zinc-950 dark:text-white">
-                {info.stats.signupCount}<span className="text-[10px] text-zinc-500">명</span>
-              </dd>
-            </div>
-            <div>
-              <dt className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">결제</dt>
-              <dd className="mt-1 text-lg font-black tabular-nums text-zinc-950 dark:text-white">
-                {info.stats.paymentCount}<span className="text-[10px] text-zinc-500">명</span>
-              </dd>
-            </div>
-            <div>
-              <dt className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">받은 크레딧</dt>
-              <dd className="mt-1 text-lg font-black tabular-nums text-blue-700 dark:text-blue-300">
-                +{info.stats.totalCredits}
-              </dd>
-            </div>
-          </dl>
+      {/* 추천 현황 — Wave 742 (2026-05-24): 0 일 때도 항상 표시 (사용자 정정). */}
+      <div className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+          지금까지 내가 초대한 친구
         </div>
-      )}
+        <dl className="mt-2 grid grid-cols-3 gap-2 text-center">
+          <div>
+            <dt className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">가입</dt>
+            <dd className="mt-1 text-lg font-black tabular-nums text-zinc-950 dark:text-white">
+              {info.stats.signupCount}<span className="text-[10px] text-zinc-500">명</span>
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">결제</dt>
+            <dd className="mt-1 text-lg font-black tabular-nums text-zinc-950 dark:text-white">
+              {info.stats.paymentCount}<span className="text-[10px] text-zinc-500">명</span>
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">받은 크레딧</dt>
+            <dd className="mt-1 text-lg font-black tabular-nums text-blue-700 dark:text-blue-300">
+              +{info.stats.totalCredits}
+            </dd>
+          </div>
+        </dl>
+      </div>
 
       {/* 뒤로 */}
       <div className="text-center">
