@@ -1,15 +1,8 @@
 // Wave 503 (2026-05-21): 상세 열람/쉬운모드 행동 로그 운영자 대시보드.
 // 결제 CTA 개선을 위해 사용자가 어디서 빠지는지, 숫자 리포트/원본 클릭까지 가는지 본다.
+// Wave launch-108 (2026-05-24): admin auth + nav layout 위임.
 
-import { notFound } from "next/navigation";
-import {
-  OPS_ADMIN_BASE_PATH,
-  OPS_ADMIN_FEEDBACK_STATS_PATH,
-  OPS_ADMIN_LOSS_REPORTS_PATH,
-} from "@/lib/admin-routes";
-import { isAdminUser } from "@/lib/auth-users";
 import { detailEventLabel } from "@/lib/detail-analytics";
-import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 export const dynamic = "force-dynamic";
@@ -183,9 +176,7 @@ function sessionRows(rows: DetailEventRow[], listings: Map<number, ListingMeta>)
 }
 
 export default async function DetailEventsAdminPage() {
-  const auth = await requireSupabaseUserFromCookies();
-  if (!auth.ok || !isAdminUser(auth.user)) notFound();
-
+  // admin auth 는 layout.tsx 에서 처리 (Wave launch-108).
   const { rows, error } = await fetchDetailEvents();
   const listings = await fetchListingMeta(rows.map((row) => row.pid));
   const detailOpened = countType(rows, "detail_opened");
@@ -198,44 +189,19 @@ export default async function DetailEventsAdminPage() {
   const uniqueSessions = new Set(rows.map((row) => row.session_id).filter(Boolean)).size;
   const sessions = sessionRows(rows, listings);
 
+  // Wave launch-108 (2026-05-24): nav + 헤더 layout 위임 + Bloomberg 톤.
   return (
-    <main className="min-h-screen bg-[#f6f1e8] dark:bg-zinc-950">
-      <section className="mx-auto max-w-7xl px-4 py-8">
-        <nav className="mb-4 flex flex-wrap items-center gap-2 text-xs">
-          <a
-            href={OPS_ADMIN_BASE_PATH}
-            className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 font-black text-amber-800 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
-          >
-            ⚙ 회원 목록
-          </a>
-          <a
-            href={OPS_ADMIN_LOSS_REPORTS_PATH}
-            className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 font-black text-amber-900 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
-          >
-            🔍 사용자 신고 검수
-          </a>
-          <a
-            href={OPS_ADMIN_FEEDBACK_STATS_PATH}
-            className="rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 font-black text-emerald-900 hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-100"
-          >
-            📊 신고 통계
-          </a>
-          <span className="rounded-full bg-sky-100 px-2.5 py-1 font-black text-sky-900 dark:bg-sky-900/40 dark:text-sky-100">
-            👀 상세 행동 (현재)
-          </span>
-        </nav>
+    <main className="mx-auto max-w-7xl px-4 pb-10 pt-4 sm:px-6">
+      <header className="mb-4 border-b border-zinc-800 pb-3">
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-400">▌DETAIL EVENTS</p>
+        <h1 className="mt-1 text-xl font-black tracking-tight text-zinc-100">funnel · session · CTR breakdown</h1>
+        <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-zinc-500">
+          last 500 events — detail open · easy mode · numeric report · original click
+        </p>
+      </header>
 
-        <header className="mb-6 border-b border-[#e2d9cb] pb-4 dark:border-zinc-800">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-sky-700 dark:text-sky-300">
-            Admin · detail_events
-          </p>
-          <h1 className="mt-1 text-2xl font-black tracking-tight text-[#223127] dark:text-white">
-            상세 움직임 보기
-          </h1>
-          <p className="mt-1 text-xs text-[#687366] dark:text-zinc-400">
-            상세 열람, 쉬운모드 장면 이동, 숫자 리포트 전환, 원본 매물 클릭까지 최근 500건을 봅니다.
-          </p>
-        </header>
+      <section className="px-0">
+        {/* legacy inner content — 한국어 KpiCard 라벨 keep (다음 wave 에서 영문화 권장). */}
 
         {error ? (
           <section className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-bold text-rose-900 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-100">
