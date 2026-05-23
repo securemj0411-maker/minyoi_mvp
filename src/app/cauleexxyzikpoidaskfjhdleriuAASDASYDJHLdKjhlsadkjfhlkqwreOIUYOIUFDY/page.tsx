@@ -30,6 +30,8 @@ type CreditRow = {
   pro_until: string | null;
   is_beta_tester: boolean | null;
   beta_tester_granted_at: string | null;
+  blocked_at: string | null;
+  blocked_reason: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -66,7 +68,7 @@ async function fetchAuthUsers(): Promise<AuthUser[]> {
 
 async function fetchAllCredits(): Promise<CreditRow[]> {
   const res = await fetch(
-    `${tableUrl("mvp_user_credits")}?select=auth_user_id,user_ref,balance,free_grant_tokens,free_granted_at,pro_until,is_beta_tester,beta_tester_granted_at,created_at,updated_at&limit=10000`,
+    `${tableUrl("mvp_user_credits")}?select=auth_user_id,user_ref,balance,free_grant_tokens,free_granted_at,pro_until,is_beta_tester,beta_tester_granted_at,blocked_at,blocked_reason,created_at,updated_at&limit=10000`,
     { headers: serviceHeaders(), cache: "no-store" },
   );
   if (!res.ok) return [];
@@ -154,6 +156,8 @@ export default async function MembersPage() {
         proUntil: credit?.pro_until ?? null,
         isBetaTester: Boolean(credit?.is_beta_tester),
         betaGrantedAt: credit?.beta_tester_granted_at ?? null,
+        blockedAt: credit?.blocked_at ?? null,
+        blockedReason: credit?.blocked_reason ?? null,
         creditRowExists: credit != null,
         planKey: plan?.plan_key ?? "free",
         planStatus: plan?.status ?? null,

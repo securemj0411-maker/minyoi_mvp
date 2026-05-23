@@ -14,6 +14,8 @@ export type MemberRow = {
   proUntil: string | null;
   isBetaTester: boolean;
   betaGrantedAt: string | null;
+  blockedAt: string | null;
+  blockedReason: string | null;
   creditRowExists: boolean;
   planKey: string;
   planStatus: string | null;
@@ -65,6 +67,10 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
   const [planFilter, setPlanFilter] = useState<PlanFilter>("all");
   const [betaFilter, setBetaFilter] = useState<BetaFilter>("all");
   const [creditDrafts, setCreditDrafts] = useState<Record<string, string>>({});
+  // Wave launch-95: 회수 input + 차단/해제 toggle.
+  const [revokeDrafts, setRevokeDrafts] = useState<Record<string, string>>({});
+  const [revokePendingIds, setRevokePendingIds] = useState<Set<string>>(new Set());
+  const [blockPendingIds, setBlockPendingIds] = useState<Set<string>>(new Set());
 
   const filteredRows = rows.filter((row) => {
     if (search.trim()) {
@@ -169,6 +175,96 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
     }
   }
 
+  // Wave launch-95: 크레딧 회수. 양심 신뢰 충전 후 입금 안 한 사용자 처리.
+  async function revokeCredits(row: MemberRow) {
+    const rawAmount = revokeDrafts[row.authUserId] ?? "";
+    const amount = Math.round(Number(rawAmount));
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError("회수할 크레딧 개수를 1 이상으로 입력해주세요.");
+      setNotice(null);
+      return;
+    }
+    const target = row.nickname || row.email || row.authUserId;
+    const ok = window.confirm(`${target} 회원의 크레딧 ${amount.toLocaleString("ko-KR")}개를 회수할까요?\n(입금 안 했거나 의심스러운 경우)`);
+    if (!ok) return;
+
+    setError(null);
+    setNotice(null);
+    setRevokePendingIds((prev) => new Set(prev).add(row.authUserId));
+    try {
+      const res = await fetch("/api/admin/credits/revoke", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ authUserId: row.authUserId, amount, note: "operator manual deposit revoke" }),
+      });
+      const data = (await res.json()) as { ok?: boolean; balance?: number; error?: string };
+      if (!res.ok || !data.ok) {
+        setError(data.error ?? "credit_revoke_failed");
+        return;
+      }
+      setRows((prev) => prev.map((r) =>
+        r.authUserId === row.authUserId
+          ? { ...r, balance: Number(data.balance ?? r.balance ?? 0) }
+          : r,
+      ));
+      setRevokeDrafts((prev) => ({ ...prev, [row.authUserId]: "" }));
+      setNotice(`${target} 회원의 크레딧 ${amount.toLocaleString("ko-KR")}개 회수 완료`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "network error");
+    } finally {
+      setRevokePendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(row.authUserId);
+        return next;
+      });
+    }
+  }
+
+  // Wave launch-95: 계정 차단/해제 toggle.
+  async function toggleBlock(row: MemberRow) {
+    const blocking = !row.blockedAt;
+    const target = row.nickname || row.email || row.authUserId;
+    let reason: string | null = null;
+    if (blocking) {
+      const input = window.prompt(`${target} 회원 차단 사유 (선택):`, "manual deposit fraud");
+      if (input === null) return;
+      reason = input.trim() || "blocked by operator";
+    } else {
+      const ok = window.confirm(`${target} 회원 차단을 해제할까요?`);
+      if (!ok) return;
+    }
+
+    setError(null);
+    setNotice(null);
+    setBlockPendingIds((prev) => new Set(prev).add(row.authUserId));
+    try {
+      const res = await fetch("/api/admin/user/block", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ authUserId: row.authUserId, blocked: blocking, reason }),
+      });
+      const data = (await res.json()) as { ok?: boolean; blockedAt?: string | null; error?: string };
+      if (!res.ok || !data.ok) {
+        setError(data.error ?? "block_toggle_failed");
+        return;
+      }
+      setRows((prev) => prev.map((r) =>
+        r.authUserId === row.authUserId
+          ? { ...r, blockedAt: data.blockedAt ?? null, blockedReason: blocking ? reason : null }
+          : r,
+      ));
+      setNotice(blocking ? `${target} 회원 차단됨` : `${target} 회원 차단 해제됨`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "network error");
+    } finally {
+      setBlockPendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(row.authUserId);
+        return next;
+      });
+    }
+  }
+
   return (
     <>
       {notice ? (
@@ -240,6 +336,8 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
               <th className="px-3 py-2">가입일</th>
               <th className="px-3 py-2">마지막 로그인</th>
               <th className="px-3 py-2">크레딧</th>
+              <th className="px-3 py-2">회수</th>
+              <th className="px-3 py-2">차단</th>
               <th className="px-3 py-2">베타 체험단</th>
               <th className="px-3 py-2">provider</th>
             </tr>
@@ -250,6 +348,9 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
               const badge = PLAN_BADGE[row.planKey] ?? PLAN_BADGE.free;
               const pending = pendingIds.has(row.authUserId);
               const creditPending = creditPendingIds.has(row.authUserId);
+              const revokePending = revokePendingIds.has(row.authUserId);
+              const blockPending = blockPendingIds.has(row.authUserId);
+              const isBlocked = Boolean(row.blockedAt);
               return (
                 <tr key={row.authUserId} className="border-b border-gray-100 hover:bg-amber-50/40 dark:border-zinc-900 dark:hover:bg-amber-950/20">
                   <td className="px-3 py-2 font-semibold">{row.nickname || "—"}</td>
@@ -304,6 +405,49 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                         {creditPending ? "..." : "지급"}
                       </button>
                     </div>
+                  </td>
+                  {/* Wave launch-95: 회수 input + button. 양심 신뢰 충전 후 입금 안 한 사용자 회수 용도. */}
+                  <td className="px-3 py-2">
+                    <div className="flex items-center justify-end gap-2">
+                      <input
+                        type="number"
+                        min={1}
+                        step={1}
+                        inputMode="numeric"
+                        value={revokeDrafts[row.authUserId] ?? ""}
+                        onChange={(e) => setRevokeDrafts((prev) => ({ ...prev, [row.authUserId]: e.target.value }))}
+                        placeholder="개수"
+                        className="h-7 w-20 rounded-md border border-gray-300 bg-white px-2 text-right font-mono text-xs outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-100 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:ring-rose-950"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void revokeCredits(row)}
+                        disabled={revokePending || !row.creditRowExists}
+                        className="inline-flex h-7 items-center rounded-md bg-rose-600 px-2.5 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-50"
+                        title="입금 안 한 사용자 크레딧 회수"
+                      >
+                        {revokePending ? "..." : "회수"}
+                      </button>
+                    </div>
+                  </td>
+                  {/* Wave launch-95: 차단/해제 toggle. */}
+                  <td className="px-3 py-2">
+                    <button
+                      type="button"
+                      onClick={() => void toggleBlock(row)}
+                      disabled={blockPending || !row.creditRowExists}
+                      className={`inline-flex h-7 items-center rounded-md px-2.5 text-xs font-bold transition disabled:opacity-50 ${
+                        isBlocked
+                          ? "bg-zinc-800 text-white hover:bg-zinc-900"
+                          : "border border-gray-300 bg-white text-gray-700 hover:border-rose-400 hover:bg-rose-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-gray-300"
+                      }`}
+                      title={isBlocked ? `차단됨: ${row.blockedReason ?? "-"} — 클릭하면 해제` : "결제 차단"}
+                    >
+                      {blockPending ? "..." : isBlocked ? "✕ 차단" : "차단"}
+                    </button>
+                    {isBlocked && row.blockedAt ? (
+                      <div className="mt-0.5 font-mono text-[10px] text-rose-600 dark:text-rose-400">{fmt(row.blockedAt)}</div>
+                    ) : null}
                   </td>
                   <td className="px-3 py-2">
                     <button

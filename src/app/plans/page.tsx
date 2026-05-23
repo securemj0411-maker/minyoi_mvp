@@ -73,7 +73,10 @@ function ChargeCard({ plan }: { plan: PlanDefinition }) {
           </div>
         </div>
         <Link
-          href={`/billing/checkout?credits=${plan.monthlyCredits}`}
+          /* Wave launch-95 (사용자 결정 — 토스페이먼츠 가맹심사 중 임시):
+             /billing/checkout (PortOne 카드결제) → /billing/manual (계좌이체) 로 우회.
+             가맹 승인 후엔 이 link 만 다시 /billing/checkout 으로 돌려놓으면 됨. */
+          href={`/billing/manual?credits=${plan.monthlyCredits}`}
           className={`flex h-10 shrink-0 items-center justify-center rounded-xl px-3.5 text-[13px] font-black transition sm:min-w-[112px] ${
             isFeatured
               ? "bg-[var(--rd-em)] text-white shadow-[0_10px_22px_rgba(49,130,246,0.28)] hover:bg-[var(--rd-em-700)]"
