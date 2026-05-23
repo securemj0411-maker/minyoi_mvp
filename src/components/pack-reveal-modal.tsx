@@ -5431,6 +5431,18 @@ function RevealCardItem({
                     <DealMeterButton card={card} />
                   </div>
                 </div>
+                {/* Wave 714g (2026-05-23): 신발/의류 5-tier 등급 + raw 표현 chips — 매물명 바로 아래 prominent 노출.
+                    ? 클릭 시 분류 기준 popover. 데이터 없으면 hide. */}
+                {(card.conditionTier || (card.conditionChips && card.conditionChips.length > 0)) && (
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    {card.conditionTier && (
+                      <ConditionTierChip tier={card.conditionTier} variant="friendly" showHelp />
+                    )}
+                    {card.conditionChips && card.conditionChips.length > 0 && (
+                      <ConditionChipsList chips={card.conditionChips} max={6} />
+                    )}
+                  </div>
+                )}
                 {onBeginnerGuideClick ? (
                   <button
                     type="button"
