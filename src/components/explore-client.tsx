@@ -1214,6 +1214,19 @@ export default function ExploreClient({
   const [feedExhausted, setFeedExhausted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailAccessLimit, setDetailAccessLimit] = useState<DetailAccessLimitModal | null>(null);
+  // Wave launch-93 (사용자 정정 — "4번째 클릭할 때 잠그라니까"):
+  //   paywall 한 번이라도 트리거된 적이 있으면 true. 4번째 클릭 시점에 set.
+  //   3번째 다 본 후에도 카드 보임 → 4번째 클릭 = paywall 응답 받을 때 잠금 시작.
+  //   새로고침해도 유지 — localStorage 박음. 충전 후엔 creditFeedEnabled=true 라 자동 unlock.
+  const [hasSeenPaywall, setHasSeenPaywall] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try { return window.localStorage.getItem(`minyoi:has-seen-paywall:${storageScope}`) === "1"; } catch { return false; }
+  });
+  const markPaywallSeen = useCallback(() => {
+    setHasSeenPaywall(true);
+    if (typeof window === "undefined") return;
+    try { window.localStorage.setItem(`minyoi:has-seen-paywall:${storageScope}`, "1"); } catch {}
+  }, [storageScope]);
   const [directTradeConfirm, setDirectTradeConfirm] = useState<DirectTradeConfirmState | null>(null);
   const [detailAccessLoadingPid, setDetailAccessLoadingPid] = useState<number | null>(null);
   const openedDetailPidsRef = useRef<Set<number>>(new Set());
@@ -1910,6 +1923,8 @@ export default function ExploreClient({
           freeLimit,
           valueSummary: detailAccessValueRef.current,
         });
+        // Wave launch-93: paywall variant 시 잠금 trigger. sold/verify_fail 은 카드 잠금 X (다른 issue).
+        if (variant === "paywall") markPaywallSeen();
         trackDetailEvent(item.pid, "free_limit_paywall_shown", {
           reason: data.error ?? "detail_access_failed",
           freeUsed,
@@ -2397,11 +2412,12 @@ export default function ExploreClient({
             const exactUnlocked = creditFeedEnabled || freePreviewUnlocked || scrapOnly || savedPidSet.has(item.pid) || openedDetailPids.has(item.pid);
             const lockedPreview = !exactUnlocked;
             const freeDetailAvailable = lockedPreview && !creditFeedEnabled && freeDetailRemaining > 0;
-            // Wave launch-90 (사용자 정정 — "4번째 누를 때 뒤에 안 잠긴다니까"):
-            //   launch-63 의 "사진+제목 항상 unlock" 은 무료 남았을 때만 conversion 위함이었음.
-            //   무료 다 쓴 후 (freeDetailRemaining=0) + 안 본 매물 → 사진 blur + 제목 hide → "잠긴" 상태 명확.
-            //   creditFeedEnabled 또는 이미 본 매물은 fullLocked=false (그대로 표시).
-            const fullLocked = lockedPreview && !freeDetailAvailable;
+            // Wave launch-90 → launch-93 (사용자 정정 — "4번째 클릭할 때 잠그라니까"):
+            //   잠금 trigger = paywall 한 번 떴는가 (hasSeenPaywall).
+            //   3번째 클릭 후엔 freeDetailRemaining=0 이지만 hasSeenPaywall=false → 카드 그대로 보임.
+            //   4번째 클릭 = paywall 응답 받음 → markPaywallSeen() → 그 후부터 잠금 적용.
+            //   creditFeedEnabled (충전된 사용자) 또는 이미 본 매물은 lockedPreview=false 라 영향 X.
+            const fullLocked = lockedPreview && !freeDetailAvailable && hasSeenPaywall;
             return (
               <button
                 key={item.pid}
