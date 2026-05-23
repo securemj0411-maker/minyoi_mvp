@@ -60,28 +60,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "revoke_failed" }, { status: 500 });
   }
 
-  await restFetch(
-    `${tableUrl("mvp_credit_ledger")}`,
-    {
-      method: "POST",
-      headers: { ...serviceHeaders(), Prefer: "return=minimal" },
-      body: jsonBody([{
-        user_ref: targetUserRef,
-        auth_user_id: targetAuthUserId,
-        event_type: "admin_revoke",
-        amount: -actualRevoked,
-        balance_after: newBalance,
-        metadata: {
-          admin_auth_user_id: auth.user.id,
-          admin_email: auth.user.email ?? null,
-          requested_amount: amount,
-          actual_revoked: actualRevoked,
-          note,
-        },
-        created_at: nowIso,
-      }]),
-    },
-  );
+  // Wave launch-99b: ledger insert 가 throw 해도 endpoint 자체는 success (balance 이미 박혔음).
+  try {
+    const ledgerRes = await restFetch(
+      `${tableUrl("mvp_credit_ledger")}`,
+      {
+        method: "POST",
+        headers: { ...serviceHeaders(), Prefer: "return=minimal" },
+        body: jsonBody([{
+          user_ref: targetUserRef,
+          auth_user_id: targetAuthUserId,
+          event_type: "admin_revoke",
+          amount: -actualRevoked,
+          balance_after: newBalance,
+          metadata: {
+            admin_auth_user_id: auth.user.id,
+            admin_email: auth.user.email ?? null,
+            requested_amount: amount,
+            actual_revoked: actualRevoked,
+            note,
+          },
+          created_at: nowIso,
+        }]),
+      },
+    );
+    if (!ledgerRes.ok) {
+      console.warn("[admin/credits/revoke] ledger insert non-ok", ledgerRes.status);
+    }
+  } catch (err) {
+    console.warn("[admin/credits/revoke] ledger insert threw", err instanceof Error ? err.message : String(err));
+  }
 
   return NextResponse.json({ ok: true, authUserId: targetAuthUserId, revoked: actualRevoked, balance: newBalance });
 }

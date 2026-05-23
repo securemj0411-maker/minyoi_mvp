@@ -46,27 +46,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "block_toggle_failed" }, { status: 500 });
   }
 
-  // ledger audit row (parent payment_events 보다 의미상 ledger 가 적합)
-  await restFetch(
-    `${tableUrl("mvp_credit_ledger")}`,
-    {
-      method: "POST",
-      headers: { ...serviceHeaders(), Prefer: "return=minimal" },
-      body: jsonBody([{
-        user_ref: targetUserRef,
-        auth_user_id: targetAuthUserId,
-        event_type: blocked ? "admin_block" : "admin_unblock",
-        amount: 0,
-        balance_after: 0,
-        metadata: {
-          admin_auth_user_id: auth.user.id,
-          admin_email: auth.user.email ?? null,
-          reason,
-        },
-        created_at: nowIso,
-      }]),
-    },
-  );
+  // Wave launch-99b: ledger insert throw 안전망 — block 자체는 이미 성공.
+  try {
+    const ledgerRes = await restFetch(
+      `${tableUrl("mvp_credit_ledger")}`,
+      {
+        method: "POST",
+        headers: { ...serviceHeaders(), Prefer: "return=minimal" },
+        body: jsonBody([{
+          user_ref: targetUserRef,
+          auth_user_id: targetAuthUserId,
+          event_type: blocked ? "admin_block" : "admin_unblock",
+          amount: 0,
+          balance_after: 0,
+          metadata: {
+            admin_auth_user_id: auth.user.id,
+            admin_email: auth.user.email ?? null,
+            reason,
+          },
+          created_at: nowIso,
+        }]),
+      },
+    );
+    if (!ledgerRes.ok) {
+      console.warn("[admin/user/block] ledger insert non-ok", ledgerRes.status);
+    }
+  } catch (err) {
+    console.warn("[admin/user/block] ledger insert threw", err instanceof Error ? err.message : String(err));
+  }
 
   return NextResponse.json({
     ok: true,
