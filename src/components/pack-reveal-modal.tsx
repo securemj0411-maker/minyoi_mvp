@@ -2128,8 +2128,11 @@ function RevealProductImage({ card }: { card: RevealCard }) {
             priority
           />
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/18 to-transparent" />
-          {/* Wave 394.7.w (사용자 짚음 + handoff): 좌하 condition pill — nav(top-left)랑 안 겹침. */}
-          {card.marketBasis?.conditionClass ? (
+          {/* Wave 394.7.w (사용자 짚음 + handoff): 좌하 condition pill — nav(top-left)랑 안 겹침.
+              Wave 714d (2026-05-23): 신발/의류는 옛 conditionClass pill 숨김 (전자기기용 라벨 정확도 낮음). */}
+          {card.marketBasis?.conditionClass
+            && !card.marketBasis.comparableKey?.startsWith("shoe|")
+            && !card.marketBasis.comparableKey?.startsWith("clothing|") ? (
             <div className="absolute bottom-8 left-3 z-10">
               <span className="inline-flex items-center rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-[#4b5650] shadow-[0_2px_8px_rgba(0,0,0,0.18)] backdrop-blur">
                 <span className="mr-1 text-emerald-600">●</span>

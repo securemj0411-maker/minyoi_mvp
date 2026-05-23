@@ -2473,8 +2473,13 @@ export default function ExploreClient({
                     ) : (
                       <>
                         {/* Wave 354+355: 매물 등급 — 친화 풀어쓴 라벨 ("상태 보통"/"하자 있음"/...).
-                            unopened/mint는 사진 위 럭셔리 배지로 따로 표시되므로 여기선 제외. */}
-                        {item.conditionClass && item.conditionClass !== "unopened" && item.conditionClass !== "mint" ? (
+                            unopened/mint는 사진 위 럭셔리 배지로 따로 표시되므로 여기선 제외.
+                            Wave 714d (2026-05-23): 신발/의류는 옛 chip 숨김 (전자기기용이라 정확도 낮음). */}
+                        {item.conditionClass
+                          && item.conditionClass !== "unopened"
+                          && item.conditionClass !== "mint"
+                          && !item.comparableKey?.startsWith("shoe|")
+                          && !item.comparableKey?.startsWith("clothing|") ? (
                           <ConditionChip conditionClass={item.conditionClass} variant="friendly" />
                         ) : null}
                         <span className="flex items-center gap-0.5 text-zinc-500">
