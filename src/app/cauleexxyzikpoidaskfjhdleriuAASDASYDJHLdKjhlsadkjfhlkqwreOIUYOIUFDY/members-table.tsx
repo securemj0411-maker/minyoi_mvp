@@ -71,6 +71,9 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
   const [revokeDrafts, setRevokeDrafts] = useState<Record<string, string>>({});
   const [revokePendingIds, setRevokePendingIds] = useState<Set<string>>(new Set());
   const [blockPendingIds, setBlockPendingIds] = useState<Set<string>>(new Set());
+  // Wave launch-100: 회원 일괄 삭제용 체크박스 + 진행 상태.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleteInProgress, setDeleteInProgress] = useState(false);
 
   const filteredRows = rows.filter((row) => {
     if (search.trim()) {
@@ -265,6 +268,61 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
     }
   }
 
+  // Wave launch-100: 체크박스 toggle + 일괄 삭제.
+  function toggleSelect(authUserId: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(authUserId)) next.delete(authUserId);
+      else next.add(authUserId);
+      return next;
+    });
+  }
+  function toggleSelectAll() {
+    if (selectedIds.size === filteredRows.length && filteredRows.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredRows.map((r) => r.authUserId)));
+    }
+  }
+
+  async function deleteSelected() {
+    const ids = [...selectedIds];
+    if (ids.length === 0) return;
+    const summary = ids.length === 1
+      ? `${rows.find((r) => r.authUserId === ids[0])?.email ?? ids[0]} 계정`
+      : `${ids.length}명 계정`;
+    const confirm1 = window.confirm(`${summary}을 영구 삭제할까요?\n\n삭제 시 auth.users + 크레딧 + 결제 이력 등 모든 데이터가 사라져요.`);
+    if (!confirm1) return;
+    const phrase = window.prompt(`정말 삭제하려면 "삭제" 를 입력하세요:`, "");
+    if (phrase?.trim() !== "삭제") {
+      setError("삭제 확인 문구가 일치하지 않아 취소됐어요.");
+      return;
+    }
+
+    setError(null);
+    setNotice(null);
+    setDeleteInProgress(true);
+    try {
+      const res = await fetch("/api/admin/users/delete", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ authUserIds: ids }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; deleted?: number; total?: number; error?: string; message?: string };
+      if (!res.ok || !data.ok) {
+        setError(data.message ?? data.error ?? `삭제 실패 (${res.status})`);
+        return;
+      }
+      setRows((prev) => prev.filter((r) => !selectedIds.has(r.authUserId)));
+      setSelectedIds(new Set());
+      setNotice(`${data.deleted ?? 0}/${data.total ?? ids.length}명 삭제 완료`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "network error");
+    } finally {
+      setDeleteInProgress(false);
+    }
+  }
+
   return (
     <>
       {notice ? (
@@ -319,14 +377,36 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
         </div>
       </div>
 
-      <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-        {filteredRows.length}건 표시 (전체 {rows.length})
+      <div className="mt-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+        <span>{filteredRows.length}건 표시 (전체 {rows.length})</span>
+        {/* Wave launch-100: 선택된 row 일괄 삭제 button. */}
+        {selectedIds.size > 0 ? (
+          <button
+            type="button"
+            onClick={() => void deleteSelected()}
+            disabled={deleteInProgress}
+            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-rose-600 px-3 text-xs font-black text-white shadow-sm transition hover:bg-rose-700 disabled:opacity-50"
+          >
+            {deleteInProgress ? "..." : `🗑 ${selectedIds.size}명 삭제`}
+          </button>
+        ) : null}
       </div>
 
       <div className="mt-2 overflow-x-auto rounded-xl border border-gray-200 dark:border-zinc-800">
         <table className="w-full min-w-[1500px] text-sm">
           <thead className="bg-gray-50 dark:bg-zinc-900">
             <tr className="border-b border-gray-200 text-left text-xs font-bold text-gray-600 dark:border-zinc-800 dark:text-gray-400">
+              {/* Wave launch-100: 헤더 전체 선택 체크박스. */}
+              <th className="w-9 px-3 py-2">
+                <input
+                  type="checkbox"
+                  aria-label="전체 선택"
+                  checked={selectedIds.size > 0 && selectedIds.size === filteredRows.length}
+                  ref={(el) => { if (el) el.indeterminate = selectedIds.size > 0 && selectedIds.size < filteredRows.length; }}
+                  onChange={toggleSelectAll}
+                  className="h-4 w-4 cursor-pointer accent-rose-600"
+                />
+              </th>
               <th className="px-3 py-2">닉네임</th>
               {/* Wave launch-96 (사용자 정정 — 구독제 무 / 베타 체험단 무): 플랜/플랜만료/일일 사용/최근 결제/베타 column 제거.
                   현재 시스템 = 크레딧 패키지만. 단순화. */}
@@ -349,7 +429,17 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
               const blockPending = blockPendingIds.has(row.authUserId);
               const isBlocked = Boolean(row.blockedAt);
               return (
-                <tr key={row.authUserId} className="border-b border-gray-100 hover:bg-amber-50/40 dark:border-zinc-900 dark:hover:bg-amber-950/20">
+                <tr key={row.authUserId} className={`border-b border-gray-100 hover:bg-amber-50/40 dark:border-zinc-900 dark:hover:bg-amber-950/20 ${selectedIds.has(row.authUserId) ? "bg-rose-50/60 dark:bg-rose-950/15" : ""}`}>
+                  {/* Wave launch-100: row 체크박스 */}
+                  <td className="px-3 py-2">
+                    <input
+                      type="checkbox"
+                      aria-label={`${row.email ?? row.authUserId} 선택`}
+                      checked={selectedIds.has(row.authUserId)}
+                      onChange={() => toggleSelect(row.authUserId)}
+                      className="h-4 w-4 cursor-pointer accent-rose-600"
+                    />
+                  </td>
                   <td className="px-3 py-2 font-semibold">{row.nickname || "—"}</td>
                   <td className="px-3 py-2 font-mono text-xs">{row.email ?? "—"}</td>
                   {/* Wave launch-96: 플랜/플랜만료/일일사용/최근결제 td 제거 (구독제 무). */}
