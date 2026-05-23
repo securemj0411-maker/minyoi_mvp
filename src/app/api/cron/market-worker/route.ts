@@ -13,7 +13,9 @@ import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { runMarketStatsPipeline } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
 
-export const maxDuration = 90;
+// Wave 722 hotfix (2026-05-23): 4시간 cron 정체 후 backlog 처리 위해 90s → 180s.
+//   재가동 후 backlog catch-up 완료되면 90s 복귀 가능.
+export const maxDuration = 180;
 
 function firstForwardedIp(value: string | null): string | null {
   if (!value) return null;
