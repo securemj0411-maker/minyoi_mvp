@@ -2436,13 +2436,17 @@ export default function ExploreClient({
                       className={`object-cover ${isSoldOut ? "opacity-60" : ""} ${fullLocked ? "scale-110 blur-md" : ""}`}
                     />
                   ) : null}
+                  {/* Wave launch-91 (사용자 정정 — "기존에 카테고리별 예쁜 아이콘 있었는데"):
+                      자물쇠 SVG → CategoryIcon (의류면 셔츠, 폰이면 폰, 신발이면 신발).
+                      어두운 overlay → emerald/sky gradient (브랜드 톤) — 잠금이지만 답답 X. */}
                   {fullLocked && !isSoldOut ? (
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-zinc-900/50">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/95 shadow-lg dark:bg-zinc-950/90">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-700 dark:text-zinc-200">
-                          <rect x="4" y="11" width="16" height="10" rx="2" />
-                          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-                        </svg>
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-500/35 via-sky-500/25 to-blue-600/30 backdrop-blur-[1px] dark:from-emerald-700/45 dark:via-sky-800/35 dark:to-blue-900/45">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 shadow-[0_4px_14px_rgba(15,23,42,0.18)] ring-1 ring-white/60 dark:bg-zinc-950/90 dark:ring-zinc-700/60">
+                        <CategoryIcon
+                          category={categoryFromComparableKey(item.comparableKey ?? null) ?? "default"}
+                          className="h-5 w-5 text-[#3182f6] dark:text-blue-300"
+                          strokeWidth={1.9}
+                        />
                       </div>
                     </div>
                   ) : null}
