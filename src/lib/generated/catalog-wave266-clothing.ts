@@ -865,6 +865,10 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "선수 한정", "선수 사인",
       "fog x mlb", "에센셜 x mlb", "essentials x mlb", "fear of god x mlb",
       "빈티지 mlb", "90s mlb", "00s mlb",
+      // Wave 750 bias-free: false positive 차단 — MLB 라이센스 brand는 별 시세군
+      "마제스틱", "majestic",  // 옛 MLB 공식 supplier (자켓 21-25만 / 일반 5-9만)
+      "언더아머", "under armour",  // UA x MLB collab
+      "뉴에라", "new era",  // New Era cap brand (모자만)
     ],
     msrpKrw: 89000,
     released: 1997,
