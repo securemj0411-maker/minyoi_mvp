@@ -1025,6 +1025,10 @@ export const LANE_READINESS: LaneReadinessMap = {
   acne_studios_broad: { status: "ready", label: "Acne Studios Apparel Broad", note: "Wave 734 — 427건/주 p50 15만 (denim premium 별도)." },
   nanamica_apparel_broad: { status: "ready", label: "Nanamica (고어텍스/Coolmax)", note: "Wave 734 — 251건/주 p50 19.4만." },
   tommy_hilfiger_broad: { status: "ready", label: "Tommy Hilfiger Apparel", note: "Wave 734 — 78건/주 p50 5.5만." },
+  // Wave 735 — 골프웨어 추가 3 brand
+  footjoy_apparel_broad: { status: "ready", label: "FootJoy Golf Apparel", note: "Wave 735 — 239건/주 p50 5.5만 (의류만)." },
+  amazingcree_apparel_broad: { status: "ready", label: "AmazingCree Golf Apparel (한국)", note: "Wave 735 — 138건/주 p50 9.9만." },
+  callaway_apparel_broad: { status: "ready", label: "Callaway Golf Apparel (의류만)", note: "Wave 735 — 135건/주 p50 4.5만 (골프채 차단)." },
   // Wave 733 — 신발 broad 6 SKU (salomon_xt_6 narrow는 이미 line 624 Wave 208 존재)
   salomon_broad: { status: "ready", label: "Salomon Broad (Pulsar/Speedcross/Sense)", note: "Wave 733 — 23건/주 p50 12-15만." },
   hoka_bondi: { status: "ready", label: "Hoka Bondi (시그니처 max cushion)", note: "Wave 733 — 7+건/주 p50 20만." },

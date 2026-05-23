@@ -57,6 +57,7 @@ import { WAVE_731_ADIDAS_APPAREL_BROAD } from "@/lib/generated/catalog-731-adida
 import { WAVE_732_MULTI_BRAND } from "@/lib/generated/catalog-732-multi-brand";
 import { WAVE_733_SHOE_BROAD } from "@/lib/generated/catalog-733-shoe-broad";
 import { WAVE_734_MEGA_BRAND } from "@/lib/generated/catalog-734-mega-brand";
+import { WAVE_735_GOLF_BROAD_2 } from "@/lib/generated/catalog-735-golf-broad-2";
 
 export type Sku = {
   id: string;
@@ -7042,6 +7043,7 @@ export const CATALOG: Sku[] = [
   ...WAVE_732_MULTI_BRAND, // Wave 732 — Nike x MLB jersey + Uniqlo collab + Thisisneverthat + Columbia/Blackyak + Barbour quilted
   ...WAVE_733_SHOE_BROAD, // Wave 733 — 신발 broad (Salomon XT-6 + broad / Hoka Bondi + broad / On Running broad / Skechers / Under Armour)
   ...WAVE_734_MEGA_BRAND, // Wave 734 — 거대한 미발견 brand (FOG Essentials/Patagonia/Acne Studios/Nanamica/Tommy Hilfiger)
+  ...WAVE_735_GOLF_BROAD_2, // Wave 735 — 골프웨어 추가 (FootJoy/AmazingCree/Callaway)
   ...BAG_CATALOG,
   ...BAG_WAVE266_CATALOG, // Wave 266 — 명품 가방 brand-broad fallback 20 SKU
   ...BIKE_CATALOG,
