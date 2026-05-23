@@ -8034,11 +8034,28 @@ export const CATALOG: Sku[] = [
   {
     // Wave 199 정정 — clothing-stussy-nike-collab은 의류만 (fleece pant / hoodie / windrunner / track).
     //   신발 매물 (Spiridon / Benassi / Air Force / Vandal / Air Max 2013 / Air Penny / LD-1000 / 척테일러) 차단.
+    // Wave 732 (2026-05-24) leak fix: 51건 unmatched 분석:
+    //   1. mustContain[0] "나투시" 누락 — 한국 셀러 합성어 표기 흔함
+    //   2. mustContain[2] product type 좁음 — 자켓/팬츠/롱슬리브/워터쇼츠/버킷햇 누락
     id: "clothing-stussy-nike-collab",
     brand: "Nike x Stussy", category: "clothing", laneKey: "stussy_nike_collab",
     modelName: "Nike × Stüssy Apparel (collab)",
-    aliases: ["Nike Stussy 의류", "나이키 스투시 fleece"],
-    mustContain: [["nike", "나이키"], ["stussy", "스투시", "stüssy"], ["fleece", "플리스", "windrunner", "윈드러너", "track", "트랙", "hoodie", "후드", "맨투맨", "tee", "반팔", "티셔츠"]],
+    aliases: ["Nike Stussy 의류", "나이키 스투시 fleece", "나투시"],
+    mustContain: [
+      ["nike", "나이키", "나투시"],
+      ["stussy", "스투시", "stüssy", "나투시"],
+      ["fleece", "플리스", "windrunner", "윈드러너", "track", "트랙",
+       "hoodie", "후드", "맨투맨", "크루넥", "스웻",
+       "tee", "반팔", "티셔츠",
+       // Wave 732 추가
+       "롱슬리브", "long sleeve", "롱 슬리브",
+       "자켓", "jacket", "재킷", "스톰핏", "storm fit", "코치자켓", "coach jacket",
+       "팬츠", "pants", "바지", "카고",
+       "쇼츠", "shorts", "반바지", "비치 팬츠", "비치팬츠", "워터 쇼츠", "워터쇼츠", "water short",
+       "풀오버", "pullover",
+       "버킷햇", "bucket hat", "비니", "beanie", "헤드밴드",
+       "nrg"],
+    ],
     mustNotContain: [
       "키즈", "kids", "fragment", "프래그먼트", "dior", "디올", "복각", "이미테이션", "rep ", "replica",
       // 신발 차단 — Nike Stussy collab 매물 56% 신발 (shoe SKU로 별도 분리)
@@ -8050,6 +8067,8 @@ export const CATALOG: Sku[] = [
       "셋업", "set up", "setup", "상하의 세트", "상의 하의", "상하의세트",
       "월드투어", "world tour",  // 한정 시즌 (380k variant)
       "오프 느와르 셋업", "오프 누아르 셋업", "off noir setup",
+      // Wave 732 추가: 묶음 brand 매물 차단
+      "여성의류", "남성의류", "다양 brand", "여러 brand",
     ],
     msrpKrw: 150000, released: 2020,
   },
