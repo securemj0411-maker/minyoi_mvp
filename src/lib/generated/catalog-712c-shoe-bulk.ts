@@ -67,6 +67,82 @@ export const WAVE_712C_SHOE_BULK: Sku[] = [
     msrpKrw: 160000, released: 2023,
     defaultProductType: "sneaker",
   },
+
+  // Wave 739 (2026-05-24): NB Made in USA/UK broad — 13건/주 p50 18만.
+  //   1400/650/670/991/992/1500 등 USA/UK made 라인 - 가격대 +50% (made in mass)
+  {
+    id: "shoe-newbalance-made-in-usa-uk",
+    brand: "New Balance", category: "shoe", laneKey: "nb_made_in_usa_uk",
+    modelName: "New Balance Made in USA / UK (premium tier)",
+    aliases: ["NB Made in USA", "NB Made in UK", "뉴발 미국산", "뉴발 영국산"],
+    mustContain: [
+      ["new balance", "newbalance", "뉴발란스", "뉴발", "nb"],
+      ["made in usa", "made in uk", "미국산", "영국산", "usa제", "uk제",
+       "미국 뉴발", "영국 뉴발",
+       "mie",  // Made in England (NB)
+       "made in england"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE,
+      // narrow 우선 (530/990/993/2002r 등 USA만들기는 별 SKU)
+      "990", "993", "996", "998", "1906", "2002r",
+    ],
+    msrpKrw: 290000, released: 1990,
+    defaultProductType: "sneaker",
+  },
+
+  // Wave 739 (2026-05-24): NB Generic Broad — 99_other 789건 fallback.
+  //   1600/991/ct302/610/1400/650/670 등 narrow SKU 없는 모델 catch.
+  //   narrow는 다 mustNotContain으로 우선 보호.
+  {
+    id: "shoe-newbalance-generic-broad",
+    brand: "New Balance", category: "shoe", laneKey: "nb_generic_broad",
+    modelName: "New Balance Generic Broad (narrow 외 fallback)",
+    aliases: ["NB", "뉴발란스"],
+    mustContain: [
+      ["new balance", "newbalance", "뉴발란스", "뉴발", "nb"],
+      ["스니커즈", "sneakers", "운동화", "shoe", "shoes",
+       "1600", "1500", "1400", "1300", "1200", "1100",
+       "991", "992", "994", "997",
+       "610", "620", "630", "650", "670", "680", "690",
+       "270", "299",
+       "ct302", "ct 302", "ct300",
+       "퓨어셀", "퓨어 셀", "purecell", "fresh foam", "프레시폼",
+       "브리즈", "breeze",
+       "v4", "v3", "v2"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE,
+      // 우선 narrow SKU 보호
+      "530",
+      "990", "993",
+      "327",
+      "2002r", "2002 r",
+      "574",
+      "1906",
+      "9060",
+      "860",
+      "880",
+      "550",
+      "480",
+      "420",
+      "237",
+      "996",
+      "577",
+      "998",
+      // 가방/의류
+      "가방", "bag", "백팩",
+      "후드", "hoodie", "맨투맨", "반팔",
+      "자켓", "재킷", "팬츠", "바지",
+      // collab
+      "kith", "키스", "loewe", "로에베",
+      "aime leon dore", "에임 레온 도르", "에임레온도르",
+      "comme", "꼼데", "준야", "junya",
+      "junya watanabe",
+    ],
+    msrpKrw: 109000, released: 1906,
+    defaultProductType: "sneaker",
+  },
   {
     id: "shoe-newbalance-996-broad",
     brand: "New Balance", category: "shoe", laneKey: "nb_996",
