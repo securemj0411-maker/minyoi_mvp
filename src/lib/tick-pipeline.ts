@@ -2658,6 +2658,14 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // full-unit pollution for these active pool categories.
   home_appliance: "option-parser-v55",
   drone: "option-parser-v55",
+  // Wave 743 (2026-05-24): 전자기기 카테고리 LATEST 매핑 추가. 24K stale 매물 (smartphone/tablet/laptop/smartwatch/earphone) detection 정확도 향상.
+  // 전자기기는 pool 아니라 자동 reparse 트리거 X — comparable_key 계산 시 stale 정합성만 영향.
+  smartphone: "option-parser-v55",
+  tablet: "option-parser-v55",
+  laptop: "option-parser-v55",
+  smartwatch: "option-parser-v55",
+  earphone: "option-parser-v55",
+  watch: "option-parser-v55",
 };
 function isParsedStale(row: ParsedListingRow): boolean {
   if (!row.category) return false;
