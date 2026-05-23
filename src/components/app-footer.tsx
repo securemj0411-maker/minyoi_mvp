@@ -14,8 +14,12 @@ const legalLinks = [
 // 형태 자유. 데스크탑은 기본 열림 (sm+), 모바일은 닫힘 → 사용자 클릭 시 펼침.
 export default function AppFooter() {
   // Wave launch-102 (사용자 정정): cau* admin path 면 footer hide.
+  // Wave launch-112 (2026-05-24): 로그인/회원가입/콜백 페이지도 footer hide (focused single-action 화면).
   const pathname = usePathname();
   if (pathname && pathname.startsWith("/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY")) {
+    return null;
+  }
+  if (pathname === "/login" || pathname === "/signup" || pathname?.startsWith("/auth/")) {
     return null;
   }
   return (

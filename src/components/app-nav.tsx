@@ -372,6 +372,12 @@ export default function AppNav() {
     return <AdminTerminalNav />;
   }
 
+  // Wave launch-112 (2026-05-24): 로그인/회원가입/콜백 페이지는 nav hide (다른 사이트 표준 패턴).
+  //   로그인 페이지에서 다른 메뉴로 나갈 일 없음 — focused 한 단일 액션 화면.
+  if (pathname === "/login" || pathname === "/signup" || pathname?.startsWith("/auth/")) {
+    return null;
+  }
+
   return (
     <>
     <nav className="sticky top-0 z-40 border-b border-zinc-200 bg-white/92 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/90">
