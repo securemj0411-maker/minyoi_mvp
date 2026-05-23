@@ -903,7 +903,7 @@ function DetailAccessPaywallModal({
                 type="button"
                 disabled={kakaoShareLoading || !kakaoShareReady}
                 onClick={onKakaoShare}
-                title={kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : (kakaoShareReady ? "카톡으로 공유하고 크레딧 1개 받기" : "카카오 공유 로딩 중...")}
+                title={kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : (kakaoShareReady ? "카톡으로 공유하고 크레딧 3개 받기" : "카카오 공유 로딩 중...")}
                 className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left transition ${
                   kakaoShareReady && kakaoShareCooldownHours === 0
                     ? "bg-[#fbe300] shadow-[0_4px_14px_rgba(251,227,0,0.35)] hover:bg-[#fae100] active:scale-[0.99]"
@@ -914,7 +914,7 @@ function DetailAccessPaywallModal({
                   <KakaoLogo className={`h-6 w-6 shrink-0 rounded-[6px] ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "" : "opacity-80"}`} />
                   <div className="min-w-0">
                     <div className={`text-sm font-bold ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]" : "text-[#3b1e1e]/80"}`}>
-                      {kakaoShareCooldownHours > 0 ? "오늘은 이미 받았어요" : kakaoShareLoading ? "공유 처리 중..." : "카톡 공유하고 무료로 1개 받기"}
+                      {kakaoShareCooldownHours > 0 ? "오늘은 이미 받았어요" : kakaoShareLoading ? "공유 처리 중..." : "카톡 공유하고 무료로 3개 받기"}
                     </div>
                     <div className={`mt-0.5 text-[11px] font-medium ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]/70" : "text-[#3b1e1e]/60"}`}>
                       {kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : "하루 1번 · 충전 안 해도 OK"}
@@ -1359,9 +1359,9 @@ export default function ExploreClient({
       });
 
       // Wave 734: 즉시 fetch 제거 — 친구가 메시지 클릭해야 webhook → 보상.
-      //   사용자에게 명시 안내 (UI 가 즉시 +1 안 보여줘서 헷갈리지 않게).
+      //   Wave 736 정정: 보상 3 크레딧 (1 아님).
       if (typeof window !== "undefined") {
-        window.alert("공유해주셔서 감사해요!\n친구가 메시지를 누르고 들어오면 크레딧 1개를 받아요.");
+        window.alert("공유해주셔서 감사해요!\n친구한테 메시지가 도달하면 크레딧 3개를 받아요.");
       }
       setRefreshModalOpen(false);
     } catch (err) {

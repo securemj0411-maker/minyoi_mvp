@@ -14,7 +14,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const COOLDOWN_HOURS = 24;
-const BONUS_AMOUNT = 1;
+// Wave 736 (2026-05-24 사용자 정정): 정책 = 3 크레딧. share-webhook 과 일관성.
+// Note: POST 호출은 Wave 734 에서 deprecate 됨 (즉시 지급 → webhook 의존). GET 은 cooldown 조회용 유지.
+const BONUS_AMOUNT = 3;
 
 type CreditsRow = {
   user_ref: string;
