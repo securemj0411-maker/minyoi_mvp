@@ -51,6 +51,7 @@ import { WAVE_727_GOLF_BROAD } from "@/lib/generated/catalog-727-golf-broad";
 // Wave 728 (2026-05-24): supreme/arcteryx catalog leak fix — 누락 collab/한정 라인 narrow 신설.
 //   supreme dickies/mm6/collab broad + arcteryx proton/solano/rampart.
 import { WAVE_728_LEAK_FIX } from "@/lib/generated/catalog-728-leak-fix";
+import { WAVE_729_CARHARTT_BROAD } from "@/lib/generated/catalog-729-carhartt-broad";
 
 export type Sku = {
   id: string;
@@ -7030,6 +7031,7 @@ export const CATALOG: Sku[] = [
   ...WAVE_726_CLOTHING_BRAND_ADD, // Wave 726 — 신규 brand (Alpha Industries / Levi's / Discovery Expedition)
   ...WAVE_727_GOLF_BROAD, // Wave 727 — 골프 6 brand (Titleist/PXG/Malbon/G·FORE/J.Lindeberg/Mark&Lona)
   ...WAVE_728_LEAK_FIX, // Wave 728 — supreme/arcteryx leak fix (collab + 한정 라인 narrow)
+  ...WAVE_729_CARHARTT_BROAD, // Wave 729 — Carhartt broad (hoodie_sweat/denim_pants/overall_anorak/shirt_flannel) + double_knee leak fix + matinkim 확장
   ...BAG_CATALOG,
   ...BAG_WAVE266_CATALOG, // Wave 266 — 명품 가방 brand-broad fallback 20 SKU
   ...BIKE_CATALOG,
@@ -10166,13 +10168,42 @@ export const CATALOG: Sku[] = [
     //   text 명시 매물 (e.g. "BAPE 샤크 후드티") 은 정상 통과 (regex 가 hoodie 추출).
   },
   // 마뗑킴 (Matin Kim) — 한국 디자이너, 매물 63건
+  // Wave 729 (2026-05-24): unmatched sweep — apparel-only sample 결과 다음 product 누락:
+  //   니트/코트/다운/패딩/점퍼/푸퍼/베스트/조끼/탱크탑/카디건/바람막이/팬츠/데님 = 75% miss.
+  //   casetify 폰케이스 collab은 phone accessory → 차단.
   {
     id: "clothing-matinkim",
     brand: "Matin Kim", category: "clothing", laneKey: "matinkim_apparel",
-    modelName: "Matin Kim Apparel (티/후드/맨투맨/자켓)",
+    modelName: "Matin Kim Apparel (티/후드/맨투맨/니트/코트/다운/팬츠)",
     aliases: ["Matin Kim", "마뗑킴", "마틴킴"],
-    mustContain: [["matin kim", "마뗑킴", "마틴킴"], ["반팔", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "크루넥", "자켓", "jacket", "셔츠", "가디건"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "가방", "bag", "신발"],
+    mustContain: [
+      ["matin kim", "마뗑킴", "마틴킴"],
+      [
+        // 기존
+        "반팔", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "크루넥", "자켓", "jacket", "셔츠", "가디건",
+        // Wave 729 추가
+        "니트", "knit", "스웨터", "sweater", "카디건", "cardigan",
+        "코트", "coat", "트렌치", "trench",
+        "다운", "패딩", "푸퍼", "puffer", "점퍼", "jumper",
+        "베스트", "vest", "조끼",
+        "탱크탑", "tank top", "탱크 탑", "슬리브리스", "sleeveless",
+        "바람막이", "windbreaker", "윈드브레이커",
+        "팬츠", "pants", "바지", "데님", "denim", "청바지",
+        "쇼츠", "shorts",
+        "스커트", "skirt", "원피스", "dress",
+      ],
+    ],
+    mustNotContain: [
+      "키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
+      // Wave 729: 가방/지갑/액세서리 (사용자 정책 — bag ready X)
+      "가방", "bag", "백팩", "지갑", "wallet", "키링", "키 링", "key chain",
+      "버킷햇", "bucket hat", "토트", "tote", "파우치", "pouch",
+      "슬링백", "숄더백", "크로스백", "버클백", "쇼퍼",
+      // Wave 729: casetify 폰케이스 collab — phone accessory (별 시세)
+      "casetify", "케이스티파이", "아이폰", "iphone", "갤럭시", "galaxy",
+      "폰 케이스", "폰케이스", "phone case", "카드홀더",
+      "신발",
+    ],
     msrpKrw: 119000, released: 2020,
   },
   // 리복 — 매물 47건, 의류 (트랙수트 / 빅로고 티)

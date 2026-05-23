@@ -996,6 +996,11 @@ export const LANE_READINESS: LaneReadinessMap = {
   arcteryx_proton: { status: "ready", label: "Arc'teryx Proton (Insulated)", note: "Wave 728 — 라인 누락 회복." },
   arcteryx_solano: { status: "ready", label: "Arc'teryx Solano (light)", note: "Wave 728 — 한정 라인." },
   arcteryx_rampart_pants: { status: "ready", label: "Arc'teryx Rampart Pants", note: "Wave 728 — pants 라인 누락 회복." },
+  // Wave 729 — Carhartt broad (double_knee leak fix + 4 SKU 신설)
+  carhartt_hoodie_sweat: { status: "ready", label: "Carhartt Hoodie / Sweat / Crewneck (Broad)", note: "Wave 729 — 18+건/주 p50 7.7만." },
+  carhartt_denim_pants: { status: "ready", label: "Carhartt Denim / Landon / Newel Pants", note: "Wave 729 — 9+건/주 p50 9.1만." },
+  carhartt_overall_anorak: { status: "ready", label: "Carhartt Overall / Nimbus Anorak", note: "Wave 729 — 7건/주 p50 8-10만." },
+  carhartt_shirt_flannel: { status: "ready", label: "Carhartt Flannel / Workshirt", note: "Wave 729 — 7건/주 p50 8만." },
   // Wave 715 P2-P3 — 잔여 narrow split
   polo_oxford_vintage: { status: "ready", label: "Polo Oxford Vintage (90s/00s archive)", note: "Wave 715 — 67x spread 해소." },
   polo_pique_vintage: { status: "ready", label: "Polo Pique Vintage (90s/00s archive)", note: "Wave 715 — 65x spread 해소." },

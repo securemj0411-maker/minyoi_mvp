@@ -566,16 +566,23 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
     laneKey: "carhartt_double_knee_pants",
     modelName: "Carhartt Double Knee Pants",
     aliases: ["Carhartt Double Knee", "칼하트 더블니"],
+    // Wave 729 (2026-05-24): mustContain group 3 (팬츠/pants/...) 제거 — leak fix.
+    //   한국 셀러는 "칼하트 더블니 32X30" 처럼 사이즈만 적고 "팬츠/바지" 명시 안함.
+    //   "더블니/B01" 자체가 carhartt double-knee pants signature (다른 product 없음).
+    //   72건 unmatched 대부분이 이 패턴이라 group 3 제거.
     mustContain: [
       ["carhartt", "칼하트"],
       ["double knee", "doubleknee", "더블니", "더블 니", "b01"],
-      ["팬츠", "pants", "바지", "워크팬츠", "work pants"],
     ],
     mustNotContain: [
       ...CLOTHING_COMMON_NOISE,
       "supreme",
       "junya watanabe", "준야와타나베",
       "wacko maria", "와코마리아",
+      // Wave 729: signature loosen 후 추가 noise 차단.
+      "싱글니", "single knee",  // 다른 model (carhartt_single_knee_pants 별도 추후)
+      "일괄", "벌크",  // 묶음 매물
+      "쇼츠", "shorts", "반바지", "숏팬츠",  // 동일 시그니처 쇼츠는 별 시세 (carhartt_cargo_pants 또는 별 SKU)
     ],
     msrpKrw: 189000,
     released: 1939,
