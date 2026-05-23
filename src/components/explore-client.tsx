@@ -760,7 +760,9 @@ function DetailAccessPaywallModal({
 
   return (
     <div
-      className="fixed inset-0 z-[95] flex items-end justify-center bg-black/45 px-3 pb-3 pt-10 backdrop-blur-[2px] sm:items-center sm:p-6"
+      // Wave launch-88 (사용자 정정 — paywall 떠도 뒤 카드 사진/제목 다 보임):
+      //   bg-black/45 + blur-[2px] 너무 약함 → 70% + blur-md 로 강화. 뒤 카드 사실상 안 보임.
+      className="fixed inset-0 z-[95] flex items-end justify-center bg-black/70 px-3 pb-3 pt-10 backdrop-blur-md sm:items-center sm:p-6"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
@@ -806,28 +808,23 @@ function DetailAccessPaywallModal({
             </p>
           </div>
 
-          {/* Wave launch-14: paywall variant 만 크레딧 정보 표시.
-              sold / verify_fail = 크레딧 무관 — 매물 자체 issue. */}
+          {/* Wave launch-88 (사용자 정정 — 모바일 화면 안에 다 안 들어옴):
+              4 row (header / progress / 설명 / 보유 크레딧) → 2 row 로 압축.
+              설명 텍스트 ("첫 3개 상품은 무료로 열리고...") 제거 — 모달 body 와 의미 중복.
+              "보유 크레딧" 정보는 헤더 row 에 inline. progress bar h-2.5 → h-1.5 (얇게). */}
           {isPaywall ? (
-            <div className="mt-5 rounded-[22px] bg-zinc-50 p-4 dark:bg-zinc-900/70">
-              <div className="flex items-center justify-between text-xs font-bold text-zinc-500 dark:text-zinc-400">
-                <span>첫 무료 상세보기</span>
-                <span>{freeUsed.toLocaleString("ko-KR")} / {freeLimit.toLocaleString("ko-KR")}</span>
+            <div className="mt-4 rounded-[18px] bg-zinc-50 p-3 dark:bg-zinc-900/70">
+              <div className="flex items-center justify-between text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+                <span>무료 {freeUsed.toLocaleString("ko-KR")}/{freeLimit.toLocaleString("ko-KR")} 사용</span>
+                <span>보유 <b className="text-zinc-700 dark:text-zinc-200">{creditBalance.toLocaleString("ko-KR")}크레딧</b></span>
               </div>
-              <div className="mt-3 grid gap-2" style={{ gridTemplateColumns: `repeat(${segments}, minmax(0, 1fr))` }}>
+              <div className="mt-2 grid gap-1" style={{ gridTemplateColumns: `repeat(${segments}, minmax(0, 1fr))` }}>
                 {Array.from({ length: segments }).map((_, idx) => (
                   <div
                     key={idx}
-                    className={`h-2.5 rounded-full ${idx < Math.min(freeUsed, segments) ? "bg-[#3182f6]" : "bg-zinc-200 dark:bg-zinc-700"}`}
+                    className={`h-1.5 rounded-full ${idx < Math.min(freeUsed, segments) ? "bg-[#3182f6]" : "bg-zinc-200 dark:bg-zinc-700"}`}
                   />
                 ))}
-              </div>
-              <p className="mt-3 text-[12px] font-medium leading-5 text-zinc-500 dark:text-zinc-400">
-                첫 3개 상품은 무료로 열리고, 이후에는 새 상품을 열 때마다 1크레딧이 차감됩니다.
-              </p>
-              <div className="mt-3 flex items-center justify-between rounded-2xl bg-white px-3 py-2 text-xs font-black text-zinc-600 ring-1 ring-zinc-100 dark:bg-zinc-950 dark:text-zinc-300 dark:ring-zinc-800">
-                <span>현재 보유 크레딧</span>
-                <span>{creditBalance.toLocaleString("ko-KR")}개</span>
               </div>
             </div>
           ) : null}
@@ -2892,6 +2889,23 @@ export default function ExploreClient({
         onClose={() => setDirectTradeConfirm(null)}
         onConfirm={confirmDirectTradeDetail}
       />
+
+      {/* Wave launch-88 (사용자 정정 — 클릭 시 검증 딜레이 동안 렉걸린 느낌):
+          detailAccessLoadingPid 활성 동안 검은 overlay + 가운데 dots loading 표시.
+          z-[94] = paywall modal (z-[95]) 보다 한 단계 아래. paywall 응답 받으면 자동 사라짐. */}
+      {detailAccessLoadingPid != null ? (
+        <div
+          className="fixed inset-0 z-[94] flex items-center justify-center bg-black/55 backdrop-blur-[1px]"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <div className="flex gap-2">
+            <span className="h-3 w-3 animate-bounce rounded-full bg-white [animation-delay:-0.32s]" />
+            <span className="h-3 w-3 animate-bounce rounded-full bg-white [animation-delay:-0.16s]" />
+            <span className="h-3 w-3 animate-bounce rounded-full bg-white" />
+          </div>
+        </div>
+      ) : null}
 
       <DetailAccessPaywallModal
         state={detailAccessLimit}
