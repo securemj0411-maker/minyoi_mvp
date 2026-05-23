@@ -60,6 +60,7 @@ import { WAVE_734_MEGA_BRAND } from "@/lib/generated/catalog-734-mega-brand";
 import { WAVE_735_GOLF_BROAD_2 } from "@/lib/generated/catalog-735-golf-broad-2";
 import { WAVE_736_MM6_LACOSTE } from "@/lib/generated/catalog-736-mm6-lacoste";
 import { WAVE_746_NEIGHBORHOOD_SCHOTT } from "@/lib/generated/catalog-746-neighborhood-schott";
+import { WAVE_749_SONY_ELECTRONICS } from "@/lib/generated/catalog-749-sony-electronics";
 import { WAVE_737_SHOE_BROAD_2 } from "@/lib/generated/catalog-737-shoe-broad-2";
 
 export type Sku = {
@@ -7089,6 +7090,7 @@ export const CATALOG: Sku[] = [
   ...WAVE_735_GOLF_BROAD_2, // Wave 735 — 골프웨어 추가 (FootJoy/AmazingCree/Callaway)
   ...WAVE_736_MM6_LACOSTE, // Wave 736 — MM6 Margiela / Lacoste broad / Mountain Hardwear
   ...WAVE_746_NEIGHBORHOOD_SCHOTT, // Wave 746 — Neighborhood / Schott (Perfecto)
+  ...WAVE_749_SONY_ELECTRONICS, // Wave 749 — Sony 이어폰 신설 (WF-1000XM4/5/6 / LinkBuds Open / MDR Pro)
   ...WAVE_737_SHOE_BROAD_2, // Wave 737 — 신발 broad 추가 (Dr.Martens broad/Timberland/Keen/Fila/Clarks/Clae)
   ...BAG_CATALOG,
   ...BAG_WAVE266_CATALOG, // Wave 266 — 명품 가방 brand-broad fallback 20 SKU
