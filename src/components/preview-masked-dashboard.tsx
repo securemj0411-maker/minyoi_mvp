@@ -42,10 +42,22 @@ function krw(value: number) {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
 }
 
+// Wave launch-111b (2026-05-24): 비로그인 매물 가격은 정확값 X — "만원대" band 로 노출.
+//   사용자 정정: "매입이랑 시세를 몇만원대 이런 식으로 하자고 했는데 정확값 박혀 있음 = 구라".
+//   원 단위 정확값 노출 시 비로그인이 sku/가격 매핑 가능 → 카탈로그 leak 위험.
+function krwTenThousandBand(value: number): string {
+  const v = Math.round(value);
+  if (v <= 0) return "0원";
+  if (v < 10_000) return `${(Math.floor(v / 1_000) || 1) * 1_000}원대`;
+  const tenK = Math.floor(v / 10_000);
+  return `${tenK}만원대`;
+}
+
 // 2026-05-17: 시세 차이 표시 — min === max 면 단일 (구간 표시 어색 fix).
+// Wave launch-111b (2026-05-24): 만원대 band 로 변경 (정확값 노출 X).
 function marketGapLabel(min: number, max: number): string {
-  if (Math.round(min) === Math.round(max)) return `${Math.round(min).toLocaleString("ko-KR")}원 낮음`;
-  return `${Math.round(min).toLocaleString("ko-KR")}~${Math.round(max).toLocaleString("ko-KR")}원 낮음`;
+  if (Math.round(min) === Math.round(max)) return `${krwTenThousandBand(min)} 낮음`;
+  return `${krwTenThousandBand(min)}~${krwTenThousandBand(max)} 낮음`;
 }
 
 // 시세 차이 % — 매입가 대비 차이 비율 (대시보드 통일 패턴).
@@ -247,16 +259,19 @@ export default function PreviewMaskedDashboard() {
                         <span className="truncate text-[11px] font-bold text-zinc-400 dark:text-zinc-500">{previewStatusLabel(item)}</span>
                       </div>
 
-                      <div className="mt-2 select-none truncate text-[15px] font-black tracking-tight text-zinc-950 blur-[3px] dark:text-zinc-100 sm:text-[17px]">
+                      {/* Wave launch-111 (2026-05-24): blur-[3px] 제거 — maskedName 이 이미 카테고리 라벨
+                          ("이어폰", "신발") 이라 blur 처리하면 모순. 라벨은 정직하게 노출. */}
+                      <div className="mt-2 truncate text-[15px] font-black tracking-tight text-zinc-950 dark:text-zinc-100 sm:text-[17px]">
                         {item.maskedName}
                       </div>
 
+                      {/* Wave launch-111b (2026-05-24): 매입/시세 만원대 band 표시 (비로그인 카탈로그 leak 방지). */}
                       <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
-                        <span>매입 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krw(item.price)}</span></span>
+                        <span>매입 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krwTenThousandBand(item.price)}</span></span>
                         {item.skuMedian && item.skuMedian > 0 ? (
                           <>
                             <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                            <span>시세 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krw(item.skuMedian)}</span></span>
+                            <span>시세 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krwTenThousandBand(item.skuMedian)}</span></span>
                           </>
                         ) : null}
                       </div>
