@@ -1021,6 +1021,10 @@ export const LANE_READINESS: LaneReadinessMap = {
   columbia_apparel_broad: { status: "ready", label: "Columbia Apparel (패딩/플리스)", note: "Wave 732 — 9건/주 p50 6.2만." },
   blackyak_apparel_broad: { status: "ready", label: "Blackyak Apparel (다운/패딩)", note: "Wave 732 — 8건/주 p50 6.3만." },
   barbour_quilted_jacket: { status: "ready", label: "Barbour Quilted Jacket", note: "Wave 732 — 4건/주 p50 10.5만 (시그니처)." },
+  // Wave 734 — 거대한 미발견 brand (~750건 회수; FOG/Patagonia은 이미 SKU 있어 별 wave leak fix)
+  acne_studios_broad: { status: "ready", label: "Acne Studios Apparel Broad", note: "Wave 734 — 427건/주 p50 15만 (denim premium 별도)." },
+  nanamica_apparel_broad: { status: "ready", label: "Nanamica (고어텍스/Coolmax)", note: "Wave 734 — 251건/주 p50 19.4만." },
+  tommy_hilfiger_broad: { status: "ready", label: "Tommy Hilfiger Apparel", note: "Wave 734 — 78건/주 p50 5.5만." },
   // Wave 733 — 신발 broad 6 SKU (salomon_xt_6 narrow는 이미 line 624 Wave 208 존재)
   salomon_broad: { status: "ready", label: "Salomon Broad (Pulsar/Speedcross/Sense)", note: "Wave 733 — 23건/주 p50 12-15만." },
   hoka_bondi: { status: "ready", label: "Hoka Bondi (시그니처 max cushion)", note: "Wave 733 — 7+건/주 p50 20만." },

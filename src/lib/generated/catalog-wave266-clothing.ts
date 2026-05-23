@@ -1017,20 +1017,35 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
     laneKey: "patagonia_apparel_broad",
     modelName: "Patagonia Apparel (Broad — narrow 외)",
     aliases: ["Patagonia", "파타고니아"],
+    // Wave 734 leak fix: 443건 unmatched 분석:
+    //   1. mustContain[1] "후디/플리스/풀오버/신칠라/자켓" 누락
+    //   2. mustNotContain "다운/down/쉘/shell" 차단 → Patagonia 다운/토렌트쉘 매물도 차단 (의도와 반대)
+    //      → 다운/쉘 narrow 명확 없으면 broad에서 catch
     mustContain: [
       ["patagonia", "파타고니아"],
-      ["티셔츠", "tee", "후드", "hoodie", "맨투맨", "셔츠", "팬츠", "바지", "쇼츠", "베스트", "조끼"],
+      ["티셔츠", "tee", "후드", "후디", "hoodie", "맨투맨", "크루넥", "스웻", "sweat", "셔츠",
+       "팬츠", "pants", "바지", "쇼츠", "shorts", "반바지",
+       "베스트", "vest", "조끼",
+       // Wave 734 추가
+       "플리스", "fleece", "풀오버", "pullover", "신칠라", "synchilla",
+       "자켓", "jacket", "재킷", "패딩", "down jacket", "다운 자켓", "다운자켓",
+       "토렌트쉘", "torrentshell", "윈드브레이커", "windbreaker", "후디니", "houdini",
+       "배기스", "baggies",
+       "스냅 t", "snap-t", "snapt",
+       "나노 퍼프", "nano puff", "나노퍼프",
+       "리트로", "리사이클",
+       "r1", "r2", "r3"],
     ],
     mustNotContain: [
       ...CLOTHING_COMMON_NOISE,
-      // narrow SKU 있는 거 차단
+      // narrow SKU 있는 거만 차단 (broad는 fallback)
       "retro x", "retro-x", "레트로 x", "레트로x",
       "deep pile", "딥파일", "레트로파일", "레트로 파일", "retro pile", "retro-pile",
-      // 다운/쉘은 별도 narrow
-      "다운", "down",
-      "쉘", "shell",
+      // Wave 734: 다운/쉘 narrow 명확 없으면 broad catch — 차단 제거.
       // 등산용품
       "텐트", "침낭",
+      // 가방
+      "백팩", "boston bag", "보스턴백", "크로스백", "토트백", "tote bag", "메신저백",
     ],
     msrpKrw: 159000,
     released: 1973,
