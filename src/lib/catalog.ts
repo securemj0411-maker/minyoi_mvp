@@ -8184,6 +8184,15 @@ export const CATALOG: Sku[] = [
       "id 매거진", "iD 매거진", "id magazine", "스투시 id", "stussy id",
       "스택드", "stacked", "스택드 피그먼트",
       "다이아 후드", "diamond hoodie", "피그먼트 다이아",
+      // Wave 745 (2026-05-24): spread 3.0x audit — collab/시그니처 추가 차단.
+      // 부아나 (Boana) 한국 표기 / 마틴로즈 (Martine Rose) / 8볼 후드 시그니처 / Soul 1980 / Designs (헤리티지 라인 일부) / 슈페리어
+      "부아나", "boana",
+      "마틴로즈", "martine rose", "마틴 로즈",
+      "8볼 후드", "8 ball hoodie", "8볼 hoodie", "8ball 후드", "8ball hoodie",
+      "soul 1980", "soul1980",
+      "슈페리어", "superior",
+      "스프레이 다이드", "spray dyed", "spray-dyed", "sprayed",
+      "피그먼트 다이드", "pigment dyed", "피그먼트다이드",
     ],
     msrpKrw: 159000, released: 2020,
   },
