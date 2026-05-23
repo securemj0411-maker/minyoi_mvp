@@ -1014,6 +1014,13 @@ export const LANE_READINESS: LaneReadinessMap = {
   adidas_hoodie_sweat_broad: { status: "ready", label: "Adidas Hoodie / Sweat / Crewneck", note: "Wave 731 — 42건/주 p50 10-14만." },
   adidas_pants_shorts_broad: { status: "ready", label: "Adidas Pants / Cargo / Shorts", note: "Wave 731 — 18건/주 p50 14.5만." },
   adidas_down_padding_broad: { status: "ready", label: "Adidas Down / Padding", note: "Wave 731 — 7건/주 p50 6.3만." },
+  // Wave 732 — Multi-brand (Nike x MLB jersey + Uniqlo collab + Thisisneverthat + Korean outdoor + Barbour)
+  mlb_nike_jersey_collab: { status: "ready", label: "Nike × MLB Official Jersey", note: "Wave 732 — 54건/주 p50 12.5만 (mlb_apparel_broad nike 차단 leak)." },
+  thisisneverthat_apparel: { status: "ready", label: "Thisisneverthat Apparel (Broad)", note: "Wave 732 — 15건/주 p50 5만." },
+  uniqlo_collab_broad: { status: "ready", label: "Uniqlo Collab (Lemaire/Marimekko/JW Anderson)", note: "Wave 732 — 17건/주 p50 4.9만." },
+  columbia_apparel_broad: { status: "ready", label: "Columbia Apparel (패딩/플리스)", note: "Wave 732 — 9건/주 p50 6.2만." },
+  blackyak_apparel_broad: { status: "ready", label: "Blackyak Apparel (다운/패딩)", note: "Wave 732 — 8건/주 p50 6.3만." },
+  barbour_quilted_jacket: { status: "ready", label: "Barbour Quilted Jacket", note: "Wave 732 — 4건/주 p50 10.5만 (시그니처)." },
   // Wave 715 P2-P3 — 잔여 narrow split
   polo_oxford_vintage: { status: "ready", label: "Polo Oxford Vintage (90s/00s archive)", note: "Wave 715 — 67x spread 해소." },
   polo_pique_vintage: { status: "ready", label: "Polo Pique Vintage (90s/00s archive)", note: "Wave 715 — 65x spread 해소." },
