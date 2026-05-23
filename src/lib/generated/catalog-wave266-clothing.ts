@@ -119,6 +119,20 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "라코스테", "lacoste",  // 빈번한 polo 혼동
       "타미", "tommy", "타미힐피거",  // 이미 일부 SKU에 있지만 broad에 명시
       "바나나리퍼블릭", "banana republic",
+      // Wave 750 bias-free (2026-05-24): 한정/premium 라인 차단 (spread 6.8x → 4x 이하 target)
+      "80s", "80년대",  // vintage 80s 별 라인
+      "70s", "70년대",
+      "매키노", "mackinaw",  // 한정 매키노 자켓 (RRL과 별)
+      "인디언헤드", "indian head", "인디언 헤드",  // 한정 라인
+      "알파카", "alpaca",  // premium 소재
+      "하운드투스", "houndstooth",  // 시그니처 패턴 premium
+      "레인 자켓", "rain jacket", "레인자켓",  // Polo Rain 별 라인
+      "헌팅 자켓", "hunting jacket", "헌팅자켓",  // 한정 헌팅 라인
+      "타탄체크", "tartan check", "타탄 체크",  // 시그니처 premium
+      "트림하운드투스", "스웨이드 트림",  // 가죽 premium
+      "레어", "rare",  // 한정 시그니처
+      "스웨이드 자켓", "스웨이드자켓",  // 가죽 premium
+      "데님 자켓 80s", "스웨이드 2세대",  // 시그니처 vintage
     ],
     msrpKrw: 169000,
     released: 1967,
