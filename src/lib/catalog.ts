@@ -9535,7 +9535,9 @@ export const CATALOG: Sku[] = [
     brand: "Asics", category: "shoe", laneKey: "asics_gel_1130",
     modelName: "Asics Gel-1130 (시그니처)",
     aliases: ["Asics Gel-1130", "아식스 젤 1130", "젤-1130", "Gel1130"],
-    mustContain: [["asics", "아식스"], ["gel-1130", "gel 1130", "젤 1130", "젤-1130", "젤1130"]],
+    // Wave 740 leak fix: 218건 unmatched — 매물 "아식스 1130" 단독 "1130" 표기 흔함. mustContain[1]에 "1130" 단독 추가.
+    //   다른 brand "1130" 모델 없음 (NB 1130/1100 없음), false positive 위험 낮음.
+    mustContain: [["asics", "아식스"], ["gel-1130", "gel 1130", "젤 1130", "젤-1130", "젤1130", "1130"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "키코", "kiko", "세실리에", "cecilie", "슈슈통", "아트모스", "atmos", "오호스", "ojos"],
     msrpKrw: 159000, released: 2008,
   },
