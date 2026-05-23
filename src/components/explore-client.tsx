@@ -1337,10 +1337,11 @@ export default function ExploreClient({
     const shareUrl = `${baseUrl}?ref=kakao_share`;
 
     try {
-      // Wave launch-57 (사용자 정정 "친구말투 X, 존댓말로"):
-      //   존댓말 + 정중한 톤 — 정직한 상품 추천 느낌.
-      // Wave 732 (2026-05-24 사용자 보고): objectType "feed" 는 imageUrl 필수 — 없으면 카카오가
-      //   카드 안 만들고 텍스트만 fallback 해서 링크 묻힘. "text" 로 변경 — 본문 + 링크 + 버튼 보장.
+      // Wave launch-57: 존댓말 톤.
+      // Wave 732: objectType "feed" → "text" (imageUrl 필요 없음, 링크 확실히 같이 감).
+      // Wave 734 (2026-05-24): 카카오 공유 webhook 기반으로 변경 — 다이얼로그만 띄우면 보상 받던 매크로
+      //   차단. `serverCallbackArgs` 에 user_id 박아서 친구가 메시지 클릭 시 카카오가 webhook 호출.
+      //   webhook 에서 cooldown 검증 후 +1 지급. (즉시 fetch POST share-bonus 제거)
       kakao.Share.sendDefault({
         objectType: "text",
         text: "지금 팔면 바로 돈 되는 중고 상품이 있어요.\nAI 가 매일 찾아주는 차익 상품, 지금 무료로 확인해보세요!",
@@ -1349,34 +1350,26 @@ export default function ExploreClient({
           webUrl: shareUrl,
         },
         buttonTitle: "바로 보러가기",
+        // Wave 734: 카카오가 webhook URL 에 이 key/value 를 query param 으로 전달.
+        //   Kakao Console "사용자 정의 콜백 (웹훅)" 에서 입력 데이터 라벨 = user_id 등록 필요.
+        serverCallbackArgs: {
+          // Wave 734: storageScope = user.id (me-dashboard-client.tsx 에서 전달). 익명은 button disabled.
+          user_id: storageScope && storageScope !== "anonymous" ? storageScope : "",
+        },
       });
 
-      // Kakao callback 은 다이얼로그 닫혔을 때 호출되는데 신뢰 X (사용자가 안 보내고 닫기만 해도 호출).
-      // 단순화 = sendDefault 호출 직후 보너스 API call. 24h 제한이 abuse 차단.
-      setKakaoShareLoading(true);
-      const res = await fetch("/api/packs/pool/share-bonus", { method: "POST" });
-      const data = await res.json() as { ok?: boolean; bonus?: number; balance?: number; message?: string; remainingHours?: number };
-      if (data.ok) {
-        // 보너스 받음 — cooldown 24h 박힘. button 비활성 위해 상태 갱신.
-        setKakaoShareCooldownHours(24);
-        setRefreshModalOpen(false);
-        if (typeof window !== "undefined") {
-          window.location.reload();
-        }
-      } else if (typeof data.remainingHours === "number") {
-        // 서버 cooldown 응답 (race condition — mount 시 갱신 후 다른 tab 에서 받았을 때)
-        setKakaoShareCooldownHours(data.remainingHours);
-        if (typeof window !== "undefined") {
-          window.alert(`오늘은 이미 받았어요! ${data.remainingHours}시간 후 다시 받을 수 있어요`);
-        }
+      // Wave 734: 즉시 fetch 제거 — 친구가 메시지 클릭해야 webhook → 보상.
+      //   사용자에게 명시 안내 (UI 가 즉시 +1 안 보여줘서 헷갈리지 않게).
+      if (typeof window !== "undefined") {
+        window.alert("공유해주셔서 감사해요!\n친구가 메시지를 누르고 들어오면 크레딧 1개를 받아요.");
       }
-      console.info("[kakao-share]", data.message ?? "");
+      setRefreshModalOpen(false);
     } catch (err) {
       console.error("kakao share failed", err);
     } finally {
       setKakaoShareLoading(false);
     }
-  }, [kakaoShareCooldownHours, kakaoShareLoading]);
+  }, [kakaoShareCooldownHours, kakaoShareLoading, storageScope]);
   // 모달 mount 후 다음 frame에 애니메이션 활성화 (slide up / fade in)
   useEffect(() => {
     if (refreshModalOpen) {
