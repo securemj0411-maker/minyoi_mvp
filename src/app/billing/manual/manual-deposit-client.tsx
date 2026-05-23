@@ -216,7 +216,7 @@ export default function ManualDepositClient() {
                 <span className="h-2 w-2 animate-bounce rounded-full bg-white" />
               </>
             ) : stage === "success" ? (
-              <>충전 완료! 잠시 후 내 피드로 이동해요</>
+              <>신청 접수됨 — 곧 지급돼요</>
             ) : (
               <>입금 완료 — 즉시 {plan.monthlyCredits.toLocaleString("ko-KR")}크레딧 받기</>
             )}
@@ -260,11 +260,12 @@ export default function ManualDepositClient() {
                 <path d="M20 6L9 17l-5-5" />
               </svg>
             </div>
-            <h2 className="mt-5 text-[22px] font-black text-zinc-950 dark:text-zinc-50">충전이 완료되었어요</h2>
+            <h2 className="mt-5 text-[22px] font-black text-zinc-950 dark:text-zinc-50">신청이 접수됐어요</h2>
             <div className="mt-2 text-[16px] font-bold text-[#3182f6] dark:text-blue-300">
-              +{plan.monthlyCredits.toLocaleString("ko-KR")} 크레딧
+              {plan.monthlyCredits.toLocaleString("ko-KR")} 크레딧
             </div>
             <p className="mt-4 text-center text-[12.5px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+              운영자 확인 또는 3분 안에 자동 지급돼요.<br/>
               잠시 후 내 피드로 이동해요.
             </p>
           </div>

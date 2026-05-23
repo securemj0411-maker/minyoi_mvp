@@ -21,6 +21,10 @@
       "schedule": "*/30 * * * *"
     },
     {
+      "path": "/api/cron/manual-deposit-auto-approve",
+      "schedule": "* * * * *"
+    },
+    {
       "path": "/api/cron/lifecycle-worker",
       "schedule": "*/5 * * * *"
     },

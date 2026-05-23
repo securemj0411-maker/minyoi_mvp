@@ -328,17 +328,14 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
           <thead className="bg-gray-50 dark:bg-zinc-900">
             <tr className="border-b border-gray-200 text-left text-xs font-bold text-gray-600 dark:border-zinc-800 dark:text-gray-400">
               <th className="px-3 py-2">닉네임</th>
+              {/* Wave launch-96 (사용자 정정 — 구독제 무 / 베타 체험단 무): 플랜/플랜만료/일일 사용/최근 결제/베타 column 제거.
+                  현재 시스템 = 크레딧 패키지만. 단순화. */}
               <th className="px-3 py-2">이메일</th>
-              <th className="px-3 py-2">플랜</th>
-              <th className="px-3 py-2">플랜 만료</th>
-              <th className="px-3 py-2 text-right">일일 사용</th>
-              <th className="px-3 py-2">최근 결제</th>
               <th className="px-3 py-2">가입일</th>
               <th className="px-3 py-2">마지막 로그인</th>
               <th className="px-3 py-2">크레딧</th>
               <th className="px-3 py-2">회수</th>
               <th className="px-3 py-2">차단</th>
-              <th className="px-3 py-2">베타 체험단</th>
               <th className="px-3 py-2">provider</th>
             </tr>
           </thead>
@@ -355,31 +352,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                 <tr key={row.authUserId} className="border-b border-gray-100 hover:bg-amber-50/40 dark:border-zinc-900 dark:hover:bg-amber-950/20">
                   <td className="px-3 py-2 font-semibold">{row.nickname || "—"}</td>
                   <td className="px-3 py-2 font-mono text-xs">{row.email ?? "—"}</td>
-                  <td className="px-3 py-2">
-                    <span className={`inline-flex h-5 items-center rounded px-1.5 text-[11px] font-bold ${badge.cls}`}>
-                      {badge.label}
-                    </span>
-                    {row.planStatus && row.planStatus !== "active" ? (
-                      <span className="ml-1 text-[10px] text-gray-500">{row.planStatus}</span>
-                    ) : null}
-                    {row.planCancelAtEnd ? (
-                      <div className="mt-0.5 text-[10px] text-orange-600 dark:text-orange-400">해지 예약</div>
-                    ) : null}
-                  </td>
-                  <td className={`px-3 py-2 font-mono text-xs ${planActive ? "text-gray-700 dark:text-gray-300" : "text-gray-400"}`}>
-                    {fmt(row.planEndAt)}
-                  </td>
-                  <td className="px-3 py-2 text-right font-mono text-xs">{row.dailyUsedCount ?? "—"}</td>
-                  <td className="px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-400">
-                    {row.lastPaymentAt ? (
-                      <div>
-                        <div>{fmt(row.lastPaymentAt)}</div>
-                        {row.lastPaymentAmount ? (
-                          <div className="text-[10px] text-gray-500">₩{row.lastPaymentAmount.toLocaleString("ko-KR")}</div>
-                        ) : null}
-                      </div>
-                    ) : "—"}
-                  </td>
+                  {/* Wave launch-96: 플랜/플랜만료/일일사용/최근결제 td 제거 (구독제 무). */}
                   <td className="px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-400">{fmt(row.createdAt)}</td>
                   <td className="px-3 py-2 font-mono text-xs text-gray-600 dark:text-gray-400">{fmt(row.lastSignInAt)}</td>
                   <td className="px-3 py-2">
@@ -449,24 +422,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                       <div className="mt-0.5 font-mono text-[10px] text-rose-600 dark:text-rose-400">{fmt(row.blockedAt)}</div>
                     ) : null}
                   </td>
-                  <td className="px-3 py-2">
-                    <button
-                      type="button"
-                      onClick={() => toggleBeta(row)}
-                      disabled={pending}
-                      className={`inline-flex h-7 items-center rounded-md px-2.5 text-xs font-bold transition disabled:opacity-50 ${
-                        row.isBetaTester
-                          ? "bg-purple-600 text-white hover:bg-purple-700"
-                          : "border border-gray-300 bg-white text-gray-700 hover:border-purple-400 hover:bg-purple-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-gray-300"
-                      }`}
-                      title={row.creditRowExists ? "" : "크레딧 row 없음 — 회원이 1회 이상 추천/팩 사용해야 row 생성"}
-                    >
-                      {pending ? "..." : row.isBetaTester ? "✓ 베타" : "승격"}
-                    </button>
-                    {row.isBetaTester && row.betaGrantedAt ? (
-                      <div className="mt-0.5 font-mono text-[10px] text-purple-600 dark:text-purple-400">{fmt(row.betaGrantedAt)}</div>
-                    ) : null}
-                  </td>
+                  {/* Wave launch-96: 베타 체험단 td 제거 (현재 시스템 무관). */}
                   <td className="px-3 py-2 text-xs text-gray-500">{row.provider ?? "—"}</td>
                 </tr>
               );

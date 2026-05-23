@@ -1,24 +1,21 @@
-// Wave launch-95 (사용자 결정 — 토스페이먼츠 가맹심사 중 임시 흐름):
-//   양심 신뢰 즉시 grant + 30분 rate limit + blocked 체크 + admin 회수 가능.
-//
-//   - auth user 검증 + blocked_at 체크 (차단 사용자 거부)
-//   - last_manual_deposit_at 30분 rate limit (메시지에 시간 표시 X — 일반 안내)
-//   - balance += plan.monthlyCredits + ledger row insert + last_manual_deposit_at=now()
-//
-//   토스페이먼츠 가맹 승인 후엔 이 endpoint deprecated.
+// Wave launch-96 (사용자 결정 — 즉시 grant 모델 → 신청·승인 모델):
+//   사용자 "입금 완료" → 신청 row 생성 + 운영자 텔레그램 알림.
+//   운영자가 3분 안에 승인 누르면 즉시 grant. 안 누르면 cron 이 자동 grant (양심 신뢰).
+//   기존 즉시 grant launch-95 흐름은 deprecated.
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { isAdminUser } from "@/lib/auth-users";
 import { planForKey, type PlanKey } from "@/lib/plan-config";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { notifyAdminTelegram } from "@/lib/telegram-notify";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const RATE_LIMIT_WINDOW_MS = 30 * 60 * 1000; // 30분
+const AUTO_APPROVE_WINDOW_MS = 3 * 60 * 1000; // 3분
+const RATE_LIMIT_WINDOW_MS = 30 * 60 * 1000; // 30분 — 같은 사용자 재신청 방지
 
 type Body = {
   planKey?: string;
@@ -44,123 +41,111 @@ export async function POST(req: NextRequest) {
   const authUserId = auth.user.id;
   const userRef = userRefForAuthUser(authUserId);
 
-  // Wave launch-95d (사용자 보고: 500 + balance 박힘 — ledger insert throw 가능성):
-  //   전체 endpoint try/catch + ledger insert 도 catch (grant 후 ledger fail 해도 500 응답 X).
-  //   이전엔 ledger restFetch timeout/throw 시 500 응답 + balance 박힘 inconsistency.
   try {
-
-  // 현재 user_credits state 조회 (blocked_at + last_manual_deposit_at + balance)
-  const credRes = await restFetch(
-    `${tableUrl("mvp_user_credits")}?select=balance,blocked_at,blocked_reason,last_manual_deposit_at&user_ref=eq.${encodeURIComponent(userRef)}&auth_user_id=eq.${authUserId}&limit=1`,
-    { headers: serviceHeaders() },
-  );
-  if (!credRes.ok) return NextResponse.json({ error: "lookup_failed" }, { status: 500 });
-  const credRows = (await credRes.json()) as Array<{
-    balance: number;
-    blocked_at: string | null;
-    blocked_reason: string | null;
-    last_manual_deposit_at: string | null;
-  }>;
-  const current = credRows[0] ?? { balance: 0, blocked_at: null, blocked_reason: null, last_manual_deposit_at: null };
-
-  // 차단된 사용자 거부.
-  if (current.blocked_at) {
-    return NextResponse.json({
-      error: "account_blocked",
-      message: "결제가 차단된 계정이에요. 운영자에게 문의해주세요.",
-    }, { status: 403 });
-  }
-
-  // Rate limit: 30분 내 재충전 차단. 메시지에 시간 명시 X (사용자 결정).
-  // Wave launch-95c: admin user 는 rate limit 면제 (운영자 본인 테스트 frustrate 차단).
-  const isAdmin = isAdminUser(auth.user);
-  if (!isAdmin && current.last_manual_deposit_at) {
-    const lastTs = new Date(current.last_manual_deposit_at).getTime();
-    if (Number.isFinite(lastTs) && Date.now() - lastTs < RATE_LIMIT_WINDOW_MS) {
-      return NextResponse.json({
-        error: "deposit_too_soon",
-        message: "이미 진행 중인 신청이 있어요. 잠시 후 다시 시도해주세요.",
-      }, { status: 429 });
+    // 차단된 사용자 거부 (user_credits.blocked_at 체크).
+    const credRes = await restFetch(
+      `${tableUrl("mvp_user_credits")}?select=blocked_at&user_ref=eq.${encodeURIComponent(userRef)}&auth_user_id=eq.${authUserId}&limit=1`,
+      { headers: serviceHeaders() },
+    );
+    if (credRes.ok) {
+      const credRows = (await credRes.json()) as Array<{ blocked_at: string | null }>;
+      if (credRows[0]?.blocked_at) {
+        return NextResponse.json({
+          error: "account_blocked",
+          message: "결제가 차단된 계정이에요. 운영자에게 문의해주세요.",
+        }, { status: 403 });
+      }
     }
-  }
 
-  const newBalance = (current.balance ?? 0) + plan.monthlyCredits;
-  const nowIso = new Date().toISOString();
-
-  // user_credits upsert (balance, last_manual_deposit_at)
-  const upsertRes = await restFetch(
-    `${tableUrl("mvp_user_credits")}?on_conflict=user_ref`,
-    {
-      method: "POST",
-      headers: { ...serviceHeaders(), Prefer: "resolution=merge-duplicates,return=minimal" },
-      body: jsonBody([{
-        user_ref: userRef,
-        auth_user_id: authUserId,
-        balance: newBalance,
-        last_manual_deposit_at: nowIso,
-        updated_at: nowIso,
-      }]),
-    },
-  );
-  if (!upsertRes.ok) {
-    const errText = await upsertRes.text();
-    console.error("[manual-deposit] upsert failed", { status: upsertRes.status, body: errText.slice(0, 400) });
-    // admin user 면 debug detail 응답 (사용자 본인 fix 용).
-    if (isAdmin) {
-      return NextResponse.json({
-        error: "grant_failed",
-        message: `upsert failed (${upsertRes.status}): ${errText.slice(0, 200)}`,
-      }, { status: 500 });
+    // 같은 사용자 pending 신청 또는 30분 내 직전 신청 차단.
+    const recentRes = await restFetch(
+      `${tableUrl("mvp_manual_deposit_requests")}?select=id,status,created_at&auth_user_id=eq.${authUserId}&order=created_at.desc&limit=1`,
+      { headers: serviceHeaders() },
+    );
+    if (recentRes.ok) {
+      const recentRows = (await recentRes.json()) as Array<{ id: number; status: string; created_at: string }>;
+      const recent = recentRows[0];
+      if (recent) {
+        if (recent.status === "pending") {
+          return NextResponse.json({
+            error: "deposit_pending",
+            message: "이미 진행 중인 신청이 있어요. 잠시 후 다시 확인해주세요.",
+          }, { status: 429 });
+        }
+        const lastTs = new Date(recent.created_at).getTime();
+        if (Number.isFinite(lastTs) && Date.now() - lastTs < RATE_LIMIT_WINDOW_MS) {
+          return NextResponse.json({
+            error: "deposit_too_soon",
+            message: "이미 진행 중인 신청이 있어요. 잠시 후 다시 시도해주세요.",
+          }, { status: 429 });
+        }
+      }
     }
-    return NextResponse.json({ error: "grant_failed", message: "충전 신청을 처리하지 못했어요. 잠시 후 다시 시도해주세요." }, { status: 500 });
-  }
 
-  // ledger row insert — admin 회수 시 reference. throw 도 endpoint 500 만들지 않게 try/catch.
-  try {
-    const ledgerRes = await restFetch(
-      `${tableUrl("mvp_credit_ledger")}`,
+    // 신청 row 생성. 3분 후 auto-approve scheduled.
+    const nowIso = new Date().toISOString();
+    const scheduledIso = new Date(Date.now() + AUTO_APPROVE_WINDOW_MS).toISOString();
+    const insertRes = await restFetch(
+      `${tableUrl("mvp_manual_deposit_requests")}`,
       {
         method: "POST",
-        headers: { ...serviceHeaders(), Prefer: "return=minimal" },
+        headers: { ...serviceHeaders(), Prefer: "return=representation" },
         body: jsonBody([{
           user_ref: userRef,
           auth_user_id: authUserId,
-          event_type: "manual_deposit_grant",
+          plan_key: planKey,
           amount: plan.monthlyCredits,
-          balance_after: newBalance,
-          metadata: {
-            plan_key: planKey,
-            price_krw: plan.priceKrw,
-            depositor_name: depositorName,
-            honor_trust: true,
-            note: "토스페이먼츠 가맹심사 중 임시 흐름",
-          },
+          price_krw: plan.priceKrw,
+          depositor_name: depositorName,
+          status: "pending",
+          scheduled_auto_approve_at: scheduledIso,
           created_at: nowIso,
         }]),
       },
     );
-    if (!ledgerRes.ok) {
-      console.warn("[manual-deposit] ledger insert failed (granted but no audit row)", { status: ledgerRes.status });
+    if (!insertRes.ok) {
+      const errText = await insertRes.text().catch(() => "");
+      console.error("[manual-deposit] request insert failed", { status: insertRes.status, body: errText.slice(0, 200) });
+      return NextResponse.json({
+        error: "request_failed",
+        message: `신청을 처리하지 못했어요: ${errText.slice(0, 120)}`,
+      }, { status: 500 });
     }
-  } catch (ledgerErr) {
-    // ledger fail 은 grant 자체 무효화 X. log 만 (audit row 누락 — 운영자가 fallback 으로 ledger 봐서 회복).
-    console.warn("[manual-deposit] ledger insert threw", ledgerErr instanceof Error ? ledgerErr.message : String(ledgerErr));
-  }
+    const insertedRows = (await insertRes.json()) as Array<{ id: number }>;
+    const requestId = insertedRows[0]?.id;
 
-  return NextResponse.json({
-    ok: true,
-    balance: newBalance,
-    granted: plan.monthlyCredits,
-    planKey,
-  });
+    // 운영자 텔레그램 알림. fail 해도 신청 자체는 OK (자동 승인으로 fallback).
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://minyoi-mvp.vercel.app";
+    const approveLink = `${baseUrl}/api/admin/manual-deposit/decide?id=${requestId}&decision=approve`;
+    const rejectLink = `${baseUrl}/api/admin/manual-deposit/decide?id=${requestId}&decision=reject`;
+    const msg = [
+      "💰 *충전 신청* (3분 안에 결정 / 안 누르면 자동 지급)",
+      "",
+      `• 신청 ID: \`${requestId}\``,
+      `• 입금자명: *${escapeMarkdown(depositorName)}*`,
+      `• 패키지: ${plan.monthlyCredits.toLocaleString("ko-KR")} 크레딧 (${plan.priceKrw.toLocaleString("ko-KR")}원)`,
+      `• 회원: ${escapeMarkdown(auth.user.email ?? authUserId)}`,
+      "",
+      `통장 확인 후 → [✅ 승인](${approveLink}) / [❌ 거절](${rejectLink})`,
+    ].join("\n");
+    await notifyAdminTelegram(msg);
 
+    return NextResponse.json({
+      ok: true,
+      requestId,
+      etaSeconds: Math.floor(AUTO_APPROVE_WINDOW_MS / 1000),
+      planKey,
+      credits: plan.monthlyCredits,
+    });
   } catch (err) {
-    // Wave launch-95d: 전체 endpoint catch — restFetch throw 등 unhandled 잡고 message 응답.
-    //   잘못된 500 응답 차단. balance 박힌 후 ledger throw 시에도 frontend 가 success path 진입.
     console.error("[manual-deposit] endpoint error", err instanceof Error ? err.message : String(err));
     return NextResponse.json({
       error: "deposit_failed",
       message: `처리 중 오류가 발생했어요: ${err instanceof Error ? err.message.slice(0, 160) : "unknown"}`,
     }, { status: 500 });
   }
+}
+
+function escapeMarkdown(text: string): string {
+  return text.replace(/([_*`\[\]()])/g, "\\$1");
 }
