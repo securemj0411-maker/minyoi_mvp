@@ -3676,8 +3676,9 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
   if (marketplaceProfit <= 0 && daangnProfit <= 0) return null;
   const bonusFromDaangn = marketplaceFee;
   const currentSource = card.marketplaceSource === "joongna" ? "joongna" : "bunjang";
-  // Wave launch-66 (사용자 짚음 "판매자/셀러 같은 의미 왜 다르게? 전국 거래 chip 의미 중복"):
-  //   "셀러" → "판매자" 통일. "전국 거래" chip 제거 (둘 다라 의미 X) — 차별화 정보 (결제 시스템) 로 교체.
+  // Wave launch-66/67 (사용자 짚음 "셀러/판매자 통일 + chip 위계"):
+  //   chip = 결제 시스템 (위계 1). joongna chip = "안심결제" 단독.
+  //   note = 수수료 (판매자 + 구매자 둘 다 표시 — joongna 가 사실 더 부담).
   const marketplaceCards = [
     {
       source: "bunjang",
@@ -3690,8 +3691,8 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
       source: "joongna",
       label: "중고나라",
       profit: joongnaProfit,
-      note: `판매자 ${Math.round(JOONGNA_SELLER_SAFE_PAYMENT_FEE_RATE * 100)}% 수수료 차감`,
-      chips: ["안심결제", `구매자 ${Math.round(JOONGNA_BUYER_SAFE_PAYMENT_FEE_RATE * 1000) / 10}% 별도`],
+      note: `판매자 ${Math.round(JOONGNA_SELLER_SAFE_PAYMENT_FEE_RATE * 100)}% · 구매자 ${Math.round(JOONGNA_BUYER_SAFE_PAYMENT_FEE_RATE * 1000) / 10}% 별도`,
+      chips: ["안심결제", "전국 거래"],
     },
   ];
 
@@ -4821,17 +4822,25 @@ function BeginnerGuideSafetyVisual({ card }: { card: RevealCard }) {
 
 function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
   const market = card.marketBasis;
+  // Wave launch-67 (사용자 짚음 "차익 다 같음 무슨 버그"):
+  //   marketBasis 가 lazy-fill (별도 API /api/packs/pool/analysis) — 처음엔 null.
+  //   null 이면 marketplaceFee=0 → 모든 채널 같은 값 (=base) 표시. 버그.
+  //   가드: medianPrice 없으면 채널 비교 X (시세 확보 후 표시).
+  if (!market?.medianPrice || market.medianPrice <= 0) return null;
+
   const marketplaceProfit = expectedProfitAverage(card);
-  const marketplaceFee = market?.medianPrice ? Math.round(market.medianPrice * SELLING_FEE_RATE) : 0;
-  const joongnaFee = joongnaSellerSafePaymentFee(market?.medianPrice ?? null);
+  const marketplaceFee = Math.round(market.medianPrice * SELLING_FEE_RATE);
+  const joongnaFee = joongnaSellerSafePaymentFee(market.medianPrice);
   const joongnaProfit = marketplaceProfit + marketplaceFee - joongnaFee;
   const daangnProfit = marketplaceProfit + marketplaceFee;
   const preferDaangn = daangnProfit > marketplaceProfit;
   const currentSource = card.marketplaceSource === "joongna" ? "joongna" : "bunjang";
-  // Wave launch-66: BeginnerGuide channel profit 도 같은 fix (판매자 통일, chip 차별화).
+  // Wave launch-67 (사용자 짚음 "chip 위계 + 구매자 수수료 중고나라 더 부담인데"):
+  //   chip = 결제 시스템 (위계 1). note = 수수료 정보 (위계 2).
+  //   joongna note 에 구매자 fee 도 같이 표시 — 매물 가격 인상 effect (구매자가 위에 얹어서).
   const marketChannels = [
     { source: "bunjang", label: "번개장터", profit: marketplaceProfit, note: `판매자 ${Math.round(SELLING_FEE_RATE * 1000) / 10}% 수수료`, chip: "번개페이" },
-    { source: "joongna", label: "중고나라", profit: joongnaProfit, note: `판매자 ${Math.round(JOONGNA_SELLER_SAFE_PAYMENT_FEE_RATE * 100)}% 수수료`, chip: `구매자 ${Math.round(JOONGNA_BUYER_SAFE_PAYMENT_FEE_RATE * 1000) / 10}% 별도` },
+    { source: "joongna", label: "중고나라", profit: joongnaProfit, note: `판매자 ${Math.round(JOONGNA_SELLER_SAFE_PAYMENT_FEE_RATE * 100)}% · 구매자 ${Math.round(JOONGNA_BUYER_SAFE_PAYMENT_FEE_RATE * 1000) / 10}% 별도`, chip: "안심결제" },
   ];
 
   return (
