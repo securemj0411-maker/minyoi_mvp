@@ -982,6 +982,13 @@ export const LANE_READINESS: LaneReadinessMap = {
   alpha_mil_jacket: { status: "ready", label: "Alpha Industries MA-1 / N3B 항공자켓", note: "Wave 726 — 70건/주 p50 10만." },
   levis_denim_broad: { status: "ready", label: "Levi's Denim Broad (501/550/LVC)", note: "Wave 726 — 72건/주 p50 8.5만." },
   discovery_broad: { status: "ready", label: "Discovery Expedition (패딩/맨투맨)", note: "Wave 726 — 74건/주 p50 4.2만 (일반인 친화)." },
+  // Wave 727 — 골프웨어 6 brand
+  titleist_broad: { status: "ready", label: "Titleist Golf Apparel", note: "Wave 727 — 1,006건/주 p50 11만." },
+  pxg_broad: { status: "ready", label: "PXG Golf Apparel", note: "Wave 727 — 463건/주 p50 8.5만." },
+  malbon_broad: { status: "ready", label: "Malbon Golf Apparel", note: "Wave 727 — 433건/주 p50 7.9만." },
+  gfore_broad: { status: "ready", label: "G/FORE Golf Apparel", note: "Wave 727 — 291건/주 p50 10.9만." },
+  jlindeberg_broad: { status: "ready", label: "J.Lindeberg Golf Apparel", note: "Wave 727 — 241건/주 p50 5.9만." },
+  marklona_broad: { status: "ready", label: "Mark&Lona Golf Apparel", note: "Wave 727 — 190건/주 p50 9만." },
   // Wave 715 P2-P3 — 잔여 narrow split
   polo_oxford_vintage: { status: "ready", label: "Polo Oxford Vintage (90s/00s archive)", note: "Wave 715 — 67x spread 해소." },
   polo_pique_vintage: { status: "ready", label: "Polo Pique Vintage (90s/00s archive)", note: "Wave 715 — 65x spread 해소." },
