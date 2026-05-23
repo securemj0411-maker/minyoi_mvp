@@ -1007,6 +1007,13 @@ export const LANE_READINESS: LaneReadinessMap = {
   nike_hoodie_sweat_broad: { status: "ready", label: "Nike Hoodie / Sweat / Crewneck", note: "Wave 730 — 36건/주 p50 5만." },
   nike_tee_broad: { status: "ready", label: "Nike Tee / Short Sleeve", note: "Wave 730 — 23건/주 p50 6만." },
   nike_pants_shorts_broad: { status: "ready", label: "Nike Pants / Cargo / Shorts", note: "Wave 730 — 16건/주 p50 11.7만." },
+  // Wave 731 — Adidas apparel broad 6 SKU
+  adidas_tracksuit_broad: { status: "ready", label: "Adidas Tracksuit / Firebird", note: "Wave 731 — 11건/주 p50 5-6만." },
+  adidas_tee_broad: { status: "ready", label: "Adidas Tee / Short Sleeve", note: "Wave 731 — 34건/주 p50 4.4만." },
+  adidas_windbreaker_broad: { status: "ready", label: "Adidas Windbreaker / Fleece", note: "Wave 731 — 36건/주 p50 7-8만." },
+  adidas_hoodie_sweat_broad: { status: "ready", label: "Adidas Hoodie / Sweat / Crewneck", note: "Wave 731 — 42건/주 p50 10-14만." },
+  adidas_pants_shorts_broad: { status: "ready", label: "Adidas Pants / Cargo / Shorts", note: "Wave 731 — 18건/주 p50 14.5만." },
+  adidas_down_padding_broad: { status: "ready", label: "Adidas Down / Padding", note: "Wave 731 — 7건/주 p50 6.3만." },
   // Wave 715 P2-P3 — 잔여 narrow split
   polo_oxford_vintage: { status: "ready", label: "Polo Oxford Vintage (90s/00s archive)", note: "Wave 715 — 67x spread 해소." },
   polo_pique_vintage: { status: "ready", label: "Polo Pique Vintage (90s/00s archive)", note: "Wave 715 — 65x spread 해소." },

@@ -53,6 +53,7 @@ import { WAVE_727_GOLF_BROAD } from "@/lib/generated/catalog-727-golf-broad";
 import { WAVE_728_LEAK_FIX } from "@/lib/generated/catalog-728-leak-fix";
 import { WAVE_729_CARHARTT_BROAD } from "@/lib/generated/catalog-729-carhartt-broad";
 import { WAVE_730_NIKE_APPAREL_BROAD } from "@/lib/generated/catalog-730-nike-apparel-broad";
+import { WAVE_731_ADIDAS_APPAREL_BROAD } from "@/lib/generated/catalog-731-adidas-apparel-broad";
 
 export type Sku = {
   id: string;
@@ -7034,6 +7035,7 @@ export const CATALOG: Sku[] = [
   ...WAVE_728_LEAK_FIX, // Wave 728 — supreme/arcteryx leak fix (collab + 한정 라인 narrow)
   ...WAVE_729_CARHARTT_BROAD, // Wave 729 — Carhartt broad (hoodie_sweat/denim_pants/overall_anorak/shirt_flannel) + double_knee leak fix + matinkim 확장
   ...WAVE_730_NIKE_APPAREL_BROAD, // Wave 730 — Nike apparel broad (Dri-FIT/Windbreaker/Hoodie_Sweat/Tee/Pants_Shorts)
+  ...WAVE_731_ADIDAS_APPAREL_BROAD, // Wave 731 — Adidas apparel broad (Tracksuit/Tee/Windbreaker/Hoodie_Sweat/Pants_Shorts/Down_Padding)
   ...BAG_CATALOG,
   ...BAG_WAVE266_CATALOG, // Wave 266 — 명품 가방 brand-broad fallback 20 SKU
   ...BIKE_CATALOG,
