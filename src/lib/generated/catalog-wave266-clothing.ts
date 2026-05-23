@@ -95,6 +95,13 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "피케 폴로", "피케 셔츠", "pique polo", "pique",  // → clothing-polo-pique-classic
       // 자체 colab
       "supreme x polo", "polo x supreme",
+      // Wave 715 P1 (2026-05-23): 488건 110x spread → vintage 분리.
+      "빈티지", "vintage", "90s", "90's", "00s", "y2k", "올드", "old", "archive", "아카이브",
+      "90년대", "00년대", "2000년대",
+      "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999",
+      // 별도 narrow 라인 추가 차단
+      "stadium", "스타디움", "chief keef", "치프키프",
+      "p-wing", "p wing",
     ],
     msrpKrw: 169000,
     released: 1967,
@@ -214,6 +221,8 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "levi", "리바이스",
       // 가짜
       "1:1", "11급", "미러", "복각",
+      // Wave 715 P1 (2026-05-23): box logo narrow 도입 → broad에서 제외.
+      "box logo", "박스 로고", "박스로고", "bogo", "보고",
     ],
     msrpKrw: 199000,
     released: 1994,
@@ -471,6 +480,8 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "pvc 백", "pvc백", "pvc 가방", "구찌 홀리데이", "gucci holiday",
       // Wave 615: accessory 매물 차단 (clothing 아님).
       "머플러", "muffler", "스카프", "scarf", "넥워머",
+      // Wave 715 P1 (2026-05-23): junya/홈므플러스 narrow 박음 → broad에서 명확 분리.
+      "junya", "준야", "준야 와타나베", "준야와타나베", "junya watanabe",
     ],
     msrpKrw: 390000,
     released: 1969,
@@ -713,6 +724,13 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "강아지 니트", "애견 니트", "반려견 니트", "dog knit",
       "서스펜더", "suspender", "타미진스", "타미힐피거", "tommy hilfiger",
       "koe", "코에", "미스터톰", "mister thom",
+      // Wave 715 P1 (2026-05-23): 6-split 후 broad fallback — narrow 우선 매칭 유도.
+      "4-bar", "4바", "포바", "사바", "four bar", "사선",  // → thombrowne_4bar
+      "가디건", "카디건", "cardigan",  // → thombrowne_cardigan
+      "니트", "knit", "스웨터", "sweater", "케이블",  // → thombrowne_knit
+      "옥스포드", "옥스퍼드", "럭비", "rugby", "버튼다운",  // → thombrowne_shirt
+      "슈트", "suit", "블레이저", "blazer", "코트", "coat", "오버코트", "트렌치",  // → thombrowne_suit_coat
+      "맨투맨", "스웻", "sweat", "후드", "hoodie", "후디", "크루넥",  // → thombrowne_sweat_hoodie
     ],
     msrpKrw: 990000,
     released: 2003,
@@ -1040,6 +1058,10 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       // Wave 602: 한국어 collab 표기 변형 추가 (영문만 박혀있던 collab 키워드).
       "사이클로픽", "cyclopic",  // Rick Owens collab 모델명
       "람사우", "람자우", "ramsau",  // Palm Angels collab 모델명
+      // Wave 715 P1 (2026-05-23): 3-split narrow 도입 → broad는 catch-all 잔여만.
+      "maya", "마야",  // → moncler_maya
+      "grenoble", "그르노블", "그레노블", "그르노블르",  // → moncler_grenoble
+      "tricot", "트리코",  // → moncler_tricot
     ],
     msrpKrw: 1490000,
     released: 1952,

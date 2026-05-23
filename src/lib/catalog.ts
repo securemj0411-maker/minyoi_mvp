@@ -38,6 +38,10 @@ import { WAVE_712B_BIAS_FREE_SKUS } from "@/lib/generated/catalog-712b-bias-free
 //   NB vintage 12 / Asics+Onitsuka 8 / Air Max 3 / Dr.Martens 14 / Yeezy 6 / Hoka 3 / Salomon 6 /
 //   On Running 5 / Superstar 5 / Cortez 4 / AJ1 5 / Puma 5 / Crocs 4 / Blazer 5 / Mizuno 2 / Adidas Boost 4
 import { WAVE_712C_SHOE_BULK } from "@/lib/generated/catalog-712c-shoe-bulk";
+// Wave 715 (2026-05-23): 의류 catalog 체계적 narrow split — Phase 0 audit 결과 20 broad SKU 5-150x spread fix.
+//   Thom Browne 6-split (4-bar/Cardigan/Knit/Shirt/Suit/Sweat) + Polo Vintage + Moncler 3-split (Maya/Grenoble/Tricot)
+//   + Supreme Box Logo + Carhartt WIP Detroit + CDG 3-split (PLAY/Homme Plus/Junya) + Stussy×Nike + Arc'teryx LEAF/Veilance
+import { WAVE_715_CLOTHING_NARROW } from "@/lib/generated/catalog-715-clothing-narrow";
 
 export type Sku = {
   id: string;
@@ -7013,6 +7017,7 @@ export const CATALOG: Sku[] = [
   ...SHOE_WAVE266_CATALOG, // Wave 266 — 살로몬/NB/Shox/명품 신발 broad 등 30+ SKU
   ...WAVE_712B_BIAS_FREE_SKUS, // Wave 712b — bias-free 14+21 brand 검증 50+ SKU 일괄 신설
   ...WAVE_712C_SHOE_BULK, // Wave 712c — 신발 추가 100+ SKU (NB vintage / Asics+Onitsuka / Dr.Martens family / Yeezy broad / 등)
+  ...WAVE_715_CLOTHING_NARROW, // Wave 715 — 의류 체계적 narrow split (Thom Browne 6 / Moncler 3 / CDG 3 / Polo Vintage / Supreme Box Logo / 등)
   ...BAG_CATALOG,
   ...BAG_WAVE266_CATALOG, // Wave 266 — 명품 가방 brand-broad fallback 20 SKU
   ...BIKE_CATALOG,
@@ -10247,10 +10252,13 @@ export const CATALOG: Sku[] = [
       "시스템 a", "system a", "오지 인슐레이티드", "ogi insulated",
       "피션", "fission",  // Fission 고어텍스 한정
       "솔라노", "solano", "솔라노 후디",
-      "베일런스", "veilance",  // 이미 있음, 변형
+      "베일런스", "veilance", "베일런 스",  // 이미 있음, 변형
       "랄로", "라로", "rallo",
       // Gen 2.1 같은 generation 표기 (한정/특수)
       "gen2", "gen 2", "gen2.1", "2.1 gen",
+      // Wave 715 P1 (2026-05-23): LEAF/Veilance 별도 narrow 박음 → 명확 차단.
+      // (Wave 688 enrich)
+      "cerium", "세륨", "세리움", "thorium", "토륨", "쏘리움", "소리움", "nuclei", "누클리아이", "뉴클리", "therma", "써마",  // → arcteryx_down
     ],
     msrpKrw: 400000, released: 1989,
   },

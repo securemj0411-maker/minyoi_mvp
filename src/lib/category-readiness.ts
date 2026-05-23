@@ -958,6 +958,30 @@ export const LANE_READINESS: LaneReadinessMap = {
   stone_island_crinkle_reps: { status: "ready", label: "Stone Island Crinkle Reps (패딩 시그니처)", note: "Wave 712b — 38건/주 64.8만." },
   // Arc'teryx Down
   arcteryx_down: { status: "ready", label: "Arc'teryx Down (Cerium/Thorium/Nuclei)", note: "Wave 712b — 39건/주 60만." },
+  // Wave 715 P1 — Arc'teryx LEAF/Veilance 별도 narrow
+  arcteryx_leaf: { status: "ready", label: "Arc'teryx LEAF (군용/방산 premium)", note: "Wave 715 — broad에서 LEAF 분리 (시세 다름)." },
+  arcteryx_veilance: { status: "ready", label: "Arc'teryx Veilance (도시 premium minimalist)", note: "Wave 715 — 60x spread 해소." },
+  // Wave 715 P1 — Thom Browne 6-split (640건 58x → narrow)
+  thombrowne_4bar: { status: "ready", label: "Thom Browne 4-Bar Stripe (시그니처)", note: "Wave 715 — premium 라인 (~150-300만)." },
+  thombrowne_cardigan: { status: "ready", label: "Thom Browne Cardigan", note: "Wave 715 — V넥 가디건 (~80-150만)." },
+  thombrowne_knit: { status: "ready", label: "Thom Browne Knit Sweater", note: "Wave 715 — 케이블 니트 (~80-150만)." },
+  thombrowne_shirt: { status: "ready", label: "Thom Browne Shirt", note: "Wave 715 — 옥스포드/럭비 (~30-80만)." },
+  thombrowne_suit_coat: { status: "ready", label: "Thom Browne Suit/Blazer/Coat (premium)", note: "Wave 715 — 200-400만 top tier." },
+  thombrowne_sweat_hoodie: { status: "ready", label: "Thom Browne Sweat/Hoodie", note: "Wave 715 — 맨투맨/후디 (~50-100만)." },
+  // Wave 715 P1 — Polo Apparel vintage 분리
+  polo_apparel_vintage: { status: "ready", label: "Polo Apparel Vintage (90s/00s archive)", note: "Wave 715 — broad 488건 110x → vintage narrow 분리." },
+  // Wave 715 P1 — Moncler 3-split
+  moncler_maya: { status: "ready", label: "Moncler Maya (시그니처 light down)", note: "Wave 715 — 220만 premium." },
+  moncler_grenoble: { status: "ready", label: "Moncler Grenoble (스키웨어)", note: "Wave 715 — 300만 premium ski line." },
+  moncler_tricot: { status: "ready", label: "Moncler Tricot (니트 sub-line)", note: "Wave 715 — 120만 다른 시세군." },
+  // Wave 715 P1 — Supreme Box Logo narrow
+  supreme_box_logo: { status: "ready", label: "Supreme Box Logo (BOGO)", note: "Wave 715 — 시즌별 가격 크게 다름, narrow 필수." },
+  // Wave 715 P1 — Carhartt WIP Detroit
+  carhartt_wip_detroit: { status: "ready", label: "Carhartt WIP Detroit Jacket (시그니처)", note: "Wave 715 — broad에서 분리." },
+  // Wave 715 P1 — CDG 3-split
+  cdg_play: { status: "ready", label: "CDG PLAY (heart 로고 basic)", note: "Wave 715 — broad에서 PLAY 분리." },
+  cdg_homme_plus: { status: "ready", label: "CDG Homme Plus (premium mainline)", note: "Wave 715 — 110만 premium tier." },
+  cdg_junya: { status: "ready", label: "Junya Watanabe CDG (sub-line)", note: "Wave 715 — 80만 별도 시세군." },
   // BAPE
   bape_adidas_collab: { status: "ready", label: "BAPE × Adidas 의류 collab", note: "Wave 712b — 174건/주 (가장 큰 misclassification fix)." },
   bape_longsleeve: { status: "ready", label: "BAPE 롱슬리브 (FW)", note: "Wave 712b — 32건/주 14.8만." },
