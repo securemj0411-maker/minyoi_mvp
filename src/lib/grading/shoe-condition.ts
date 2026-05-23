@@ -88,9 +88,24 @@ export function gradeShoeCondition(input: ShoeGradeInput): ConditionGrade {
   // 매칭 0건 → enum prior 사용 (보수적).
   let finalTier: ConditionTier = tier;
   let confidence = computeConfidence(positiveMatches.length, negativeMatches.length, rawTextLength);
+  let finalReason = reason;
   if (tier === "B" && positiveMatches.length === 0 && negativeMatches.length === 0 && enumPrior) {
     finalTier = applyEnumPrior(enumPrior);
     confidence = 0.45;
+  }
+  // Wave 721 (2026-05-23): clothing-condition 동일 패턴 — single-signal vintage demote.
+  //   신발 D-tier 매물 중 "빈티지" 단독 매칭 151건 (launch-80 발견)도 매장 boilerplate 다수.
+  //   text-sanitize Wave 721 strip 이후 잔여 단독 매칭은 B로 demote.
+  if (
+    tier === "D"
+    && labels.wear === "vintage"
+    && positiveMatches.length === 1
+    && positiveMatches[0] === "빈티지"
+    && negativeMatches.length === 0
+  ) {
+    finalTier = "B";
+    confidence = Math.min(confidence, 0.5);
+    finalReason = "wear=vintage 단독 매칭 → B로 demote (Wave 721 — 매장 boilerplate 가능성 ↑)";
   }
 
   return {
@@ -103,7 +118,7 @@ export function gradeShoeCondition(input: ShoeGradeInput): ConditionGrade {
       axes: labels,
       rawTextLength,
       enumPrior,
-      reason,
+      reason: finalReason,
     },
     chips: chipsFromShoeAxes(labels),
   };
