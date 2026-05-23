@@ -277,6 +277,16 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "1:1", "11급", "미러", "복각",
       // Wave 715 P1 (2026-05-23): box logo narrow 도입 → broad에서 제외.
       "box logo", "박스 로고", "박스로고", "bogo", "보고",
+      // Wave 751c (2026-05-24) Pareto: 46x spread audit — premium collab 차단.
+      // 1M+ Vanson Leathers / B.B. Simon / Featherweight / 스터드 퍼퍼 collab broad 오염.
+      "vanson", "밴슨", "vanson leathers", "밴슨 레더스", "밴슨레더스",
+      "b.b. 사이먼", "bb 사이먼", "bb사이먼", "b.b. simon", "bb simon",
+      "스터드 퍼퍼", "스터드퍼퍼", "studded puffer",
+      "페더웨이트 다운", "페더웨이트", "featherweight",
+      "리버시블 다운", "리버시블 패딩",
+      "코듀라", "cordura",
+      "11ss", "12ss", "13ss", "14ss", "15ss", "16ss", "17ss", "18ss", "19ss", // 추가 시즌 코드
+      "11fw", "12fw", "13fw", "14fw", "15fw", "16fw", "17fw", "18fw", "19fw",
     ],
     msrpKrw: 199000,
     released: 1994,

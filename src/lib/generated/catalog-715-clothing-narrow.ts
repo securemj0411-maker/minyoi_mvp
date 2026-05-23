@@ -603,6 +603,9 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
       ...COMMON_NOISE,
       // 일반 자켓과 시세군 다름 — 정밀 분리
       "veilance", "베일런스",
+      // Wave 751c (2026-05-24) Pareto: 350x spread — 전술배낭/drypack 차단 (가방 false match).
+      "drypack", "dry pack", "전술배낭", "전술 배낭", "배낭", "백팩", "backpack",
+      "리프 가방", "리프 백팩", "포치", "pouch", "체스트 리그", "chest rig",
     ],
     msrpKrw: 1200000, released: 2010,
   },
