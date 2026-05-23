@@ -92,6 +92,11 @@ export type JoongnaDetail = {
   sourceUpdatedAt: string | null;
   // Wave launch-38 (사용자 짚음): "만나서 직거래" 다음 button 안 동네 텍스트.
   tradeLocation: string | null;
+  // Wave launch-73 (사용자 짚음 "판매됐는데 feed 에 잔존"):
+  //   joongna sold/disappeared 페이지는 productStatus 자체 없음 + "판매완료" 키워드 없음 →
+  //   "이 상품은 더 이상 판매되지 않아요" + "비슷한 상품을 아래에서 확인" 패턴만.
+  //   parser 가 이 패턴 감지 → isSoldOutPage=true 박음. lifecycle 가 sold_confirmed 마킹.
+  isSoldOutPage: boolean;
 };
 
 export type JoongnaSellerStoreInfo = {
@@ -462,7 +467,19 @@ export function parseJoongnaDetailHtml(url: string, html: string, status = 200):
     sourceUpdatedAt: parseKstDateTime(updateDate) ?? parseKstDateTime(sortDate),
     // Wave launch-38: HTML 안 "만나서 직거래" <dt> 뒤 span role="button" 안 동네 추출.
     tradeLocation: extractJoongnaTradeLocation(html),
+    // Wave launch-73: joongna sold/disappeared 페이지 감지.
+    //   "이 상품은 더 이상 판매되지 않아요" + "비슷한 상품을" 패턴 = sold/disappeared.
+    isSoldOutPage: detectJoongnaSoldOutPage(html),
   };
+}
+
+// Wave launch-73: joongna sold/disappeared 페이지 감지.
+//   sold 페이지엔 productStatus 자체 X + "판매완료/거래완료" 키워드 X.
+//   대신 "이 상품은 더 이상 판매되지 않아요" + "비슷한 상품을 아래에서 확인" 표시.
+function detectJoongnaSoldOutPage(html: string): boolean {
+  if (/더\s*이상\s*판매되지\s*않/.test(html)) return true;
+  if (/비슷한\s*상품을\s*아래에서\s*확인/.test(html)) return true;
+  return false;
 }
 
 // 중고나라 detail HTML 안 직거래 위치 추출.

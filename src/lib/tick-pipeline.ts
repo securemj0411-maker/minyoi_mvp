@@ -4808,11 +4808,17 @@ async function fetchLifecycleDetailBySource(row: LifecycleClaimRow): Promise<{
     const j = await fetchJoongnaDetail(row.url, 10_000);
     if (!j.ok) return { detail: null, signals: ["fetch_failed"] };
     const signals: SoldOutSignal[] = [];
+    // Wave launch-73 (사용자 짚음 "판매됐는데 feed 잔존"):
+    //   joongna sold/disappeared 페이지 감지 — productStatus 자체 없는 sold 페이지 ("이 상품은
+    //   더 이상 판매되지 않아요"). 가장 강한 신호.
+    if (j.isSoldOutPage) signals.push("sale_status_inactive");
     const soldByStatus = j.productStatus != null && j.productStatus !== 0;
     if (soldByStatus) signals.push("sale_status_inactive");
     const textHits = soldOutTextHits(j.title, j.description);
     if (textHits.length > 0) signals.push("description_traded");
-    const saleStatus = j.productStatus === 0
+    const saleStatus = j.isSoldOutPage
+      ? "JOONGNA_SOLD_PAGE"
+      : j.productStatus === 0
       ? "JOONGNA_STATUS_0"
       : j.productStatus != null
       ? `JOONGNA_STATUS_${j.productStatus}`

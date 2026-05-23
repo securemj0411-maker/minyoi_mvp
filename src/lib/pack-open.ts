@@ -1554,11 +1554,14 @@ export async function loadRevealListingDetail(input: {
       throw new Error(`joongna detail fetch failed: ${detail.status}`);
     }
 
+    // Wave launch-73: isSoldOutPage 도 신호 — productStatus 자체 없는 sold/disappeared 페이지.
+    const soldByPage = detail.isSoldOutPage === true;
     const soldByStatus = detail.productStatus != null && detail.productStatus !== 0;
     const soldByText = soldOutTextHits(detail.title, detail.description, null).length > 0;
-    if (soldByStatus || soldByText) {
-      const saleStatus = soldByStatus ? `JOONGNA_STATUS_${detail.productStatus}` : "SOLD_OUT";
-      await patchRevealDetailTerminalState(input.pid, "sold_confirmed", saleStatus, soldByStatus ? `joongna_product_status_${detail.productStatus}` : "joongna_text_traded");
+    if (soldByPage || soldByStatus || soldByText) {
+      const saleStatus = soldByPage ? "JOONGNA_SOLD_PAGE" : soldByStatus ? `JOONGNA_STATUS_${detail.productStatus}` : "SOLD_OUT";
+      const reason = soldByPage ? "joongna_sold_page" : soldByStatus ? `joongna_product_status_${detail.productStatus}` : "joongna_text_traded";
+      await patchRevealDetailTerminalState(input.pid, "sold_confirmed", saleStatus, reason);
       return {
         ...terminalRevealDetail(input.pid, saleStatus),
         description: detail.description || "추천 당시 매물이 현재 판매완료되어 더 이상 상세 정보를 확인할 수 없어요.",
@@ -1816,10 +1819,13 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
             releasePids.push(candidate.pid);
             continue;
           }
+          // Wave launch-73: isSoldOutPage 도 신호 (joongna sold/disappeared 페이지).
+          const soldByPage = detail.isSoldOutPage === true;
           const soldByStatus = detail.productStatus != null && detail.productStatus !== 0;
           const soldByText = soldOutTextHits(detail.title, detail.description, meta.name).length > 0;
-          if (soldByStatus || soldByText) {
-            await rpcInvalidate(candidate.pid, soldByStatus ? `joongna_product_status_${detail.productStatus}` : "joongna_text_traded");
+          if (soldByPage || soldByStatus || soldByText) {
+            const reason = soldByPage ? "joongna_sold_page" : soldByStatus ? `joongna_product_status_${detail.productStatus}` : "joongna_text_traded";
+            await rpcInvalidate(candidate.pid, reason);
             continue;
           }
           const liveType = classifyListing(meta.name, detail.description ?? "", meta.price).listingType;
