@@ -1416,10 +1416,12 @@ export default function ExploreClient({
       // Wave 738 (2026-05-24): 다이얼로그 닫힘 → Supabase Realtime 이 webhook→DB UPDATE 감지 시
       //   클라이언트로 즉시 push (useEffect 의 subscription 이 처리). polling 불필요.
       //   app-nav 가 "minyoi:credits-changed" event listen → 자동 refetch + UI 갱신.
-      setRefreshModalOpen(false);
     } catch (err) {
       console.error("kakao share failed", err);
     } finally {
+      // Wave 739 (2026-05-24): 모달 닫기 + loading 해제를 finally 안으로 이동.
+      //   sendDefault throw 시에도 모달이 stuck 안 되게 — 사용자 답답함 차단.
+      setRefreshModalOpen(false);
       setKakaoShareLoading(false);
     }
   }, [kakaoShareCooldownHours, kakaoShareLoading, storageScope]);
