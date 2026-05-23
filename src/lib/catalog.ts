@@ -6847,7 +6847,15 @@ export const CATALOG: Sku[] = [
     modelName: "Jo Malone Wood Sage & Sea Salt 100ml",
     aliases: ["Jo Malone Wood Sage", "조말론 우드세이지 시솔트"],
     mustContain: [["jo malone", "조말론"], ["wood sage", "우드세이지", "우드 세이지"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다",
+      // Wave 745 (2026-05-24): spread 3.3x audit — 향수 카피/유사 향 가품 차단.
+      // 매물 "퍼퓸홀릭 향 스프레이" / "프리미엄 향 스프레이" / "type" 표기 = Jo Malone 카피/유사 향.
+      "퍼퓸홀릭", "perfume holic",
+      "프리미엄 향 스프레이", "premium 향 스프레이",
+      "type]", "type ]", " type 향", "type 향", "향 카피", "향수 카피",
+      "유사향", "유사 향", "동일 향",
+      "노트 카피", "카피 향수",
+      ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 230000, released: 2014,
   },
   {
@@ -6855,7 +6863,15 @@ export const CATALOG: Sku[] = [
     modelName: "Jo Malone Lime Basil & Mandarin 100ml",
     aliases: ["Jo Malone Lime Basil", "조말론 라임바질 만다린"],
     mustContain: [["jo malone", "조말론"], ["lime basil", "라임바질", "라임 바질"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다",
+      // Wave 745 (2026-05-24): spread 3.3x audit — 향수 카피/유사 향 가품 차단.
+      // 매물 "퍼퓸홀릭 향 스프레이" / "프리미엄 향 스프레이" / "type" 표기 = Jo Malone 카피/유사 향.
+      "퍼퓸홀릭", "perfume holic",
+      "프리미엄 향 스프레이", "premium 향 스프레이",
+      "type]", "type ]", " type 향", "type 향", "향 카피", "향수 카피",
+      "유사향", "유사 향", "동일 향",
+      "노트 카피", "카피 향수",
+      ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 230000, released: 1999,
   },
   {
@@ -6863,7 +6879,15 @@ export const CATALOG: Sku[] = [
     modelName: "Jo Malone English Pear & Freesia 100ml",
     aliases: ["Jo Malone English Pear", "조말론 잉글리쉬페어 프리지아"],
     mustContain: [["jo malone", "조말론"], ["english pear", "잉글리쉬페어", "잉글리쉬 페어"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다",
+      // Wave 745 (2026-05-24): spread 3.3x audit — 향수 카피/유사 향 가품 차단.
+      // 매물 "퍼퓸홀릭 향 스프레이" / "프리미엄 향 스프레이" / "type" 표기 = Jo Malone 카피/유사 향.
+      "퍼퓸홀릭", "perfume holic",
+      "프리미엄 향 스프레이", "premium 향 스프레이",
+      "type]", "type ]", " type 향", "type 향", "향 카피", "향수 카피",
+      "유사향", "유사 향", "동일 향",
+      "노트 카피", "카피 향수",
+      ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 230000, released: 2010,
   },
   {
@@ -6871,7 +6895,15 @@ export const CATALOG: Sku[] = [
     modelName: "Jo Malone Blackberry & Bay 100ml",
     aliases: ["Jo Malone Blackberry Bay", "조말론 블랙베리 베이"],
     mustContain: [["jo malone", "조말론"], ["blackberry", "블랙베리"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다",
+      // Wave 745 (2026-05-24): spread 3.3x audit — 향수 카피/유사 향 가품 차단.
+      // 매물 "퍼퓸홀릭 향 스프레이" / "프리미엄 향 스프레이" / "type" 표기 = Jo Malone 카피/유사 향.
+      "퍼퓸홀릭", "perfume holic",
+      "프리미엄 향 스프레이", "premium 향 스프레이",
+      "type]", "type ]", " type 향", "type 향", "향 카피", "향수 카피",
+      "유사향", "유사 향", "동일 향",
+      "노트 카피", "카피 향수",
+      ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 230000, released: 2012,
   },
   {
@@ -6879,7 +6911,15 @@ export const CATALOG: Sku[] = [
     modelName: "Jo Malone Peony & Blush Suede 100ml",
     aliases: ["Jo Malone Peony Blush", "조말론 피오니 블러쉬"],
     mustContain: [["jo malone", "조말론"], ["peony", "피오니"], ["100ml", "100 ml"]],
-    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다", ...WAVE188_NEW_CATEGORY_NOISE],
+    mustNotContain: ["분주", "소분", "리필", "샘플", "vial", "빈병", "공병", "테스터", "tester", "방향제", "디퓨저", "디스커버리", "discovery", "30ml", "50ml", "200ml", "매입", "삽니다",
+      // Wave 745 (2026-05-24): spread 3.3x audit — 향수 카피/유사 향 가품 차단.
+      // 매물 "퍼퓸홀릭 향 스프레이" / "프리미엄 향 스프레이" / "type" 표기 = Jo Malone 카피/유사 향.
+      "퍼퓸홀릭", "perfume holic",
+      "프리미엄 향 스프레이", "premium 향 스프레이",
+      "type]", "type ]", " type 향", "type 향", "향 카피", "향수 카피",
+      "유사향", "유사 향", "동일 향",
+      "노트 카피", "카피 향수",
+      ...WAVE188_NEW_CATEGORY_NOISE],
     msrpKrw: 230000, released: 2014,
   },
   // Le Labo
