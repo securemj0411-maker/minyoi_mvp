@@ -912,7 +912,9 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
     mustNotContain: [
       ...CLOTHING_COMMON_NOISE,
       // 별도 SKU
-      "1996", "96",
+      // Wave 741 leak fix: "96" 단독 제거 — Korean 의류 사이즈 "95/96" 표기 차단 위험.
+      //   "1996" 전체 매칭만 유지.
+      "1996",
       "supreme", "슈프림",
       "gucci", "구찌",
       "mm6", "margiela", "마르지엘라",
