@@ -64,10 +64,12 @@ async function loadRows(limit: number, offset: number): Promise<RawRow[]> {
 
 // 2026-05-15 Wave 117: parser_version != CURRENT 옛 매물만 batch reparse.
 // score_dirty 트리거는 score 만 재계산, parser 재실행 X — 옛 v24~v40 매물 정리 위해 별도 path.
-async function loadLegacyRows(limit: number, currentVersion: string): Promise<RawRow[]> {
+// Wave 756 (2026-05-24): category filter 추가 — shoe v39 bulk reparse 효율 (전체 카테고리 섞이는 거 차단).
+async function loadLegacyRows(limit: number, currentVersion: string, category?: string | null): Promise<RawRow[]> {
   // step 1: mvp_listing_parsed 에서 옛 parser_version pid limit개 (오래된 버전부터)
+  const categoryFilter = category ? `&category=eq.${encodeURIComponent(category)}` : "";
   const parsedRes = await restFetch(
-    `/mvp_listing_parsed?select=pid,parser_version&parser_version=neq.${encodeURIComponent(currentVersion)}&order=parser_version.asc,pid.asc&limit=${limit}`,
+    `/mvp_listing_parsed?select=pid,parser_version&parser_version=neq.${encodeURIComponent(currentVersion)}${categoryFilter}&order=parser_version.asc,pid.asc&limit=${limit}`,
     { headers: serviceHeaders() },
   );
   const parsed = (await parsedRes.json()) as Array<{ pid: number; parser_version: string }>;
@@ -117,9 +119,17 @@ async function handleReparse(req: NextRequest) {
   const offset = boundedInt(req.nextUrl.searchParams.get("offset"), 0, 0, 100000);
   const shouldReclassify = req.nextUrl.searchParams.get("reclassify") === "1";
   const legacyOnly = req.nextUrl.searchParams.get("legacy") === "1";
+  // Wave 756 (2026-05-24): category filter for legacy reparse (e.g., ?category=shoe).
+  const categoryFilter = req.nextUrl.searchParams.get("category");
+  // Wave 756: shoe latest parser version은 wave92-shoe-v39 — option-parser-v55와 다름.
+  // category 명시 시 해당 카테고리의 latest version과 비교 (currentVersion override).
+  const legacyVersion = categoryFilter === "shoe" ? "wave92-shoe-v39"
+    : categoryFilter === "bag" ? "wave92-bag-v24"
+    : categoryFilter === "clothing" ? "wave216-clothing-v47"
+    : PARSER_VERSION;
   // 2026-05-16 v46 cleanup: option-parser.PARSER_VERSION import — silent drift 차단 (이전 별도 const).
   const rows = legacyOnly
-    ? await loadLegacyRows(limit, PARSER_VERSION)
+    ? await loadLegacyRows(limit, legacyVersion, categoryFilter)
     : await loadRows(limit, offset);
   const summary = {
     total: rows.length,
