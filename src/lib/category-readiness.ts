@@ -978,6 +978,10 @@ export const LANE_READINESS: LaneReadinessMap = {
   supreme_box_logo: { status: "ready", label: "Supreme Box Logo (BOGO)", note: "Wave 715 — 시즌별 가격 크게 다름, narrow 필수." },
   // Wave 715 P1 — Carhartt WIP Detroit
   carhartt_heritage_usa: { status: "ready", label: "Carhartt Heritage USA (미국산 라인)", note: "Wave 715 — WIP과 시세 다름 (+50%)." },
+  // Wave 726 (2026-05-24): 신규 brand
+  alpha_mil_jacket: { status: "ready", label: "Alpha Industries MA-1 / N3B 항공자켓", note: "Wave 726 — 70건/주 p50 10만." },
+  levis_denim_broad: { status: "ready", label: "Levi's Denim Broad (501/550/LVC)", note: "Wave 726 — 72건/주 p50 8.5만." },
+  discovery_broad: { status: "ready", label: "Discovery Expedition (패딩/맨투맨)", note: "Wave 726 — 74건/주 p50 4.2만 (일반인 친화)." },
   // Wave 715 P2-P3 — 잔여 narrow split
   polo_oxford_vintage: { status: "ready", label: "Polo Oxford Vintage (90s/00s archive)", note: "Wave 715 — 67x spread 해소." },
   polo_pique_vintage: { status: "ready", label: "Polo Pique Vintage (90s/00s archive)", note: "Wave 715 — 65x spread 해소." },

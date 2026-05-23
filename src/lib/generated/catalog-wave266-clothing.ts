@@ -176,7 +176,13 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
     aliases: ["Stussy", "스투시", "Stüssy"],
     mustContain: [
       ["stussy", "stüssy", "스투시"],
-      ["자켓", "jacket", "패딩", "코트", "셔츠", "팬츠", "pants", "바지", "조거", "쇼츠", "베스트", "조끼", "니트", "knit", "가디건", "윈드"],
+      // Wave 726 P1 (2026-05-24): sample 25건 검증 후 누락 product type 추가.
+      ["자켓", "jacket", "패딩", "코트", "셔츠", "남방", "shirt", "팬츠", "pants", "바지", "조거", "쇼츠", "베스트", "조끼",
+        "니트", "knit", "가디건", "cardigan", "윈드", "바람막이",
+        // Wave 726: 추가 product type
+        "점프수트", "jumpsuit", "코치자켓", "coach jacket", "플란넬", "flannel",
+        "다운 파카", "다운파카", "퀼팅", "quilted",
+      ],
     ],
     mustNotContain: [
       ...CLOTHING_COMMON_NOISE,

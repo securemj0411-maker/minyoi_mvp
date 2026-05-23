@@ -42,6 +42,9 @@ import { WAVE_712C_SHOE_BULK } from "@/lib/generated/catalog-712c-shoe-bulk";
 //   Thom Browne 6-split (4-bar/Cardigan/Knit/Shirt/Suit/Sweat) + Polo Vintage + Moncler 3-split (Maya/Grenoble/Tricot)
 //   + Supreme Box Logo + Carhartt WIP Detroit + CDG 3-split (PLAY/Homme Plus/Junya) + Stussy×Nike + Arc'teryx LEAF/Veilance
 import { WAVE_715_CLOTHING_NARROW } from "@/lib/generated/catalog-715-clothing-narrow";
+// Wave 726 (2026-05-24): agent deep sweep — 신규 brand 신설 (Alpha Industries / Levi's / Discovery).
+//   일반인 친화 가격대 brand 추가. 명품/골프웨어는 별 cycle.
+import { WAVE_726_CLOTHING_BRAND_ADD } from "@/lib/generated/catalog-726-clothing-brand-add";
 
 export type Sku = {
   id: string;
@@ -7018,6 +7021,7 @@ export const CATALOG: Sku[] = [
   ...WAVE_712B_BIAS_FREE_SKUS, // Wave 712b — bias-free 14+21 brand 검증 50+ SKU 일괄 신설
   ...WAVE_712C_SHOE_BULK, // Wave 712c — 신발 추가 100+ SKU (NB vintage / Asics+Onitsuka / Dr.Martens family / Yeezy broad / 등)
   ...WAVE_715_CLOTHING_NARROW, // Wave 715 — 의류 체계적 narrow split (Thom Browne 6 / Moncler 3 / CDG 3 / Polo Vintage / Supreme Box Logo / 등)
+  ...WAVE_726_CLOTHING_BRAND_ADD, // Wave 726 — 신규 brand (Alpha Industries / Levi's / Discovery Expedition)
   ...BAG_CATALOG,
   ...BAG_WAVE266_CATALOG, // Wave 266 — 명품 가방 brand-broad fallback 20 SKU
   ...BIKE_CATALOG,
