@@ -4651,7 +4651,9 @@ function aiAuditVerdictFromClassification(
 ): "pass" | "hold" | "reject" {
   const decision = aiSecondOpinionDecision(result);
   const hardRisk = aiHasHardRisk(result);
-  if (decision === "pass" && result.listingType === "normal" && result.confidence === "high" && !hardRisk) {
+  // Wave 757 (2026-05-24): pass 조건 완화 (ai-l2-shadow-audit.ts와 sync).
+  // hardRisk 없는 normal + confidence != low 매물은 pass. 일반인 친화.
+  if (decision === "pass" && result.listingType === "normal" && !hardRisk && result.confidence !== "low") {
     return "pass";
   }
   if (decision === "reject" && result.confidence !== "low") {

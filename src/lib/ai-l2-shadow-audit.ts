@@ -331,7 +331,12 @@ export async function runShadowAudit(input: ShadowAuditInput): Promise<ShadowAud
         const decision = aiSecondOpinionDecision(result);
         const hardRisk = aiHasHardRisk(result);
         let verdict: "pass" | "hold" | "reject";
-        if (decision === "pass" && result.listingType === "normal" && result.confidence === "high" && !hardRisk) {
+        // Wave 757 (2026-05-24): pass 조건 완화. 일반인 친화 핵심 원칙.
+        //   기존: confidence === "high" 만 pass (medium도 hold).
+        //   sample audit 결과: hold 120건 대부분 "description 짧음" / "condition 불명" 같은 weak signal.
+        //   가품/스캠 신호 (hardRisk) 없으면 medium confidence도 pass 허용.
+        //   confidence === "low" 만 hold (진짜 불확실한 매물).
+        if (decision === "pass" && result.listingType === "normal" && !hardRisk && result.confidence !== "low") {
           verdict = "pass";
         } else if (decision === "reject" && result.confidence !== "low") {
           verdict = "reject";
