@@ -528,6 +528,54 @@ const GOLF_DRIVER_NOISE = [
   "헤드커버만",
 ];
 
+// Wave 759 (2026-05-24): 골프 broad SKU 신설용 공통 noise.
+const GOLF_CLUB_COMMON_NOISE = [
+  "삽니다", "구매합니다", "구합니다", "구해요", "구함", "wts", "wtb", "사삽니다",
+  "가품", "이미테이션", "fake", "짭", "복각",
+  "수리필요", "부품용", "고장", "헤드만", "head only", "샤프트만", "shaft only",
+  "헤드커버만", "헤드 커버만",
+  // 의류 (Wave 727+ catalog 있음 — golf 의류 제외)
+  "골프웨어", "골프복", "골프 의류",
+  // 가방 (사용자 정책 가방 ready X)
+  "캐디백", "캐디 백", "골프백", "골프 백", "스탠드백", "토트백",
+  // 신발/액세서리
+  "골프화", "골프 화", "장갑", "골프 장갑",
+  // 골프공
+  "골프공", "골프 공", "공 박스", "공만",
+  // 모자
+  "골프 모자", "골프모자", "캡", "볼캡",
+  // 광고/매입
+  "최고가", "최고가 매입", "매입 다 받음",
+];
+
+// 골프 driver broad용 추가 noise
+const GOLF_DRIVER_BROAD_NOISE = [
+  ...GOLF_CLUB_COMMON_NOISE,
+  // 다른 product type 차단 (driver만)
+  "아이언", "iron", "퍼터", "putter", "웨지", "wedge",
+  "하이브리드", "hybrid", "유틸리티", "utility",
+  "페어웨이 우드", "fairway wood", "5번 우드", "3번 우드",
+  "풀세트", "풀 세트", "하프세트", "하프 세트", "골프세트",
+  "아이언세트", "우드세트",
+];
+
+// 골프 iron broad용 추가 noise
+const GOLF_IRON_BROAD_NOISE = [
+  ...GOLF_CLUB_COMMON_NOISE,
+  "드라이버", "driver", "퍼터", "putter", "웨지", "wedge",
+  "하이브리드", "hybrid",
+  "페어웨이 우드", "fairway wood",
+  "단품", "1번", "단일",
+];
+
+// 골프 putter broad용 추가 noise
+const GOLF_PUTTER_BROAD_NOISE = [
+  ...GOLF_CLUB_COMMON_NOISE,
+  "드라이버", "driver", "아이언", "iron", "웨지", "wedge",
+  "하이브리드", "hybrid", "우드", "wood",
+  "퍼터 커버", "퍼터커버", "퍼터 그립만",
+];
+
 const LAPTOP_NOISE = [
   "메인보드",
   "메인 보드",
@@ -6950,6 +6998,254 @@ export const CATALOG: Sku[] = [
     mustNotContain: [...GOLF_DRIVER_NOISE, "tsr2", "tsr 2", "tsr1", "tsi", "ts3", "ts2", "헤드만", "head only"],
     msrpKrw: 950000,
     released: 2022,
+  },
+  // Wave 759 (2026-05-24) Golf deep sweep — 11 brand × driver/iron + Scotty Cameron putter + Odyssey putter.
+  // Sample 10,628 unique 매물 분석: TaylorMade 1159 / Callaway 1144 / Titleist 1088 / Honma 942 /
+  //   XXIO 746 / PXG 736 / Majesty 735 / Mizuno 573 / Srixon 559 / Ping 510 / Bridgestone 412.
+  // Catalog 거의 전무 (Titleist TSR2/TSR3 만). 95%+ unmatched.
+  // ─── TaylorMade ───
+  {
+    id: "sport-golf-taylormade-driver-broad",
+    brand: "TaylorMade", category: "sport_golf", laneKey: "sport_golf_taylormade_driver_broad",
+    modelName: "TaylorMade Driver (broad — R7/M/SIM/Stealth/Qi10)",
+    aliases: ["TaylorMade Driver", "테일러메이드 드라이버"],
+    mustContain: [["테일러메이드", "taylormade", "tm골프"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE],
+    msrpKrw: 600000, released: 2020,
+  },
+  {
+    id: "sport-golf-taylormade-iron-broad",
+    brand: "TaylorMade", category: "sport_golf", laneKey: "sport_golf_taylormade_iron_broad",
+    modelName: "TaylorMade Iron Set (broad — P/M/SIM/Stealth/P770/P790)",
+    aliases: ["TaylorMade Iron", "테일러메이드 아이언"],
+    mustContain: [["테일러메이드", "taylormade", "tm골프"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE],
+    msrpKrw: 1200000, released: 2020,
+  },
+  // ─── Callaway ───
+  {
+    id: "sport-golf-callaway-driver-broad",
+    brand: "Callaway", category: "sport_golf", laneKey: "sport_golf_callaway_driver_broad",
+    modelName: "Callaway Driver (broad — Paradym/Rogue/Epic/MAVRIK/AI Smoke)",
+    aliases: ["Callaway Driver", "캘러웨이 드라이버"],
+    mustContain: [["캘러웨이", "callaway"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE],
+    msrpKrw: 600000, released: 2020,
+  },
+  {
+    id: "sport-golf-callaway-iron-broad",
+    brand: "Callaway", category: "sport_golf", laneKey: "sport_golf_callaway_iron_broad",
+    modelName: "Callaway Iron Set (broad — Apex/Rogue/Paradym/Mavrik)",
+    aliases: ["Callaway Iron", "캘러웨이 아이언"],
+    mustContain: [["캘러웨이", "callaway"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE],
+    msrpKrw: 1100000, released: 2020,
+  },
+  // ─── Titleist (broad, narrow TSR2/TSR3는 기존) ───
+  {
+    id: "sport-golf-titleist-driver-broad",
+    brand: "Titleist", category: "sport_golf", laneKey: "sport_golf_titleist_driver_broad",
+    modelName: "Titleist Driver (broad — TSi/GT/910/913/915/917)",
+    aliases: ["Titleist Driver", "타이틀리스트 드라이버"],
+    mustContain: [["타이틀리스트", "titleist"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE, "tsr2", "tsr 2", "tsr3", "tsr 3"],
+    msrpKrw: 700000, released: 2020,
+  },
+  {
+    id: "sport-golf-titleist-iron-broad",
+    brand: "Titleist", category: "sport_golf", laneKey: "sport_golf_titleist_iron_broad",
+    modelName: "Titleist Iron Set (broad — T100/T150/T200/T350/AP1/AP2)",
+    aliases: ["Titleist Iron", "타이틀리스트 아이언"],
+    mustContain: [["타이틀리스트", "titleist"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE],
+    msrpKrw: 1500000, released: 2020,
+  },
+  // ─── Honma (일본 premium) ───
+  {
+    id: "sport-golf-honma-driver-broad",
+    brand: "Honma", category: "sport_golf", laneKey: "sport_golf_honma_driver_broad",
+    modelName: "Honma Driver (broad — Beres/XP/T//World/Tour World)",
+    aliases: ["Honma Driver", "혼마 드라이버", "혼마 베레스"],
+    mustContain: [["혼마", "honma"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE],
+    msrpKrw: 900000, released: 2020,
+  },
+  {
+    id: "sport-golf-honma-iron-broad",
+    brand: "Honma", category: "sport_golf", laneKey: "sport_golf_honma_iron_broad",
+    modelName: "Honma Iron Set (broad — Beres/TW/Tour World)",
+    aliases: ["Honma Iron", "혼마 아이언"],
+    mustContain: [["혼마", "honma"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE],
+    msrpKrw: 2000000, released: 2020,
+  },
+  // ─── XXIO (시니어 인기) ───
+  {
+    id: "sport-golf-xxio-driver-broad",
+    brand: "XXIO", category: "sport_golf", laneKey: "sport_golf_xxio_driver_broad",
+    modelName: "XXIO Driver (broad — MP400/MP500/MP600/MP1000/MP1100/XXIO 7~13)",
+    aliases: ["XXIO Driver", "젝시오 드라이버", "젝시오 MP"],
+    mustContain: [["젝시오", "xxio"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE],
+    msrpKrw: 700000, released: 2020,
+  },
+  {
+    id: "sport-golf-xxio-iron-broad",
+    brand: "XXIO", category: "sport_golf", laneKey: "sport_golf_xxio_iron_broad",
+    modelName: "XXIO Iron Set (broad — MP series)",
+    aliases: ["XXIO Iron", "젝시오 아이언"],
+    mustContain: [["젝시오", "xxio"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE],
+    msrpKrw: 1500000, released: 2020,
+  },
+  // ─── PXG ───
+  {
+    id: "sport-golf-pxg-driver-broad",
+    brand: "PXG", category: "sport_golf", laneKey: "sport_golf_pxg_driver_broad",
+    modelName: "PXG Driver (broad — 0311 series)",
+    aliases: ["PXG Driver", "PXG 드라이버"],
+    mustContain: [["pxg"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE],
+    msrpKrw: 1000000, released: 2020,
+  },
+  {
+    id: "sport-golf-pxg-iron-broad",
+    brand: "PXG", category: "sport_golf", laneKey: "sport_golf_pxg_iron_broad",
+    modelName: "PXG Iron Set (broad — 0311 T/P/ST/X/XF/GEN5/GEN6)",
+    aliases: ["PXG Iron", "PXG 아이언"],
+    mustContain: [["pxg"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE],
+    msrpKrw: 2500000, released: 2020,
+  },
+  // ─── Majesty (시니어 premium) ───
+  {
+    id: "sport-golf-majesty-driver-broad",
+    brand: "Majesty", category: "sport_golf", laneKey: "sport_golf_majesty_driver_broad",
+    modelName: "Majesty Driver (broad — Conquest/Prestigio/FL Plus/Verati)",
+    aliases: ["Majesty Driver", "마제스티 드라이버"],
+    mustContain: [["마제스티", "majesty", "마루망"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE],
+    msrpKrw: 800000, released: 2020,
+  },
+  {
+    id: "sport-golf-majesty-iron-broad",
+    brand: "Majesty", category: "sport_golf", laneKey: "sport_golf_majesty_iron_broad",
+    modelName: "Majesty Iron Set (broad — Conquest/Prestigio/FL Plus/Verati)",
+    aliases: ["Majesty Iron", "마제스티 아이언"],
+    mustContain: [["마제스티", "majesty", "마루망"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE],
+    msrpKrw: 2000000, released: 2020,
+  },
+  // ─── Mizuno Golf ───
+  {
+    id: "sport-golf-mizuno-driver-broad",
+    brand: "Mizuno", category: "sport_golf", laneKey: "sport_golf_mizuno_driver_broad",
+    modelName: "Mizuno Driver (broad — ST/MP/JPX)",
+    aliases: ["Mizuno Driver", "미즈노 드라이버"],
+    mustContain: [["미즈노", "mizuno"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE,
+      // 신발 차단 (mizuno alpha shoe와 충돌)
+      "alpha", "wave", "monarcida", "morelia", "sala", "런닝", "축구화",
+    ],
+    msrpKrw: 500000, released: 2020,
+  },
+  {
+    id: "sport-golf-mizuno-iron-broad",
+    brand: "Mizuno", category: "sport_golf", laneKey: "sport_golf_mizuno_iron_broad",
+    modelName: "Mizuno Iron Set (broad — JPX/MP/Pro/T20)",
+    aliases: ["Mizuno Iron", "미즈노 아이언", "jpx", "mp-20"],
+    mustContain: [["미즈노", "mizuno"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE,
+      "alpha", "wave", "monarcida", "morelia", "sala", "런닝", "축구화",
+    ],
+    msrpKrw: 1200000, released: 2020,
+  },
+  // ─── Srixon ───
+  {
+    id: "sport-golf-srixon-driver-broad",
+    brand: "Srixon", category: "sport_golf", laneKey: "sport_golf_srixon_driver_broad",
+    modelName: "Srixon Driver (broad — Z series Z565/Z585/Z725/Z765/ZX5/ZX7)",
+    aliases: ["Srixon Driver", "스릭슨 드라이버"],
+    mustContain: [["스릭슨", "srixon"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE],
+    msrpKrw: 500000, released: 2020,
+  },
+  {
+    id: "sport-golf-srixon-iron-broad",
+    brand: "Srixon", category: "sport_golf", laneKey: "sport_golf_srixon_iron_broad",
+    modelName: "Srixon Iron Set (broad — Z355/Z585/Z785/ZX series)",
+    aliases: ["Srixon Iron", "스릭슨 아이언"],
+    mustContain: [["스릭슨", "srixon"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE],
+    msrpKrw: 1000000, released: 2020,
+  },
+  // ─── Ping ───
+  {
+    id: "sport-golf-ping-driver-broad",
+    brand: "Ping", category: "sport_golf", laneKey: "sport_golf_ping_driver_broad",
+    modelName: "Ping Driver (broad — G15/G30/G400/G410/G425/G430)",
+    aliases: ["Ping Driver", "핑 드라이버"],
+    mustContain: [["ping", "핑 ", "핑골프"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE,
+      "타핑", "더핑", "어핑", "쵸핑", "쇼핑", "포핑", "핑핑", "핑크",  // 핑 single token false match
+    ],
+    msrpKrw: 500000, released: 2020,
+  },
+  {
+    id: "sport-golf-ping-iron-broad",
+    brand: "Ping", category: "sport_golf", laneKey: "sport_golf_ping_iron_broad",
+    modelName: "Ping Iron Set (broad — i series i210/i230/i500/G410/G425)",
+    aliases: ["Ping Iron", "핑 아이언"],
+    mustContain: [["ping", "핑 ", "핑골프"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE,
+      "타핑", "더핑", "어핑", "쵸핑", "쇼핑", "포핑", "핑핑", "핑크",
+    ],
+    msrpKrw: 1300000, released: 2020,
+  },
+  // ─── Bridgestone Golf ───
+  {
+    id: "sport-golf-bridgestone-driver-broad",
+    brand: "Bridgestone", category: "sport_golf", laneKey: "sport_golf_bridgestone_driver_broad",
+    modelName: "Bridgestone Driver (broad — B1/B2/B3/Tour B)",
+    aliases: ["Bridgestone Driver", "브리지스톤 드라이버"],
+    mustContain: [["브리지스톤", "bridgestone"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE,
+      "타이어",  // 자동차 타이어 brand과 같이 박힘
+    ],
+    msrpKrw: 600000, released: 2020,
+  },
+  {
+    id: "sport-golf-bridgestone-iron-broad",
+    brand: "Bridgestone", category: "sport_golf", laneKey: "sport_golf_bridgestone_iron_broad",
+    modelName: "Bridgestone Iron Set (broad — V300/201CB/Tour B)",
+    aliases: ["Bridgestone Iron", "브리지스톤 아이언"],
+    mustContain: [["브리지스톤", "bridgestone"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE,
+      "타이어",
+    ],
+    msrpKrw: 1400000, released: 2020,
+  },
+  // ─── Putter (Scotty Cameron + Odyssey) ───
+  {
+    id: "sport-golf-scotty-cameron-putter-broad",
+    brand: "Scotty Cameron", category: "sport_golf", laneKey: "sport_golf_scotty_cameron_putter_broad",
+    modelName: "Scotty Cameron Putter (broad — Newport/Phantom/Special Select/Studio Style)",
+    aliases: ["Scotty Cameron Putter", "스코티 카메론 퍼터"],
+    mustContain: [["스코티 카메론", "scotty cameron", "스코티카메론", "scottycameron"], ["퍼터", "putter"]],
+    mustNotContain: [...GOLF_PUTTER_BROAD_NOISE],
+    msrpKrw: 900000, released: 2020,
+  },
+  {
+    id: "sport-golf-odyssey-putter-broad",
+    brand: "Odyssey", category: "sport_golf", laneKey: "sport_golf_odyssey_putter_broad",
+    modelName: "Odyssey Putter (broad — White Hot/Stroke Lab/Two Ball/Versa)",
+    aliases: ["Odyssey Putter", "오디세이 퍼터"],
+    mustContain: [["오디세이", "odyssey"], ["퍼터", "putter"]],
+    mustNotContain: [...GOLF_PUTTER_BROAD_NOISE,
+      "원피스 오디세이",  // PS5/Switch 게임 오디세이 false match 차단
+      "ps5 오디세이", "원피스",
+    ],
+    msrpKrw: 350000, released: 2020,
   },
   {
     id: "camera-sony-a6400",
