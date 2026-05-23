@@ -19,6 +19,9 @@ type FeedbackRow = {
   decided_at: string | null;
   decided_by: string | null;
   reward_granted_at: string | null;
+  // Wave launch-104b: list endpoint join — auth.users 닉네임/이메일.
+  user_email: string | null;
+  user_nickname: string | null;
 };
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -146,7 +149,7 @@ export default function FeedbackReviewFull() {
           <thead className="bg-zinc-900/80">
             <tr className="border-b border-zinc-800 text-left text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">
               <th className="w-12 px-3 py-2">ID</th>
-              <th className="px-3 py-2">USER</th>
+              <th className="px-3 py-2">USER (NICK · EMAIL)</th>
               <th className="px-3 py-2">PID</th>
               <th className="px-3 py-2">CATEGORY</th>
               <th className="px-3 py-2">MESSAGE</th>
@@ -177,7 +180,10 @@ export default function FeedbackReviewFull() {
                       }`}
                     >
                       <td className="px-3 py-2 font-mono text-[10px]">{r.id}</td>
-                      <td className="px-3 py-2 font-mono text-[10px] text-zinc-400">{r.user_ref.slice(0, 18)}…</td>
+                      <td className="px-3 py-2 text-[10px]">
+                        <div className="font-bold text-zinc-200">{r.user_nickname || "(닉네임 없음)"}</div>
+                        <div className="font-mono text-[9px] text-zinc-500">{r.user_email ?? r.user_ref.slice(0, 18) + "…"}</div>
+                      </td>
                       <td className="px-3 py-2 font-mono text-[10px] text-zinc-400">{r.pid ?? "—"}</td>
                       <td className="px-3 py-2 font-bold text-amber-300">{CATEGORY_LABEL[r.category] ?? r.category}</td>
                       <td className="px-3 py-2 max-w-[350px] truncate text-zinc-300" title={r.message}>{r.message}</td>
@@ -212,6 +218,10 @@ export default function FeedbackReviewFull() {
                       <tr className="border-b border-zinc-900 bg-zinc-950/60">
                         <td colSpan={8} className="px-4 py-3">
                           <dl className="grid grid-cols-[120px_minmax(0,1fr)] gap-y-1.5 text-[11px]">
+                            <dt className="font-bold uppercase tracking-wide text-zinc-500">NICKNAME</dt>
+                            <dd className="font-bold text-zinc-100">{r.user_nickname || "(없음)"}</dd>
+                            <dt className="font-bold uppercase tracking-wide text-zinc-500">EMAIL</dt>
+                            <dd className="font-mono text-[11px] text-zinc-300">{r.user_email ?? "(없음)"}</dd>
                             <dt className="font-bold uppercase tracking-wide text-zinc-500">USER REF</dt>
                             <dd className="break-all font-mono text-[10px] text-zinc-400">{r.user_ref}</dd>
                             <dt className="font-bold uppercase tracking-wide text-zinc-500">AUTH ID</dt>
