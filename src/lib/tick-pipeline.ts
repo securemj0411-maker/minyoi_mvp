@@ -2649,9 +2649,14 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // Wave 703 (2026-05-23): shoe v36 — bias-free critical hotfix. AF1 Mid '07 ('07 bleed 124건 fix) / AF1 LV ("lv" 단독 49건 fix) / Dunk panda 범고래 추가 / Palermo black-white collision 제거 / AJ1 latushi 라벨 정정 (LA to Chicago) / NB miumiu 명품 제거 / On Loewe cloudventure / Crocs 비신발+가품 차단.
   // Wave 712b (2026-05-23): shoe v37 — bias-free 21 brand 검증 신발 신설 (Onitsuka 2 / AF1 LV8+Tune+UNDEFEATED 3 / Salomon RX Slide+Phantasm+Mary Jane+XT-Whisper 4 / Hoka Mafate Xlim+Hopara+Mach 6+Kaha 3 GTX 4 / Mizuno Golf JPX+MX+Wave Prophecy 3 / Sacai split 4 / Adidas Adios Pro+Takumi+NMD R1+Pureboost 4 / Dr.Martens 5 / Vans 2 / Converse 4 / Yeezy 3 / Crocs 3 / Puma 2).
   // Wave 712c (2026-05-23): shoe v38 — 신발 추가 100+ SKU (NB vintage 12 / Asics+Onitsuka 8 / Air Max 3 / Dr.Martens family 14 / Yeezy 6 / Hoka 3 / Salomon 6 / On Running 5 / Superstar 5 / Cortez 4 / AJ1 5 / Puma 5 / Crocs 4 / Blazer 5 / Mizuno 2 / Adidas Boost 4).
-  shoe: "wave92-shoe-v38",
+  // Wave 756 (2026-05-24): shoe v39 — comparable_key에서 sizeMm 제거 (사용자 정책 "C 시세에 사이즈 반영은 진짜 아니다").
+  //   기존 v38: shoe|model|sneaker|255|b_grade|with_box → size별 sample 1-2건 fragmented.
+  //   Nike Dunk Panda 47건 sku_median_unavailable 1위. systemic fix.
+  //   stale v38 매물 cron이 점진 reparse → size-agnostic comparable_key로 sample 통합.
+  shoe: "wave92-shoe-v39",
   // Wave 660 (2026-05-22): bag v23 — Coach Tabby 폴리쉬드 페블 레더 (top tier 820k) 차단.
-  bag: "wave92-bag-v23",
+  // Wave 756 (2026-05-24): bag v24 — comparable_key에서 sizeVariant 제거 (shoe와 일관).
+  bag: "wave92-bag-v24",
   // Wave 690 (2026-05-22): clothing v44 — stussy_nike_collab release (셋업/월드투어 차단, 30~50만 가격대 안정).
   // Wave 712a (2026-05-23): clothing v45 — bias-free 14 brand 검증 hotfix. MLB cap 엠엘비 alias + Nike/Murakami directSpecificMatch / Stussy crossbody narrow split + basic-tee shorts 차단 / Adidas trefoil Thug+SFTM+Y3+FOG+Raf 콜라보 차단 / Patagonia Synchilla 신설 (162건 회복) / Polo Big Pony Pique 신설 (193건 black hole 회복).
   // Wave 712b (2026-05-23): clothing v46 — 의류 신설 (Adidas collab 5 / FOG Main Line 4 / Polo 7 / Stone Island sub 3 / Arc'teryx Down / BAPE × Adidas + Longsleeve + Backpack / TNF Novelty + Steep Tech / Junya + CDG Converse broad / Stussy 모델 3 + Nike sub 2 / NB collab 2 / Polo Chief Keef).

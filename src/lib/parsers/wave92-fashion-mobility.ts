@@ -647,9 +647,12 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 //   Adidas football line, Nike Sacai shape, Salomon ACS+/ACS Pro, and Hoka Kaha boot type.
 // Wave 536 (2026-05-22) shoe v17: Dr. Martens Flora Chelsea no longer shares 2976 samples.
 // Wave 537 (2026-05-22) shoe v18: Acne Manhattan/Rockaway mixed titles are ambiguous and held out.
-const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v38";
+// Wave 756 (2026-05-24): shoe v38→v39 — comparable_key에서 sizeMm 제거 (사용자 정책).
+//   "C 시세에 사이즈 반영은 진짜 아니다" 준수. fragmented sample 통합 → sku_median_unavailable 회복.
+const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v39";
 // Wave 538 (2026-05-22) bag v14: Longchamp Le Pliage requires explicit line text.
-const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v23";
+// Wave 756 (2026-05-24): bag v23→v24 — comparable_key에서 sizeVariant 제거 (사용자 정책 일관).
+const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v24";
 // Wave 652 (2026-05-22): clothing v25 — TNF Nuptse broad 추가 변형 + adidas_trefoil 레더/세트.
 // Wave 216 (2026-05-19): clothing 카테고리 분기 신규 추가.
 //   기존: parseFashionMobility 가 shoe/bag/bike 만 처리 → clothing 1253건 dispatcher
@@ -949,13 +952,18 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
       needsReview = true;
       criticalUnknown.push("shoe_damage_reject");
     }
+    // Wave 756 (2026-05-24): 사용자 정책 "C 시세에 사이즈 반영은 진짜 아니다" 준수.
+    //   기존 (Wave 134+): partsForKey.push(sizeMm) → 같은 모델인데 사이즈별 시세 sample 분리
+    //     → "shoe|dunk_low|sneaker|255|b_grade|with_box" 1건, "...|260|..." 1건 식으로 fragmented.
+    //     Nike Dunk Panda 47건이 sku_median_unavailable 1위 (size+condition+box 마다 split).
+    //   신규: 사이즈는 parsedJson에만 저장 (UI display용). comparable_key는 size-agnostic.
+    //   사용자 친화: 같은 모델 = 같은 시세 (사용자가 250mm 사도 같은 시세 적용).
+    parsedJson.shoe_size_mm = opt.sizeMm ?? null;
     if (opt.sizeMm != null) {
-      partsForKey.push(String(opt.sizeMm));
-      parseConfidence += 0.3;
+      parseConfidence += 0.3;  // confidence 보너스는 유지 (사이즈 추출 신호)
     } else {
-      partsForKey.push("unknown_size");
       unknownParts.push("unknown_size");
-      criticalUnknown.push("unknown_size");
+      // criticalUnknown 제거: size 없어도 시세 비교 가능 (사용자 정책).
     }
     if (opt.conditionTier) {
       conditionKeyIndex = partsForKey.length;
@@ -1070,11 +1078,13 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
       unknownParts.push("unknown_era");
       parseConfidence += 0.05;
     }
+    // Wave 756 (2026-05-24): bag도 사이즈 시세 분리 안 함 (사용자 정책 일관).
+    //   기존: partsForKey.push(sizeVariant) → mini/medium/large 시세 분리
+    //   신규: parsedJson에만 저장. 시세는 size-agnostic.
+    parsedJson.bag_size_variant = opt.sizeVariant ?? null;
     if (opt.sizeVariant) {
-      partsForKey.push(opt.sizeVariant);
       parseConfidence += 0.15;
     } else {
-      partsForKey.push("unknown_size_variant");
       unknownParts.push("unknown_size_variant");
       parseConfidence += 0.05;
     }
