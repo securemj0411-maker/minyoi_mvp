@@ -2330,6 +2330,53 @@ async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Prom
   return pids.length;
 }
 
+// Wave 714c (2026-05-23): lane unblock 시 stale invalidated 매물 자동 재평가.
+//
+// 발견: Wave 678/679 에서 의류 4 lane (stussy_hoodie / stussy_basic_tee / bape_tee / patagonia_retro_x)
+// 을 blocked → ready 로 풀어줬는데, 기존 candidate_pool 의 invalidated row 들이 그대로 남음.
+// cron 은 score_dirty=true 인 row 만 재평가 → stale invalidated 38건 묶임 → 의류 ready 정체.
+//
+// 해결: 매 tick 마다 invalidated_reason 이 `lane_blocked_X` 패턴인 매물 중,
+//   X (laneKey) 가 현재 LANE_READINESS 에서 ready 상태이면 score_dirty=true 박음.
+//   cron 이 자연 재평가 → 진짜 차단 사유 있으면 다시 invalidate, 없으면 ready 진입.
+//
+// 안전:
+//   - 직접 status update X (자연 재평가만 트리거)
+//   - 매 tick 마다 row 신규 stale 만 잡음 (idempotent — 한 번 dirty 박힌 row 는 cron 처리 후 false)
+//   - lane 다시 blocked 로 돌아간 경우엔 invalidated 그대로 유지 (LANE_READINESS check)
+async function markStaleLaneBlockedScoreDirty(): Promise<number> {
+  if (!(await rawScoreDirtySchemaAvailable())) return 0;
+  try {
+    const { LANE_READINESS } = await import("@/lib/category-readiness");
+    const res = await restFetch(
+      `${tableUrl("mvp_candidate_pool")}?select=pid,invalidated_reason&status=eq.invalidated&invalidated_reason=like.lane_blocked_*&limit=2000`,
+      { method: "GET" },
+    );
+    if (!res.ok) return 0;
+    const rows: Array<{ pid: number; invalidated_reason: string | null }> = await res.json();
+    if (!rows.length) return 0;
+    const stalePids: number[] = [];
+    for (const row of rows) {
+      const reason = row.invalidated_reason ?? "";
+      if (!reason.startsWith("lane_blocked_")) continue;
+      const laneKey = reason.slice("lane_blocked_".length);
+      // LANE_READINESS 에서 lane 이 ready 면 stale — score_dirty 박기.
+      const laneConfig = (LANE_READINESS as Record<string, { status: string }>)[laneKey];
+      if (laneConfig?.status === "ready") {
+        stalePids.push(row.pid);
+      }
+    }
+    if (stalePids.length === 0) return 0;
+    for (const chunk of chunkArray(stalePids, REST_WRITE_CHUNK_SIZE)) {
+      await patchRowsByIds("mvp_raw_listings", chunk, { score_dirty: true }, REST_WRITE_CHUNK_SIZE);
+    }
+    return stalePids.length;
+  } catch (err) {
+    console.warn("[wave714c] markStaleLaneBlockedScoreDirty failed (non-fatal)", err);
+    return 0;
+  }
+}
+
 // Wave 184 (2026-05-17): incremental market-worker — last_seen_at lookback filter 추가.
 //
 // 변경 이유 (사용자 통찰):
@@ -3825,6 +3872,16 @@ export async function marketStatsStage(): Promise<StageStats> {
     console.error("mark raw score dirty by comparable keys failed", err);
     return 0;
   });
+  // Wave 714c (2026-05-23): lane unblock 시 stale invalidated 매물 자동 재평가.
+  //   Wave 678/679 에서 4 의류 lane 풀어줬는데 candidate_pool 의 invalidated row 안 reset 발견.
+  //   매 tick 마다 LANE_READINESS check 해서 ready 인 lane 의 stale invalidated → score_dirty=true.
+  const staleLaneRescored = await markStaleLaneBlockedScoreDirty().catch((err) => {
+    console.error("mark stale lane_blocked score dirty failed", err);
+    return 0;
+  });
+  if (staleLaneRescored > 0) {
+    console.log(`[wave714c] stale lane_blocked invalidated rescored: ${staleLaneRescored} rows`);
+  }
   // Wave 191 (2026-05-18): reveal row 의 current_profit 자동 재계산.
   //   recomputedKeys 의 comparable_key 가 reveal 매물의 키와 매칭되면 그 reveal 의
   //   current_profit_min/max + market_invalidated_at 갱신. 시세 < 매입가 → /me 에서 판매완료처럼 접힘.
