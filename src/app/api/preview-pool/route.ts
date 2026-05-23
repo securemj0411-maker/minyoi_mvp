@@ -173,13 +173,12 @@ export async function GET() {
     const headers = serviceHeaders();
 
     // Wave launch-113 (2026-05-24): 비로그인 hook 강화 — 이미 팔린 실제 매물 노출.
-    //   배경: 사진 blur + 카테고리 라벨로는 hook 약함 ("진짜 같지 않음").
-    //   해결: 7일 안 sold/disappeared 매물 → 실제 제목/사진/매입/시세/차익 그대로 노출 +
-    //         "거래 완료" 배지 + "로그인하면 진행 중 매물" fine print.
+    // Wave launch-115 (2026-05-24): 7일 → 14일 + scan limit 500 (3개만 보이는 frustration fix).
+    //   배경: 7일 sold + tier dedup 5겹 거치면 5개 못 채우는 케이스 발생.
     //   카탈로그 leak 우려 없음 (이미 거래된 매물 = 사용자가 잡을 수 없음).
-    const sinceIso = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const sinceIso = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
     const soldPidsRes = await restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,sold_detected_at&listing_state=in.(sold_confirmed,disappeared)&sold_detected_at=gte.${encodeURIComponent(sinceIso)}&order=sold_detected_at.desc&limit=300`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,sold_detected_at&listing_state=in.(sold_confirmed,disappeared)&sold_detected_at=gte.${encodeURIComponent(sinceIso)}&order=sold_detected_at.desc&limit=500`,
       { headers },
     );
     const soldPidRows = (await soldPidsRes.json()) as Array<{ pid: number; sold_detected_at: string }>;

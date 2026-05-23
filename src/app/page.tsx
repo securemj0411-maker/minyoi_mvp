@@ -11,6 +11,7 @@
 
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 import MeDashboardClient from "@/components/me-dashboard-client";
+import PreviewMaskedDashboardServer from "@/components/preview-masked-dashboard-server";
 
 export const dynamic = "force-dynamic";
 
@@ -18,11 +19,13 @@ export default async function Home() {
   const auth = await requireSupabaseUserFromCookies();
   const isLoggedIn = auth.ok;
 
-  return (
-    <>
-      {!isLoggedIn ? (
-        // SEO server-rendered content — 비로그인 한정. 시각적으로 숨김 (sr-only) 이지만
-        // 구글 크롤러는 읽음. 핵심 키워드 + 카테고리 자연 분포.
+  // Wave launch-115 (2026-05-24): 비로그인 분기 SSR.
+  //   기존엔 MeDashboardClient (client) → 안에서 client side fetch → 첫 paint 깜빡임.
+  //   이제 server component 가 직접 fetch + HTML 박아 응답. 첫 paint 즉시 + SEO 강함.
+  if (!isLoggedIn) {
+    return (
+      <>
+        {/* SEO server-rendered content — 비로그인 한정. sr-only (시각 숨김, 크롤러만 읽음). */}
         <header className="sr-only">
           <h1>득템잡이 — AI 중고 시세 비교 서비스</h1>
           <p>
@@ -43,8 +46,10 @@ export default async function Home() {
           </p>
           <p>면책: 본 서비스는 시세 비교 정보를 제공할 뿐, 매물 진위·거래 결과를 보장하지 않습니다. 최종 판단은 이용자가 합니다.</p>
         </header>
-      ) : null}
-      <MeDashboardClient initialInventory={[]} />
-    </>
-  );
+        <PreviewMaskedDashboardServer />
+      </>
+    );
+  }
+
+  return <MeDashboardClient initialInventory={[]} />;
 }
