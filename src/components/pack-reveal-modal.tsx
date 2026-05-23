@@ -2668,23 +2668,25 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
           {/* Wave launch-64 (사용자 짚음 "우리 상품 가격 어디있는지 모름, 사진 작게 + 매입가 표시"):
               비교 매물 list 최상단에 "내 매물" row — 같은 format (사진 52px + 이름 + 매입가).
               사용자가 비교 매물 가격과 즉시 비교 가능. */}
+          {/* Wave 729 (2026-05-23): 모바일 360px 폭 layout 짤림 fix (스크린샷 보고).
+              min-w-0 명시 + pill shrink-0 + 상품명 truncate 로 가로 짤림 보장. 모바일 패딩 축소로 텍스트 영역 폭 확보. */}
           {card.price > 0 ? (
-            <li className="flex items-center gap-3 bg-[#fffbef] px-3 py-3 dark:bg-amber-950/20">
-              <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[9px] bg-zinc-100 ring-2 ring-amber-300 dark:bg-zinc-800 dark:ring-amber-700">
+            <li className="flex items-center gap-2.5 bg-[#fffbef] px-2.5 py-3 dark:bg-amber-950/20 sm:gap-3 sm:px-3">
+              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[9px] bg-zinc-100 ring-2 ring-amber-300 dark:bg-zinc-800 dark:ring-amber-700 sm:h-[52px] sm:w-[52px]">
                 {card.thumbnailUrl ? (
-                  <Image src={card.thumbnailUrl} alt="" fill sizes="52px" unoptimized className="object-cover" />
+                  <Image src={card.thumbnailUrl} alt="" fill sizes="(max-width: 640px) 44px, 52px" unoptimized className="object-cover" />
                 ) : (
                   <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-[9.5px] font-black text-white">내 매물</span>
-                  <span className="line-clamp-1 text-[12.5px] font-bold leading-tight tracking-tight text-zinc-900 dark:text-zinc-100">
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <span className="shrink-0 rounded-full bg-amber-500 px-1.5 py-0.5 text-[9.5px] font-black text-white">내 매물</span>
+                  <span className="min-w-0 flex-1 truncate text-[12.5px] font-bold leading-tight tracking-tight text-zinc-900 dark:text-zinc-100">
                     {card.name || "이 상품"}
                   </span>
                 </div>
-                <div className="mt-0.5 text-[10.5px] font-bold text-amber-700 dark:text-amber-300">
+                <div className="mt-0.5 truncate text-[10.5px] font-bold text-amber-700 dark:text-amber-300">
                   매입가 기준
                 </div>
               </div>
@@ -4778,23 +4780,25 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
         <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
           {/* Wave launch-65 (사용자 정정 — 진짜 위치): 쉬운모드 1페이지 비교 매물 상단에
               "내 매물" row 박음. 사용자가 비교 매물 가격 vs 내 매물 매입가 즉시 비교 가능. */}
+          {/* Wave 729 (2026-05-23): 모바일 360px 폭 layout 짤림 fix (스크린샷 보고). 상세 모드 (line 2672) 와 동일 패턴.
+              min-w-0 + pill shrink-0 + truncate + 모바일 패딩 축소. */}
           {card.price > 0 ? (
-            <div className="flex items-center gap-3 bg-[#fffbef] px-4 py-3 dark:bg-amber-950/20">
-              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-zinc-100 ring-2 ring-amber-300 dark:bg-zinc-800 dark:ring-amber-700">
+            <div className="flex items-center gap-2.5 bg-[#fffbef] px-3 py-3 dark:bg-amber-950/20 sm:gap-3 sm:px-4">
+              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[12px] bg-zinc-100 ring-2 ring-amber-300 dark:bg-zinc-800 dark:ring-amber-700 sm:h-12 sm:w-12">
                 {card.thumbnailUrl ? (
-                  <Image src={card.thumbnailUrl} alt="" fill sizes="48px" unoptimized className="object-cover" />
+                  <Image src={card.thumbnailUrl} alt="" fill sizes="(max-width: 640px) 44px, 48px" unoptimized className="object-cover" />
                 ) : (
                   <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-[9.5px] font-black text-white">내 매물</span>
-                  <span className="line-clamp-1 text-[12px] font-black text-[#172019] dark:text-zinc-100">
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <span className="shrink-0 rounded-full bg-amber-500 px-1.5 py-0.5 text-[9.5px] font-black text-white">내 매물</span>
+                  <span className="min-w-0 flex-1 truncate text-[12px] font-black text-[#172019] dark:text-zinc-100">
                     {card.name || "이 상품"}
                   </span>
                 </div>
-                <div className="mt-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300">매입가 기준</div>
+                <div className="mt-0.5 truncate text-[11px] font-bold text-amber-700 dark:text-amber-300">매입가 기준</div>
               </div>
               <div className="shrink-0 text-right">
                 <div className="text-[14px] font-black tabular-nums text-amber-700 dark:text-amber-300">{krw(card.price)}</div>

@@ -262,7 +262,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
       <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-emerald-400">Admin · candidate_pool</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-blue-400">Admin · candidate_pool</p>
             <h1 className="mt-1 text-2xl font-black tracking-tight text-zinc-950 dark:text-white">운영자 풀 매물 검증</h1>
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
               팩 결제 없이 candidate_pool 전체 매물 페이지네이션 조회. 카드별 시세 근거 디버그 가능.
@@ -340,7 +340,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                   <button
                     type="button"
                     onClick={() => { setPriceBucket(""); setPage(1); }}
-                    className="text-[10px] font-black text-emerald-700 hover:underline dark:text-emerald-300"
+                    className="text-[10px] font-black text-blue-700 hover:underline dark:text-blue-300"
                   >
                     가격 필터 해제
                   </button>
@@ -354,8 +354,8 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     onClick={() => { setPriceBucket(bucket.key); setPage(1); }}
                     className={`rounded-full border px-2.5 py-1 text-[11px] font-black transition ${
                       priceBucket === bucket.key
-                        ? "border-emerald-700 bg-emerald-700 text-white"
-                        : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-emerald-300 hover:bg-emerald-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+                        ? "border-blue-700 bg-blue-700 text-white"
+                        : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-blue-300 hover:bg-blue-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
                     }`}
                   >
                     {bucket.label} <span className="font-mono">{bucket.ready_count.toLocaleString()}</span>
@@ -375,7 +375,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                   <button
                     type="button"
                     onClick={() => { setCategory(""); setPage(1); }}
-                    className="text-[10px] font-black text-emerald-700 hover:underline dark:text-emerald-300"
+                    className="text-[10px] font-black text-blue-700 hover:underline dark:text-blue-300"
                   >
                     카테고리 해제
                   </button>
@@ -389,8 +389,8 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     onClick={() => { setCategory(row.category); setPage(1); }}
                     className={`rounded-full border px-2.5 py-1 text-[11px] font-black transition ${
                       category === row.category
-                        ? "border-emerald-700 bg-emerald-700 text-white"
-                        : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-emerald-300 hover:bg-emerald-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+                        ? "border-blue-700 bg-blue-700 text-white"
+                        : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-blue-300 hover:bg-blue-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
                     }`}
                   >
                     {categoryLabel(row.category)} <span className="font-mono">{row.ready_count.toLocaleString()}</span>
@@ -427,12 +427,12 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
             type="button"
             onClick={applySearch}
             disabled={loading}
-            className="rounded-md border border-emerald-700 bg-emerald-700 px-3 py-1 font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+            className="rounded-md border border-blue-700 bg-blue-700 px-3 py-1 font-semibold text-white hover:bg-blue-800 disabled:opacity-50"
           >
             검색
           </button>
           {searchQuery && (
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
               검색: &quot;{searchQuery}&quot;
             </span>
           )}
@@ -531,12 +531,12 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                 key={item.pid}
                 className={`relative rounded-lg border bg-white p-3 shadow-sm dark:bg-zinc-900 ${
                   item.hasComment
-                    ? "border-emerald-400 ring-2 ring-emerald-200 dark:border-emerald-700 dark:ring-emerald-900/40"
+                    ? "border-blue-400 ring-2 ring-blue-200 dark:border-blue-700 dark:ring-blue-900/40"
                     : "border-[#e3ddd2] dark:border-zinc-800"
                 }`}
               >
                 {item.hasComment && (
-                  <div className="absolute right-2 top-2 z-10 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-black text-white shadow-md">
+                  <div className="absolute right-2 top-2 z-10 rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-black text-white shadow-md">
                     ✅ 코멘트
                   </div>
                 )}
@@ -556,7 +556,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                   <div className="min-w-0 flex-1 space-y-1 text-xs">
                     <div className="line-clamp-2 text-[13px] font-bold text-zinc-900 dark:text-zinc-100">{item.name}</div>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-base font-black tabular-nums text-emerald-700 dark:text-emerald-400">
+                      <span className="text-base font-black tabular-nums text-blue-700 dark:text-blue-400">
                         {item.expectedProfitMin === item.expectedProfitMax
                           ? `+${krw(item.expectedProfitMax)}`
                           : `+${krw(item.expectedProfitMin)}~${krw(item.expectedProfitMax)}`}
@@ -567,11 +567,21 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       {item.category !== "shoe" && item.category !== "clothing" && (
                         <ConditionChip conditionClass={item.conditionClass} showHelp />
                       )}
-                      {item.conditionTier && <ConditionTierChip
-                        tier={item.conditionTier}
-                        showHelp
-                        category={item.category === "clothing" ? "clothing" : "shoe"}
-                      />}
+                      {/* Wave 727 (2026-05-23): 신발/의류 condition_tier NULL 비율 추적 — DB 측정 결과 신발 65% / 의류 79% NULL.
+                          운영자 화면에서 NULL placeholder 박아 backfill 진행 상황 가시화. 사용자 화면 3곳은 다른 세션 종료 후 별도 wave. */}
+                      {(item.category === "shoe" || item.category === "clothing") && (
+                        item.conditionTier ? (
+                          <ConditionTierChip
+                            tier={item.conditionTier}
+                            showHelp
+                            category={item.category === "clothing" ? "clothing" : "shoe"}
+                          />
+                        ) : (
+                          <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                            등급 NULL
+                          </span>
+                        )
+                      )}
                     </div>
                     {/* Wave 714d: raw 표현 chips (박스/하자/실착 등) */}
                     {item.conditionChips && item.conditionChips.length > 0 && (
@@ -600,7 +610,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                         const label = verdictUiLabel(guidance.verdict);
                         if (!label) return null;
                         const cls = label.tone === "em"
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
+                          ? "border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200"
                           : label.tone === "amber"
                             ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
                             : "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200";
@@ -713,7 +723,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     {/* 2026-05-16 (사용자 코멘트 #120): 시세 출처 표시 — pack-reveal-modal 과 동일 패턴. */}
                     {/* Wave 246 (2026-05-19): skuMedian=0 일 땐 출처 배지 숨김 — 시세 자체가 없는데 출처만 보이면 미스리딩. */}
                     {!(item.skuMedian && item.skuMedian > 0) ? null : item.conditionClass === "unopened" ? (
-                      <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
+                      <div className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 dark:text-blue-300">
                         <DanawaLogo className="h-4 w-4 rounded-[4px]" />
                         다나와 새 가격 기준 (이 매물 미개봉)
                       </div>
@@ -736,7 +746,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       <span className="font-mono">{item.skuId ?? "—"}</span> · query: {item.query ?? "—"}
                     </div>
                     {item.listingUrl ? (
-                      <a href={item.listingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 hover:underline dark:text-emerald-400">
+                      <a href={item.listingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-700 hover:underline dark:text-blue-400">
                         <MarketplaceSourceBadge source={item.marketplaceSource} label={item.marketplaceLabel} />
                         열기
                       </a>
@@ -744,7 +754,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                   </div>
                 </div>
                 {item.hasComment && item.commentPreview && (
-                  <div className="mt-2 rounded border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-[11px] text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200">
+                  <div className="mt-2 rounded border border-blue-200 bg-blue-50 px-2 py-1.5 text-[11px] text-blue-900 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-200">
                     <div className="line-clamp-2">💬 {item.commentPreview}</div>
                   </div>
                 )}
@@ -790,7 +800,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                 key={n}
                 onClick={() => setPage(n)}
                 disabled={loading}
-                className={`rounded-md border px-3 py-1 text-xs font-semibold ${n === page ? "border-emerald-700 bg-emerald-700 text-white" : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"}`}
+                className={`rounded-md border px-3 py-1 text-xs font-semibold ${n === page ? "border-blue-700 bg-blue-700 text-white" : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"}`}
               >
                 {n}
               </button>

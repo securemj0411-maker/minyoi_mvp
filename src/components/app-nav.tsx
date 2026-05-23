@@ -327,6 +327,9 @@ export default function AppNav() {
   const mobileNavLinks = user
     ? [
         { href: "/me", label: "추천 피드", caption: "오늘 볼 만한 매물" },
+        // Wave 726 (2026-05-23): 모바일에서 sidebar 숨김 (lg:block) 이라 텔레그램 알림 설정 접근 불가.
+        //   모바일 사용자가 한 번이라도 설정 가능하게 drawer 에 link 박음.
+        { href: "/me?view=hotdeal-alerts", label: "핫딜 알림", caption: "텔레그램 알림 설정" },
         { href: "/plans", label: "크레딧 충전", caption: "상세 분석 열기" },
         { href: "/how-it-works", label: "서비스 안내", caption: "득템잡이 사용법" },
         ...(admin ? [{ href: "/debug", label: "운영 로그", caption: "관리자 전용" }] : []),
