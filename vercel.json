@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/tick",
-      "schedule": "* * * * *"
+      "schedule": "*/2 * * * *"
     },
     {
       "path": "/api/cron/detail-worker",
@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/score-worker",
-      "schedule": "* * * * *"
+      "schedule": "*/2 * * * *"
     },
     {
       "path": "/api/cron/recovery-worker",
