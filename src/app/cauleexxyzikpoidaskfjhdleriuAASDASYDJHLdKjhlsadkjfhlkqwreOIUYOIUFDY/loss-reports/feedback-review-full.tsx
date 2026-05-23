@@ -185,7 +185,14 @@ export default function FeedbackReviewFull() {
                         <div className="font-mono text-[9px] text-zinc-500">{r.user_email ?? r.user_ref.slice(0, 18) + "…"}</div>
                       </td>
                       <td className="px-3 py-2 font-mono text-[10px] text-zinc-400">{r.pid ?? "—"}</td>
-                      <td className="px-3 py-2 font-bold text-amber-300">{CATEGORY_LABEL[r.category] ?? r.category}</td>
+                      <td className="px-3 py-2 font-bold text-amber-300">
+                        {CATEGORY_LABEL[r.category] ?? r.category}
+                        {r.category === "sold_out" && isPending ? (
+                          <span className="ml-1.5 rounded-sm border border-rose-700/60 bg-rose-900/40 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide text-rose-300">
+                            ⚠ 풀 제외 중
+                          </span>
+                        ) : null}
+                      </td>
                       <td className="px-3 py-2 max-w-[350px] truncate text-zinc-300" title={r.message}>{r.message}</td>
                       <td className="px-3 py-2">
                         <span className={`rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase ${STATUS_BADGE[r.status] ?? STATUS_BADGE.pending}`}>

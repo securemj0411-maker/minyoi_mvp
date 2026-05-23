@@ -131,6 +131,9 @@ export default function FeedbackPanel() {
             <li key={r.id} className="flex items-center gap-2 rounded-sm border border-amber-900/40 bg-amber-950/15 px-3 py-2 text-[11px]">
               <span className="font-mono text-[10px] text-zinc-500">#{r.id}</span>
               <span className="font-bold text-amber-300">{CATEGORY_LABEL[r.category] ?? r.category}</span>
+              {r.category === "sold_out" ? (
+                <span className="rounded-sm border border-rose-700/60 bg-rose-900/40 px-1 py-0.5 text-[8px] font-black uppercase text-rose-300">⚠ 풀 제외</span>
+              ) : null}
               <span className="min-w-0 flex-1 truncate text-zinc-300" title={r.message}>{r.message}</span>
               <span className="font-mono text-[10px] text-zinc-500">{fmt(r.created_at)}</span>
             </li>

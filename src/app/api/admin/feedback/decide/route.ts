@@ -1,4 +1,8 @@
 // Wave launch-103: 피드백 승인/거절. 승인 시 +20 크레딧 grant. HTML 응답 (텔레그램 link 클릭).
+// Wave launch-107 (2026-05-24): sold_out 카테고리 풀 status 처리.
+//   submit 단계에서 임시 invalidate (reason=user_report_sold_pending:fbXXX) 박혀 있음.
+//   approve → user_report_sold_confirmed + raw_listings.listing_state=sold_confirmed (정식)
+//   reject  → status=ready 복귀 + reason 클리어 (단, 다른 이유로 invalidate 됐으면 보존)
 
 import { NextRequest, NextResponse } from "next/server";
 
@@ -80,10 +84,43 @@ async function handle(req: NextRequest, decision: "approve" | "reject", id: numb
       },
     );
 
+    // Wave launch-107: sold_out approve — pool reason 정정 + raw_listings 정식 sold_confirmed.
+    //   submit 단계에서 이미 status=invalidated 박혀 있으니 reason 만 정정 + 원본 매물 마킹.
+    //   recovery-worker 가 user_report_sold_confirmed reason 도 차단해야 다시 복귀 안 함 (별도 patch).
+    let poolNote = "";
+    if (fb.category === "sold_out" && fb.pid != null) {
+      await Promise.allSettled([
+        restFetch(
+          `${tableUrl("mvp_candidate_pool")}?pid=eq.${fb.pid}`,
+          {
+            method: "PATCH",
+            headers: { ...serviceHeaders(), Prefer: "return=minimal" },
+            body: jsonBody({
+              invalidated_reason: `user_report_sold_confirmed:fb${fb.id}`,
+              updated_at: nowIso,
+            }),
+          },
+        ),
+        restFetch(
+          `${tableUrl("mvp_raw_listings")}?pid=eq.${fb.pid}`,
+          {
+            method: "PATCH",
+            headers: { ...serviceHeaders(), Prefer: "return=minimal" },
+            body: jsonBody({
+              listing_state: "sold_confirmed",
+              sold_detected_at: nowIso,
+              updated_at: nowIso,
+            }),
+          },
+        ),
+      ]);
+      poolNote = `<br/><span style="color:#34d399">매물 #${fb.pid} 정식 sold_confirmed 마킹.</span>`;
+    }
+
     // 3) ledger event_type=feedback_reward (RPC 가 이미 박지만 명시 metadata 보강 — RPC 결과에 의존)
     return new NextResponse(resultHtml(
       "✅ 승인 + 보상 지급",
-      `피드백 #${id} 승인. +${fb.reward_amount} 크레딧 (잔액 ${newBalance?.toLocaleString("ko-KR") ?? "-"})`,
+      `피드백 #${id} 승인. +${fb.reward_amount} 크레딧 (잔액 ${newBalance?.toLocaleString("ko-KR") ?? "-"})${poolNote}`,
     ), { headers: { "content-type": "text/html; charset=utf-8" } });
   } else {
     await restFetch(
@@ -94,9 +131,37 @@ async function handle(req: NextRequest, decision: "approve" | "reject", id: numb
         body: jsonBody({ status: "rejected", decided_at: nowIso, decided_by: "admin" }),
       },
     );
+
+    // Wave launch-107: sold_out reject — submit 단계에서 임시 invalidate 한 거 복귀.
+    //   단, 다른 이유 (cron 의 진짜 sold 감지 등) 로 invalidate 됐으면 보존.
+    //   reason prefix "user_report_sold_pending:fb<id>" 정확 매칭으로만 복귀.
+    let poolNote = "";
+    if (fb.category === "sold_out" && fb.pid != null) {
+      const expectedReason = `user_report_sold_pending:fb${fb.id}`;
+      const revertRes = await restFetch(
+        `${tableUrl("mvp_candidate_pool")}?pid=eq.${fb.pid}&status=eq.invalidated&invalidated_reason=eq.${encodeURIComponent(expectedReason)}`,
+        {
+          method: "PATCH",
+          headers: { ...serviceHeaders(), Prefer: "return=representation" },
+          body: jsonBody({
+            status: "ready",
+            invalidated_reason: null,
+            updated_at: nowIso,
+            score_dirty: true,
+          }),
+        },
+      );
+      if (revertRes.ok) {
+        const reverted = (await revertRes.json().catch(() => [])) as Array<unknown>;
+        poolNote = reverted.length > 0
+          ? `<br/><span style="color:#fbbf24">매물 #${fb.pid} 풀로 자동 복귀.</span>`
+          : `<br/><span style="color:#a1a1aa">매물 #${fb.pid} 풀 복귀 안 함 (다른 이유로 이미 invalidate 됨).</span>`;
+      }
+    }
+
     return new NextResponse(resultHtml(
       "❌ 거절 완료",
-      `피드백 #${id} 거절됨. 보상 지급 X.`,
+      `피드백 #${id} 거절됨. 보상 지급 X.${poolNote}`,
     ), { headers: { "content-type": "text/html; charset=utf-8" } });
   }
 }

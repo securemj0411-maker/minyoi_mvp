@@ -746,6 +746,18 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       // Wave 715 P2 (2026-05-23): 59x spread — Heritage USA narrow 분리 (별 시세군).
       "carhartt usa", "칼하트 usa", "칼하트 미국산", "칼하트 미국",
       "made in usa", "made in u.s.a", "heritage", "헤리티지",
+      // Wave 750 bias-free (2026-05-24): premium/한정 라인 차단 (spread 6.7x).
+      "awake", "어웨이크", "awake ny", "어웨이크뉴욕",  // Awake NY collab
+      "02s", "03s", "01s", "00s",  // vintage decades
+      "단종", "discontinued", "지금은 단종",  // 단종 premium
+      "초어 코트", "초어코트", "chore coat",  // 시그니처 premium (별 SKU 가능)
+      "탱크 자켓", "탱크자켓", "tank jacket",  // vintage 라인
+      "하비 데님", "harvey",  // 단종 premium
+      // 묶음 brand 매물 차단
+      "조거쉬", "joggesh",
+      "헤리티지플로스", "헤리티지 플로스",
+      "이미스", "emis",
+      "칼린", "carlin",
     ],
     msrpKrw: 179000,
     released: 1889,
