@@ -85,21 +85,32 @@ export async function GET(request: Request) {
       console.warn("[auth/callback] ensureReferralCode failed", err instanceof Error ? err.message : String(err));
     }
 
-    const referralCookie = cookieStore.get("minyoi_referral")?.value;
-    if (referralCookie) {
+    // Wave 733 (2026-05-24): URL ?ref= 먼저 (signInWithOAuth redirectTo 에 박힘), 쿠키 fallback.
+    //   카카오 OAuth flow 중 쿠키 손실 가능성 → URL 이 더 안전.
+    const refFromUrl = requestUrl.searchParams.get("ref");
+    const refFromCookie = cookieStore.get("minyoi_referral")?.value;
+    const referrerCode = refFromUrl || refFromCookie;
+    if (referrerCode) {
+      console.log("[auth/callback] referral signup attempt", {
+        source: refFromUrl ? "url" : "cookie",
+        code: referrerCode,
+        userId: authUser.id,
+      });
       try {
         const result = await createReferralAndGrantSignupBonus({
-          referrerCode: referralCookie,
+          referrerCode,
           referredUserId: authUser.id,
           referredUserRef: userRef,
         });
         if (!result.ok) {
-          console.warn("[auth/callback] referral signup skipped", { reason: result.error });
+          console.warn("[auth/callback] referral signup skipped", { reason: result.error, code: referrerCode });
+        } else {
+          console.log("[auth/callback] referral signup granted", { code: referrerCode, userId: authUser.id });
         }
       } catch (err) {
         console.warn("[auth/callback] referral signup threw", err instanceof Error ? err.message : String(err));
       }
-      // 성공/실패 무관 — 쿠키 clear (한 번 시도)
+      // 쿠키 clear (한 번 시도) — URL 은 redirect 후 사라짐
       try {
         cookieStore.set("minyoi_referral", "", { maxAge: 0, path: "/" });
       } catch {
