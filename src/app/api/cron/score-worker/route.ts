@@ -13,7 +13,8 @@ import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { scoreStage } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
 
-export const maxDuration = 90;
+// Wave 724 (2026-05-23): p95 70.8s/max 88.3s 측정 → 150s buffer. 90s 거의 도달이라 spike fail risk.
+export const maxDuration = 150;
 
 function firstForwardedIp(value: string | null): string | null {
   if (!value) return null;

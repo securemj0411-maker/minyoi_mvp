@@ -18,7 +18,8 @@ import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { runLifecycleWorkerPipeline } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
 
-export const maxDuration = 90;
+// Wave 724 (2026-05-23): max 106s 측정 (90s 이미 초과) → 180s. duplicate invocation 별 별 분석 필요.
+export const maxDuration = 180;
 
 function firstForwardedIp(value: string | null): string | null {
   if (!value) return null;

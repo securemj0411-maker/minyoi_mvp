@@ -12,7 +12,8 @@ import { acquireCronGuardWithSourceHealth, cronGuardSkipBody } from "@/lib/cron-
 import { runJoongnaIngest } from "@/lib/joongna-ingest";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 
-export const maxDuration = 90;
+// Wave 724 (2026-05-23): p95 64s/max 100s 측정 → 150s buffer.
+export const maxDuration = 150;
 
 function envInt(name: string, fallback: number, min: number, max: number): number {
   const parsed = Number.parseInt(process.env[name] ?? "", 10);

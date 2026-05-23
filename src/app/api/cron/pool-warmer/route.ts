@@ -13,7 +13,8 @@ import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { runPoolWarmerPipeline } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
 
-export const maxDuration = 90;
+// Wave 724 (2026-05-23): p95 29s/max 85s 측정 → 120s buffer.
+export const maxDuration = 120;
 
 function firstForwardedIp(value: string | null): string | null {
   if (!value) return null;
