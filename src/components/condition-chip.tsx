@@ -260,6 +260,89 @@ export function UnopenedPhotoBadge(props: Parameters<typeof ConditionPhotoBadge>
   return <ConditionPhotoBadge {...props} />;
 }
 
+// Wave 714q (2026-05-23): 신발/의류 5-tier 전용 사진 위 뱃지.
+//   기존 ConditionPhotoBadge 는 옛 conditionClass (mint/unopened) 기반.
+//   신발/의류는 새 tier (S/A/B/C/D) 사용 — 다른 component 로 분리.
+const TIER_PHOTO_BADGE_STYLES: Record<string, { label: string; mark: string; className: string; markClassName: string; desc: string }> = {
+  S: {
+    label: "S급",
+    mark: "S",
+    className: "border-emerald-400/40 bg-zinc-950/95 text-emerald-200 shadow-[0_4px_12px_rgba(0,0,0,0.25)] dark:border-emerald-300/30 dark:bg-zinc-950 dark:text-emerald-100",
+    markClassName: "bg-emerald-200 text-zinc-950 dark:bg-emerald-100 dark:text-zinc-950",
+    desc: "S급 — 박스/풀구성 + kream/매장 + 미시착 2축 이상 동시 (최상급)",
+  },
+  A: {
+    label: "A급",
+    mark: "A",
+    className: "border-[#bce9ff]/90 bg-[linear-gradient(135deg,#ffffff_0%,#dbf5ff_48%,#b8efe5_100%)] text-[#093a4d] shadow-[0_10px_24px_rgba(14,116,144,0.22)] ring-1 ring-white/80 dark:border-sky-400/45 dark:bg-[linear-gradient(135deg,#071d2c_0%,#0d5264_52%,#0b766e_100%)] dark:text-sky-50 dark:ring-sky-100/15",
+    markClassName: "bg-[#0d5264] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] dark:bg-sky-100 dark:text-[#083548]",
+    desc: "A급 — 박스 또는 kream 또는 미시착 단일 strong (양호)",
+  },
+  B: {
+    label: "B급",
+    mark: "B",
+    className: "border-zinc-200/90 bg-[linear-gradient(135deg,#ffffff_0%,#f4f4f5_100%)] text-zinc-700 shadow-[0_7px_18px_rgba(39,39,42,0.12)] ring-1 ring-white/65 dark:border-zinc-700/80 dark:bg-[linear-gradient(135deg,#18181b_0%,#27272a_100%)] dark:text-zinc-200 dark:ring-white/10",
+    markClassName: "bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900",
+    desc: "B급 — 약한 매칭 / 상세 부족 (보통)",
+  },
+  C: {
+    label: "C급",
+    mark: "C",
+    className: "border-orange-200/90 bg-[linear-gradient(135deg,#fff7ed_0%,#fed7aa_100%)] text-orange-950 shadow-[0_7px_18px_rgba(194,65,12,0.14)] ring-1 ring-white/60 dark:border-orange-800/80 dark:bg-[linear-gradient(135deg,#2b1206_0%,#7c2d12_100%)] dark:text-orange-100 dark:ring-orange-100/10",
+    markClassName: "bg-orange-900 text-orange-50 dark:bg-orange-100 dark:text-orange-950",
+    desc: "C급 — 경미 하자 또는 사용감",
+  },
+  D: {
+    label: "D급",
+    mark: "D",
+    className: "border-rose-200/90 bg-[linear-gradient(135deg,#fff1f2_0%,#fecdd3_100%)] text-rose-950 shadow-[0_7px_18px_rgba(190,18,60,0.14)] dark:border-rose-800/80 dark:bg-[linear-gradient(135deg,#2a0710_0%,#881337_100%)] dark:text-rose-100",
+    markClassName: "bg-rose-900 text-rose-50 dark:bg-rose-100 dark:text-rose-950",
+    desc: "D급 — 빈티지/구제 또는 심각 하자",
+  },
+};
+
+export function ConditionTierPhotoBadge({
+  tier,
+  compact = false,
+  className = "",
+}: {
+  tier: string | null | undefined;
+  compact?: boolean;
+  className?: string;
+}) {
+  if (!tier || tier === "UNKNOWN") return null;
+  const style = TIER_PHOTO_BADGE_STYLES[tier];
+  if (!style) return null;
+  return (
+    <span
+      title={style.desc}
+      className={`pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center overflow-hidden border text-[9px] font-black tracking-[0.02em] backdrop-blur-md ${
+        style.className
+      } ${
+        compact
+          ? "max-w-[calc(100%-10px)] rounded-[10px] px-2 py-1 text-[10px] leading-none sm:px-2 sm:py-1 sm:text-[10px]"
+          : "max-w-[calc(100%-10px)] gap-1 rounded-[10px] px-1 py-0.5 sm:left-2 sm:top-2 sm:px-2.5 sm:py-1 sm:text-[10px]"
+      } ${className}`}
+    >
+      <span className="pointer-events-none absolute inset-x-1 top-0 h-px bg-white/70 dark:bg-white/25" />
+      {compact ? (
+        <span className="relative whitespace-nowrap leading-none">{style.label}</span>
+      ) : (
+        <>
+          <span
+            className={`relative flex h-4 min-w-[16px] items-center justify-center rounded-[7px] px-1 text-[8px] font-black leading-none sm:h-5 sm:min-w-[20px] sm:text-[9px] ${
+              style.markClassName
+            }`}
+          >
+            {style.mark}
+          </span>
+          <span className="relative truncate leading-none">{style.label}</span>
+        </>
+      )}
+    </span>
+  );
+}
+
 // =============================================================================
 // Wave 714d (2026-05-23): 신발/의류 5-tier S/A/B/C/D 등급 chip + raw 표현 chips.
 //

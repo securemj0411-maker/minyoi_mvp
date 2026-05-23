@@ -7,7 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import CreditIcon from "@/components/credit-icon";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, HourglassIcon, BookmarkIcon } from "@/components/icons";
-import { ConditionChip, ConditionPhotoBadge } from "@/components/condition-chip";
+import { ConditionChip, ConditionPhotoBadge, ConditionTierPhotoBadge } from "@/components/condition-chip";
 import KakaoLogo from "@/components/kakao-logo";
 import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
@@ -2419,13 +2419,12 @@ export default function ExploreClient({
                       className={`object-cover ${isSoldOut ? "opacity-60" : ""}`}
                     />
                   ) : null}
-                  {/* Wave 355: unopened/mint만 사진 위 럭셔리 배지 ("전설템" 느낌). 나머지 등급은 메타 영역 friendly 칩.
+                  {/* Wave 355: unopened/mint만 사진 위 럭셔리 배지 ("전설템" 느낌).
                       Wave 714p (2026-05-23): 신발/의류는 옛 conditionClass 뱃지 hide (전자기기용 라벨 정확도 낮음).
-                      신발/의류 = 새 ConditionTierChip (S/A/B/C/D) 가 카드 본문에 표시. 사진 위는 비움. */}
-                  {!isSoldOut
-                    && (item.conditionClass === "unopened" || item.conditionClass === "mint")
-                    && !item.comparableKey?.startsWith("shoe|")
-                    && !item.comparableKey?.startsWith("clothing|") ? (
+                      Wave 714q (2026-05-23): 신발/의류는 새 5-tier (S/A/B/C/D) 뱃지로 대체. UNKNOWN 은 표시 X. */}
+                  {!isSoldOut && (item.comparableKey?.startsWith("shoe|") || item.comparableKey?.startsWith("clothing|")) ? (
+                    <ConditionTierPhotoBadge tier={item.conditionTier} compact />
+                  ) : !isSoldOut && (item.conditionClass === "unopened" || item.conditionClass === "mint") ? (
                     <ConditionPhotoBadge conditionClass={item.conditionClass} compact />
                   ) : null}
                   {isSoldOut ? (
