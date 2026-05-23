@@ -1299,8 +1299,9 @@ function LastVerifiedAtBadge({ card }: { card: RevealCard }) {
           판매글 기준
         </span>
         {cond && !isShoeOrClothing && <ConditionChip conditionClass={cond} variant="friendly" />}
-        {/* Wave 714d (2026-05-23): 신발/의류 5-tier 등급 chip — 쉬운모드용 friendly variant. */}
-        {tier && <ConditionTierChip tier={tier} variant="friendly" />}
+        {/* Wave 714d (2026-05-23): 신발/의류 5-tier 등급 chip — 쉬운모드용 friendly variant.
+            Wave 714f (2026-05-23): showHelp 추가 — ? 버튼 클릭 시 분류 기준 popover. */}
+        {tier && <ConditionTierChip tier={tier} variant="friendly" showHelp />}
       </div>
       {/* Wave 714d: raw 표현 chips (박스/하자/실착 등) */}
       {chips && chips.length > 0 && (

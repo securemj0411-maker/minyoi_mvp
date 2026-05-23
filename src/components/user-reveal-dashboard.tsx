@@ -1522,12 +1522,13 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   </span>
                 ) : null}
               </div>
-              {/* Wave 714d (2026-05-23): 신발/의류 5-tier 등급 + chips (전자기기는 표시 X). */}
+              {/* Wave 714d (2026-05-23): 신발/의류 5-tier 등급 + chips (전자기기는 표시 X).
+                  Wave 714f (2026-05-23): showHelp 추가 — ? 버튼 클릭 시 분류 기준 popover. */}
               {(item.conditionTier || (item.conditionChips && item.conditionChips.length > 0)) && (
                 <div className="mt-1 flex flex-wrap items-center gap-1">
-                  {item.conditionTier && <ConditionTierChip tier={item.conditionTier} variant="friendly" />}
+                  {item.conditionTier && <ConditionTierChip tier={item.conditionTier} variant="friendly" showHelp />}
                   {item.conditionChips && item.conditionChips.length > 0 && (
-                    <ConditionChipsList chips={item.conditionChips} max={4} />
+                    <ConditionChipsList chips={item.conditionChips} max={5} />
                   )}
                 </div>
               )}
