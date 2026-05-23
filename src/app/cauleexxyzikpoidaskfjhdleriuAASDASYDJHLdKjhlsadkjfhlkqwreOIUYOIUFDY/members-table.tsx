@@ -211,8 +211,45 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
         </div>
       ) : null}
 
-      {/* table */}
-      <div className="overflow-x-auto rounded-sm border border-zinc-800 bg-zinc-950">
+      {/* Wave launch-110: 모바일 카드 layout (md 미만). desktop 테이블은 md 이상. */}
+      <div className="space-y-1.5 md:hidden">
+        {pageRows.length === 0 ? (
+          <div className="rounded-sm border border-zinc-800 bg-zinc-950 px-3 py-6 text-center text-[10px] uppercase text-zinc-600">no results</div>
+        ) : pageRows.map((row) => {
+          const isBlocked = Boolean(row.blockedAt);
+          const isSelected = selectedIds.has(row.authUserId);
+          return (
+            <div
+              key={`m-${row.authUserId}`}
+              onClick={() => setDrawerId(row.authUserId)}
+              className={`rounded-sm border p-3 transition ${isSelected ? "border-amber-700/60 bg-amber-950/20" : "border-zinc-800 bg-zinc-950"} ${isBlocked ? "opacity-70" : ""}`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2" onClick={(e) => { e.stopPropagation(); toggleSelect(row.authUserId); }}>
+                  <input
+                    type="checkbox"
+                    aria-label="row 선택"
+                    checked={isSelected}
+                    onChange={() => toggleSelect(row.authUserId)}
+                    className="h-4 w-4 cursor-pointer accent-amber-500"
+                  />
+                  <span className="text-[13px] font-bold text-zinc-100">{row.nickname || "—"}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {isBlocked ? (
+                    <span className="rounded-sm border border-rose-800/60 bg-rose-950/40 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-rose-300">BLOCKED</span>
+                  ) : null}
+                  <span className="font-bold tabular-nums text-amber-400">{row.balance?.toLocaleString("ko-KR") ?? "—"}</span>
+                </div>
+              </div>
+              <div className="mt-1 truncate font-mono text-[11px] text-zinc-400">{row.email ?? "—"}</div>
+              <div className="mt-0.5 text-[10px] uppercase text-zinc-600">{row.provider ?? "—"} · 탭하여 상세</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-sm border border-zinc-800 bg-zinc-950 md:block">
         <table className="w-full text-[11px]">
           <thead className="bg-zinc-900/80">
             <tr className="border-b border-zinc-800 text-left text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">

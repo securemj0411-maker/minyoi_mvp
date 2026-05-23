@@ -153,7 +153,71 @@ export default function ManualDepositPanel() {
         </div>
       ) : null}
 
-      <div className="overflow-x-auto rounded-sm border border-zinc-800 bg-zinc-950">
+      {/* Wave launch-110: 모바일 카드 layout (md 미만). desktop 은 기존 테이블 (md 이상). */}
+      <div className="space-y-2 md:hidden">
+        {loading && rows.length === 0 ? (
+          <div className="rounded-sm border border-zinc-800 bg-zinc-950 px-3 py-6 text-center text-[10px] uppercase text-zinc-600">불러오는 중…</div>
+        ) : pending.length === 0 && recent.length === 0 ? (
+          <div className="rounded-sm border border-zinc-800 bg-zinc-950 px-3 py-6 text-center text-[10px] uppercase text-zinc-600">최근 24시간 신청 없음</div>
+        ) : (
+          <>
+            {pending.map((r) => {
+              const remaining = secondsUntil(r.scheduled_auto_approve_at);
+              const inProgress = pendingIds.has(r.id);
+              const badge = STATUS_BADGE[r.status] ?? STATUS_BADGE.pending;
+              return (
+                <div key={`m-${r.id}`} className="rounded-sm border border-amber-900/40 bg-amber-950/15 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-mono text-[10px] text-zinc-500">#{r.id}</span>
+                      <span className="text-[13px] font-bold text-amber-300">{r.depositor_name}</span>
+                    </div>
+                    <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${badge.cls}`}>{badge.label}</span>
+                  </div>
+                  <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+                    <div><span className="text-zinc-500">패키지:</span> <span className="font-bold text-zinc-200">{r.amount.toLocaleString("ko-KR")} 크레딧</span></div>
+                    <div><span className="text-zinc-500">금액:</span> <span className="font-mono font-bold text-zinc-200">₩{r.price_krw.toLocaleString("ko-KR")}</span></div>
+                    <div className="col-span-2"><span className="text-zinc-500">남은 시간:</span> <span className="font-mono font-black text-amber-300">{formatCountdown(remaining)}</span></div>
+                    <div className="col-span-2"><span className="text-zinc-500">신청:</span> <span className="font-mono text-[10px] text-zinc-500">{fmt(r.created_at)}</span></div>
+                  </div>
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void decide(r.id, "approve")}
+                      disabled={inProgress}
+                      className="flex-1 rounded-sm border border-emerald-700/60 bg-emerald-900/40 py-2 text-[12px] font-black text-emerald-300 hover:bg-emerald-900/60 disabled:opacity-40"
+                    >{inProgress ? "..." : "✓ 승인"}</button>
+                    <button
+                      type="button"
+                      onClick={() => void decide(r.id, "reject")}
+                      disabled={inProgress}
+                      className="flex-1 rounded-sm border border-rose-700/60 bg-rose-900/40 py-2 text-[12px] font-black text-rose-300 hover:bg-rose-900/60 disabled:opacity-40"
+                    >{inProgress ? "..." : "✕ 거절"}</button>
+                  </div>
+                </div>
+              );
+            })}
+            {recent.map((r) => {
+              const badge = STATUS_BADGE[r.status] ?? STATUS_BADGE.pending;
+              return (
+                <div key={`m-${r.id}`} className="rounded-sm border border-zinc-900 bg-zinc-950 px-3 py-2 opacity-75">
+                  <div className="flex items-center justify-between gap-2 text-[11px]">
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-mono text-[10px] text-zinc-600">#{r.id}</span>
+                      <span className="font-semibold text-zinc-400">{r.depositor_name}</span>
+                      <span className="font-mono text-[10px] text-zinc-500">₩{r.price_krw.toLocaleString("ko-KR")}</span>
+                    </div>
+                    <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${badge.cls}`}>{badge.label}</span>
+                  </div>
+                  <div className="mt-0.5 text-[10px] text-zinc-600">{fmt(r.decided_at ?? r.created_at)} · 처리됨</div>
+                </div>
+              );
+            })}
+          </>
+        )}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-sm border border-zinc-800 bg-zinc-950 md:block">
         <table className="w-full min-w-[900px] text-[11px]">
           <thead className="bg-zinc-900/80">
             <tr className="border-b border-zinc-800 text-left text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">

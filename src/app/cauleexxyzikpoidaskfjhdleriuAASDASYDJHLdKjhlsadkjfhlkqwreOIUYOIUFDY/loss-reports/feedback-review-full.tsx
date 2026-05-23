@@ -144,7 +144,64 @@ export default function FeedbackReviewFull() {
         <div className="mb-2 rounded-sm border border-rose-900/50 bg-rose-950/30 px-2.5 py-1.5 text-[10px] font-bold text-rose-300">{error}</div>
       ) : null}
 
-      <div className="overflow-x-auto rounded-sm border border-zinc-800 bg-zinc-950">
+      {/* Wave launch-110: 모바일 카드 layout (md 미만). desktop 테이블은 md 이상. */}
+      <div className="space-y-2 md:hidden">
+        {loading && rows.length === 0 ? (
+          <div className="rounded-sm border border-zinc-800 bg-zinc-950 px-3 py-6 text-center text-[10px] uppercase text-zinc-600">불러오는 중…</div>
+        ) : filtered.length === 0 ? (
+          <div className="rounded-sm border border-zinc-800 bg-zinc-950 px-3 py-6 text-center text-[10px] uppercase text-zinc-600">결과 없음</div>
+        ) : (
+          filtered.map((r) => {
+            const busy = pendingIds.has(r.id);
+            const isPending = r.status === "pending";
+            return (
+              <div key={`m-${r.id}`} className={`rounded-sm border p-3 ${isPending ? "border-amber-900/40 bg-amber-950/15" : "border-zinc-900 bg-zinc-950 opacity-80"}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-mono text-[10px] text-zinc-500">#{r.id}</span>
+                    <span className="text-[12px] font-bold text-amber-300">{CATEGORY_LABEL[r.category] ?? r.category}</span>
+                    {r.category === "sold_out" && isPending ? (
+                      <span className="rounded-sm border border-rose-700/60 bg-rose-900/40 px-1 py-0.5 text-[8px] font-black uppercase text-rose-300">⚠ 풀 제외</span>
+                    ) : null}
+                  </div>
+                  <span className={`rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase ${STATUS_BADGE[r.status] ?? STATUS_BADGE.pending}`}>{r.status}</span>
+                </div>
+                <div className="mt-1.5 text-[11px] text-zinc-300">
+                  <div className="font-bold text-zinc-100">{r.user_nickname || "(닉네임 없음)"}</div>
+                  <div className="font-mono text-[10px] text-zinc-500">{r.user_email ?? r.user_ref.slice(0, 24) + "…"}</div>
+                </div>
+                {r.pid ? (
+                  <div className="mt-1 text-[10px] text-zinc-500">매물 #{r.pid}</div>
+                ) : null}
+                <div className="mt-2 max-h-24 overflow-y-auto rounded-sm border border-zinc-800 bg-zinc-900/40 px-2 py-1.5 text-[11px] text-zinc-200 whitespace-pre-wrap">
+                  {r.message}
+                </div>
+                <div className="mt-1.5 font-mono text-[10px] text-zinc-500">{fmt(r.created_at)}</div>
+                {isPending ? (
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void decide(r.id, "approve")}
+                      disabled={busy}
+                      className="flex-1 rounded-sm border border-emerald-700/60 bg-emerald-900/40 py-2 text-[12px] font-black text-emerald-300 hover:bg-emerald-900/60 disabled:opacity-40"
+                    >{busy ? "..." : "✓ APPROVE +20"}</button>
+                    <button
+                      type="button"
+                      onClick={() => void decide(r.id, "reject")}
+                      disabled={busy}
+                      className="flex-1 rounded-sm border border-rose-700/60 bg-rose-900/40 py-2 text-[12px] font-black text-rose-300 hover:bg-rose-900/60 disabled:opacity-40"
+                    >{busy ? "..." : "✕ REJECT"}</button>
+                  </div>
+                ) : (
+                  <div className="mt-1 text-[10px] uppercase text-zinc-600">처리됨 · {r.decided_by ?? "—"}{r.reward_granted_at ? ` · +${r.reward_amount} @ ${fmt(r.reward_granted_at)}` : ""}</div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-sm border border-zinc-800 bg-zinc-950 md:block">
         <table className="w-full min-w-[1100px] text-[11px]">
           <thead className="bg-zinc-900/80">
             <tr className="border-b border-zinc-800 text-left text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">
