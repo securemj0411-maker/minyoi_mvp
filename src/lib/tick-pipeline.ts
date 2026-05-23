@@ -342,7 +342,11 @@ const TERMINAL_LISTING_STATES = new Set(["sold_confirmed", "disappeared", "archi
 // Wave 713 (2026-05-23): v1→v2 bump — Wave 712 catalog 152 신설 후 stale 168K 매물 reparse.
 //   bias-free 검증으로 brand 매물 매칭 가능한데 title_triage_v1 단계에서 차단된 매물 대량 발견.
 //   v2 bump 시 isCurrentTitleTriageSkip false → cron이 점진적 reparse.
-const TITLE_TRIAGE_SKIP_VERSION = "title_triage_v2";
+// Wave 752 (2026-05-24): v2→v3 bump — Wave 727-751 cycle 55+ SKU 신설 (Dyson V/의류 broad/신발 신규 brand 등)
+//   audit: 135,427 matters detail_status='skipped' (7일) — 9.4% sku_id 매칭률.
+//   sample 확인: Nike Air Max BW / Adidas Superstar / NIKE DUNK GOLDENROD 같은 catalog match
+//   가능한 매물 다수 stale v2 단계 차단. v3 bump → 점진 reparse 큐.
+const TITLE_TRIAGE_SKIP_VERSION = "title_triage_v3";
 let rawScoreDirtySchemaAvailablePromise: Promise<boolean> | null = null;
 
 async function rawScoreDirtySchemaAvailable() {
