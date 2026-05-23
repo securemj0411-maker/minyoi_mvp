@@ -124,6 +124,8 @@ export type V7SiblingPresenceMap = Map<string, boolean>;
 export type MarketBandRow = {
   comparable_key: string;
   condition_class: string;
+  // Wave 722 / Stage 5 (2026-05-23): shoe/clothing은 S/A/B/C/D/UNKNOWN, 그 외는 '' (sentinel).
+  condition_tier: string;
   blended_median_price: number | null;
   active_median_price: number | null;
   active_sample_count: number | null;
@@ -131,7 +133,9 @@ export type MarketBandRow = {
   disappeared_sample_count: number | null;
 };
 
-export type MarketBandMap = Map<string, Map<string, MarketBandRow>>;
+// Wave 722: nested key — comparable_key → condition_class → condition_tier → row.
+// shoe/clothing은 tier별 별도 row, 그 외는 tier='' 하나만 존재.
+export type MarketBandMap = Map<string, Map<string, Map<string, MarketBandRow>>>;
 
 /**
  * mvp_market_price_daily 에서 comparable_key in (...) 기준으로 (comparable_key, condition_class)
@@ -150,6 +154,8 @@ export async function loadMarketBandsForKeys(
   const cols = [
     "comparable_key",
     "condition_class",
+    // Wave 722 / Stage 5 (2026-05-23): tier 컬럼 추가 — shoe/clothing 매물 tier-aware filter.
+    "condition_tier",
     "blended_median_price",
     "active_median_price",
     "active_sample_count",
@@ -158,18 +164,23 @@ export async function loadMarketBandsForKeys(
   ].join(",");
   const encoded = unique.map((k) => encodeURIComponent(k)).join(",");
   // pack-open.ts / pool/route.ts 패턴 — comparable_key in (...) + order date desc + limit ample.
-  //   각 (comparable_key, condition_class) 의 가장 최신 row 만 보존.
+  //   각 (comparable_key, condition_class, condition_tier) 의 가장 최신 row 만 보존.
+  // Wave 722: tier 컬럼 추가로 row 수가 카테고리당 최대 5배 (S/A/B/C/D/UNKNOWN) 증가 가능 → limit 확대.
   const res = await restFetch(
-    `${tableUrl("mvp_market_price_daily")}?select=${cols}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(200, unique.length * 12)}`,
+    `${tableUrl("mvp_market_price_daily")}?select=${cols}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(500, unique.length * 60)}`,
     { headers },
   );
   const rows = (await res.json()) as MarketBandRow[];
   const byKey: MarketBandMap = new Map();
   for (const row of rows) {
-    const byCondition = byKey.get(row.comparable_key) ?? new Map<string, MarketBandRow>();
-    if (!byCondition.has(row.condition_class)) {
-      byCondition.set(row.condition_class, row);
+    const tier = row.condition_tier ?? "";
+    const byCondition = byKey.get(row.comparable_key) ?? new Map<string, Map<string, MarketBandRow>>();
+    const byTier = byCondition.get(row.condition_class) ?? new Map<string, MarketBandRow>();
+    // 가장 최신만 (order desc + 첫 매칭 보존)
+    if (!byTier.has(tier)) {
+      byTier.set(tier, row);
     }
+    byCondition.set(row.condition_class, byTier);
     byKey.set(row.comparable_key, byCondition);
   }
   return byKey;
@@ -198,6 +209,7 @@ export function bandAwareMedianForListing(
   comparableKey: string | null | undefined,
   conditionClass: string | null | undefined,
   v7SiblingPresence?: V7SiblingPresenceMap,
+  conditionTier?: string | null | undefined,
 ): number | null {
   if (!comparableKey) return null;
   // Wave 252.A real: v3 stale 가드 — v7 sibling 존재 시 v3 row mixed-pool 차단.
@@ -206,14 +218,67 @@ export function bandAwareMedianForListing(
   }
   const byCondition = bandMap.get(comparableKey);
   if (!byCondition) return null;
+  // Wave 722 / Stage 5 (2026-05-23): tier-aware path — shoe/clothing은 (condition_class, condition_tier) 둘 다 매칭.
+  //   conditionTier 명시 + bandMap에 해당 tier row 존재하면 그것 사용.
+  //   tier sample 부족 시 inter-tier fallback (인접 tier 가중평균은 별 wave — neighbor-weighted-price.ts).
+  //   현재 단계: tier 매칭 row → 직접 사용, tier 매칭 row 0 → tier 무시 fallback (옛 conditionClass 그대로).
+  const tierKey = conditionTier ?? "";
+  if (tierKey && tierKey !== "") {
+    // shoe/clothing 매물 tier 명시 → 같은 tier row 우선
+    const conditionFallbackMap = collapseTierLevelToCondition(byCondition, tierKey);
+    const { row: tierRow } = pickByConditionFallback(
+      conditionFallbackMap,
+      conditionClass ?? null,
+      (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0) + Number(r.disappeared_sample_count ?? 0),
+    );
+    if (tierRow) {
+      const price = tierRow.blended_median_price ?? tierRow.active_median_price ?? null;
+      if (price && price > 0) return price;
+    }
+    // tier 매칭 row 없거나 0 → tier 무시 fallback (legacy path, conditionClass만).
+  }
+  // Legacy path — tier 무관 (전자기기 등) 또는 fallback.
+  const legacyMap = collapseTierLevelToCondition(byCondition, "");
   const { row } = pickByConditionFallback(
-    byCondition,
+    legacyMap,
     conditionClass ?? null,
     (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0) + Number(r.disappeared_sample_count ?? 0),
   );
   if (!row) return null;
   const price = row.blended_median_price ?? row.active_median_price ?? null;
   return price && price > 0 ? price : null;
+}
+
+/**
+ * Wave 722: nested tier map → flat conditionClass map 변환 (pickByConditionFallback 호환).
+ *   targetTier 명시 시 해당 tier row만 추출 (tier filter).
+ *   targetTier='' 또는 매칭 없으면 모든 tier sample을 합쳐서 conditionClass별 가장 큰 sample row 선택.
+ */
+function collapseTierLevelToCondition(
+  byCondition: Map<string, Map<string, MarketBandRow>>,
+  targetTier: string,
+): Map<string, MarketBandRow> {
+  const out = new Map<string, MarketBandRow>();
+  for (const [conditionClass, byTier] of byCondition.entries()) {
+    if (targetTier) {
+      // 명시 tier 추출 (없으면 skip — 다른 conditionClass에서 같은 tier 시도)
+      const row = byTier.get(targetTier);
+      if (row) out.set(conditionClass, row);
+    } else {
+      // tier 무시 — 모든 tier row 중 sample 가장 큰 것
+      let best: MarketBandRow | undefined;
+      let bestSample = -1;
+      for (const r of byTier.values()) {
+        const s = Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0) + Number(r.disappeared_sample_count ?? 0);
+        if (s > bestSample) {
+          best = r;
+          bestSample = s;
+        }
+      }
+      if (best) out.set(conditionClass, best);
+    }
+  }
+  return out;
 }
 
 /**
@@ -233,8 +298,10 @@ export function resolveSkuMedianForDisplay(
   conditionClass: string | null | undefined,
   rawSkuMedian: number | null | undefined,
   v7SiblingPresence?: V7SiblingPresenceMap,
+  conditionTier?: string | null | undefined,
 ): number {
-  const band = bandAwareMedianForListing(bandMap, comparableKey, conditionClass, v7SiblingPresence);
+  // Wave 722 / Stage 5 (2026-05-23): conditionTier 추가 — shoe/clothing 매물 tier-aware 시세.
+  const band = bandAwareMedianForListing(bandMap, comparableKey, conditionClass, v7SiblingPresence, conditionTier);
   if (band != null && band > 0) return band;
   // Wave 252.A real: v3 stale 매물도 raw sku_median fallback 차단.
   //   raw sku_median 은 mvp_listings 에 박힌 값 — v3 매물의 경우 v3 comparable_key 시점에

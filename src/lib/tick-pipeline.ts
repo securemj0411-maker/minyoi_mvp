@@ -189,6 +189,10 @@ type ParsedListingRow = {
   // Wave 130 (2026-05-16): condition_class column — DB migration 추가.
   // 시세 산정 시 (comparable_key, condition_class) 복합 키로 grouping.
   condition_class: string | null;
+  // Wave 722 / Stage 5 (2026-05-23): condition_tier (S/A/B/C/D/UNKNOWN) — Wave 714 신발/의류 5-tier.
+  //   시세 산정 시 shoe/clothing 만 (comparable_key, condition_tier) 별 별도 row.
+  //   launch-78 후속 — 라벨/비교군 UI 외에 시세 자체도 tier-aware.
+  condition_tier: string | null;
   needs_review: boolean | null;
   parsed_json: Record<string, unknown> | null;
 };
@@ -2547,7 +2551,7 @@ async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListing
   const unique = [...new Set(pids.filter(Number.isFinite))];
   if (unique.length === 0) return new Map();
   // Wave 130: condition_class 컬럼 fetch — 시세 산정 grouping key.
-  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,condition_class,needs_review,parsed_json";
+  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,condition_class,condition_tier,needs_review,parsed_json";
   const rows: ParsedListingRow[] = [];
   for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
     const url = `${tableUrl("mvp_listing_parsed")}?select=${columns}&pid=in.(${chunk.join(",")})`;
@@ -2566,7 +2570,7 @@ async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: n
   //   default row cap (≈1000) 으로 silent truncation. 50 key chunk × 100 = 5000
   //   limit 박아도 실제 1000 row 만 반환 → 12,736 stale 영역 1 chain 의 root cause.
   //   fix: `restFetchAll` 의 offset pagination 으로 cap 우회.
-  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,condition_class,needs_review,parsed_json";
+  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,condition_class,condition_tier,needs_review,parsed_json";
   const rows: ParsedListingRow[] = [];
   for (const chunk of chunkArray(unique, REST_KEY_READ_CHUNK_SIZE)) {
     const encoded = chunk.map((key) => encodeURIComponent(key)).join(",");
@@ -2585,7 +2589,7 @@ async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: n
 async function loadParsedRowsByShoeSizeSiblingKeys(comparableKeys: string[], limit: number): Promise<Map<number, ParsedListingRow>> {
   const patterns = [...new Set(comparableKeys.map(shoeSizeSiblingLikePattern).filter((key): key is string => Boolean(key)))];
   if (patterns.length === 0 || limit <= 0) return new Map();
-  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,condition_class,needs_review,parsed_json";
+  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,condition_class,condition_tier,needs_review,parsed_json";
   const rows: ParsedListingRow[] = [];
   for (const pattern of patterns.slice(0, REST_KEY_READ_CHUNK_SIZE)) {
     const baseUrl = `${tableUrl("mvp_listing_parsed")}?select=${columns}&comparable_key=like.${encodeURIComponent(pattern)}&parse_confidence=gte.0.65&needs_review=eq.false`;
@@ -2697,6 +2701,8 @@ async function ensureParsedRows(rows: ScorableRawRow[], parsedByPid: Map<number,
       condition_score: (row.condition_score as number | null) ?? null,
       // Wave 130: condition_class — option-parser가 채움. 시세 grouping key.
       condition_class: (row.condition_class as string | null) ?? null,
+      // Wave 722 / Stage 5: condition_tier — shoe/clothing parser가 채움. 시세 grouping key (tier-aware).
+      condition_tier: (row.condition_tier as string | null) ?? null,
       needs_review: (row.needs_review as boolean | null) ?? null,
       parsed_json: (row.parsed_json as Record<string, unknown> | null) ?? null,
     });
@@ -3627,9 +3633,13 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
   //   * normal — 마킹 없거나 일반 사용 매물 (default)
   //
   // grouping key: `${comparable_key}|${condition_class}`. upsert 시 PK (date, comparable_key, condition_class).
+  // Wave 722 / Stage 5 (2026-05-23): shoe/clothing 만 추가 conditionTier 별 시세 분리 — launch-78 후속.
+  //   같은 condition_class('clean') 안에 tier S/A/B/C/D 매물이 섞여 D급 시세 부정확. tier별 별도 row 추가.
+  //   다른 카테고리는 conditionTier=null → 기존 (comparable_key, condition_class) 별 1개 row 유지.
   const byKey = new Map<string, {
     comparableKey: string;
     conditionClass: string;
+    conditionTier: string;  // Wave 722: shoe/clothing은 S/A/B/C/D/UNKNOWN, 그 외는 '' (sentinel)
     rows: ScorableRawRow[];
     activeRows: ScorableRawRow[];
     soldRows: ScorableRawRow[];
@@ -3673,14 +3683,22 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
       parsed.comparable_key,
       shoeSizeAgnosticComparableKey(parsed.comparable_key),
     ].filter((key): key is string => Boolean(key));
+    // Wave 722 / Stage 5 (2026-05-23): shoe/clothing 만 conditionTier 별 별도 row.
+    //   같은 condition_class 안에 tier S/A/B/C/D 매물이 섞여 D급 시세 부정확.
+    //   tier=UNKNOWN/null도 그대로 통과 (backfill 진행 중 매물).
+    //   PK가 NOT NULL이라 빈 문자열 '' 로 처리 — non-shoe/clothing 매물 sentinel.
+    const isShoeOrClothing = parsed.category === "shoe" || parsed.category === "clothing";
+    const conditionTier = isShoeOrClothing ? (parsed.condition_tier ?? "UNKNOWN") : "";
     for (const comparableKey of comparableKeys) {
       // Wave 130: grouping key = (comparable_key, condition_class). 같은 SKU+옵션이라도
       // condition별 별도 시세 산정.
-      const key = `${comparableKey}|${conditionClass}`;
+      // Wave 722: shoe/clothing은 tier도 키에 포함 → (comparable_key, condition_class, condition_tier)
+      const key = `${comparableKey}|${conditionClass}|${conditionTier}`;
       if (!byKey.has(key)) {
         byKey.set(key, {
           comparableKey,
           conditionClass,
+          conditionTier,
           rows: [],
           activeRows: [],
           soldRows: [],
@@ -3864,6 +3882,8 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
       comparable_key: comparableKey,
       // Wave 130: condition_class — PK 일부. condition별 별도 row.
       condition_class: group.conditionClass,
+      // Wave 722 / Stage 5 (2026-05-23): shoe/clothing 만 tier 박힘. 다른 카테고리는 null.
+      condition_tier: group.conditionTier,
       ...marketKeyMeta(comparableKey, group.skuId),
       active_median_price: activeMedian,
       sold_median_price: soldMedian,
@@ -3879,7 +3899,14 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
   });
 
   // Wave 130: PK (date, comparable_key, condition_class) — condition별 별도 upsert.
-  await upsertRows("mvp_market_price_daily", marketRows, "date,comparable_key,condition_class");
+  // Wave 722 / Stage 5: shoe/clothing 매물은 condition_tier 추가 PK 확장. upsert 처리.
+  //   기존 PK (date, comparable_key, condition_class) — backwards compatible.
+  //   tier-aware row는 같은 (date, comparable_key, condition_class) 안에 tier별 별도 row.
+  //   on conflict 정책: PK를 (date, comparable_key, condition_class, condition_tier) 로 확장하지만
+  //   기존 row (condition_tier=null) 와 새 row (condition_tier=S/A/B/C/D) 가 공존.
+  //   현재 upsertRows는 PK 컬럼 conflict 사용 — condition_tier 추가 가능하지만 schema migration 필요.
+  //   1단계 (이 wave): condition_tier 컬럼 채우기만. PK는 그대로. tier-aware row는 conflict 시 덮어쓰기.
+  await upsertRows("mvp_market_price_daily", marketRows, "date,comparable_key,condition_class,condition_tier");
   return {
     keyCount: marketRows.length,
     sampleCount: marketRows.reduce((sum, row) => sum + row.active_sample_count + row.sold_sample_count + row.disappeared_sample_count, 0),

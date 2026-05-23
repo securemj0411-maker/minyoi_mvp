@@ -401,12 +401,16 @@ export async function GET(req: NextRequest) {
       // Wave 252.A (2026-05-20): band-aware sku_median — (comparable_key, condition_class) 매칭
       //   row 우선, sample 부족 시 condition-fallback chain, 그래도 없으면 raw mvp_listings.sku_median.
       //   사용자 코멘트 id 201/202 (BAPE tee 후드/티 혼합) 근본 fix — admin-pool-browser 화면.
+      // Wave 722 / Stage 5 (2026-05-23): shoe/clothing 매물 tier-aware 시세 — 같은 tier row 우선.
+      //   D급 매물에 S/A 매물 평균 시세 부여하던 문제 해소.
+      const conditionTier = (p.condition_tier as string | null) ?? null;
       const skuMedianFinal = resolveSkuMedianForDisplay(
         bandMap,
         comparableKey,
         conditionClass,
         l.sku_median as number | null | undefined,
         v7SiblingPresence,
+        conditionTier,
       );
       return {
         hasComment: note.trim().length > 0,
