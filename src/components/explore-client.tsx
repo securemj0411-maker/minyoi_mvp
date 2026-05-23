@@ -1370,11 +1370,11 @@ export default function ExploreClient({
       Kakao?: {
         isInitialized: () => boolean;
         Share?: {
-          sendScrap: (config: Record<string, unknown>) => void;
+          sendDefault: (config: Record<string, unknown>) => void;
         };
       };
     }).Kakao;
-    if (!kakao?.Share?.sendScrap || !kakao.isInitialized()) {
+    if (!kakao?.Share?.sendDefault || !kakao.isInitialized()) {
       return;
     }
 
@@ -1382,12 +1382,29 @@ export default function ExploreClient({
     const shareUrl = `${baseUrl}?ref=kakao_share`;
 
     try {
-      // Wave 740 (2026-05-24): sendDefault → sendScrap. requestUrl 만 박으면 카카오가 OG meta
-      //   (og:title, og:description, og:image) 자동 fetch 해서 카드 만듦. 카카오 표준 방식.
-      //   기존 sendDefault + imageUrl 직접 박는 방식이 block URL 로 차단된 원인은 카카오 측
-      //   카드 검증 실패. sendScrap + og meta 가 검증 통과 가장 robust.
-      kakao.Share.sendScrap({
-        requestUrl: shareUrl,
+      // Wave 741 (2026-05-24 사용자 정정): sendDefault 복원. 사용자가 정한 카피/CTA 유지.
+      //   block URL 원인은 제품 링크 관리 도메인 미등록 (4002). 사용자가 등록 후 sendDefault 정상 작동.
+      const imageUrl = `${baseUrl}/new_balance.jpeg`;
+      kakao.Share.sendDefault({
+        objectType: "feed",
+        content: {
+          title: "지금 팔면 바로 돈 되는 중고 상품이 있어요",
+          description: "AI 가 매일 찾아주는 차익 상품, 지금 무료로 확인해보세요!",
+          imageUrl,
+          link: {
+            mobileWebUrl: shareUrl,
+            webUrl: shareUrl,
+          },
+        },
+        buttons: [
+          {
+            title: "지금 바로가기",
+            link: {
+              mobileWebUrl: shareUrl,
+              webUrl: shareUrl,
+            },
+          },
+        ],
         serverCallbackArgs: {
           user_id: storageScope && storageScope !== "anonymous" ? storageScope : "",
         },
