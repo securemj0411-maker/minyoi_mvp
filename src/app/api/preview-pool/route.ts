@@ -21,9 +21,11 @@ const PREVIEW_COUNT = 5;
 // 2026-05-17: 진입장벽 ↓ — 가격 tier 분리.
 // tier A: 10만 이하 2개 (저렴한 hook — "와 진짜 싼 매물도 있네")
 // tier B: 30만 이하 3개 (실제 매물 분위기)
+// Wave launch-111 (2026-05-24): 사용자 정정 — 5개 다 15만원 이하로 (tier B 300k → 150k).
+//   비로그인 신규 진입자 부담 ↓. 진짜 진입가 낮춤.
 const TIER_A_MAX_KRW = 100_000;
 const TIER_A_COUNT = 2;
-const TIER_B_MAX_KRW = 300_000;
+const TIER_B_MAX_KRW = 150_000;
 const TIER_B_COUNT = 3;
 const PREVIEW_POOL_SCAN_LIMIT = 500;
 const HIGH_PROFIT_ELECTRONICS_ROI = 0.4;
@@ -77,16 +79,37 @@ async function fetchAndBlurImage(url: string | null | undefined): Promise<string
 }
 
 // 2026-05-17: 매물명 마스킹 강화 — 사용자 보안 우려.
-// 단어별 첫 글자만 보이고 나머지 * 처리 (식별 불가능 + 카테고리 느낌만 유지).
-// 예: "갤럭시 S24 울트라 512GB 자급제 풀박스" → "갤** S** 울** 5**** 자** 풀**"
-//     "애플워치 울트라 2 49mm 티타늄" → "애** 울** * 4*** 티**"
-// DevTools 우회 차단 — 서버에서만 마스킹된 string 전송.
-function maskName(name: string): string {
-  if (!name) return "*****";
-  return name.trim().split(/\s+/).map((w) => {
-    if (w.length <= 1) return w;
-    return w.charAt(0) + "*".repeat(Math.min(w.length - 1, 4));
-  }).join(" ");
+// Wave launch-111 (2026-05-24): 별표 *** 마스킹 폐기 → 카테고리 친화 라벨.
+//   배경: "갤** S** 울**" 같은 별표 노출이 사용자한테 더러워 보임. 사용자 정정 ("이어폰/헤드폰
+//   스마트폰" 같이 카테고리만 표시). 정확한 모델/제목은 가입 후만 노출 (가입 incentive 유지).
+const CATEGORY_FRIENDLY_LABEL: Record<string, string> = {
+  bag: "가방",
+  bike: "자전거",
+  both: "기타",
+  camera: "카메라",
+  clothing: "의류",
+  desktop: "데스크탑",
+  drone: "드론",
+  earphone: "이어폰",
+  game_console: "게임기",
+  headphone: "헤드폰",
+  home_appliance: "생활가전",
+  kickboard: "킥보드",
+  laptop: "노트북",
+  lego: "레고",
+  monitor: "모니터",
+  perfume: "향수",
+  shoe: "신발",
+  smartphone: "스마트폰",
+  smartwatch: "스마트워치",
+  speaker: "스피커",
+  sport_golf: "골프",
+  tablet: "태블릿",
+  watch: "시계",
+};
+function categoryFriendlyLabel(category: string | null): string {
+  if (!category) return "중고 상품";
+  return CATEGORY_FRIENDLY_LABEL[category] ?? "중고 상품";
 }
 
 type PoolRow = {
@@ -330,7 +353,7 @@ export async function GET() {
       const meta = metaByPid.get(row.pid);
       return {
         slot: idx + 1,
-        maskedName: maskName(raw?.name ?? ""),
+        maskedName: categoryFriendlyLabel(row.category), // Wave launch-111: 별표 → 카테고리 라벨.
         // 진짜 사진 blur 처리 base64 (원본 URL X) — DevTools 우회 불가.
         blurredImage: blurredImages[idx],
         category: row.category ?? "other",
