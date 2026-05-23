@@ -325,6 +325,24 @@ const PHONE_NOISE = [
   "callas20", "soocoo", "yas207", "xls202",
   // 미니카
   "토미카", "tomica", "1:64", "1/64", "미니카",
+  // Wave 751 (2026-05-24) Pareto sweep — iPhone Pro 18,000x spread audit 발견.
+  // 사제수리/대용량 배터리/케이스 brand/bait 차단.
+  "사제수리", "사제 수리", "사제수리폰", "수리폰",
+  "에너자이저", "energizer", "대용량 배터리",
+  "어프어프", "케이스만",
+  // bait listings: "개당5000원" 같은 multi-unit dummy 가격
+  "개당", "개당가격", "장당",
+  // Wave 751b (2026-05-24) batch audit:
+  // - 목업폰/디스플레이용 (iPhone 15 Pro Max 7K)
+  // - 껍데기/구성품만 (iPhone 13 Pro 5K / iPhone 16 Pro 25K)
+  // - GTS250 NVIDIA GPU → galaxy-s25 false match (6.5K)
+  // - 광고성 bait ("2/3일까지만 이 가격" — macbook-air)
+  "목업폰", "목업 폰", "전시품", "전시폰", "디스플레이용", "디스플레이 용",
+  "껍데기", "껍데기만", "구성품만", "구성품 만", "내용물만",
+  // GPU false match (Galaxy S25 mustNotContain spread)
+  "gts250", "gts 250", "그래픽카드", "그래픽 카드", "geforce",
+  // 광고 bait
+  "이가격", "이 가격", "오늘까지만", "특가 마감", "급마감",
 ];
 
 const TABLET_NOISE = [
@@ -390,6 +408,13 @@ const HEADPHONE_NOISE = [
   "본체 가져가신", "본체 분실", "본체 찾", "분실 본체",
   "이어폰 단품",
   "8핀 본체", "8핀,본체", "8핀 왼쪽", "8핀 오른쪽",
+  // Wave 751 (2026-05-24) Pareto sweep — AirPods Pro 3 1250x spread.
+  // 분실/찾기 글 차단 (10M dummy 가격 lost & found 매물).
+  "분실물", "분실 신고", "잃어버렸", "잃어버린", "분실해서",
+  "찾아 주", "찾아주", "찾습니다", "찾고 있", "찾고있",
+  "사례하겠", "사례드립",
+  // Wave 751b (2026-05-24) — AirPods Max 어프어프 콜라보 케이스/하드 차단.
+  "어프어프", "전과자 콜라보", "전과자콜라보", "클리어하드", "하드 케이스",
   // Wave 122: 공통 noise 패턴
   ...COMMON_PRODUCT_NOISE,
 ];
@@ -528,6 +553,13 @@ const LAPTOP_NOISE = [
   //   production: pid 407486538 '맥북프로 m5 max 14인치 교환만' 5.79M (placeholder/교환).
   "교환 원함", "교환원함", "교환원해요", "교환 원해요", "교환원합니다", "교환 원합니다",
   "교환희망", "교환 희망", "교환합니다", "교환만",
+  // Wave 751 (2026-05-24) Pareto sweep — macbook-pro 4400x spread audit 발견.
+  // 키보드 가드/공박스/도킹스테이션/구매 글 차단.
+  "키보드 가드", "키보드가드", "공박스", "박스만",
+  "도킹 스테이션", "도킹스테이션", "docking station", "조이룸", "joyroom",
+  "사봐요", "사요", "사고싶어요", "사고 싶어요",
+  // 호환 거치대/스탠드 (단품)
+  "거치대만", "스탠드만", "받침대만", "노트북 받침대만", "노트북 받침만",
 ];
 
 // Wave 94 (2026-05-15): pollution audit 발견 패턴 강화.
@@ -2509,7 +2541,18 @@ const CORE_TABLET_CATALOG: Sku[] = [
     modelName: "iPad Air",
     aliases: ["아이패드 에어", "아이패드에어", "iPad Air"],
     mustContain: [["아이패드", "ipad"], ["에어", "air"]],
-    mustNotContain: ["프로", "pro", "미니", "mini", ...TABLET_NOISE],
+    // Wave 751 (2026-05-24) Pareto sweep — 3846x spread audit 발견.
+    // iPad Air 1세대 (2013) / 2세대 (2014) 9년 정책 차단. 교환 dummy 가격 차단.
+    mustNotContain: [
+      "프로", "pro", "미니", "mini",
+      "에어 1", "에어1", "에어 1세대", "에어1세대", "1세대",
+      "에어 2", "에어2", "에어 2세대", "에어2세대", "2세대",
+      "16gb", "16 gb", "16기가", "16g",
+      "32gb", "32 gb", "32기가",
+      // 교환 dummy 가격 (a16 → 에어4 같은 trade post)
+      "추가금액", "추가 금액", "교환 가능", "교환합니다",
+      ...TABLET_NOISE,
+    ],
     msrpKrw: 900000,
     released: 2024,
   },
@@ -8984,10 +9027,19 @@ export const CATALOG: Sku[] = [
     aliases: ["Crocs Classic", "크록스 클래식", "Crocs 클래식 클로그"],
     mustContain: [["crocs", "크록스"], ["클래식", "classic", "클로그", "clog"]],
     // Wave 220: 별모델 추가 차단 (디스코/퍼/라이트라이드/딜런/스톰프/베이 글리터/언퍼게터블/스타/별무늬)
+    // Wave 751 Pareto: 380x spread — BAPE/Salehe Bembury/Balenciaga 한정 협업 차단.
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
       "바야밴드", "bayaband", "바야 밴드", "크러쉬", "crush", "에코", "eco", "플랫폼", "platform", "발레 플랫", "ballet flat",
       "굿즈", "참이슬", "두꺼비",
-      "디스코", "disco", "별무늬", "라이트라이드", "lite ride", "딜런", "dylan", "스톰프", "stomp", "베이 글리터", "글리터", "glitter", "퍼클로그", "퍼 클로그", "fur clog", "언퍼게터블", "스웨이드", "비건"],
+      "디스코", "disco", "별무늬", "라이트라이드", "lite ride", "딜런", "dylan", "스톰프", "stomp", "베이 글리터", "글리터", "glitter", "퍼클로그", "퍼 클로그", "fur clog", "언퍼게터블", "스웨이드", "비건",
+      // Wave 751 (2026-05-24): 한정 협업 차단 (시세 오염 380x spread)
+      "bape", "베이프", "에이프", "베이프스타",
+      "salehe", "살레헤", "벰버리", "bembury",
+      "balenciaga", "발렌시아가",
+      "맥퀸", "alexander mcqueen", "mcqueen",
+      "스투시 크록스", "stussy crocs", "kith crocs", "키스 크록스",
+      "한정판", "리미티드", "limited",
+    ],
     msrpKrw: 49000, released: 2002,
     defaultProductType: "slipper", // Wave 236e — Classic Clog = slipper.
   },
@@ -10105,6 +10157,10 @@ export const CATALOG: Sku[] = [
       "축구공 세트", "축구공/가방", "축구공 가방", "축구공 동봉", "축구공포함",
       "메시 튜닛 엘리트", "messi tunit elite", "메시 튜닛",
       "최상급 축구화",
+      // Wave 751 (2026-05-24) Pareto: 960x spread audit — goalkeeper gloves false match.
+      "골키퍼 장갑", "골키퍼장갑", "키퍼 장갑", "키퍼장갑", "gk 장갑", "goalkeeper",
+      // 가격 제안받아요 같은 bait
+      "가격 제안받아", "가격제안받아", "가격제시받",
     ],
     msrpKrw: 199000, released: 2014,
   },

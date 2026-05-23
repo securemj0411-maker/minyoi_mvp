@@ -869,6 +869,16 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "glowny", "글로니",
       "thisisneverthat", "디스이즈네버댓", "디네댓",
       "fuct", "퍽트",
+      // Wave 751 (2026-05-24) bias-free sweep — 1818x spread audit 결과
+      // collab/parody premium 차단
+      "coach", "코치 챔피온", "코치 챔피언", "coach x champion",
+      "darkroom", "다크룸",
+      "vetements", "베트멍",
+      // vintage premium 차단 (broad 평균 오염)
+      "90s", "80s", "vintage champion", "vintage 챔피온", "vintage 챔피언",
+      "빈티지 챔피온", "빈티지 챔피언", "vtg",
+      // bait 차단 (만원샵/사이즈교환 typo bait)
+      "만원샵", "1만원샵", "오천원샵",
       // "Champion" 양주
       "위스키", "whisky", "샴페인",
     ],
