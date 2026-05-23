@@ -1001,6 +1001,12 @@ export const LANE_READINESS: LaneReadinessMap = {
   carhartt_denim_pants: { status: "ready", label: "Carhartt Denim / Landon / Newel Pants", note: "Wave 729 — 9+건/주 p50 9.1만." },
   carhartt_overall_anorak: { status: "ready", label: "Carhartt Overall / Nimbus Anorak", note: "Wave 729 — 7건/주 p50 8-10만." },
   carhartt_shirt_flannel: { status: "ready", label: "Carhartt Flannel / Workshirt", note: "Wave 729 — 7건/주 p50 8만." },
+  // Wave 730 — Nike apparel broad 5 SKU 신설
+  nike_dri_fit_therma_broad: { status: "ready", label: "Nike Dri-FIT / Therma Training", note: "Wave 730 — 52건/주 p50 5만." },
+  nike_windbreaker_broad: { status: "ready", label: "Nike Windrunner / Windbreaker", note: "Wave 730 — 47건/주 p50 6만." },
+  nike_hoodie_sweat_broad: { status: "ready", label: "Nike Hoodie / Sweat / Crewneck", note: "Wave 730 — 36건/주 p50 5만." },
+  nike_tee_broad: { status: "ready", label: "Nike Tee / Short Sleeve", note: "Wave 730 — 23건/주 p50 6만." },
+  nike_pants_shorts_broad: { status: "ready", label: "Nike Pants / Cargo / Shorts", note: "Wave 730 — 16건/주 p50 11.7만." },
   // Wave 715 P2-P3 — 잔여 narrow split
   polo_oxford_vintage: { status: "ready", label: "Polo Oxford Vintage (90s/00s archive)", note: "Wave 715 — 67x spread 해소." },
   polo_pique_vintage: { status: "ready", label: "Polo Pique Vintage (90s/00s archive)", note: "Wave 715 — 65x spread 해소." },
