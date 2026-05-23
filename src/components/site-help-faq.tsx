@@ -194,10 +194,11 @@ export default function SiteHelpFaq() {
                   </div>
                   <div className="min-w-0 flex-1 rounded-2xl rounded-tl-sm bg-[#f3f8ef] px-3 py-2.5 dark:bg-zinc-950">
                     {isThinking ? (
-                      <div className="flex h-10 items-center gap-1.5" aria-label="답변 준비 중">
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#6f856e]" />
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#6f856e] [animation-delay:120ms]" />
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#6f856e] [animation-delay:240ms]" />
+                      // Wave 730: animate-bounce → animate-bounce-high (더 높이 튐) + 다크모드 variant 추가 (다크에서 회색-녹색 안 보임).
+                      <div className="flex h-10 items-end gap-1.5" aria-label="답변 준비 중">
+                        <span className="h-2 w-2 animate-bounce-high rounded-full bg-[#3182f6] dark:bg-[#ffffff]" />
+                        <span className="h-2 w-2 animate-bounce-high rounded-full bg-[#3182f6] dark:bg-[#ffffff] [animation-delay:120ms]" />
+                        <span className="h-2 w-2 animate-bounce-high rounded-full bg-[#3182f6] dark:bg-[#ffffff] [animation-delay:240ms]" />
                       </div>
                     ) : (
                       <>

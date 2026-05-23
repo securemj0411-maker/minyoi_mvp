@@ -1116,10 +1116,11 @@ function FirstFeedOnboardingCard({
                         {row.value.toLocaleString("ko-KR")}건
                       </div>
                     ) : (
-                      <div className="flex h-[30px] items-center gap-1.5">
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#0a9f69]/50 dark:bg-emerald-300/50 [animation-delay:-0.32s]" />
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#0a9f69]/50 dark:bg-emerald-300/50 [animation-delay:-0.16s]" />
-                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#0a9f69]/50 dark:bg-emerald-300/50" />
+                      // Wave 730: bounce-high keyframe (더 높이 튐) + opacity 제거로 다크모드 가시성 강화.
+                      <div className="flex h-[30px] items-end gap-1.5">
+                        <span className="h-2 w-2 animate-bounce-high rounded-full bg-[#3182f6] dark:bg-[#ffffff] [animation-delay:-0.32s]" />
+                        <span className="h-2 w-2 animate-bounce-high rounded-full bg-[#3182f6] dark:bg-[#ffffff] [animation-delay:-0.16s]" />
+                        <span className="h-2 w-2 animate-bounce-high rounded-full bg-[#3182f6] dark:bg-[#ffffff]" />
                       </div>
                     )}
                   </div>
@@ -2953,17 +2954,28 @@ export default function ExploreClient({
 
       {/* Wave launch-88 (사용자 정정 — 클릭 시 검증 딜레이 동안 렉걸린 느낌):
           detailAccessLoadingPid 활성 동안 검은 overlay + 가운데 dots loading 표시.
-          z-[94] = paywall modal (z-[95]) 보다 한 단계 아래. paywall 응답 받으면 자동 사라짐. */}
+          z-[94] = paywall modal (z-[95]) 보다 한 단계 아래. paywall 응답 받으면 자동 사라짐.
+          Wave 730 (2026-05-23): 사용자 보고 — 점이 더 높이 튀어야 / "확인 중" 안내 메시지 / 다크모드 가시성.
+            - animate-bounce → animate-bounce-high (custom keyframe, -100% 높이)
+            - 점 크기 키움 (h-3 → h-2.5/4 staggered = 더 dynamic)
+            - "상품을 확인중입니다" + sub text 추가
+            - dots 흰색 + drop-shadow 로 다크 배경에서도 또렷 */}
       {detailAccessLoadingPid != null ? (
         <div
           className="fixed inset-0 z-[94] flex items-center justify-center bg-black/55 backdrop-blur-[1px]"
           aria-live="polite"
           aria-busy="true"
         >
-          <div className="flex gap-2">
-            <span className="h-3 w-3 animate-bounce rounded-full bg-white [animation-delay:-0.32s]" />
-            <span className="h-3 w-3 animate-bounce rounded-full bg-white [animation-delay:-0.16s]" />
-            <span className="h-3 w-3 animate-bounce rounded-full bg-white" />
+          <div className="flex flex-col items-center gap-5">
+            <div className="flex items-end gap-2.5">
+              <span className="h-3.5 w-3.5 animate-bounce-high rounded-full bg-[#ffffff] shadow-[0_2px_8px_rgba(255,255,255,0.4)] [animation-delay:-0.32s]" />
+              <span className="h-3.5 w-3.5 animate-bounce-high rounded-full bg-[#ffffff] shadow-[0_2px_8px_rgba(255,255,255,0.4)] [animation-delay:-0.16s]" />
+              <span className="h-3.5 w-3.5 animate-bounce-high rounded-full bg-[#ffffff] shadow-[0_2px_8px_rgba(255,255,255,0.4)]" />
+            </div>
+            <div className="text-center">
+              <div className="text-[15px] font-black text-white">상품을 확인 중이에요</div>
+              <div className="mt-1 text-[12px] font-bold text-white/70">시세·재고·셀러 정보를 가져오는 중...</div>
+            </div>
           </div>
         </div>
       ) : null}

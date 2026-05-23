@@ -52,6 +52,10 @@
   --color-foreground: var(--foreground);
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  /* Wave 730 (2026-05-23 정정): Tailwind 4 utility 자동 등록. 이전엔 globals.css 안에 .animate-bounce-high
+   * 일반 CSS class 박았는데 JIT 가 작동 안 함 (사용자 보고 "점 가만히 있음"). @theme 박으면 animate-bounce-high
+   * utility 자동. */
+  --animate-bounce-high: bounce-high 0.9s infinite;
 }
 
 html,
@@ -147,6 +151,27 @@ a {
   .showcase-swipe-in,
   .showcase-swipe-out,
   .showcase-content-in {
+    animation: none;
+  }
+}
+
+/* Wave 730 (2026-05-23): 더 명확하게 튀는 loading dots — Tailwind animate-bounce 는 약 -25% 만 튐.
+ * 사용자 보고 "더 높이 진짜 애니메이션으로". 50% 시점에 -100% (점 자기 height 만큼) 튀고
+ * cubic-bezier 로 hop 느낌. 다크모드도 흰 점이라 가시성 OK.
+ * Tailwind 4 utility 자동 등록은 @theme inline 의 --animate-bounce-high (위) 가 담당. */
+@keyframes bounce-high {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(-100%);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-bounce-high {
     animation: none;
   }
 }
