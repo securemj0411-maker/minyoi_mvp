@@ -7,6 +7,8 @@ import { isAdminUser } from "@/lib/auth-users";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 import { serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import MembersTable, { type MemberRow } from "./members-table";
+// Wave launch-97: cau page 에 충전 신청 승인 panel.
+import ManualDepositPanel from "./manual-deposit-panel";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -225,6 +227,8 @@ export default async function MembersPage() {
         <KpiCard label="오늘 번개장터 클릭" value={clicksToday} accent="sky" sub={revealsToday > 0 ? `CTR ${Math.round((clicksToday / revealsToday) * 100)}%` : undefined} />
         <KpiCard label="베타 체험단" value={totalBeta} accent="purple" sub={`최근 7일 로그인 ${totalActive7d}`} />
       </section>
+
+      <ManualDepositPanel />
 
       <MembersTable initialRows={rows} />
     </main>

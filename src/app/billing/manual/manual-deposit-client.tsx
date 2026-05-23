@@ -23,7 +23,16 @@ const CREDIT_PACKAGE_TO_PLAN: Record<string, Exclude<PlanKey, "free">> = {
 };
 const VALID: Exclude<PlanKey, "free">[] = ["starter", "plus", "pro"];
 
-type Stage = "ready" | "submitting" | "success" | "error";
+function formatCountdown(seconds: number): string {
+  const safe = Math.max(0, Math.floor(seconds));
+  const m = Math.floor(safe / 60);
+  const s = safe % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+// Wave launch-97: countdown 추가. "waiting" = 신청 후 3분 카운트다운 + status polling.
+// "approved" = 운영자 승인 또는 자동 grant 완료.
+type Stage = "ready" | "submitting" | "waiting" | "approved" | "error";
 
 export default function ManualDepositClient() {
   const params = useSearchParams();
@@ -43,6 +52,10 @@ export default function ManualDepositClient() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copyOk, setCopyOk] = useState(false);
   const [authReady, setAuthReady] = useState<"loading" | "authed" | "guest">("loading");
+  // Wave launch-97: 신청 → 카운트다운 + polling.
+  const [requestId, setRequestId] = useState<number | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState<number>(180);
+  const [approvedBy, setApprovedBy] = useState<"admin" | "auto" | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,6 +72,53 @@ export default function ManualDepositClient() {
       cancelled = true;
     };
   }, []);
+
+  // Wave launch-97: waiting 상태에서 countdown 1초마다 감소.
+  useEffect(() => {
+    if (stage !== "waiting") return;
+    const interval = window.setInterval(() => {
+      setSecondsLeft((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, [stage]);
+
+  // Wave launch-97: waiting 상태에서 3초마다 status polling.
+  //   status = approved | auto_approved → setStage("approved") + credits-changed event.
+  useEffect(() => {
+    if (stage !== "waiting" || requestId == null) return;
+    let cancelled = false;
+    let timer: number | null = null;
+    const poll = async () => {
+      try {
+        const supabase = getSupabaseBrowserClient();
+        const token = supabase ? (await supabase.auth.getSession()).data.session?.access_token : null;
+        const res = await fetch(`/api/billing/manual-deposit/${requestId}`, {
+          cache: "no-store",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as { status?: string; decidedBy?: string | null };
+        if (cancelled) return;
+        if (data.status === "approved" || data.status === "auto_approved") {
+          setApprovedBy(data.decidedBy === "admin" ? "admin" : "auto");
+          setStage("approved");
+          window.dispatchEvent(new CustomEvent("minyoi:credits-changed"));
+          window.setTimeout(() => router.push("/"), 2400);
+        } else if (data.status === "rejected") {
+          setErrorMessage("운영자가 신청을 거절했어요. 입금이 확인되지 않아요.");
+          setStage("error");
+        }
+      } catch {
+        // 일시적 network fail — 다음 polling 에서 재시도.
+      }
+    };
+    void poll();
+    timer = window.setInterval(poll, 3000);
+    return () => {
+      cancelled = true;
+      if (timer != null) window.clearInterval(timer);
+    };
+  }, [stage, requestId, router]);
 
   async function copyAccountNumber() {
     try {
@@ -98,12 +158,17 @@ export default function ManualDepositClient() {
         setStage("error");
         return;
       }
-      // 크레딧 즉시 grant 됐음. credits-changed 이벤트 + success modal 2.4초 후 redirect.
-      // Wave launch-95e + 95f (사용자 정정 — "왜 /explore 로? 우리 메인 페이지가 피드인데"):
-      //   메인 path `/` = MeDashboardClient = 추천 피드. /explore 는 별개.
-      window.dispatchEvent(new CustomEvent("minyoi:credits-changed"));
-      setStage("success");
-      window.setTimeout(() => router.push("/"), 2400);
+      // Wave launch-96 + 97: 신청 row 생성 → 카운트다운 + polling 시작.
+      const reqData = data as { ok?: boolean; requestId?: number; etaSeconds?: number };
+      const reqId = Number(reqData.requestId);
+      if (!Number.isFinite(reqId) || reqId <= 0) {
+        setErrorMessage("신청 ID를 받지 못했어요.");
+        setStage("error");
+        return;
+      }
+      setRequestId(reqId);
+      setSecondsLeft(Math.max(60, Math.min(300, Number(reqData.etaSeconds ?? 180))));
+      setStage("waiting");
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "네트워크 오류가 발생했어요.");
       setStage("error");
@@ -194,7 +259,7 @@ export default function ManualDepositClient() {
               onChange={(e) => setDepositorName(e.target.value)}
               placeholder="입금하신 분의 성함"
               maxLength={40}
-              disabled={stage === "submitting" || stage === "success"}
+              disabled={stage === "submitting" || stage === "waiting" || stage === "approved"}
               className="mt-1.5 flex h-11 w-full items-center rounded-xl border border-zinc-200 bg-white px-3 text-[14px] font-bold text-zinc-950 placeholder:text-zinc-400 focus:border-[#3182f6] focus:outline-none focus:ring-2 focus:ring-[#3182f6]/25 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500"
             />
             <p className="mt-1.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
@@ -206,7 +271,7 @@ export default function ManualDepositClient() {
           <button
             type="button"
             onClick={handleConfirm}
-            disabled={authReady !== "authed" || stage === "submitting" || stage === "success"}
+            disabled={authReady !== "authed" || stage === "submitting" || stage === "waiting" || stage === "approved"}
             className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#3182f6] text-[14.5px] font-black text-white shadow-[0_10px_22px_rgba(49,130,246,0.28)] transition hover:bg-[#1c6fe8] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-55"
           >
             {stage === "submitting" ? (
@@ -215,8 +280,8 @@ export default function ManualDepositClient() {
                 <span className="h-2 w-2 animate-bounce rounded-full bg-white [animation-delay:-0.16s]" />
                 <span className="h-2 w-2 animate-bounce rounded-full bg-white" />
               </>
-            ) : stage === "success" ? (
-              <>신청 접수됨 — 곧 지급돼요</>
+            ) : stage === "waiting" || stage === "approved" ? (
+              <>신청 접수됨 — 잠시만요</>
             ) : (
               <>입금 완료 — 즉시 {plan.monthlyCredits.toLocaleString("ko-KR")}크레딧 받기</>
             )}
@@ -245,9 +310,39 @@ export default function ManualDepositClient() {
         </section>
       </div>
 
-      {/* Wave launch-95e (사용자 정정): 충전 완료 fullscreen 모달.
-          큰 ✓ 체크 + "충전 완료" headline + 받은 크레딧 + sub. 2.4초 후 자동 redirect. */}
-      {stage === "success" ? (
+      {/* Wave launch-97: waiting 단계 — 3분 카운트다운 + status polling. */}
+      {stage === "waiting" ? (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/65 backdrop-blur-md"
+          role="dialog"
+          aria-modal="true"
+          aria-label="입금 확인 중"
+        >
+          <div className="mx-4 flex w-full max-w-[360px] flex-col items-center rounded-[28px] bg-white px-6 py-8 shadow-[0_24px_60px_rgba(15,23,42,0.35)] dark:bg-zinc-950">
+            <div className="success-check relative flex h-24 w-24 items-center justify-center rounded-full bg-[#ebf2ff] dark:bg-blue-950/40">
+              <span className="text-[28px] font-black tabular-nums text-[#3182f6] dark:text-blue-300">
+                {formatCountdown(secondsLeft)}
+              </span>
+            </div>
+            <h2 className="mt-5 text-[22px] font-black text-zinc-950 dark:text-zinc-50">입금 확인 중</h2>
+            <div className="mt-2 text-[16px] font-bold text-[#3182f6] dark:text-blue-300">
+              {plan.monthlyCredits.toLocaleString("ko-KR")} 크레딧
+            </div>
+            <p className="mt-4 text-center text-[12.5px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+              운영자가 통장 확인 중이에요.<br/>
+              카운트가 0이 되면 자동으로 크레딧을 받아요.
+            </p>
+            <div className="mt-3 flex items-center gap-1">
+              <span className="h-1.5 w-1.5 animate-bounce-high rounded-full bg-[#3182f6] [animation-delay:-0.32s]" />
+              <span className="h-1.5 w-1.5 animate-bounce-high rounded-full bg-[#3182f6] [animation-delay:-0.16s]" />
+              <span className="h-1.5 w-1.5 animate-bounce-high rounded-full bg-[#3182f6]" />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Wave launch-97: approved 단계 — 큰 ✓ + 2.4s 후 redirect. */}
+      {stage === "approved" ? (
         <div
           className="fixed inset-0 z-[120] flex items-center justify-center bg-black/55 backdrop-blur-md"
           role="dialog"
@@ -260,12 +355,13 @@ export default function ManualDepositClient() {
                 <path d="M20 6L9 17l-5-5" />
               </svg>
             </div>
-            <h2 className="mt-5 text-[22px] font-black text-zinc-950 dark:text-zinc-50">신청이 접수됐어요</h2>
+            <h2 className="mt-5 text-[22px] font-black text-zinc-950 dark:text-zinc-50">
+              {approvedBy === "admin" ? "승인 완료!" : "지급 완료!"}
+            </h2>
             <div className="mt-2 text-[16px] font-bold text-[#3182f6] dark:text-blue-300">
-              {plan.monthlyCredits.toLocaleString("ko-KR")} 크레딧
+              +{plan.monthlyCredits.toLocaleString("ko-KR")} 크레딧
             </div>
             <p className="mt-4 text-center text-[12.5px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-              운영자 확인 또는 3분 안에 자동 지급돼요.<br/>
               잠시 후 내 피드로 이동해요.
             </p>
           </div>
