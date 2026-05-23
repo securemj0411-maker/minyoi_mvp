@@ -5422,6 +5422,25 @@ function RevealCardItem({
                 <div className="hidden">
                   <LastVerifiedAtBadge card={card} />
                 </div>
+                {/* Wave 714i (2026-05-23 사용자 요청): 상세보기 맨 위 — 매물명 위에 unconditional 등급 chip placeholder.
+                    빈 chip 도 표시 (사용자가 "여기 박혔구나" 디버깅 가능).
+                    backfill 진행 중인 매물 → "분석중" placeholder. */}
+                <div className="mb-2 flex flex-wrap items-center gap-1.5 rounded-md bg-amber-50/80 px-2 py-1.5 ring-1 ring-amber-200/60 dark:bg-amber-900/20 dark:ring-amber-700/40">
+                  <span className="text-[10px] font-black uppercase tracking-wide text-zinc-600 dark:text-zinc-300">
+                    상태:
+                  </span>
+                  {card.conditionTier ? (
+                    <ConditionTierChip tier={card.conditionTier} variant="friendly" showHelp />
+                  ) : (
+                    <span className="text-[11px] italic text-zinc-500 dark:text-zinc-400">
+                      분석중 (24h 안에 표시)
+                    </span>
+                  )}
+                  {card.conditionChips && card.conditionChips.length > 0 && (
+                    <ConditionChipsList chips={card.conditionChips} max={6} />
+                  )}
+                  {/* 디버그: tier/chips 둘 다 null 이면 매물 backfill 안 됨 (raw 텍스트 분석 진행 중). */}
+                </div>
                 {/* Wave 359+361: 득템 점수 — 제목과 같은 행 우측 작게 (당근 36.8°C 톤). */}
                 <div className="flex items-start gap-3">
                   <div className="min-w-0 flex-1 line-clamp-2 pr-[92px] text-[20px] font-black leading-[1.25] tracking-[-0.01em] text-[#111915] dark:text-zinc-50">
@@ -5431,18 +5450,6 @@ function RevealCardItem({
                     <DealMeterButton card={card} />
                   </div>
                 </div>
-                {/* Wave 714g (2026-05-23): 신발/의류 5-tier 등급 + raw 표현 chips — 매물명 바로 아래 prominent 노출.
-                    ? 클릭 시 분류 기준 popover. 데이터 없으면 hide. */}
-                {(card.conditionTier || (card.conditionChips && card.conditionChips.length > 0)) && (
-                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    {card.conditionTier && (
-                      <ConditionTierChip tier={card.conditionTier} variant="friendly" showHelp />
-                    )}
-                    {card.conditionChips && card.conditionChips.length > 0 && (
-                      <ConditionChipsList chips={card.conditionChips} max={6} />
-                    )}
-                  </div>
-                )}
                 {onBeginnerGuideClick ? (
                   <button
                     type="button"
