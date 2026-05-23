@@ -352,7 +352,11 @@ export const GENERATED_CATALOG: Sku[] = [
       [
         "아이폰 15 프로",
         "아이폰15프로",
-        "iphone 15 pro"
+        "아이폰 15프로",
+        "아이폰15 프로",
+        "iphone 15 pro",
+        "iphone15 pro",
+        "iphone 15pro"
       ]
     ],
     "mustNotContain": [
