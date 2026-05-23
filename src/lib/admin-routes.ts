@@ -4,3 +4,5 @@ export const OPS_ADMIN_FEEDBACK_STATS_PATH = `${OPS_ADMIN_BASE_PATH}/feedback-st
 export const OPS_ADMIN_DETAIL_EVENTS_PATH = `${OPS_ADMIN_BASE_PATH}/detail-events`;
 // Wave 342: /explore 운영자 모니터 — 비밀 path 안에 박음 (Wave 340 정정 — /admin 노출 path였음)
 export const OPS_ADMIN_EXPLORE_MONITOR_PATH = `${OPS_ADMIN_BASE_PATH}/explore-monitor`;
+// Wave launch-105: 운영자 풀 (AdminPoolBrowser) — /me 운영자 view 와 동일한 매물 검토 화면.
+export const OPS_ADMIN_POOL_PATH = `${OPS_ADMIN_BASE_PATH}/pool`;

@@ -2,7 +2,7 @@
 // 비admin은 notFound() → URL 존재 자체 노출 X. /admin과 별개로 운영자가 회원 현황 확인 용도.
 
 import { notFound } from "next/navigation";
-import { OPS_ADMIN_DETAIL_EVENTS_PATH, OPS_ADMIN_FEEDBACK_STATS_PATH, OPS_ADMIN_LOSS_REPORTS_PATH } from "@/lib/admin-routes";
+import { OPS_ADMIN_DETAIL_EVENTS_PATH, OPS_ADMIN_FEEDBACK_STATS_PATH, OPS_ADMIN_LOSS_REPORTS_PATH, OPS_ADMIN_POOL_PATH } from "@/lib/admin-routes";
 import { isAdminUser } from "@/lib/auth-users";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 import { serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -208,6 +208,7 @@ export default async function MembersPage() {
           {/* sub nav (페이지 ↔ 페이지 jump) */}
           <nav className="mt-3 flex flex-wrap items-center gap-1.5 text-[10px] uppercase tracking-[0.16em]">
             <span className="rounded-sm border border-amber-500/40 bg-amber-500/10 px-2 py-1 font-black text-amber-300">▶ MEMBERS</span>
+            <a href={OPS_ADMIN_POOL_PATH} className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 font-bold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200">POOL</a>
             <a href={OPS_ADMIN_LOSS_REPORTS_PATH} className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 font-bold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200">LOSS-REPORTS</a>
             <a href={OPS_ADMIN_FEEDBACK_STATS_PATH} className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 font-bold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200">FEEDBACK-STATS</a>
             <a href={OPS_ADMIN_DETAIL_EVENTS_PATH} className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 font-bold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200">DETAIL-EVENTS</a>
