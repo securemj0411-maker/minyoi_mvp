@@ -1,5 +1,6 @@
 // Wave 182 (2026-05-17): 운영자 손해 신고 검수 페이지.
 // Wave launch-104 (2026-05-23): Bloomberg 톤 + user_feedback 검수 panel mount.
+// Wave launch-104c (2026-05-24): legacy feedback_reports UI 제거 — user_feedback 으로 단일화.
 //   URL obfuscation + admin auth 이중 보호 (같은 디렉토리 패턴 — members-table 옆).
 
 import { notFound } from "next/navigation";
@@ -7,7 +8,6 @@ import { OPS_ADMIN_BASE_PATH, OPS_ADMIN_DETAIL_EVENTS_PATH, OPS_ADMIN_FEEDBACK_S
 import { isAdminUser } from "@/lib/auth-users";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 import FeedbackReviewFull from "./feedback-review-full";
-import LossReportsClient from "./loss-reports-client";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -51,18 +51,12 @@ export default async function LossReportsAdminPage() {
             사용자 신고 검수
           </h1>
           <p className="mt-1 text-[11px] text-zinc-500">
-            🚨 user_feedback (매물 정보 신고 · +20 크레딧) + 손해 신고 통합 검수. 24h 내 처리 권장.
+            🚨 매물 정보 신고 (가품·시세·거래완료·카테고리 오류). 승인 시 +20 크레딧 지급. 24h 내 처리 권장.
           </p>
         </header>
 
         {/* Wave launch-104: user_feedback 풀 리뷰 — 카테고리/필터/확장. */}
         <FeedbackReviewFull />
-
-        {/* legacy: 손해 신고 / feedback_reports (Wave 182 이전 시스템). */}
-        <div className="mt-8">
-          <h2 className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-amber-400">▌LEGACY · 손해 신고 / feedback_reports</h2>
-          <LossReportsClient />
-        </div>
       </section>
     </main>
   );
