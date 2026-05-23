@@ -79,7 +79,7 @@ export default function InviteClient() {
         return;
       }
       // Wave 737 (2026-05-24): "text" 형식이 친구한테 link 안 보냄 보고됨 → "feed" 복원 + imageUrl 박음.
-      const imageUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/share-card.webp`;
+      const imageUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/new_balance.jpeg`;
       kakao.Share.sendDefault({
         objectType: "feed",
         content: {

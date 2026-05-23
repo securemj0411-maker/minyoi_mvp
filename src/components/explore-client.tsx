@@ -1386,7 +1386,7 @@ export default function ExploreClient({
       // Wave 732 → 737 (2026-05-24): "text" 형식이 친구한테 link 안 보내는 문제 보고됨 →
       //   "feed" 형식 복원 + imageUrl 박음 (이미지 = public/share-card.png, 사용자 첨부 이미지).
       // Wave 734: serverCallbackArgs 로 친구 도달 시 webhook 통과 → +3 크레딧.
-      const imageUrl = `${baseUrl}/share-card.webp`;
+      const imageUrl = `${baseUrl}/new_balance.jpeg`;
       kakao.Share.sendDefault({
         objectType: "feed",
         content: {
