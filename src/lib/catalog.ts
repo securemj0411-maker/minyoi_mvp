@@ -9499,6 +9499,11 @@ export const CATALOG: Sku[] = [
       "타임", "time homme", "이자벨마랑", "isabel marant", "마쥬", "maje",
       "아미/", "ami/", "비비안", "vivienne westwood",
       "르샵", "leshop", "le shop",
+      // Wave 800 (2026-05-24) Phase 2: 72x — skincare false match + 한정 라인.
+      "크리미 폼", "크리미폼", "creamy foam", "여드름", "트러블",
+      "페어 아크네", "아크네 케어", "acne care", "acne treatment",
+      "레이어드 티셔츠 s", "stockholm long sleeve",  // 한정 라인 (530K-650K)
+      "스톡홀름 롱슬리브", "한정 티", "limited tee",
     ],
     msrpKrw: 130000, released: 2020,
     defaultProductType: "tee", // Wave 236d — Acne Tee = tee 확정.
@@ -9509,7 +9514,14 @@ export const CATALOG: Sku[] = [
     modelName: "Acne Studios Sweat / Hoodie (Fairview / 페어뷰)",
     aliases: ["Acne 맨투맨", "Acne 후디", "Acne Fairview"],
     mustContain: [["acne", "아크네"], ["맨투맨", "후드", "hoodie", "후디", "스웻", "스웨트", "스웻셔츠", "스웨트셔츠", "스웨트 셔츠", "sweat", "sweatshirt", "sweat shirt", "포바", "forba", "flogho", "페어뷰", "fairview", "페이셜", "facial", "크루넥"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep", "replica", "fake", "긴팔티", "긴팔 티셔츠", "긴팔티셔츠", "반팔티", "자켓", "코트", "데님", "버튼다운", "남방"],
+    // Wave 800 (2026-05-24) Phase 2: 68x — skincare "아크네 크리미 폼" false match 차단.
+    mustNotContain: ["키즈", "kids", "복각", "rep", "replica", "fake", "긴팔티", "긴팔 티셔츠", "긴팔티셔츠", "반팔티", "자켓", "코트", "데님", "버튼다운", "남방",
+      // skincare "아크네 (acne 여드름)" - clothing-acne-apparel과 동일 패턴
+      "크리미 폼", "크리미폼", "creamy foam", "폼클렌징", "클렌징폼",
+      "페어 아크네", "fair acne", // skincare brand
+      "핌플", "여드름", "트러블", "패치 2매", "마스터 패치",
+      "바디워시", "body wash", "샴푸",
+    ],
     msrpKrw: 230000, released: 2020,
     // Wave 236d: multi product-type (hoodie + crewneck) — default 안 박음. text 추출 의존.
   },
@@ -10749,7 +10761,14 @@ export const CATALOG: Sku[] = [
       // 셀럽 outlier 차단
       "gd", "지디", "지드래곤", "안소희", "손나은",
       // Nike collab 차단 (의류 단일)
-      "나이키", "nike", "머큐리얼", "mercurial", "컨버스", "converse", "airmax", "에어맥스"],
+      "나이키", "nike", "머큐리얼", "mercurial", "컨버스", "converse", "airmax", "에어맥스",
+      // Wave 800 (2026-05-24) Phase 2: 72x — Mars edition + 90s vintage + 모음 bundle 차단.
+      "mars", "마스 신칠라", "patagonia mars",
+      "reversible snap", "리버서블 스냅", "리버시블",
+      "90s 신칠라", "90s synchilla", "y2k 신칠라", "vintage 신칠라", "vintage synchilla",
+      "모음", "묶음", "bundle", "x장", "장 일괄",  // multi-piece bundle (1M outlier)
+      "핫핑크", "hot pink",  // 한정 color 라인 (별도 시세)
+    ],
     msrpKrw: 365000, released: 1985,
   },
   // 파타고니아 — 매물 17건, faved 19, outdoor

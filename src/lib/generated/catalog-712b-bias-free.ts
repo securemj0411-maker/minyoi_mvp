@@ -201,9 +201,16 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       ["폴로", "polo", "ralph lauren", "랄프로렌"],
       ["체크 셔츠", "체크셔츠", "스트라이프 셔츠", "깅엄", "플란넬", "flannel", "페이즐리", "paisley", "하와이안", "마드라스"],
     ],
+    // Wave 800 (2026-05-24) Phase 2: 68x audit — 블레이저/금장 등 별 product type 차단.
     mustNotContain: [...COMMON_NOISE, "RRL", "purple label", "퍼플라벨", "옥스포드", "oxford", "polo bear",
       "라코스테", "lacoste", "타미힐피거", "tommy", "유니클로", "나이키", "아디다스", "버버리", "fendi", "디올",
-      "rlx", "j.lindeberg", "마크앤로나", "waac", "u.s. polo", "us polo", "디스커버리", "내셔널지오그래픽"],
+      "rlx", "j.lindeberg", "마크앤로나", "waac", "u.s. polo", "us polo", "디스커버리", "내셔널지오그래픽",
+      // 별 product type
+      "블레이저", "blazer", "재킷", "자켓",
+      "도스킨", "doeskin", "울 플란넬 블레이저", "wool flannel blazer",
+      "리미티드", "limited", "한정 셔츠", "패치워크",
+      "금장", "gold button",
+    ],
     msrpKrw: 159000, released: 2018,
   },
   {
@@ -228,7 +235,15 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       ["폴로", "polo", "ralph lauren", "랄프로렌"],
       ["니트", "knit", "스웨터", "sweater", "케이블", "cable", "꽈배기", "v넥", "롤넥", "페어아일", "fair isle"],
     ],
-    mustNotContain: [...COMMON_NOISE, "RRL", "purple label", "퍼플라벨", "polo bear", "라코스테", "타미힐피거", "rlx"],
+    // Wave 800 (2026-05-24) Phase 2: 95x spread — 다른 brand "polo 니트" generic 차단.
+    mustNotContain: [...COMMON_NOISE, "RRL", "purple label", "퍼플라벨", "polo bear", "라코스테", "타미힐피거", "rlx",
+      // Other brand polo collar knits (false match)
+      "믹쏘", "mixxo", "자라", "zara", "wolsey", "월시", "월시폴로",
+      "poszer", "포저", "스파오", "유니클로", "uniqlo", "에잇세컨즈",
+      // 캐시미어 100% 별도 라인 (top tier)
+      "캐시미어 100", "100프로 캐시미어", "100% cashmere",
+      "나바호 핸드니트", "navajo handknit",  // Polo Country 한정
+    ],
     msrpKrw: 219000, released: 2018,
   },
   {
@@ -460,6 +475,10 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       "후드", "후디", "hoodie", "후드티",
       "봄버", "bomber", "봄버자켓",
       "자켓", "재킷", "jacket",
+      // Wave 800 (2026-05-24) Phase 2: 324x spread — Martin Rose collab + dyed bomber 차단.
+      "martin rose", "마틴 로즈", "마틴로즈",
+      "stussy dyed nylon", "dyed nylon bomber",  // 다른 product type (bomber jacket)
+      "올리브", "olive",  // dyed nylon olive bomber 시그니처
     ],
     msrpKrw: 70000, released: 2020,
   },

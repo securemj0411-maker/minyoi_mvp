@@ -817,6 +817,20 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "옥스포드", "옥스퍼드", "럭비", "rugby", "버튼다운",  // → thombrowne_shirt
       "슈트", "suit", "블레이저", "blazer", "코트", "coat", "오버코트", "트렌치",  // → thombrowne_suit_coat
       "맨투맨", "스웻", "sweat", "후드", "hoodie", "후디", "크루넥",  // → thombrowne_sweat_hoodie
+      // Wave 800 (2026-05-24) Pareto Phase 2: 113x spread — luxury material/한정 라인 분리.
+      // Fur / Shearling / Cashmere = 2-7M outlier broad 오염.
+      "밍크", "mink", "여우 fur", "fur 자켓", "fur 코트",
+      "시어링", "shearling",
+      "캐시미어 자켓", "cashmere jacket", "캐시미어 코트", "cashmere coat",
+      "구스다운", "goose down", "다운필 자켓",
+      // 한정/스페셜 라인
+      "금장", "골드", "gold accent",
+      "프린스 오브 웨일즈", "prince of wales",
+      "헤링본", "herringbone",
+      "고가라인", "스페셜", "special edition",
+      "정장 세트", "정장세트", "suit set", "set bundle",
+      // 사이즈 라벨링 ("38사이즈" 여성 또는 라벨 변형)
+      "수트 세트", "쓰리피스", "three piece",
     ],
     msrpKrw: 990000,
     released: 2003,
@@ -1142,6 +1156,14 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "ice jacket", "아이스 자켓",
       "프리즘", "prism",
       "ghost",
+      // Wave 800 (2026-05-24) Pareto Phase 2: 47x spread — Alcantara/David TC/Frost 한정 차단.
+      "알칸타라", "alcantara",
+      "다비드tc", "david tc", "david-tc", "davidtc",
+      "프로스트", "frost vest", "프로스트 베스트",
+      "나일론 메탈 한정", "nylon metal", "메탈 한정판",
+      "25ss 알칸타라", "25 ss 알칸타라",
+      "17fw", "18fw", "19fw", "20fw", "21fw", "22fw", "23fw", "24fw",  // 빈티지 시즌 (broad 시세군 다름)
+      "17ss", "18ss", "19ss", "20ss", "21ss", "22ss", "23ss", "24ss", "25ss",
     ],
     msrpKrw: 490000,
     released: 1982,
