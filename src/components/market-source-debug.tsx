@@ -6,7 +6,7 @@
 // 코멘트는 mvp_reveal_feedback.note에 watching 타입으로 upsert.
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { DanawaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { ConditionTierChip, ConditionChipsList } from "@/components/condition-chip";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -284,7 +284,35 @@ export function MarketSourceDebug({
     }
   }, [accessToken, userRef, note, pid, onCommentSaved]);
 
-  const sorted = data?.comparables ? [...data.comparables].sort((a, b) => a.price - b.price) : [];
+  // Wave 714e (2026-05-23): 신발/의류 — 같은 tier 우선 + 인접 tier (±1) + 그 외 순으로 정렬.
+  //   ourTier 가 null (전자기기/backfill 안 됨) 이면 price 정렬 (기존 behavior).
+  //   같은 tier distance 내에서는 price 오름차순.
+  const TIER_ORDER = ["S", "A", "B", "C", "D"] as const;
+  const tierDistance = (tier: string | null | undefined): number => {
+    const ourTier = data?.ourListing.conditionTier;
+    if (!ourTier || !tier) return 99; // null tier = 가장 멀리 (마지막 group)
+    const ourIdx = TIER_ORDER.indexOf(ourTier as typeof TIER_ORDER[number]);
+    const sampleIdx = TIER_ORDER.indexOf(tier as typeof TIER_ORDER[number]);
+    if (ourIdx < 0 || sampleIdx < 0) return 99;
+    return Math.abs(ourIdx - sampleIdx);
+  };
+  const ourTier = data?.ourListing.conditionTier ?? null;
+  const sorted = data?.comparables ? [...data.comparables].sort((a, b) => {
+    if (ourTier) {
+      const da = tierDistance(a.conditionTier);
+      const db = tierDistance(b.conditionTier);
+      if (da !== db) return da - db;
+    }
+    return a.price - b.price;
+  }) : [];
+  // Wave 714e: tier distance 별 grouping — UI section 헤더 분리.
+  const groupLabel = (distance: number): string => {
+    if (!ourTier) return "";
+    if (distance === 0) return `같은 등급 (${ourTier}급)`;
+    if (distance === 1) return "인접 등급 (±1)";
+    if (distance === 99) return "등급 정보 없음";
+    return "그 외 등급";
+  };
 
   return (
     <div className="rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/40">
@@ -491,11 +519,27 @@ export function MarketSourceDebug({
                       </div>
                     )}
                     <div className="space-y-1">
-                      {sorted.map((c) => {
+                      {/* Wave 714e (2026-05-23): tier distance 별 section 헤더.
+                          신발/의류 — 같은 등급 > 인접 (±1) > 그 외 > 등급 정보 없음 순. */}
+                      {sorted.map((c, idx) => {
                         const isCheaper = c.price < ourPrice;
+                        const dist = tierDistance(c.conditionTier);
+                        const prevDist = idx > 0 ? tierDistance(sorted[idx - 1].conditionTier) : -1;
+                        const showHeader = !!ourTier && dist !== prevDist;
+                        const dimFar = ourTier && dist >= 2 && dist !== 99;
                         return (
+                          <Fragment key={c.pid}>
+                            {showHeader && (
+                              <div className={`mb-1 mt-2 px-1 text-[10px] font-bold uppercase tracking-wide ${
+                                dist === 0 ? "text-emerald-600 dark:text-emerald-400"
+                                  : dist === 1 ? "text-sky-600 dark:text-sky-400"
+                                  : dist === 99 ? "text-zinc-400 dark:text-zinc-500"
+                                  : "text-zinc-500 dark:text-zinc-400"
+                              }`}>
+                                {groupLabel(dist)}
+                              </div>
+                            )}
                           <a
-                            key={c.pid}
                             href={c.listingUrl || c.bunjangUrl}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -505,7 +549,7 @@ export function MarketSourceDebug({
                                 : isCheaper
                                 ? "border-rose-300 bg-rose-50/60 dark:border-rose-900 dark:bg-rose-950/20"
                                 : "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
-                            }`}
+                            } ${dimFar ? "opacity-50" : ""}`}
                           >
                             {c.thumbnailUrl && (
                               <Image
@@ -542,6 +586,7 @@ export function MarketSourceDebug({
                               {isCheaper && <div className="text-[10px] text-rose-500">-{krw(ourPrice - c.price)}</div>}
                             </div>
                           </a>
+                          </Fragment>
                         );
                       })}
                       {sorted.length === 0 && (
