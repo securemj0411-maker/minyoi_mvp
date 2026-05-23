@@ -1615,8 +1615,14 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "Galaxy S21",
     aliases: ["갤럭시 S21", "갤럭시S21", "Galaxy S21"],
-    mustContain: [["갤럭시 s21", "갤럭시s21", "galaxy s21", "s21"]],
-    mustNotContain: ["울트라", "ultra", "플러스", "plus", "fe", "팬에디션", "노트", "note", ...PHONE_NOISE],
+    // Wave 753c (2026-05-24) Pareto: 240x audit — bare "s21" 제거. brand context 필수.
+    // 발견: "톤28 샴푸바 S21" / "육육걸즈 F_S2120" / "젝시믹스 XL_S2125" 같은
+    // 의류/skincare item code "S21XX" 대량 false match.
+    mustContain: [["갤럭시 s21", "갤럭시s21", "galaxy s21"]],
+    mustNotContain: ["울트라", "ultra", "플러스", "plus", "fe", "팬에디션", "노트", "note",
+      // 의류/skincare item code (PS21XX / F_S21XX / TOUN28 / 톤28)
+      "toun28", "톤28", "샴푸바", "바디워시 s2",
+      ...PHONE_NOISE],
     msrpKrw: 999000,
     released: 2021,
   },
@@ -1626,8 +1632,14 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "Galaxy S22",
     aliases: ["갤럭시 S22", "갤럭시S22", "Galaxy S22"],
-    mustContain: [["갤럭시 s22", "갤럭시s22", "galaxy s22", "s22"]],
-    mustNotContain: ["울트라", "ultra", "플러스", "plus", "fe", "팬에디션", ...PHONE_NOISE],
+    // Wave 753c (2026-05-24) Pareto: 250x audit — bare "s22" 제거.
+    // 발견: "PS22184" 같은 PlayStation 2 일본판 게임 카트리지 일련번호 false match.
+    mustContain: [["갤럭시 s22", "갤럭시s22", "galaxy s22"]],
+    mustNotContain: ["울트라", "ultra", "플러스", "plus", "fe", "팬에디션",
+      // PS2 게임 일련번호 (PS22XXX = PlayStation 2 카탈로그 번호)
+      "ps2", "ps 2", "playstation 2", "여성향", "일본판",
+      "ps22", "ps 22",
+      ...PHONE_NOISE],
     msrpKrw: 999000,
     released: 2022,
   },
