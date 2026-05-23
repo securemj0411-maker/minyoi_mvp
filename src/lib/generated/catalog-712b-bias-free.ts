@@ -35,8 +35,12 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     id: "clothing-adidas-bape-collab",
     brand: "Adidas x BAPE", category: "clothing", laneKey: "adidas_bape_collab",
     modelName: "BAPE × Adidas (트랙수트/샤크후드/티 의류)",
-    aliases: ["BAPE Adidas", "베이프 아디다스"],
-    mustContain: [["adidas", "아디다스"], ["bape", "베이프", "샤크"]],
+    aliases: ["BAPE Adidas", "베이프 아디다스", "BAPE × Adidas", "샤크 아디다스"],
+    // Wave 715 P0#2: 매칭 키워드 확장 (ape head, ape sta, 비에이프).
+    mustContain: [
+      ["adidas", "아디다스"],
+      ["bape", "베이프", "비에이프", "샤크", "ape head", "에이프헤드", "ape sta", "베이프스타"],
+    ],
     mustNotContain: [...COMMON_NOISE, "superstar", "슈퍼스타", "스니커즈", "sneaker", "운동화", "신발"],
     msrpKrw: 280000, released: 2024,
   },
@@ -69,6 +73,7 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
   },
 
   // ─── FOG Main Line 의류 (Essentials 아님, premium tier) ───
+  // Wave 715 P0#3 (2026-05-23): 54x spread 해소. London Fog 25% 흡수 + Nike 콜라보 분리.
   {
     id: "clothing-fog-main-jacket",
     brand: "Fear of God Main", category: "clothing", laneKey: "fog_main_jacket",
@@ -78,7 +83,19 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       ["피어오브갓", "피오갓", "fear of god", "fog "],
       ["자켓", "재킷", "jacket", "봄버", "bomber", "블루종", "코트", "coat"],
     ],
-    mustNotContain: [...COMMON_NOISE, "essentials", "에센셜", "1977"],
+    mustNotContain: [
+      ...COMMON_NOISE, "essentials", "에센셜", "1977",
+      // Wave 715 P0#3: London Fog (다른 brand) 25% 흡수 차단.
+      "london fog", "런던포그", "런던 포그", "lonfo",
+      // Wave 715: Nike × FOG 콜라보 분리 (별도 SKU).
+      "nike", "나이키", "에어 피어", "air fear", "air fog", "warm up", "웜업",
+      // Wave 715: Adidas × FOG athletics 분리.
+      "adidas", "아디다스", "fg athletics", "에프지", "fg-1",
+      // Wave 715: Zegna × FOG 콜라보 차단 (premium suit, 100~200만 outlier).
+      "zegna", "제냐", "에르메네질도",
+      // Wave 715: 럭셔리 매장 RTW 차단.
+      "barneys", "바니스",
+    ],
     msrpKrw: 800000, released: 2018,
   },
   {
@@ -90,8 +107,34 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       ["피어오브갓", "피오갓", "fear of god", "fog "],
       ["팬츠", "pants", "바지", "조거", "스웻팬츠", "카고", "주짓수", "옥스포드"],
     ],
-    mustNotContain: [...COMMON_NOISE, "essentials", "에센셜", "1977"],
+    mustNotContain: [
+      ...COMMON_NOISE, "essentials", "에센셜", "1977",
+      // Wave 715 P0#4: 같은 noise pattern.
+      "london fog", "런던포그", "런던 포그", "lonfo",
+      "nike", "나이키", "에어 피어", "air fear", "warm up", "웜업",
+      "adidas", "아디다스", "fg athletics", "에프지", "fg-1",
+      "zegna", "제냐",
+    ],
     msrpKrw: 550000, released: 2018,
+  },
+  // Wave 715 P0#3: Nike × Fear of God 의류 콜라보 별도 SKU 신설 (warm up jacket / hoodie 가격 다름).
+  {
+    id: "clothing-nike-fog-collab",
+    brand: "Nike x Fear of God", category: "clothing", laneKey: "nike_fog_apparel_collab",
+    modelName: "Nike × Fear of God 의류 콜라보 (Warm Up Jacket / Hoodie / Pants)",
+    aliases: ["Nike FOG Apparel", "나이키 피어오브갓", "Nike Fear of God"],
+    mustContain: [
+      ["nike", "나이키"],
+      ["피어오브갓", "피오갓", "fear of god", "fog "],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE, "essentials", "에센셜",
+      // 신발 차단
+      "스니커즈", "sneaker", "운동화", "신발", "에어 피어", "air fear of god",
+      // London Fog 차단
+      "london fog", "런던포그",
+    ],
+    msrpKrw: 350000, released: 2019,
   },
   {
     id: "clothing-fog-main-tee",
@@ -207,16 +250,43 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
   },
 
   // ─── Polo Chief Keef Stadium ───
+  // Wave 715 P0#1 (2026-05-23): 132x spread → modern Chief Keef vs vintage 1992 OG 분리.
+  // 기존 SKU = modern 치프키프 빅포니 PK 카라티 (~30건, p50 5만) narrow.
+  // vintage 1992 Polo Stadium OG (~10건, p50 100만) 신설.
   {
-    id: "clothing-polo-chiefkeef-stadium",
+    id: "clothing-polo-chiefkeef-modern",
     brand: "Polo Ralph Lauren", category: "clothing", laneKey: "polo_chiefkeef_stadium",
-    modelName: "Polo Stadium / Chief Keef (스포츠 graphic)",
-    aliases: ["Polo Stadium", "치프키프", "Chief Keef Polo", "Polo P-Wing"],
+    modelName: "Polo Chief Keef Big Pony (modern graphic PK 카라티)",
+    aliases: ["Chief Keef Polo", "치프키프", "Polo P-Wing", "빅포니"],
     mustContain: [
       ["폴로", "polo", "ralph lauren", "랄프로렌"],
-      ["스타디움", "stadium", "치프키프", "chief keef", "p-wing", "p wing"],
+      ["치프키프", "chief keef", "p-wing", "p wing", "빅포니"],
     ],
-    mustNotContain: [...COMMON_NOISE, "RRL", "purple label", "polo bear"],
+    mustNotContain: [
+      ...COMMON_NOISE, "RRL", "purple label", "polo bear",
+      // Wave 715: vintage 1992 OG 흡수 차단
+      "1992", "1993", "1990", "1991", "vintage og", "stadium og", "올드", "vintage", "빈티지",
+      "90s", "90's", "y2k", "00s",
+    ],
+    msrpKrw: 290000, released: 2014,
+  },
+  // Wave 715 P0#1: vintage 1992 OG Polo Stadium 별도 SKU 신설
+  {
+    id: "clothing-polo-stadium-1992-og",
+    brand: "Polo Ralph Lauren", category: "clothing", laneKey: "polo_stadium_1992_og",
+    modelName: "Polo Stadium 1992 OG (vintage archive Stadium line)",
+    aliases: ["Polo Stadium 1992", "Stadium OG", "P-Wing Vintage", "폴로 스타디움 빈티지"],
+    mustContain: [
+      ["폴로", "polo", "ralph lauren", "랄프로렌"],
+      ["stadium", "스타디움"],
+      ["1992", "1993", "1990", "1991", "vintage", "빈티지", "올드", "og", "archive", "아카이브"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE, "RRL", "purple label", "polo bear",
+      // modern Chief Keef 흡수 차단
+      "치프키프", "chief keef", "빅포니",
+      "리프로", "reproduction", "복각", "rep",
+    ],
     msrpKrw: 290000, released: 1992,
   },
 

@@ -594,7 +594,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   acne_rockaway: { status: "ready", label: "Acne Rockaway Sneakers", note: "Wave 442 shoe split" },
   acne_pvc_tote: { status: "ready", label: "Acne PVC Tote", note: "Wave 205 bag" },
   acne_musubi: { status: "ready", label: "Acne Musubi (시그니처)", note: "Wave 205 bag" },
-  acne_apparel: { status: "ready", label: "Acne Apparel (broad fallback)", note: "Wave 685 release — broad fallback (narrow 다 ready), cross-category 추가 차단 (숄더 백 변형/크로스백/비니/셋업/스커트/자카드 플랫)." },
+  acne_apparel: { status: "ready", label: "Acne Apparel (broad fallback)", note: "Wave 715 P0#5 — 150x spread audit, 추가 bag 모델명 (plaque/whitley/kobenhavn/banner/knot backpack/mini musubi) + 라프시몬스/face logo/vintage 차단." },
   // Wave 219 (2026-05-19): Acne product type 5분리 — 티 130K vs 맨투맨 230K vs 자켓 590K vs 데님 320K vs 셔츠 380K
   acne_tee: { status: "ready", label: "Acne Tee / Long-Sleeve", note: "Wave 219" },
   acne_sweat: { status: "ready", label: "Acne Sweat/Hoodie (Fairview)", note: "Wave 219" },
@@ -937,8 +937,9 @@ export const LANE_READINESS: LaneReadinessMap = {
   adidas_y3_collab: { status: "ready", label: "Adidas × Y-3 의류 (요지 야마모토)", note: "Wave 712b — 68건/주 9만." },
   adidas_fog_apparel: { status: "ready", label: "Adidas × FOG Athletics 의류", note: "Wave 712b — 65건/주 15만, 2025-12 partnership 종료." },
   // FOG Main Line 의류
-  fog_main_jacket: { status: "ready", label: "FOG Main Line 자켓 (Eternal/California)", note: "Wave 712b — 24건/주 40만 premium." },
-  fog_main_pants: { status: "ready", label: "FOG Main Line 팬츠", note: "Wave 712b — 18건/주 27.5만." },
+  fog_main_jacket: { status: "ready", label: "FOG Main Line 자켓 (Eternal/California)", note: "Wave 715 — London Fog 25% 흡수 차단 + Nike/Adidas/Zegna 콜라보 분리." },
+  fog_main_pants: { status: "ready", label: "FOG Main Line 팬츠", note: "Wave 715 — 54x spread → London Fog/Nike/Adidas 차단." },
+  nike_fog_apparel_collab: { status: "ready", label: "Nike × Fear of God 의류 콜라보", note: "Wave 715 — Warm Up jacket/hoodie 신설. fog_main에서 분리." },
   fog_main_tee: { status: "ready", label: "FOG Main Line 티셔츠/롱슬리브", note: "Wave 712b — 22건/주 18.7만." },
   fog_main_hoodie: { status: "ready", label: "FOG Main Line 후드", note: "Wave 712b — 20건/주 21.5만." },
   // Polo Ralph Lauren 7개
@@ -949,7 +950,8 @@ export const LANE_READINESS: LaneReadinessMap = {
   polo_purple_label: { status: "ready", label: "Polo Purple Label (top tier)", note: "Wave 712b — 30건/주 69만 premium." },
   polo_sport_90s: { status: "ready", label: "Polo Sport (90s vintage athletic)", note: "Wave 712b — 21건/주 12만." },
   polo_rlx_golf: { status: "ready", label: "Polo RLX Golf", note: "Wave 712b — 11건/주 5만." },
-  polo_chiefkeef_stadium: { status: "ready", label: "Polo Stadium / Chief Keef", note: "Wave 712b — 71건/주 8만 (Polo P-Wing graphic)." },
+  polo_chiefkeef_stadium: { status: "ready", label: "Polo Chief Keef Big Pony (modern PK)", note: "Wave 715 — narrow modern only (~30건 p50 5만). vintage Stadium 분리." },
+  polo_stadium_1992_og: { status: "ready", label: "Polo Stadium 1992 OG (vintage archive)", note: "Wave 715 — vintage 1992 OG narrow (~10건 p50 100만). 132x spread 해소." },
   // Stone Island sub-line
   stone_island_shadow_project: { status: "ready", label: "Stone Island Shadow Project", note: "Wave 712b — 15건/주 55만." },
   stone_island_ghost_piece: { status: "ready", label: "Stone Island Ghost Piece", note: "Wave 712b — 15건/주 34.5만." },

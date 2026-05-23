@@ -9071,6 +9071,17 @@ export const CATALOG: Sku[] = [
       "skirt", "스커트", "미니 스커트", "miniskirt",
       // 향수/cosmetic 추가
       "퍼퓸 50", "퍼퓸 100", "오드뜨왈렛", "디퓨저",
+      // Wave 715 P0#5 (2026-05-23): 150x spread broad fallback — 추가 cross-category + bag 모델명 강화.
+      // Acne bag 모델명 (musubi 외).
+      "plaque", "플라크", "whitley", "휘틀리", "kobenhavn", "코펜하겐", "코벤하븐",
+      "banner", "배너", "knot backpack", "노트 백팩", "kobun", "코분",
+      "mini musubi", "미니 무수비", "마이크로 무수비", "micro musubi",
+      "다리오", "dario", "이미테이션 가죽",
+      // archive / 한정 (별도 narrow 필요)
+      "raf simons", "라프시몬스", "라프 시몬스",
+      "monster face", "몬스터 페이스", "페이스 로고",
+      // 1990s vintage (잘못 흡수 시 시세 outlier)
+      "1990s", "y2k", "00s vintage",
     ],
     msrpKrw: 250000, released: 2020,
   },
@@ -10894,6 +10905,15 @@ export const CATALOG: Sku[] = [
       // Wave 546 (2026-05-22): production audit — 프라다/베이프 콜라보 100~200만 추가 차단.
       "prada", "프라다", "사피아노",
       "bape", "베이프", "비에이프",
+      // Wave 715 P0#2 (2026-05-23): bape 콜라보 흡수 강화. 샤크/ape head/colab 시리즈.
+      "샤크", "ape head", "에이프헤드", "ape sta", "에이프 스타",
+      "ape", "에이프", "베이핑", "bape sta", "베이프스타",
+      // Wave 715: 추가 adidas 콜라보 차단 (trefoil spread 77x).
+      "kerwin frost", "커윈프로스트", "커윈 프로스트", "kerwin",
+      "stella mccartney", "스텔라매카트니", "스텔라 매카트니",
+      "ivy park", "아이비파크", "비욘세",
+      "off-white", "오프화이트", "off white", "버질",
+      "moncler", "몽클레르", "몽클레어",
       "포플린 트랙", "포플린 자켓", "포플린", // 발렌시아가 포플린 트랙 시리즈
       // Wave 652 (2026-05-22): 레더/세트 outlier 차단 (b_grade spread 13.3x).
       // 레더 자켓 200k outlier (포우 레더 아디컬러 3S 루즈 파이어버드 pid 407184117).
