@@ -4862,7 +4862,9 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
               <div className="text-[10.5px] font-black leading-tight text-[#172019] dark:text-zinc-50 sm:text-[13px]">{channel.label}</div>
             </div>
             <div className="mt-2 text-[15px] font-black leading-tight tabular-nums text-emerald-700 dark:text-emerald-300 sm:mt-3 sm:text-[22px]">+{krw(channel.profit)}</div>
-            <div className="mt-1 min-h-[26px] break-keep text-[9px] font-bold leading-[1.35] text-[#7b8378] dark:text-zinc-400 sm:min-h-0 sm:text-[11px]">{channel.note}</div>
+            {/* Wave launch-68 (사용자 짚음 "chip 수직 위치 다 다름"):
+                joongna note 2줄 → chip 아래로 밀림. note 영역 mobile/desktop 둘 다 fixed height. */}
+            <div className="mt-1 flex min-h-[28px] items-start break-keep text-[9px] font-bold leading-[1.35] text-[#7b8378] dark:text-zinc-400 sm:min-h-[34px] sm:text-[11px]">{channel.note}</div>
             <div className="mt-2 rounded-full bg-emerald-50 px-1.5 py-1 text-center text-[9px] font-black text-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-200 sm:mt-3 sm:px-2.5 sm:text-[11px]">{channel.chip}</div>
           </div>
         ))}
@@ -4872,7 +4874,7 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
             <div className="text-[10.5px] font-black leading-tight text-[#172019] dark:text-zinc-50 sm:text-[13px]">당근 직거래</div>
           </div>
           <div className="mt-2 text-[15px] font-black leading-tight tabular-nums text-amber-700 dark:text-amber-200 sm:mt-3 sm:text-[22px]">+{krw(daangnProfit)}</div>
-          <div className="mt-1 min-h-[26px] break-keep text-[9px] font-bold leading-[1.35] text-[#7b8378] dark:text-zinc-400 sm:min-h-0 sm:text-[11px]">수수료 0원 가정</div>
+          <div className="mt-1 flex min-h-[28px] items-start break-keep text-[9px] font-bold leading-[1.35] text-[#7b8378] dark:text-zinc-400 sm:min-h-[34px] sm:text-[11px]">수수료 0원 가정</div>
           <div className="mt-2 rounded-full bg-white/80 px-1.5 py-1 text-center text-[9px] font-black text-amber-700 ring-1 ring-amber-100 dark:bg-zinc-950/60 dark:text-amber-200 dark:ring-amber-900/50 sm:mt-3 sm:px-2.5 sm:text-[11px]">지역/네고 부담</div>
         </div>
       </div>
