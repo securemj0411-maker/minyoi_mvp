@@ -442,6 +442,10 @@ export const LANE_READINESS: LaneReadinessMap = {
   memo_italian_leather_75: { status: "ready", label: "Memo Italian Leather 75ml", note: "Wave 185" },
   // Wave 185 internal test (2026-05-18): Dyson Airwrap Origin 신모델 추가.
   dyson_airwrap_origin: { status: "ready", label: "Dyson Airwrap Origin", note: "Wave 185 internal test: 저가형 Airwrap 2024.11 신모델." },
+  // Wave 751d (2026-05-24) Pareto: Dyson V-series 무선 청소기 76건 unmatched → 3 SKU 신설.
+  dyson_v15_detect: { status: "ready", label: "Dyson V15 Detect / Submarine", note: "Wave 751d Pareto: 33건 unmatched 매물 catalog 신설." },
+  dyson_v12_detect: { status: "ready", label: "Dyson V12 Detect Slim / Submarine", note: "Wave 751d Pareto: 43건 unmatched 매물 catalog 신설." },
+  dyson_v8_v11_vacuum_broad: { status: "ready", label: "Dyson V8 / V10 / V11 (구형 broad)", note: "Wave 751d Pareto: 68건 unmatched 매물 V8-V11 broad." },
   // Wave 185 internal test (2026-05-18): DJI 신모델 (Pocket 4 / Action 6 / Osmo Nano).
   dji_osmo_pocket_4: { status: "ready", label: "DJI Osmo Pocket 4", note: "Wave 185 internal test: 2025 신모델, 매물 4건 발견." },
   dji_osmo_action_6: { status: "ready", label: "DJI Osmo Action 6", note: "Wave 185 internal test: 2025 신모델." },
