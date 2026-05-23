@@ -416,7 +416,12 @@ const LEGACY_SAVED_REVEAL_PIDS_STORAGE_KEY = "minyoi_saved_reveal_pids_v1";
 const FIRST_FEED_ONBOARDING_STORAGE_KEY = "minyoi_first_feed_value_hook_v1";
 const FEED_BUDGET_FILTER_STORAGE_KEY = "minyoi_feed_budget_filter_v1";
 const DETAIL_ACCESS_SNAPSHOT_STORAGE_KEY = "minyoi_detail_access_snapshot_v1";
-const SAFETY_STATS_FETCH_TIMEOUT_MS = 3500;
+// Wave launch-86 (사용자 보고: 폰 첫 가입 시 "몇 건 걸렀고" 숫자 안 나옴):
+//   3.5s 가 mobile 4G + Vercel cold start + DB snapshot read 합치면 부족.
+//   abort 시 stats=null 채로 statsLoaded=true → row 라벨만 보이고 숫자 빈칸.
+//   DB snapshot 자체는 매 30분 cron 으로 신선 — 단지 client fetch 가 못 끝낸 것.
+//   8s 로 늘림: cold start (~1s) + DB cache read (~200ms) + TLS (~500ms) + mobile latency (~500ms) 충분 buffer.
+const SAFETY_STATS_FETCH_TIMEOUT_MS = 8000;
 const MAX_LOCAL_SCRAP_SNAPSHOTS = 500;
 
 function scopedStorageKey(baseKey: string, storageScope: string) {
