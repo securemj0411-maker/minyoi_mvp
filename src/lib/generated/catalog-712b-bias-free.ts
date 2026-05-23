@@ -116,6 +116,15 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       "zegna", "제냐", "에르메네질도",
       // Wave 715: 럭셔리 매장 RTW 차단.
       "barneys", "바니스",
+      // Wave 750 bias-free (2026-05-24): false positive 추가 발견.
+      "mountain fog", "마운틴 포그", "마운틴포그",  // Mountain Fog brand (별 brand)
+      "notes from he", "notes from",  // Notes from He brand
+      "리본 포그", "ribbon fog",  // false brand
+      "nfl",  // NFL 라이센스
+      // 시즌/한정 라인 outlier (Main Line 내 시세 다양 — Eternal 시그니처는 별 시세군)
+      "이터널", "eternal", "eternal collection",  // Eternal premium (700k-1M)
+      "애슬래틱 푸퍼", "athletic puffer",  // Athletic Puffer 시그니처
+      "센스x", "센스 x", "sense x",  // 4th 센스 collab
     ],
     msrpKrw: 800000, released: 2018,
   },
