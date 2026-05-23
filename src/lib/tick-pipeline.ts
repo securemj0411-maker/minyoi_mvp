@@ -2651,7 +2651,8 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // Wave 690 (2026-05-22): clothing v44 — stussy_nike_collab release (셋업/월드투어 차단, 30~50만 가격대 안정).
   // Wave 712a (2026-05-23): clothing v45 — bias-free 14 brand 검증 hotfix. MLB cap 엠엘비 alias + Nike/Murakami directSpecificMatch / Stussy crossbody narrow split + basic-tee shorts 차단 / Adidas trefoil Thug+SFTM+Y3+FOG+Raf 콜라보 차단 / Patagonia Synchilla 신설 (162건 회복) / Polo Big Pony Pique 신설 (193건 black hole 회복).
   // Wave 712b (2026-05-23): clothing v46 — 의류 신설 (Adidas collab 5 / FOG Main Line 4 / Polo 7 / Stone Island sub 3 / Arc'teryx Down / BAPE × Adidas + Longsleeve + Backpack / TNF Novelty + Steep Tech / Junya + CDG Converse broad / Stussy 모델 3 + Nike sub 2 / NB collab 2 / Polo Chief Keef).
-  clothing: "wave216-clothing-v46",
+  // Wave 742 (2026-05-24): clothing v47 — 의류 사이즈 추출 신설 (sizeAlpha/sizeKr/waistInch). 7,616건 v46 매물 점진 reparse.
+  clothing: "wave216-clothing-v47",
   bike: "wave92-fashion-mobility-v7",
   // Wave 531: generic option-parser v55 blocks exchange-only and accessory-only
   // full-unit pollution for these active pool categories.
