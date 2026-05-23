@@ -240,7 +240,7 @@ export default function FeedbackStatsClient() {
                     href={`https://m.bunjang.co.kr/products/${row.pid}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1.5 inline-block text-[10px] font-semibold text-emerald-700 hover:underline dark:text-emerald-400"
+                    className="mt-1.5 inline-block text-[10px] font-semibold text-emerald-700 hover:underline dark:text-blue-400"
                   >
                     🔗 번장 열기
                   </a>
@@ -262,7 +262,7 @@ export default function FeedbackStatsClient() {
 function KpiCard({ label, value, accent, sub }: { label: string; value: number; accent: "amber" | "emerald" | "rose" | "sky"; sub?: string }) {
   const styles: Record<typeof accent, string> = {
     amber: "border-amber-200 bg-amber-50/60 dark:border-amber-900/40 dark:bg-amber-950/20",
-    emerald: "border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/40 dark:bg-emerald-950/20",
+    emerald: "border-emerald-200 bg-emerald-50/60 dark:border-blue-900/40 dark:bg-blue-950/20",
     rose: "border-rose-200 bg-rose-50/60 dark:border-rose-900/40 dark:bg-rose-950/20",
     sky: "border-sky-200 bg-sky-50/60 dark:border-sky-900/40 dark:bg-sky-950/20",
   };

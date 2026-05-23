@@ -104,7 +104,7 @@ export default function SiteHelpFaq() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="AI 도움말 열기"
-        className="fixed bottom-4 right-4 z-[70] flex h-12 w-12 items-center justify-center rounded-full border border-[#bfd2c1] bg-[#f8fff5]/95 text-xl font-black text-[#263d2f] shadow-[0_16px_42px_rgba(31,65,45,0.26)] backdrop-blur transition hover:-translate-y-0.5 hover:border-[#82aa88] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb993] dark:border-emerald-900/70 dark:bg-zinc-900/95 dark:text-zinc-100 sm:bottom-5 sm:right-5"
+        className="fixed bottom-4 right-4 z-[70] flex h-12 w-12 items-center justify-center rounded-full border border-[#bfd2c1] bg-[#f8fff5]/95 text-xl font-black text-[#263d2f] shadow-[0_16px_42px_rgba(31,65,45,0.26)] backdrop-blur transition hover:-translate-y-0.5 hover:border-[#82aa88] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb993] dark:border-blue-900/70 dark:bg-zinc-900/95 dark:text-zinc-100 sm:bottom-5 sm:right-5"
       >
         <span className="absolute inset-0 rounded-full bg-emerald-300/20 blur-md" />
         <HeadsetIcon className="relative h-6 w-6" />
@@ -129,7 +129,7 @@ export default function SiteHelpFaq() {
                     <HeadsetIcon className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-black uppercase text-[#5e755f] dark:text-emerald-400">Assistant</p>
+                    <p className="text-[10px] font-black uppercase text-[#5e755f] dark:text-blue-400">Assistant</p>
                     <h2 id={titleId} className="mt-0.5 text-lg font-black text-[#223127] dark:text-zinc-100">
                       AI 도움말
                     </h2>
@@ -152,7 +152,7 @@ export default function SiteHelpFaq() {
             <div className="max-h-[calc(90vh-92px)] overflow-y-auto px-4 py-3">
               <div className="rounded-3xl border border-[#dce8d8] bg-white p-3 shadow-[0_10px_28px_rgba(34,49,39,0.07)] dark:border-zinc-800 dark:bg-zinc-900/80">
                 <div className="flex items-start gap-2.5">
-                  <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e7f4e5] text-[10px] font-black text-[#234332] dark:bg-emerald-950 dark:text-emerald-300">
+                  <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e7f4e5] text-[10px] font-black text-[#234332] dark:bg-blue-950 dark:text-blue-300">
                     <HeadsetIcon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1 rounded-2xl rounded-tl-sm bg-[#f3f8ef] px-3 py-2.5 dark:bg-zinc-950">
@@ -189,7 +189,7 @@ export default function SiteHelpFaq() {
                 </div>
 
                 <div className="mt-3 flex items-start gap-2.5">
-                  <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e7f4e5] text-[10px] font-black text-[#234332] dark:bg-emerald-950 dark:text-emerald-300">
+                  <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e7f4e5] text-[10px] font-black text-[#234332] dark:bg-blue-950 dark:text-blue-300">
                     <HeadsetIcon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1 rounded-2xl rounded-tl-sm bg-[#f3f8ef] px-3 py-2.5 dark:bg-zinc-950">
@@ -224,7 +224,7 @@ export default function SiteHelpFaq() {
                       onClick={() => askQuestion(index)}
                       className={`flex items-start justify-between gap-3 rounded-2xl border px-3 py-2.5 text-left transition ${
                         selectedIndex === index
-                          ? "border-[#a9c9a6] bg-[#eef8ea] dark:border-emerald-900/80 dark:bg-emerald-950/20"
+                          ? "border-[#a9c9a6] bg-[#eef8ea] dark:border-blue-900/80 dark:bg-blue-950/20"
                           : "border-[#e4ecdf] bg-white/80 hover:border-[#bfd2c1] hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/70 dark:hover:bg-zinc-900"
                       }`}
                     >
@@ -235,7 +235,7 @@ export default function SiteHelpFaq() {
                 </div>
               </div>
 
-              <div className="mt-3 rounded-2xl border border-[#dbe7d7] bg-[#f1f7ef] p-3 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+              <div className="mt-3 rounded-2xl border border-[#dbe7d7] bg-[#f1f7ef] p-3 dark:border-blue-900/50 dark:bg-blue-950/20">
                 <div className="text-sm font-black text-[#223127] dark:text-zinc-100">고객센터 및 피드백</div>
                 <p className="mt-1 text-[13px] font-semibold leading-5 text-[#5f6d60] dark:text-zinc-400">
                   상품 정보가 틀렸다면 상품 보기 모달의 정보 오류 신고를 사용해주세요. 운영자 검수 후 적절하면 토큰 3개를 지급합니다.

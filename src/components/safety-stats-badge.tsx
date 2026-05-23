@@ -152,11 +152,11 @@ function StatRow({ icon, label, count }: Row) {
   if (count <= 0) return null;
   return (
     <div className="flex items-center justify-between gap-2">
-      <span className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300/90">
-        <span className="text-emerald-600 dark:text-emerald-400">{icon}</span>
+      <span className="flex items-center gap-1.5 text-emerald-800 dark:text-blue-300/90">
+        <span className="text-emerald-600 dark:text-blue-400">{icon}</span>
         <span>{label}</span>
       </span>
-      <span className="font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+      <span className="font-mono font-bold tabular-nums text-emerald-700 dark:text-blue-300">
         {count.toLocaleString("ko-KR")}건
       </span>
     </div>
@@ -165,9 +165,9 @@ function StatRow({ icon, label, count }: Row) {
 
 function GroupHeader({ icon, label }: { icon: ReactNode; label: string }) {
   return (
-    <div className="mt-2 flex items-center gap-1.5 border-t border-emerald-200 pt-2 dark:border-emerald-900">
-      <span className="text-emerald-700 dark:text-emerald-400">{icon}</span>
-      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+    <div className="mt-2 flex items-center gap-1.5 border-t border-emerald-200 pt-2 dark:border-blue-900">
+      <span className="text-emerald-700 dark:text-blue-400">{icon}</span>
+      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-blue-400">
         {label}
       </span>
     </div>
@@ -206,16 +206,16 @@ export default function SafetyStatsBadge() {
   if (hidden) return null;
   if (!stats) {
     return (
-      <div className="mb-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-950/30">
+      <div className="mb-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 dark:border-blue-800 dark:bg-blue-950/30">
         <div className="flex w-full items-center justify-between gap-3">
           <div>
-            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700/80 dark:text-emerald-400/80">
+            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700/80 dark:text-blue-400/80">
               <ShieldIcon />
               <span>회원님 보호</span>
             </div>
             <div className="mt-1 flex items-baseline gap-2">
-              <span className="inline-block h-7 w-20 animate-pulse rounded bg-emerald-200/80 dark:bg-emerald-900/60" />
-              <span className="text-sm font-bold text-emerald-800/70 dark:text-emerald-300/70">이번 주 차단된 매물</span>
+              <span className="inline-block h-7 w-20 animate-pulse rounded bg-emerald-200/80 dark:bg-blue-900/60" />
+              <span className="text-sm font-bold text-emerald-800/70 dark:text-blue-300/70">이번 주 차단된 매물</span>
             </div>
           </div>
           <span className="flex items-center gap-1 rounded-full bg-emerald-600/40 px-3 py-1 text-[10px] font-black text-white/70">상세<ChevronDownIcon open={false} /></span>
@@ -243,11 +243,11 @@ export default function SafetyStatsBadge() {
   const parserMissTotal = stats.needs_review_7d ?? 0;
 
   return (
-    <div className="relative mb-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 dark:border-emerald-800 dark:bg-emerald-950/30">
+    <div className="relative mb-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 dark:border-blue-800 dark:bg-blue-950/30">
       <button
         type="button"
         onClick={hideForWeek}
-        className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-1 text-[10px] font-bold text-emerald-800 transition hover:bg-white dark:bg-zinc-900/70 dark:text-emerald-200"
+        className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-1 text-[10px] font-bold text-emerald-800 transition hover:bg-white dark:bg-zinc-900/70 dark:text-blue-200"
         aria-label="차단 통계 7일 숨김"
       >
         <XIcon />
@@ -259,15 +259,15 @@ export default function SafetyStatsBadge() {
         className="flex w-full items-center justify-between gap-3 pr-14 text-left"
       >
         <div>
-          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-400">
+          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700 dark:text-blue-400">
             <ShieldIcon />
             <span>회원님 보호</span>
           </div>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-black tabular-nums text-emerald-700 dark:text-emerald-300">
+            <span className="text-2xl font-black tabular-nums text-emerald-700 dark:text-blue-300">
               {total.toLocaleString("ko-KR")}건
             </span>
-            <span className="text-sm font-bold text-emerald-800 dark:text-emerald-300/80">
+            <span className="text-sm font-bold text-emerald-800 dark:text-blue-300/80">
               오늘 차단된 매물
             </span>
           </div>
@@ -278,7 +278,7 @@ export default function SafetyStatsBadge() {
         </span>
       </button>
       {showDetail && (
-        <div className="mt-3 grid gap-1.5 border-t border-emerald-200 pt-3 text-[11px] dark:border-emerald-900">
+        <div className="mt-3 grid gap-1.5 border-t border-emerald-200 pt-3 text-[11px] dark:border-blue-900">
           {/* ─── 그룹 1: 매물 분류 단계 (수집 시점 차단) — 가장 큰 카테고리 ─────── */}
           {collectionStageTotal > 0 && (
             <>
@@ -415,7 +415,7 @@ export default function SafetyStatsBadge() {
             </>
           )}
 
-          <div className="mt-2 text-[10px] leading-[1.5] text-emerald-700/70 dark:text-emerald-400/70">
+          <div className="mt-2 text-[10px] leading-[1.5] text-emerald-700/70 dark:text-blue-400/70">
             부품·액세서리만 매물 · 손상·파손 · 광고·매크로 · 위조·도난·잠금 · 거래 거부 가격 · 시세 검증 실패 · 대량 재고 업자 · 다중 ID 사기 그룹 등을 수집·분류·풀 진입 단계에서 사전 차단했습니다.
           </div>
         </div>

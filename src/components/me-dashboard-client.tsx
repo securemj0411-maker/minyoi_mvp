@@ -31,7 +31,7 @@ function GuideLibraryView() {
       <div className="mt-6 rounded-[24px] border border-zinc-200 bg-white p-4 shadow-[0_18px_36px_rgba(15,23,42,0.06)] dark:border-zinc-800 dark:bg-zinc-900 sm:p-6 lg:rounded-[28px]">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-emerald-400">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-blue-400">
               Model Guides
             </p>
             <h2 className="mt-1.5 text-xl font-black tracking-tight text-zinc-950 dark:text-white sm:text-2xl lg:text-3xl">
@@ -257,7 +257,7 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
               </button>
             </div>
             <div className={`hidden px-2 pb-3 lg:block ${sidebarCollapsed ? "lg:hidden" : ""}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-emerald-400">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-blue-400">
                 My Dashboard
               </p>
               <div className="mt-1 text-sm font-black text-zinc-950 dark:text-zinc-100">작업 메뉴</div>

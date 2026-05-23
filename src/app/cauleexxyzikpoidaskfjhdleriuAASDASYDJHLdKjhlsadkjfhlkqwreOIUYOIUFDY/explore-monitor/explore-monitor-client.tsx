@@ -175,7 +175,7 @@ function Stat({ label, value, sub, tone }: {
   tone?: "good" | "info" | "emerald" | "rose" | "zinc";
 }) {
   const valueColor = tone === "good" || tone === "emerald"
-    ? "text-emerald-600 dark:text-emerald-300"
+    ? "text-emerald-600 dark:text-blue-300"
     : tone === "rose"
       ? "text-rose-600 dark:text-rose-300"
       : "text-zinc-900 dark:text-zinc-100";

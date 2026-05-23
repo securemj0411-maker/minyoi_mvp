@@ -951,13 +951,13 @@ function calculateDealScore(card: RevealCard): DealScore {
   let toneClass = "text-zinc-500 dark:text-zinc-400";
   if (score >= 90) {
     label = "최고";
-    toneClass = "text-emerald-700 dark:text-emerald-300";
+    toneClass = "text-emerald-700 dark:text-blue-300";
   } else if (score >= 80) {
     label = "강추";
-    toneClass = "text-emerald-600 dark:text-emerald-400";
+    toneClass = "text-emerald-600 dark:text-blue-400";
   } else if (score >= 70) {
     label = "좋음";
-    toneClass = "text-emerald-500 dark:text-emerald-400";
+    toneClass = "text-emerald-500 dark:text-blue-400";
   }
   return { score, label, toneClass };
 }
@@ -1172,7 +1172,7 @@ function WhyTrustCollapse({ card }: { card: RevealCard }) {
           {" "}입금자명 변경, 신분증 인증 요구, 도용 사진 의심은 보류 신호로 봅니다. 미뇨이는 거래 당사자가 아니라 위험 신호를 먼저 정리해드려요.
           {safety.sourceAction ? (
             <>
-              {" "}<a href={safety.sourceAction.href} target="_blank" rel="noreferrer" className="font-black text-emerald-700 underline decoration-emerald-300 underline-offset-2 dark:text-emerald-300">
+              {" "}<a href={safety.sourceAction.href} target="_blank" rel="noreferrer" className="font-black text-emerald-700 underline decoration-emerald-300 underline-offset-2 dark:text-blue-300">
                 {safety.sourceAction.label}
               </a>
               {" "}도 같이 확인하세요.
@@ -1253,7 +1253,7 @@ function costAssuranceSnapshot(card: RevealCard) {
   const shippingLabel = safety.shipping.label;
   const confidenceLabel = safety.shipping.confidenceLabel;
   const confidenceClass = safety.shipping.buyerShippingHigh === 0
-    ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
+    ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200"
     : "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200";
 
   return {
@@ -1681,9 +1681,9 @@ function RevealResultSkeleton() {
         <div className="h-[118px] w-full rounded-lg bg-zinc-200/80 dark:bg-zinc-800" />
         <div className="min-w-0 space-y-3">
           <SkeletonLine className="h-4 w-4/5" />
-          <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-3 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-            <SkeletonLine className="h-3 w-20 bg-emerald-200/80 dark:bg-emerald-900/60" />
-            <SkeletonLine className="mt-2 h-7 w-36 bg-emerald-200/80 dark:bg-emerald-900/60" />
+          <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-3 dark:border-blue-900/40 dark:bg-blue-950/20">
+            <SkeletonLine className="h-3 w-20 bg-emerald-200/80 dark:bg-blue-900/60" />
+            <SkeletonLine className="mt-2 h-7 w-36 bg-emerald-200/80 dark:bg-blue-900/60" />
             <SkeletonLine className="mt-2 h-3 w-52" />
           </div>
           <div className="hidden flex-wrap gap-1.5">
@@ -1712,8 +1712,8 @@ function RevealResultSkeleton() {
           </div>
         </div>
         <div className="rounded-lg border border-[#d8e2d7] bg-[var(--brand-accent-soft)] px-4 py-3 dark:border-zinc-800 dark:bg-zinc-800/60">
-          <SkeletonLine className="h-3 w-32 bg-emerald-200/80 dark:bg-emerald-900/60" />
-          <SkeletonLine className="mt-2 h-7 w-48 bg-emerald-200/80 dark:bg-emerald-900/60" />
+          <SkeletonLine className="h-3 w-32 bg-emerald-200/80 dark:bg-blue-900/60" />
+          <SkeletonLine className="mt-2 h-7 w-48 bg-emerald-200/80 dark:bg-blue-900/60" />
           <SkeletonLine className="mt-2 h-3 w-5/6" />
         </div>
       </div>
@@ -1801,7 +1801,7 @@ function ConfidenceBreakdown({ card }: { card: RevealCard }) {
           <span
             className={`font-bold tabular-nums ${
               line.tone === "good"
-                ? "text-emerald-700 dark:text-emerald-300"
+                ? "text-emerald-700 dark:text-blue-300"
                 : line.tone === "warn"
                   ? "text-amber-700 dark:text-amber-300"
                   : "text-zinc-700 dark:text-zinc-200"
@@ -1847,7 +1847,7 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
   const confidence = market.confidence ?? "low";
   const confidenceLabel = confidence === "high" ? "높음" : confidence === "medium" ? "보통" : "낮음";
   const confidenceClass = confidence === "high"
-    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+    ? "bg-emerald-100 text-emerald-800 dark:bg-blue-950/40 dark:text-blue-200"
     : confidence === "medium"
       ? "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
       : "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200";
@@ -2082,7 +2082,7 @@ function DealMeterButton({ card }: { card: RevealCard }) {
   const { score, toneClass } = calculateDealScore(card);
   return (
     <div className="flex shrink-0 flex-col items-end whitespace-nowrap leading-tight" aria-label={`득템 점수 ${score}점`}>
-      <span className="mb-1 text-[9px] font-black uppercase tracking-[0.14em] text-[#047857] dark:text-emerald-300">
+      <span className="mb-1 text-[9px] font-black uppercase tracking-[0.14em] text-[#047857] dark:text-blue-300">
         득템 점수
       </span>
       <span className="flex items-baseline gap-0.5">
@@ -2146,9 +2146,9 @@ function PurchaseDecisionHeader({ card }: { card: RevealCard }) {
           }
         : profitAvg > 0
           ? {
-              eyebrow: "text-emerald-700 dark:text-emerald-300",
+              eyebrow: "text-emerald-700 dark:text-blue-300",
               badge: "후보",
-              badgeClass: "bg-emerald-100 text-emerald-800 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-900/60",
+              badgeClass: "bg-emerald-100 text-emerald-800 ring-emerald-200 dark:bg-blue-950/40 dark:text-blue-200 dark:ring-blue-900/60",
               borderClass: "border-emerald-200 bg-white dark:border-zinc-800 dark:bg-zinc-900",
               headline: "근거 있는 매입 후보",
               body: discountText
@@ -2292,7 +2292,7 @@ function SkuListingFlowMini({ card }: { card: RevealCard }) {
   const ratio = flow.avgPerDay7d > 0 ? flow.count24h / flow.avgPerDay7d : 1;
   const trendTone =
     ratio >= 1.3
-      ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
+      ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200"
       : ratio <= 0.6
         ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
         : "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800/40 dark:text-zinc-200";
@@ -2445,7 +2445,7 @@ function safetyDisplay(card: RevealCard, risk: ReturnType<typeof buildRiskScore>
       safety.sellerTrust.trustScore == null || safety.sellerTrust.trustScore >= 500
     );
     const badge = safety.sellerTrust.badgeLabel
-      ? { label: safety.sellerTrust.badgeLabel, className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/35 dark:text-emerald-200" }
+      ? { label: safety.sellerTrust.badgeLabel, className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-blue-900/60 dark:bg-blue-950/35 dark:text-blue-200" }
       : reviewCount > 0
         ? { label: `거래후기 ${reviewCountLabel}`, className: "border-[#d6e2d3] bg-white/75 text-[#4d6654] dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300" }
         : null;
@@ -2459,9 +2459,9 @@ function safetyDisplay(card: RevealCard, risk: ReturnType<typeof buildRiskScore>
   }
   const reviewBadge =
     reviewCount >= 100
-      ? { label: `후기 ${reviewCountLabel}+`, className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/35 dark:text-emerald-200" }
+      ? { label: `후기 ${reviewCountLabel}+`, className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-blue-900/60 dark:bg-blue-950/35 dark:text-blue-200" }
       : reviewCount >= 30
-        ? { label: `후기 ${reviewCountLabel}`, className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/35 dark:text-emerald-200" }
+        ? { label: `후기 ${reviewCountLabel}`, className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-blue-900/60 dark:bg-blue-950/35 dark:text-blue-200" }
         : reviewCount >= 10
           ? { label: `후기 ${reviewCountLabel}`, className: "border-[#d6e2d3] bg-white/75 text-[#4d6654] dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300" }
           : reviewCount > 0
@@ -2491,9 +2491,9 @@ function safetyDisplay(card: RevealCard, risk: ReturnType<typeof buildRiskScore>
 function upperFoldTileClass(tone: UpperFoldTileTone) {
   if (tone === "safe" || tone === "good") {
     return {
-      card: "border-emerald-200/80 bg-white/80 dark:border-emerald-900/45 dark:bg-zinc-900/55",
+      card: "border-emerald-200/80 bg-white/80 dark:border-blue-900/45 dark:bg-zinc-900/55",
       dot: "bg-emerald-500",
-      value: "text-emerald-700 dark:text-emerald-300",
+      value: "text-emerald-700 dark:text-blue-300",
     };
   }
   if (tone === "caution" || tone === "info" || tone === "warn") {
@@ -2725,7 +2725,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                   const evidenceType = isSold ? "판매완료" : isReserved ? "예약중" : "판매중";
                   const seenLabel = seenAgoLabel(item.lastSeenAt);
                   const statusBadge = isSold
-                    ? { label: "판매완료", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200" }
+                    ? { label: "판매완료", cls: "bg-emerald-100 text-emerald-700 dark:bg-blue-950/40 dark:text-blue-200" }
                     : isReserved
                       ? { label: "예약중", cls: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200" }
                       : null;
@@ -2783,7 +2783,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                           {krw(itemPrice)}
                         </div>
                         {!isSimilar ? (
-                          <div className={`mt-px text-[11px] font-extrabold tabular-nums ${isMoreExpensive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                          <div className={`mt-px text-[11px] font-extrabold tabular-nums ${isMoreExpensive ? "text-emerald-600 dark:text-blue-400" : "text-rose-600 dark:text-rose-400"}`}>
                             {isMoreExpensive ? `+${diffPct}%` : `${diffPct}%`}
                           </div>
                         ) : (
@@ -2835,7 +2835,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
         {listings && listings.length > 0 ? (
           // Wave 394.6.b.fix3: 사용자 짚음 — "현재 매입가 대비 몇 % 싸거나 비싼지". 비교 매물 기준 표현.
           <div>
-            <span className="text-emerald-600 dark:text-emerald-400">+%</span> 비교 매물 비쌈 (이 매물 더 쌈) ·{" "}
+            <span className="text-emerald-600 dark:text-blue-400">+%</span> 비교 매물 비쌈 (이 매물 더 쌈) ·{" "}
             <span className="text-rose-600 dark:text-rose-400">−%</span> 비교 매물 쌈 (이 매물 더 비쌈)
           </div>
         ) : null}
@@ -2961,7 +2961,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
   const watchSignals = recommendationWatchSignals(card);
   const featureCards = recommendationFeatureCards(card);
   const toneClass = {
-    profit: "border-emerald-100 bg-emerald-50/70 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-100",
+    profit: "border-emerald-100 bg-emerald-50/70 text-emerald-900 dark:border-blue-900/50 dark:bg-blue-950/20 dark:text-blue-100",
     market: "border-sky-100 bg-sky-50/70 text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/20 dark:text-sky-100",
     speed: "border-amber-100 bg-amber-50/70 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-100",
     quality: "border-[#d8e2d7] bg-white/85 text-zinc-950 dark:border-zinc-800 dark:bg-zinc-900/45 dark:text-zinc-100",
@@ -2999,14 +2999,14 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
         >
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-sm font-black text-zinc-950 dark:text-zinc-100">
-              <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
+              <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-700 dark:text-blue-300" />
               왜 이 상품을 추천했나요?
             </div>
             <div className="mt-1 hidden text-xs font-semibold leading-5 text-[#60705f] dark:text-zinc-300 sm:block">
               {reasonSummary}
             </div>
           </div>
-          <span className="shrink-0 rounded-full border border-[#b9d0b4] bg-white/90 px-2.5 py-1 text-[11px] font-black text-[#4f6a52] shadow-sm transition group-hover:bg-[#e4f0e1] dark:border-emerald-900/60 dark:bg-zinc-900 dark:text-emerald-200">
+          <span className="shrink-0 rounded-full border border-[#b9d0b4] bg-white/90 px-2.5 py-1 text-[11px] font-black text-[#4f6a52] shadow-sm transition group-hover:bg-[#e4f0e1] dark:border-blue-900/60 dark:bg-zinc-900 dark:text-blue-200">
             근거 보기
           </span>
         </button>
@@ -3031,7 +3031,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
             <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#e8dfd2] bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 sm:px-5">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 text-sm font-black text-zinc-950 dark:text-zinc-100">
-                  <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" />
+                  <CheckCircleIcon className="h-4 w-4 shrink-0 text-emerald-700 dark:text-blue-300" />
                   왜 이 상품을 추천했나요?
                 </div>
                 <div className="mt-0.5 truncate text-xs font-semibold text-[#60705f] dark:text-zinc-300">
@@ -3066,11 +3066,11 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
                 <MarketBasisMini card={card} />
               </div>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                <div className="rounded-xl border border-emerald-100 bg-white/85 px-3 py-2.5 shadow-sm dark:border-emerald-900/50 dark:bg-zinc-900/45">
-                  <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">좋은 점</div>
+                <div className="rounded-xl border border-emerald-100 bg-white/85 px-3 py-2.5 shadow-sm dark:border-blue-900/50 dark:bg-zinc-900/45">
+                  <div className="text-[11px] font-black text-emerald-800 dark:text-blue-200">좋은 점</div>
                   <div className="mt-1.5 flex flex-wrap gap-1">
                     {goodSignals.length > 0 ? goodSignals.map((signal) => (
-                      <span key={signal} className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
+                      <span key={signal} className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:bg-blue-950/40 dark:text-blue-200">
                         {signal}
                       </span>
                     )) : (
@@ -3181,12 +3181,12 @@ function FeedbackReportPanel({ card }: { card: RevealCard }) {
 
   if (stage === "done") {
     return (
-      <section className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50/60 px-4 py-4 dark:border-emerald-900/60 dark:bg-emerald-950/30">
-        <div className="flex items-center gap-2 text-[13px] font-black text-emerald-800 dark:text-emerald-200">
+      <section className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50/60 px-4 py-4 dark:border-blue-900/60 dark:bg-blue-950/30">
+        <div className="flex items-center gap-2 text-[13px] font-black text-emerald-800 dark:text-blue-200">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
           신고 접수됐어요
         </div>
-        <p className="mt-1.5 text-[12px] font-bold leading-5 text-emerald-700/90 dark:text-emerald-300/90">
+        <p className="mt-1.5 text-[12px] font-bold leading-5 text-emerald-700/90 dark:text-blue-300/90">
           운영자가 검토 후 정당하면 +20 크레딧 지급해드릴게요.
         </p>
       </section>
@@ -3320,13 +3320,13 @@ function MarketGraphTrustLine({ card }: { card: RevealCard }) {
   return (
     <details className="rounded-lg border border-zinc-200 bg-white/70 px-3 py-2 text-[11px] font-semibold leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/45 dark:text-zinc-300">
       <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2">
-        <span className="font-black text-[#4f6a52] dark:text-emerald-200">그래프 기준 보기</span>
+        <span className="font-black text-[#4f6a52] dark:text-blue-200">그래프 기준 보기</span>
         <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
           {condition} · {source}
         </span>
       </summary>
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
-        <span className="rounded-full bg-[#e7f2e4] px-2 py-0.5 text-[10px] font-black text-[#4f6a52] dark:bg-emerald-950/50 dark:text-emerald-300">
+        <span className="rounded-full bg-[#e7f2e4] px-2 py-0.5 text-[10px] font-black text-[#4f6a52] dark:bg-blue-950/50 dark:text-blue-300">
           {condition} 기준
         </span>
         <span className="text-zinc-500 dark:text-zinc-400">{source}</span>
@@ -3440,7 +3440,7 @@ function _SellerTrustPanel({ card }: { card: RevealCard }) {
         ? "border-l-amber-400"
         : "border-l-rose-500";
   const valueColor = trustLevel === "good" || trustLevel === "ok"
-    ? "text-emerald-700 dark:text-emerald-300"
+    ? "text-emerald-700 dark:text-blue-300"
     : trustLevel === "caution"
       ? "text-amber-700 dark:text-amber-300"
       : "text-rose-700 dark:text-rose-300";
@@ -3471,7 +3471,7 @@ function _SellerTrustPanel({ card }: { card: RevealCard }) {
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
           {freeShipping ? (
-            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
+            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-blue-950/40 dark:text-blue-200">
               무료배송
             </span>
           ) : null}
@@ -3602,7 +3602,7 @@ function CounterfeitChecklistPanel({ card }: { card: RevealCard }) {
                     ? "rounded-full bg-rose-50 px-2 py-0.5 font-bold text-rose-700 dark:bg-rose-950/40 dark:text-rose-200"
                     : brandDepth.brand.counterfeitRisk === "moderate"
                       ? "rounded-full bg-amber-50 px-2 py-0.5 font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
-                      : "rounded-full bg-emerald-50 px-2 py-0.5 font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
+                      : "rounded-full bg-emerald-50 px-2 py-0.5 font-bold text-emerald-700 dark:bg-blue-950/40 dark:text-blue-200"
                 }
               >
                 {COUNTERFEIT_RISK_LABEL[brandDepth.brand.counterfeitRisk]}
@@ -3786,7 +3786,7 @@ function SellHelperPanel({
           <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
             판매 도우미 — {helper.label}
           </div>
-          <div className="mt-1 flex items-center gap-2 text-sm font-bold text-emerald-700 dark:text-emerald-300">
+          <div className="mt-1 flex items-center gap-2 text-sm font-bold text-emerald-700 dark:text-blue-300">
             <WalletIcon className="h-4 w-4 shrink-0" />
             {currentFeedbackType === "bought" ? "매수 완료 — 이제 팔아보자"
               : currentFeedbackType === "inspected" ? "검수 완료 — 등록 단계"
@@ -3813,7 +3813,7 @@ function SellHelperPanel({
               <div className="mt-1.5 grid grid-cols-2 gap-2">
                 <div>
                   <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">호가 (등록)</div>
-                  <div className="text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-300">
+                  <div className="text-base font-bold tabular-nums text-emerald-600 dark:text-blue-300">
                     {krw(pricing.askingPrice)}
                   </div>
                   <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
@@ -4001,7 +4001,7 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
             className="relative rounded-[14px] border border-zinc-200 bg-white px-3 pb-3 pt-3 dark:border-zinc-800 dark:bg-zinc-900"
           >
             {channel.source === currentSource ? (
-              <div className="absolute -top-2 right-2.5 rounded-full bg-emerald-700 px-2 py-1 text-[9px] font-extrabold tracking-wide text-white dark:bg-emerald-500 dark:text-zinc-950">
+              <div className="absolute -top-2 right-2.5 rounded-full bg-emerald-700 px-2 py-1 text-[9px] font-extrabold tracking-wide text-white dark:bg-blue-500 dark:text-zinc-950">
                 원본 출처
               </div>
             ) : null}
@@ -4013,13 +4013,13 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
               )}
               <span className="text-[12px] font-bold text-zinc-900 dark:text-zinc-100">{channel.label}</span>
             </div>
-            <div className="text-[19px] font-black tracking-tight text-emerald-700 tabular-nums dark:text-emerald-300">
+            <div className="text-[19px] font-black tracking-tight text-emerald-700 tabular-nums dark:text-blue-300">
               +{krw(channel.profit)}
             </div>
             <div className="mt-1 text-[10.5px] font-semibold text-zinc-500 dark:text-zinc-400">{channel.note}</div>
             <div className="mt-2 flex flex-wrap gap-1">
               {channel.chips.map((chip) => (
-                <span key={chip} className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-200">
+                <span key={chip} className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-blue-950/45 dark:text-blue-200">
                   {chip}
                 </span>
               ))}
@@ -4107,7 +4107,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
   });
   // Wave 325: verdict 4단계 (great/good/fair/tight). rose 제거 — 풀 매물은 다 안전 통과.
   const verdictClass = !guidance ? "" : (guidance.verdict === "great" || guidance.verdict === "good")
-    ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+    ? "bg-emerald-50 text-emerald-800 dark:bg-blue-950/40 dark:text-blue-200"
     : "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200";
   const profitFormula = snapshot.salePrice != null
     ? `수익 기준 시세 ${snapshot.salePriceLabel} − 매입 ${snapshot.buyerCostLabel} − 비용`
@@ -4135,7 +4135,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
 
         {/* Wave 394.7.h: 비용 분해 — 구매 / 재판매 그룹 분리. */}
         <div className="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">
-          <div className="mb-2 text-[10px] font-black tracking-wide text-[#047857] dark:text-emerald-300">
+          <div className="mb-2 text-[10px] font-black tracking-wide text-[#047857] dark:text-blue-300">
             구매 비용
           </div>
           <div className="space-y-3">
@@ -4184,11 +4184,11 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
           <div className="text-[10.5px] font-semibold leading-4 text-zinc-500 dark:text-zinc-400">
             {profitFormula}
           </div>
-          <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-[#b8e5ce] bg-[#effbf4] px-3 py-2.5 dark:border-emerald-900/60 dark:bg-emerald-950/30">
-            <span className="text-[12px] font-black text-[#047857] dark:text-emerald-300">
+          <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-[#b8e5ce] bg-[#effbf4] px-3 py-2.5 dark:border-blue-900/60 dark:bg-blue-950/30">
+            <span className="text-[12px] font-black text-[#047857] dark:text-blue-300">
               = 예상 차익
             </span>
-            <span className="text-[14px] font-black tabular-nums tracking-tight text-[#047857] dark:text-emerald-300">
+            <span className="text-[14px] font-black tabular-nums tracking-tight text-[#047857] dark:text-blue-300">
               {displayProfitRange(card)}
             </span>
           </div>
@@ -4232,28 +4232,28 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
           <div className="rounded-2xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
           <div className="space-y-1.5">
             {/* 현재 매입가 — em row */}
-            <div className="flex items-center gap-2.5 rounded-xl bg-emerald-50 px-3 py-3 dark:bg-emerald-950/30">
+            <div className="flex items-center gap-2.5 rounded-xl bg-emerald-50 px-3 py-3 dark:bg-blue-950/30">
               <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-sm font-black text-emerald-500 dark:bg-zinc-900">●</div>
               <div className="min-w-0 flex-1">
                 <div className="text-[13px] font-bold leading-tight tracking-tight text-zinc-800 dark:text-zinc-100">
-                  현재 매입가 <span className="ml-1 tabular-nums text-emerald-700 dark:text-emerald-300">{krw(card.price)}</span>
+                  현재 매입가 <span className="ml-1 tabular-nums text-emerald-700 dark:text-blue-300">{krw(card.price)}</span>
                 </div>
               </div>
-              <div className="text-[12px] font-bold tabular-nums tracking-tight text-emerald-700 dark:text-emerald-300">
+              <div className="text-[12px] font-bold tabular-nums tracking-tight text-emerald-700 dark:text-blue-300">
                 차익 +{krw(guidance.currentProfit)}
               </div>
             </div>
 
 
             {/* 협상 시도 — em row */}
-            <div className="flex items-center gap-2.5 rounded-xl bg-emerald-50 px-3 py-3 dark:bg-emerald-950/30">
+            <div className="flex items-center gap-2.5 rounded-xl bg-emerald-50 px-3 py-3 dark:bg-blue-950/30">
               <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-sm font-black text-emerald-500 dark:bg-zinc-900">↓</div>
               <div className="min-w-0 flex-1">
                 <div className="text-[13px] font-bold leading-tight tracking-tight text-zinc-800 dark:text-zinc-100">
-                  협상 시도 <span className="ml-1 tabular-nums text-emerald-700 dark:text-emerald-300">{krw(guidance.negotiationTarget)}</span>
+                  협상 시도 <span className="ml-1 tabular-nums text-emerald-700 dark:text-blue-300">{krw(guidance.negotiationTarget)}</span>
                 </div>
               </div>
-              <div className="text-[12px] font-bold tabular-nums tracking-tight text-emerald-700 dark:text-emerald-300">
+              <div className="text-[12px] font-bold tabular-nums tracking-tight text-emerald-700 dark:text-blue-300">
                 차익 +{krw(guidance.negotiationProfit)}
               </div>
             </div>
@@ -4417,7 +4417,7 @@ function RevealSaveButton({
           ? "pointer-events-auto inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90"
           : `pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full transition active:scale-90 ${
               saved
-                ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-200 dark:hover:bg-emerald-900/50"
+                ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-blue-950/40 dark:text-blue-200 dark:hover:bg-blue-900/50"
                 : "text-zinc-900 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-800"
             }`
       }
@@ -4548,7 +4548,7 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
       <div data-beginner-guide-trust-metric className="my-5 grid gap-0 divide-x divide-zinc-200 border-y border-zinc-200 py-4 dark:divide-zinc-800 dark:border-zinc-800 grid-cols-2">
         <div className="px-3">
           <div className="flex items-center gap-2 text-[12px] font-black text-zinc-500 dark:text-zinc-400">
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#eefbf3] text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-200">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#eefbf3] text-emerald-700 dark:bg-blue-950/45 dark:text-blue-200">
               <ShieldIcon className="h-4 w-4" />
             </span>
             <span>신뢰지수</span>
@@ -4563,7 +4563,7 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
             {reviewLabel}건
           </div>
           {safety.sellerTrust.badgeLabel ? (
-            <div className="mt-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+            <div className="mt-1 text-[11px] font-bold text-emerald-700 dark:text-blue-300">
               {safety.sellerTrust.badgeLabel}
             </div>
           ) : null}
@@ -4619,7 +4619,7 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
 
       <div className="px-3">
         <div className="flex items-center gap-2 text-[12px] font-black text-zinc-500 dark:text-zinc-400">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#edf8f2] text-[#0f9f6e] dark:bg-emerald-950/45 dark:text-emerald-200">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#edf8f2] text-[#0f9f6e] dark:bg-blue-950/45 dark:text-blue-200">
             <TrophyIcon className="h-4 w-4" />
           </span>
           <span>후기</span>
@@ -4699,9 +4699,9 @@ function BeginnerGuidePurchaseCheckVisual({ card }: { card: RevealCard }) {
       card: "ring-blue-100 dark:ring-blue-900/45",
     },
     emerald: {
-      icon: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/55 dark:text-emerald-200",
-      badge: "bg-emerald-50 text-emerald-700 ring-emerald-100 dark:bg-emerald-950/35 dark:text-emerald-200 dark:ring-emerald-900/55",
-      card: "ring-emerald-100 dark:ring-emerald-900/45",
+      icon: "bg-emerald-100 text-emerald-700 dark:bg-blue-950/55 dark:text-blue-200",
+      badge: "bg-emerald-50 text-emerald-700 ring-emerald-100 dark:bg-blue-950/35 dark:text-blue-200 dark:ring-blue-900/55",
+      card: "ring-emerald-100 dark:ring-blue-900/45",
     },
   };
 
@@ -4830,7 +4830,7 @@ function BeginnerGuideSummaryVisual({ card }: { card: RevealCard }) {
   return (
     <div className="mt-4 space-y-3">
       <div className="flex justify-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/55 dark:text-emerald-200 dark:ring-emerald-900/60">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 dark:bg-blue-950/55 dark:text-blue-200 dark:ring-blue-900/60">
           <CheckCircleIcon className="h-11 w-11" />
         </div>
       </div>
@@ -5010,7 +5010,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
                         ) : null}
                       </div>
                       <div className="shrink-0 text-right">
-                        {isSold ? <div className="mb-0.5 text-[9px] font-black text-emerald-600 dark:text-emerald-300">판매완료</div> : null}
+                        {isSold ? <div className="mb-0.5 text-[9px] font-black text-emerald-600 dark:text-blue-300">판매완료</div> : null}
                         <div className="text-[14px] font-black tabular-nums text-[#172019] dark:text-zinc-100">{krw(item.price)}</div>
                       </div>
                     </div>
@@ -5108,7 +5108,7 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
       </div>
       <div className="px-4 py-4">
         <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">최종 예상 순익</div>
-        <div className="mt-1 text-[30px] font-black leading-tight text-emerald-700 dark:text-emerald-300">
+        <div className="mt-1 text-[30px] font-black leading-tight text-emerald-700 dark:text-blue-300">
           {displayProfitRange(card)}
         </div>
         <div className={`mt-3 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${snapshot.confidenceClass}`}>
@@ -5128,9 +5128,9 @@ function BeginnerGuideSafetyVisual({ card }: { card: RevealCard }) {
   ];
 
   return (
-    <div data-beginner-guide-safe-payment className="mt-5 rounded-[22px] bg-white/84 p-4 ring-1 ring-[#d7e6d5] dark:bg-zinc-950/60 dark:ring-emerald-900/40">
+    <div data-beginner-guide-safe-payment className="mt-5 rounded-[22px] bg-white/84 p-4 ring-1 ring-[#d7e6d5] dark:bg-zinc-950/60 dark:ring-blue-900/40">
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-blue-950/60 dark:text-blue-200">
           <ShieldIcon className="h-6 w-6" />
         </div>
         <div>
@@ -5141,7 +5141,7 @@ function BeginnerGuideSafetyVisual({ card }: { card: RevealCard }) {
       <div className="mt-4 grid gap-2">
         {rows.map(([title, body], index) => (
           <div key={title} className="flex gap-3 rounded-[16px] bg-zinc-50 px-3 py-3 dark:bg-zinc-900">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[11px] font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-zinc-950 dark:text-emerald-200 dark:ring-emerald-900/50">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-[11px] font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-zinc-950 dark:text-blue-200 dark:ring-blue-900/50">
               {index + 1}
             </span>
             <div>
@@ -5184,7 +5184,7 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
         {marketChannels.map((channel) => (
           <div key={channel.source} className="relative min-w-0 rounded-[16px] bg-white/84 px-2 py-2.5 ring-1 ring-zinc-200 dark:bg-zinc-950/60 dark:ring-zinc-800 sm:rounded-[22px] sm:p-4">
             {channel.source === currentSource ? (
-              <div className="absolute right-1.5 top-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[8px] font-black text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-200 sm:right-3 sm:top-3 sm:px-2 sm:text-[9px]">
+              <div className="absolute right-1.5 top-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[8px] font-black text-emerald-700 dark:bg-blue-950/45 dark:text-blue-200 sm:right-3 sm:top-3 sm:px-2 sm:text-[9px]">
                 원본 출처
               </div>
             ) : null}
@@ -5196,11 +5196,11 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
               )}
               <div className="text-[10.5px] font-black leading-tight text-[#172019] dark:text-zinc-50 sm:text-[13px]">{channel.label}</div>
             </div>
-            <div className="mt-2 text-[15px] font-black leading-tight tabular-nums text-emerald-700 dark:text-emerald-300 sm:mt-3 sm:text-[22px]">+{krw(channel.profit)}</div>
+            <div className="mt-2 text-[15px] font-black leading-tight tabular-nums text-emerald-700 dark:text-blue-300 sm:mt-3 sm:text-[22px]">+{krw(channel.profit)}</div>
             {/* Wave launch-68 (사용자 짚음 "chip 수직 위치 다 다름"):
                 joongna note 2줄 → chip 아래로 밀림. note 영역 mobile/desktop 둘 다 fixed height. */}
             <div className="mt-1 flex min-h-[28px] items-start break-keep text-[9px] font-bold leading-[1.35] text-[#7b8378] dark:text-zinc-400 sm:min-h-[34px] sm:text-[11px]">{channel.note}</div>
-            <div className="mt-2 rounded-full bg-emerald-50 px-1.5 py-1 text-center text-[9px] font-black text-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-200 sm:mt-3 sm:px-2.5 sm:text-[11px]">{channel.chip}</div>
+            <div className="mt-2 rounded-full bg-emerald-50 px-1.5 py-1 text-center text-[9px] font-black text-emerald-700 dark:bg-blue-950/35 dark:text-blue-200 sm:mt-3 sm:px-2.5 sm:text-[11px]">{channel.chip}</div>
           </div>
         ))}
         <div className="min-w-0 rounded-[16px] bg-amber-50/80 px-2 py-2.5 ring-1 ring-amber-200 dark:bg-amber-950/20 dark:ring-amber-900/55 sm:rounded-[22px] sm:p-4">
@@ -5764,18 +5764,18 @@ function RevealCardItem({
         // counterfeit 위험 시 "조건부" 접두 (em verdict 한정)
         label: hasHighCounterfeitRisk && verdictUi.tone === "em" ? `조건부 ${verdictUi.card}` : verdictUi.card,
         cls: verdictUi.tone === "em"
-          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+          ? "bg-emerald-100 text-emerald-800 dark:bg-blue-950/40 dark:text-blue-200"
           : verdictUi.tone === "amber"
             ? "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
             : "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200",
       };
   const profitCardClass = isMarketInvalidated
     ? "border-rose-200 bg-gradient-to-br from-rose-50 to-rose-100 shadow-[0_10px_28px_rgba(45,51,42,0.08)] dark:border-rose-900/50 dark:from-rose-950/30 dark:to-zinc-950 dark:shadow-none"
-    : "border-emerald-200 bg-gradient-to-br from-[#f3faf5] to-[#e6f4ec] shadow-[0_10px_28px_rgba(45,51,42,0.08)] dark:border-emerald-900/50 dark:from-emerald-950/22 dark:to-zinc-950 dark:shadow-none";
-  const profitToneClass = isMarketInvalidated ? "text-rose-800 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-300";
+    : "border-emerald-200 bg-gradient-to-br from-[#f3faf5] to-[#e6f4ec] shadow-[0_10px_28px_rgba(45,51,42,0.08)] dark:border-blue-900/50 dark:from-blue-950/22 dark:to-zinc-950 dark:shadow-none";
+  const profitToneClass = isMarketInvalidated ? "text-rose-800 dark:text-rose-300" : "text-emerald-700 dark:text-blue-300";
   const profitChipClass = isMarketInvalidated
     ? "bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-200"
-    : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200";
+    : "bg-emerald-100 text-emerald-800 dark:bg-blue-950/50 dark:text-blue-200";
   const profitMutedClass = "text-zinc-500 dark:text-zinc-400";
   const profitStrongClass = "text-zinc-900 dark:text-zinc-100";
   // Wave 2026-05-19 v2: grossGap, dailyProfit 표시 제거 (일반인 헷갈림 / 노이즈 큼).
@@ -5871,7 +5871,7 @@ function RevealCardItem({
                     type="button"
                     onClick={onBeginnerGuideClick}
                     data-beginner-guide-reopen
-                    className="mx-auto mt-3 flex min-h-10 w-full max-w-[180px] items-center justify-center gap-1.5 rounded-full border border-[#d7e6d5] bg-white/86 px-4 text-[12px] font-black text-[#047857] shadow-sm transition hover:bg-[#f3faf5] active:scale-[0.98] dark:border-zinc-700 dark:bg-zinc-950/70 dark:text-emerald-300 dark:hover:bg-zinc-900"
+                    className="mx-auto mt-3 flex min-h-10 w-full max-w-[180px] items-center justify-center gap-1.5 rounded-full border border-[#d7e6d5] bg-white/86 px-4 text-[12px] font-black text-[#047857] shadow-sm transition hover:bg-[#f3faf5] active:scale-[0.98] dark:border-zinc-700 dark:bg-zinc-950/70 dark:text-blue-300 dark:hover:bg-zinc-900"
                   >
                     <ShieldIcon className="h-3.5 w-3.5" />
                     <span>쉽게 보기</span>
@@ -5939,7 +5939,7 @@ function RevealCardItem({
                   className={`mt-3.5 flex w-full cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border px-3 py-2.5 text-[13px] font-extrabold transition active:scale-[0.99] ${
                     isMarketInvalidated
                       ? "border-rose-200 bg-white text-rose-800 hover:bg-rose-50 dark:border-rose-900/60 dark:bg-zinc-950/70 dark:text-rose-200 dark:hover:bg-rose-950/20"
-                      : "border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-zinc-950/70 dark:text-emerald-200 dark:hover:bg-emerald-950/20"
+                      : "border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 dark:border-blue-900/60 dark:bg-zinc-950/70 dark:text-blue-200 dark:hover:bg-blue-950/20"
                   }`}
                 >
                   <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -6380,11 +6380,11 @@ function FixedBunjangFooter({
           />
           <div className="relative w-full max-w-[430px] overflow-hidden rounded-[26px] bg-white p-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)] ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800">
             <div className="flex items-start gap-3">
-              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/55 dark:text-emerald-200 dark:ring-emerald-900/60">
+              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200 dark:bg-blue-950/55 dark:text-blue-200 dark:ring-blue-900/60">
                 <ShieldIcon className="h-6 w-6" />
               </span>
               <div className="min-w-0">
-                <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-200">원본 매물로 이동하기 전</div>
+                <div className="text-[11px] font-black text-emerald-700 dark:text-blue-200">원본 매물로 이동하기 전</div>
                 <h3 className="mt-1 break-keep text-[21px] font-black leading-[1.18] text-[#172019] dark:text-zinc-50">
                   이 세 가지만 기억하세요
                 </h3>
@@ -6407,16 +6407,16 @@ function FixedBunjangFooter({
                 </div>
               ) : null}
               {safety.sourceAction ? (
-                <div className="rounded-[18px] bg-emerald-50/80 px-3.5 py-3 ring-1 ring-emerald-100 dark:bg-emerald-950/25 dark:ring-emerald-900/60">
-                  <div className="text-[11px] font-black text-emerald-800 dark:text-emerald-200">중고나라 추가 확인</div>
-                  <p className="mt-1 break-keep text-[12.5px] font-bold leading-5 text-emerald-900 dark:text-emerald-100">
+                <div className="rounded-[18px] bg-emerald-50/80 px-3.5 py-3 ring-1 ring-emerald-100 dark:bg-blue-950/25 dark:ring-blue-900/60">
+                  <div className="text-[11px] font-black text-emerald-800 dark:text-blue-200">중고나라 추가 확인</div>
+                  <p className="mt-1 break-keep text-[12.5px] font-bold leading-5 text-emerald-900 dark:text-blue-100">
                     {safety.sourceAction.note}
                   </p>
                   <a
                     href={safety.sourceAction.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-2 inline-flex rounded-full bg-white px-3 py-1.5 text-[12px] font-black text-emerald-700 ring-1 ring-emerald-200 dark:bg-zinc-950/50 dark:text-emerald-200 dark:ring-emerald-900/70"
+                    className="mt-2 inline-flex rounded-full bg-white px-3 py-1.5 text-[12px] font-black text-emerald-700 ring-1 ring-emerald-200 dark:bg-zinc-950/50 dark:text-blue-200 dark:ring-blue-900/70"
                   >
                     {safety.sourceAction.label}
                   </a>
@@ -6517,7 +6517,7 @@ function RelatedRevealStrip({
         <div className="text-base font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
           다른 수익 매물
         </div>
-        <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+        <span className="text-[11px] font-bold text-emerald-700 dark:text-blue-400">
           {visibleItems.length}개
         </span>
       </div>
@@ -6578,7 +6578,7 @@ function RelatedRevealStrip({
                   <div className="line-clamp-2 min-h-[32px] text-[11px] font-bold leading-tight text-zinc-700 dark:text-zinc-300">
                     {item.name}
                   </div>
-                  <div className="mt-1.5 text-[13px] font-black leading-none tabular-nums tracking-tight text-emerald-700 dark:text-emerald-300">
+                  <div className="mt-1.5 text-[13px] font-black leading-none tabular-nums tracking-tight text-emerald-700 dark:text-blue-300">
                     {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
                   </div>
                   <div className="mt-0.5 text-[10px] font-bold tabular-nums text-zinc-500 dark:text-zinc-400">
@@ -6611,7 +6611,7 @@ function DetailReportModeChoiceSheet({
     <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/45 px-3 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-8 backdrop-blur-sm sm:items-center sm:px-6 sm:pb-8">
       <div className="w-full max-w-[420px] rounded-[28px] bg-white p-4 shadow-[0_24px_80px_rgba(0,0,0,0.28)] ring-1 ring-black/10 dark:bg-zinc-950 dark:ring-white/10">
         <div className="rounded-[22px] bg-white px-4 py-4 ring-1 ring-[#ebe3d4] dark:bg-zinc-900 dark:ring-zinc-800">
-          <div className="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-black text-emerald-800 ring-1 ring-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-900/60">
+          <div className="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-black text-emerald-800 ring-1 ring-emerald-100 dark:bg-blue-950/40 dark:text-blue-200 dark:ring-blue-900/60">
             보기 방식 선택
           </div>
           <h3 className="mt-3 break-keep text-[21px] font-black leading-[1.2] text-[#172019] dark:text-zinc-50">
@@ -7188,7 +7188,7 @@ export default function PackRevealModal({
                     <div className="truncate text-[11.5px] font-bold leading-tight text-zinc-900 dark:text-zinc-100">
                       {activeRevealCard.name}
                     </div>
-                    <div className="mt-0.5 truncate text-[12.5px] font-black leading-none tabular-nums text-emerald-600 dark:text-emerald-400">
+                    <div className="mt-0.5 truncate text-[12.5px] font-black leading-none tabular-nums text-emerald-600 dark:text-blue-400">
                       {Math.min(activeRevealCard.expectedProfitMin, activeRevealCard.expectedProfitMax) <= 0
                         ? <span className="text-rose-600 dark:text-rose-400">판매완료 처리</span>
                         : displayProfitRange(activeRevealCard)}

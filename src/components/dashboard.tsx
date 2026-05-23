@@ -127,7 +127,7 @@ function categoryOf(item: ListingCandidate): CategoryFilter {
 
 function cashoutHintClass(item: ListingCandidate) {
   const hint = cashoutHint(item);
-  if (hint === "빠름") return "text-emerald-600 dark:text-emerald-400";
+  if (hint === "빠름") return "text-emerald-600 dark:text-blue-400";
   if (hint === "보통") return "text-sky-600 dark:text-sky-400";
   return "text-zinc-500";
 }
@@ -269,7 +269,7 @@ function Navbar() {
             M
           </div>
           <span className="font-black tracking-tight text-zinc-900 dark:text-white">득템잡이</span>
-          <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:ring-emerald-900">
+          <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-blue-950/50 dark:text-blue-400 dark:ring-blue-900">
             Beta
           </span>
         </div>
@@ -337,7 +337,7 @@ function SignalPills({ signals, tone }: { signals: CandidateSignal[]; tone: "goo
   if (signals.length === 0) return null;
   const className =
     tone === "good"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-400"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-400"
       : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950/50 dark:text-amber-400";
 
   return (
@@ -385,7 +385,7 @@ function ProfitBreakdown({ item }: { item: ListingCandidate }) {
         ))}
         <div className="flex justify-between gap-3 border-t border-zinc-200 pt-2.5 dark:border-zinc-700">
           <span className="font-bold text-zinc-950 dark:text-zinc-50">예상 순익</span>
-          <span className="font-bold text-emerald-600 dark:text-emerald-400">{profit}</span>
+          <span className="font-bold text-emerald-600 dark:text-blue-400">{profit}</span>
         </div>
       </div>
     </div>
@@ -594,7 +594,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
               ].map(({ label, value, highlight }) => (
                 <div key={label} className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 dark:border-zinc-800 dark:bg-zinc-900">
                   <span className="text-xs text-zinc-400">{label} </span>
-                  <span className={`text-sm font-bold tabular-nums ${highlight ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-800 dark:text-zinc-200"}`}>
+                  <span className={`text-sm font-bold tabular-nums ${highlight ? "text-emerald-600 dark:text-blue-400" : "text-zinc-800 dark:text-zinc-200"}`}>
                     {value}
                   </span>
                 </div>
@@ -614,7 +614,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
           {/* Status chips */}
           <section className="flex flex-wrap gap-2">
             {[
-              { label: `관심 ${interestedCount}건`, cls: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-400" },
+              { label: `관심 ${interestedCount}건`, cls: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-400" },
               { label: `보류 ${holdCount}건`, cls: "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-400" },
               { label: `숨김 ${hiddenCount}건`, cls: "border-zinc-200 bg-white text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-400" },
             ].map(({ label, cls }) => (
@@ -637,7 +637,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                   onClick={() => setSelectedPid(item.pid)}
                   className={`group flex h-full flex-col overflow-hidden rounded-2xl border text-left transition-all duration-200 hover:-translate-y-1.5 ${
                     isPremium
-                      ? "border-emerald-200 bg-white shadow-lg shadow-emerald-500/10 hover:border-emerald-300 hover:shadow-2xl hover:shadow-emerald-500/20 dark:border-emerald-900/50 dark:bg-zinc-900 dark:shadow-emerald-950/50 dark:hover:border-emerald-800"
+                      ? "border-emerald-200 bg-white shadow-lg shadow-emerald-500/10 hover:border-emerald-300 hover:shadow-2xl hover:shadow-emerald-500/20 dark:border-blue-900/50 dark:bg-zinc-900 dark:shadow-blue-950/50 dark:hover:border-blue-800"
                       : "border-zinc-200/80 bg-white shadow-md hover:border-zinc-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
                   }`}
                 >
@@ -697,7 +697,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                       </div>
                       <div className="text-right">
                         <div className="text-[10px] font-medium text-zinc-400">시세갭</div>
-                        <div className={`text-sm font-bold ${item.priceGap >= 0.15 ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-700 dark:text-zinc-300"}`}>
+                        <div className={`text-sm font-bold ${item.priceGap >= 0.15 ? "text-emerald-600 dark:text-blue-400" : "text-zinc-700 dark:text-zinc-300"}`}>
                           {percent(item.priceGap)}
                         </div>
                       </div>
@@ -723,7 +723,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                 {/* Modal header */}
                 <div className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-200 bg-white/95 px-5 py-4 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">
                   <div className="min-w-0">
-                    <div className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    <div className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-blue-400">
                       리셀갭 상세
                     </div>
                     <div className="truncate text-sm font-bold text-zinc-950 dark:text-zinc-50">{selected.name}</div>
@@ -775,7 +775,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                         <div className="mt-1 text-sm text-zinc-500">{selected.skuName}</div>
                       </div>
                       <div className="shrink-0 text-right">
-                        <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{profitLabel(selected)}</div>
+                        <div className="text-3xl font-black text-emerald-600 dark:text-blue-400">{profitLabel(selected)}</div>
                         <div className="text-xs text-zinc-400">예상 순익</div>
                       </div>
                     </div>
@@ -852,7 +852,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                       <button
                         type="button"
                         onClick={() => setStatus(selected.pid, "interested")}
-                        className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-bold text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-400 dark:hover:bg-emerald-950/60"
+                        className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-bold text-emerald-800 transition hover:bg-emerald-100 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-400 dark:hover:bg-blue-950/60"
                       >
                         관심
                       </button>

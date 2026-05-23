@@ -138,7 +138,7 @@ export function liquidityHoursLabel(hours: number | null): string {
 
 // position → tailwind tone class
 export const LIQUIDITY_POSITION_CLASS: Record<LiquidityPosition, string> = {
-  fast: "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200",
+  fast: "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200",
   average: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200",
   slow: "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200",
   unknown: "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300",
@@ -153,8 +153,8 @@ export const LIQUIDITY_POSITION_LABEL: Record<LiquidityPosition, string> = {
 
 // 5 bucket → tailwind class (mini bar)
 export const LIQUIDITY_BUCKET_CLASS: Record<number, string> = {
-  0: "bg-emerald-500/90 dark:bg-emerald-500/80",
-  1: "bg-emerald-400/80 dark:bg-emerald-500/60",
+  0: "bg-emerald-500/90 dark:bg-blue-500/80",
+  1: "bg-emerald-400/80 dark:bg-blue-500/60",
   2: "bg-amber-400/80 dark:bg-amber-500/70",
   3: "bg-rose-400/80 dark:bg-rose-500/70",
   4: "bg-rose-500/90 dark:bg-rose-500/80",

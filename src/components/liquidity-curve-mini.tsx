@@ -99,15 +99,15 @@ export function LiquidityCurveMini({ compact = false, uiTestFallback = false, ..
       </div>
 
       <div className="mt-2 text-[12px] font-black text-[#223127] dark:text-zinc-100">
-        비슷한 상품은 보통 <span className="text-emerald-700 dark:text-emerald-300">{estimated}</span> 안에 팔렸어요
+        비슷한 상품은 보통 <span className="text-emerald-700 dark:text-blue-300">{estimated}</span> 안에 팔렸어요
       </div>
 
       {(curve.estimatedHoursAt5PctDiscount != null || curve.estimatedHoursAt5PctMarkup != null) && (
         <div className="mt-1.5 grid grid-cols-2 gap-1.5 text-[10px]">
           {curve.estimatedHoursAt5PctDiscount != null && (
-            <div className="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-              <span className="font-bold text-emerald-800 dark:text-emerald-300">5% 싸게 팔면</span>
-              <span className="ml-1 text-emerald-900 dark:text-emerald-200">{liquidityHoursLabel(curve.estimatedHoursAt5PctDiscount)}</span>
+            <div className="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 dark:border-blue-900/40 dark:bg-blue-950/20">
+              <span className="font-bold text-emerald-800 dark:text-blue-300">5% 싸게 팔면</span>
+              <span className="ml-1 text-emerald-900 dark:text-blue-200">{liquidityHoursLabel(curve.estimatedHoursAt5PctDiscount)}</span>
             </div>
           )}
           {curve.estimatedHoursAt5PctMarkup != null && (

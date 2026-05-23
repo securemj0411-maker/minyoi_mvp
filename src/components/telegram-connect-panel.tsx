@@ -132,7 +132,7 @@ function NotConnectedView({ botUsername, onStart, actionLoading }: {
   return (
     <div className="rounded-2xl border border-[#e2d9cb] bg-[#fffaf6] p-5 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex items-start gap-3">
-        <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-emerald-300">
+        <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-blue-300">
           <BellIcon className="h-5 w-5" />
         </div>
         <div className="flex-1">
@@ -212,11 +212,11 @@ function ConnectedView({ status, onDisconnect, actionLoading }: {
   actionLoading: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-[#c8d8c4] bg-[#f0f6ec] p-5 dark:border-emerald-800 dark:bg-emerald-950/30">
+    <div className="rounded-2xl border border-[#c8d8c4] bg-[#f0f6ec] p-5 dark:border-blue-800 dark:bg-blue-950/30">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-blue-900/50 dark:text-blue-300">
               <CheckCircleIcon className="h-4 w-4" />
             </span>
             <span className="text-base font-black text-[#223127] dark:text-zinc-100">연결됨</span>

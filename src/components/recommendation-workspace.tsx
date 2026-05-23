@@ -236,7 +236,7 @@ function packCardClasses(band: PackBand) {
   if (band === 3)
     return "border-[#ead8a7] bg-[linear-gradient(180deg,rgba(255,251,243,0.98)_0%,rgba(251,245,230,0.96)_100%)] shadow-[0_24px_60px_rgba(183,143,54,0.12)] hover:shadow-[0_28px_70px_rgba(183,143,54,0.18)] dark:border-amber-800/60 dark:bg-[linear-gradient(180deg,rgba(31,25,18,0.98)_0%,rgba(24,20,15,0.98)_100%)] dark:shadow-amber-950/40";
   if (band === 2)
-    return "border-[#d8dccd] bg-[linear-gradient(180deg,rgba(255,251,243,0.98)_0%,rgba(247,243,233,0.98)_100%)] shadow-[0_24px_60px_rgba(49,130,246,0.10)] hover:shadow-[0_28px_70px_rgba(49,130,246,0.16)] dark:border-emerald-900/40 dark:bg-[linear-gradient(180deg,rgba(18,28,22,0.98)_0%,rgba(15,22,18,0.98)_100%)]";
+    return "border-[#d8dccd] bg-[linear-gradient(180deg,rgba(255,251,243,0.98)_0%,rgba(247,243,233,0.98)_100%)] shadow-[0_24px_60px_rgba(49,130,246,0.10)] hover:shadow-[0_28px_70px_rgba(49,130,246,0.16)] dark:border-blue-900/40 dark:bg-[linear-gradient(180deg,rgba(18,28,22,0.98)_0%,rgba(15,22,18,0.98)_100%)]";
   return "border-[#d8e4e2] bg-[linear-gradient(180deg,rgba(255,251,243,0.98)_0%,rgba(242,247,247,0.98)_100%)] shadow-[0_24px_60px_rgba(73,113,126,0.10)] hover:shadow-[0_28px_70px_rgba(73,113,126,0.16)] dark:border-sky-900/40 dark:bg-[linear-gradient(180deg,rgba(15,22,28,0.98)_0%,rgba(12,18,22,0.98)_100%)]";
 }
 
@@ -1060,7 +1060,7 @@ function PackSelectorCard({
             <>
               {busyStatusText ? (
                 <div
-                  className="rounded-2xl border border-[#d8dccd] bg-[#f8fbf4] px-3 py-3 shadow-[0_12px_28px_rgba(49,130,246,0.10)] dark:border-emerald-900/50 dark:bg-emerald-950/20"
+                  className="rounded-2xl border border-[#d8dccd] bg-[#f8fbf4] px-3 py-3 shadow-[0_12px_28px_rgba(49,130,246,0.10)] dark:border-blue-900/50 dark:bg-blue-950/20"
                   role="status"
                   aria-live="polite"
                 >
@@ -1075,10 +1075,10 @@ function PackSelectorCard({
                       <div className="text-sm font-black text-zinc-950 dark:text-zinc-100">
                         {busyStatusText}
                       </div>
-                      <div className="mt-1 text-[11px] font-semibold leading-5 text-[#667466] dark:text-emerald-100/80">
+                      <div className="mt-1 text-[11px] font-semibold leading-5 text-[#667466] dark:text-blue-100/80">
                         시세 기준, 판매 상태, 조건 필터를 같이 확인합니다. 창을 닫지 않아도 곧 결과가 반영돼요.
                       </div>
-                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#dfe9dc] dark:bg-emerald-950/60">
+                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#dfe9dc] dark:bg-blue-950/60">
                         <div
                           className="h-full w-2/3 rounded-full bg-gradient-to-r from-transparent via-[var(--brand-accent-strong)] to-transparent"
                           style={{ animation: "seekProgressSweep 1.35s ease-in-out infinite" }}

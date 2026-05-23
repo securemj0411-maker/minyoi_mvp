@@ -113,11 +113,11 @@ function MarketSourceDebugSkeleton() {
   const line = (className: string) => <div className={`rounded-full bg-zinc-200 dark:bg-zinc-800 ${className}`} />;
   return (
     <div className="animate-pulse space-y-3" aria-busy="true">
-      <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+      <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50 p-3 dark:border-blue-900/50 dark:bg-blue-950/20">
         <div className="flex gap-3">
-          <div className="h-24 w-24 shrink-0 rounded-lg bg-emerald-100 dark:bg-emerald-900/50" />
+          <div className="h-24 w-24 shrink-0 rounded-lg bg-emerald-100 dark:bg-blue-900/50" />
           <div className="min-w-0 flex-1 space-y-2">
-            {line("h-3 w-32 bg-emerald-100 dark:bg-emerald-900/50")}
+            {line("h-3 w-32 bg-emerald-100 dark:bg-blue-900/50")}
             {line("h-4 w-4/5")}
             {line("h-5 w-56")}
             {line("h-3 w-44")}
@@ -366,7 +366,7 @@ export function MarketSourceDebug({
               {data && (
                 <>
                   {/* 🎯 검토 중인 매물 — prominent 카드 */}
-                  <div className="rounded-xl border-2 border-emerald-400 bg-emerald-50 p-3 dark:border-emerald-700 dark:bg-emerald-950/30">
+                  <div className="rounded-xl border-2 border-emerald-400 bg-emerald-50 p-3 dark:border-blue-700 dark:bg-blue-950/30">
                     <div className="flex gap-3">
                       {data.ourListing.thumbnailUrl && (
                         <Image
@@ -375,11 +375,11 @@ export function MarketSourceDebug({
                           width={96}
                           height={96}
                           unoptimized
-                          className="h-24 w-24 shrink-0 rounded-lg object-cover ring-2 ring-emerald-300 dark:ring-emerald-700"
+                          className="h-24 w-24 shrink-0 rounded-lg object-cover ring-2 ring-emerald-300 dark:ring-blue-700"
                         />
                       )}
                       <div className="min-w-0 flex-1">
-                        <div className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                        <div className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-blue-300">
                           🎯 지금 검토 중인 매물
                         </div>
                         <div className="mt-1 line-clamp-2 text-[14px] font-bold leading-5 text-zinc-900 dark:text-zinc-100">
@@ -414,7 +414,7 @@ export function MarketSourceDebug({
                           href={data.ourListing.listingUrl || data.ourListing.bunjangUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:underline dark:text-emerald-400"
+                          className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:underline dark:text-blue-400"
                         >
                           <MarketplaceSourceBadge source={data.ourListing.marketplaceSource} label={data.ourListing.marketplaceLabel} />
                           원본 매물 열기 →
@@ -514,7 +514,7 @@ export function MarketSourceDebug({
                     </div>
                     {/* Wave 251.4 (2026-05-19): clothing product_type 필터 표시 — 사용자 신뢰. */}
                     {data.ourListing.productType && data.ourListing.productType !== "type_unknown" && (
-                      <div className="mb-2 rounded-md bg-emerald-50 px-2 py-1 text-[11px] text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:ring-emerald-700">
+                      <div className="mb-2 rounded-md bg-emerald-50 px-2 py-1 text-[11px] text-emerald-700 ring-1 ring-emerald-200 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-700">
                         🧵 product_type 필터 적용 — 본 매물 「{data.ourListing.productType}」 와 같은 type 만 표시 (다른 type 매물 제외)
                       </div>
                     )}
@@ -531,7 +531,7 @@ export function MarketSourceDebug({
                           <Fragment key={c.pid}>
                             {showHeader && (
                               <div className={`mb-1 mt-2 px-1 text-[10px] font-bold uppercase tracking-wide ${
-                                dist === 0 ? "text-emerald-600 dark:text-emerald-400"
+                                dist === 0 ? "text-emerald-600 dark:text-blue-400"
                                   : dist === 1 ? "text-sky-600 dark:text-sky-400"
                                   : dist === 99 ? "text-zinc-400 dark:text-zinc-500"
                                   : "text-zinc-500 dark:text-zinc-400"
@@ -603,7 +603,7 @@ export function MarketSourceDebug({
               <div className="mb-1.5 flex items-baseline justify-between text-[10px] font-bold">
                 <span className="text-zinc-600 dark:text-zinc-300">💬 검증 메모 — 매물별 자유 기록 (나중에 일괄 검토용)</span>
                 {(!userRef || !accessToken) && <span className="text-rose-500">로그인 필요</span>}
-                {noteSaved && <span className="text-emerald-600 dark:text-emerald-400">✓ 저장됨</span>}
+                {noteSaved && <span className="text-emerald-600 dark:text-blue-400">✓ 저장됨</span>}
               </div>
               <textarea
                 value={note}
@@ -612,7 +612,7 @@ export function MarketSourceDebug({
                 maxLength={5000}
                 rows={3}
                 placeholder="시세 비교 OK / 단품 의심 / 가격 비교 틀린 듯 / 사진 애매 / 이거 좋은 추천 ..."
-                className="w-full resize-y rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs leading-5 text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-emerald-400 dark:focus:ring-emerald-900"
+                className="w-full resize-y rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs leading-5 text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-400 dark:focus:ring-blue-900"
               />
               <div className="mt-1.5 flex items-center justify-between">
                 <div className="text-[10px] text-zinc-400">{note.length}/5000</div>
@@ -620,7 +620,7 @@ export function MarketSourceDebug({
                   type="button"
                   onClick={handleSaveNote}
                   disabled={!userRef || !accessToken || !note.trim() || noteLoading}
-                  className="rounded-md bg-emerald-700 px-4 py-1.5 text-[11px] font-black text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                  className="rounded-md bg-emerald-700 px-4 py-1.5 text-[11px] font-black text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-blue-600 dark:hover:bg-blue-700"
                 >
                   {noteLoading ? "저장 중..." : "코멘트 저장"}
                 </button>

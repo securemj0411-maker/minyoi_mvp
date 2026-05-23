@@ -137,7 +137,7 @@ export default function HotdealReservations({ initialPid }: { initialPid: number
       )}
 
       {pending.length > 1 && (
-        <div className="flex items-center justify-between rounded-2xl border border-[#c8d8c4] bg-[var(--brand-accent-soft)] p-4 dark:border-emerald-800 dark:bg-emerald-950/30">
+        <div className="flex items-center justify-between rounded-2xl border border-[#c8d8c4] bg-[var(--brand-accent-soft)] p-4 dark:border-blue-800 dark:bg-blue-950/30">
           <div className="text-sm font-black text-[#223127] dark:text-zinc-100">
             받은 핫딜 {pending.length}건
           </div>
@@ -197,7 +197,7 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen }: {
       <article
         className={`overflow-hidden rounded-2xl border p-5 transition ${
           highlight
-            ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-soft)] ring-2 ring-[var(--brand-accent-strong)] dark:border-emerald-400 dark:bg-emerald-950/30 dark:ring-emerald-400"
+            ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-soft)] ring-2 ring-[var(--brand-accent-strong)] dark:border-blue-400 dark:bg-blue-950/30 dark:ring-blue-400"
             : "border-[#e2d9cb] bg-[#fffaf6] dark:border-zinc-800 dark:bg-zinc-900"
         }`}
       >
@@ -241,7 +241,7 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen }: {
     <article
       className={`overflow-hidden rounded-2xl border p-5 transition ${
         highlight
-          ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-soft)] ring-2 ring-[var(--brand-accent-strong)] dark:border-emerald-400 dark:bg-emerald-950/30 dark:ring-emerald-400"
+          ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-soft)] ring-2 ring-[var(--brand-accent-strong)] dark:border-blue-400 dark:bg-blue-950/30 dark:ring-blue-400"
           : "border-[#e2d9cb] bg-[#fffaf6] dark:border-zinc-800 dark:bg-zinc-900"
       }`}
     >
@@ -278,7 +278,7 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen }: {
             </div>
             <div>
               <div className="text-[10px] uppercase tracking-wide text-[#7a8577] dark:text-zinc-500">차익</div>
-              <div className="mt-0.5 font-black text-emerald-700 dark:text-emerald-300">
+              <div className="mt-0.5 font-black text-emerald-700 dark:text-blue-300">
                 ₩{profitWan.toLocaleString("ko-KR")}만 ({pct}%)
               </div>
             </div>

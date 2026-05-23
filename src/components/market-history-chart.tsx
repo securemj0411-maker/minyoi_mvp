@@ -144,7 +144,7 @@ export default function MarketHistoryChart({
       <button
         type="button"
         onClick={() => setOpened(true)}
-        className="w-full rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-left text-[11px] font-bold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/50"
+        className="w-full rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-left text-[11px] font-bold text-emerald-700 hover:bg-emerald-100 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-950/50"
       >
         시세 30일 추이 보기
       </button>
@@ -161,7 +161,7 @@ export default function MarketHistoryChart({
   if (!data || data.length === 0) {
     if (priceSource === "reference" && referencePrice != null && referencePrice > 0) {
       return (
-        <div className="rounded-md border border-emerald-100 bg-emerald-50/70 px-3 py-2 text-[11px] font-semibold text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-200">
+        <div className="rounded-md border border-emerald-100 bg-emerald-50/70 px-3 py-2 text-[11px] font-semibold text-emerald-800 dark:border-blue-900/50 dark:bg-blue-950/20 dark:text-blue-200">
           다나와 새상품 기준 {krwShort(referencePrice)} · 번개 미개봉 거래 추이는 표본 누적 중
         </div>
       );
@@ -175,7 +175,7 @@ export default function MarketHistoryChart({
   if (data.length < 2) {
     if (priceSource === "reference" && referencePrice != null && referencePrice > 0) {
       return (
-        <div className="rounded-md border border-emerald-100 bg-emerald-50/70 px-3 py-2 text-[11px] font-semibold text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-200">
+        <div className="rounded-md border border-emerald-100 bg-emerald-50/70 px-3 py-2 text-[11px] font-semibold text-emerald-800 dark:border-blue-900/50 dark:bg-blue-950/20 dark:text-blue-200">
           다나와 새상품 기준 {krwShort(referencePrice)} · 번개 미개봉 추이는 내일부터 더 선명해져요
         </div>
       );
@@ -267,7 +267,7 @@ export default function MarketHistoryChart({
   const latestConfidence = data[data.length - 1]?.confidence ?? "low";
   const confidenceBadge: { label: string; cls: string } | null =
     latestConfidence === "high"
-      ? { label: "✓ 신뢰 높음", cls: "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300" }
+      ? { label: "✓ 신뢰 높음", cls: "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-300" }
       : latestConfidence === "medium"
         ? { label: "△ 신뢰 보통", cls: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300" }
         : { label: "? 표본 부족", cls: "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400" };

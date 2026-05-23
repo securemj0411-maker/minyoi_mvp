@@ -226,7 +226,7 @@ export default function AuthForm({ mode }: Props) {
   return (
     <div className="w-full max-w-md rounded-[32px] border border-[#ddd4c7] bg-[#fffbf4] p-6 shadow-[0_20px_48px_rgba(34,49,39,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
       <div>
-        <p className="text-xs font-black uppercase tracking-widest text-[#5d735f] dark:text-emerald-400">
+        <p className="text-xs font-black uppercase tracking-widest text-[#5d735f] dark:text-blue-400">
           득템잡이
         </p>
         <h1 className="mt-2 text-2xl font-black tracking-tight text-[#223127] dark:text-white">

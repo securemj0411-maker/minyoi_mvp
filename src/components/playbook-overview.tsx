@@ -334,7 +334,7 @@ const SECTIONS: Section[] = [
 function ToneClass(tone: Tone | undefined): string {
   switch (tone) {
     case "good":
-      return "bg-[#eef5ea] dark:bg-emerald-950/40";
+      return "bg-[#eef5ea] dark:bg-blue-950/40";
     case "warn":
       return "bg-[#fbf0e1] dark:bg-amber-950/40";
     case "highlight":
@@ -347,11 +347,11 @@ function ToneClass(tone: Tone | undefined): string {
 function CalloutClass(tone: Tone): string {
   switch (tone) {
     case "good":
-      return "border-l-4 border-[#74a07a] bg-[#eef5ea] dark:border-emerald-700 dark:bg-emerald-950/40";
+      return "border-l-4 border-[#74a07a] bg-[#eef5ea] dark:border-blue-700 dark:bg-blue-950/40";
     case "warn":
       return "border-l-4 border-[#c79750] bg-[#fbf0e1] dark:border-amber-700 dark:bg-amber-950/40";
     case "highlight":
-      return "border-l-4 border-[var(--brand-accent-strong)] bg-[var(--brand-accent-soft)] dark:border-emerald-500 dark:bg-zinc-800";
+      return "border-l-4 border-[var(--brand-accent-strong)] bg-[var(--brand-accent-soft)] dark:border-blue-500 dark:bg-zinc-800";
     default:
       return "border-l-4 border-[#d5d0c4] bg-[#fbf8f2] dark:border-zinc-700 dark:bg-zinc-900";
   }
@@ -381,7 +381,7 @@ function BlockRenderer({ block }: { block: Block }) {
             >
               <span
                 aria-hidden
-                className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--brand-accent-strong)] dark:bg-emerald-500"
+                className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--brand-accent-strong)] dark:bg-blue-500"
               />
               <span>{item}</span>
             </li>
@@ -418,7 +418,7 @@ function BlockRenderer({ block }: { block: Block }) {
       return (
         <div className="overflow-x-auto rounded-xl border border-[#e7dece] dark:border-zinc-800">
           <table className="w-full min-w-[480px] text-left text-xs sm:text-sm">
-            <thead className="bg-[#f3eee5] text-[10px] uppercase tracking-wider text-[#5d735f] dark:bg-zinc-900 dark:text-emerald-400 sm:text-[11px]">
+            <thead className="bg-[#f3eee5] text-[10px] uppercase tracking-wider text-[#5d735f] dark:bg-zinc-900 dark:text-blue-400 sm:text-[11px]">
               <tr>
                 {block.headers.map((h, i) => (
                   <th key={i} className="px-3 py-2 font-black sm:px-4">
@@ -459,7 +459,7 @@ function SectionView({ section }: { section: Section }) {
       className="scroll-mt-[170px] rounded-2xl border border-[#e7dece] bg-[#fffbf4] p-4 dark:border-zinc-800 dark:bg-zinc-950/40 sm:p-6 lg:scroll-mt-[120px]"
     >
       <div className="flex items-start gap-3">
-        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-accent-soft)] text-sm font-black text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-emerald-400">
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-accent-soft)] text-sm font-black text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-blue-400">
           {section.number}
         </span>
         <h3 className="pt-0.5 text-base font-black leading-7 text-[#223127] dark:text-zinc-100 sm:text-lg">
@@ -544,7 +544,7 @@ export default function PlaybookOverview() {
   return (
     <div ref={containerRef} className="space-y-5">
       <div className="rounded-[24px] border border-[#e2d9cb] bg-[#fffaf6] p-4 shadow-[0_18px_36px_rgba(34,49,39,0.06)] dark:border-zinc-800 dark:bg-zinc-900 sm:p-6 lg:rounded-[28px]">
-        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
+        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-blue-400">
           Playbook
         </p>
         <h2 className="mt-1.5 text-xl font-black tracking-tight text-[#223127] dark:text-white sm:text-2xl lg:text-3xl">
@@ -584,7 +584,7 @@ export default function PlaybookOverview() {
                   onClick={() => scrollTo(s.id)}
                   className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-black transition ${
                     active
-                      ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] dark:bg-emerald-500 dark:text-zinc-950"
+                      ? "border-[var(--brand-accent-strong)] bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] dark:bg-blue-500 dark:text-zinc-950"
                       : "border-[#ddd4c7] bg-[#fbf8f2] text-[#344136] hover:border-[#c8d8c4] hover:bg-[var(--brand-accent-soft)] hover:text-[var(--brand-accent-strong)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                   }`}
                 >
@@ -592,7 +592,7 @@ export default function PlaybookOverview() {
                     className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] ${
                       active
                         ? "bg-white/20 text-[var(--brand-cream)]"
-                        : "bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-emerald-400"
+                        : "bg-[var(--brand-accent-soft)] text-[var(--brand-accent-strong)] dark:bg-zinc-800 dark:text-blue-400"
                     }`}
                   >
                     {s.number}

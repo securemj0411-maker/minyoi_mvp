@@ -203,14 +203,14 @@ export function buildRiskScore(input: RiskScoreInput): RiskScore {
 
 // tone → tailwind class (3 화면 공통).
 export const RISK_TONE_CLASS: Record<RiskTone, string> = {
-  safe: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200",
+  safe: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200",
   caution: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200",
   danger: "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200",
 };
 
 // axis 별 tailwind class — mini-bar 시각화.
 export const RISK_AXIS_LEVEL_CLASS: Record<RiskLevel, string> = {
-  0: "bg-emerald-400/70 dark:bg-emerald-500/60",
+  0: "bg-emerald-400/70 dark:bg-blue-500/60",
   1: "bg-amber-400/80 dark:bg-amber-500/70",
   2: "bg-rose-500/90 dark:bg-rose-500/80",
 };

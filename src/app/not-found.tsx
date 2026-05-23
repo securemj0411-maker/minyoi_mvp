@@ -6,7 +6,7 @@ export default function NotFound() {
   return (
     <main className="min-h-screen bg-[#f6f1e8] px-4 py-12 dark:bg-zinc-950">
       <div className="mx-auto max-w-xl text-center">
-        <div className="text-[80px] font-black leading-none text-[#314238] dark:text-emerald-300">404</div>
+        <div className="text-[80px] font-black leading-none text-[#314238] dark:text-blue-300">404</div>
         <h1 className="mt-4 text-2xl font-black text-[#223127] dark:text-zinc-100 sm:text-3xl">
           페이지를 찾을 수 없어요
         </h1>

@@ -159,7 +159,7 @@ export function RiskScoreBar({
               </div>
             ))}
           </div>
-          <div className="mt-3 rounded-xl border border-[#d8eadf] bg-[#f3fbf6] px-3.5 py-3 text-sm font-semibold leading-5 text-zinc-700 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-zinc-200">
+          <div className="mt-3 rounded-xl border border-[#d8eadf] bg-[#f3fbf6] px-3.5 py-3 text-sm font-semibold leading-5 text-zinc-700 dark:border-blue-900/50 dark:bg-blue-950/20 dark:text-zinc-200">
             <div className="mb-1.5 text-sm font-black text-zinc-950 dark:text-zinc-50">
               확인하면 좋아요
             </div>

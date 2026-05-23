@@ -270,7 +270,7 @@ export function buildVerdicts(input: VerdictInput): Verdict[] {
 
 // chip tone → tailwind class (3 화면 공통).
 export const VERDICT_TONE_CLASS: Record<VerdictTone, string> = {
-  good: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200",
+  good: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200",
   warn: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200",
   info: "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-200",
 };

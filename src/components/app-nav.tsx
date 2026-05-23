@@ -403,7 +403,7 @@ export default function AppNav() {
               D
             </div>
             <span className="font-black tracking-tight text-zinc-950 dark:text-white">득템잡이</span>
-            <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:ring-emerald-900">
+            <span className="rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-700 ring-1 ring-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:ring-blue-900">
               Beta
             </span>
           </Link>
@@ -483,7 +483,7 @@ export default function AppNav() {
                             {infiniteCredits ? "∞" : tokens}
                           </span>
                         </div>
-                        <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-black text-[#3182f6] dark:bg-emerald-950/30 dark:text-emerald-200">
+                        <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-black text-[#3182f6] dark:bg-blue-950/30 dark:text-blue-200">
                           즉시 사용
                         </span>
                       </div>
@@ -655,7 +655,7 @@ export default function AppNav() {
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-emerald-400">
+                      <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-400">
                         보유 크레딧
                       </div>
                       <div className="mt-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
@@ -702,7 +702,7 @@ export default function AppNav() {
               {user ? (
                 <div className="space-y-2">
                   <div className="rounded-xl bg-white px-3 py-2.5 dark:bg-zinc-900">
-                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-emerald-400">화면 모드</div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-400">화면 모드</div>
                     <ThemeToggle className="mt-2 w-full" />
                   </div>
                 </div>
@@ -716,7 +716,7 @@ export default function AppNav() {
                     카카오 로그인
                   </Link>
                   <div className="rounded-xl bg-white px-3 py-2.5 dark:bg-zinc-900">
-                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-emerald-400">화면 모드</div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-400">화면 모드</div>
                     <ThemeToggle className="mt-2 w-full" />
                   </div>
                 </div>
@@ -768,7 +768,7 @@ export default function AppNav() {
           </div>
           {/* 화면 모드 */}
           <div className="mt-3 rounded-xl bg-white px-3 py-2.5 dark:bg-zinc-950/50">
-            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-emerald-400">화면 모드</div>
+            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-400">화면 모드</div>
             <ThemeToggle className="mt-2 w-full" />
           </div>
           <div className="mt-3">

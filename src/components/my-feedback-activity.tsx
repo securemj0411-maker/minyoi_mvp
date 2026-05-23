@@ -140,8 +140,8 @@ export function MyFeedbackActivity() {
   const hasAny = allTime.totalCount > 0;
   if (!hasAny && emptyHidden) return null;
   const shellClassName = hasAny
-    ? "mb-4 rounded-xl border-2 border-blue-100 bg-[#f3f7f1] p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20"
-    : "mb-4 hidden rounded-xl border-2 border-blue-100 bg-[#f3f7f1] p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20 sm:block";
+    ? "mb-4 rounded-xl border-2 border-blue-100 bg-[#f3f7f1] p-4 dark:border-blue-900/40 dark:bg-blue-950/20"
+    : "mb-4 hidden rounded-xl border-2 border-blue-100 bg-[#f3f7f1] p-4 dark:border-blue-900/40 dark:bg-blue-950/20 sm:block";
 
   function hideEmptyForWeek() {
     const until = Date.now() + HIDE_FOR_MS;
@@ -176,7 +176,7 @@ export function MyFeedbackActivity() {
 
       <div className={shellClassName}>
         <div className="mb-2 flex items-start justify-between gap-2">
-          <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-emerald-400">
+          <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-blue-400">
             <SearchIcon className="h-3.5 w-3.5" />
             내 피드백 활동
             {/* Wave 194: 미확인 운영자 응답 배지. */}
@@ -219,11 +219,11 @@ export function MyFeedbackActivity() {
                 </div>
                 <div className="text-[9px] font-bold text-zinc-600 dark:text-zinc-400">신고</div>
               </div>
-              <div className="rounded-lg bg-emerald-100 px-2 py-2 dark:bg-emerald-900/40">
-                <div className="text-base font-black tabular-nums text-emerald-900 dark:text-emerald-100">
+              <div className="rounded-lg bg-emerald-100 px-2 py-2 dark:bg-blue-900/40">
+                <div className="text-base font-black tabular-nums text-emerald-900 dark:text-blue-100">
                   {thisMonth.resolvedCount}
                 </div>
-                <div className="text-[9px] font-bold text-emerald-800 dark:text-emerald-300">보정</div>
+                <div className="text-[9px] font-bold text-emerald-800 dark:text-blue-300">보정</div>
               </div>
               <div className="rounded-lg bg-amber-100 px-2 py-2 dark:bg-amber-900/40">
                 <div className="text-base font-black tabular-nums text-amber-900 dark:text-amber-100">
@@ -243,7 +243,7 @@ export function MyFeedbackActivity() {
             {/* 누적 (allTime) — thisMonth 와 다르면 표시 */}
             {allTime.totalCount > thisMonth.totalCount && (
               <div className="mt-2 text-[10px] text-zinc-600 dark:text-zinc-400">
-                누적: 신고 <b>{allTime.totalCount}건</b> · 보정 <b className="text-emerald-700 dark:text-emerald-300">{allTime.resolvedCount}건</b> · 토큰 <b>+{allTime.tokensReceived}</b>
+                누적: 신고 <b>{allTime.totalCount}건</b> · 보정 <b className="text-emerald-700 dark:text-blue-300">{allTime.resolvedCount}건</b> · 토큰 <b>+{allTime.tokensReceived}</b>
               </div>
             )}
 
@@ -273,7 +273,7 @@ export function MyFeedbackActivity() {
               className={`mt-2 w-full rounded-lg border px-3 py-1.5 text-[11px] font-black transition ${
                 data.unreadCount > 0
                   ? "border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/50"
-                  : "border-blue-100 bg-white text-[#3182f6] hover:bg-[#edf3ea] dark:border-emerald-900/40 dark:bg-zinc-900 dark:text-emerald-300 dark:hover:bg-emerald-950/40"
+                  : "border-blue-100 bg-white text-[#3182f6] hover:bg-[#edf3ea] dark:border-blue-900/40 dark:bg-zinc-900 dark:text-blue-300 dark:hover:bg-blue-950/40"
               }`}
             >
               {data.unreadCount > 0 ? `운영자 응답 ${data.unreadCount}건 확인 →` : "자세히 보기 →"}
@@ -349,7 +349,7 @@ export function MyFeedbackActivity() {
                           <div className="shrink-0 text-right">
                             <span className={`inline-block rounded-full px-1.5 py-0.5 text-[10px] font-black ${
                               report.adminStatus === "resolved"
-                                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200"
+                                ? "bg-emerald-100 text-emerald-800 dark:bg-blue-900/40 dark:text-blue-200"
                                 : report.adminStatus === "dismissed"
                                   ? "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
                                   : "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
@@ -359,7 +359,7 @@ export function MyFeedbackActivity() {
                                 : "대기 중"}
                             </span>
                             {report.compensationTokens > 0 && (
-                              <div className="mt-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                              <div className="mt-1 text-[10px] font-bold text-emerald-600 dark:text-blue-400">
                                 토큰 +{report.compensationTokens}
                               </div>
                             )}
@@ -369,7 +369,7 @@ export function MyFeedbackActivity() {
                           <span className="font-black text-zinc-500">내 신고:</span> {report.note}
                         </div>
                         {report.adminResponseNote && (
-                          <div className={`mt-1 rounded border px-2 py-1 text-[11px] dark:bg-emerald-950/30 dark:text-emerald-200 ${
+                          <div className={`mt-1 rounded border px-2 py-1 text-[11px] dark:bg-blue-950/30 dark:text-blue-200 ${
                             report.unread
                               ? "border-rose-300 bg-rose-50 text-rose-900 ring-2 ring-rose-400 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-100 dark:ring-rose-600"
                               : "border-emerald-200 bg-emerald-50 text-emerald-900"
@@ -379,7 +379,7 @@ export function MyFeedbackActivity() {
                             </span> {report.adminResponseNote}
                             {report.adminRespondedAt && (
                               <div className={`mt-0.5 text-[9px] ${
-                                report.unread ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-400"
+                                report.unread ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-blue-400"
                               }`}>
                                 {timeLabel(report.adminRespondedAt)} ({relAge(report.adminRespondedAt)})
                               </div>

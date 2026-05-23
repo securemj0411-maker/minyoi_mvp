@@ -82,10 +82,10 @@ export default function AccountDeletePage() {
   if (doneMessage) {
     return (
       <main className="min-h-screen bg-[#f6f1e8] px-4 py-10 dark:bg-zinc-950">
-        <div className="mx-auto max-w-xl rounded-2xl border border-emerald-200 bg-emerald-50 p-6 dark:border-emerald-900 dark:bg-emerald-950/30">
-          <h1 className="text-xl font-black text-emerald-900 dark:text-emerald-100">탈퇴 완료</h1>
-          <p className="mt-2 text-sm font-semibold text-emerald-800 dark:text-emerald-200">{doneMessage}</p>
-          <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">잠시 후 메인으로 이동합니다…</p>
+        <div className="mx-auto max-w-xl rounded-2xl border border-emerald-200 bg-emerald-50 p-6 dark:border-blue-900 dark:bg-blue-950/30">
+          <h1 className="text-xl font-black text-emerald-900 dark:text-blue-100">탈퇴 완료</h1>
+          <p className="mt-2 text-sm font-semibold text-emerald-800 dark:text-blue-200">{doneMessage}</p>
+          <p className="mt-1 text-xs text-emerald-700 dark:text-blue-300">잠시 후 메인으로 이동합니다…</p>
         </div>
       </main>
     );

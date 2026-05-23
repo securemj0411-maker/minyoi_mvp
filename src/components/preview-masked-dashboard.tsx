@@ -227,7 +227,7 @@ export default function PreviewMaskedDashboard() {
               <div className="text-[11px] font-black uppercase tracking-[0.16em] text-zinc-400 dark:text-zinc-500">Preview feed</div>
               <div className="mt-0.5 text-[16px] font-black text-[var(--rd-ink)] dark:text-zinc-50">오늘의 추천 매물</div>
             </div>
-            <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black text-[#3182f6] dark:bg-emerald-950/40 dark:text-emerald-200">
+            <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black text-[#3182f6] dark:bg-blue-950/40 dark:text-blue-200">
               로그인 후 공개
             </div>
           </div>
@@ -252,7 +252,7 @@ export default function PreviewMaskedDashboard() {
                 <Link
                   href="/login"
                   key={item.slot}
-                  className="group block rounded-2xl border border-zinc-200 bg-white px-3.5 py-3 transition hover:border-blue-200 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-emerald-900"
+                  className="group block rounded-2xl border border-zinc-200 bg-white px-3.5 py-3 transition hover:border-blue-200 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-blue-900"
                 >
                   <div className="flex items-center gap-3">
                     {/* Wave launch-113 (2026-05-24): sold 매물 실제 사진 노출 (이미 거래된 매물이라 leak 없음).
@@ -304,7 +304,7 @@ export default function PreviewMaskedDashboard() {
                       </div>
 
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                        <span className="text-[18px] font-black leading-none tabular-nums text-[#059669] dark:text-emerald-300">
+                        <span className="text-[18px] font-black leading-none tabular-nums text-[#059669] dark:text-blue-300">
                           {marketGapLabel(item.expectedProfitMin, item.expectedProfitMax)}
                         </span>
                         {(() => {

@@ -289,7 +289,7 @@ export default function CheckoutClient() {
                 onChange={(event) => setBuyerEmail(event.target.value.slice(0, 120))}
                 placeholder="you@example.com"
                 disabled={needsLogin || stage === "processing"}
-                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-emerald-950/60"
+                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-blue-950/60"
               />
             </label>
 
@@ -304,7 +304,7 @@ export default function CheckoutClient() {
                 onChange={(event) => setBuyerName(event.target.value.slice(0, 40))}
                 placeholder="홍길동"
                 disabled={needsLogin || stage === "processing"}
-                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-emerald-950/60"
+                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-blue-950/60"
               />
             </label>
 
@@ -320,7 +320,7 @@ export default function CheckoutClient() {
                 onChange={(event) => setBuyerPhone(normalizePhoneNumber(event.target.value))}
                 placeholder="01012345678"
                 disabled={needsLogin || stage === "processing"}
-                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black tabular-nums text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-emerald-950/60"
+                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black tabular-nums text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-blue-950/60"
               />
               <span className="mt-1.5 block text-[11px] leading-5 text-[#8a8a7c]">
                 KG이니시스 결제창 호출에 필요한 정보입니다. 결제 알림과 승인 확인에만 사용됩니다.

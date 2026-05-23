@@ -104,7 +104,7 @@ export function AccountPanel({
       <div className={card}>
         <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">크레딧 사용</div>
         <div className="mt-2">
-          <div className="flex items-center justify-between text-[11px] font-bold text-[#5d735f] dark:text-emerald-400">
+          <div className="flex items-center justify-between text-[11px] font-bold text-[#5d735f] dark:text-blue-400">
             <span>보유 크레딧</span>
             <span className="tabular-nums text-[#223127] dark:text-zinc-100">
               {unlimited ? "∞" : `${tokens} / ${monthlyTotal || tokens || "—"}`}

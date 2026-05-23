@@ -143,7 +143,7 @@ export default function ManualDepositPanel() {
       </div>
 
       {notice ? (
-        <div className="mb-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+        <div className="mb-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-300">
           {notice}
         </div>
       ) : null}

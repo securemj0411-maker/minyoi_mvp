@@ -42,17 +42,17 @@ export default function OnboardingBanner({ onStart }: { onStart?: () => void }) 
   if (!show) return null;
 
   return (
-    <div className="relative mb-4 overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-[#fffbf4] p-4 shadow-[0_12px_28px_rgba(63,99,67,0.08)] dark:border-emerald-800 dark:from-emerald-950/30 dark:to-zinc-900">
+    <div className="relative mb-4 overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-[#fffbf4] p-4 shadow-[0_12px_28px_rgba(63,99,67,0.08)] dark:border-blue-800 dark:from-blue-950/30 dark:to-zinc-900">
       <div className="flex items-start gap-3">
         <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white shadow-md">
           <CheckCircleIcon className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-300">
+            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700 dark:text-blue-300">
               가입 환영
             </span>
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200">
+            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:bg-blue-900/60 dark:text-blue-200">
               상세보기 3개 무료
             </span>
           </div>

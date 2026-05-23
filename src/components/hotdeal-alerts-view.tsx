@@ -22,7 +22,7 @@ export default function HotdealAlertsView() {
     <section className="px-3 py-4 sm:px-4 sm:py-6 lg:px-8 lg:py-8">
       <div className="mx-auto max-w-2xl space-y-6">
         <header>
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-emerald-400">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-blue-400">
             Hot Deal Alerts
           </p>
           <h2 className="mt-2 flex items-center gap-3 text-2xl font-black tracking-tight text-[#223127] dark:text-white sm:text-3xl">

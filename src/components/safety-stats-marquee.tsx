@@ -77,8 +77,8 @@ function StatRow({ label, count }: { label: string; count: number }) {
   if (count <= 0) return null;
   return (
     <div className="flex items-center justify-between gap-2">
-      <span className="text-emerald-800/85 dark:text-emerald-300/85">{label}</span>
-      <span className="font-mono font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+      <span className="text-emerald-800/85 dark:text-blue-300/85">{label}</span>
+      <span className="font-mono font-bold tabular-nums text-emerald-700 dark:text-blue-300">
         {count.toLocaleString("ko-KR")}건
       </span>
     </div>
@@ -87,7 +87,7 @@ function StatRow({ label, count }: { label: string; count: number }) {
 
 function GroupHeader({ label }: { label: string }) {
   return (
-    <div className="mt-1.5 border-t border-emerald-200/60 pt-1.5 text-[9px] font-black uppercase tracking-wider text-emerald-700 dark:border-emerald-900/60 dark:text-emerald-400">
+    <div className="mt-1.5 border-t border-emerald-200/60 pt-1.5 text-[9px] font-black uppercase tracking-wider text-emerald-700 dark:border-blue-900/60 dark:text-blue-400">
       {label}
     </div>
   );
@@ -125,12 +125,12 @@ export default function SafetyStatsMarquee() {
   if (hidden) return null;
   if (!stats) {
     return (
-      <div className="border-b border-emerald-100 bg-emerald-50/60 dark:border-emerald-900/60 dark:bg-emerald-950/30">
+      <div className="border-b border-emerald-100 bg-emerald-50/60 dark:border-blue-900/60 dark:bg-blue-950/30">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-1.5">
-          <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800/70 dark:text-emerald-300/70">
-            <span className="text-emerald-600/70 dark:text-emerald-400/70"><ShieldIcon /></span>
+          <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800/70 dark:text-blue-300/70">
+            <span className="text-emerald-600/70 dark:text-blue-400/70"><ShieldIcon /></span>
             <span>오늘 득템잡이가 차단한 매물:</span>
-            <span className="inline-block h-3 w-12 animate-pulse rounded bg-emerald-200/80 align-middle dark:bg-emerald-900/60" />
+            <span className="inline-block h-3 w-12 animate-pulse rounded bg-emerald-200/80 align-middle dark:bg-blue-900/60" />
           </span>
           <span className="flex items-center gap-0.5 rounded-full bg-emerald-600/40 px-2 py-0.5 text-[9px] font-black text-white/70">
             상세
@@ -153,17 +153,17 @@ export default function SafetyStatsMarquee() {
   const wholesalerTotal = stats.wholesaler_total_7d ?? 0;
 
   return (
-    <div className="border-b border-emerald-100 bg-emerald-50/60 dark:border-emerald-900/60 dark:bg-emerald-950/30">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-1.5 transition-colors hover:bg-emerald-100/60 dark:hover:bg-emerald-900/30">
+    <div className="border-b border-emerald-100 bg-emerald-50/60 dark:border-blue-900/60 dark:bg-blue-950/30">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-1.5 transition-colors hover:bg-emerald-100/60 dark:hover:bg-blue-900/30">
         <button
           type="button"
           onClick={() => setShowDetail((s) => !s)}
-          className="flex min-w-0 flex-1 items-center gap-1.5 text-left text-[11px] font-bold text-emerald-800 dark:text-emerald-300"
+          className="flex min-w-0 flex-1 items-center gap-1.5 text-left text-[11px] font-bold text-emerald-800 dark:text-blue-300"
           aria-expanded={showDetail}
         >
-          <span className="text-emerald-600 dark:text-emerald-400"><ShieldIcon /></span>
+          <span className="text-emerald-600 dark:text-blue-400"><ShieldIcon /></span>
           <span className="truncate">오늘 득템잡이가 차단한 매물:</span>
-          <span className="font-mono tabular-nums text-emerald-700 dark:text-emerald-300">
+          <span className="font-mono tabular-nums text-emerald-700 dark:text-blue-300">
             {total.toLocaleString("ko-KR")}건
           </span>
         </button>
@@ -179,7 +179,7 @@ export default function SafetyStatsMarquee() {
           <button
             type="button"
             onClick={hideForWeek}
-            className="flex items-center gap-0.5 rounded-full bg-white/70 px-2 py-0.5 text-[9px] font-black text-emerald-800 hover:bg-white dark:bg-zinc-900/70 dark:text-emerald-200"
+            className="flex items-center gap-0.5 rounded-full bg-white/70 px-2 py-0.5 text-[9px] font-black text-emerald-800 hover:bg-white dark:bg-zinc-900/70 dark:text-blue-200"
             aria-label="차단 통계 7일 숨김"
           >
             <XIcon />
@@ -188,7 +188,7 @@ export default function SafetyStatsMarquee() {
         </div>
       </div>
       {showDetail && (
-        <div className="mx-auto max-w-6xl border-t border-emerald-200/70 bg-emerald-50/40 px-4 py-2.5 text-[10px] dark:border-emerald-900/70 dark:bg-emerald-950/20">
+        <div className="mx-auto max-w-6xl border-t border-emerald-200/70 bg-emerald-50/40 px-4 py-2.5 text-[10px] dark:border-blue-900/70 dark:bg-blue-950/20">
           <div className="grid gap-x-6 gap-y-0.5 md:grid-cols-2 lg:grid-cols-3">
             {collectionStageTotal > 0 && (
               <div className="space-y-0.5">
