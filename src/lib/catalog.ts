@@ -780,7 +780,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 13 Pro Max",
     aliases: ["아이폰 13 프로맥스", "아이폰13프로맥스", "iPhone 13 Pro Max"],
-    mustContain: [["아이폰 13 프로맥스", "아이폰13프로맥스", "아이폰 13 프로 맥스", "iphone 13 pro max"]],
+    // Wave 749d (2026-05-24): mid-space 변형 보강.
+    mustContain: [["아이폰 13 프로맥스", "아이폰13프로맥스", "아이폰 13 프로 맥스", "아이폰 13프로맥스", "아이폰13 프로맥스", "아이폰13 프로 맥스", "아이폰 13프로 맥스", "iphone 13 pro max", "iphone13 pro max", "iphone 13pro max"]],
     mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1490000,
     released: 2021,
@@ -834,7 +835,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 14 Pro Max",
     aliases: ["아이폰 14 프로맥스", "아이폰14프로맥스", "iPhone 14 Pro Max"],
-    mustContain: [["아이폰 14 프로맥스", "아이폰14프로맥스", "아이폰 14 프로 맥스", "iphone 14 pro max"]],
+    // Wave 749d: mid-space 변형 보강.
+    mustContain: [["아이폰 14 프로맥스", "아이폰14프로맥스", "아이폰 14 프로 맥스", "아이폰 14프로맥스", "아이폰14 프로맥스", "아이폰14 프로 맥스", "아이폰 14프로 맥스", "iphone 14 pro max", "iphone14 pro max", "iphone 14pro max"]],
     mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1750000,
     released: 2022,
@@ -1239,7 +1241,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 16 Pro Max",
     aliases: ["아이폰 16 프로맥스", "아이폰16프로맥스", "iPhone 16 Pro Max"],
-    mustContain: [["아이폰 16 프로맥스", "아이폰16프로맥스", "아이폰 16 프로 맥스", "iphone 16 pro max"]],
+    // Wave 749d: mid-space 변형 보강.
+    mustContain: [["아이폰 16 프로맥스", "아이폰16프로맥스", "아이폰 16 프로 맥스", "아이폰 16프로맥스", "아이폰16 프로맥스", "아이폰16 프로 맥스", "아이폰 16프로 맥스", "iphone 16 pro max", "iphone16 pro max", "iphone 16pro max"]],
     mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 1900000,
     released: 2024,
@@ -1309,7 +1312,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 14 Plus",
     aliases: ["아이폰 14 플러스", "아이폰14플러스", "iPhone 14 Plus"],
-    mustContain: [["아이폰 14 플러스", "아이폰14플러스", "iphone 14 plus", "아이폰 14+"]],
+    // Wave 749d: mid-space 보강.
+    mustContain: [["아이폰 14 플러스", "아이폰14플러스", "iphone 14 plus", "아이폰 14+", "아이폰 14플러스", "아이폰14 플러스", "iphone14 plus", "iphone 14plus", "아이폰14+", "iphone14+"]],
     mustNotContain: ["프로", "pro", "맥스", "max", ...PHONE_NOISE],
     msrpKrw: 1350000,
     released: 2022,
@@ -1321,7 +1325,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 15 Plus",
     aliases: ["아이폰 15 플러스", "아이폰15플러스", "iPhone 15 Plus"],
-    mustContain: [["아이폰 15 플러스", "아이폰15플러스", "iphone 15 plus", "아이폰 15+"]],
+    // Wave 749d: mid-space 보강.
+    mustContain: [["아이폰 15 플러스", "아이폰15플러스", "iphone 15 plus", "아이폰 15+", "아이폰 15플러스", "아이폰15 플러스", "iphone15 plus", "iphone 15plus", "아이폰15+", "iphone15+"]],
     mustNotContain: ["프로", "pro", "맥스", "max", ...PHONE_NOISE],
     msrpKrw: 1350000,
     released: 2023,
@@ -1333,7 +1338,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 16 Plus",
     aliases: ["아이폰 16 플러스", "아이폰16플러스", "iPhone 16 Plus"],
-    mustContain: [["아이폰 16 플러스", "아이폰16플러스", "iphone 16 plus", "아이폰 16+"]],
+    // Wave 749d: mid-space 보강.
+    mustContain: [["아이폰 16 플러스", "아이폰16플러스", "iphone 16 plus", "아이폰 16+", "아이폰 16플러스", "아이폰16 플러스", "iphone16 plus", "iphone 16plus", "아이폰16+", "iphone16+"]],
     mustNotContain: ["프로", "pro", "맥스", "max", ...PHONE_NOISE],
     msrpKrw: 1350000,
     released: 2024,
@@ -1344,7 +1350,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 17 Plus",
     aliases: ["아이폰 17 플러스", "아이폰17플러스", "iPhone 17 Plus"],
-    mustContain: [["아이폰 17 플러스", "아이폰17플러스", "iphone 17 plus", "아이폰 17+"]],
+    // Wave 749d: mid-space 보강.
+    mustContain: [["아이폰 17 플러스", "아이폰17플러스", "iphone 17 plus", "아이폰 17+", "아이폰 17플러스", "아이폰17 플러스", "iphone17 plus", "iphone 17plus", "아이폰17+", "iphone17+"]],
     mustNotContain: ["프로", "pro", "맥스", "max", "에어", "air", ...PHONE_NOISE],
     msrpKrw: 1450000,
     released: 2025,
@@ -1429,7 +1436,8 @@ const CORE_SMARTPHONE_CATALOG: Sku[] = [
     category: "smartphone",
     modelName: "iPhone 17 Pro Max",
     aliases: ["아이폰 17 프로맥스", "아이폰17프로맥스", "iPhone 17 Pro Max"],
-    mustContain: [["아이폰 17 프로맥스", "아이폰17프로맥스", "아이폰 17 프로 맥스", "iphone 17 pro max"]],
+    // Wave 749d: mid-space 변형 보강.
+    mustContain: [["아이폰 17 프로맥스", "아이폰17프로맥스", "아이폰 17 프로 맥스", "아이폰 17프로맥스", "아이폰17 프로맥스", "아이폰17 프로 맥스", "아이폰 17프로 맥스", "iphone 17 pro max", "iphone17 pro max", "iphone 17pro max"]],
     mustNotContain: ["플러스", "plus", ...PHONE_NOISE],
     msrpKrw: 2100000,
     released: 2025,
