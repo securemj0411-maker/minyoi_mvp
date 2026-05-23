@@ -1103,14 +1103,25 @@ function FirstFeedOnboardingCard({
               )}
             </p>
 
+            {/* Wave launch-90 (사용자 정정 — "숫자 로딩 속도 진짜 느림. 글자는 박혀있고 숫자만 기다리게"):
+                row 라벨은 즉시 표시 + 숫자 자리에 3 dots staggered bounce placeholder.
+                데이터 도착 시 dots → 숫자 swap. Whisper 앱 패턴. */}
             {showStats ? (
               <div className="mt-9 space-y-5">
                 {rows.map((row) => (
                   <div key={row.label} className="flex items-end justify-between border-b border-zinc-200/80 pb-4 dark:border-zinc-800">
                     <div className="text-[16px] font-black text-zinc-700 dark:text-zinc-200">{row.label}</div>
-                    <div className="text-[30px] font-black leading-none text-[#0a9f69] dark:text-emerald-300">
-                      {formatStatMaybe(row.value, statsLoaded)}
-                    </div>
+                    {statsLoaded && row.value != null ? (
+                      <div className="text-[30px] font-black leading-none text-[#0a9f69] dark:text-emerald-300">
+                        {row.value.toLocaleString("ko-KR")}건
+                      </div>
+                    ) : (
+                      <div className="flex h-[30px] items-center gap-1.5">
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#0a9f69]/50 dark:bg-emerald-300/50 [animation-delay:-0.32s]" />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#0a9f69]/50 dark:bg-emerald-300/50 [animation-delay:-0.16s]" />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-[#0a9f69]/50 dark:bg-emerald-300/50" />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -2386,6 +2397,11 @@ export default function ExploreClient({
             const exactUnlocked = creditFeedEnabled || freePreviewUnlocked || scrapOnly || savedPidSet.has(item.pid) || openedDetailPids.has(item.pid);
             const lockedPreview = !exactUnlocked;
             const freeDetailAvailable = lockedPreview && !creditFeedEnabled && freeDetailRemaining > 0;
+            // Wave launch-90 (사용자 정정 — "4번째 누를 때 뒤에 안 잠긴다니까"):
+            //   launch-63 의 "사진+제목 항상 unlock" 은 무료 남았을 때만 conversion 위함이었음.
+            //   무료 다 쓴 후 (freeDetailRemaining=0) + 안 본 매물 → 사진 blur + 제목 hide → "잠긴" 상태 명확.
+            //   creditFeedEnabled 또는 이미 본 매물은 fullLocked=false (그대로 표시).
+            const fullLocked = lockedPreview && !freeDetailAvailable;
             return (
               <button
                 key={item.pid}
@@ -2407,9 +2423,8 @@ export default function ExploreClient({
                     : "active:bg-zinc-50 dark:active:bg-zinc-900/40 sm:border-zinc-200 sm:bg-white sm:hover:border-emerald-300 sm:hover:shadow-md dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40 dark:sm:hover:border-emerald-700"
                 }`}
               >
-                {/* Wave launch-63 (사용자 짚음 "잠긴거 보고 클릭 안 함, conversion 0"):
-                    사진 + 제목 = 항상 unlock. 차익/가격/시세 mask 유지.
-                    사용자가 카드 보고 "클릭해볼까" 결정 → 4번째 click 시 modal "크레딧 부족" 자연 트리거. */}
+                {/* Wave launch-63 + launch-90: 사진 = 무료 남았을 때만 표시.
+                    무료 다 쓴 후 (fullLocked=true) → blur + 자물쇠 overlay. */}
                 <div className={`relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 ${isSoldOut ? "grayscale" : ""}`}>
                   {item.thumbnailUrl ? (
                     <Image
@@ -2418,8 +2433,18 @@ export default function ExploreClient({
                       fill
                       sizes="120px"
                       unoptimized
-                      className={`object-cover ${isSoldOut ? "opacity-60" : ""}`}
+                      className={`object-cover ${isSoldOut ? "opacity-60" : ""} ${fullLocked ? "scale-110 blur-md" : ""}`}
                     />
+                  ) : null}
+                  {fullLocked && !isSoldOut ? (
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-zinc-900/50">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/95 shadow-lg dark:bg-zinc-950/90">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-700 dark:text-zinc-200">
+                          <rect x="4" y="11" width="16" height="10" rx="2" />
+                          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                        </svg>
+                      </div>
+                    </div>
                   ) : null}
                   {/* Wave 355: unopened/mint만 사진 위 럭셔리 배지 ("전설템" 느낌).
                       Wave 714p (2026-05-23): 신발/의류는 옛 conditionClass 뱃지 hide (전자기기용 라벨 정확도 낮음).
@@ -2446,8 +2471,9 @@ export default function ExploreClient({
                 </div>
                 <div className={`min-w-0 ${isSoldOut ? "opacity-60" : ""}`}>
                   <div className="line-clamp-2 text-sm font-bold leading-tight text-zinc-900 dark:text-zinc-100">
-                    {/* Wave launch-63: 제목 = 항상 unlock. 차익/가격만 mask 유지. */}
-                    {item.name}
+                    {/* Wave launch-63 + launch-90 (사용자 정정): 무료 남았을 때만 제목 노출.
+                        무료 다 쓴 후 (fullLocked) → 카테고리 placeholder ("의류 후보" / "신발 후보"). */}
+                    {fullLocked ? lockedPreviewTitle(item) : item.name}
                   </div>
 
 
