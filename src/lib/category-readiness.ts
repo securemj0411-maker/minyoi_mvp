@@ -1039,6 +1039,9 @@ export const LANE_READINESS: LaneReadinessMap = {
   mm6_margiela_apparel_broad: { status: "ready", label: "MM6 Maison Margiela Apparel", note: "Wave 736 — 123건/주 p50 22만 (sub-brand mass)." },
   lacoste_apparel_broad: { status: "ready", label: "Lacoste Apparel (Broad — polo 외)", note: "Wave 736 — 32건/주 p50 4.9만." },
   mountain_hardwear_broad: { status: "ready", label: "Mountain Hardwear Apparel", note: "Wave 736 — 14건/주 p50 3.9만." },
+  // Wave 746 — Neighborhood / Schott
+  neighborhood_apparel_broad: { status: "ready", label: "Neighborhood Apparel (Broad)", note: "Wave 746 — 71건/주 p50 13.9만 (일본 streetwear)." },
+  schott_apparel_broad: { status: "ready", label: "Schott Apparel (Perfecto)", note: "Wave 746 — 62건/주 p50 9.9만 (가죽 자켓 시그니처)." },
   // Wave 737 — 신발 broad 추가
   drmartens_broad: { status: "ready", label: "Dr. Martens Broad (narrow 외)", note: "Wave 737 — 191건/주 p50 8만." },
   timberland_broad: { status: "ready", label: "Timberland (6인치 부츠/Earthkeepers)", note: "Wave 737 — 135건/주 p50 13.3만." },
