@@ -125,4 +125,35 @@ export const WAVE_746_NEIGHBORHOOD_SCHOTT: Sku[] = [
     ],
     msrpKrw: 590000, released: 1928,
   },
+
+  // ─── Dickies (15건 / p50 변동 — collab 제외 일반 워크웨어) ───
+  // Wave 728에 Supreme x Dickies collab만 있어 일반 Dickies 매물 leak.
+  {
+    id: "clothing-dickies-broad",
+    brand: "Dickies", category: "clothing", laneKey: "dickies_apparel_broad",
+    modelName: "Dickies Apparel Broad (워크 셔츠/874/팬츠/코치자켓 일반)",
+    aliases: ["Dickies", "디키즈"],
+    mustContain: [
+      ["dickies", "디키즈"],
+      [...APPAREL_PRODUCT_TYPES,
+       // Dickies 시그니처
+       "874", "워크 팬츠", "워크팬츠", "work pants",
+       "874 팬츠", "874팬츠",
+       "워크 셔츠", "워크셔츠", "work shirt",
+       "이튼 valid", "에이젠시", "원포인트",
+       "디트로이트", "라이트닝",
+       "더블니", "이튼", "스톤텍스처"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE, ...NON_APPAREL_GLOBAL,
+      // Collab 별 SKU (Wave 728 supreme_dickies_collab 있고, Stussy/준야/Human Made collab 별)
+      "supreme", "슈프림",
+      "stussy", "스투시",
+      "준야", "junya", "junya watanabe",
+      "human made", "휴먼메이드", "휴먼 메이드",
+      "몽키타임", "monkey time",
+      "와코마리아", "wacko maria",
+    ],
+    msrpKrw: 89000, released: 1922,
+  },
 ];
