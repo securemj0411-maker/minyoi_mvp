@@ -5104,6 +5104,40 @@ export const CATALOG: Sku[] = [
       "fifa", "피파", "마리오카트", "큐브 크리에이터", "친구모아", "친구 모아",
       "젤다", "zelda", "포켓몬", "pokemon", "스플래툰", "splatoon",
       "닌텐도 스위치 수리", "스위치 수리",
+      // Wave 758 (2026-05-24) Game category deep sweep — 게임 카트리지/액세서리 systemic 차단.
+      // 사용자 발견: switch-v1 SKU가 게임 TITLE까지 흡수 → 시세군 망가짐 (5만~22만 mix).
+      // 게임 카트리지/디스크/알칩 (단품)
+      "알칩", "알 칩", "곽팩", "곽 팩", "디스크 단품", "카트리지 단품", "카트리지만",
+      "게임칩", "게임 칩", "게임 카트리지", "게임카트리지", "게임 cd", "게임cd",
+      "타이틀", "title", "정품 타이틀", "스틸북", "스틸 북", "스틸 케이스", "스틸케이스",
+      // 게임 TITLE (가장 많이 흡수되는 게임명)
+      "마인크래프트", "minecraft", "포켓몬스터", "별의커비", "별의 커비", "슈퍼 몽키볼",
+      "리버시티", "지라프", "픽스 아크", "역전재판", "오도로키", "시드마이어", "문명 6",
+      "슈퍼 스매시", "스매시 브라더스", "대난투", "동물의숲", "동물의 숲", "모여봐요",
+      "메이드 인 와리오", "와리오", "동키콩", "트로피컬", "오리와 눈먼", "테니스 월드",
+      "리버시티", "에어포트 히어로", "젤다의 꿈꾸는", "꿈꾸는 섬", "제노블레이드",
+      "마리오 잼버리", "마리오 테니스", "에이스", "슈퍼 마리오 3d", "퓨리 월드",
+      "심연", "떠도는밤", "샤이닝펄", "포켓몬 실드", "스타얼라이즈", "메트로이드",
+      "삼국무쌍", "갤럭시", "원피스 오디세이", "가디언즈", "갤럭시 오브",
+      "용과 같이", "야쿠자", "철권", "스트리트 파이터", "버추얼파이터",
+      "ace combat", "에이스컴뱃", "리듬세상", "리듬 세상",
+      // 액세서리
+      "프로콘", "프로 컨트롤러", "pro controller", "조이콘 정품", "정품 조이콘", "조이콘 그립",
+      "아미보", "amiibo", "아미보 카드", "아미보카드",
+      "휠", "스티어링 휠", "레이싱 휠", "마리오카트 레이싱",
+      "닌텐도 정품 hdmi", "정품 hdmi", "hdmi 케이블", "hdmi케이블",
+      "충전독", "충전 독", "충전 거치대",
+      // 옛 닌텐도 콘솔
+      "wii", "wii u", "위유", "wii콘",
+      "gba", "게임보이 어드밴스", "게임보이어드밴스",
+      "게임보이", "gameboy", "gbc", "gb 컬러", "게임보이 컬러", "게임보이컬러",
+      "sfc", "슈퍼패미컴", "슈퍼 패미컴", "패미콤", "fc 캡틴", "famicom",
+      "닌텐도 클래식 미니", "클래식 미니", "닌텐도클래식",
+      "dsi", "dsi ll", "dsill",
+      // 한정판/콜라보 케이스 (HEAD bag/SWEETCH 브랜드 케이스)
+      "sweetch", "스위치 케이스", "스위치케이스 브랜드", "헬멧백",
+      // 동봉/일괄 패턴 (단품 시세 무의미)
+      "타이틀 일괄", "게임 일괄", "타이틀 합본", "게임 합본",
     ],
     msrpKrw: 360000,
     released: 2017,
@@ -5182,6 +5216,152 @@ export const CATALOG: Sku[] = [
     msrpKrw: 414000,
     released: 2021,
     confusionNote: "OLED (2021-10). 7인치 OLED 화면, 본체 white/red. 일반 Switch(2017)와 가격 ~₩100K 차이. Switch 2/Lite와 별도.",
+  },
+  // Wave 758 (2026-05-24) 게임 deep sweep: Switch 2 (2025-06) 신설.
+  //   audit: 335 unmatched 매물 (catalog 없음). 신상 인기 모델.
+  //   본체 75만~85만 / 게임 4.6만~10만 / 액세서리 (프로콘2/조이콘 커버) 별도.
+  {
+    id: "switch-2",
+    brand: "Nintendo",
+    category: "game_console",
+    laneKey: "switch_2",
+    modelName: "Nintendo Switch 2 (2025-06)",
+    aliases: ["Nintendo Switch 2", "닌텐도 스위치 2", "스위치2", "Switch 2"],
+    mustContain: [
+      ["스위치 2", "스위치2", "switch 2", "switch2", "닌텐도 스위치 2", "닌텐도 스위치2"],
+    ],
+    mustNotContain: [
+      // 다른 모델 격리
+      "oled", "올레드", "lite", "라이트",
+      "닌텐도 스위치 1", "스위치 1세대", "스위치1세대",
+      "ps5", "ps4", "xbox", "엑박", "스팀덱",
+      // 게임 카트리지/액세서리 (본체 외 — 시세군 다름)
+      "메트로이드 프라임", "마리오 파티", "마리오파티", "잼버리", "동물의숲", "동물의 숲",
+      "포코피아", "요시", "드래곤퀘스트", "스컬앤코", "스칼렛", "야숨", "왕눈",
+      "프로콘2", "프로콘 2", "조이콘 스틱커버", "조이콘스틱", "스틱커버",
+      "파우치", "퀼팅 미디움", "케이스 블랙", "케이스만",
+      "타이틀 일괄", "게임 일괄", "타이틀 15종", "게임 15종",
+      "구매합니다", "구합니다", "삽니다", "매입",
+      // 게임 단품 (스위치2용 게임은 본체 아님)
+      "스위치2 게임", "스위치2용 게임", "스위치2용 카트리지",
+      "스위치2 카트리지", "스위치2 알칩",
+    ],
+    msrpKrw: 480000,
+    released: 2025,
+    confusionNote: "Switch 2 (2025-06). 본체 시세 75~85만. 게임 4~10만, 액세서리 별도. 일반 Switch (2017)와 별도 SKU.",
+  },
+  // Wave 758: Xbox 신설 (77 unmatched 매물, catalog 없음).
+  //   Series X/S 신상 본체 + One (구형) 모두 cover.
+  {
+    id: "xbox-series-x",
+    brand: "Microsoft",
+    category: "game_console",
+    laneKey: "xbox_series_x",
+    modelName: "Xbox Series X (2020-11)",
+    aliases: ["Xbox Series X", "엑박 시리즈 X", "엑스박스 시리즈 X"],
+    mustContain: [
+      ["xbox series x", "xbox seriesx", "엑박 시리즈 x", "엑박시리즈x", "엑스박스 시리즈 x", "엑스박스시리즈x"],
+    ],
+    mustNotContain: [
+      "series s", "시리즈 s", "시리즈s",
+      "xbox one", "엑박 원", "엑박원", "xbox 360", "엑박 360",
+      "ps5", "ps4", "스위치", "스팀덱",
+      "컨트롤러만", "컨트롤러 단품", "패드만",
+      "키넥트", "kinect", "어답터", "어댑터",
+      "게임만", "디스크만", "타이틀만",
+      "구매합니다", "구합니다", "삽니다", "매입",
+      "ASUS ROG", "ROG Ally", "rog ally",
+    ],
+    msrpKrw: 598000,
+    released: 2020,
+  },
+  {
+    id: "xbox-series-s",
+    brand: "Microsoft",
+    category: "game_console",
+    laneKey: "xbox_series_s",
+    modelName: "Xbox Series S (2020-11)",
+    aliases: ["Xbox Series S", "엑박 시리즈 S", "엑스박스 시리즈 S"],
+    mustContain: [
+      ["xbox series s", "xbox seriess", "엑박 시리즈 s", "엑박시리즈s", "엑스박스 시리즈 s", "엑스박스시리즈s"],
+    ],
+    mustNotContain: [
+      "series x", "시리즈 x", "시리즈x",
+      "xbox one", "엑박 원", "엑박원", "xbox 360", "엑박 360",
+      "ps5", "ps4", "스위치", "스팀덱",
+      "컨트롤러만", "컨트롤러 단품", "패드만",
+      "키넥트", "kinect",
+      "게임만", "디스크만", "타이틀만",
+      "구매합니다", "구합니다", "삽니다", "매입",
+    ],
+    msrpKrw: 398000,
+    released: 2020,
+  },
+  {
+    id: "xbox-one",
+    brand: "Microsoft",
+    category: "game_console",
+    laneKey: "xbox_one_broad",
+    modelName: "Xbox One (S/X, 2013-2017 구형)",
+    aliases: ["Xbox One", "엑박 원", "엑박원"],
+    mustContain: [
+      ["xbox one", "xbox 1", "엑박 원", "엑박원", "엑스박스 원", "엑스박스원"],
+    ],
+    mustNotContain: [
+      "series x", "series s", "시리즈 x", "시리즈 s",
+      "xbox 360", "엑박 360",
+      "ps5", "ps4", "스위치", "스팀덱",
+      "컨트롤러만", "패드만", "키넥트만",
+      "게임만", "디스크만", "타이틀만",
+      "구매합니다", "구합니다", "삽니다", "매입",
+    ],
+    msrpKrw: 498000,
+    released: 2013,
+  },
+  // Wave 758: Steam Deck 신설 (22 unmatched 매물).
+  {
+    id: "steamdeck-oled",
+    brand: "Valve",
+    category: "game_console",
+    laneKey: "steamdeck_oled",
+    modelName: "Steam Deck OLED (2023-11)",
+    aliases: ["Steam Deck OLED", "스팀덱 OLED", "스팀덱oled"],
+    mustContain: [
+      ["스팀덱", "steam deck", "steamdeck"],
+      ["oled", "올레드"],
+    ],
+    mustNotContain: [
+      "lcd", "엘시디",
+      "rog ally", "asus rog", "legion go", "리전고", "리전 go", "gpd",
+      "umpc", "한방팩", "에뮬게임",
+      "노트북",
+      "구매합니다", "구합니다", "삽니다", "사삽니다", "매입",
+      "케이스만", "독만", "스킨만",
+    ],
+    msrpKrw: 700000,
+    released: 2023,
+  },
+  {
+    id: "steamdeck-lcd",
+    brand: "Valve",
+    category: "game_console",
+    laneKey: "steamdeck_lcd",
+    modelName: "Steam Deck LCD (2022-02)",
+    aliases: ["Steam Deck LCD", "스팀덱 LCD", "스팀덱lcd"],
+    mustContain: [
+      ["스팀덱", "steam deck", "steamdeck"],
+      ["lcd", "엘시디"],
+    ],
+    mustNotContain: [
+      "oled", "올레드",
+      "rog ally", "asus rog", "legion go", "리전고", "리전 go", "gpd",
+      "umpc", "한방팩",
+      "노트북",
+      "구매합니다", "구합니다", "삽니다", "매입",
+      "케이스만", "독만", "스킨만",
+    ],
+    msrpKrw: 400000,
+    released: 2022,
   },
   // ─── PlayStation 5 Slim (Disc/Digital, 2023-11) ─────
   // narrow lane: ps5_slim (Standard/Pro/PSVR/Switch/액세서리 차단)

@@ -343,6 +343,37 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "Seiko (broad catch-all)",
     note: "Wave 754 Pareto: 762 \"seiko_other\" unmatched 매물. Grand Seiko 명품 skip 정책 catalog 차단.",
   },
+  // Wave 758 (2026-05-24) 게임 카테고리 deep sweep — 콘솔 6 SKU 신설.
+  switch_2: {
+    status: "ready",
+    label: "Nintendo Switch 2 (2025-06)",
+    note: "Wave 758: 335 unmatched 매물. 신상 인기 콘솔. 본체 75~85만.",
+  },
+  xbox_series_x: {
+    status: "ready",
+    label: "Xbox Series X",
+    note: "Wave 758: 77 Xbox unmatched 매물의 시리즈 X 본체.",
+  },
+  xbox_series_s: {
+    status: "ready",
+    label: "Xbox Series S",
+    note: "Wave 758: Xbox Series S 본체.",
+  },
+  xbox_one_broad: {
+    status: "ready",
+    label: "Xbox One (S/X)",
+    note: "Wave 758: Xbox One 구형 본체 broad.",
+  },
+  steamdeck_oled: {
+    status: "ready",
+    label: "Steam Deck OLED (2023)",
+    note: "Wave 758: 22 Steam Deck unmatched 중 OLED 본체.",
+  },
+  steamdeck_lcd: {
+    status: "ready",
+    label: "Steam Deck LCD (2022)",
+    note: "Wave 758: Steam Deck LCD 구형 본체.",
+  },
   iphone_13_pro_128gb_self: {
     status: "ready",
     label: "iPhone 13 Pro 128GB (자급제)",
