@@ -2419,8 +2419,13 @@ export default function ExploreClient({
                       className={`object-cover ${isSoldOut ? "opacity-60" : ""}`}
                     />
                   ) : null}
-                  {/* Wave 355: unopened/mint만 사진 위 럭셔리 배지 ("전설템" 느낌). 나머지 등급은 메타 영역 friendly 칩. */}
-                  {!isSoldOut && (item.conditionClass === "unopened" || item.conditionClass === "mint") ? (
+                  {/* Wave 355: unopened/mint만 사진 위 럭셔리 배지 ("전설템" 느낌). 나머지 등급은 메타 영역 friendly 칩.
+                      Wave 714p (2026-05-23): 신발/의류는 옛 conditionClass 뱃지 hide (전자기기용 라벨 정확도 낮음).
+                      신발/의류 = 새 ConditionTierChip (S/A/B/C/D) 가 카드 본문에 표시. 사진 위는 비움. */}
+                  {!isSoldOut
+                    && (item.conditionClass === "unopened" || item.conditionClass === "mint")
+                    && !item.comparableKey?.startsWith("shoe|")
+                    && !item.comparableKey?.startsWith("clothing|") ? (
                     <ConditionPhotoBadge conditionClass={item.conditionClass} compact />
                   ) : null}
                   {isSoldOut ? (
