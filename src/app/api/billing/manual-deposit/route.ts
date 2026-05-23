@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+import { isAdminUser } from "@/lib/auth-users";
 import { planForKey, type PlanKey } from "@/lib/plan-config";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -66,7 +67,9 @@ export async function POST(req: NextRequest) {
   }
 
   // Rate limit: 30분 내 재충전 차단. 메시지에 시간 명시 X (사용자 결정).
-  if (current.last_manual_deposit_at) {
+  // Wave launch-95c: admin user 는 rate limit 면제 (운영자 본인 테스트 frustrate 차단).
+  const isAdmin = isAdminUser(auth.user);
+  if (!isAdmin && current.last_manual_deposit_at) {
     const lastTs = new Date(current.last_manual_deposit_at).getTime();
     if (Number.isFinite(lastTs) && Date.now() - lastTs < RATE_LIMIT_WINDOW_MS) {
       return NextResponse.json({
@@ -96,8 +99,15 @@ export async function POST(req: NextRequest) {
   );
   if (!upsertRes.ok) {
     const errText = await upsertRes.text();
-    console.error("[manual-deposit] upsert failed", errText);
-    return NextResponse.json({ error: "grant_failed" }, { status: 500 });
+    console.error("[manual-deposit] upsert failed", { status: upsertRes.status, body: errText.slice(0, 400) });
+    // admin user 면 debug detail 응답 (사용자 본인 fix 용).
+    if (isAdmin) {
+      return NextResponse.json({
+        error: "grant_failed",
+        message: `upsert failed (${upsertRes.status}): ${errText.slice(0, 200)}`,
+      }, { status: 500 });
+    }
+    return NextResponse.json({ error: "grant_failed", message: "충전 신청을 처리하지 못했어요. 잠시 후 다시 시도해주세요." }, { status: 500 });
   }
 
   // ledger row insert — admin 회수 시 reference.
