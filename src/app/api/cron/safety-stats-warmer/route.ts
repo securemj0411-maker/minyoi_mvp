@@ -37,9 +37,12 @@ async function warmSnapshot() {
   }
   const payload = await res.json();
 
-  // global scope cache key (matches API 의 safetyStatsCacheKey global 형식)
-  // v2:global:::: = level=global, skuId="", comparableKey="", category=""
-  const scopeKey = "v2:global::::";
+  // Wave launch-87 (사용자 보고 — 폰 첫 가입 시 숫자 안 나옴 진짜 원인):
+  //   이전 키 "v2:global::::" (4 trailing colons) 가 API safetyStatsCacheKey 결과 "v2:global:::"
+  //   (3 trailing colons) 와 mismatch → API 가 영원히 cache miss → 매번 live query 23개 fail → 500.
+  //   API 코드 safetyStatsCacheKey: ["v2", "global", "", "", ""].join(":") = "v2:global:::" (3 colons).
+  //   cron 도 동일하게 5 element join 으로 통일.
+  const scopeKey = ["v2", "global", "", "", ""].join(":");
 
   await restFetch(`${tableUrl("mvp_safety_stats_snapshot")}?on_conflict=scope_key`, {
     method: "POST",
