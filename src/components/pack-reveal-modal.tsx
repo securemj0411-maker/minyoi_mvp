@@ -4521,20 +4521,20 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
   // Wave 394.7.ab: "확인 중" → "표본 부족" — 정직 카피.
   const sampleLabel = dailySoldValue ? "동일 모델 하루 판매량" : sampleCount > 0 ? "비슷한 거래 기록" : "거래 기록";
   const sampleValue = dailySoldValue ?? (sampleCount > 0 ? `${sampleCount.toLocaleString("ko-KR")}건` : "표본 부족");
-  const speedIsWeak = speed.label === "표본 부족" || speed.label === "수집 중";
-
   return (
     <div className="rounded-[22px] bg-white p-4 shadow-[0_16px_34px_rgba(15,23,42,0.07)] ring-1 ring-zinc-200 dark:bg-zinc-950/70 dark:ring-zinc-800">
+      {/* Wave launch-72 (사용자 짚음 "약 8.7개 파란색이면 위계 흔들림"):
+          title 의 숫자만 강조 (파란색). sub metric (visual) 은 default 색으로 — 위계 일관. */}
       <div className="grid grid-cols-2 gap-2.5">
         <div className="rounded-[18px] bg-[#f5f9ff] px-3 py-3 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
           <div className="break-keep text-[11px] font-bold text-[#6f7b73] dark:text-zinc-400">되팔 때 판매 주기</div>
-          <div className={`mt-1 text-[20px] font-black leading-tight ${speedIsWeak ? "text-[#3182f6] dark:text-blue-300" : "text-[#172019] dark:text-zinc-50"}`}>
+          <div className="mt-1 text-[20px] font-black leading-tight text-[#172019] dark:text-zinc-50">
             {speed.label}
           </div>
         </div>
         <div className="rounded-[18px] bg-[#f5f9ff] px-3 py-3 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
           <div className="break-keep text-[11px] font-bold text-[#6f7b73] dark:text-zinc-400">{sampleLabel}</div>
-          <div className="mt-1 text-[20px] font-black leading-tight text-[#3182f6] dark:text-blue-300">{sampleValue}</div>
+          <div className="mt-1 text-[20px] font-black leading-tight text-[#172019] dark:text-zinc-50">{sampleValue}</div>
         </div>
       </div>
     </div>
