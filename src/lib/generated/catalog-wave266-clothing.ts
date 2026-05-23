@@ -210,6 +210,20 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "bape", "베이프",
       "kapital",
       "cdg", "꼼데가르송",
+      // Wave 750 bias-free (2026-05-24): Nike/Stussy collab broad 추가 차단 (stussy_nike_collab으로 가야 함)
+      "나이키", "nike", "나투시",  // Nike x Stussy collab
+      // 추가 collab 차단
+      "리바이스", "levis", "levi's",  // Levi's x Stussy
+      "아워레가시", "our legacy", "ourlegacy",  // Our Legacy collab
+      "워크샵", "workshop",
+      "노바디스 홈", "no vacancy inn",
+      "cpfm", "cactus plant flea market",
+      "마틴로즈", "martine rose",
+      // 시그니처 premium 차단 (시세 outlier)
+      "비치 쉘", "비치쉘", "beach shell",  // 시그니처 premium 자켓
+      "립스탑 패딩", "ripstop padding", "립스탑패딩",  // 시그니처 premium
+      "비치팬츠", "비치 팬츠", "beach pants",  // Nike x Stussy 시그니처 (above already blocked by nike)
+      "월드투어", "world tour",  // 한정 시즌
     ],
     msrpKrw: 159000,
     released: 1980,
