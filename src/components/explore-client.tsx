@@ -2423,7 +2423,11 @@ export default function ExploreClient({
                       Wave 714p (2026-05-23): 신발/의류는 옛 conditionClass 뱃지 hide (전자기기용 라벨 정확도 낮음).
                       Wave 714q (2026-05-23): 신발/의류는 새 5-tier (S/A/B/C/D) 뱃지로 대체. UNKNOWN 은 표시 X. */}
                   {!isSoldOut && (item.comparableKey?.startsWith("shoe|") || item.comparableKey?.startsWith("clothing|")) ? (
-                    <ConditionTierPhotoBadge tier={item.conditionTier} compact />
+                    <ConditionTierPhotoBadge
+                      tier={item.conditionTier}
+                      compact
+                      category={item.comparableKey?.startsWith("clothing|") ? "clothing" : "shoe"}
+                    />
                   ) : !isSoldOut && (item.conditionClass === "unopened" || item.conditionClass === "mint") ? (
                     <ConditionPhotoBadge conditionClass={item.conditionClass} compact />
                   ) : null}

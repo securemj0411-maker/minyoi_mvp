@@ -301,21 +301,34 @@ const TIER_PHOTO_BADGE_STYLES: Record<string, { label: string; mark: string; cla
   },
 };
 
+// Wave 714r: 의류용 짧은 desc (tooltip). 사진 위 hover 시 보임.
+const TIER_PHOTO_DESC_CLOTHING: Record<string, string> = {
+  S: "S급 — 미사용 + 시즌/콜라보/매장 anchor 중 2축 이상 동시 (최상급)",
+  A: "A급 — 미사용 또는 콜라보 또는 자율등급 단일 strong (양호)",
+  B: "B급 — 약한 매칭 / 상세 부족 (보통)",
+  C: "C급 — 보풀/늘어남 같은 경미 하자 또는 X/10 점수",
+  D: "D급 — 빈티지/구제 또는 이염/구멍/황변 심각 하자",
+};
+
 export function ConditionTierPhotoBadge({
   tier,
   compact = false,
   className = "",
+  category,
 }: {
   tier: string | null | undefined;
   compact?: boolean;
   className?: string;
+  // Wave 714r: 신발/의류 desc 분리.
+  category?: "shoe" | "clothing" | null;
 }) {
   if (!tier || tier === "UNKNOWN") return null;
   const style = TIER_PHOTO_BADGE_STYLES[tier];
   if (!style) return null;
+  const desc = category === "clothing" ? (TIER_PHOTO_DESC_CLOTHING[tier] ?? style.desc) : style.desc;
   return (
     <span
-      title={style.desc}
+      title={desc}
       className={`pointer-events-none absolute left-1.5 top-1.5 z-10 inline-flex items-center overflow-hidden border text-[9px] font-black tracking-[0.02em] backdrop-blur-md ${
         style.className
       } ${
@@ -407,6 +420,18 @@ const TIER_STYLES: Record<string, TierStyle> = {
   },
 };
 
+// Wave 714r (2026-05-23): 의류는 분류 axis 가 신발과 다름 — popover 설명 분리.
+//   의류 specific: 시즌 SS/FW (3.27x), 콜라보, 자율등급 (S/A/B급 셀러 표기), 수선/줄임 (+1.59x positive)
+//   의류 D: 구제 (gunje, 0.42x) — 일본 빈티지샵 유통, 신발엔 없는 axis.
+const TIER_DESC_CLOTHING: Record<string, string> = {
+  S: "택그대로/미사용 + 시즌(SS/FW) 표기 + 정품 (kream/매장) + 콜라보/자율등급 중 2축 이상 동시. 데이터 1.7x+ (cluster-relative).",
+  A: "미사용 또는 시즌 표기 또는 콜라보 또는 자율등급 단일 strong signal. 데이터 1.2~1.7x.",
+  B: "상세 설명 부족 또는 약한 매칭. 대다수 매물 (default).",
+  C: "보풀/늘어남/얼룩 같은 경미 하자 또는 'X/10 점수' 자술. 데이터 0.5~0.85x.",
+  D: "빈티지(낡음) 또는 구제(일본 빈티지샵) 또는 이염/구멍/황변 등 심각 하자. 데이터 <0.5x.",
+  UNKNOWN: "셀러가 상세 설명 안 적음. 시세 신뢰도 낮음 (보수적 평가).",
+};
+
 type ChipBadgeKey = string;
 
 /** Wave 714 chip key → 한국어 라벨 + 색상 mapping. */
@@ -453,10 +478,14 @@ export function ConditionTierChip({
   tier,
   variant = "default",
   showHelp = false,
+  category,
 }: {
   tier: string | null | undefined;
   variant?: "default" | "friendly";
   showHelp?: boolean;
+  // Wave 714r (2026-05-23): "shoe" | "clothing" — popover desc 분리.
+  //   의류는 분류 axis 자체가 신발과 다름 (시즌/콜라보/자율등급/수선/구제).
+  category?: "shoe" | "clothing" | null;
 }) {
   const [open, setOpen] = useState(false);
   if (!tier) return null;
@@ -489,23 +518,28 @@ export function ConditionTierChip({
               <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
               <div className="absolute left-0 top-5 z-50 w-72 rounded-lg border border-zinc-300 bg-white p-3 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
                 <div className="mb-2 text-[11px] font-bold text-zinc-900 dark:text-zinc-100">
-                  신발/의류 등급 (5-tier)
+                  {category === "clothing" ? "의류" : "신발"} 등급 (5-tier)
                 </div>
                 <div className="space-y-1.5 text-[10px]">
                   {(["S", "A", "B", "C", "D", "UNKNOWN"] as const).map((k) => {
                     const s = TIER_STYLES[k];
+                    // Wave 714r: category 별 desc 분리 — 신발/의류 axis 다름.
+                    const desc = category === "clothing" ? (TIER_DESC_CLOTHING[k] ?? s.desc) : s.desc;
                     return (
                       <div key={k} className="flex gap-2">
                         <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${s.bg} ${s.text}`}>
                           {s.label}
                         </span>
-                        <span className="text-zinc-600 dark:text-zinc-400">{s.desc}</span>
+                        <span className="text-zinc-600 dark:text-zinc-400">{desc}</span>
                       </div>
                     );
                   })}
                 </div>
                 <div className="mt-2 border-t border-zinc-200 pt-2 text-[9px] text-zinc-500 dark:border-zinc-700">
-                  raw 텍스트 (제목 + 상세설명) 기반 자동 분류 (Wave 714). brand cluster 별 cluster-relative 시세.
+                  raw 텍스트 (제목 + 상세설명) 기반 자동 분류 (Wave 714).
+                  {category === "clothing"
+                    ? " 의류는 시즌/콜라보/자율등급/수선 axis 활용. cluster (premium_archive/volume_vintage/collab_heavy/casual_mass) 별 cluster-relative 시세."
+                    : " brand cluster (premium_snk/run_tech/volume_vintage/casual_parts) 별 cluster-relative 시세."}
                 </div>
               </div>
             </>

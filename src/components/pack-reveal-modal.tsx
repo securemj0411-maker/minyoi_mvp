@@ -1301,7 +1301,13 @@ function LastVerifiedAtBadge({ card }: { card: RevealCard }) {
         {cond && !isShoeOrClothing && <ConditionChip conditionClass={cond} variant="friendly" />}
         {/* Wave 714d (2026-05-23): 신발/의류 5-tier 등급 chip — 쉬운모드용 friendly variant.
             Wave 714f (2026-05-23): showHelp 추가 — ? 버튼 클릭 시 분류 기준 popover. */}
-        {tier && <ConditionTierChip tier={tier} showHelp />}
+        {tier && (
+          <ConditionTierChip
+            tier={tier}
+            showHelp
+            category={comparableKey?.startsWith("clothing|") ? "clothing" : "shoe"}
+          />
+        )}
       </div>
       {/* Wave 714d: raw 표현 chips (박스/하자/실착 등) */}
       {chips && chips.length > 0 && (
@@ -5429,7 +5435,11 @@ function RevealCardItem({
                     상태:
                   </span>
                   {card.conditionTier ? (
-                    <ConditionTierChip tier={card.conditionTier} showHelp />
+                    <ConditionTierChip
+                      tier={card.conditionTier}
+                      showHelp
+                      category={card.marketBasis?.comparableKey?.startsWith("clothing|") ? "clothing" : "shoe"}
+                    />
                   ) : (
                     <span className="text-[11px] italic text-zinc-500 dark:text-zinc-400">
                       분석중 (24h 안에 표시)

@@ -1535,7 +1535,13 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   Wave 714f (2026-05-23): showHelp 추가 — ? 버튼 클릭 시 분류 기준 popover. */}
               {(item.conditionTier || (item.conditionChips && item.conditionChips.length > 0)) && (
                 <div className="mt-1 flex flex-wrap items-center gap-1">
-                  {item.conditionTier && <ConditionTierChip tier={item.conditionTier} showHelp />}
+                  {item.conditionTier && (
+                    <ConditionTierChip
+                      tier={item.conditionTier}
+                      showHelp
+                      category={item.comparableKey?.startsWith("clothing|") ? "clothing" : "shoe"}
+                    />
+                  )}
                   {item.conditionChips && item.conditionChips.length > 0 && (
                     <ConditionChipsList chips={item.conditionChips} max={5} />
                   )}

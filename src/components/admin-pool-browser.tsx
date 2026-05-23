@@ -567,7 +567,11 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       {item.category !== "shoe" && item.category !== "clothing" && (
                         <ConditionChip conditionClass={item.conditionClass} showHelp />
                       )}
-                      {item.conditionTier && <ConditionTierChip tier={item.conditionTier} showHelp />}
+                      {item.conditionTier && <ConditionTierChip
+                        tier={item.conditionTier}
+                        showHelp
+                        category={item.category === "clothing" ? "clothing" : "shoe"}
+                      />}
                     </div>
                     {/* Wave 714d: raw 표현 chips (박스/하자/실착 등) */}
                     {item.conditionChips && item.conditionChips.length > 0 && (
