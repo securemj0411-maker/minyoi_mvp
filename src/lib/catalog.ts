@@ -6630,6 +6630,79 @@ export const CATALOG: Sku[] = [
     msrpKrw: 450000,
     released: 2019,
   },
+  // Wave 754 (2026-05-24) Pareto: Seiko 991 unmatched. Seiko 5 broad + Prospex broad + general broad.
+  {
+    id: "watch-seiko-5-broad",
+    brand: "Seiko",
+    category: "watch",
+    laneKey: "watch_seiko_5_broad",
+    modelName: "Seiko 5 (broad — SRPD/SBSA 외)",
+    aliases: ["Seiko 5", "세이코 5", "세이코 파이브"],
+    mustContain: [
+      ["seiko 5", "세이코 5", "세이코5", "seiko5", "seiko five", "세이코 파이브"],
+    ],
+    mustNotContain: [...WATCH_NOISE,
+      "srpd", "5kx", "sbsa",
+      "프로스펙스", "prospex", "프레사지", "presage",
+      "astron", "킹세이코", "king seiko", "그랜드세이코", "grand seiko",
+      "skx", "ssk", "스노우플레이크", "snowflake",
+      // 케이스/스트랩 단품
+      "스트랩만", "밴드만", "케이스만", "베젤만",
+    ],
+    msrpKrw: 250000,
+    released: 2019,
+  },
+  {
+    id: "watch-seiko-prospex-broad",
+    brand: "Seiko",
+    category: "watch",
+    laneKey: "watch_seiko_prospex_broad",
+    modelName: "Seiko Prospex (broad — Diver/Turtle/Alpinist/Speedtimer)",
+    aliases: ["Seiko Prospex", "세이코 프로스펙스", "프로스펙스"],
+    mustContain: [
+      ["프로스펙스", "prospex", "터틀", "turtle", "사무라이", "samurai", "알피니스트", "alpinist", "스피드타이머", "speedtimer", "다이버", "diver"],
+      ["세이코", "seiko"],
+    ],
+    mustNotContain: [...WATCH_NOISE,
+      "세이코 5", "seiko 5", "세이코5", "seiko5",
+      "srpd", "sbsa", "5kx",
+      "프레사지", "presage", "astron",
+      "킹세이코", "king seiko", "그랜드세이코", "grand seiko",
+      "롤렉스", "rolex", "오메가", "omega", "튜더", "tudor",  // 다른 brand
+      // 케이스/스트랩 단품
+      "스트랩만", "밴드만", "케이스만", "베젤만",
+    ],
+    msrpKrw: 800000,
+    released: 2014,
+  },
+  {
+    id: "watch-seiko-broad",
+    brand: "Seiko",
+    category: "watch",
+    laneKey: "watch_seiko_broad",
+    modelName: "Seiko (broad — narrow 미박힘 catch-all)",
+    aliases: ["Seiko", "세이코"],
+    mustContain: [
+      ["세이코", "seiko"],
+    ],
+    mustNotContain: [...WATCH_NOISE,
+      // narrow lane으로 매칭되어야 할 명시
+      "세이코 5", "seiko 5", "세이코5", "seiko5", "세이코 파이브",
+      "srpd", "sbsa", "5kx",
+      "프로스펙스", "prospex", "터틀", "turtle", "사무라이", "samurai", "알피니스트", "alpinist", "스피드타이머", "speedtimer", "다이버",
+      "프레사지", "presage", "astron",
+      "킹세이코", "king seiko", "그랜드세이코", "grand seiko", "gs ",
+      // 다른 brand
+      "롤렉스", "rolex", "오메가", "omega", "튜더", "tudor", "지샥", "g-shock",
+      // 케이스/스트랩 단품
+      "스트랩만", "밴드만", "케이스만", "베젤만",
+      // 캡코 SBSA/SBDC/SBDX 같은 모델 코드 — narrow lane으로
+      "sbdc", "sbdx",
+    ],
+    msrpKrw: 400000,
+    released: 1881,
+    confusionNote: "Seiko 5/Prospex/Presage/Astron narrow 미박힘 catch-all. Grand Seiko/King Seiko는 명품 정책 skip.",
+  },
   {
     id: "sport-golf-titleist-tsr2-driver",
     brand: "Titleist",

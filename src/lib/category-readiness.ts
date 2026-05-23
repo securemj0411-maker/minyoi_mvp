@@ -327,6 +327,22 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "PlayStation 4 Pro",
     note: "Wave 754 Pareto: PS4 Pro 37 unmatched 매물. 1TB 표준.",
   },
+  // Wave 754 — Seiko 991 unmatched → 3 SKU.
+  watch_seiko_5_broad: {
+    status: "ready",
+    label: "Seiko 5 (broad)",
+    note: "Wave 754 Pareto: Seiko 5 79 unmatched (SRPD/SBSA narrow 외).",
+  },
+  watch_seiko_prospex_broad: {
+    status: "ready",
+    label: "Seiko Prospex (broad)",
+    note: "Wave 754 Pareto: Prospex/Turtle/Alpinist/Speedtimer/Diver 100+ unmatched.",
+  },
+  watch_seiko_broad: {
+    status: "ready",
+    label: "Seiko (broad catch-all)",
+    note: "Wave 754 Pareto: 762 \"seiko_other\" unmatched 매물. Grand Seiko 명품 skip 정책 catalog 차단.",
+  },
   iphone_13_pro_128gb_self: {
     status: "ready",
     label: "iPhone 13 Pro 128GB (자급제)",
