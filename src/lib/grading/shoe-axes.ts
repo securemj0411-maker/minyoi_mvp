@@ -13,7 +13,18 @@ import type { AxisLabels, BrandCluster } from "./types";
 // =============================================================================
 
 const A_UNWORN = ["미시착", "미사용", "미착용", "데드스탁", "deadstock", "dead stock", "미개봉", "박스 미개봉", "박스미개봉"];
-const A_WORN_1TO2 = ["1회 착용", "1회 신음", "1번 신음", "1번 착용", "한번 착용", "한번만 착용", "한 번 착용", "딱 한번", "실착 1회", "실착1회", "실내 시착", "실내시착"];
+// Wave 720 (2026-05-23): 17K sample sweep — 216건 uncovered S 신호 발견.
+//   "시착만" 148건 / "한번도 안 신" 70건 / "신어보기만" 8건 추가.
+//   13% S-cover 확장. pid 221667421 sample mismatch (40만원 시착만 → B → S/A 정정).
+const A_WORN_1TO2 = [
+  "1회 착용", "1회 신음", "1번 신음", "1번 착용", "한번 착용", "한번만 착용", "한 번 착용", "딱 한번",
+  "실착 1회", "실착1회", "실내 시착", "실내시착",
+  // Wave 720 추가
+  "시착만", "시착 만",
+  "한번도 안 신", "한 번도 안 신", "한번도안신", "한 번도안신",
+  "신어보기만", "신어보기만 함", "신어 보기만",
+  "집에서 시착만", "집에서시착만",
+];
 // Wave 714b (2026-05-23): ready sample 검증 발견 누락 표현 추가.
 //   - "거의 새것/거의 새상품/거의 새신발" — A_WORN_3TO5 진입 (의류 cross-tab 검증 / 1.05~1.08x).
 //   - "사용감 거의 없" / "사용감 적음" / "사용감 적게" — 셀러 자주 사용 표현.
@@ -43,8 +54,18 @@ const A_VINTAGE = ["빈티지", "vintage", "오래된"];
 // Axis B — 박스/구성품
 // =============================================================================
 
-const B_FULL = ["풀구성", "풀 구성", "풀박", "풀박스", "풀 박스", "완전체"];
-const B_BOX_INCLUDED = ["박스 포함", "박스포함", "박스 있음", "박스있"];
+// Wave 720 (2026-05-23): 17K sample — 더스트백/dust bag 388건, 영수증/인보이스 306건, 보증서 102건 발견.
+//   더스트백+박스 결합 276건은 full 상승. 영수증/인보이스/보증서 단독 → box_included.
+const B_FULL = [
+  "풀구성", "풀 구성", "풀박", "풀박스", "풀 박스", "완전체",
+  // Wave 720 추가 — 박스 외 추가 구성품 (full 신호 강화)
+  "더스트백", "더스트 백", "dust bag",
+];
+const B_BOX_INCLUDED = [
+  "박스 포함", "박스포함", "박스 있음", "박스있",
+  // Wave 720 추가 — 단독 영수증/인보이스/보증서 박스 있음 신호
+  "영수증", "인보이스", "보증서", "개런티 카드", "개런티카드",
+];
 const B_BOX_ONLY = ["박스만"];
 const B_NO_BOX = ["박스 없음", "박스없", "박스없음"];
 const B_BOX_DAMAGED = ["박스 손상", "박스 찌그", "박스찌그"];
@@ -53,7 +74,13 @@ const B_BOX_DAMAGED = ["박스 손상", "박스 찌그", "박스찌그"];
 // Axis C — 정품 anchor
 // =============================================================================
 
-const C_KREAM = ["kream", "크림", "kream 구매", "크림 구매", "kream구매", "크림구매", "kream 인증", "크림 검수"];
+// Wave 720 (2026-05-23): 17K sample — "크림택 달려있음" 72건 단독 강력 S 신호 발견.
+//   pid 347553600 "구매후 한번도 안신은 새상품(크림택 달려있음)" — 시스템 A → S 정정.
+const C_KREAM = [
+  "kream", "크림", "kream 구매", "크림 구매", "kream구매", "크림구매", "kream 인증", "크림 검수",
+  // Wave 720 추가 — 크림택 (kream tag) 단독 신호
+  "크림택", "크림 택", "kream 택", "kream택",
+];
 // Wave 714b (2026-05-23): ready sample 검증 — "매장용/공홈/국내 발매/정상가" 누락 추가.
 const C_STORE = [
   "매장판", "매장 구매", "매장구매", "매장용", "매장가",
@@ -87,6 +114,11 @@ const D_MAJOR = [
   "분리됨",
   "수리",
   "접착",
+  // Wave 720 (2026-05-23): 17K sample — 솔/밑창 하자 표현 추가 (negation matcher가 "없고" 자동 처리).
+  "솔 갈림", "솔갈림", "솔 마모", "솔마모",
+  "밑창 닳음", "밑창닳음", "밑창 떨어짐", "밑창떨어짐",
+  "뒷굽닳음", "뒷굽 닳음",
+  "갑피 찢어짐", "갑피찢어짐",
 ];
 const D_MINOR = [
   "보푸라기",
@@ -112,7 +144,15 @@ const E_WASHED = ["세탁"];
 // Negation-aware matcher
 // =============================================================================
 
-const NEGATION_SUFFIXES = ["없음", "없습", "없네", "없어", "안함", "X", "x", "X.", "x."];
+const NEGATION_SUFFIXES = ["없음", "없습", "없네", "없어", "없이", "안함", "X", "x", "X.", "x."];
+// Wave launch-80: list 끝 부정 패턴 — 의류 audit 에서 발견한 "X Y Z 없음" / "X 등 없" / "X 외에" 처리 (clothing-axes.ts 와 동일).
+const LIST_NEG_TERMINATORS = [
+  /^[\s가-힣A-Za-z]*\s*등\s*(없음|없습|없네|없어|없이|X|x|x\.|X\.)/,
+  /^[\s가-힣A-Za-z]*\s*외(에|로)?\s*(없|깨끗|괜찮)/,
+  /^[\s가-힣A-Za-z,]*\s*(없음|없습|없네|없어|없이|없는)\b/,
+  // Wave launch-80b: 괄호/콤마 list 끝 X negation.
+  /^[\s가-힣A-Za-z,]*\s*(X|x)(\b|\.|\)|,|\s|$)/,
+];
 
 /**
  * keyword 가 text 에 있는지 — keyword 직후 negation suffix 흡수.
@@ -121,6 +161,7 @@ const NEGATION_SUFFIXES = ["없음", "없습", "없네", "없어", "안함", "X"
  *     "오염 없음" → match("오염") = false
  *     "이염 있음" → match("이염") = true
  *     "안 닳음" → match("닳음") = false (직전 "안")
+ *     Wave launch-80: "스크래치 등 없" / "이염 외 깨끗" / "스크래치 늘어남 없음" 도 negation 처리.
  */
 function matchesKeyword(text: string, keyword: string): boolean {
   let searchFrom = 0;
@@ -133,6 +174,13 @@ function matchesKeyword(text: string, keyword: string): boolean {
       if (after.startsWith(neg) || after.startsWith(" " + neg)) {
         isNegated = true;
         break;
+      }
+    }
+    // Wave launch-80: list 끝 부정 처리.
+    if (!isNegated) {
+      const afterExtended = text.slice(idx + keyword.length, idx + keyword.length + 20);
+      for (const re of LIST_NEG_TERMINATORS) {
+        if (re.test(afterExtended)) { isNegated = true; break; }
       }
     }
     if (!isNegated) {

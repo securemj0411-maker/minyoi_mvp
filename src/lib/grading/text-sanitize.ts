@@ -62,12 +62,52 @@ function maskFalseDurabilityClaims(text: string): string {
 }
 
 /**
+ * Wave launch-79 (사용자 보고 pid 7000939590067 — RRL 필드치노 gas station green):
+ * "빈티지한 그린계열 색상" 의 "빈티지" 한 단어가 wear=vintage(낡음) 로 매칭 → D tier 오분류.
+ *
+ * 의류 reseller 들은 "빈티지" 단어를 색상/스타일/디자인 묘사로 매우 자주 사용:
+ *   - "빈티지한 그린", "빈티지 색감", "빈티지 무드", "빈티지룩",
+ *     "빈티지한 분위기", "빈티지 스타일", "빈티지 디자인"
+ * 이 표현들은 의류 자체의 낡음/archive 와 무관한 marketing copy.
+ *
+ * 패턴: "빈티지" (선택적 어미 "한"/"스러운"/"의") + 색상/스타일/디자인 명사 → "(style)" 으로 마스킹.
+ * 차단 대상은 명확히 "색감/스타일" 맥락만. "빈티지 의류", "빈티지 매물" 같은 진짜 wear 신호는 그대로 통과.
+ */
+function maskVintageStyleDescriptions(text: string): string {
+  // 색상 단어 + 일반 명사 (색/톤/무드/룩/스타일/디자인/감성/분위기/색감/색상/핏/실루엣/미감/감각/감/매력).
+  const styleNoun = "(그린|블루|네이비|카키|브라운|올리브|머스타드|버건디|레드|핑크|옐로우|와인|민트|코랄|아이보리|크림|차콜|그레이|베이지|블랙|화이트|퍼플|오렌지|색|색상|색감|컬러|톤|분위기|무드|감성|스타일|디자인|룩|핏|실루엣|미감|감각|매력|느낌|모델|디테일|소재|원단|라인|아이템|패턴|프린트|로고|마감|디자이너)";
+  // Wave launch-80 (audit 후): vintage/archive 영문 + "오래된" + "아카이브" 모두 포함.
+  // 의류/신발 reseller 들이 형용사/관형사로 매우 자주 사용 — 진짜 wear=vintage 신호와 분리.
+  const vintageWord = "(빈티지(한|스러운|의|풍|풍의|틱|틱한)?|vintage|아카이브|archive|오래된)";
+  const re = new RegExp(`${vintageWord}\\s*${styleNoun}`, "gi");
+  return text.replace(re, "(style)");
+}
+
+/**
  * 마케팅/광고 boilerplate 제거 — "사용감 X 새상품 같은" 같이 강조 표현 흡수 위함.
  *
- * (현재는 minimal. 추후 sample 보고 추가.)
+ * Wave 720 (2026-05-23): 17K sample sweep 발견 — 명품 reseller boilerplate 다수.
+ *   - "쇼룸방문구매" / "쇼룸 진열" 표기가 36/44건 명품 reseller boilerplate (실제 진열품 아님)
+ *   - "수도권 퀵 가능" / "당일 매입" / "오프라인 매장 운영" 등도 boilerplate
+ *   - 추가하지 않으면 "쇼룸" 키워드를 axis A의 S 신호로 잘못 매칭할 risk.
+ *   - 차단 후 reseller boilerplate가 wear/auth 신호 오염 X.
  */
 function stripMarketingBoilerplate(text: string): string {
-  // "100% 정품 보장" / "정품 보장 X" 등은 grading axis 영향 적음 — 일단 패스.
+  // Wave 720: 명품 reseller boilerplate line 제거 (line 단위)
+  const RESELLER_BOILERPLATE_PATTERNS: RegExp[] = [
+    /쇼룸\s*방문\s*구매/g,
+    /쇼룸\s*진열/g,
+    /수도권\s*퀵\s*(가능|배송)?/g,
+    /당일\s*매입/g,
+    /오프라인\s*매장\s*운영/g,
+    /실재고\s*보유중/g,
+    /모든\s*제품\s*퀵\s*가능/g,
+    // 명품 reseller 컨디션 표 (sanitize 안 되면 axis 오염)
+    /컨디션\s*기준표/g,
+  ];
+  for (const re of RESELLER_BOILERPLATE_PATTERNS) {
+    text = text.replace(re, "(reseller)");
+  }
   return text;
 }
 
@@ -87,6 +127,8 @@ export function sanitizeForGrading(rawText: string | null | undefined): string {
   let text = rawText.toLowerCase();
   text = stripGradeRubric(text);
   text = maskFalseDurabilityClaims(text);
+  // Wave launch-79: "빈티지한 그린" 같은 색감/스타일 묘사 → wear=vintage false positive 차단.
+  text = maskVintageStyleDescriptions(text);
   text = stripMarketingBoilerplate(text);
   return text;
 }
