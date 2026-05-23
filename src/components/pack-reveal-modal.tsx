@@ -758,17 +758,22 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
   }
 
   // Wave 394.7.ab: low confidence — 데이터는 있지만 표본 적음. "참고용" 톤.
+  // Wave launch-70 (사용자 짚음 "위 큰 글씨는 사용자 친화적으로"):
+  //   title 통계 톤 → 자연 문장 ("되팔면 보통 N 안에 팔려요"). 표본 부족은 body 에서.
   if (hasReferenceVelocity && velocity) {
-    const label = velocity.medianHoursToSold != null && velocity.medianHoursToSold > 0
+    const hasHours = velocity.medianHoursToSold != null && velocity.medianHoursToSold > 0;
+    const label = hasHours
       ? velocityHoursLabel(velocity.medianHoursToSold)
       : `${velocity.sold7dCount.toLocaleString("ko-KR")}건`;
     return {
       eyebrow: "4. 판매 속도",
-      title: "거래 기록이 적어서 참고용으로만 봐요",
+      title: hasHours
+        ? `되팔면 보통 ${label} 안에 팔리는 편이에요`
+        : `최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}건 거래됐어요`,
       metric: label,
-      metricLabel: `7일 ${velocity.sold7dCount.toLocaleString("ko-KR")}건 — 표본 부족`,
-      body: `같은 모델이 최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}건만 거래됐어요. 추세 잡기엔 표본이 적어서 "이 정도 빠르다" 단정 안 하고 참고용으로만 보면 됩니다.`,
-      note: "표본이 적은 모델은 판매가 늦어질 수 있어서 매입가를 더 보수적으로 잡는 게 안전해요.",
+      metricLabel: `7일 ${velocity.sold7dCount.toLocaleString("ko-KR")}건 — 표본 적음`,
+      body: `같은 모델이 최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}건만 거래돼서 추세 단정은 어려워요. 위 숫자는 참고용으로 보고, 매입가는 더 보수적으로 잡는 게 안전해요.`,
+      note: "표본이 적은 모델은 판매가 늦어질 수 있어요. 시세와 셀러 신뢰도를 같이 보세요.",
       tone: "speed",
     };
   }
