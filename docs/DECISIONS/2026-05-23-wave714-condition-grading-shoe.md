@@ -267,6 +267,88 @@ Wave 713 의 `title_triage_v2` bump (이미 박힘) cron 이 활발히 progressi
 - 의류 sweep (n=11,167): `acb8fe3ea66f00975` — 의류 only axis 9개 발견
 - 의류 5-axis cross-tab (n=11,543): `a2d7c17a34f40235e` — cluster baseline 5x 차이 + template noise 발견
 
+---
+
+## Sub-waves 추적 (2026-05-23 cycle 전체)
+
+| Wave | Commit | 내용 |
+|---|---|---|
+| 714 | (initial) | grading module 9 file 신설 (types/axes/condition/sanitize/neighbor-price) + parser 통합 + DB migration |
+| 714b | 0b54c51 | grading raw 표현 보강 — ready sample 검증 5 fix: 노스페이스/닥마/UGG cluster / "거의 새것 사용감 거의 없음" / "4-5회/10번정도" wear / length<50 시 name 합산 / "매장용/공홈/X-코리아" auth |
+| 714c | 3b6e2bd | lane unblock stale 자동 재평가 — `markStaleLaneBlockedScoreDirty()` 신설. 매 tick `invalidated_reason=lane_blocked_X` 매물 중 X 가 LANE_READINESS ready 면 score_dirty=true. Wave 678/679 의 의류 4 lane 풀기 시 발생한 stale 38건 자동 회복 + 재발 방지 |
+| 714d Phase 1 | 8678898 | 시세 근거 모달 (market-source) chip 노출 — ConditionTierChip + ConditionChipsList 컴포넌트 신설 (CHIP_BADGES 30개 한국어 매핑) + market-source API/UI |
+| 714d Phase 2 | 70ce29a | 운영자풀/나의상품/쉬운모드 3 화면 — packs/me/admin/pool-listings API + pack-open RevealCard 부착 + 3 UI 컴포넌트 |
+| 714d Phase 3 | df21914 | 신발/의류 기존 chip 숨김 (중복 차단) — admin-pool/user-reveal/pack-reveal-modal 3 곳 |
+| 714d Phase 3.1 | c94d9ca | explore-client + pack-reveal-modal 좌하 pill 누락 추가 fix |
+| 714e | 9453540 | 비교군 sample 정책 변경 — 시세 근거 모달에서 같은 tier 우선 + 인접 tier (±1) 포함 + 그 외 회색 group section 분리 |
+| 714f | e1adc30 | showHelp ? 버튼 추가 (분류 기준 popover) — /me 피드 + 쉬운모드 |
+| 714g | c9e31de | pack-reveal-modal 매물명 아래 prominent chip 노출 — LastVerifiedAtBadge 의 `<div hidden>` 우회 |
+| 714h | 5e699a8 | /me 매물 클릭 → modalResult 변환 시 conditionTier 5 field 누락 fix |
+| 714i | ef6759d | 상세보기 매물명 위 unconditional placeholder (디버깅 진입) |
+| 714j | bcedba4 | 디버그 텍스트 `pid=... tier=... cluster=... chips=...` 추가 (진단용) |
+| 714k | 3258350 | **packs/pool API** + explore-client poolItemToRevealCard 가 conditionTier 전달 (메인 feed path fix) |
+| 714l | cdae047 | parsed_json.condition_grade fallback — PostgREST schema cache 우회 (packs/pool + packs/me) |
+| 714m | 432d47e | 메인 list 카드마다 디버그 텍스트 표시 (진단) |
+| 714n | e8d9b8a | **진짜 root cause** — `loadExactPoolItem` (detail-access API) 가 listing_parsed 안 fetch 했음 → 추가 query + parsed_json fallback |
+| 714o | 7b1da30 | `variant="friendly"` 제거 — "양호/보통/낡음" → "S급/A급/B급/C급/D급" 그대로 표시 |
+| 714p | 02acdee | explore-client 메인 list 카드 사진 위 옛 ConditionPhotoBadge 신발/의류 hide |
+| 714q | dbe8d38 | **ConditionTierPhotoBadge 컴포넌트 신설** — 메인 list 카드 사진 위 [S급]/[A급]/[B급]/[C급]/[D급] 뱃지 |
+| 714r | 20ba5fb | 신발/의류 ? popover 설명 분리 — `TIER_DESC_CLOTHING` / `TIER_PHOTO_DESC_CLOTHING` 의류 전용. category prop 4 화면 전달 |
+| 714s | a1016a6 | 디버그 텍스트 + amber placeholder 제거 (chip 정상 작동 확인 후) |
+
+## Cycle 핵심 발견
+
+### 데이터 path 추적 어려움 (사용자 burden)
+
+`/me 상세보기` 라는 사용자 표현이 실제로는 **메인 feed (explore-client) 카드 클릭** 이었음. transform path 4-5 layer 거치며 conditionTier 어디서 떨어지는지 추적 시간 큼:
+
+1. `mvp_listing_parsed.condition_tier` (DB) ✓
+2. `/api/packs/pool` (메인 list) — Wave 714k 박음
+3. `explore-client.PoolItem` (state) — Wave 714k type 박음
+4. **`/api/packs/pool/detail-access.loadExactPoolItem`** — listing_parsed query 누락 (진짜 root, Wave 714n)
+5. `poolItemToRevealCard` (변환) — Wave 714k
+6. `RevealCard` (모달 prop) — Wave 714g/i
+7. `ConditionTierChip` (UI) — variant friendly 잘못 (Wave 714o)
+
+**교훈**: API path 끝까지 추적 + 디버그 데이터 client 노출 + 한 path 만 박지 말 것.
+
+### PostgREST schema cache 잠재 risk
+
+`NOTIFY pgrst, 'reload schema'` 한 번에 안 잡힐 수 있음 — fallback `parsed_json.condition_grade` 같이 박는 게 안전.
+
+### 신발/의류 분류 체계 다름 (axis 9개 차이)
+
+- 신발: wear/box(풀구성)/auth(kream/매장)/damage/extra(여분끈)
+- 의류: wear(구제 포함)/box(태그)/auth(시즌 SS-FW 포함)/damage(수선 positive)/extra(콜라보/자율등급/X-10 점수)
+- popover 설명 분리 필요 (Wave 714r)
+
+### 새 매물 정상 흐름 (Wave 714s 시점)
+
+```
+번개장터 → mvp_raw_listings → detail cron → description_preview
+  → tick-pipeline parser cron → parseFashionMobility
+    → category=shoe? gradeShoeCondition / category=clothing? gradeClothingCondition
+      → parsedJson.condition_grade { tier, cluster, confidence, chips }
+        → toParsedListingRow → mvp_listing_parsed.condition_tier/cluster/confidence/flags column write
+          → API (packs/pool / packs/me / detail-access / market-source)
+            → UI (메인 list 사진 위 뱃지 + 모달 매물명 위 chip + 운영자풀 카드)
+```
+
+## 현재 상태 (2026-05-23 push a1016a6 시점)
+
+- DB: 신발 20.8% / 의류 15.7% condition_tier 채워짐
+- reparse cron: 신발 9,445/day / 의류 7,605/day — 자연 backfill 진행
+- 24h 후 95%+ 매물에 chip 노출 예상
+- 디버그 텍스트 모두 제거 — 깔끔한 production UI
+
+## 남은 다음 단계
+
+1. **Stage 5 시세 query 통합** — `band-aware-median` 등에서 `weightedNeighborPrice` + `applyClusterRelativePricing` 호출. 의류 cluster baseline 5배 차이 반영.
+2. **Backfill 모니터링** — 24h 후 chip 분포 측정 (S/A/B/C/D %)
+3. **모순 cell 재검증** — A1_unworn × D3_major 가 sanitize 후 줄어드는지 측정
+4. **메인 list 카드 메타 영역 chip 추가** (선택) — 사진 위 뱃지 외에 카드 본문에 chips list 노출 권고
+5. **A0/B0 default 비율 ↓** UX — 사용자가 description 더 자세히 쓰도록 유도
+
 ## 미해결 / 모순 (raw text 한계)
 
 - "거의 새것" (102k) vs "거의 새상품" (147k) — 1.45x 차이. 표현 자체에서 분리 어려움
