@@ -4638,6 +4638,31 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
         <div className="px-4 pb-4 text-[12px] font-bold text-[#7b8378] dark:text-zinc-400">비교 매물 누적 중</div>
       ) : (
         <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
+          {/* Wave launch-65 (사용자 정정 — 진짜 위치): 쉬운모드 1페이지 비교 매물 상단에
+              "내 매물" row 박음. 사용자가 비교 매물 가격 vs 내 매물 매입가 즉시 비교 가능. */}
+          {card.price > 0 ? (
+            <div className="flex items-center gap-3 bg-[#fffbef] px-4 py-3 dark:bg-amber-950/20">
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-zinc-100 ring-2 ring-amber-300 dark:bg-zinc-800 dark:ring-amber-700">
+                {card.thumbnailUrl ? (
+                  <Image src={card.thumbnailUrl} alt="" fill sizes="48px" unoptimized className="object-cover" />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-[9.5px] font-black text-white">내 매물</span>
+                  <span className="line-clamp-1 text-[12px] font-black text-[#172019] dark:text-zinc-100">
+                    {card.name || "이 상품"}
+                  </span>
+                </div>
+                <div className="mt-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300">매입가 기준</div>
+              </div>
+              <div className="shrink-0 text-right">
+                <div className="text-[14px] font-black tabular-nums text-amber-700 dark:text-amber-300">{krw(card.price)}</div>
+              </div>
+            </div>
+          ) : null}
           {visibleListings.map((item) => {
             const diff = item.price - card.price;
             const diffLabel = diff > 0 ? `이 매물보다 ${krw(diff)} 비쌈` : diff < 0 ? `이 매물보다 ${krw(Math.abs(diff))} 쌈` : "비슷한 가격";
