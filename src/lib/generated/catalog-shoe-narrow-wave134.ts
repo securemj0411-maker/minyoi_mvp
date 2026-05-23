@@ -679,6 +679,8 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
       "990v6", "v6", "990v4", "v4",
       "991", "992", "993", "997", "998",
       "joe freshgoods", "조 프레시굿즈", "ald", "aime leon dore",
+      // Wave 753 (2026-05-24) Pareto: 194x spread — ALD Korean phonetic 추가 차단.
+      "에메레온도르", "에이미레온도르", "에이미 레온 도르", "에메 레온도르",
       // Wave 239: 다른 NB 모델 차단 (v5 표기 공유 모델)
       "410", "411", "412", "810", "910", "996", "999",
       ...COMMON_BLOCK,

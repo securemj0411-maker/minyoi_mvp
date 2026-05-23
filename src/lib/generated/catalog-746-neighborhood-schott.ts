@@ -66,6 +66,12 @@ export const WAVE_746_NEIGHBORHOOD_SCHOTT: Sku[] = [
       "supreme", "슈프림",
       "adidas x", "x adidas",
       "converse x", "x converse",
+      // Wave 753 (2026-05-24) Pareto: 186x spread audit — 헬리녹스 텐트 + Vlone collab 차단.
+      "헬리녹스", "helinox", "텐트", "tent", "터널 텐트",
+      "캠핑 의자", "캠핑체어", "캠핑 체어", "체어 원",
+      "vlone", "브이론", "브이로네", "vlone collab",
+      "에이셉", "asap", "락키", "rocky",
+      "라이더 레더 자켓", // brake 안 잡힘 - 일반 레더 자켓은 OK인데 collab 사례
     ],
     msrpKrw: 250000, released: 1994,
   },

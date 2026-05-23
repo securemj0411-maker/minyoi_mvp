@@ -343,6 +343,11 @@ const PHONE_NOISE = [
   "gts250", "gts 250", "그래픽카드", "그래픽 카드", "geforce",
   // 광고 bait
   "이가격", "이 가격", "오늘까지만", "특가 마감", "급마감",
+  // Wave 753 (2026-05-24) Pareto: iPhone 17 Pro Max 306x audit — 학교제출용/모형/가짜폰 차단.
+  "목각폰", "목각 폰", "모형폰", "모형 폰", "가짜폰", "가짜 폰",
+  "학교제출용", "학교 제출용", "전시용", "전시 용",
+  // 캐릭터 case (마이멜로디/뮤즈무드 같은 case brand)
+  "뮤즈무드", "muse mood", "마이멜로디 아이폰", "쿠로미 아이폰",
 ];
 
 const TABLET_NOISE = [
@@ -9433,6 +9438,13 @@ export const CATALOG: Sku[] = [
       "monster face", "몬스터 페이스", "페이스 로고",
       // 1990s vintage (잘못 흡수 시 시세 outlier)
       "1990s", "y2k", "00s vintage",
+      // Wave 753 (2026-05-24) Pareto: 270x audit — skincare "아크네" 추가 차단 + 쇼핑백 + 시카/일리윤.
+      "핌플", "pimple", "트러블", "패치",
+      "바디워시", "body wash", "샴푸", "shampoo", "린스",
+      "쇼핑백", "shopping bag", "지퍼백",
+      "시카", "cica", "일리윤", "유우주",
+      "코스알엑스", "cosrx", "닥터자르트", "닥터아크네",
+      "오일 컨트롤", "수딩 젤",
     ],
     msrpKrw: 250000, released: 2020,
   },
