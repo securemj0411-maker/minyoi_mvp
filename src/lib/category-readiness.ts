@@ -977,7 +977,13 @@ export const LANE_READINESS: LaneReadinessMap = {
   // Wave 715 P1 — Supreme Box Logo narrow
   supreme_box_logo: { status: "ready", label: "Supreme Box Logo (BOGO)", note: "Wave 715 — 시즌별 가격 크게 다름, narrow 필수." },
   // Wave 715 P1 — Carhartt WIP Detroit
-  carhartt_wip_detroit: { status: "ready", label: "Carhartt WIP Detroit Jacket (시그니처)", note: "Wave 715 — broad에서 분리." },
+  carhartt_heritage_usa: { status: "ready", label: "Carhartt Heritage USA (미국산 라인)", note: "Wave 715 — WIP과 시세 다름 (+50%)." },
+  // Wave 715 P2-P3 — 잔여 narrow split
+  polo_oxford_vintage: { status: "ready", label: "Polo Oxford Vintage (90s/00s archive)", note: "Wave 715 — 67x spread 해소." },
+  polo_pique_vintage: { status: "ready", label: "Polo Pique Vintage (90s/00s archive)", note: "Wave 715 — 65x spread 해소." },
+  adidas_trefoil_archive: { status: "ready", label: "Adidas Trefoil Archive (90s 빈티지)", note: "Wave 715 — 77x spread broad → vintage 분리." },
+  polo_bear_vintage: { status: "ready", label: "Polo Bear Vintage (90s premium)", note: "Wave 715 — 55x spread → 빈티지 분리." },
+  stussy_vintage_collab: { status: "ready", label: "Stussy Vintage Collab (한정)", note: "Wave 715 — 74x broad spread → 빈티지 collab 분리." },
   // Wave 715 P1 — CDG 3-split
   cdg_play: { status: "ready", label: "CDG PLAY (heart 로고 basic)", note: "Wave 715 — broad에서 PLAY 분리." },
   cdg_homme_plus: { status: "ready", label: "CDG Homme Plus (premium mainline)", note: "Wave 715 — 110만 premium tier." },

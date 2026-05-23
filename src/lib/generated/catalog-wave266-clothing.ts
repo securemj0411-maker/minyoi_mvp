@@ -696,6 +696,9 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "madison", "메디슨",
       "landon", "랜든",
       "chase", "체이스",
+      // Wave 715 P2 (2026-05-23): 59x spread — Heritage USA narrow 분리 (별 시세군).
+      "carhartt usa", "칼하트 usa", "칼하트 미국산", "칼하트 미국",
+      "made in usa", "made in u.s.a", "heritage", "헤리티지",
     ],
     msrpKrw: 179000,
     released: 1889,

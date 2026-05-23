@@ -251,27 +251,142 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
   },
 
   // ============================================================================
-  // ===== Carhartt WIP Detroit Jacket =====
+  // ===== Carhartt Heritage USA 별도 (carhartt_detroit_jacket 이미 존재, 중복 방지) =====
   // ============================================================================
 
-  // ─── Carhartt WIP Detroit Jacket (시그니처 캔버스 자켓) ───
+  // ─── Carhartt Heritage USA (미국산 라인, 가격 +50%) ───
   {
-    id: "clothing-carhartt-wip-detroit",
-    brand: "Carhartt WIP", category: "clothing", laneKey: "carhartt_wip_detroit",
-    modelName: "Carhartt WIP Detroit Jacket (캔버스 자켓 시그니처)",
-    aliases: ["Carhartt WIP Detroit", "칼하트 디트로이트", "칼하트 WIP 디트로이트"],
+    id: "clothing-carhartt-heritage-usa",
+    brand: "Carhartt USA", category: "clothing", laneKey: "carhartt_heritage_usa",
+    modelName: "Carhartt Heritage USA (미국산 라인 — WIP과 시세 다름)",
+    aliases: ["Carhartt USA", "칼하트 USA", "칼하트 미국산", "Carhartt Heritage"],
     mustContain: [
-      ["carhartt wip", "칼하트 wip", "칼하트wip", "carhartt", "칼하트"],
-      ["detroit", "디트로이트"],
+      ["carhartt", "칼하트"],
+      ["usa", "미국", "미국산", "heritage", "헤리티지", "made in usa", "made in u.s.a"],
     ],
     mustNotContain: [
       ...COMMON_NOISE,
-      // US/일반 칼하트 (브랜드 다름)
-      "carhartt usa", "칼하트 미국", "칼하트 유에스", "carhartt us",
-      // 키즈
-      "키즈 디트로이트",
+      // WIP 라인 차단 (WIP는 별도 시세)
+      "carhartt wip", "칼하트 wip", "칼하트wip",
+      // 콜라보
+      "supreme", "슈프림", "junya watanabe", "준야와타나베",
+      "wacko maria", "와코마리아", "neighborhood", "네이버후드",
     ],
-    msrpKrw: 280000, released: 2003,
+    msrpKrw: 450000, released: 1889,
+  },
+
+  // ============================================================================
+  // ===== P2-P3 — 잔여 narrow split (polo_oxford vintage / adidas_trefoil archive / polo_rrl) =====
+  // ============================================================================
+
+  // ─── Polo Oxford Shirt Vintage (90s/00s archive) ───
+  {
+    id: "clothing-polo-oxford-vintage",
+    brand: "Polo Ralph Lauren", category: "clothing", laneKey: "polo_oxford_vintage",
+    modelName: "Polo Oxford Vintage (90s/00s archive — 신모델과 시세 다름)",
+    aliases: ["Polo Oxford Vintage", "폴로 옥스포드 빈티지", "90s Polo Oxford"],
+    mustContain: [
+      ["폴로", "polo", "ralph lauren", "랄프로렌"],
+      ["옥스포드", "oxford", "옥스퍼드"],
+      ["빈티지", "vintage", "90s", "00s", "y2k", "올드",
+       "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999",
+       "90년대", "00년대", "90's", "archive", "아카이브"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE, "RRL", "더블 알엘", "double rl", "purple label",
+      "polo bear", "베어", "키즈", "kids",
+      // 신모델 차단 (별도 SKU)
+      "신모델", "최신", "2024", "2025", "신상품",
+    ],
+    msrpKrw: 89000, released: 1990,
+  },
+
+  // ─── Polo Pique Vintage (90s/00s archive 폴로 카라티) ───
+  {
+    id: "clothing-polo-pique-vintage",
+    brand: "Polo Ralph Lauren", category: "clothing", laneKey: "polo_pique_vintage",
+    modelName: "Polo Pique Vintage (90s/00s archive 폴로 카라티)",
+    aliases: ["Polo Pique Vintage", "폴로 피케 빈티지", "90s Polo Pique"],
+    mustContain: [
+      ["폴로", "polo", "ralph lauren", "랄프로렌"],
+      ["피케", "pique", "pk", "카라티", "카라 티"],
+      ["빈티지", "vintage", "90s", "00s", "y2k", "올드",
+       "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999",
+       "90년대", "00년대", "90's", "archive", "아카이브"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE, "RRL", "purple label", "polo bear", "베어",
+      "키즈", "kids",
+      "빅포니 성조기", "성조기 빅포니",
+      "rlx",
+    ],
+    msrpKrw: 89000, released: 1990,
+  },
+
+  // ─── Adidas Trefoil Archive (90s/00s archive 트랙수트) ───
+  {
+    id: "clothing-adidas-trefoil-archive",
+    brand: "Adidas Originals", category: "clothing", laneKey: "adidas_trefoil_archive",
+    modelName: "Adidas Trefoil Archive (90s/00s vintage 트랙수트)",
+    aliases: ["Adidas Vintage", "아디다스 빈티지", "Adidas Archive", "트레포일 빈티지"],
+    mustContain: [
+      ["adidas", "아디다스"],
+      ["trefoil", "트레포일", "오리지널스", "originals", "트랙수트", "트랙"],
+      ["빈티지", "vintage", "90s", "00s", "y2k", "올드", "old school", "올드스쿨",
+       "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999",
+       "archive", "아카이브"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE,
+      // 콜라보 별도
+      "thug club", "떠그클럽", "sftm", "송포더뮤트", "y-3", "y3", "요지",
+      "fear of god", "피어오브갓", "fog", "에센셜",
+      "bape", "베이프", "kerwin", "moncler",
+      "balenciaga", "발렌시아가", "prada", "프라다", "gucci", "구찌",
+      "wales bonner", "웨일스",
+    ],
+    msrpKrw: 119000, released: 1990,
+  },
+
+  // ─── Polo Bear Vintage (90s 빈티지 베어, premium tier) ───
+  {
+    id: "clothing-polo-bear-vintage",
+    brand: "Polo Ralph Lauren", category: "clothing", laneKey: "polo_bear_vintage",
+    modelName: "Polo Bear Vintage (90s 빈티지 베어 — premium tier)",
+    aliases: ["Polo Bear Vintage", "폴로 베어 빈티지", "90s Polo Bear"],
+    mustContain: [
+      ["폴로", "polo", "ralph lauren"],
+      ["베어", "bear"],
+      ["빈티지", "vintage", "90s", "y2k", "올드",
+       "92년", "91년", "90년", "93년", "94년", "95년", "96년", "97년", "98년", "99년",
+       "1990", "1991", "1992", "1993", "1994", "1995"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE, "RRL", "purple label",
+      "키즈", "kids", "토들러", "스티커", "키링",
+    ],
+    msrpKrw: 230000, released: 1992,
+  },
+
+  // ─── Stussy 시즌 빈티지 콜라보 (FW/SS 가격 큰 변동) ───
+  {
+    id: "clothing-stussy-vintage-collab",
+    brand: "Stussy", category: "clothing", laneKey: "stussy_vintage_collab",
+    modelName: "Stussy Vintage Collab (Bape/Hysteric/Vans 한정)",
+    aliases: ["Stussy Vintage", "스투시 빈티지", "Stussy Collab Vintage"],
+    mustContain: [
+      ["stussy", "스투시"],
+      ["빈티지", "vintage", "90s", "00s", "올드", "archive", "아카이브",
+       "x bape", "x hysteric", "x vans", "x dover street", "도버스트리트", "fragment", "프래그먼트"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE,
+      // nike collab은 별도
+      "nike", "나이키", "stussy nike", "스투시 나이키",
+      // shoe
+      "운동화", "스니커즈", "sneaker",
+    ],
+    msrpKrw: 250000, released: 1995,
   },
 
   // ============================================================================

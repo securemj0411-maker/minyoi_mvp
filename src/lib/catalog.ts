@@ -7099,6 +7099,10 @@ export const CATALOG: Sku[] = [
       // pid 408213485 "랄프로렌 RLX 반팔카라티" 28k score 56 — RLX는 골프 라인 (별도 SKU 필요).
       "rlx", "rlx 골프", "rlx golf", "rlx 카라", "rlx 반팔",
       "랄프로렌 rlx", "polo rlx", "rlx polo",
+      // Wave 715 P2 (2026-05-23): vintage narrow 분리 → broad에서 명확 차단.
+      "빈티지", "vintage", "y2k", "올드", "archive", "아카이브",
+      "90년대", "00년대", "90's", "00s",
+      "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999",
     ],
     msrpKrw: 159000, released: 2020,
     defaultProductType: "polo_shirt", // Wave 236d — Polo Pique = polo shirt 라인 확정.
@@ -7134,6 +7138,10 @@ export const CATALOG: Sku[] = [
       // Wave 593d: BEAMS 한정 collab + 90s 빈티지 outlier 차단.
       "빔즈", "beams", "x beams", "beams x", "리미티드", "limited edition", "한정판",
       "90s ", "90's", "90s 폴로", "vintage polo", "빈티지 폴로",
+      // Wave 715 P2 (2026-05-23): vintage narrow SKU 신설 → broad에서 명확 차단.
+      "빈티지", "vintage", "y2k", "올드", "archive", "아카이브",
+      "90년대", "00년대", "00s",
+      "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999",
     ],
     msrpKrw: 159000, released: 2020,
     defaultProductType: "shirt", // Wave 236d — Oxford = 셔츠 라인.
@@ -7168,6 +7176,11 @@ export const CATALOG: Sku[] = [
       // 빈티지 90s/Y2K (별도 시세 라인)
       "y2k 폴로", "y2k polo", "00s polo",
       "키치 테디", "키치 베어", "키치 곰돌이",
+      // Wave 715 P2 (2026-05-23): polo_bear_vintage 신설 → 명확 차단.
+      "빈티지", "vintage", "archive", "아카이브",
+      "96년", "97년", "98년", "99년", "00년",
+      "96년도", "97년도", "98년도", "99년도",
+      "1990", "1991", "1992", "1993", "1994", "1995",
     ],
     msrpKrw: 159000, released: 2020,
   },
@@ -10367,6 +10380,10 @@ export const CATALOG: Sku[] = [
       "토트백 보스턴백", "토트 보스턴 세일러", "다중백",
       "모음", "세트 모음", "set 모음",
       "지디", "지드래곤",  // 셀럽 착용 (가격 inflated)
+      // Wave 715 P2 (2026-05-23): 28% synchilla 흡수 잔여 추가 차단 (parser bug + catalog 다중 방어).
+      "신찰라", "싱칠라", "신질라", "신키라",  // 신칠라 오탈자
+      "스냅풀오버", "스냅 풀오버", "snap pullover",
+      "파일", "pile", "레트로 파일",  // 일반 fleece (다른 시세)
     ],
     msrpKrw: 199000, released: 1985,
     defaultProductType: "jacket", // Wave 236d — Retro X/Synchilla = 플리스 자켓 라인 확정.
@@ -10937,7 +10954,11 @@ export const CATALOG: Sku[] = [
       "플라워 삼선", "플라워자켓", "꽃무늬 자켓", "플라워 트랙",
       "빈티지 블루종", "빈티지블루종", "올드스쿨 블루종", "제펜 올드스쿨", "japan old school",
       // 가방 차단
-      "가방", "bag", "backpack", "백팩"],
+      "가방", "bag", "backpack", "백팩",
+      // Wave 715 P2 (2026-05-23): adidas_trefoil_archive 신설 → vintage 명확 차단.
+      "빈티지", "vintage", "archive", "아카이브", "y2k", "올드", "old school", "올드스쿨",
+      "90년대", "00년대", "90s", "90's", "00s",
+      "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999"],
     msrpKrw: 119000, released: 1949,
   },
   // Wave 215 (2026-05-19): Yeezy 신발 + BAPE STA + Stussy 8 Ball — 매물 검증.
