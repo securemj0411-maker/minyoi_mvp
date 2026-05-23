@@ -3683,17 +3683,14 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
       parsed.comparable_key,
       shoeSizeAgnosticComparableKey(parsed.comparable_key),
     ].filter((key): key is string => Boolean(key));
-    // Wave 722 / Stage 5 (2026-05-23): shoe/clothing 만 conditionTier 별 별도 row.
-    //   같은 condition_class 안에 tier S/A/B/C/D 매물이 섞여 D급 시세 부정확.
-    //   tier=UNKNOWN/null도 그대로 통과 (backfill 진행 중 매물).
-    //   PK가 NOT NULL이라 빈 문자열 '' 로 처리 — non-shoe/clothing 매물 sentinel.
-    const isShoeOrClothing = parsed.category === "shoe" || parsed.category === "clothing";
-    const conditionTier = isShoeOrClothing ? (parsed.condition_tier ?? "UNKNOWN") : "";
+    // Wave 722 hotfix (2026-05-23 13:00 UTC): tier-aware grouping 일시 revert.
+    //   schema PK 3-col로 rollback됨 — tier 추가하면 PK violation 발생.
+    //   condition_tier 컬럼은 유지하되 aggregation 그룹핑에는 제외. 다음 cycle에서 재migration.
+    const conditionTier = ""; // sentinel — tier-bucketing 미적용 (Wave 722 rollback)
     for (const comparableKey of comparableKeys) {
       // Wave 130: grouping key = (comparable_key, condition_class). 같은 SKU+옵션이라도
       // condition별 별도 시세 산정.
-      // Wave 722: shoe/clothing은 tier도 키에 포함 → (comparable_key, condition_class, condition_tier)
-      const key = `${comparableKey}|${conditionClass}|${conditionTier}`;
+      const key = `${comparableKey}|${conditionClass}`;
       if (!byKey.has(key)) {
         byKey.set(key, {
           comparableKey,
@@ -3899,14 +3896,13 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
   });
 
   // Wave 130: PK (date, comparable_key, condition_class) — condition별 별도 upsert.
-  // Wave 722 / Stage 5: shoe/clothing 매물은 condition_tier 추가 PK 확장. upsert 처리.
-  //   기존 PK (date, comparable_key, condition_class) — backwards compatible.
-  //   tier-aware row는 같은 (date, comparable_key, condition_class) 안에 tier별 별도 row.
-  //   on conflict 정책: PK를 (date, comparable_key, condition_class, condition_tier) 로 확장하지만
-  //   기존 row (condition_tier=null) 와 새 row (condition_tier=S/A/B/C/D) 가 공존.
-  //   현재 upsertRows는 PK 컬럼 conflict 사용 — condition_tier 추가 가능하지만 schema migration 필요.
-  //   1단계 (이 wave): condition_tier 컬럼 채우기만. PK는 그대로. tier-aware row는 conflict 시 덮어쓰기.
-  await upsertRows("mvp_market_price_daily", marketRows, "date,comparable_key,condition_class,condition_tier");
+  // Wave 722 hotfix (2026-05-23 13:00 UTC): tier-aware 일시 rollback.
+  //   파일 13:00 시점에 production cron 3+시간 정체 발견.
+  //   4-col PK + partial unique index 시도했으나 PostgREST가 partial index의 WHERE 전달 안 함 → 매칭 실패.
+  //   schema PK 3-col로 rollback + 코드도 3-col on_conflict로 revert.
+  //   condition_tier 컬럼은 유지 (data 손실 X). 다음 cycle에서 더 안전한 방식으로 재migration.
+  //   Plan: code deploy 완료 확인 후 schema migration → 시간차 원인 차단.
+  await upsertRows("mvp_market_price_daily", marketRows, "date,comparable_key,condition_class");
   return {
     keyCount: marketRows.length,
     sampleCount: marketRows.reduce((sum, row) => sum + row.active_sample_count + row.sold_sample_count + row.disappeared_sample_count, 0),
