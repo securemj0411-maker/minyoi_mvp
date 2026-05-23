@@ -47,7 +47,11 @@ export interface ShoeGradeInput {
 export function gradeShoeCondition(input: ShoeGradeInput): ConditionGrade {
   const cluster = detectShoeBrandCluster(input.name ?? "");
   const description = input.description ?? "";
-  const rawTextLength = description.length;
+  // Wave 714b (2026-05-23): length = name + description 합산.
+  //   이전: description 만. "노바블라스트5 270 새제품 정품 아식스코리아" (30자) 같이
+  //   짧지만 명확한 signal 있는 매물도 UNKNOWN 으로 떨어짐 — false positive 차단 의도가 과도.
+  //   개선: name(40자) + description(30자) = 70자 → axis 매칭 진행.
+  const rawTextLength = (input.name?.length ?? 0) + description.length;
   const enumPrior = input.enumLabel ?? null;
 
   // Crocs 는 별도 경로 (박스 axis 무력, 지비츠 핵심).

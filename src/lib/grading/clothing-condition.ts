@@ -38,7 +38,8 @@ export interface ClothingGradeInput {
 export function gradeClothingCondition(input: ClothingGradeInput): ConditionGrade {
   const cluster = detectClothingBrandCluster(input.name ?? "");
   const description = input.description ?? "";
-  const rawTextLength = description.length;
+  // Wave 714b (2026-05-23): length = name + description 합산 — 짧지만 명확한 signal 매물 grading 진행.
+  const rawTextLength = (input.name?.length ?? 0) + description.length;
   const enumPrior = input.enumLabel ?? null;
 
   const { labels, positiveMatches, negativeMatches } = labelClothingAxes({
