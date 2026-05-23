@@ -47,6 +47,26 @@ export const WAVE_712C_SHOE_BULK: Sku[] = [
     msrpKrw: 160000, released: 2024,
     defaultProductType: "shoe",
   },
+  // Wave 739 (2026-05-24): nb_1906 generic broad — 200건 leak.
+  //   매물 "뉴발란스 1906 275" 처럼 R/A/L 명시 안 한 일반 1906. nb_1906r/a/l narrow에 안 잡힘.
+  //   가격대 9.3만 (p50) — 일반인 친화.
+  {
+    id: "shoe-newbalance-1906-broad",
+    brand: "New Balance", category: "shoe", laneKey: "nb_1906_broad",
+    modelName: "New Balance 1906 Broad (R/A/L 외 일반)",
+    aliases: ["NB 1906", "뉴발 1906"],
+    mustContain: [["new balance", "newbalance", "뉴발란스", "뉴발", "nb"], ["1906"]],
+    mustNotContain: [
+      ...COMMON_NOISE,
+      // narrow SKU 우선
+      "1906l", "1906 l",
+      "1906r", "1906 r",
+      "1906a", "1906 a",
+      "1906d", "1906 d",
+    ],
+    msrpKrw: 160000, released: 2023,
+    defaultProductType: "sneaker",
+  },
   {
     id: "shoe-newbalance-996-broad",
     brand: "New Balance", category: "shoe", laneKey: "nb_996",

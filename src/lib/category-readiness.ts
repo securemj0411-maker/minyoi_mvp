@@ -1019,6 +1019,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   thisisneverthat_apparel: { status: "ready", label: "Thisisneverthat Apparel (Broad)", note: "Wave 732 — 15건/주 p50 5만." },
   uniqlo_collab_broad: { status: "ready", label: "Uniqlo Collab (Lemaire/Marimekko/JW Anderson/Cecilie/KAWS/EG)", note: "Wave 732+737 — collab 확장." },
   uniqlo_apparel_broad: { status: "ready", label: "Uniqlo Generic Apparel", note: "Wave 737 — 61건/주 0% 매칭 root fix." },
+  nb_1906_broad: { status: "ready", label: "New Balance 1906 Broad", note: "Wave 739 — 200건/주 p50 9.3만 (R/A/L 외 일반)." },
   columbia_apparel_broad: { status: "ready", label: "Columbia Apparel (패딩/플리스)", note: "Wave 732 — 9건/주 p50 6.2만." },
   blackyak_apparel_broad: { status: "ready", label: "Blackyak Apparel (다운/패딩)", note: "Wave 732 — 8건/주 p50 6.3만." },
   barbour_quilted_jacket: { status: "ready", label: "Barbour Quilted Jacket", note: "Wave 732 — 4건/주 p50 10.5만 (시그니처)." },
