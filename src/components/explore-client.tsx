@@ -59,6 +59,12 @@ type PoolItem = {
   imageCount: number | null;
   descriptionPreview: string;
   soldOut: boolean;
+  // Wave 714k (2026-05-23): 신발/의류 5-tier grading + chips — pool API 응답 받아서 모달에 전달.
+  conditionTier?: string | null;
+  conditionCluster?: string | null;
+  conditionConfidence?: number | null;
+  conditionFlags?: Record<string, unknown> | null;
+  conditionChips?: string[] | null;
 };
 
 type ScrappedPoolItem = PoolItem & {
@@ -334,6 +340,12 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
       directTradeLocation: item.directTradeLocation ?? null,
     },
     optionBaseAssumed: null,
+    // Wave 714k (2026-05-23): 신발/의류 5-tier grading + chips — 메인 feed 카드 클릭 → 상세 모달 path 전달.
+    conditionTier: item.conditionTier ?? null,
+    conditionCluster: item.conditionCluster ?? null,
+    conditionConfidence: item.conditionConfidence ?? null,
+    conditionFlags: item.conditionFlags ?? null,
+    conditionChips: item.conditionChips ?? null,
   };
 }
 

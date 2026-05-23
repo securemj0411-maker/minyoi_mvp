@@ -234,7 +234,21 @@ async function loadPool(
     excludePids?: number[];
     readyCandidateLimit?: number;
   } = {},
-): Promise<{ pool: (PoolRow & { soldOut: boolean })[]; raws: RawRow[]; metas: RawListingMeta[]; marketBands: Map<string, Map<string, MarketBandRow>>; v7SiblingPresence: V7SiblingPresenceMap }> {
+): Promise<{
+  pool: (PoolRow & { soldOut: boolean })[];
+  raws: RawRow[];
+  metas: RawListingMeta[];
+  marketBands: Map<string, Map<string, MarketBandRow>>;
+  v7SiblingPresence: V7SiblingPresenceMap;
+  parsedGradingRows: Array<{
+    pid: number;
+    condition_tier: string | null;
+    condition_cluster: string | null;
+    condition_confidence: number | null;
+    condition_flags: Record<string, unknown> | null;
+    parsed_json: Record<string, unknown> | null;
+  }>;
+}> {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const todayIso = todayStart.toISOString();
@@ -340,7 +354,7 @@ async function loadPool(
   const pool = options.sort === "latest"
     ? [...readyRows, ...soldOutRows]
     : [...readyRows, ...soldOutRows].sort(() => Math.random() - 0.5);
-  if (pool.length === 0) return { pool: [], raws: [], metas: [], marketBands: new Map(), v7SiblingPresence: new Map() };
+  if (pool.length === 0) return { pool: [], raws: [], metas: [], marketBands: new Map(), v7SiblingPresence: new Map(), parsedGradingRows: [] };
 
   const pids = pool.map((r) => r.pid);
   // raws는 이미 rawByPid에 있음 — pool pids만 추출.
@@ -348,7 +362,7 @@ async function loadPool(
 
   // meta + marketBands fetch (pool pids만).
   const comparableKeys = [...new Set(pool.map((r) => r.comparable_key).filter((k): k is string => Boolean(k)))];
-  const [metaRes, marketBands, v7SiblingPresence] = await Promise.all([
+  const [metaRes, marketBands, v7SiblingPresence, parsedGradingRes] = await Promise.all([
     restFetch(
       // Wave launch-4: listing_state 컬럼 추가 select. 응답 후 ready 였지만 active 아닌 row 차단.
       `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,raw_json,listing_state&pid=in.(${pids.join(",")})`,
@@ -356,8 +370,22 @@ async function loadPool(
     ),
     loadMarketBandsForPool(headers, comparableKeys),
     loadV7SiblingPresence(headers, comparableKeys),
+    // Wave 714k (2026-05-23): 신발/의류 5-tier grading + chips column fetch.
+    restFetch(
+      `${tableUrl("mvp_listing_parsed")}?select=pid,condition_tier,condition_cluster,condition_confidence,condition_flags,parsed_json&pid=in.(${pids.join(",")})`,
+      { headers },
+    ),
   ]);
   const metas = (await metaRes.json()) as RawListingMeta[];
+  // Wave 714k: gradingByPid Map — 메인 feed 카드 + 모달에 전달.
+  const parsedGradingRows = (await parsedGradingRes.json().catch(() => [])) as Array<{
+    pid: number;
+    condition_tier: string | null;
+    condition_cluster: string | null;
+    condition_confidence: number | null;
+    condition_flags: Record<string, unknown> | null;
+    parsed_json: Record<string, unknown> | null;
+  }>;
 
   // Wave launch-4 (launch audit CRITICAL #4): ready 였지만 listing_state != 'active' 인 매물 사용자 풀 차단.
   // candidate_pool.status=ready 가드만으로는 lifecycle cron lag 시 sold_confirmed / disappeared /
@@ -384,7 +412,7 @@ async function loadPool(
   const filteredRaws = raws.filter((r) => !blockedPids.has(r.pid));
   const filteredMetas = metas.filter((m) => !blockedPids.has(m.pid));
 
-  return { pool: filteredPool, raws: filteredRaws, metas: filteredMetas, marketBands, v7SiblingPresence };
+  return { pool: filteredPool, raws: filteredRaws, metas: filteredMetas, marketBands, v7SiblingPresence, parsedGradingRows };
 }
 
 function buildItems(
@@ -393,9 +421,29 @@ function buildItems(
   metas: RawListingMeta[],
   marketBands: Map<string, Map<string, MarketBandRow>>,
   v7SiblingPresence: V7SiblingPresenceMap,
+  parsedGradingRows: Array<{
+    pid: number;
+    condition_tier: string | null;
+    condition_cluster: string | null;
+    condition_confidence: number | null;
+    condition_flags: Record<string, unknown> | null;
+    parsed_json: Record<string, unknown> | null;
+  }> = [],
 ) {
   const rawByPid = new Map(raws.map((r) => [r.pid, r]));
   const metaByPid = new Map(metas.map((m) => [m.pid, m]));
+  // Wave 714k (2026-05-23): pid → grading + chips map.
+  const gradingByPid = new Map<number, { tier: string | null; cluster: string | null; confidence: number | null; flags: Record<string, unknown> | null; chips: string[] | null }>();
+  for (const row of parsedGradingRows) {
+    const grade = (row.parsed_json?.condition_grade as { chips?: string[] } | null) ?? null;
+    gradingByPid.set(Number(row.pid), {
+      tier: row.condition_tier ?? null,
+      cluster: row.condition_cluster ?? null,
+      confidence: row.condition_confidence ?? null,
+      flags: row.condition_flags ?? null,
+      chips: grade?.chips ?? null,
+    });
+  }
   return pool
     .map((row) => {
       const raw = rawByPid.get(row.pid);
@@ -499,6 +547,12 @@ function buildItems(
         descriptionPreview: meta?.description_preview ?? "",
         lastSeenAt: meta?.last_seen_at ?? null,
         soldOut: row.soldOut,
+        // Wave 714k (2026-05-23): 신발/의류 5-tier grading + chips — 메인 feed 카드 + 상세 모달.
+        conditionTier: gradingByPid.get(row.pid)?.tier ?? null,
+        conditionCluster: gradingByPid.get(row.pid)?.cluster ?? null,
+        conditionConfidence: gradingByPid.get(row.pid)?.confidence ?? null,
+        conditionFlags: gradingByPid.get(row.pid)?.flags ?? null,
+        conditionChips: gradingByPid.get(row.pid)?.chips ?? null,
       };
     })
     .filter((x): x is NonNullable<typeof x> => x != null);
@@ -636,14 +690,14 @@ export async function GET(req: Request) {
     // 예산 필터가 있을 때 더 넓은 가격대로 조용히 fallback하지 않는다.
     // 15만원 이하를 보고 있는데 서버가 30/50만원 매물을 가져와도 프론트에서 다시 숨겨져
     // "새 매물 붙이는 중"만 길게 보이는 문제가 생긴다.
-    const { pool, raws, metas, marketBands, v7SiblingPresence } = await loadPool(headers, {
+    const { pool, raws, metas, marketBands, v7SiblingPresence, parsedGradingRows } = await loadPool(headers, {
       sort,
       source,
       priceMax,
       excludePids: excludeAllPids,
       readyCandidateLimit,
     });
-    items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence);
+    items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence, parsedGradingRows);
 
     // Wave 373: 성향 정렬 — preference 따라 우선순위 재정렬.
     //   safe: 우수 셀러 (평점 4.5+ & 후기 10+) 우선
