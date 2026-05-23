@@ -172,8 +172,27 @@ export async function GET() {
   try {
     const headers = serviceHeaders();
 
-    // ready 매물 fetch — band desc + profit desc. filter (price/sku 다양화) 위해 더 많이 가져옴.
-    const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key&status=eq.ready&order=profit_band.desc,expected_profit_max.desc&limit=${PREVIEW_POOL_SCAN_LIMIT}`;
+    // Wave launch-113 (2026-05-24): 비로그인 hook 강화 — 이미 팔린 실제 매물 노출.
+    //   배경: 사진 blur + 카테고리 라벨로는 hook 약함 ("진짜 같지 않음").
+    //   해결: 7일 안 sold/disappeared 매물 → 실제 제목/사진/매입/시세/차익 그대로 노출 +
+    //         "거래 완료" 배지 + "로그인하면 진행 중 매물" fine print.
+    //   카탈로그 leak 우려 없음 (이미 거래된 매물 = 사용자가 잡을 수 없음).
+    const sinceIso = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const soldPidsRes = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid,sold_detected_at&listing_state=in.(sold_confirmed,disappeared)&sold_detected_at=gte.${encodeURIComponent(sinceIso)}&order=sold_detected_at.desc&limit=300`,
+      { headers },
+    );
+    const soldPidRows = (await soldPidsRes.json()) as Array<{ pid: number; sold_detected_at: string }>;
+    const soldPids = soldPidRows.map((r) => r.pid).filter((p) => Number.isFinite(p) && p > 0);
+
+    if (soldPids.length === 0) {
+      return NextResponse.json({ items: [] }, {
+        headers: { "Cache-Control": `public, max-age=${CACHE_SECONDS}, s-maxage=${CACHE_SECONDS}` },
+      });
+    }
+
+    // candidate_pool 에서 sold pid + positive profit 만. status 는 invalidated 거나 다른 거 (sold 면 보통 invalidated).
+    const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key&pid=in.(${soldPids.join(",")})&expected_profit_max=gt.0&order=profit_band.desc,expected_profit_max.desc&limit=${PREVIEW_POOL_SCAN_LIMIT}`;
     const poolRes = await restFetch(poolUrl, { headers });
     const pool = (await poolRes.json()) as PoolRow[];
 
@@ -348,13 +367,20 @@ export async function GET() {
       } catch {}
     }
 
+    // Wave launch-113: sold_detected_at lookup (카드에 "N일 전 거래" 표시용).
+    const soldAtByPid = new Map<number, string>(soldPidRows.map((r) => [r.pid, r.sold_detected_at]));
+
     const items = selected.map((row, idx) => {
       const raw = rawByPid.get(row.pid);
       const meta = metaByPid.get(row.pid);
       return {
         slot: idx + 1,
-        maskedName: categoryFriendlyLabel(row.category), // Wave launch-111: 별표 → 카테고리 라벨.
-        // 진짜 사진 blur 처리 base64 (원본 URL X) — DevTools 우회 불가.
+        // Wave launch-113: sold 매물이라 실제 노출. fallback 으로 카테고리 라벨 유지.
+        name: raw?.name ?? categoryFriendlyLabel(row.category),
+        thumbnailUrl: raw?.thumbnail_url ?? null,
+        soldAt: soldAtByPid.get(row.pid) ?? null,
+        // (deprecated) launch-111 호환성 — 클라이언트 fallback.
+        maskedName: categoryFriendlyLabel(row.category),
         blurredImage: blurredImages[idx],
         category: row.category ?? "other",
         conditionClass: row.condition_class,

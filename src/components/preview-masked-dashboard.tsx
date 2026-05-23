@@ -14,8 +14,12 @@ import {
 
 type PreviewItem = {
   slot: number;
+  // Wave launch-113 (2026-05-24): sold 매물 실제 노출 — name/thumbnailUrl/soldAt.
+  name?: string;
+  thumbnailUrl?: string | null;
+  soldAt?: string | null;
+  // (legacy) launch-111 호환 fallback.
   maskedName: string;
-  // 2026-05-17: blurredImage = 서버 sharp 처리된 base64 (원본 URL 노출 X). DevTools 우회 불가.
   blurredImage: string | null;
   category: string;
   conditionClass: string | null;
@@ -54,10 +58,22 @@ function krwTenThousandBand(value: number): string {
 }
 
 // 2026-05-17: 시세 차이 표시 — min === max 면 단일 (구간 표시 어색 fix).
-// Wave launch-111b (2026-05-24): 만원대 band 로 변경 (정확값 노출 X).
+// Wave launch-113 (2026-05-24): 정확값 다시 (sold 매물이라 leak 없음).
 function marketGapLabel(min: number, max: number): string {
-  if (Math.round(min) === Math.round(max)) return `${krwTenThousandBand(min)} 낮음`;
-  return `${krwTenThousandBand(min)}~${krwTenThousandBand(max)} 낮음`;
+  if (Math.round(min) === Math.round(max)) return `${Math.round(min).toLocaleString("ko-KR")}원 낮음`;
+  return `${Math.round(min).toLocaleString("ko-KR")}~${Math.round(max).toLocaleString("ko-KR")}원 낮음`;
+}
+
+// Wave launch-113: "N일 전 거래" / "N시간 전 거래" 표시.
+function soldAgoLabel(soldAt: string | null | undefined): string {
+  if (!soldAt) return "최근 거래";
+  const ms = Date.now() - new Date(soldAt).getTime();
+  if (!Number.isFinite(ms) || ms < 0) return "최근 거래";
+  const hours = Math.floor(ms / (1000 * 60 * 60));
+  if (hours < 1) return "방금 거래";
+  if (hours < 24) return `${hours}시간 전 거래`;
+  const days = Math.floor(hours / 24);
+  return `${days}일 전 거래`;
 }
 
 // 시세 차이 % — 매입가 대비 차이 비율 (대시보드 통일 패턴).
@@ -160,8 +176,8 @@ export default function PreviewMaskedDashboard() {
 
       <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-4 px-4 py-3 sm:gap-6 sm:px-6 sm:py-8 lg:grid lg:grid-cols-[minmax(0,0.88fr)_minmax(420px,1fr)] lg:items-start lg:gap-8">
         <section className="pt-0 lg:sticky lg:top-24 lg:pt-8">
-          <div className="hidden items-center gap-2 rounded-full border border-[#d9d1c4] bg-white/70 px-3 py-1.5 text-[11px] font-black text-[#526055] shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-300 sm:inline-flex">
-            오늘 추천 풀 정리됨
+          <div className="hidden items-center gap-2 rounded-full border border-rose-300 bg-rose-50 px-3 py-1.5 text-[11px] font-black text-rose-700 shadow-sm dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300 sm:inline-flex">
+            최근 거래된 실제 매물
           </div>
           <h1 className="mt-1 break-keep text-[28px] font-black leading-[1.05] tracking-tight text-[var(--rd-ink)] dark:text-zinc-50 sm:mt-5 sm:text-[44px] lg:text-[52px]">
             볼 만한 중고만
@@ -170,7 +186,10 @@ export default function PreviewMaskedDashboard() {
           </h1>
           <p className="mt-2 max-w-[460px] break-keep text-[13px] font-semibold leading-5 text-[#5f6a60] dark:text-zinc-300 sm:mt-4 sm:text-[15px] sm:leading-7">
             같은 상태끼리 가격을 맞춰보고, 배송비와 수수료까지 계산한 추천 매물만 보여줘요.
-            사진과 이름은 로그인 후 공개됩니다.
+          </p>
+          {/* Wave launch-113 (2026-05-24): 정직 fine print — 우측 카드가 이미 거래된 매물임. */}
+          <p className="mt-1.5 max-w-[460px] break-keep text-[11px] font-bold leading-4 text-rose-600 dark:text-rose-400 sm:text-[12px]">
+            ※ 우측 카드는 <strong>이미 거래 완료된 매물</strong>입니다. 로그인하면 지금 진행 중인 매물을 볼 수 있어요.
           </p>
 
           <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:flex sm:flex-row sm:gap-2.5">
@@ -236,19 +255,28 @@ export default function PreviewMaskedDashboard() {
                   className="group block rounded-2xl border border-zinc-200 bg-white px-3.5 py-3 transition hover:border-blue-200 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-emerald-900"
                 >
                   <div className="flex items-center gap-3">
-                    {/* 2026-05-17 보안: 서버 sharp blur 된 base64 — 원본 URL 노출 X. DevTools 우회 불가.
-                        2026-05-19: 카테고리 힌트 제거 — 비로그인에서는 신발/가전/워치 같은 분류를 노출하지 않음. */}
+                    {/* Wave launch-113 (2026-05-24): sold 매물 실제 사진 노출 (이미 거래된 매물이라 leak 없음).
+                        thumbnailUrl 우선, 없으면 blurredImage fallback, 그것도 없으면 PackageIcon. */}
                     <div className="relative flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 sm:h-[104px] sm:w-[104px]">
-                      {item.blurredImage ? (
+                      {item.thumbnailUrl ? (
+                        <img
+                          src={item.thumbnailUrl}
+                          alt={item.name ?? "거래 완료 매물"}
+                          className="h-full w-full object-cover grayscale opacity-90"
+                        />
+                      ) : item.blurredImage ? (
                         <img
                           src={item.blurredImage}
-                          alt="마스킹된 추천 매물"
+                          alt={item.name ?? "거래 완료 매물"}
                           className="h-full w-full scale-105 object-cover blur-[7px]"
                         />
                       ) : (
                         <PackageIcon width={36} height={36} />
                       )}
-                      <div className="absolute inset-0 bg-white/12 dark:bg-black/10" />
+                      {/* 거래 완료 overlay 배지 */}
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-zinc-900/40">
+                        <span className="rounded-full bg-rose-600/95 px-2 py-0.5 text-[9px] font-black text-white shadow">거래 완료</span>
+                      </div>
                     </div>
 
                     <div className="min-w-0 flex-1">
@@ -256,22 +284,21 @@ export default function PreviewMaskedDashboard() {
                         <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-black text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                           {conditionLabel(item.conditionClass)}
                         </span>
-                        <span className="truncate text-[11px] font-bold text-zinc-400 dark:text-zinc-500">{previewStatusLabel(item)}</span>
+                        <span className="truncate text-[11px] font-bold text-rose-600 dark:text-rose-400">{soldAgoLabel(item.soldAt)}</span>
                       </div>
 
-                      {/* Wave launch-111 (2026-05-24): blur-[3px] 제거 — maskedName 이 이미 카테고리 라벨
-                          ("이어폰", "신발") 이라 blur 처리하면 모순. 라벨은 정직하게 노출. */}
-                      <div className="mt-2 truncate text-[15px] font-black tracking-tight text-zinc-950 dark:text-zinc-100 sm:text-[17px]">
-                        {item.maskedName}
+                      {/* Wave launch-113 (2026-05-24): 실제 매물명 그대로 노출 (sold 매물 = 카탈로그 leak X). */}
+                      <div className="mt-2 line-clamp-2 text-[14px] font-black tracking-tight text-zinc-950 dark:text-zinc-100 sm:text-[16px]">
+                        {item.name ?? item.maskedName}
                       </div>
 
-                      {/* Wave launch-111b (2026-05-24): 매입/시세 만원대 band 표시 (비로그인 카탈로그 leak 방지). */}
+                      {/* Wave launch-113 (2026-05-24): 매입/시세 정확값 (sold 매물). */}
                       <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
-                        <span>매입 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krwTenThousandBand(item.price)}</span></span>
+                        <span>매입 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krw(item.price)}</span></span>
                         {item.skuMedian && item.skuMedian > 0 ? (
                           <>
                             <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                            <span>시세 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krwTenThousandBand(item.skuMedian)}</span></span>
+                            <span>시세 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krw(item.skuMedian)}</span></span>
                           </>
                         ) : null}
                       </div>
