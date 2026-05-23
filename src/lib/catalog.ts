@@ -4990,6 +4990,85 @@ export const CATALOG: Sku[] = [
     msrpKrw: 568000,
     released: 2020,
   },
+  // Wave 754 (2026-05-24) Pareto: PS5 base 526건 unmatched (edition 명시 안 된 broad).
+  // disc/digital 명시 안 된 generic "PS5" 매물 catch-all. 시세는 disc/digital 평균치로.
+  {
+    id: "ps5-broad",
+    brand: "Sony",
+    category: "game_console",
+    laneKey: "ps5_broad",
+    modelName: "PlayStation 5 (broad — edition 미명시)",
+    aliases: ["PS5", "플스5", "플레이스테이션 5"],
+    mustContain: [
+      ["ps5", "플스5", "플스 5", "플레이스테이션 5", "playstation 5"],
+    ],
+    mustNotContain: [
+      // narrow lane으로 매칭되어야 할 명시
+      "디스크", "disc", "디지털", "digital",
+      "ps5 pro", "ps 5 pro", "플스5 프로", "ps5pro",
+      "슬림", "slim", "ps5 slim",
+      "psvr", "psvr2", "ps vr", "vr2",
+      "스위치", "switch", "닌텐도",
+      "ps4", "ps3", "ps2", "ps1",
+      "컨트롤러만", "듀얼센스만", "dualsense만", "충전기만", "케이스만", "스탠드만",
+      "기프트", "gift card", "디지털 카드", "월정액", "psn",
+      "구합니다", "삽니다", "매입", "wts", "wtb",
+      "부품용", "고장",
+    ],
+    msrpKrw: 630000,  // disc 698K + digital 568K 평균
+    released: 2020,
+  },
+  // Wave 754 — PS4 base broad (210 unmatched)
+  {
+    id: "ps4-broad",
+    brand: "Sony",
+    category: "game_console",
+    laneKey: "ps4_broad",
+    modelName: "PlayStation 4 (broad)",
+    aliases: ["PS4", "플스4", "플레이스테이션 4"],
+    mustContain: [
+      ["ps4", "플스4", "플스 4", "플레이스테이션 4", "playstation 4"],
+    ],
+    mustNotContain: [
+      "ps4 pro", "플스4 프로", "ps4pro", "프로",
+      "ps4 슬림", "ps4 slim", "플스4 슬림", "슬림",
+      "ps5", "ps3", "ps2", "ps1",
+      "psvr", "psvr2", "ps vr", "vr2",
+      "스위치", "switch", "닌텐도",
+      "컨트롤러만", "듀얼쇼크만", "dualshock만", "충전기만", "케이스만", "스탠드만",
+      "기프트", "gift card", "디지털 카드", "월정액", "psn",
+      "ssd만", "ssd 단품", "카드만",
+      "구합니다", "삽니다", "매입", "wts", "wtb",
+      "부품용", "고장",
+      "ps2", "ps22", // PS2 게임 일련번호 false match (Wave 753c galaxy-s22와 동일)
+    ],
+    msrpKrw: 398000,
+    released: 2013,
+  },
+  // Wave 754 — PS4 Pro narrow (37 unmatched)
+  {
+    id: "ps4-pro",
+    brand: "Sony",
+    category: "game_console",
+    laneKey: "ps4_pro",
+    modelName: "PlayStation 4 Pro",
+    aliases: ["PS4 Pro", "플스4 프로", "플스 4 프로"],
+    mustContain: [
+      ["ps4", "플스4", "플스 4", "플레이스테이션 4", "playstation 4"],
+      ["pro", "프로"],
+    ],
+    mustNotContain: [
+      "ps5", "ps3", "ps2", "ps1",
+      "슬림", "slim",
+      "psvr", "psvr2",
+      "스위치", "switch", "닌텐도",
+      "컨트롤러만", "듀얼쇼크만", "충전기만", "케이스만", "스탠드만",
+      "구합니다", "삽니다", "매입",
+      "부품용", "고장",
+    ],
+    msrpKrw: 498000,
+    released: 2016,
+  },
   // ─── Nintendo Switch OLED (2021-10) ─────────────────
   // Wave 117b (2026-05-15): Nintendo Switch 1세대 broad + Switch Lite catalog 추가.
   // 매물 측정: 14일 Switch v1 339건 / Switch Lite 19건. 다 sku_id null이었음.

@@ -310,6 +310,23 @@ export const LANE_READINESS: LaneReadinessMap = {
     label: "PlayStation 5 Slim (Disc/Digital)",
     note: "PS5 Slim 2023-11 narrow lane. Standard sibling은 ps5_disc_digital_standard. Pro/PSVR/Switch/액세서리는 catalog mustNotContain으로 분리.",
   },
+  // Wave 754 (2026-05-24) Pareto: PS5/PS4 broad + PS4 Pro 신설.
+  // 773 매물 unmatched 회수.
+  ps5_broad: {
+    status: "ready",
+    label: "PlayStation 5 (broad — edition 미명시)",
+    note: "Wave 754 Pareto: PS5 base 526 unmatched (disc/digital 명시 X). disc/digital narrow가 우선, broad는 fallback.",
+  },
+  ps4_broad: {
+    status: "ready",
+    label: "PlayStation 4 (broad)",
+    note: "Wave 754 Pareto: PS4 base 210 unmatched. Pro/Slim narrow가 우선.",
+  },
+  ps4_pro: {
+    status: "ready",
+    label: "PlayStation 4 Pro",
+    note: "Wave 754 Pareto: PS4 Pro 37 unmatched 매물. 1TB 표준.",
+  },
   iphone_13_pro_128gb_self: {
     status: "ready",
     label: "iPhone 13 Pro 128GB (자급제)",
