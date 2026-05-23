@@ -1272,7 +1272,8 @@ export default function ExploreClient({
   const [kakaoShareCooldownHours, setKakaoShareCooldownHours] = useState<number>(0);
   // Wave 738 (2026-05-24): 카톡 공유 → webhook → DB UPDATE → Supabase Realtime → 토스트.
   //   "크레딧 N개 지급됐어요!" 1.8초 표시 + app-nav "minyoi:credits-changed" event 발생.
-  const [kakaoShareToast, setKakaoShareToast] = useState<string | null>(null);
+  // Wave 746 (2026-05-24): 카톡 공유 토스트는 BalanceToast (layout.tsx) 가 universal 처리.
+  //   여기는 cooldown UI 갱신만 — minyoi:share-bonus-received event listen.
 
   // mount 시 cooldown 상태 fetch (인증 안 됐으면 fail → 0 으로 가정)
   useEffect(() => {
@@ -1293,46 +1294,14 @@ export default function ExploreClient({
     })();
   }, []);
 
-  // Wave 738 (2026-05-24): mvp_user_credits 본인 row UPDATE Realtime 구독.
-  //   카톡 공유 → 친구 클릭 → 카카오 webhook → DB UPDATE balance += 3 → Realtime push → 토스트.
-  //   storageScope = auth.user.id (me-dashboard-client 에서 전달). 익명은 skip.
+  // Wave 746 (2026-05-24): cooldown UI 갱신만 — BalanceToast 가 last_share_bonus_at 변경 감지 시
+  //   "minyoi:share-bonus-received" event 발생. 그것 listen 해서 button 비활성 갱신.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!storageScope || storageScope === "anonymous") return;
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-
-    const channel = supabase
-      .channel(`credits-realtime-${storageScope}`)
-      .on(
-        "postgres_changes" as never,
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "mvp_user_credits",
-          filter: `auth_user_id=eq.${storageScope}`,
-        },
-        (payload: { new?: { balance?: number }; old?: { balance?: number } }) => {
-          const newBalance = Number(payload.new?.balance ?? 0);
-          const oldBalance = Number(payload.old?.balance ?? 0);
-          if (newBalance > oldBalance) {
-            const gained = newBalance - oldBalance;
-            // 토스트 1.8초 표시
-            setKakaoShareToast(`크레딧 ${gained}개 지급됐어요! 🎁`);
-            window.setTimeout(() => setKakaoShareToast(null), 1800);
-            // app-nav (이미 listener 박힘) → 자동 refetch + nav UI 갱신
-            window.dispatchEvent(new CustomEvent("minyoi:credits-changed"));
-            // cooldown 24h 갱신 — 공유 보너스 받았으면 button 비활성
-            setKakaoShareCooldownHours(24);
-          }
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [storageScope]);
+    const handler = () => setKakaoShareCooldownHours(24);
+    window.addEventListener("minyoi:share-bonus-received", handler);
+    return () => window.removeEventListener("minyoi:share-bonus-received", handler);
+  }, []);
 
   // SDK init — script tag 로드 끝나면 window.Kakao 사용 가능. polling 으로 확인 (script async).
   useEffect(() => {
@@ -3022,16 +2991,7 @@ export default function ExploreClient({
             - 점 크기 키움 (h-3 → h-2.5/4 staggered = 더 dynamic)
             - "상품을 확인중입니다" + sub text 추가
             - dots 흰색 + drop-shadow 로 다크 배경에서도 또렷 */}
-      {/* Wave 738 (2026-05-24): 카톡 공유 보상 토스트 — Realtime UPDATE 감지 시 1.8초 표시. */}
-      {kakaoShareToast && (
-        <div
-          className="fixed bottom-6 left-1/2 z-[96] -translate-x-1/2 rounded-full bg-[#191f28] px-5 py-3 text-sm font-black text-white shadow-[0_8px_24px_rgba(0,0,0,0.25)] animate-[fade-in_200ms_ease-out] dark:bg-white dark:text-zinc-950"
-          role="status"
-          aria-live="polite"
-        >
-          {kakaoShareToast}
-        </div>
-      )}
+      {/* Wave 746 (2026-05-24): 카톡 공유 토스트 BalanceToast (layout) 로 이동 — universal 통합. */}
 
       {detailAccessLoadingPid != null ? (
         <div
