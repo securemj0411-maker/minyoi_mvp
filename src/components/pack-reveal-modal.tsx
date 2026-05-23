@@ -870,13 +870,15 @@ function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
   //   → 요약. 사용자 의사결정 순서 그대로.
   // Wave 500: "오늘 걸러낸 매물" 가치는 첫 방문 피드 온보딩으로 이동.
   // 상세 쉬운모드는 반복 피로를 줄이기 위해 바로 이 매물의 판단 근거부터 시작한다.
+  // Wave launch-69 (사용자 짚음 "둘러보려고 온 건데 매 상품마다 구매 전 체크 나오면 피로"):
+  //   purchaseCheckGuideStep 제거 — "원본 보러가기" 클릭 시 confirm 모달 에서 한 번만 표시.
+  //   funnel 상 사용자가 진짜 살 의도 있을 때만 보여주는 게 자연스러움.
   return [
     marketCompareGuideStep(card),
     channelGuideStep(card),
     sellerTrustGuideStep(card),
     velocityGuideStep(card),
     finalMoneyGuideStep(card),
-    purchaseCheckGuideStep(card),
     summaryGuideStep(card),
   ];
 }
@@ -5918,6 +5920,25 @@ function ModalActionFooter({
   );
 }
 
+// Wave launch-69 (사용자 짚음): 원본 보러가기 confirm modal 의 "다시 안내 안 받기" 옵션.
+//   체크하면 다음부터 confirm modal 자체 skip — 바로 원본 URL 이동.
+//   localStorage flag 영구. 사용자 가 명시적 dismiss 한 경우에만.
+const SKIP_SOURCE_CONFIRM_STORAGE_KEY = "minyoi:skip-source-confirm-v1";
+
+function readSkipSourceConfirm(): boolean {
+  if (typeof window === "undefined") return false;
+  try { return window.localStorage.getItem(SKIP_SOURCE_CONFIRM_STORAGE_KEY) === "1"; }
+  catch { return false; }
+}
+
+function writeSkipSourceConfirm(skip: boolean) {
+  if (typeof window === "undefined") return;
+  try {
+    if (skip) window.localStorage.setItem(SKIP_SOURCE_CONFIRM_STORAGE_KEY, "1");
+    else window.localStorage.removeItem(SKIP_SOURCE_CONFIRM_STORAGE_KEY);
+  } catch { /* ignore */ }
+}
+
 function FixedBunjangFooter({
   card,
   onLinkClicked,
@@ -5928,20 +5949,14 @@ function FixedBunjangFooter({
   onTrackEvent?: (pid: number, eventType: DetailEventType, metadata?: Record<string, unknown>) => void;
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [skipNextTime, setSkipNextTime] = useState(false);
   const safety = marketplaceSafetyForCard(card);
   const checks = beginnerPurchaseChecks(card).slice(0, 3);
-  const sellerReviewCount = card.savedDetail?.sellerReviewCount ?? 0;
   const marketplaceLabel = safety.marketplaceLabel;
-  const sellerLine = safety.isJoongna
-    ? `${safety.sellerTrust.metric}${safety.sellerTrust.metricLabel ? ` · ${safety.sellerTrust.metricLabel}` : ""}. 원본에서 판매자 정보와 거래후기를 다시 확인하세요.`
-    : sellerReviewCount >= SELLER_TRUST_MIN_REVIEW_COUNT
-      ? `후기 ${sellerReviewCount.toLocaleString("ko-KR")}건 판매자예요. 그래도 원본에서 사진과 구성품은 한 번 더 보세요.`
-      : sellerReviewCount > 0
-        ? `후기 ${sellerReviewCount.toLocaleString("ko-KR")}건이라 ${safety.paymentLabel}로만 진행하는 게 좋아요.`
-        : `후기 없는 판매자일 수 있어요. ${safety.paymentLabel} 가능 여부를 먼저 확인하세요.`;
   const handleConfirmClick = () => {
     onTrackEvent?.(card.pid, "original_clicked", { marketplace: marketplaceLabel });
     onLinkClicked(card.pid);
+    if (skipNextTime) writeSkipSourceConfirm(true);
     setConfirmOpen(false);
   };
   const SourceLogo = safety.isJoongna ? JoongnaLogo : BunjangLogo;
@@ -5962,6 +5977,13 @@ function FixedBunjangFooter({
       <button
         type="button"
         onClick={() => {
+          // Wave launch-69: 사용자가 "다시 안내 안 받기" 체크했으면 confirm modal skip — 바로 이동.
+          if (readSkipSourceConfirm()) {
+            onTrackEvent?.(card.pid, "original_clicked", { marketplace: marketplaceLabel, skipped_confirm: true });
+            onLinkClicked(card.pid);
+            if (typeof window !== "undefined") window.open(card.url, "_blank", "noopener,noreferrer");
+            return;
+          }
           onTrackEvent?.(card.pid, "original_confirm_opened", { marketplace: marketplaceLabel });
           setConfirmOpen(true);
         }}
@@ -6015,22 +6037,10 @@ function FixedBunjangFooter({
                 </h3>
               </div>
             </div>
+            {/* Wave launch-69 (사용자 짚음 "중복 안내 제거"):
+                시세 기준 + 판매자 확인 카드 제거 — 이미 쉬운모드에서 본 내용.
+                구매 전 멈춤 신호 만 유지 (쉬운모드 step 제거됐으니 여기 한 곳만). */}
             <div className="mt-4 space-y-2.5">
-              <div className="rounded-[18px] bg-white/86 px-3.5 py-3 ring-1 ring-zinc-200 dark:bg-zinc-950/55 dark:ring-zinc-800">
-                <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">상태별 시세 기준</div>
-                <p className="mt-1 break-keep text-[13px] font-bold leading-5 text-zinc-950 dark:text-zinc-100">
-                  {conditionBasisSentence(card)}
-                </p>
-                <div className="mt-1.5 text-[12px] font-black text-emerald-700 dark:text-emerald-200">
-                  {marketPricePositionLine(card)}
-                </div>
-              </div>
-              <div className="rounded-[18px] bg-white/86 px-3.5 py-3 ring-1 ring-zinc-200 dark:bg-zinc-950/55 dark:ring-zinc-800">
-                <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">판매자 확인</div>
-                <p className="mt-1 break-keep text-[13px] font-bold leading-5 text-zinc-950 dark:text-zinc-100">
-                  {sellerLine}
-                </p>
-              </div>
               {checks.length > 0 ? (
                 <div className="rounded-[18px] bg-white/86 px-3.5 py-3 ring-1 ring-zinc-200 dark:bg-zinc-950/55 dark:ring-zinc-800">
                   <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">구매 전 멈춤 신호</div>
@@ -6083,6 +6093,16 @@ function FixedBunjangFooter({
               >
                 더 살펴볼래요
               </button>
+              {/* Wave launch-69: 사용자 짚음 "매번 안내 나오면 부담 — 이제부터 안 보기". */}
+              <label className="mt-1 flex cursor-pointer items-center gap-2 px-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
+                <input
+                  type="checkbox"
+                  checked={skipNextTime}
+                  onChange={(e) => setSkipNextTime(e.target.checked)}
+                  className="h-4 w-4 accent-[#3182f6]"
+                />
+                <span>다음부터 이 안내 안 받기 (바로 원본으로 이동)</span>
+              </label>
             </div>
           </div>
         </div>
