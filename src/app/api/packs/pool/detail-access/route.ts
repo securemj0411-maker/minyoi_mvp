@@ -28,7 +28,7 @@ async function isReadyPoolPid(pid: number): Promise<boolean> {
 
 async function loadExactPoolItem(pid: number) {
   const headers = serviceHeaders();
-  const [poolRows, rawRows, metaRows] = await Promise.all([
+  const [poolRows, rawRows, metaRows, parsedRows] = await Promise.all([
     restFetch(
       `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&pid=eq.${pid}&status=eq.ready&limit=1`,
       { headers },
@@ -76,12 +76,38 @@ async function loadExactPoolItem(pid: number) {
       num_comment: number | null;
       raw_json: Record<string, unknown> | null;
     }>>),
+    // Wave 714n (2026-05-23): 신발/의류 5-tier grading + chips fetch — 매물 클릭 시 모달 path 의 진짜 source.
+    restFetch(
+      `${tableUrl("mvp_listing_parsed")}?select=pid,condition_tier,condition_cluster,condition_confidence,condition_flags,parsed_json&pid=eq.${pid}&limit=1`,
+      { headers },
+    ).then((res) => res.json() as Promise<Array<{
+      pid: number;
+      condition_tier: string | null;
+      condition_cluster: string | null;
+      condition_confidence: number | null;
+      condition_flags: Record<string, unknown> | null;
+      parsed_json: Record<string, unknown> | null;
+    }>>),
   ]);
 
   const pool = poolRows[0];
   const raw = rawRows[0];
   const meta = metaRows[0];
+  const parsed = parsedRows[0]; // Wave 714n: grading + chips
   if (!pool || !raw) return null;
+  // Wave 714n: tier + chips 추출 — column 직접 + parsed_json.condition_grade fallback.
+  const grade = (parsed?.parsed_json?.condition_grade as {
+    tier?: string;
+    cluster?: string;
+    confidence?: number;
+    flags?: Record<string, unknown>;
+    chips?: string[];
+  } | null) ?? null;
+  const conditionTier = parsed?.condition_tier ?? grade?.tier ?? null;
+  const conditionCluster = parsed?.condition_cluster ?? grade?.cluster ?? null;
+  const conditionConfidence = parsed?.condition_confidence ?? grade?.confidence ?? null;
+  const conditionFlags = parsed?.condition_flags ?? grade?.flags ?? null;
+  const conditionChips = grade?.chips ?? null;
   const marketplaceSource = normalizeMarketplaceSource(meta?.source ?? meta?.seller_source);
   const facts = marketplaceFactsFromRawJson({
     marketplaceSource,
@@ -134,6 +160,14 @@ async function loadExactPoolItem(pid: number) {
     // Wave launch-38: detail HTML 에서 추출한 위치 patch 시 기존 raw_json 보존용.
     rawJson: meta?.raw_json ?? null,
     tradeLocation: null as string | null,
+    // Wave 714n (2026-05-23): 신발/의류 5-tier grading + chips — 매물 클릭 시 모달 path 의 진짜 source.
+    //   loadExactPoolItem 가 listing_parsed query 안 했었음 → setSelectedCard 의 input PoolItem 에
+    //   conditionTier 자체 없어서 모달 디버그 tier=null 표시. 이제 fetch + 박음.
+    conditionTier,
+    conditionCluster,
+    conditionConfidence,
+    conditionFlags,
+    conditionChips,
   };
 }
 
