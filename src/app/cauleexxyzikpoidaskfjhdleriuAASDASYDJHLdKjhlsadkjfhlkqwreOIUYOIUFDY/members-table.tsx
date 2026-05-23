@@ -392,10 +392,11 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
         ) : null}
       </div>
 
-      <div className="mt-2 overflow-x-auto rounded-xl border border-gray-200 dark:border-zinc-800">
-        <table className="w-full min-w-[1500px] text-sm">
-          <thead className="bg-gray-50 dark:bg-zinc-900">
-            <tr className="border-b border-gray-200 text-left text-xs font-bold text-gray-600 dark:border-zinc-800 dark:text-gray-400">
+      {/* Wave launch-101: bloomberg 터미널 톤 — bg zinc-950 + mono + 작은 글자 + amber accent. */}
+      <div className="mt-2 overflow-x-auto rounded-sm border border-zinc-800 bg-zinc-950">
+        <table className="w-full min-w-[1500px] font-mono text-[11px]">
+          <thead className="bg-zinc-900/80">
+            <tr className="border-b border-zinc-800 text-left text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">
               {/* Wave launch-100: 헤더 전체 선택 체크박스. */}
               <th className="w-9 px-3 py-2">
                 <input
@@ -429,7 +430,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
               const blockPending = blockPendingIds.has(row.authUserId);
               const isBlocked = Boolean(row.blockedAt);
               return (
-                <tr key={row.authUserId} className={`border-b border-gray-100 hover:bg-amber-50/40 dark:border-zinc-900 dark:hover:bg-amber-950/20 ${selectedIds.has(row.authUserId) ? "bg-rose-50/60 dark:bg-rose-950/15" : ""}`}>
+                <tr key={row.authUserId} className={`border-b border-zinc-900 transition hover:bg-zinc-900/40 ${selectedIds.has(row.authUserId) ? "bg-rose-950/25" : ""}`}>
                   {/* Wave launch-100: row 체크박스 */}
                   <td className="px-3 py-2">
                     <input

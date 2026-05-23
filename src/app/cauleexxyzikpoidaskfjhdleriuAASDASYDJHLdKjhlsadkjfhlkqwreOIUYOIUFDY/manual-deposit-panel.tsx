@@ -128,16 +128,17 @@ export default function ManualDepositPanel() {
   const pending = rows.filter((r) => r.status === "pending");
   const recent = rows.filter((r) => r.status !== "pending").slice(0, 10);
 
+  // Wave launch-101: bloomberg 터미널 톤.
   return (
-    <section className="mt-6">
+    <section className="mt-6 font-mono">
       <div className="mb-2 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-black text-zinc-900 dark:text-zinc-50">💰 충전 신청 (최근 24h)</h2>
+        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-400">▌DEPOSIT QUEUE (24H)</h2>
         <button
           type="button"
           onClick={() => void refresh()}
-          className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-bold text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
         >
-          새로고침
+          REFRESH
         </button>
       </div>
 
@@ -152,10 +153,10 @@ export default function ManualDepositPanel() {
         </div>
       ) : null}
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-zinc-800">
-        <table className="w-full min-w-[900px] text-sm">
-          <thead className="bg-gray-50 dark:bg-zinc-900">
-            <tr className="border-b border-gray-200 text-left text-xs font-bold text-gray-600 dark:border-zinc-800 dark:text-gray-400">
+      <div className="overflow-x-auto rounded-sm border border-zinc-800 bg-zinc-950">
+        <table className="w-full min-w-[900px] text-[11px]">
+          <thead className="bg-zinc-900/80">
+            <tr className="border-b border-zinc-800 text-left text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">
               <th className="px-3 py-2">ID</th>
               <th className="px-3 py-2">입금자명</th>
               <th className="px-3 py-2">패키지</th>
@@ -178,7 +179,7 @@ export default function ManualDepositPanel() {
                   const inProgress = pendingIds.has(r.id);
                   const badge = STATUS_BADGE[r.status] ?? STATUS_BADGE.pending;
                   return (
-                    <tr key={r.id} className="border-b border-amber-100 bg-amber-50/50 dark:border-amber-950/40 dark:bg-amber-950/15">
+                    <tr key={r.id} className="border-b border-amber-900/40 bg-amber-950/15">
                       <td className="px-3 py-2 font-mono text-xs">{r.id}</td>
                       <td className="px-3 py-2 font-semibold">{r.depositor_name}</td>
                       <td className="px-3 py-2 text-xs">{r.amount.toLocaleString("ko-KR")} 크레딧</td>
@@ -212,7 +213,7 @@ export default function ManualDepositPanel() {
                 {recent.map((r) => {
                   const badge = STATUS_BADGE[r.status] ?? STATUS_BADGE.pending;
                   return (
-                    <tr key={r.id} className="border-b border-gray-100 dark:border-zinc-900">
+                    <tr key={r.id} className="border-b border-zinc-900">
                       <td className="px-3 py-2 font-mono text-xs">{r.id}</td>
                       <td className="px-3 py-2 font-semibold text-gray-600 dark:text-gray-400">{r.depositor_name}</td>
                       <td className="px-3 py-2 text-xs">{r.amount.toLocaleString("ko-KR")} 크레딧</td>

@@ -175,6 +175,30 @@ function CloseIcon() {
   );
 }
 
+// Wave launch-101 (사용자 정정 — 운영자 페이지 nav 거추장): cau* admin path 면 minimal nav.
+//   메인 페이지 가는 button 1개 + 흐릿 ⚙ admin badge만. 다른 user-facing nav 다 hide.
+function AdminTerminalNav() {
+  return (
+    <nav className="fixed left-0 right-0 top-0 z-40 h-10 border-b border-zinc-700/60 bg-zinc-950 px-4 text-xs font-mono">
+      <div className="mx-auto flex h-full max-w-[1600px] items-center justify-between">
+        <div className="flex items-center gap-3 text-amber-400">
+          <span className="text-[11px] font-black uppercase tracking-[0.18em]">▌MINYOI TERM</span>
+          <span className="hidden text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 sm:inline">OPERATOR CONSOLE</span>
+        </div>
+        <a
+          href="/"
+          className="inline-flex h-7 items-center gap-1 rounded border border-zinc-700 bg-zinc-900 px-2.5 text-[11px] font-bold text-zinc-300 transition hover:border-amber-500/60 hover:bg-zinc-800 hover:text-amber-300"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M3 11l9-8 9 8M5 10v10h14V10" />
+          </svg>
+          MAIN
+        </a>
+      </div>
+    </nav>
+  );
+}
+
 export default function AppNav() {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
@@ -339,6 +363,12 @@ export default function AppNav() {
         { href: "/how-it-works", label: "서비스 안내", caption: "득템잡이 사용법" },
         { href: "/plans", label: "크레딧 충전", caption: "가격 보기" },
       ];
+
+  // Wave launch-101 (사용자 정정 — 운영자 페이지 nav 거추장): cau* admin path 면 minimal terminal nav.
+  //   모든 hook 호출 후라서 React rules of hooks 안전. 메인 가는 button 1개만 노출.
+  if (pathname && pathname.startsWith("/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY")) {
+    return <AdminTerminalNav />;
+  }
 
   return (
     <>

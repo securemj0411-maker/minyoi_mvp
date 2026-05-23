@@ -178,59 +178,55 @@ export default async function MembersPage() {
   const totalBeta = rows.filter((r) => r.isBetaTester).length;
   const totalActive7d = rows.filter((r) => r.lastSignInAt && Date.now() - new Date(r.lastSignInAt).getTime() < 7 * 24 * 3600 * 1000).length;
 
+  // Wave launch-101 (사용자 정정 — "블룸버그 터미널처럼 투박하게 멋지게"):
+  //   bg zinc-950 + mono font + amber/emerald/rose data-only accent.
+  //   AdminTerminalNav (h-10) 자리 비우려고 pt-12.
+  const nowKst = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul", year: "2-digit", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+  }).format(new Date());
   return (
-    <main className="mx-auto max-w-[1500px] p-4 sm:p-6">
-      {/* Wave 188: 운영자 페이지 nav — 회원 / 손해 신고 / 신고 통계 (3 페이지 통일). */}
-      <nav className="mb-4 flex flex-wrap items-center gap-2 text-xs">
-        <span className="rounded-full bg-amber-100 px-2.5 py-1 font-black text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
-          ⚙ 회원 목록 (현재)
-        </span>
-        <a
-          href={OPS_ADMIN_LOSS_REPORTS_PATH}
-          className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 font-black text-amber-900 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
-        >
-          🔍 사용자 신고 검수
-        </a>
-        <a
-          href={OPS_ADMIN_FEEDBACK_STATS_PATH}
-          className="rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 font-black text-emerald-900 hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-100"
-        >
-          📊 신고 통계
-        </a>
-        <a
-          href={OPS_ADMIN_DETAIL_EVENTS_PATH}
-          className="rounded-full border border-sky-300 bg-sky-50 px-2.5 py-1 font-black text-sky-900 hover:bg-sky-100 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-100"
-        >
-          👀 상세 행동
-        </a>
-      </nav>
+    <main className="min-h-screen bg-zinc-950 pb-10 pt-12 font-mono text-zinc-200">
+      <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6">
+        {/* 헤더 — 터미널 stat bar */}
+        <header className="border-b border-zinc-800 pb-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-400">▌MEMBERS / OPERATORS</div>
+              <div className="mt-1 flex items-baseline gap-3">
+                <span className="text-3xl font-black tabular-nums text-zinc-50">{rows.length}</span>
+                <span className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">accounts</span>
+              </div>
+            </div>
+            <div className="text-right text-[10px] uppercase tracking-[0.16em] text-zinc-500">
+              <div>SESSION {nowKst} KST</div>
+              <div className="mt-0.5 text-zinc-600">v1.0 · status <span className="text-emerald-400">●live</span></div>
+            </div>
+          </div>
 
-      <div className="flex flex-col gap-1 border-b border-amber-200 pb-3 dark:border-amber-900/60">
-        <div className="text-xs font-bold text-amber-700 dark:text-amber-300">⚙ 운영자 — 회원 목록</div>
-        <h1 className="text-xl font-black text-gray-900 dark:text-gray-100 sm:text-2xl">전체 {rows.length}명</h1>
-        <div className="flex flex-wrap gap-3 text-xs text-gray-600 dark:text-gray-400">
-          <span>Pro: <b className="text-amber-700 dark:text-amber-400">{totalPro}</b></span>
-          <span>Plus: <b className="text-emerald-700 dark:text-emerald-400">{totalPlus}</b></span>
-          <span>Starter: <b className="text-sky-700 dark:text-sky-400">{totalStarter}</b></span>
-          <span>베타 체험단: <b className="text-purple-700 dark:text-purple-400">{totalBeta}</b></span>
-          <span>최근 7일 로그인: <b className="text-emerald-700 dark:text-emerald-400">{totalActive7d}</b></span>
-        </div>
+          {/* sub nav (페이지 ↔ 페이지 jump) */}
+          <nav className="mt-3 flex flex-wrap items-center gap-1.5 text-[10px] uppercase tracking-[0.16em]">
+            <span className="rounded-sm border border-amber-500/40 bg-amber-500/10 px-2 py-1 font-black text-amber-300">▶ MEMBERS</span>
+            <a href={OPS_ADMIN_LOSS_REPORTS_PATH} className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 font-bold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200">LOSS-REPORTS</a>
+            <a href={OPS_ADMIN_FEEDBACK_STATS_PATH} className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 font-bold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200">FEEDBACK-STATS</a>
+            <a href={OPS_ADMIN_DETAIL_EVENTS_PATH} className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 font-bold text-zinc-400 hover:border-zinc-700 hover:text-zinc-200">DETAIL-EVENTS</a>
+          </nav>
+        </header>
+
+        {/* KPI ticker — 한 줄 dense */}
+        <section className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-zinc-800 bg-zinc-800 sm:grid-cols-4 md:grid-cols-7">
+          <TerminalKpi label="REV TODAY" value={`₩${revenueToday.toLocaleString("ko-KR")}`} accent="amber" />
+          <TerminalKpi label="REV MONTH" value={`₩${revenueMonth.toLocaleString("ko-KR")}`} accent="amber" />
+          <TerminalKpi label="ACTIVE SUB" value={String(activeSubs)} accent="emerald" sub={`P${totalPro}/PL${totalPlus}/ST${totalStarter}`} />
+          <TerminalKpi label="NEW SIGNUP" value={String(newSignupsToday)} accent="rose" />
+          <TerminalKpi label="PACK OPEN" value={String(packOpensToday)} accent="cyan" />
+          <TerminalKpi label="REVEAL" value={String(revealsToday)} accent="cyan" />
+          <TerminalKpi label="CLICK / CTR" value={String(clicksToday)} accent="cyan" sub={revealsToday > 0 ? `${Math.round((clicksToday / revealsToday) * 100)}%` : "—"} />
+        </section>
+
+        <ManualDepositPanel />
+
+        <MembersTable initialRows={rows} />
       </div>
-
-      <section className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4">
-        <KpiCard label="오늘 매출" value={`₩${revenueToday.toLocaleString("ko-KR")}`} accent="amber" />
-        <KpiCard label="이번달 매출" value={`₩${revenueMonth.toLocaleString("ko-KR")}`} accent="amber" />
-        <KpiCard label="활성 구독자" value={activeSubs} accent="emerald" sub={`Pro ${totalPro} · Plus ${totalPlus} · Starter ${totalStarter}`} />
-        <KpiCard label="오늘 신규 가입" value={newSignupsToday} accent="rose" />
-        <KpiCard label="오늘 팩 열기" value={packOpensToday} accent="sky" />
-        <KpiCard label="오늘 공개" value={revealsToday} accent="sky" />
-        <KpiCard label="오늘 번개장터 클릭" value={clicksToday} accent="sky" sub={revealsToday > 0 ? `CTR ${Math.round((clicksToday / revealsToday) * 100)}%` : undefined} />
-        <KpiCard label="베타 체험단" value={totalBeta} accent="purple" sub={`최근 7일 로그인 ${totalActive7d}`} />
-      </section>
-
-      <ManualDepositPanel />
-
-      <MembersTable initialRows={rows} />
     </main>
   );
 }
@@ -248,6 +244,23 @@ function KpiCard({ label, value, accent, sub }: { label: string; value: string |
       <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{label}</div>
       <div className="mt-1 text-lg font-black text-gray-900 dark:text-gray-100 sm:text-xl">{value}</div>
       {sub ? <div className="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">{sub}</div> : null}
+    </div>
+  );
+}
+
+// Wave launch-101: 블룸버그 터미널 톤 KPI cell — dense, mono, accent color 만.
+function TerminalKpi({ label, value, accent, sub }: { label: string; value: string; accent: "amber" | "emerald" | "rose" | "cyan"; sub?: string }) {
+  const accentColor: Record<typeof accent, string> = {
+    amber: "text-amber-400",
+    emerald: "text-emerald-400",
+    rose: "text-rose-400",
+    cyan: "text-cyan-400",
+  };
+  return (
+    <div className="bg-zinc-950 px-3 py-3">
+      <div className="text-[9px] font-bold uppercase tracking-[0.16em] text-zinc-500">{label}</div>
+      <div className={`mt-1 truncate text-[18px] font-black tabular-nums leading-none ${accentColor[accent]}`}>{value}</div>
+      {sub ? <div className="mt-1 truncate text-[9px] uppercase tracking-wide text-zinc-600">{sub}</div> : null}
     </div>
   );
 }
