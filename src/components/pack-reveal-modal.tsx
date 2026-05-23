@@ -5428,31 +5428,21 @@ function RevealCardItem({
                 <div className="hidden">
                   <LastVerifiedAtBadge card={card} />
                 </div>
-                {/* Wave 714i (2026-05-23 사용자 요청): 상세보기 맨 위 — 매물명 위에 unconditional 등급 chip placeholder.
-                    Wave 714j (2026-05-23): pid + tier 디버그 텍스트 추가 — transform path 진단용. */}
-                <div className="mb-2 flex flex-wrap items-center gap-1.5 rounded-md bg-amber-50/80 px-2 py-1.5 ring-1 ring-amber-200/60 dark:bg-amber-900/20 dark:ring-amber-700/40">
-                  <span className="text-[10px] font-black uppercase tracking-wide text-zinc-600 dark:text-zinc-300">
-                    상태:
-                  </span>
-                  {card.conditionTier ? (
-                    <ConditionTierChip
-                      tier={card.conditionTier}
-                      showHelp
-                      category={card.marketBasis?.comparableKey?.startsWith("clothing|") ? "clothing" : "shoe"}
-                    />
-                  ) : (
-                    <span className="text-[11px] italic text-zinc-500 dark:text-zinc-400">
-                      분석중 (24h 안에 표시)
-                    </span>
-                  )}
-                  {card.conditionChips && card.conditionChips.length > 0 && (
-                    <ConditionChipsList chips={card.conditionChips} max={6} />
-                  )}
-                  {/* Wave 714j 디버그: pid + 실제 tier/cluster/chips 값. 사용자가 직접 보고 어디서 떨어지는지 확인. */}
-                  <span className="ml-auto font-mono text-[9px] text-zinc-400 dark:text-zinc-500">
-                    pid={card.pid} · tier={String(card.conditionTier ?? "null")} · cluster={String(card.conditionCluster ?? "null")} · chips={card.conditionChips?.length ?? 0}
-                  </span>
-                </div>
+                {/* Wave 714s (2026-05-23): 상세보기 매물명 위 등급 chip + chips. 데이터 없으면 hide. */}
+                {(card.conditionTier || (card.conditionChips && card.conditionChips.length > 0)) && (
+                  <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                    {card.conditionTier && (
+                      <ConditionTierChip
+                        tier={card.conditionTier}
+                        showHelp
+                        category={card.marketBasis?.comparableKey?.startsWith("clothing|") ? "clothing" : "shoe"}
+                      />
+                    )}
+                    {card.conditionChips && card.conditionChips.length > 0 && (
+                      <ConditionChipsList chips={card.conditionChips} max={6} />
+                    )}
+                  </div>
+                )}
                 {/* Wave 359+361: 득템 점수 — 제목과 같은 행 우측 작게 (당근 36.8°C 톤). */}
                 <div className="flex items-start gap-3">
                   <div className="min-w-0 flex-1 line-clamp-2 pr-[92px] text-[20px] font-black leading-[1.25] tracking-[-0.01em] text-[#111915] dark:text-zinc-50">
