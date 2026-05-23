@@ -4655,14 +4655,16 @@ async function loadPoolWarmRows(limit: number): Promise<PoolWarmRow[]> {
   return (await res.json()) as PoolWarmRow[];
 }
 
-async function loadRawPriceNames(pids: number[]): Promise<Map<number, { price: number; name: string }>> {
+async function loadRawPriceNames(pids: number[]): Promise<Map<number, { price: number; name: string; source: string | null; url: string | null }>> {
   if (pids.length === 0) return new Map();
+  // Wave launch-74 (사용자 짚음 "pool warmer 도 joongna 처리해야"):
+  //   source/url 도 같이 fetch — pool-warmer 가 joongna 분기 + fetchJoongnaDetail 사용 가능.
   const res = await restFetch(
-    `${tableUrl("mvp_raw_listings")}?select=pid,price,name&pid=in.(${pids.join(",")})`,
+    `${tableUrl("mvp_raw_listings")}?select=pid,price,name,source,url&pid=in.(${pids.join(",")})`,
     { headers: serviceHeaders() },
   );
-  const rows = (await res.json()) as { pid: number; price: number; name: string }[];
-  return new Map(rows.map((row) => [Number(row.pid), { price: Number(row.price), name: row.name }]));
+  const rows = (await res.json()) as { pid: number; price: number; name: string; source: string | null; url: string | null }[];
+  return new Map(rows.map((row) => [Number(row.pid), { price: Number(row.price), name: row.name, source: row.source ?? null, url: row.url ?? null }]));
 }
 
 async function markPoolVerified(pid: number) {
@@ -5017,11 +5019,39 @@ export async function poolWarmerStage(deadlineMs: number): Promise<StageStats> {
       stats.timedOut = true;
       return stats;
     }
+    const raw = rawByPid.get(row.pid);
+    stats.claimed += 1;
+
+    // Wave launch-74 (사용자 짚음 "pool-warmer 가 joongna 도 실시간 검증해야"):
+    //   joongna 매물 = bunjang fetchDetail 호출 시 404 (pid 7T+ 다른 API).
+    //   source 별 분기: bunjang = 기존 facts 갱신 + sold check, joongna = isSoldOutPage check + sold 시 invalidate.
+    if (raw?.source === "joongna" && raw.url) {
+      const j = await fetchJoongnaDetail(raw.url, 10_000);
+      if (config.detailDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, config.detailDelayMs));
+      if (!j.ok) {
+        stats.detailFailed += 1;
+        continue;
+      }
+      const soldByPage = j.isSoldOutPage === true;
+      const soldByStatus = j.productStatus != null && j.productStatus !== 0;
+      const soldByText = soldOutTextHits(j.title, j.description).length > 0;
+      if (soldByPage || soldByStatus || soldByText) {
+        const reason = soldByPage ? "pool_warmer_joongna_sold_page"
+          : soldByStatus ? `pool_warmer_joongna_status_${j.productStatus}`
+          : "pool_warmer_joongna_text_traded";
+        await invalidatePoolEntries([{ pid: row.pid, reason }]);
+        stats.poolSkipped += 1;
+        continue;
+      }
+      await markPoolVerified(row.pid);
+      stats.enriched += 1;
+      continue;
+    }
+
+    // bunjang 기존 흐름
     const detail = await fetchDetail(String(row.pid));
     if (config.detailDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, config.detailDelayMs));
-    const raw = rawByPid.get(row.pid);
     const signals = detectSoldOut(detail, raw?.price, { title: raw?.name });
-    stats.claimed += 1;
     if (!detail) {
       stats.detailFailed += 1;
       continue;
