@@ -2425,6 +2425,77 @@ function isPlaceholderPrice(price: number | null | undefined): boolean {
   if (p === 1004 || p === 1234 || p === 4321 || p === 12345) return true; // 의도적 sequential
   return false;
 }
+
+// Wave 719 (2026-05-23) — Task #25: 카테고리별 MAX_REASONABLE_PRICE 정의.
+// 1억 미만이지만 정상 시세 5-10배 outlier 차단 (시세 median 부풀림 방지).
+// 발견 sample: macbook-pro 22M, macbook-air 17.5M, iphone-15-pro-max 16M, iphone-16-pro-max 13.5M, airpods-max 7M.
+// prefix 매칭 — 모든 SKU 일일이 정의 X. 합리적 정상 cap (정가 1.5-2배).
+const SKU_PREFIX_MAX_KRW: Array<[RegExp, number]> = [
+  // 폴더블 폰 (더 비쌈)
+  [/^galaxy-z-fold/i, 5_000_000],
+  [/^galaxy-z-flip/i, 3_500_000],
+  // 일반 스마트폰
+  [/^iphone-16-pro-max/i, 4_000_000],
+  [/^iphone-17/i, 4_000_000],
+  [/^iphone-16/i, 3_000_000],
+  [/^iphone-15/i, 2_500_000],
+  [/^iphone-14/i, 2_000_000],
+  [/^iphone-13/i, 1_800_000],
+  [/^iphone-11/i, 1_000_000],
+  [/^iphone-/i, 2_500_000],
+  [/^galaxy-s2[5-9]/i, 3_500_000],
+  [/^galaxy-s2[0-4]/i, 2_500_000],
+  [/^galaxy-note/i, 2_000_000],
+  [/^galaxy-/i, 3_000_000],
+  // 태블릿
+  [/^ipad-pro/i, 5_000_000],
+  [/^ipad-air/i, 3_000_000],
+  [/^ipad-mini/i, 2_500_000],
+  [/^ipad-/i, 2_500_000],
+  [/^galaxy-tab-s10-ultra/i, 3_000_000],
+  [/^galaxy-tab/i, 2_500_000],
+  // 노트북
+  [/^macbook-pro/i, 12_000_000], // M3 Max 800만 + 50%
+  [/^macbook-air/i, 4_000_000],
+  [/^macbook/i, 8_000_000],
+  // 스마트워치 / 이어폰
+  [/^applewatch-ultra/i, 2_500_000],
+  [/^applewatch/i, 1_200_000],
+  [/^airpods-max/i, 1_200_000],
+  [/^airpods-pro/i, 600_000],
+  [/^airpods/i, 400_000],
+  // 스피커
+  [/^speaker-/i, 2_000_000],
+  // 드론
+  [/^drone-/i, 5_000_000],
+  // 자전거 (로드 카본)
+  [/^bike-/i, 8_000_000],
+  // 명품 가방 — Hermès legit 5000-8000만 (sentinel 1억+ 만 차단)
+  [/^bag-hermes/i, 80_000_000],
+  [/^bag-chanel/i, 30_000_000],
+  [/^bag-lv/i, 20_000_000],
+  [/^bag-gucci/i, 15_000_000],
+  [/^bag-/i, 10_000_000],
+  // 의류 / 신발 / 시계 — 일반적 cap
+  [/^clothing-polo-purple-label/i, 5_000_000],
+  [/^clothing-polo-rrl-jacket-leather/i, 5_000_000],
+  [/^clothing-thombrowne-suit/i, 5_000_000],
+  [/^clothing-moncler-grenoble/i, 5_000_000],
+  [/^clothing-/i, 3_000_000],
+  [/^shoe-/i, 3_000_000],
+];
+
+function isPriceOutlierForSku(price: number | null | undefined, skuId: string | null | undefined): boolean {
+  if (!Number.isFinite(price ?? NaN)) return false;
+  if (!skuId) return false;
+  const p = Number(price);
+  for (const [re, cap] of SKU_PREFIX_MAX_KRW) {
+    if (re.test(skuId)) {
+      return p > cap;
+    }
+  }
+  return false;
+}
 // Supabase PostgREST max-rows=1000 강제 cap → 한 GET 당 1000 row max.
 // 28h lookback 안 매물 6.7K+ (측정) — 1000 cap 으로 5.7K 누락 위험.
 // → pagination 으로 chunk 페치 후 합쳐서 group/upsert. lifecycle 의 chunk wave 패턴.
@@ -3573,6 +3644,8 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     // 2026-05-16: placeholder price 제외 (999999999, 111111111 등 "교환원함"/"분실"/"판매완료" 류).
     // Wave 218 (2026-05-19): isPlaceholderPrice 헬퍼 — 같은 자리수 반복 패턴 추가.
     if (isPlaceholderPrice(row.price)) continue;
+    // Wave 719 (2026-05-23): 카테고리별 outlier 차단 — 정상 시세 5-10배 매물은 시세 산정 제외.
+    if (isPriceOutlierForSku(row.price, row.sku_id)) continue;
 
     const conditionNotes = (parsed.parsed_json?.condition_notes as string[] | undefined) ?? [];
     // Wave 130: flawed class (손상/문제 매물) 시세 산정 차단 — 현재 정책 유지.
@@ -5666,6 +5739,9 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     // 2026-05-16: placeholder price (999999999, 111111111 등) 매물의 가격을 시세 fallback sample에서 제외.
     // Wave 218 (2026-05-19): isPlaceholderPrice 헬퍼 사용 (같은 자리수 반복 5+ 패턴 포함).
     if (isPlaceholderPrice(row.price)) continue;
+    // Wave 719 (2026-05-23): score-stage 동일 outlier 필터 (시세 fallback sample 부풀림 차단).
+    const _scoreSkuForOutlier = effectiveCatalogSkuForScorableRow(row);
+    if (isPriceOutlierForSku(row.price, _scoreSkuForOutlier?.id ?? null)) continue;
     const effectiveSku = effectiveCatalogSkuForScorableRow(row);
     const skuId = effectiveSku?.id ?? "";
     const parsedRow = parsedByPid.get(row.pid);
@@ -5828,7 +5904,8 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     const skuMedian = Math.max(0, Number(skuMedianCandidate ?? 0));
     // 2026-05-16: placeholder price 매물 (999999999, 111111111 등)은 priceGap 0 강제 → score 0 → 풀 진입 차단.
     // Wave 218 (2026-05-19): isPlaceholderPrice 헬퍼 사용 (같은 자리수 반복 5+ 패턴 포함).
-    const placeholder = isPlaceholderPrice(row.price);
+    // Wave 719 (2026-05-23): 카테고리별 outlier (iphone 1억, macbook 2200만 등)도 priceGap=0 → 풀 차단.
+    const placeholder = isPlaceholderPrice(row.price) || isPriceOutlierForSku(row.price, effectiveSku?.id ?? null);
     const priceGap = placeholder || skuMedian <= 0 ? 0 : Math.max(0, Math.min(1, (skuMedian - row.price) / skuMedian));
     const velocity = percentileRank(favsByMarket.get(marketKey) ?? [], row.num_faved);
     const safetyBase = row.shop_review_rating == null ? 0.5 : Math.max(0, Math.min(1, Number(row.shop_review_rating) / 5));
