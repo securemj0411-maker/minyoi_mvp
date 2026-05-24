@@ -222,7 +222,29 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v56";
+export const PARSER_VERSION = "option-parser-v57";
+
+// Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
+//   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
+//   전자기기/시계/모니터/스피커/카메라: 7-tier ConditionClass 그대로 (배터리/저장공간/세대/통신사 등 옵션 축 많아 5-tier 무의미).
+//   게임/골프: 옵션 축 적음 (sub-model + condition + box) → 5-tier 직관적. 의류/신발 UX 통일.
+//   토대: extractConditionClass() 결과를 단순 매핑 — parsing 핵심 로직 변경 없음 (post-process only).
+//   PARSER_VERSION v57 bump → drift gate trigger → 게임/골프 매물만 reparse 큐 (다른 카테고리 영향 0, parser_version unchanged for them).
+const GAME_GOLF_TIER_CATEGORIES = new Set<NonNullable<Sku["category"]>>([
+  "game_console",
+  "sport_golf",
+]);
+function conditionClassToFiveTier(
+  conditionClass: ConditionClass,
+): "s_grade" | "a_grade" | "b_grade" | "c_grade" | "reject" {
+  if (conditionClass === "flawed") return "reject";
+  if (conditionClass === "unopened") return "s_grade";
+  if (conditionClass === "mint") return "s_grade"; // mint == unopened tier (둘 다 박스 미개봉 + 사용 0).
+  if (conditionClass === "clean") return "a_grade"; // S급/풀세트/applecare premium.
+  if (conditionClass === "worn") return "c_grade";
+  if (conditionClass === "low_batt") return "c_grade"; // 배터리 저하 = 사용감 동급. game/golf 는 사실상 미사용.
+  return "b_grade"; // normal → default 중간 (등급 미상 안전).
+}
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -1279,11 +1301,15 @@ function conditionFromText(
     const noGameDamage = /(?:라벨|디스크|카트)\s*(?:손상|훼손|상처|흠집|문제|불량)\s*(?:없|없음|아님|깨끗|새것)/.test(lower);
     if (!noGameDamage && /라벨\s*(?:찢|까짐|벗겨|손상|훼손|더러|이염|찍힘|기스|많이\s*닳)|디스크\s*(?:깨|금\s*갔|크랙|손상|훼손|심한\s*기스|많이\s*긁힘|동작\s*불량|리딩\s*불량|인식\s*불량)|카트(?:리지)?\s*(?:손상|훼손|구부|휘어|단자\s*손상)/.test(lower)) {
       add("game_label_or_disc_damage", -0.2);
+      // Wave 760d: ConditionClass FLAWED 분류 보장 (extractConditionClass piggy-back).
+      if (!notes.includes("repair_or_defect_signal")) notes.push("repair_or_defect_signal");
     }
     // 한정판 / 초회판 / 패키지 / 특전 — 시세 1.5~3x normal. premium signal.
     //   주의: 일반 매물에서 "한정판" 단어만 잡으면 false positive 위험 — 박스/특전/스틸북 동반 시만.
     if (/(?:초회\s*한정|초회판|초회\s*특전|한정판\s*박스|스틸북|steelbook|specials?\s*edition|콜렉터스?\s*에디션|collectors?\s*edition|premium\s*edition|픽처\s*디스크|아트북\s*포함|사운드트랙\s*포함|ost\s*포함|특전\s*포함|특전\s*박스)/i.test(lower)) {
       add("game_limited_edition", 0.05);
+      // Wave 760d: ConditionClass CLEAN 분류 보장 (extractConditionClass good_condition piggy-back).
+      if (!notes.includes("good_condition")) notes.push("good_condition");
     }
     // DLC 코드 / 시즌패스 — 사용 여부 따라 시세 영향.
     //   "DLC 사용 안 함" / "DLC 코드 그대로" / "시즌패스 미사용" = mint signal.
@@ -1309,20 +1335,27 @@ function conditionFromText(
     //   negation: "그립 새것/교체" 는 mint, "그립 마모/닳음/미끄러움" 은 worn.
     if (/그립\s*(?:새\s*것|새것|새거|교체|신품|미사용)|그립\s*새로\s*감|그립\s*감은\s*지\s*얼마|새\s*그립/.test(lower)) {
       add("golf_grip_new", 0.05);
+      // Wave 760d: ConditionClass CLEAN 분류 보장.
+      if (!notes.includes("good_condition")) notes.push("good_condition");
     }
     if (/그립\s*(?:마모|닳|미끄러|딱딱|딱딱해|굳|갈라|찢어|벗겨|많이\s*사용)|그립이?\s*(?:마모|닳|미끄러)/.test(lower)) {
       add("golf_grip_worn", -0.08);
+      // Wave 760d: ConditionClass WORN 분류 보장.
+      if (!notes.includes("cosmetic_wear")) notes.push("cosmetic_wear");
     }
     // 페이스 / 스코어라인 — 임팩트 부분. 마모 시 비거리/스핀 영향 → 시세 큼.
     if (/페이스\s*(?:깨끗|새것|새거|마모\s*없|깨끗합니다|상태\s*좋|좋음)|스코어라인\s*(?:살아\s*있|깨끗|선명|새것)/.test(lower)) {
       add("golf_face_clean", 0.03);
+      if (!notes.includes("good_condition")) notes.push("good_condition");
     }
     if (/페이스\s*(?:마모|닳|움푹|푹\s*패|많이\s*패|까짐|타구\s*자국\s*심)|스코어라인\s*(?:다\s*닳|마모\s*심|지워|사라)|페이스에\s*움푹\s*패/.test(lower)) {
       add("golf_face_worn", -0.15);
+      if (!notes.includes("cosmetic_wear")) notes.push("cosmetic_wear");
     }
     // 헤드 / 크라운 — 드라이버/우드 도장 벗겨짐. 외관 손상 signal.
     if (/(?:헤드|크라운|쇼울더|페이스).{0,8}(?:도장\s*(?:벗|벗겨|박리|들뜸|날아|많이\s*벗|많이\s*까)|페인트\s*(?:벗|벗겨|박리|들뜸|날아)|크랙|많이\s*까짐|많이\s*벗|디봇\s*심|찍힘\s*심|많이\s*찍힘|기스\s*심)/.test(lower)) {
       add("golf_head_paint_damage", -0.12);
+      if (!notes.includes("cosmetic_wear")) notes.push("cosmetic_wear");
     }
     // 샤프트 — 강도/탄성 핵심 부품. 손상 시 reject 직전.
     const noShaftDamage = /샤프트.{0,8}(?:손상|굽|크랙|갈라)\s*(?:없|없음|아님|깨끗|정상)/.test(lower);
@@ -2370,7 +2403,12 @@ export function toParsedListingRow(pid: number | string, parsed: ParsedListingOp
     parsed_json: parsed.parsedJson,
     parsed_at: new Date().toISOString(),
     // Wave 714 (2026-05-23): 5-tier grading column. 전자기기는 grade=null → 모두 null.
-    condition_tier: grade?.tier ?? null,
+    // Wave 760d (2026-05-24): game_console / sport_golf 만 conditionClass → 5-tier 매핑 추가 (fashion 외 카테고리는 null 유지).
+    condition_tier:
+      grade?.tier
+        ?? (parsed.category && GAME_GOLF_TIER_CATEGORIES.has(parsed.category)
+              ? conditionClassToFiveTier(parsed.conditionClass)
+              : null),
     condition_cluster: grade?.cluster ?? null,
     condition_confidence: grade?.confidence ?? null,
     condition_flags: grade?.flags ?? null,
