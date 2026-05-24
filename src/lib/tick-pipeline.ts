@@ -4098,7 +4098,7 @@ type PoolReadyFloorState = {
 };
 
 async function loadPoolReadyFloorState(): Promise<PoolReadyFloorState> {
-  const threshold = Number(process.env.PIPELINE_POOL_CLEANUP_MIN_READY ?? 350);
+  const threshold = Number(process.env.PIPELINE_POOL_CLEANUP_MIN_READY ?? 450);
   if (!Number.isFinite(threshold) || threshold <= 0) {
     return { deferCleanup: false, readyCount: -1, threshold: 0 };
   }
