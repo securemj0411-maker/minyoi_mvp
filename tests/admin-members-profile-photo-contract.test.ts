@@ -21,5 +21,6 @@ test("admin members page forwards Kakao/Supabase profile photo URLs to the drawe
   assert.match(table, /function ProfileThumb/);
   assert.match(table, /function ProfilePhotoModal/);
   assert.match(table, /PROFILE PHOTO/);
+  assert.match(table, /VIEW PHOTO/);
   assert.match(table, /referrerPolicy="no-referrer"/);
 });

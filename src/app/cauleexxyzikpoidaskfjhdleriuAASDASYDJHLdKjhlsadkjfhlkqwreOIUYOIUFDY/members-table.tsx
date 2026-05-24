@@ -464,6 +464,20 @@ function MemberDrawer({
           <dd className="tabular-nums text-zinc-300">{fmt(row.lastSignInAt)}</dd>
           <dt className="font-bold uppercase tracking-wide text-zinc-500">PROVIDER</dt>
           <dd className="text-zinc-300">{row.provider ?? "—"}</dd>
+          <dt className="font-bold uppercase tracking-wide text-zinc-500">PROFILE PHOTO</dt>
+          <dd>
+            {row.profileImageUrl ? (
+              <button
+                type="button"
+                onClick={onOpenPhoto}
+                className="inline-flex items-center rounded-sm border border-blue-800 bg-blue-950/30 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-blue-300 transition hover:border-blue-600 hover:bg-blue-950/50"
+              >
+                VIEW PHOTO
+              </button>
+            ) : (
+              <span className="text-[11px] uppercase tracking-wide text-zinc-500">none</span>
+            )}
+          </dd>
           <dt className="font-bold uppercase tracking-wide text-zinc-500">CREDIT</dt>
           <dd className="font-bold tabular-nums text-amber-400">{row.balance?.toLocaleString("ko-KR") ?? "—"}</dd>
           <dt className="font-bold uppercase tracking-wide text-zinc-500">STATUS</dt>

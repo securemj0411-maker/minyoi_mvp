@@ -7,6 +7,7 @@
 ## 구현
 - 회원 row에 `profileImageUrl`을 추가하고, 카카오/Supabase에서 흔히 쓰는 `avatar_url`, `picture`, `profile_image_url`, `thumbnail_image_url` 계열 key를 fallback으로 탐색한다.
 - 회원 목록에는 작은 프로필 썸네일을 표시하고, 썸네일 또는 drawer의 `PROFILE PHOTO` 버튼을 누르면 큰 이미지 모달을 띄운다.
+- 운영자가 drawer 안에서 놓치지 않도록 `CREATED / LAST LOGIN / PROVIDER` 정보 표에도 `PROFILE PHOTO → VIEW PHOTO` 행을 명시한다.
 - 외부 이미지 요청은 `referrerPolicy="no-referrer"`로 처리하고, 원본 링크는 새 탭으로 열 수 있게 했다.
 
 ## 보류
