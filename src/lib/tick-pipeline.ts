@@ -2210,10 +2210,13 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   const remainingAfterFashion = Math.max(0, limit - poolRows.length - fashionRows.length);
   if (remainingAfterFashion === 0) return [...poolRows, ...fashionRows].slice(0, limit);
 
-  const sourceReserveLimit = Math.min(limit, 100);
+  // Joongna is a real second supply source, not just a garnish. Keep a
+  // proportional lane so broad parser/fashion backfills cannot leave it stuck
+  // at a tiny fixed trickle when the score queue is large.
+  const sourceReserveLimit = Math.min(remainingAfterFashion, Math.max(100, Math.floor(limit * 0.25)));
   const joongnaRows = await (async () => {
     try {
-      return fetchScorableRows("&source=eq.joongna", Math.min(sourceReserveLimit, remainingAfterFashion), seenPids);
+      return fetchScorableRows("&source=eq.joongna", sourceReserveLimit, seenPids);
     } catch (err) {
       console.warn("loadScorableRows joongna fetch failed (non-fatal)", err);
       return [];
