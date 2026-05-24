@@ -1,0 +1,6940 @@
+{
+  "sweep": "wave760-golf-narrow",
+  "isPartial": false,
+  "timestamp": "2026-05-24T00:13:52.401Z",
+  "queriesDone": 114,
+  "apiCalls": 228,
+  "apiErrors": 0,
+  "elapsedSec": 56,
+  "totalFetched": 11858,
+  "uniqueMatters": 10626,
+  "extractionCoverage": {
+    "condition": {
+      "(none)": 8110,
+      "Used": 2099,
+      "New": 345,
+      "A": 46,
+      "S": 25,
+      "NearNew": 1
+    },
+    "sex": {
+      "(none)": 8226,
+      "Men": 1516,
+      "Women": 884
+    },
+    "shaft": {
+      "(none)": 9093,
+      "TourAD": 240,
+      "LightSteel": 239,
+      "Steel": 215,
+      "Graphite": 208,
+      "Speeder": 147,
+      "Diamana": 109,
+      "Ventus": 102,
+      "NSPro": 102,
+      "Tensei": 98,
+      "KBS": 28,
+      "Modus": 18,
+      "Carbon": 16,
+      "DynamicGold": 7,
+      "Geotech": 2,
+      "Kaiser": 1,
+      "Atmos": 1
+    },
+    "subModelTopBrands": {
+      "(none)": 6457,
+      "Honma-Beres": 266,
+      "Majesty-Maruman": 252,
+      "Honma-TourWorld": 144,
+      "Majesty-Prestigio": 141,
+      "TaylorMade-Burner": 129,
+      "Titleist-Scotty": 114,
+      "Titleist-Vokey": 103,
+      "Callaway-BigBertha": 85,
+      "PXG-0311": 82,
+      "XXIO-XXIO13": 81,
+      "Ping-G425": 74,
+      "TaylorMade-Spider": 73,
+      "Bridgestone-JGR": 72,
+      "Ping-G430": 71,
+      "PXG-0211": 71,
+      "Callaway-Rogue": 66,
+      "Srixon-ZX": 63,
+      "Callaway-Odyssey": 63,
+      "XXIO-XXIO12": 59,
+      "Callaway-Epic": 55,
+      "Ping-G440": 54,
+      "Titleist-TSR3": 54,
+      "Callaway-Paradym": 54,
+      "TaylorMade-Stealth": 51,
+      "Callaway-Forged": 50,
+      "Titleist-AP2": 49,
+      "Srixon-ZX5": 48,
+      "PXG-0311P": 45,
+      "Srixon-ZX7": 45
+    }
+  },
+  "byBrandSubModel": {
+    "Titleist|Scotty|putter": {
+      "count": 113,
+      "median": 350000,
+      "min": 11111,
+      "max": 5990000
+    },
+    "Honma|Beres|driver": {
+      "count": 110,
+      "median": 285000,
+      "min": 71000,
+      "max": 2550000
+    },
+    "Titleist|Vokey|wedge": {
+      "count": 103,
+      "median": 125000,
+      "min": 50000,
+      "max": 485000
+    },
+    "TaylorMade|Spider|putter": {
+      "count": 73,
+      "median": 235000,
+      "min": 62000,
+      "max": 660000
+    },
+    "Majesty|Maruman|driver": {
+      "count": 72,
+      "median": 289500,
+      "min": 38000,
+      "max": 3225000
+    },
+    "Majesty|Maruman|iron": {
+      "count": 70,
+      "median": 165000,
+      "min": 20000,
+      "max": 9900000
+    },
+    "Callaway|Odyssey|putter": {
+      "count": 60,
+      "median": 190000,
+      "min": 11111,
+      "max": 754700
+    },
+    "Majesty|Maruman|wood_other": {
+      "count": 55,
+      "median": 210000,
+      "min": 50000,
+      "max": 1780000
+    },
+    "Honma|Beres|wood_other": {
+      "count": 52,
+      "median": 220000,
+      "min": 40000,
+      "max": 4040000
+    },
+    "Honma|TourWorld|wedge": {
+      "count": 49,
+      "median": 84000,
+      "min": 50000,
+      "max": 740000
+    },
+    "Majesty|Prestigio|driver": {
+      "count": 47,
+      "median": 690000,
+      "min": 70000,
+      "max": 2200000
+    },
+    "Titleist|AP2|iron": {
+      "count": 44,
+      "median": 370000,
+      "min": 60000,
+      "max": 800000
+    },
+    "TaylorMade|Burner|iron": {
+      "count": 42,
+      "median": 250000,
+      "min": 30000,
+      "max": 350000
+    },
+    "Callaway|Forged|wedge": {
+      "count": 41,
+      "median": 100000,
+      "min": 37000,
+      "max": 880000
+    },
+    "PXG|0311P|iron": {
+      "count": 41,
+      "median": 950000,
+      "min": 140000,
+      "max": 1750000
+    },
+    "TaylorMade|P7|iron": {
+      "count": 39,
+      "median": 700000,
+      "min": 120000,
+      "max": 1625000
+    },
+    "Srixon|ZX5|driver": {
+      "count": 38,
+      "median": 192200,
+      "min": 95000,
+      "max": 900000
+    },
+    "PXG|0311|driver": {
+      "count": 37,
+      "median": 563000,
+      "min": 200000,
+      "max": 594000
+    },
+    "Majesty|Prestigio|iron": {
+      "count": 37,
+      "median": 299000,
+      "min": 62000,
+      "max": 5650000
+    },
+    "Callaway|BigBertha|iron": {
+      "count": 36,
+      "median": 180000,
+      "min": 12000,
+      "max": 690000
+    },
+    "Bridgestone|V300|iron": {
+      "count": 34,
+      "median": 490000,
+      "min": 79000,
+      "max": 1060000
+    },
+    "Titleist|TSR3|wood_other": {
+      "count": 34,
+      "median": 380000,
+      "min": 250000,
+      "max": 450000
+    },
+    "Srixon|ZX7|driver": {
+      "count": 34,
+      "median": 269500,
+      "min": 70000,
+      "max": 340000
+    },
+    "Ping|G430|driver": {
+      "count": 32,
+      "median": 370000,
+      "min": 20000,
+      "max": 1300000
+    },
+    "Ping|G440|driver": {
+      "count": 31,
+      "median": 559000,
+      "min": 168000,
+      "max": 1600000
+    },
+    "Honma|TourWorld|iron": {
+      "count": 31,
+      "median": 270000,
+      "min": 36000,
+      "max": 770000
+    },
+    "XXIO|XXIO13|driver": {
+      "count": 31,
+      "median": 385000,
+      "min": 250000,
+      "max": 950000
+    },
+    "Callaway|Paradym|driver": {
+      "count": 30,
+      "median": 245000,
+      "min": 15000,
+      "max": 600000
+    },
+    "Honma|Beres|iron": {
+      "count": 30,
+      "median": 1415000,
+      "min": 40000,
+      "max": 6130000
+    },
+    "TaylorMade|Burner|driver": {
+      "count": 28,
+      "median": 89500,
+      "min": 35000,
+      "max": 159000
+    },
+    "Callaway|Epic|driver": {
+      "count": 27,
+      "median": 180000,
+      "min": 28000,
+      "max": 350000
+    },
+    "Srixon|ZX|iron": {
+      "count": 27,
+      "median": 150000,
+      "min": 95000,
+      "max": 300000
+    },
+    "PXG|BattleReady|putter": {
+      "count": 27,
+      "median": 391000,
+      "min": 150000,
+      "max": 520000
+    },
+    "Titleist|T100|iron": {
+      "count": 27,
+      "median": 750000,
+      "min": 75000,
+      "max": 2350000
+    },
+    "PXG|0211|iron": {
+      "count": 27,
+      "median": 580000,
+      "min": 100000,
+      "max": 1200000
+    },
+    "XXIO|XXIO13|wood_other": {
+      "count": 27,
+      "median": 265000,
+      "min": 195000,
+      "max": 326000
+    },
+    "Titleist|TSR2|driver": {
+      "count": 26,
+      "median": 423500,
+      "min": 290000,
+      "max": 1300000
+    },
+    "Honma|Beres|fairway_wood": {
+      "count": 26,
+      "median": 220000,
+      "min": 59000,
+      "max": 1590000
+    },
+    "Callaway|Rogue|iron": {
+      "count": 25,
+      "median": 560000,
+      "min": 22000,
+      "max": 584000
+    },
+    "Titleist|T200|iron": {
+      "count": 25,
+      "median": 550000,
+      "min": 130000,
+      "max": 1800000
+    },
+    "Ping|G425|wood_other": {
+      "count": 25,
+      "median": 210000,
+      "min": 150000,
+      "max": 385000
+    },
+    "Majesty|Prestigio|wood_other": {
+      "count": 25,
+      "median": 500000,
+      "min": 119000,
+      "max": 1545100
+    },
+    "Ping|G425|driver": {
+      "count": 24,
+      "median": 260000,
+      "min": 11111,
+      "max": 700000
+    },
+    "Callaway|Apex|iron": {
+      "count": 24,
+      "median": 452000,
+      "min": 105000,
+      "max": 850000
+    },
+    "Bridgestone|JGR|wood_other": {
+      "count": 24,
+      "median": 140000,
+      "min": 50000,
+      "max": 277000
+    },
+    "TaylorMade|Stealth|driver": {
+      "count": 22,
+      "median": 205000,
+      "min": 92000,
+      "max": 1700000
+    },
+    "Ping|G430|iron": {
+      "count": 22,
+      "median": 880000,
+      "min": 40000,
+      "max": 950000
+    },
+    "Srixon|Z355|iron": {
+      "count": 22,
+      "median": 290000,
+      "min": 45000,
+      "max": 290000
+    },
+    "Callaway|Steelhead|iron": {
+      "count": 22,
+      "median": 175000,
+      "min": 15000,
+      "max": 220000
+    },
+    "PXG|Mustang|putter": {
+      "count": 22,
+      "median": 280000,
+      "min": 120000,
+      "max": 1990000
+    },
+    "Majesty|Maruman|wedge": {
+      "count": 22,
+      "median": 150000,
+      "min": 22000,
+      "max": 190000
+    },
+    "Honma|TourWorld|driver": {
+      "count": 22,
+      "median": 195000,
+      "min": 75000,
+      "max": 350000
+    },
+    "Honma|TourWorld|wood_other": {
+      "count": 22,
+      "median": 170000,
+      "min": 40000,
+      "max": 500000
+    },
+    "Honma|Beres|putter": {
+      "count": 22,
+      "median": 160000,
+      "min": 23000,
+      "max": 2500000
+    },
+    "TaylorMade|Stealth2|driver": {
+      "count": 21,
+      "median": 330000,
+      "min": 120000,
+      "max": 471000
+    },
+    "PXG|0311|wedge": {
+      "count": 21,
+      "median": 189000,
+      "min": 100000,
+      "max": 900000
+    },
+    "TaylorMade|Burner|wedge": {
+      "count": 21,
+      "median": 50000,
+      "min": 15000,
+      "max": 100000
+    },
+    "Honma|Beres|wedge": {
+      "count": 21,
+      "median": 95000,
+      "min": 50000,
+      "max": 350000
+    },
+    "Bridgestone|JGR|driver": {
+      "count": 21,
+      "median": 225000,
+      "min": 42000,
+      "max": 1650000
+    },
+    "TaylorMade|Qi35|wood_other": {
+      "count": 20,
+      "median": 260000,
+      "min": 225000,
+      "max": 532000
+    },
+    "PXG|0211|putter": {
+      "count": 20,
+      "median": 269000,
+      "min": 135000,
+      "max": 338000
+    },
+    "Titleist|TSR3|driver": {
+      "count": 19,
+      "median": 389000,
+      "min": 330000,
+      "max": 450000
+    },
+    "PXG|0311T|iron": {
+      "count": 19,
+      "median": 650000,
+      "min": 130000,
+      "max": 1490000
+    },
+    "XXIO|XXIO12|driver": {
+      "count": 19,
+      "median": 320000,
+      "min": 70000,
+      "max": 1800000
+    },
+    "Titleist|TSi3|wood_other": {
+      "count": 18,
+      "median": 250000,
+      "min": 160000,
+      "max": 292000
+    },
+    "TaylorMade|Burner|wood_other": {
+      "count": 18,
+      "median": 65000,
+      "min": 20000,
+      "max": 110000
+    },
+    "Srixon|Z785|driver": {
+      "count": 17,
+      "median": 128000,
+      "min": 80000,
+      "max": 190000
+    },
+    "TaylorMade|SIM2|driver": {
+      "count": 16,
+      "median": 288000,
+      "min": 170000,
+      "max": 380000
+    },
+    "Callaway|Elyte|driver": {
+      "count": 16,
+      "median": 420000,
+      "min": 130000,
+      "max": 500000
+    },
+    "XXIO|XXIO10|iron": {
+      "count": 16,
+      "median": 800000,
+      "min": 80000,
+      "max": 800000
+    },
+    "Callaway|Epic|wood_other": {
+      "count": 16,
+      "median": 150000,
+      "min": 90000,
+      "max": 300000
+    },
+    "Majesty|Maruman|fairway_wood": {
+      "count": 16,
+      "median": 279000,
+      "min": 40000,
+      "max": 1880000
+    },
+    "PXG|0311|iron": {
+      "count": 16,
+      "median": 800000,
+      "min": 390000,
+      "max": 3800000
+    },
+    "Callaway|Rogue|driver": {
+      "count": 15,
+      "median": 250000,
+      "min": 170000,
+      "max": 1000000
+    },
+    "TaylorMade|M6|iron": {
+      "count": 15,
+      "median": 420000,
+      "min": 300000,
+      "max": 420000
+    },
+    "Odyssey|WhiteHot|putter": {
+      "count": 15,
+      "median": 68000,
+      "min": 45000,
+      "max": 195000
+    },
+    "PXG|0311X|driver": {
+      "count": 15,
+      "median": 320000,
+      "min": 210000,
+      "max": 580000
+    },
+    "Bridgestone|JGR|iron": {
+      "count": 15,
+      "median": 480000,
+      "min": 49000,
+      "max": 1050000
+    },
+    "Ping|G410|driver": {
+      "count": 14,
+      "median": 210000,
+      "min": 15000,
+      "max": 1300000
+    },
+    "Callaway|BigBertha|driver": {
+      "count": 14,
+      "median": 185000,
+      "min": 40000,
+      "max": 290000
+    },
+    "Mizuno|JPXE|iron": {
+      "count": 14,
+      "median": 310000,
+      "min": 180000,
+      "max": 450000
+    },
+    "Callaway|XR|wood_other": {
+      "count": 14,
+      "median": 117500,
+      "min": 78000,
+      "max": 157000
+    },
+    "Majesty|Maruman|putter": {
+      "count": 14,
+      "median": 145000,
+      "min": 80000,
+      "max": 620000
+    },
+    "Srixon|ZX|wood_other": {
+      "count": 14,
+      "median": 179500,
+      "min": 100000,
+      "max": 330000
+    },
+    "Bridgestone|B1|driver": {
+      "count": 13,
+      "median": 189000,
+      "min": 170000,
+      "max": 367000
+    },
+    "Titleist|T300|iron": {
+      "count": 13,
+      "median": 600000,
+      "min": 600000,
+      "max": 799000
+    },
+    "XXIO|XXIO11|iron": {
+      "count": 13,
+      "median": 690000,
+      "min": 90000,
+      "max": 786000
+    },
+    "XXIO|XXIO12|iron": {
+      "count": 13,
+      "median": 700000,
+      "min": 80000,
+      "max": 1000000
+    },
+    "Ping|G400|driver": {
+      "count": 12,
+      "median": 255000,
+      "min": 20000,
+      "max": 500000
+    },
+    "Titleist|TSi3|driver": {
+      "count": 12,
+      "median": 283000,
+      "min": 260000,
+      "max": 350000
+    },
+    "Titleist|TSi2|driver": {
+      "count": 12,
+      "median": 280000,
+      "min": 230000,
+      "max": 430000
+    },
+    "TaylorMade|Qi10|driver": {
+      "count": 12,
+      "median": 310000,
+      "min": 85000,
+      "max": 500000
+    },
+    "TaylorMade|R7|iron": {
+      "count": 12,
+      "median": 220000,
+      "min": 25000,
+      "max": 320000
+    },
+    "Majesty|Prestigio|fairway_wood": {
+      "count": 12,
+      "median": 272500,
+      "min": 70000,
+      "max": 1590000
+    },
+    "Majesty|Prestigio|wedge": {
+      "count": 12,
+      "median": 310000,
+      "min": 120000,
+      "max": 480700
+    },
+    "Honma|TourWorld|fairway_wood": {
+      "count": 12,
+      "median": 150000,
+      "min": 57000,
+      "max": 230000
+    },
+    "Srixon|Z565|driver": {
+      "count": 12,
+      "median": 150000,
+      "min": 90000,
+      "max": 300000
+    },
+    "Srixon|ZX|fairway_wood": {
+      "count": 12,
+      "median": 315000,
+      "min": 65000,
+      "max": 330000
+    },
+    "Bridgestone|B2|driver": {
+      "count": 12,
+      "median": 250000,
+      "min": 90000,
+      "max": 360000
+    },
+    "TaylorMade|Burner|fairway_wood": {
+      "count": 11,
+      "median": 88000,
+      "min": 30000,
+      "max": 130000
+    },
+    "Titleist|AP1|wedge": {
+      "count": 11,
+      "median": 110000,
+      "min": 45000,
+      "max": 579000
+    },
+    "PXG|0211|driver": {
+      "count": 11,
+      "median": 250000,
+      "min": 160000,
+      "max": 530000
+    },
+    "Ping|G425|iron": {
+      "count": 11,
+      "median": 250000,
+      "min": 150000,
+      "max": 939000
+    },
+    "Srixon|ZX7|iron": {
+      "count": 11,
+      "median": 530000,
+      "min": 85000,
+      "max": 800000
+    },
+    "Bridgestone|TourB|iron": {
+      "count": 11,
+      "median": 470000,
+      "min": 50000,
+      "max": 1200000
+    },
+    "Bridgestone|TourB|wood_other": {
+      "count": 11,
+      "median": 160000,
+      "min": 80000,
+      "max": 259000
+    },
+    "XXIO|XXIO11|driver": {
+      "count": 11,
+      "median": 220000,
+      "min": 100000,
+      "max": 320000
+    },
+    "XXIO|XXIO13|iron": {
+      "count": 11,
+      "median": 790000,
+      "min": 33000,
+      "max": 2090000
+    },
+    "Ping|G440|wood_other": {
+      "count": 10,
+      "median": 319500,
+      "min": 135000,
+      "max": 620000
+    },
+    "Callaway|BigBertha|wood_other": {
+      "count": 10,
+      "median": 50000,
+      "min": 30000,
+      "max": 114000
+    },
+    "Titleist|TSR2|wood_other": {
+      "count": 10,
+      "median": 285000,
+      "min": 250000,
+      "max": 370000
+    },
+    "PXG|BlackOps|iron": {
+      "count": 10,
+      "median": 1110000,
+      "min": 1020000,
+      "max": 1200000
+    },
+    "Srixon|ZX5|iron": {
+      "count": 10,
+      "median": 387000,
+      "min": 88000,
+      "max": 850000
+    },
+    "XXIO|XXIO10|driver": {
+      "count": 10,
+      "median": 217000,
+      "min": 140000,
+      "max": 390000
+    },
+    "XXIO|XXIO12|wood_other": {
+      "count": 10,
+      "median": 255000,
+      "min": 196000,
+      "max": 350000
+    },
+    "XXIO|MP100|wood_other": {
+      "count": 10,
+      "median": 245000,
+      "min": 210000,
+      "max": 305000
+    },
+    "XXIO|MP400|driver": {
+      "count": 9,
+      "median": 75000,
+      "min": 44000,
+      "max": 150000
+    },
+    "Callaway|XR|fairway_wood": {
+      "count": 9,
+      "median": 110000,
+      "min": 80000,
+      "max": 110000
+    },
+    "Callaway|BigBertha|wedge": {
+      "count": 9,
+      "median": 50000,
+      "min": 30000,
+      "max": 70000
+    },
+    "Callaway|Paradym|wood_other": {
+      "count": 9,
+      "median": 200000,
+      "min": 27000,
+      "max": 450000
+    },
+    "Callaway|Rogue|hybrid": {
+      "count": 9,
+      "median": 219000,
+      "min": 140000,
+      "max": 272000
+    },
+    "Titleist|917|driver": {
+      "count": 9,
+      "median": 157000,
+      "min": 100000,
+      "max": 400000
+    },
+    "TaylorMade|SIM2|wood_other": {
+      "count": 9,
+      "median": 239000,
+      "min": 160000,
+      "max": 250000
+    },
+    "PXG|BlackOps|driver": {
+      "count": 9,
+      "median": 500000,
+      "min": 320000,
+      "max": 600000
+    },
+    "PXG|0311XP|iron": {
+      "count": 9,
+      "median": 1500000,
+      "min": 100000,
+      "max": 2300000
+    },
+    "PXG|0211|wedge": {
+      "count": 9,
+      "median": 200000,
+      "min": 80000,
+      "max": 1500000
+    },
+    "Srixon|Z725|iron": {
+      "count": 9,
+      "median": 200000,
+      "min": 57000,
+      "max": 424000
+    },
+    "Bridgestone|B3|driver": {
+      "count": 9,
+      "median": 190000,
+      "min": 58000,
+      "max": 380000
+    },
+    "Bridgestone|JGR|fairway_wood": {
+      "count": 9,
+      "median": 180000,
+      "min": 65000,
+      "max": 210000
+    },
+    "XXIO|MP100|driver": {
+      "count": 9,
+      "median": 220000,
+      "min": 175000,
+      "max": 283000
+    },
+    "XXIO|XXIO12|fairway_wood": {
+      "count": 9,
+      "median": 249000,
+      "min": 195000,
+      "max": 350000
+    },
+    "XXIO|MP400|wedge": {
+      "count": 9,
+      "median": 50000,
+      "min": 39000,
+      "max": 170000
+    },
+    "Srixon|Z765|driver": {
+      "count": 8,
+      "median": 95000,
+      "min": 50000,
+      "max": 148000
+    },
+    "XXIO|XXIO9|wood_other": {
+      "count": 8,
+      "median": 192500,
+      "min": 139000,
+      "max": 250000
+    },
+    "TaylorMade|Stealth|fairway_wood": {
+      "count": 8,
+      "median": 180000,
+      "min": 150000,
+      "max": 289000
+    },
+    "Odyssey|AiOne|putter": {
+      "count": 8,
+      "median": 260000,
+      "min": 150000,
+      "max": 400000
+    },
+    "Titleist|TS3|driver": {
+      "count": 8,
+      "median": 210000,
+      "min": 180000,
+      "max": 295000
+    },
+    "Titleist|TSi2|wood_other": {
+      "count": 8,
+      "median": 257500,
+      "min": 180000,
+      "max": 350000
+    },
+    "TaylorMade|Stealth|wood_other": {
+      "count": 8,
+      "median": 209000,
+      "min": 170000,
+      "max": 225000
+    },
+    "TaylorMade|Burner|set": {
+      "count": 8,
+      "median": 700000,
+      "min": 440000,
+      "max": 1350000
+    },
+    "Ping|i230|iron": {
+      "count": 8,
+      "median": 725000,
+      "min": 75000,
+      "max": 890000
+    },
+    "Bridgestone|B2|fairway_wood": {
+      "count": 8,
+      "median": 230000,
+      "min": 190000,
+      "max": 300000
+    },
+    "XXIO|XXIO8|driver": {
+      "count": 8,
+      "median": 182500,
+      "min": 115000,
+      "max": 334000
+    },
+    "XXIO|MP500|iron": {
+      "count": 8,
+      "median": 330000,
+      "min": 140000,
+      "max": 490000
+    },
+    "Callaway|AiSmoke|driver": {
+      "count": 7,
+      "median": 280000,
+      "min": 15000,
+      "max": 935000
+    },
+    "TaylorMade|Qi35|driver": {
+      "count": 7,
+      "median": 428000,
+      "min": 130000,
+      "max": 510000
+    },
+    "Ping|G400|iron": {
+      "count": 7,
+      "median": 400000,
+      "min": 135000,
+      "max": 520000
+    },
+    "Titleist|915|fairway_wood": {
+      "count": 7,
+      "median": 140000,
+      "min": 89000,
+      "max": 200000
+    },
+    "Odyssey|DualForce|putter": {
+      "count": 7,
+      "median": 50000,
+      "min": 40000,
+      "max": 65000
+    },
+    "Callaway|BigBertha|fairway_wood": {
+      "count": 7,
+      "median": 30000,
+      "min": 20000,
+      "max": 140000
+    },
+    "Odyssey|TripleTrack|putter": {
+      "count": 7,
+      "median": 145000,
+      "min": 100000,
+      "max": 195000
+    },
+    "Odyssey|2Ball|putter": {
+      "count": 7,
+      "median": 85000,
+      "min": 44000,
+      "max": 154400
+    },
+    "Callaway|Rogue|wedge": {
+      "count": 7,
+      "median": 82000,
+      "min": 38900,
+      "max": 110000
+    },
+    "Titleist|915|driver": {
+      "count": 7,
+      "median": 115000,
+      "min": 95000,
+      "max": 170000
+    },
+    "Titleist|913|wood_other": {
+      "count": 7,
+      "median": 125000,
+      "min": 70000,
+      "max": 194000
+    },
+    "Titleist|TS2|wood_other": {
+      "count": 7,
+      "median": 188000,
+      "min": 100000,
+      "max": 200000
+    },
+    "PXG|0311|wood_other": {
+      "count": 7,
+      "median": 250000,
+      "min": 220000,
+      "max": 390000
+    },
+    "Ping|i500|iron": {
+      "count": 7,
+      "median": 85000,
+      "min": 85000,
+      "max": 520000
+    },
+    "Majesty|Prestigio|hybrid": {
+      "count": 7,
+      "median": 520000,
+      "min": 130000,
+      "max": 630000
+    },
+    "XXIO|MP400|iron": {
+      "count": 7,
+      "median": 280000,
+      "min": 230000,
+      "max": 430000
+    },
+    "XXIO|XXIO9|iron": {
+      "count": 6,
+      "median": 400000,
+      "min": 280000,
+      "max": 400000
+    },
+    "TaylorMade|Stealth|iron": {
+      "count": 6,
+      "median": 167500,
+      "min": 95000,
+      "max": 590000
+    },
+    "Ping|G440|fairway_wood": {
+      "count": 6,
+      "median": 375000,
+      "min": 300000,
+      "max": 380000
+    },
+    "TaylorMade|M2|iron": {
+      "count": 6,
+      "median": 385000,
+      "min": 320000,
+      "max": 450000
+    },
+    "Callaway|Forged|iron": {
+      "count": 6,
+      "median": 437500,
+      "min": 60000,
+      "max": 605000
+    },
+    "Callaway|XR|iron": {
+      "count": 6,
+      "median": 365000,
+      "min": 220000,
+      "max": 494000
+    },
+    "Callaway|Steelhead|wood_other": {
+      "count": 6,
+      "median": 77000,
+      "min": 30000,
+      "max": 99000
+    },
+    "Callaway|Elyte|wood_other": {
+      "count": 6,
+      "median": 310000,
+      "min": 250000,
+      "max": 350000
+    },
+    "Callaway|Legacy|wood_other": {
+      "count": 6,
+      "median": 79500,
+      "min": 44000,
+      "max": 116000
+    },
+    "Callaway|Epic|fairway_wood": {
+      "count": 6,
+      "median": 207500,
+      "min": 190000,
+      "max": 264300
+    },
+    "Callaway|Rogue|fairway_wood": {
+      "count": 6,
+      "median": 172500,
+      "min": 135000,
+      "max": 276400
+    },
+    "Callaway|Paradym|hybrid": {
+      "count": 6,
+      "median": 197500,
+      "min": 11111,
+      "max": 320000
+    },
+    "Titleist|917|wood_other": {
+      "count": 6,
+      "median": 135000,
+      "min": 95000,
+      "max": 175000
+    },
+    "Titleist|TSR2|fairway_wood": {
+      "count": 6,
+      "median": 280000,
+      "min": 239000,
+      "max": 334000
+    },
+    "TaylorMade|SIM2|fairway_wood": {
+      "count": 6,
+      "median": 214500,
+      "min": 170000,
+      "max": 254000
+    },
+    "Ping|G430|fairway_wood": {
+      "count": 6,
+      "median": 284500,
+      "min": 75000,
+      "max": 460000
+    },
+    "Ping|G425|fairway_wood": {
+      "count": 6,
+      "median": 250000,
+      "min": 200000,
+      "max": 360000
+    },
+    "Ping|G20|wood_other": {
+      "count": 6,
+      "median": 119500,
+      "min": 100000,
+      "max": 149000
+    },
+    "Majesty|Conquest|driver": {
+      "count": 6,
+      "median": 233500,
+      "min": 150000,
+      "max": 490000
+    },
+    "Srixon|ZX|driver": {
+      "count": 6,
+      "median": 155000,
+      "min": 100000,
+      "max": 300000
+    },
+    "Bridgestone|TourB|driver": {
+      "count": 6,
+      "median": 89000,
+      "min": 78000,
+      "max": 350000
+    },
+    "XXIO|XXIO11|wood_other": {
+      "count": 6,
+      "median": 182000,
+      "min": 140000,
+      "max": 209000
+    },
+    "XXIO|MP100|wedge": {
+      "count": 6,
+      "median": 57000,
+      "min": 53000,
+      "max": 650000
+    },
+    "Titleist|TS2|driver": {
+      "count": 5,
+      "median": 200000,
+      "min": 190000,
+      "max": 450000
+    },
+    "Ping|G400|fairway_wood": {
+      "count": 5,
+      "median": 200000,
+      "min": 55000,
+      "max": 230000
+    },
+    "TaylorMade|M2|fairway_wood": {
+      "count": 5,
+      "median": 120000,
+      "min": 120000,
+      "max": 350000
+    },
+    "Callaway|Apex|hybrid": {
+      "count": 5,
+      "median": 145000,
+      "min": 110000,
+      "max": 320000
+    },
+    "Titleist|GT2|driver": {
+      "count": 5,
+      "median": 650000,
+      "min": 450000,
+      "max": 760000
+    },
+    "Titleist|AP1|iron": {
+      "count": 5,
+      "median": 95000,
+      "min": 79000,
+      "max": 370000
+    },
+    "Titleist|AP3|iron": {
+      "count": 5,
+      "median": 460000,
+      "min": 127000,
+      "max": 550000
+    },
+    "Titleist|915|wood_other": {
+      "count": 5,
+      "median": 165000,
+      "min": 110000,
+      "max": 180000
+    },
+    "Titleist|TS2|fairway_wood": {
+      "count": 5,
+      "median": 139000,
+      "min": 119000,
+      "max": 220000
+    },
+    "Titleist|TSi2|fairway_wood": {
+      "count": 5,
+      "median": 195000,
+      "min": 179000,
+      "max": 250000
+    },
+    "Titleist|TSi3|fairway_wood": {
+      "count": 5,
+      "median": 175000,
+      "min": 149000,
+      "max": 200000
+    },
+    "TaylorMade|M2|driver": {
+      "count": 5,
+      "median": 120000,
+      "min": 75000,
+      "max": 126000
+    },
+    "TaylorMade|SIM2|iron": {
+      "count": 5,
+      "median": 400000,
+      "min": 115000,
+      "max": 755000
+    },
+    "PXG|0311X|wood_other": {
+      "count": 5,
+      "median": 300000,
+      "min": 260000,
+      "max": 380000
+    },
+    "PXG|0311T|wedge": {
+      "count": 5,
+      "median": 150000,
+      "min": 110000,
+      "max": 280000
+    },
+    "Ping|G430|wood_other": {
+      "count": 5,
+      "median": 283000,
+      "min": 30000,
+      "max": 350000
+    },
+    "Ping|G25|fairway_wood": {
+      "count": 5,
+      "median": 145000,
+      "min": 140000,
+      "max": 145000
+    },
+    "Ping|G400|wood_other": {
+      "count": 5,
+      "median": 165000,
+      "min": 136000,
+      "max": 250000
+    },
+    "Honma|TourWorld|putter": {
+      "count": 5,
+      "median": 123500,
+      "min": 85000,
+      "max": 220000
+    },
+    "Srixon|Z785|iron": {
+      "count": 5,
+      "median": 75000,
+      "min": 65000,
+      "max": 580000
+    },
+    "XXIO|XXIO8|iron": {
+      "count": 5,
+      "median": 498000,
+      "min": 450000,
+      "max": 684000
+    },
+    "XXIO|XXIO10|wood_other": {
+      "count": 5,
+      "median": 187000,
+      "min": 185000,
+      "max": 239000
+    },
+    "XXIO|XXIO10|wedge": {
+      "count": 5,
+      "median": 149000,
+      "min": 50000,
+      "max": 170000
+    },
+    "XXIO|XXIO13|wedge": {
+      "count": 5,
+      "median": 149000,
+      "min": 120000,
+      "max": 255000
+    },
+    "Odyssey|StrokeLab|putter": {
+      "count": 5,
+      "median": 85000,
+      "min": 60000,
+      "max": 160000
+    },
+    "TaylorMade|SIM|driver": {
+      "count": 4,
+      "median": 164000,
+      "min": 150000,
+      "max": 220000
+    },
+    "TaylorMade|R11|driver": {
+      "count": 4,
+      "median": 79500,
+      "min": 77000,
+      "max": 80000
+    },
+    "Callaway|Legacy|driver": {
+      "count": 4,
+      "median": 79000,
+      "min": 32000,
+      "max": 150000
+    },
+    "XXIO|MP500|driver": {
+      "count": 4,
+      "median": 140000,
+      "min": 120000,
+      "max": 170000
+    },
+    "Bridgestone|201CB|iron": {
+      "count": 4,
+      "median": 615000,
+      "min": 570000,
+      "max": 650000
+    },
+    "Ping|G710|iron": {
+      "count": 4,
+      "median": 270000,
+      "min": 90000,
+      "max": 700000
+    },
+    "Mizuno|JPX850|iron": {
+      "count": 4,
+      "median": 350000,
+      "min": 350000,
+      "max": 350000
+    },
+    "TaylorMade|Stealth2|fairway_wood": {
+      "count": 4,
+      "median": 227500,
+      "min": 180000,
+      "max": 360000
+    },
+    "Titleist|913|fairway_wood": {
+      "count": 4,
+      "median": 115000,
+      "min": 69000,
+      "max": 155000
+    },
+    "XXIO|MP500|wood_other": {
+      "count": 4,
+      "median": 105000,
+      "min": 90000,
+      "max": 128000
+    },
+    "Callaway|Paradym|fairway_wood": {
+      "count": 4,
+      "median": 215000,
+      "min": 209000,
+      "max": 261300
+    },
+    "Cobra|KingCobra|iron": {
+      "count": 4,
+      "median": 114000,
+      "min": 30000,
+      "max": 210000
+    },
+    "Callaway|XR|hybrid": {
+      "count": 4,
+      "median": 87500,
+      "min": 60000,
+      "max": 115000
+    },
+    "Titleist|913|hybrid": {
+      "count": 4,
+      "median": 140000,
+      "min": 80000,
+      "max": 150000
+    },
+    "Callaway|Paradym|iron": {
+      "count": 4,
+      "median": 300000,
+      "min": 60000,
+      "max": 490000
+    },
+    "Callaway|Rogue|wood_other": {
+      "count": 4,
+      "median": 152500,
+      "min": 90000,
+      "max": 185000
+    },
+    "Callaway|BigBertha|hybrid": {
+      "count": 4,
+      "median": 114500,
+      "min": 60000,
+      "max": 192000
+    },
+    "Callaway|Apex|wedge": {
+      "count": 4,
+      "median": 360000,
+      "min": 60000,
+      "max": 680000
+    },
+    "Titleist|910|iron": {
+      "count": 4,
+      "median": 50000,
+      "min": 50000,
+      "max": 50000
+    },
+    "Titleist|AP2|wedge": {
+      "count": 4,
+      "median": 380000,
+      "min": 60000,
+      "max": 1100000
+    },
+    "Titleist|GT2|wood_other": {
+      "count": 4,
+      "median": 405000,
+      "min": 340000,
+      "max": 480000
+    },
+    "Titleist|910|fairway_wood": {
+      "count": 4,
+      "median": 112500,
+      "min": 85000,
+      "max": 125000
+    },
+    "Titleist|TSR1|wood_other": {
+      "count": 4,
+      "median": 250000,
+      "min": 240000,
+      "max": 300000
+    },
+    "Titleist|917|fairway_wood": {
+      "count": 4,
+      "median": 134500,
+      "min": 119000,
+      "max": 155000
+    },
+    "TaylorMade|M6|driver": {
+      "count": 4,
+      "median": 150000,
+      "min": 15000,
+      "max": 111111111
+    },
+    "TaylorMade|M4|driver": {
+      "count": 4,
+      "median": 125000,
+      "min": 106000,
+      "max": 290000
+    },
+    "TaylorMade|M4|iron": {
+      "count": 4,
+      "median": 285000,
+      "min": 245000,
+      "max": 420000
+    },
+    "TaylorMade|R9|iron": {
+      "count": 4,
+      "median": 370000,
+      "min": 175000,
+      "max": 430000
+    },
+    "TaylorMade|R11|iron": {
+      "count": 4,
+      "median": 234500,
+      "min": 75000,
+      "max": 390000
+    },
+    "TaylorMade|Stealth2|wood_other": {
+      "count": 4,
+      "median": 213000,
+      "min": 185000,
+      "max": 250000
+    },
+    "TaylorMade|M2|wood_other": {
+      "count": 4,
+      "median": 137500,
+      "min": 80000,
+      "max": 330000
+    },
+    "TaylorMade|Qi10|wood_other": {
+      "count": 4,
+      "median": 240000,
+      "min": 200000,
+      "max": 259000
+    },
+    "TaylorMade|M4|wood_other": {
+      "count": 4,
+      "median": 152500,
+      "min": 110000,
+      "max": 169000
+    },
+    "TaylorMade|M1|putter": {
+      "count": 4,
+      "median": 179000,
+      "min": 70000,
+      "max": 260000
+    },
+    "TaylorMade|Stealth|hybrid": {
+      "count": 4,
+      "median": 210000,
+      "min": 190000,
+      "max": 220000
+    },
+    "PXG|0311P|wedge": {
+      "count": 4,
+      "median": 135000,
+      "min": 99000,
+      "max": 150000
+    },
+    "Ping|i59|iron": {
+      "count": 4,
+      "median": 509500,
+      "min": 88000,
+      "max": 1630000
+    },
+    "Ping|G410|iron": {
+      "count": 4,
+      "median": 522500,
+      "min": 400000,
+      "max": 680000
+    },
+    "Ping|G15|wood_other": {
+      "count": 4,
+      "median": 88500,
+      "min": 80000,
+      "max": 116000
+    },
+    "Mizuno|JPX850|driver": {
+      "count": 4,
+      "median": 126500,
+      "min": 120000,
+      "max": 190000
+    },
+    "Srixon|Z545|driver": {
+      "count": 4,
+      "median": 106500,
+      "min": 50000,
+      "max": 140000
+    },
+    "Srixon|Z355|wood_other": {
+      "count": 4,
+      "median": 105000,
+      "min": 100000,
+      "max": 110000
+    },
+    "Bridgestone|TourB|wedge": {
+      "count": 4,
+      "median": 129000,
+      "min": 103000,
+      "max": 149000
+    },
+    "XXIO|XXIO12|hybrid": {
+      "count": 4,
+      "median": 197000,
+      "min": 184000,
+      "max": 234000
+    },
+    "XXIO|XXIO8|wedge": {
+      "count": 4,
+      "median": 109500,
+      "min": 60000,
+      "max": 129000
+    },
+    "TaylorMade|R7|driver": {
+      "count": 3,
+      "median": 70000,
+      "min": 44000,
+      "max": 370000
+    },
+    "Titleist|GT3|driver": {
+      "count": 3,
+      "median": 595000,
+      "min": 580000,
+      "max": 600000
+    },
+    "Ping|G15|driver": {
+      "count": 3,
+      "median": 50000,
+      "min": 50000,
+      "max": 60000
+    },
+    "Titleist|913|driver": {
+      "count": 3,
+      "median": 140000,
+      "min": 65000,
+      "max": 150000
+    },
+    "TaylorMade|R9|driver": {
+      "count": 3,
+      "median": 115000,
+      "min": 90000,
+      "max": 125000
+    },
+    "Odyssey|Versa|putter": {
+      "count": 3,
+      "median": 70000,
+      "min": 70000,
+      "max": 170000
+    },
+    "TaylorMade|R7|wedge": {
+      "count": 3,
+      "median": 40000,
+      "min": 40000,
+      "max": 55000
+    },
+    "Callaway|BigBertha|set": {
+      "count": 3,
+      "median": 300000,
+      "min": 150000,
+      "max": 780000
+    },
+    "Honma|TourWorld|set": {
+      "count": 3,
+      "median": 1150000,
+      "min": 1150000,
+      "max": 1150000
+    },
+    "TaylorMade|M6|set": {
+      "count": 3,
+      "median": 900000,
+      "min": 900000,
+      "max": 900000
+    },
+    "Callaway|XR|driver": {
+      "count": 3,
+      "median": 95000,
+      "min": 95000,
+      "max": 150000
+    },
+    "Callaway|Mavrik|driver": {
+      "count": 3,
+      "median": 220000,
+      "min": 180000,
+      "max": 260000
+    },
+    "Callaway|Mavrik|wood_other": {
+      "count": 3,
+      "median": 180000,
+      "min": 165000,
+      "max": 180000
+    },
+    "Titleist|TSi1|wood_other": {
+      "count": 3,
+      "median": 300000,
+      "min": 260000,
+      "max": 350000
+    },
+    "Titleist|GT3|wood_other": {
+      "count": 3,
+      "median": 420000,
+      "min": 396000,
+      "max": 540000
+    },
+    "Titleist|TS2|hybrid": {
+      "count": 3,
+      "median": 200000,
+      "min": 180000,
+      "max": 200000
+    },
+    "TaylorMade|M1|driver": {
+      "count": 3,
+      "median": 90000,
+      "min": 88000,
+      "max": 190000
+    },
+    "TaylorMade|SIM|iron": {
+      "count": 3,
+      "median": 350000,
+      "min": 30000,
+      "max": 460000
+    },
+    "TaylorMade|R7|wood_other": {
+      "count": 3,
+      "median": 70000,
+      "min": 48000,
+      "max": 100000
+    },
+    "TaylorMade|M5|fairway_wood": {
+      "count": 3,
+      "median": 140000,
+      "min": 140000,
+      "max": 140000
+    },
+    "TaylorMade|R7|fairway_wood": {
+      "count": 3,
+      "median": 40000,
+      "min": 40000,
+      "max": 55000
+    },
+    "TaylorMade|SIM|wedge": {
+      "count": 3,
+      "median": 80000,
+      "min": 80000,
+      "max": 90000
+    },
+    "TaylorMade|M2|wedge": {
+      "count": 3,
+      "median": 130000,
+      "min": 40000,
+      "max": 620000
+    },
+    "TaylorMade|R9|wedge": {
+      "count": 3,
+      "median": 55000,
+      "min": 50000,
+      "max": 55000
+    },
+    "TaylorMade|M6|hybrid": {
+      "count": 3,
+      "median": 110000,
+      "min": 80000,
+      "max": 190000
+    },
+    "Ping|K15|driver": {
+      "count": 3,
+      "median": 85000,
+      "min": 80000,
+      "max": 250000
+    },
+    "Ping|G25|driver": {
+      "count": 3,
+      "median": 125000,
+      "min": 59000,
+      "max": 160000
+    },
+    "Ping|G20|driver": {
+      "count": 3,
+      "median": 130000,
+      "min": 130000,
+      "max": 160000
+    },
+    "Ping|G425|wedge": {
+      "count": 3,
+      "median": 620000,
+      "min": 94800,
+      "max": 650000
+    },
+    "Ping|G430|hybrid": {
+      "count": 3,
+      "median": 250000,
+      "min": 180000,
+      "max": 380000
+    },
+    "Ping|G440|hybrid": {
+      "count": 3,
+      "median": 360000,
+      "min": 290000,
+      "max": 360000
+    },
+    "Majesty|Conquest|iron": {
+      "count": 3,
+      "median": 98000,
+      "min": 85000,
+      "max": 100000
+    },
+    "Mizuno|JPXE|driver": {
+      "count": 3,
+      "median": 90000,
+      "min": 62000,
+      "max": 130000
+    },
+    "Mizuno|JPX800|iron": {
+      "count": 3,
+      "median": 330000,
+      "min": 55000,
+      "max": 350000
+    },
+    "Mizuno|JPX825|iron": {
+      "count": 3,
+      "median": 280000,
+      "min": 260000,
+      "max": 330000
+    },
+    "Mizuno|JPX800|wedge": {
+      "count": 3,
+      "median": 60000,
+      "min": 60000,
+      "max": 71000
+    },
+    "Mizuno|JPXE|wedge": {
+      "count": 3,
+      "median": 79000,
+      "min": 60000,
+      "max": 120000
+    },
+    "Srixon|Z745|driver": {
+      "count": 3,
+      "median": 211000,
+      "min": 60000,
+      "max": 218000
+    },
+    "Srixon|Z355|driver": {
+      "count": 3,
+      "median": 105000,
+      "min": 90000,
+      "max": 160000
+    },
+    "Srixon|Z355|fairway_wood": {
+      "count": 3,
+      "median": 120000,
+      "min": 100000,
+      "max": 120000
+    },
+    "Srixon|Z785|wedge": {
+      "count": 3,
+      "median": 680000,
+      "min": 98000,
+      "max": 750000
+    },
+    "Bridgestone|B2|wood_other": {
+      "count": 3,
+      "median": 239000,
+      "min": 230000,
+      "max": 270000
+    },
+    "Bridgestone|TourB|fairway_wood": {
+      "count": 3,
+      "median": 190000,
+      "min": 190000,
+      "max": 190000
+    },
+    "XXIO|XXIO9|driver": {
+      "count": 3,
+      "median": 225000,
+      "min": 170000,
+      "max": 330000
+    },
+    "XXIO|MP300|driver": {
+      "count": 3,
+      "median": 75000,
+      "min": 70000,
+      "max": 85000
+    },
+    "XXIO|MP100|iron": {
+      "count": 3,
+      "median": 450000,
+      "min": 320000,
+      "max": 596000
+    },
+    "XXIO|MP300|iron": {
+      "count": 3,
+      "median": 60000,
+      "min": 52000,
+      "max": 155000
+    },
+    "XXIO|MP200|iron": {
+      "count": 3,
+      "median": 68000,
+      "min": 25000,
+      "max": 170000
+    },
+    "XXIO|XXIO13|fairway_wood": {
+      "count": 3,
+      "median": 240000,
+      "min": 205000,
+      "max": 290000
+    },
+    "XXIO|XXIO8|wood_other": {
+      "count": 3,
+      "median": 132000,
+      "min": 132000,
+      "max": 160000
+    },
+    "XXIO|MP200|wedge": {
+      "count": 3,
+      "median": 56000,
+      "min": 34000,
+      "max": 65000
+    },
+    "XXIO|XXIO13|hybrid": {
+      "count": 3,
+      "median": 220000,
+      "min": 190000,
+      "max": 220000
+    },
+    "Cobra|Speedzone|driver": {
+      "count": 3,
+      "median": 175000,
+      "min": 120000,
+      "max": 220000
+    }
+  },
+  "byBrandCondition": {
+    "Callaway|iron|Used": {
+      "count": 143,
+      "median": 230000,
+      "min": 45000,
+      "max": 605000
+    },
+    "TaylorMade|iron|Used": {
+      "count": 109,
+      "median": 290000,
+      "min": 40000,
+      "max": 880000
+    },
+    "Mizuno|iron|Used": {
+      "count": 87,
+      "median": 260000,
+      "min": 39000,
+      "max": 560000
+    },
+    "Honma|iron|Used": {
+      "count": 73,
+      "median": 290000,
+      "min": 35000,
+      "max": 1803000
+    },
+    "XXIO|iron|Used": {
+      "count": 70,
+      "median": 430000,
+      "min": 63000,
+      "max": 800000
+    },
+    "TaylorMade|set|Used": {
+      "count": 55,
+      "median": 395000,
+      "min": 180000,
+      "max": 1680000
+    },
+    "Callaway|set|Used": {
+      "count": 53,
+      "median": 420000,
+      "min": 190000,
+      "max": 1190000
+    },
+    "XXIO|driver|Used": {
+      "count": 48,
+      "median": 185000,
+      "min": 70000,
+      "max": 390000
+    },
+    "Titleist|iron|Used": {
+      "count": 47,
+      "median": 450000,
+      "min": 65000,
+      "max": 960000
+    },
+    "Honma|wedge|Used": {
+      "count": 39,
+      "median": 59000,
+      "min": 30000,
+      "max": 113000
+    },
+    "Honma|driver|Used": {
+      "count": 37,
+      "median": 250000,
+      "min": 20000,
+      "max": 690000
+    },
+    "Bridgestone|iron|Used": {
+      "count": 37,
+      "median": 300000,
+      "min": 90000,
+      "max": 580000
+    },
+    "XXIO|wood_other|Used": {
+      "count": 37,
+      "median": 210000,
+      "min": 85000,
+      "max": 280000
+    },
+    "Srixon|iron|Used": {
+      "count": 36,
+      "median": 290000,
+      "min": 61000,
+      "max": 454000
+    },
+    "TaylorMade|wood_other|Used": {
+      "count": 36,
+      "median": 181500,
+      "min": 25000,
+      "max": 260000
+    },
+    "Titleist|wood_other|Used": {
+      "count": 35,
+      "median": 250000,
+      "min": 75000,
+      "max": 450000
+    },
+    "TaylorMade|driver|Used": {
+      "count": 33,
+      "median": 150000,
+      "min": 40000,
+      "max": 330000
+    },
+    "Ping|iron|Used": {
+      "count": 32,
+      "median": 330000,
+      "min": 85000,
+      "max": 893000
+    },
+    "Callaway|wood_other|Used": {
+      "count": 30,
+      "median": 110000,
+      "min": 30000,
+      "max": 189000
+    },
+    "Ping|wood_other|Used": {
+      "count": 30,
+      "median": 210000,
+      "min": 65000,
+      "max": 319000
+    },
+    "TaylorMade|putter|Used": {
+      "count": 30,
+      "median": 140000,
+      "min": 50000,
+      "max": 550000
+    },
+    "Srixon|driver|Used": {
+      "count": 30,
+      "median": 239500,
+      "min": 65000,
+      "max": 489000
+    },
+    "Bridgestone|wood_other|Used": {
+      "count": 30,
+      "median": 140000,
+      "min": 100000,
+      "max": 230000
+    },
+    "Titleist|wedge|Used": {
+      "count": 29,
+      "median": 120000,
+      "min": 45000,
+      "max": 196000
+    },
+    "Majesty|iron|Used": {
+      "count": 28,
+      "median": 800000,
+      "min": 45000,
+      "max": 2140000
+    },
+    "Mizuno|driver|Used": {
+      "count": 28,
+      "median": 132500,
+      "min": 30000,
+      "max": 295000
+    },
+    "Odyssey|putter|Used": {
+      "count": 24,
+      "median": 65000,
+      "min": 50000,
+      "max": 165000
+    },
+    "Titleist|putter|Used": {
+      "count": 24,
+      "median": 308500,
+      "min": 70000,
+      "max": 979000
+    },
+    "Cobra|driver|New": {
+      "count": 24,
+      "median": 229000,
+      "min": 33000,
+      "max": 590000
+    },
+    "Ping|driver|Used": {
+      "count": 23,
+      "median": 210000,
+      "min": 93000,
+      "max": 559000
+    },
+    "Honma|fairway_wood|Used": {
+      "count": 23,
+      "median": 77000,
+      "min": 30000,
+      "max": 400000
+    },
+    "Majesty|driver|Used": {
+      "count": 23,
+      "median": 270000,
+      "min": 38000,
+      "max": 2268000
+    },
+    "Titleist|fairway_wood|Used": {
+      "count": 22,
+      "median": 144000,
+      "min": 69000,
+      "max": 239000
+    },
+    "Titleist|driver|Used": {
+      "count": 21,
+      "median": 170000,
+      "min": 65000,
+      "max": 1999000
+    },
+    "TaylorMade|fairway_wood|Used": {
+      "count": 21,
+      "median": 50000,
+      "min": 30000,
+      "max": 159000
+    },
+    "TaylorMade|wedge|Used": {
+      "count": 21,
+      "median": 95000,
+      "min": 50000,
+      "max": 180000
+    },
+    "Honma|wood_other|Used": {
+      "count": 18,
+      "median": 80000,
+      "min": 30000,
+      "max": 250000
+    },
+    "Honma|putter|Used": {
+      "count": 18,
+      "median": 80000,
+      "min": 55000,
+      "max": 249000
+    },
+    "Callaway|wedge|Used": {
+      "count": 18,
+      "median": 80000,
+      "min": 55000,
+      "max": 150000
+    },
+    "Mizuno|set|Used": {
+      "count": 18,
+      "median": 420000,
+      "min": 160000,
+      "max": 1000000
+    },
+    "Srixon|wood_other|Used": {
+      "count": 18,
+      "median": 110000,
+      "min": 100000,
+      "max": 245000
+    },
+    "Callaway|fairway_wood|Used": {
+      "count": 17,
+      "median": 50000,
+      "min": 20000,
+      "max": 80000
+    },
+    "XXIO|set|Used": {
+      "count": 17,
+      "median": 790000,
+      "min": 550000,
+      "max": 1520000
+    },
+    "Callaway|driver|Used": {
+      "count": 16,
+      "median": 200000,
+      "min": 15000,
+      "max": 430000
+    },
+    "Majesty|wood_other|Used": {
+      "count": 16,
+      "median": 196000,
+      "min": 105000,
+      "max": 1285200
+    },
+    "XXIO|wedge|Used": {
+      "count": 15,
+      "median": 75000,
+      "min": 50000,
+      "max": 195000
+    },
+    "Cobra|driver|Used": {
+      "count": 14,
+      "median": 160000,
+      "min": 35000,
+      "max": 280000
+    },
+    "Mizuno|wedge|Used": {
+      "count": 13,
+      "median": 70000,
+      "min": 37000,
+      "max": 109000
+    },
+    "Ping|putter|Used": {
+      "count": 13,
+      "median": 80000,
+      "min": 60000,
+      "max": 185000
+    },
+    "Bridgestone|driver|Used": {
+      "count": 13,
+      "median": 189000,
+      "min": 90000,
+      "max": 820000
+    },
+    "TaylorMade|driver|New": {
+      "count": 11,
+      "median": 500000,
+      "min": 220000,
+      "max": 680000
+    },
+    "Mizuno|fairway_wood|Used": {
+      "count": 11,
+      "median": 70000,
+      "min": 50000,
+      "max": 128000
+    },
+    "TaylorMade|putter|New": {
+      "count": 11,
+      "median": 260000,
+      "min": 150000,
+      "max": 600000
+    },
+    "PXG|iron|Used": {
+      "count": 11,
+      "median": 680000,
+      "min": 225000,
+      "max": 1750000
+    },
+    "PXG|driver|Used": {
+      "count": 10,
+      "median": 289500,
+      "min": 150000,
+      "max": 594000
+    },
+    "Mizuno|wood_other|Used": {
+      "count": 10,
+      "median": 64500,
+      "min": 18500,
+      "max": 150000
+    },
+    "Honma|set|Used": {
+      "count": 9,
+      "median": 750000,
+      "min": 450000,
+      "max": 1150000
+    },
+    "Ping|driver|New": {
+      "count": 9,
+      "median": 615000,
+      "min": 70000,
+      "max": 790000
+    },
+    "Ping|wedge|Used": {
+      "count": 9,
+      "median": 95000,
+      "min": 80000,
+      "max": 110000
+    },
+    "Majesty|wedge|New": {
+      "count": 9,
+      "median": 150000,
+      "min": 22000,
+      "max": 240000
+    },
+    "Majesty|wedge|Used": {
+      "count": 9,
+      "median": 120000,
+      "min": 85000,
+      "max": 120000
+    },
+    "Mizuno|wood_other|New": {
+      "count": 9,
+      "median": 190000,
+      "min": 20000,
+      "max": 220000
+    },
+    "Callaway|driver|New": {
+      "count": 8,
+      "median": 380000,
+      "min": 35000,
+      "max": 650000
+    },
+    "Callaway|putter|Used": {
+      "count": 8,
+      "median": 160000,
+      "min": 50000,
+      "max": 210000
+    },
+    "PXG|iron|New": {
+      "count": 8,
+      "median": 1065000,
+      "min": 49900,
+      "max": 1700000
+    },
+    "PXG|putter|Used": {
+      "count": 8,
+      "median": 320000,
+      "min": 259000,
+      "max": 453600
+    },
+    "PXG|putter|New": {
+      "count": 8,
+      "median": 485000,
+      "min": 350000,
+      "max": 2400000
+    },
+    "Majesty|driver|New": {
+      "count": 8,
+      "median": 720000,
+      "min": 270000,
+      "max": 1950000
+    },
+    "Honma|fairway_wood|New": {
+      "count": 8,
+      "median": 369500,
+      "min": 198000,
+      "max": 1150000
+    },
+    "Honma|wood_other|New": {
+      "count": 8,
+      "median": 465000,
+      "min": 249000,
+      "max": 770000
+    },
+    "Bridgestone|wood_other|New": {
+      "count": 8,
+      "median": 250000,
+      "min": 130000,
+      "max": 277000
+    },
+    "XXIO|iron|New": {
+      "count": 8,
+      "median": 139500,
+      "min": 25000,
+      "max": 2090000
+    },
+    "PXG|driver|New": {
+      "count": 7,
+      "median": 450000,
+      "min": 45000,
+      "max": 860000
+    },
+    "Majesty|iron|New": {
+      "count": 7,
+      "median": 490000,
+      "min": 129000,
+      "max": 4950000
+    },
+    "Cobra|fairway_wood|Used": {
+      "count": 7,
+      "median": 65000,
+      "min": 50000,
+      "max": 195000
+    },
+    "Titleist|driver|A": {
+      "count": 6,
+      "median": 292500,
+      "min": 200000,
+      "max": 580000
+    },
+    "TaylorMade|iron|New": {
+      "count": 6,
+      "median": 153000,
+      "min": 55000,
+      "max": 590000
+    },
+    "TaylorMade|wood_other|New": {
+      "count": 6,
+      "median": 250000,
+      "min": 60000,
+      "max": 320000
+    },
+    "Majesty|fairway_wood|Used": {
+      "count": 6,
+      "median": 150000,
+      "min": 70000,
+      "max": 269000
+    },
+    "Honma|driver|New": {
+      "count": 6,
+      "median": 760000,
+      "min": 549000,
+      "max": 1350000
+    },
+    "Srixon|driver|New": {
+      "count": 6,
+      "median": 257500,
+      "min": 220000,
+      "max": 269000
+    },
+    "Fourteen|wedge|Used": {
+      "count": 5,
+      "median": 70000,
+      "min": 65000,
+      "max": 80000
+    },
+    "Titleist|putter|New": {
+      "count": 5,
+      "median": 1350000,
+      "min": 569000,
+      "max": 3500000
+    },
+    "Titleist|wedge|New": {
+      "count": 5,
+      "median": 295000,
+      "min": 249000,
+      "max": 494000
+    },
+    "TaylorMade|wedge|New": {
+      "count": 5,
+      "median": 160000,
+      "min": 145000,
+      "max": 320000
+    },
+    "PXG|wood_other|Used": {
+      "count": 5,
+      "median": 250000,
+      "min": 130000,
+      "max": 250000
+    },
+    "Majesty|putter|Used": {
+      "count": 5,
+      "median": 130000,
+      "min": 90000,
+      "max": 230000
+    },
+    "Honma|wedge|New": {
+      "count": 5,
+      "median": 149000,
+      "min": 15000,
+      "max": 330000
+    },
+    "Srixon|iron|New": {
+      "count": 5,
+      "median": 215000,
+      "min": 140000,
+      "max": 880000
+    },
+    "Callaway|driver|A": {
+      "count": 4,
+      "median": 170000,
+      "min": 170000,
+      "max": 370000
+    },
+    "Fourteen|iron|Used": {
+      "count": 4,
+      "median": 350000,
+      "min": 320000,
+      "max": 350000
+    },
+    "Yonex|fairway_wood|Used": {
+      "count": 4,
+      "median": 55000,
+      "min": 55000,
+      "max": 55000
+    },
+    "Adams|wedge|Used": {
+      "count": 4,
+      "median": 65000,
+      "min": 60000,
+      "max": 70000
+    },
+    "Cobra|iron|Used": {
+      "count": 4,
+      "median": 170000,
+      "min": 80000,
+      "max": 300000
+    },
+    "PXG|hybrid|New": {
+      "count": 4,
+      "median": 302500,
+      "min": 228000,
+      "max": 600000
+    },
+    "Callaway|hybrid|Used": {
+      "count": 4,
+      "median": 124500,
+      "min": 60000,
+      "max": 200000
+    },
+    "Callaway|set|New": {
+      "count": 4,
+      "median": 541000,
+      "min": 350000,
+      "max": 700000
+    },
+    "Titleist|set|Used": {
+      "count": 4,
+      "median": 885000,
+      "min": 790000,
+      "max": 1010000
+    },
+    "Callaway|putter|New": {
+      "count": 4,
+      "median": 260000,
+      "min": 180000,
+      "max": 320000
+    },
+    "Callaway|wedge|New": {
+      "count": 4,
+      "median": 124450,
+      "min": 38900,
+      "max": 340000
+    },
+    "PXG|wedge|Used": {
+      "count": 4,
+      "median": 155000,
+      "min": 135000,
+      "max": 190000
+    },
+    "Ping|fairway_wood|Used": {
+      "count": 4,
+      "median": 225000,
+      "min": 135000,
+      "max": 260000
+    },
+    "Ping|wedge|New": {
+      "count": 4,
+      "median": 160000,
+      "min": 149000,
+      "max": 180000
+    },
+    "Majesty|wood_other|New": {
+      "count": 4,
+      "median": 600000,
+      "min": 68000,
+      "max": 1450000
+    },
+    "Honma|iron|New": {
+      "count": 4,
+      "median": 450000,
+      "min": 180000,
+      "max": 2970000
+    },
+    "Mizuno|driver|New": {
+      "count": 4,
+      "median": 450000,
+      "min": 200000,
+      "max": 1800000
+    },
+    "Mizuno|wedge|New": {
+      "count": 4,
+      "median": 150000,
+      "min": 147000,
+      "max": 180000
+    },
+    "XXIO|driver|A": {
+      "count": 4,
+      "median": 220000,
+      "min": 215000,
+      "max": 395000
+    },
+    "XXIO|wedge|New": {
+      "count": 4,
+      "median": 129500,
+      "min": 110000,
+      "max": 180000
+    },
+    "TaylorMade|driver|A": {
+      "count": 3,
+      "median": 280000,
+      "min": 200000,
+      "max": 320000
+    },
+    "Bridgestone|iron|A": {
+      "count": 3,
+      "median": 650000,
+      "min": 650000,
+      "max": 890000
+    },
+    "TaylorMade|hybrid|Used": {
+      "count": 3,
+      "median": 60000,
+      "min": 60000,
+      "max": 190000
+    },
+    "Titleist|driver|S": {
+      "count": 3,
+      "median": 375000,
+      "min": 157000,
+      "max": 386000
+    },
+    "Titleist|iron|A": {
+      "count": 3,
+      "median": 373000,
+      "min": 370000,
+      "max": 930000
+    },
+    "Titleist|wood_other|S": {
+      "count": 3,
+      "median": 292000,
+      "min": 250000,
+      "max": 303000
+    },
+    "TaylorMade|fairway_wood|New": {
+      "count": 3,
+      "median": 270000,
+      "min": 230000,
+      "max": 400000
+    },
+    "PXG|wedge|New": {
+      "count": 3,
+      "median": 295000,
+      "min": 220000,
+      "max": 345000
+    },
+    "Majesty|fairway_wood|New": {
+      "count": 3,
+      "median": 355000,
+      "min": 355000,
+      "max": 800000
+    },
+    "Honma|putter|New": {
+      "count": 3,
+      "median": 25000,
+      "min": 23000,
+      "max": 820000
+    },
+    "Mizuno|putter|Used": {
+      "count": 3,
+      "median": 40000,
+      "min": 30000,
+      "max": 59000
+    },
+    "Srixon|fairway_wood|Used": {
+      "count": 3,
+      "median": 110000,
+      "min": 90000,
+      "max": 130000
+    },
+    "Srixon|wedge|Used": {
+      "count": 3,
+      "median": 70000,
+      "min": 50000,
+      "max": 70000
+    },
+    "Srixon|set|Used": {
+      "count": 3,
+      "median": 650000,
+      "min": 630000,
+      "max": 750000
+    },
+    "Odyssey|putter|New": {
+      "count": 3,
+      "median": 250000,
+      "min": 190000,
+      "max": 348000
+    },
+    "Cobra|iron|S": {
+      "count": 3,
+      "median": 93000,
+      "min": 92000,
+      "max": 96000
+    }
+  },
+  "bySexCategory": {
+    "Mizuno|iron|Men": {
+      "count": 168,
+      "median": 50000,
+      "min": 20000,
+      "max": 560000
+    },
+    "TaylorMade|iron|Men": {
+      "count": 97,
+      "median": 320000,
+      "min": 30000,
+      "max": 700000
+    },
+    "Callaway|iron|Men": {
+      "count": 97,
+      "median": 220000,
+      "min": 35000,
+      "max": 560000
+    },
+    "Callaway|iron|Women": {
+      "count": 59,
+      "median": 220000,
+      "min": 45000,
+      "max": 494000
+    },
+    "Honma|iron|Women": {
+      "count": 58,
+      "median": 370000,
+      "min": 35000,
+      "max": 2500000
+    },
+    "Honma|iron|Men": {
+      "count": 51,
+      "median": 450000,
+      "min": 40000,
+      "max": 4390000
+    },
+    "XXIO|iron|Women": {
+      "count": 49,
+      "median": 645000,
+      "min": 77000,
+      "max": 1000000
+    },
+    "XXIO|iron|Men": {
+      "count": 46,
+      "median": 385000,
+      "min": 33000,
+      "max": 690000
+    },
+    "TaylorMade|set|Men": {
+      "count": 43,
+      "median": 450000,
+      "min": 180000,
+      "max": 1150000
+    },
+    "Titleist|iron|Men": {
+      "count": 40,
+      "median": 420000,
+      "min": 40000,
+      "max": 750000
+    },
+    "Titleist|wood_other|Men": {
+      "count": 40,
+      "median": 380000,
+      "min": 250000,
+      "max": 450000
+    },
+    "Honma|driver|Men": {
+      "count": 39,
+      "median": 250000,
+      "min": 50000,
+      "max": 1190000
+    },
+    "TaylorMade|iron|Women": {
+      "count": 39,
+      "median": 230000,
+      "min": 30000,
+      "max": 1100000
+    },
+    "XXIO|wood_other|Women": {
+      "count": 39,
+      "median": 220000,
+      "min": 80000,
+      "max": 326000
+    },
+    "Callaway|set|Women": {
+      "count": 32,
+      "median": 470000,
+      "min": 150000,
+      "max": 1390000
+    },
+    "Callaway|set|Men": {
+      "count": 32,
+      "median": 405000,
+      "min": 190000,
+      "max": 1190000
+    },
+    "Majesty|iron|Women": {
+      "count": 32,
+      "median": 490000,
+      "min": 62000,
+      "max": 7490000
+    },
+    "Ping|iron|Men": {
+      "count": 31,
+      "median": 330000,
+      "min": 45000,
+      "max": 880000
+    },
+    "Majesty|driver|Women": {
+      "count": 30,
+      "median": 367500,
+      "min": 70000,
+      "max": 3225000
+    },
+    "TaylorMade|driver|Men": {
+      "count": 28,
+      "median": 260000,
+      "min": 60000,
+      "max": 420000
+    },
+    "Bridgestone|iron|Men": {
+      "count": 28,
+      "median": 580000,
+      "min": 190000,
+      "max": 890000
+    },
+    "Majesty|iron|Men": {
+      "count": 27,
+      "median": 800000,
+      "min": 75000,
+      "max": 7490000
+    },
+    "Mizuno|iron|Women": {
+      "count": 26,
+      "median": 55000,
+      "min": 39000,
+      "max": 360000
+    },
+    "TaylorMade|wedge|Men": {
+      "count": 25,
+      "median": 65000,
+      "min": 38000,
+      "max": 180000
+    },
+    "Mizuno|driver|Men": {
+      "count": 24,
+      "median": 142500,
+      "min": 65000,
+      "max": 380000
+    },
+    "Honma|driver|Women": {
+      "count": 23,
+      "median": 275000,
+      "min": 75000,
+      "max": 550000
+    },
+    "XXIO|driver|Women": {
+      "count": 23,
+      "median": 320000,
+      "min": 70000,
+      "max": 458000
+    },
+    "TaylorMade|set|Women": {
+      "count": 22,
+      "median": 450000,
+      "min": 280000,
+      "max": 800000
+    },
+    "Srixon|driver|Men": {
+      "count": 22,
+      "median": 280000,
+      "min": 65000,
+      "max": 300000
+    },
+    "TaylorMade|wood_other|Women": {
+      "count": 21,
+      "median": 260000,
+      "min": 20000,
+      "max": 330000
+    },
+    "Ping|wood_other|Men": {
+      "count": 21,
+      "median": 210000,
+      "min": 65000,
+      "max": 220000
+    },
+    "Honma|wedge|Men": {
+      "count": 21,
+      "median": 80000,
+      "min": 40000,
+      "max": 145000
+    },
+    "XXIO|wedge|Women": {
+      "count": 21,
+      "median": 119000,
+      "min": 39000,
+      "max": 216600
+    },
+    "Srixon|iron|Men": {
+      "count": 20,
+      "median": 290000,
+      "min": 70000,
+      "max": 390000
+    },
+    "Callaway|fairway_wood|Men": {
+      "count": 20,
+      "median": 60000,
+      "min": 20000,
+      "max": 160000
+    },
+    "Callaway|wedge|Men": {
+      "count": 20,
+      "median": 65000,
+      "min": 50000,
+      "max": 95000
+    },
+    "Titleist|driver|Men": {
+      "count": 19,
+      "median": 620000,
+      "min": 70000,
+      "max": 3050000
+    },
+    "TaylorMade|driver|Women": {
+      "count": 19,
+      "median": 140000,
+      "min": 65000,
+      "max": 575000
+    },
+    "Ping|wedge|Men": {
+      "count": 19,
+      "median": 84400,
+      "min": 50000,
+      "max": 134000
+    },
+    "TaylorMade|fairway_wood|Men": {
+      "count": 17,
+      "median": 50000,
+      "min": 30000,
+      "max": 209000
+    },
+    "XXIO|driver|Men": {
+      "count": 16,
+      "median": 110000,
+      "min": 75000,
+      "max": 1800000
+    },
+    "Callaway|wood_other|Men": {
+      "count": 16,
+      "median": 150000,
+      "min": 30000,
+      "max": 150000
+    },
+    "Mizuno|wood_other|Women": {
+      "count": 16,
+      "median": 88000,
+      "min": 15000,
+      "max": 210000
+    },
+    "Honma|wedge|Women": {
+      "count": 15,
+      "median": 40000,
+      "min": 29000,
+      "max": 95000
+    },
+    "Callaway|driver|Men": {
+      "count": 14,
+      "median": 200000,
+      "min": 130000,
+      "max": 600000
+    },
+    "Mizuno|set|Women": {
+      "count": 14,
+      "median": 354500,
+      "min": 220000,
+      "max": 790000
+    },
+    "PXG|driver|Men": {
+      "count": 14,
+      "median": 492000,
+      "min": 150000,
+      "max": 564500
+    },
+    "Honma|fairway_wood|Women": {
+      "count": 13,
+      "median": 85000,
+      "min": 45000,
+      "max": 400000
+    },
+    "XXIO|set|Men": {
+      "count": 13,
+      "median": 790000,
+      "min": 590000,
+      "max": 1500000
+    },
+    "Mizuno|set|Men": {
+      "count": 13,
+      "median": 490000,
+      "min": 160000,
+      "max": 1090000
+    },
+    "Ping|driver|Men": {
+      "count": 12,
+      "median": 334500,
+      "min": 130000,
+      "max": 1300000
+    },
+    "TaylorMade|wedge|Women": {
+      "count": 12,
+      "median": 50000,
+      "min": 40000,
+      "max": 80000
+    },
+    "XXIO|set|Women": {
+      "count": 12,
+      "median": 1505000,
+      "min": 700000,
+      "max": 3080000
+    },
+    "Callaway|wood_other|Women": {
+      "count": 12,
+      "median": 75000,
+      "min": 30000,
+      "max": 290000
+    },
+    "Majesty|driver|Men": {
+      "count": 12,
+      "median": 305000,
+      "min": 140000,
+      "max": 550000
+    },
+    "Majesty|fairway_wood|Men": {
+      "count": 12,
+      "median": 840000,
+      "min": 150000,
+      "max": 1750000
+    },
+    "Honma|fairway_wood|Men": {
+      "count": 12,
+      "median": 80000,
+      "min": 30000,
+      "max": 1590000
+    },
+    "Majesty|fairway_wood|Women": {
+      "count": 11,
+      "median": 150000,
+      "min": 70000,
+      "max": 1880000
+    },
+    "Honma|wood_other|Women": {
+      "count": 11,
+      "median": 183000,
+      "min": 70000,
+      "max": 380000
+    },
+    "Titleist|wedge|Men": {
+      "count": 11,
+      "median": 90000,
+      "min": 45000,
+      "max": 120000
+    },
+    "Mizuno|wedge|Men": {
+      "count": 11,
+      "median": 69000,
+      "min": 40000,
+      "max": 95000
+    },
+    "Honma|wood_other|Men": {
+      "count": 10,
+      "median": 80000,
+      "min": 30000,
+      "max": 199000
+    },
+    "Honma|set|Women": {
+      "count": 10,
+      "median": 1025000,
+      "min": 450000,
+      "max": 3000000
+    },
+    "Majesty|wood_other|Men": {
+      "count": 10,
+      "median": 220000,
+      "min": 79000,
+      "max": 1545100
+    },
+    "Bridgestone|wood_other|Women": {
+      "count": 10,
+      "median": 105000,
+      "min": 40000,
+      "max": 277000
+    },
+    "Majesty|wood_other|Women": {
+      "count": 9,
+      "median": 650000,
+      "min": 50000,
+      "max": 1285200
+    },
+    "TaylorMade|fairway_wood|Women": {
+      "count": 8,
+      "median": 55000,
+      "min": 39000,
+      "max": 150000
+    },
+    "TaylorMade|wood_other|Men": {
+      "count": 8,
+      "median": 50000,
+      "min": 25000,
+      "max": 150000
+    },
+    "Mizuno|fairway_wood|Men": {
+      "count": 8,
+      "median": 65000,
+      "min": 50000,
+      "max": 150000
+    },
+    "Cobra|driver|Men": {
+      "count": 8,
+      "median": 150000,
+      "min": 70000,
+      "max": 250000
+    },
+    "Callaway|wedge|Women": {
+      "count": 7,
+      "median": 125000,
+      "min": 30000,
+      "max": 300000
+    },
+    "Ping|wood_other|Women": {
+      "count": 7,
+      "median": 280000,
+      "min": 70000,
+      "max": 290000
+    },
+    "Mizuno|driver|Women": {
+      "count": 7,
+      "median": 200000,
+      "min": 30000,
+      "max": 220000
+    },
+    "Mizuno|fairway_wood|Women": {
+      "count": 7,
+      "median": 165000,
+      "min": 22000,
+      "max": 199000
+    },
+    "XXIO|wedge|Men": {
+      "count": 6,
+      "median": 125000,
+      "min": 50000,
+      "max": 180000
+    },
+    "PXG|iron|Men": {
+      "count": 6,
+      "median": 920000,
+      "min": 550000,
+      "max": 1600000
+    },
+    "Majesty|wedge|Men": {
+      "count": 6,
+      "median": 234900,
+      "min": 70000,
+      "max": 390000
+    },
+    "Mizuno|wood_other|Men": {
+      "count": 6,
+      "median": 60000,
+      "min": 40000,
+      "max": 80000
+    },
+    "Srixon|fairway_wood|Men": {
+      "count": 6,
+      "median": 120000,
+      "min": 90000,
+      "max": 160000
+    },
+    "Srixon|wood_other|Men": {
+      "count": 6,
+      "median": 120500,
+      "min": 100000,
+      "max": 189000
+    },
+    "XXIO|wood_other|Men": {
+      "count": 6,
+      "median": 170000,
+      "min": 70000,
+      "max": 230000
+    },
+    "Fourteen|wedge|Men": {
+      "count": 5,
+      "median": 70000,
+      "min": 65000,
+      "max": 80000
+    },
+    "Callaway|hybrid|Women": {
+      "count": 5,
+      "median": 89000,
+      "min": 40000,
+      "max": 200000
+    },
+    "Ping|hybrid|Women": {
+      "count": 5,
+      "median": 40000,
+      "min": 30000,
+      "max": 658000
+    },
+    "Titleist|set|Men": {
+      "count": 5,
+      "median": 850000,
+      "min": 790000,
+      "max": 940000
+    },
+    "Ping|putter|Men": {
+      "count": 5,
+      "median": 70000,
+      "min": 70000,
+      "max": 80000
+    },
+    "Bridgestone|driver|Men": {
+      "count": 5,
+      "median": 235000,
+      "min": 140000,
+      "max": 360000
+    },
+    "Cobra|iron|Women": {
+      "count": 5,
+      "median": 40000,
+      "min": 35000,
+      "max": 120000
+    },
+    "Fourteen|iron|Men": {
+      "count": 4,
+      "median": 350000,
+      "min": 320000,
+      "max": 350000
+    },
+    "Titleist|fairway_wood|Men": {
+      "count": 4,
+      "median": 120000,
+      "min": 70000,
+      "max": 189000
+    },
+    "Yonex|fairway_wood|Women": {
+      "count": 4,
+      "median": 55000,
+      "min": 55000,
+      "max": 55000
+    },
+    "Adams|wedge|Men": {
+      "count": 4,
+      "median": 65000,
+      "min": 60000,
+      "max": 70000
+    },
+    "Callaway|putter|Men": {
+      "count": 4,
+      "median": 105000,
+      "min": 50000,
+      "max": 250000
+    },
+    "TaylorMade|putter|Men": {
+      "count": 4,
+      "median": 67500,
+      "min": 55000,
+      "max": 80000
+    },
+    "PXG|iron|Women": {
+      "count": 4,
+      "median": 832500,
+      "min": 480000,
+      "max": 1550000
+    },
+    "Majesty|hybrid|Men": {
+      "count": 4,
+      "median": 150500,
+      "min": 130000,
+      "max": 363700
+    },
+    "Mizuno|putter|Women": {
+      "count": 4,
+      "median": 56500,
+      "min": 42000,
+      "max": 59000
+    },
+    "Bridgestone|iron|Women": {
+      "count": 4,
+      "median": 57000,
+      "min": 55000,
+      "max": 410000
+    },
+    "XXIO|fairway_wood|Women": {
+      "count": 4,
+      "median": 217000,
+      "min": 155000,
+      "max": 605000
+    },
+    "Majesty|set|Women": {
+      "count": 3,
+      "median": 1600000,
+      "min": 1050000,
+      "max": 3500000
+    },
+    "Cobra|iron|Men": {
+      "count": 3,
+      "median": 210000,
+      "min": 130000,
+      "max": 300000
+    },
+    "Honma|set|Men": {
+      "count": 3,
+      "median": 690000,
+      "min": 590000,
+      "max": 750000
+    },
+    "PRGR|set|Men": {
+      "count": 3,
+      "median": 1280000,
+      "min": 590000,
+      "max": 1300000
+    },
+    "Callaway|driver|Women": {
+      "count": 3,
+      "median": 100000,
+      "min": 40000,
+      "max": 220000
+    },
+    "Callaway|hybrid|Men": {
+      "count": 3,
+      "median": 60000,
+      "min": 60000,
+      "max": 210400
+    },
+    "Titleist|putter|Men": {
+      "count": 3,
+      "median": 70000,
+      "min": 70000,
+      "max": 270000
+    },
+    "Titleist|wedge|Women": {
+      "count": 3,
+      "median": 250000,
+      "min": 130000,
+      "max": 600000
+    },
+    "PXG|wedge|Women": {
+      "count": 3,
+      "median": 295000,
+      "min": 129000,
+      "max": 345000
+    },
+    "Majesty|putter|Women": {
+      "count": 3,
+      "median": 85000,
+      "min": 84000,
+      "max": 89000
+    },
+    "Honma|putter|Men": {
+      "count": 3,
+      "median": 60000,
+      "min": 60000,
+      "max": 135000
+    },
+    "Srixon|set|Men": {
+      "count": 3,
+      "median": 650000,
+      "min": 630000,
+      "max": 750000
+    },
+    "Bridgestone|driver|Women": {
+      "count": 3,
+      "median": 240000,
+      "min": 140000,
+      "max": 350000
+    },
+    "Bridgestone|wood_other|Men": {
+      "count": 3,
+      "median": 100000,
+      "min": 100000,
+      "max": 110000
+    },
+    "Cobra|fairway_wood|Men": {
+      "count": 3,
+      "median": 50000,
+      "min": 50000,
+      "max": 60000
+    }
+  },
+  "byShaft": {
+    "Honma|wedge|Graphite": {
+      "count": 31,
+      "median": 85000,
+      "min": 28000,
+      "max": 171000
+    },
+    "Callaway|iron|Steel": {
+      "count": 29,
+      "median": 180000,
+      "min": 15000,
+      "max": 1980000
+    },
+    "Majesty|iron|Graphite": {
+      "count": 29,
+      "median": 800000,
+      "min": 80000,
+      "max": 1690000
+    },
+    "Bridgestone|driver|TourAD": {
+      "count": 25,
+      "median": 160000,
+      "min": 93000,
+      "max": 367000
+    },
+    "PXG|driver|Speeder": {
+      "count": 22,
+      "median": 563050,
+      "min": 150000,
+      "max": 581000
+    },
+    "Titleist|driver|TourAD": {
+      "count": 20,
+      "median": 140000,
+      "min": 70000,
+      "max": 350000
+    },
+    "Ping|iron|LightSteel": {
+      "count": 20,
+      "median": 174500,
+      "min": 85000,
+      "max": 950000
+    },
+    "Srixon|driver|Ventus": {
+      "count": 20,
+      "median": 280000,
+      "min": 220000,
+      "max": 315000
+    },
+    "Srixon|iron|LightSteel": {
+      "count": 20,
+      "median": 150000,
+      "min": 45000,
+      "max": 1350000
+    },
+    "XXIO|iron|Graphite": {
+      "count": 20,
+      "median": 690000,
+      "min": 70000,
+      "max": 1000000
+    },
+    "Srixon|wood_other|TourAD": {
+      "count": 19,
+      "median": 150000,
+      "min": 100000,
+      "max": 220000
+    },
+    "Callaway|wedge|LightSteel": {
+      "count": 17,
+      "median": 100000,
+      "min": 40000,
+      "max": 680000
+    },
+    "Honma|iron|LightSteel": {
+      "count": 17,
+      "median": 300000,
+      "min": 36000,
+      "max": 1300000
+    },
+    "Bridgestone|wood_other|TourAD": {
+      "count": 17,
+      "median": 140000,
+      "min": 70000,
+      "max": 280000
+    },
+    "Srixon|iron|Graphite": {
+      "count": 16,
+      "median": 290000,
+      "min": 65000,
+      "max": 795000
+    },
+    "Srixon|driver|Diamana": {
+      "count": 16,
+      "median": 187200,
+      "min": 100000,
+      "max": 270000
+    },
+    "Bridgestone|wood_other|Speeder": {
+      "count": 16,
+      "median": 160000,
+      "min": 50000,
+      "max": 230000
+    },
+    "Srixon|driver|TourAD": {
+      "count": 15,
+      "median": 190000,
+      "min": 100000,
+      "max": 310000
+    },
+    "Titleist|iron|LightSteel": {
+      "count": 15,
+      "median": 130000,
+      "min": 130000,
+      "max": 850000
+    },
+    "Cobra|driver|Speeder": {
+      "count": 15,
+      "median": 195000,
+      "min": 35000,
+      "max": 339000
+    },
+    "Titleist|iron|Graphite": {
+      "count": 14,
+      "median": 600000,
+      "min": 350000,
+      "max": 600000
+    },
+    "Titleist|wood_other|Ventus": {
+      "count": 14,
+      "median": 450000,
+      "min": 420000,
+      "max": 540000
+    },
+    "Titleist|fairway_wood|TourAD": {
+      "count": 14,
+      "median": 139000,
+      "min": 75000,
+      "max": 189000
+    },
+    "PXG|iron|Steel": {
+      "count": 13,
+      "median": 990000,
+      "min": 130000,
+      "max": 1750000
+    },
+    "TaylorMade|driver|Diamana": {
+      "count": 12,
+      "median": 240000,
+      "min": 85000,
+      "max": 450000
+    },
+    "TaylorMade|driver|TourAD": {
+      "count": 12,
+      "median": 160000,
+      "min": 100000,
+      "max": 200000
+    },
+    "Mizuno|iron|Graphite": {
+      "count": 12,
+      "median": 310000,
+      "min": 310000,
+      "max": 310000
+    },
+    "Callaway|wedge|NSPro": {
+      "count": 12,
+      "median": 79500,
+      "min": 30000,
+      "max": 200000
+    },
+    "Titleist|wedge|LightSteel": {
+      "count": 12,
+      "median": 112500,
+      "min": 90000,
+      "max": 520000
+    },
+    "Mizuno|wedge|LightSteel": {
+      "count": 12,
+      "median": 84500,
+      "min": 40000,
+      "max": 750000
+    },
+    "Cobra|driver|TourAD": {
+      "count": 12,
+      "median": 195000,
+      "min": 140000,
+      "max": 590000
+    },
+    "TaylorMade|wedge|LightSteel": {
+      "count": 11,
+      "median": 130000,
+      "min": 65000,
+      "max": 150000
+    },
+    "PXG|driver|Diamana": {
+      "count": 11,
+      "median": 295000,
+      "min": 100000,
+      "max": 790000
+    },
+    "Ping|wedge|LightSteel": {
+      "count": 11,
+      "median": 125000,
+      "min": 35000,
+      "max": 650000
+    },
+    "Mizuno|wedge|Graphite": {
+      "count": 11,
+      "median": 60000,
+      "min": 35000,
+      "max": 95000
+    },
+    "Srixon|fairway_wood|TourAD": {
+      "count": 11,
+      "median": 330000,
+      "min": 65000,
+      "max": 330000
+    },
+    "Bridgestone|iron|LightSteel": {
+      "count": 11,
+      "median": 260000,
+      "min": 79000,
+      "max": 890000
+    },
+    "XXIO|iron|LightSteel": {
+      "count": 11,
+      "median": 400000,
+      "min": 63000,
+      "max": 760000
+    },
+    "XXIO|wedge|Graphite": {
+      "count": 11,
+      "median": 85000,
+      "min": 50000,
+      "max": 133900
+    },
+    "Cobra|driver|Diamana": {
+      "count": 11,
+      "median": 225000,
+      "min": 180000,
+      "max": 259000
+    },
+    "Callaway|driver|Tensei": {
+      "count": 10,
+      "median": 250000,
+      "min": 115000,
+      "max": 700000
+    },
+    "Callaway|wood_other|Steel": {
+      "count": 10,
+      "median": 54500,
+      "min": 30000,
+      "max": 115000
+    },
+    "Callaway|wedge|Steel": {
+      "count": 10,
+      "median": 72500,
+      "min": 18000,
+      "max": 310000
+    },
+    "Honma|wedge|LightSteel": {
+      "count": 10,
+      "median": 69500,
+      "min": 55000,
+      "max": 650000
+    },
+    "Srixon|iron|NSPro": {
+      "count": 10,
+      "median": 190000,
+      "min": 55000,
+      "max": 390000
+    },
+    "Callaway|iron|NSPro": {
+      "count": 9,
+      "median": 99000,
+      "min": 60000,
+      "max": 600000
+    },
+    "Majesty|wedge|Tensei": {
+      "count": 9,
+      "median": 150000,
+      "min": 120000,
+      "max": 150000
+    },
+    "Callaway|driver|Ventus": {
+      "count": 8,
+      "median": 210000,
+      "min": 130000,
+      "max": 900000
+    },
+    "Callaway|driver|Speeder": {
+      "count": 8,
+      "median": 290000,
+      "min": 160000,
+      "max": 360000
+    },
+    "Titleist|wedge|Steel": {
+      "count": 8,
+      "median": 86000,
+      "min": 65000,
+      "max": 494000
+    },
+    "Titleist|iron|NSPro": {
+      "count": 8,
+      "median": 370000,
+      "min": 70000,
+      "max": 1000000
+    },
+    "Titleist|wood_other|TourAD": {
+      "count": 8,
+      "median": 174000,
+      "min": 110000,
+      "max": 300000
+    },
+    "TaylorMade|iron|LightSteel": {
+      "count": 8,
+      "median": 297500,
+      "min": 60000,
+      "max": 590000
+    },
+    "TaylorMade|iron|KBS": {
+      "count": 8,
+      "median": 290000,
+      "min": 75000,
+      "max": 750000
+    },
+    "PXG|driver|Tensei": {
+      "count": 8,
+      "median": 259000,
+      "min": 150000,
+      "max": 590000
+    },
+    "Majesty|iron|LightSteel": {
+      "count": 8,
+      "median": 97500,
+      "min": 75000,
+      "max": 1300000
+    },
+    "Majesty|wedge|Steel": {
+      "count": 8,
+      "median": 120000,
+      "min": 80000,
+      "max": 120000
+    },
+    "Honma|iron|Graphite": {
+      "count": 8,
+      "median": 94500,
+      "min": 45000,
+      "max": 590000
+    },
+    "Mizuno|iron|Steel": {
+      "count": 8,
+      "median": 65000,
+      "min": 65000,
+      "max": 325000
+    },
+    "Srixon|iron|Steel": {
+      "count": 8,
+      "median": 265000,
+      "min": 48000,
+      "max": 1150000
+    },
+    "Srixon|wedge|LightSteel": {
+      "count": 8,
+      "median": 337000,
+      "min": 45000,
+      "max": 690000
+    },
+    "Titleist|driver|Diamana": {
+      "count": 7,
+      "median": 150000,
+      "min": 100000,
+      "max": 290000
+    },
+    "Callaway|driver|TourAD": {
+      "count": 7,
+      "median": 175000,
+      "min": 143000,
+      "max": 290000
+    },
+    "TaylorMade|wood_other|Steel": {
+      "count": 7,
+      "median": 40000,
+      "min": 20000,
+      "max": 99000
+    },
+    "Titleist|iron|Steel": {
+      "count": 7,
+      "median": 373000,
+      "min": 46000,
+      "max": 1800000
+    },
+    "Titleist|wood_other|Tensei": {
+      "count": 7,
+      "median": 275000,
+      "min": 250000,
+      "max": 480000
+    },
+    "TaylorMade|wedge|NSPro": {
+      "count": 7,
+      "median": 90000,
+      "min": 45000,
+      "max": 430000
+    },
+    "Ping|wood_other|TourAD": {
+      "count": 7,
+      "median": 320000,
+      "min": 120000,
+      "max": 620000
+    },
+    "Cobra|wood_other|Speeder": {
+      "count": 7,
+      "median": 80000,
+      "min": 80000,
+      "max": 91000
+    },
+    "Titleist|driver|Speeder": {
+      "count": 6,
+      "median": 105000,
+      "min": 60000,
+      "max": 340000
+    },
+    "TaylorMade|fairway_wood|Ventus": {
+      "count": 6,
+      "median": 249000,
+      "min": 180000,
+      "max": 360000
+    },
+    "Callaway|wedge|Graphite": {
+      "count": 6,
+      "median": 65000,
+      "min": 28000,
+      "max": 300000
+    },
+    "Titleist|driver|Tensei": {
+      "count": 6,
+      "median": 145000,
+      "min": 120000,
+      "max": 410000
+    },
+    "TaylorMade|driver|Tensei": {
+      "count": 6,
+      "median": 154000,
+      "min": 75000,
+      "max": 285000
+    },
+    "PXG|driver|Ventus": {
+      "count": 6,
+      "median": 627000,
+      "min": 200000,
+      "max": 780000
+    },
+    "PXG|iron|KBS": {
+      "count": 6,
+      "median": 670000,
+      "min": 100000,
+      "max": 1003200
+    },
+    "PXG|iron|LightSteel": {
+      "count": 6,
+      "median": 607500,
+      "min": 140000,
+      "max": 860000
+    },
+    "PXG|wood_other|Speeder": {
+      "count": 6,
+      "median": 219450,
+      "min": 165000,
+      "max": 334400
+    },
+    "Ping|iron|Steel": {
+      "count": 6,
+      "median": 249000,
+      "min": 80000,
+      "max": 1850000
+    },
+    "Ping|wedge|Steel": {
+      "count": 6,
+      "median": 87500,
+      "min": 40000,
+      "max": 120000
+    },
+    "Ping|wedge|NSPro": {
+      "count": 6,
+      "median": 110000,
+      "min": 70000,
+      "max": 150000
+    },
+    "Honma|wedge|Steel": {
+      "count": 6,
+      "median": 70500,
+      "min": 56000,
+      "max": 100000
+    },
+    "Bridgestone|driver|Diamana": {
+      "count": 6,
+      "median": 208500,
+      "min": 90000,
+      "max": 345600
+    },
+    "Bridgestone|iron|Graphite": {
+      "count": 6,
+      "median": 87000,
+      "min": 75000,
+      "max": 1050000
+    },
+    "Bridgestone|fairway_wood|Speeder": {
+      "count": 6,
+      "median": 195000,
+      "min": 180000,
+      "max": 229000
+    },
+    "Callaway|iron|LightSteel": {
+      "count": 5,
+      "median": 350000,
+      "min": 55000,
+      "max": 800000
+    },
+    "Callaway|iron|Graphite": {
+      "count": 5,
+      "median": 270000,
+      "min": 30000,
+      "max": 584000
+    },
+    "Callaway|fairway_wood|TourAD": {
+      "count": 5,
+      "median": 189000,
+      "min": 129000,
+      "max": 200000
+    },
+    "TaylorMade|wood_other|Ventus": {
+      "count": 5,
+      "median": 225000,
+      "min": 185000,
+      "max": 240000
+    },
+    "TaylorMade|wedge|Steel": {
+      "count": 5,
+      "median": 65000,
+      "min": 35000,
+      "max": 85000
+    },
+    "PXG|driver|TourAD": {
+      "count": 5,
+      "median": 200000,
+      "min": 120000,
+      "max": 470000
+    },
+    "PXG|wood_other|Tensei": {
+      "count": 5,
+      "median": 257500,
+      "min": 100000,
+      "max": 300000
+    },
+    "Mizuno|driver|TourAD": {
+      "count": 5,
+      "median": 270000,
+      "min": 140000,
+      "max": 410000
+    },
+    "Srixon|driver|Speeder": {
+      "count": 5,
+      "median": 120000,
+      "min": 78000,
+      "max": 245000
+    },
+    "Srixon|wedge|NSPro": {
+      "count": 5,
+      "median": 70000,
+      "min": 35000,
+      "max": 98000
+    },
+    "Bridgestone|fairway_wood|TourAD": {
+      "count": 5,
+      "median": 190000,
+      "min": 130000,
+      "max": 230000
+    },
+    "XXIO|wedge|LightSteel": {
+      "count": 5,
+      "median": 78000,
+      "min": 34000,
+      "max": 255000
+    },
+    "TaylorMade|driver|Ventus": {
+      "count": 4,
+      "median": 285000,
+      "min": 150000,
+      "max": 290000
+    },
+    "Callaway|fairway_wood|Tensei": {
+      "count": 4,
+      "median": 200000,
+      "min": 179000,
+      "max": 280000
+    },
+    "Callaway|fairway_wood|Steel": {
+      "count": 4,
+      "median": 70000,
+      "min": 60000,
+      "max": 80000
+    },
+    "Callaway|wood_other|TourAD": {
+      "count": 4,
+      "median": 129500,
+      "min": 110000,
+      "max": 157000
+    },
+    "Titleist|fairway_wood|Tensei": {
+      "count": 4,
+      "median": 192500,
+      "min": 180000,
+      "max": 334000
+    },
+    "Titleist|wood_other|Speeder": {
+      "count": 4,
+      "median": 115000,
+      "min": 87000,
+      "max": 170000
+    },
+    "Titleist|wedge|NSPro": {
+      "count": 4,
+      "median": 110000,
+      "min": 85000,
+      "max": 120000
+    },
+    "Titleist|hybrid|TourAD": {
+      "count": 4,
+      "median": 210000,
+      "min": 200000,
+      "max": 250000
+    },
+    "TaylorMade|iron|Graphite": {
+      "count": 4,
+      "median": 425000,
+      "min": 180000,
+      "max": 550000
+    },
+    "TaylorMade|wedge|Graphite": {
+      "count": 4,
+      "median": 62500,
+      "min": 40000,
+      "max": 79000
+    },
+    "Ping|iron|NSPro": {
+      "count": 4,
+      "median": 262500,
+      "min": 99000,
+      "max": 480900
+    },
+    "Ping|wedge|Modus": {
+      "count": 4,
+      "median": 130000,
+      "min": 105000,
+      "max": 145000
+    },
+    "Majesty|wood_other|Speeder": {
+      "count": 4,
+      "median": 195000,
+      "min": 150000,
+      "max": 230000
+    },
+    "Majesty|wedge|Graphite": {
+      "count": 4,
+      "median": 160000,
+      "min": 150000,
+      "max": 190000
+    },
+    "Majesty|wedge|LightSteel": {
+      "count": 4,
+      "median": 142400,
+      "min": 124000,
+      "max": 180000
+    },
+    "Honma|wedge|NSPro": {
+      "count": 4,
+      "median": 167500,
+      "min": 82000,
+      "max": 200000
+    },
+    "Mizuno|wood_other|Graphite": {
+      "count": 4,
+      "median": 77000,
+      "min": 59000,
+      "max": 210000
+    },
+    "Srixon|fairway_wood|Steel": {
+      "count": 4,
+      "median": 36500,
+      "min": 35000,
+      "max": 40000
+    },
+    "Bridgestone|driver|Tensei": {
+      "count": 4,
+      "median": 155000,
+      "min": 100000,
+      "max": 229000
+    },
+    "Bridgestone|driver|Speeder": {
+      "count": 4,
+      "median": 128500,
+      "min": 100000,
+      "max": 240000
+    },
+    "Bridgestone|iron|Steel": {
+      "count": 4,
+      "median": 732500,
+      "min": 325000,
+      "max": 1890000
+    },
+    "Bridgestone|iron|Modus": {
+      "count": 4,
+      "median": 91500,
+      "min": 85000,
+      "max": 300000
+    },
+    "Bridgestone|wedge|LightSteel": {
+      "count": 4,
+      "median": 84500,
+      "min": 70000,
+      "max": 500000
+    },
+    "XXIO|driver|TourAD": {
+      "count": 4,
+      "median": 232500,
+      "min": 220000,
+      "max": 380000
+    },
+    "XXIO|iron|Steel": {
+      "count": 4,
+      "median": 440000,
+      "min": 77000,
+      "max": 790000
+    },
+    "XXIO|wedge|NSPro": {
+      "count": 4,
+      "median": 62500,
+      "min": 35000,
+      "max": 85000
+    },
+    "Odyssey|putter|Steel": {
+      "count": 4,
+      "median": 65000,
+      "min": 60000,
+      "max": 70000
+    },
+    "Ping|driver|Ventus": {
+      "count": 3,
+      "median": 310000,
+      "min": 240000,
+      "max": 750000
+    },
+    "TaylorMade|iron|Carbon": {
+      "count": 3,
+      "median": 250000,
+      "min": 195000,
+      "max": 315000
+    },
+    "Titleist|fairway_wood|Speeder": {
+      "count": 3,
+      "median": 120000,
+      "min": 95000,
+      "max": 140000
+    },
+    "TaylorMade|fairway_wood|TourAD": {
+      "count": 3,
+      "median": 140000,
+      "min": 140000,
+      "max": 180000
+    },
+    "Callaway|driver|Diamana": {
+      "count": 3,
+      "median": 90000,
+      "min": 70000,
+      "max": 156000
+    },
+    "Callaway|wood_other|Ventus": {
+      "count": 3,
+      "median": 880000,
+      "min": 228000,
+      "max": 880000
+    },
+    "Callaway|wood_other|Diamana": {
+      "count": 3,
+      "median": 180000,
+      "min": 138000,
+      "max": 180000
+    },
+    "Titleist|iron|KBS": {
+      "count": 3,
+      "median": 495000,
+      "min": 85000,
+      "max": 590000
+    },
+    "Titleist|wood_other|Diamana": {
+      "count": 3,
+      "median": 180000,
+      "min": 180000,
+      "max": 180000
+    },
+    "TaylorMade|wood_other|Tensei": {
+      "count": 3,
+      "median": 190000,
+      "min": 70000,
+      "max": 195000
+    },
+    "TaylorMade|wood_other|Diamana": {
+      "count": 3,
+      "median": 245000,
+      "min": 98000,
+      "max": 260000
+    },
+    "TaylorMade|fairway_wood|Tensei": {
+      "count": 3,
+      "median": 179000,
+      "min": 140000,
+      "max": 289000
+    },
+    "TaylorMade|wedge|KBS": {
+      "count": 3,
+      "median": 80000,
+      "min": 70000,
+      "max": 80000
+    },
+    "PXG|wood_other|Ventus": {
+      "count": 3,
+      "median": 340000,
+      "min": 313500,
+      "max": 380000
+    },
+    "PXG|wedge|Modus": {
+      "count": 3,
+      "median": 110000,
+      "min": 110000,
+      "max": 120000
+    },
+    "Ping|driver|Speeder": {
+      "count": 3,
+      "median": 150000,
+      "min": 140000,
+      "max": 160000
+    },
+    "Ping|wedge|Graphite": {
+      "count": 3,
+      "median": 60000,
+      "min": 25000,
+      "max": 60000
+    },
+    "Majesty|wedge|NSPro": {
+      "count": 3,
+      "median": 130000,
+      "min": 95000,
+      "max": 146000
+    },
+    "Honma|iron|NSPro": {
+      "count": 3,
+      "median": 380000,
+      "min": 290000,
+      "max": 750000
+    },
+    "Mizuno|wood_other|TourAD": {
+      "count": 3,
+      "median": 200000,
+      "min": 150000,
+      "max": 240000
+    },
+    "Bridgestone|driver|Ventus": {
+      "count": 3,
+      "median": 120000,
+      "min": 120000,
+      "max": 250000
+    },
+    "Bridgestone|iron|NSPro": {
+      "count": 3,
+      "median": 90000,
+      "min": 85000,
+      "max": 500000
+    },
+    "Bridgestone|fairway_wood|Diamana": {
+      "count": 3,
+      "median": 240000,
+      "min": 230000,
+      "max": 250000
+    },
+    "XXIO|driver|Speeder": {
+      "count": 3,
+      "median": 150000,
+      "min": 129000,
+      "max": 200000
+    },
+    "Cobra|driver|Ventus": {
+      "count": 3,
+      "median": 259000,
+      "min": 249000,
+      "max": 259000
+    }
+  },
+  "byGeneration": {
+    "Bridgestone|V300|5th": {
+      "count": 13,
+      "median": 580000,
+      "min": 580000,
+      "max": 1450000
+    },
+    "Bridgestone|V300|1st": {
+      "count": 12,
+      "median": 190000,
+      "min": 190000,
+      "max": 190000
+    },
+    "Titleist|T100|2nd": {
+      "count": 6,
+      "median": 750000,
+      "min": 660000,
+      "max": 890000
+    },
+    "Majesty|Prestigio|2026": {
+      "count": 3,
+      "median": 500000,
+      "min": 205000,
+      "max": 1590000
+    },
+    "Honma|TourWorld|2024": {
+      "count": 3,
+      "median": 170000,
+      "min": 170000,
+      "max": 170000
+    }
+  },
+  "bySubModelLoft": {
+    "Srixon|ZX7|9.5도": {
+      "count": 25,
+      "median": 280000,
+      "min": 70000,
+      "max": 310000
+    },
+    "Honma|Beres|10.5도": {
+      "count": 21,
+      "median": 690000,
+      "min": 81000,
+      "max": 770000
+    },
+    "Titleist|TSR2|9도": {
+      "count": 18,
+      "median": 620000,
+      "min": 350000,
+      "max": 620000
+    },
+    "Majesty|Maruman|18도": {
+      "count": 18,
+      "median": 240000,
+      "min": 120000,
+      "max": 1880000
+    },
+    "Titleist|TSR3|15도": {
+      "count": 17,
+      "median": 380000,
+      "min": 225000,
+      "max": 380000
+    },
+    "Honma|Beres|10도": {
+      "count": 17,
+      "median": 81000,
+      "min": 71000,
+      "max": 90000
+    },
+    "Honma|Beres|9.5도": {
+      "count": 16,
+      "median": 250000,
+      "min": 145000,
+      "max": 399000
+    },
+    "Honma|Beres|19도": {
+      "count": 16,
+      "median": 239000,
+      "min": 127000,
+      "max": 770000
+    },
+    "PXG|0311|10.5도": {
+      "count": 15,
+      "median": 563900,
+      "min": 300000,
+      "max": 594000
+    },
+    "TaylorMade|Stealth2|9도": {
+      "count": 14,
+      "median": 330000,
+      "min": 230000,
+      "max": 471000
+    },
+    "Majesty|Maruman|11.5도": {
+      "count": 14,
+      "median": 335000,
+      "min": 175000,
+      "max": 800000
+    },
+    "Honma|Beres|18도": {
+      "count": 13,
+      "median": 230000,
+      "min": 59000,
+      "max": 4040000
+    },
+    "Srixon|ZX5|9.5도": {
+      "count": 13,
+      "median": 180000,
+      "min": 95000,
+      "max": 499000
+    },
+    "Ping|G440|9도": {
+      "count": 12,
+      "median": 587500,
+      "min": 420000,
+      "max": 790000
+    },
+    "Titleist|TSR3|9도": {
+      "count": 12,
+      "median": 387500,
+      "min": 330000,
+      "max": 440000
+    },
+    "XXIO|XXIO13|18도": {
+      "count": 12,
+      "median": 250000,
+      "min": 195000,
+      "max": 290000
+    },
+    "Ping|G425|9도": {
+      "count": 11,
+      "median": 270000,
+      "min": 11111,
+      "max": 330000
+    },
+    "TaylorMade|Burner|18도": {
+      "count": 11,
+      "median": 80000,
+      "min": 40000,
+      "max": 129000
+    },
+    "Honma|Beres|9도": {
+      "count": 11,
+      "median": 150000,
+      "min": 81000,
+      "max": 250000
+    },
+    "Honma|Beres|16도": {
+      "count": 11,
+      "median": 250000,
+      "min": 75000,
+      "max": 770000
+    },
+    "Bridgestone|B2|18도": {
+      "count": 11,
+      "median": 230000,
+      "min": 190000,
+      "max": 300000
+    },
+    "Callaway|Paradym|9도": {
+      "count": 10,
+      "median": 280000,
+      "min": 150000,
+      "max": 403400
+    },
+    "Titleist|TSR2|18도": {
+      "count": 10,
+      "median": 275000,
+      "min": 239000,
+      "max": 285000
+    },
+    "Majesty|Maruman|19도": {
+      "count": 10,
+      "median": 237500,
+      "min": 155000,
+      "max": 1480000
+    },
+    "Honma|TourWorld|18도": {
+      "count": 10,
+      "median": 151500,
+      "min": 57000,
+      "max": 180000
+    },
+    "Srixon|ZX|18도": {
+      "count": 10,
+      "median": 186500,
+      "min": 135000,
+      "max": 220000
+    },
+    "TaylorMade|Stealth|10.5도": {
+      "count": 9,
+      "median": 190000,
+      "min": 150000,
+      "max": 330000
+    },
+    "TaylorMade|SIM2|9도": {
+      "count": 9,
+      "median": 320000,
+      "min": 170000,
+      "max": 320000
+    },
+    "TaylorMade|Stealth|9도": {
+      "count": 9,
+      "median": 210000,
+      "min": 190000,
+      "max": 285000
+    },
+    "Callaway|Epic|10.5도": {
+      "count": 9,
+      "median": 175000,
+      "min": 130000,
+      "max": 220000
+    },
+    "Callaway|Paradym|10.5도": {
+      "count": 9,
+      "median": 220000,
+      "min": 190000,
+      "max": 398600
+    },
+    "Titleist|TSi2|18도": {
+      "count": 9,
+      "median": 195000,
+      "min": 179000,
+      "max": 265000
+    },
+    "Ping|G430|9도": {
+      "count": 9,
+      "median": 425000,
+      "min": 370000,
+      "max": 570000
+    },
+    "Majesty|Prestigio|10.5도": {
+      "count": 9,
+      "median": 588000,
+      "min": 165000,
+      "max": 1990000
+    },
+    "Bridgestone|JGR|18도": {
+      "count": 9,
+      "median": 139000,
+      "min": 93000,
+      "max": 190000
+    },
+    "Callaway|BigBertha|9도": {
+      "count": 8,
+      "median": 200000,
+      "min": 76000,
+      "max": 200000
+    },
+    "Titleist|TSi2|10도": {
+      "count": 8,
+      "median": 280000,
+      "min": 230000,
+      "max": 355000
+    },
+    "Titleist|TSi3|9도": {
+      "count": 8,
+      "median": 283000,
+      "min": 260000,
+      "max": 350000
+    },
+    "Srixon|ZX5|10.5도": {
+      "count": 8,
+      "median": 185000,
+      "min": 150000,
+      "max": 300000
+    },
+    "Callaway|XR|18도": {
+      "count": 8,
+      "median": 110000,
+      "min": 105000,
+      "max": 157000
+    },
+    "Titleist|TSi3|18도": {
+      "count": 8,
+      "median": 175000,
+      "min": 149000,
+      "max": 280000
+    },
+    "Titleist|TS2|18도": {
+      "count": 8,
+      "median": 139000,
+      "min": 100000,
+      "max": 220000
+    },
+    "Majesty|Maruman|9.5도": {
+      "count": 8,
+      "median": 231500,
+      "min": 146000,
+      "max": 560000
+    },
+    "Majesty|Prestigio|11.5도": {
+      "count": 8,
+      "median": 1010000,
+      "min": 390000,
+      "max": 2200000
+    },
+    "Honma|Beres|11.5도": {
+      "count": 8,
+      "median": 368500,
+      "min": 230000,
+      "max": 550000
+    },
+    "Srixon|Z785|9.5도": {
+      "count": 8,
+      "median": 116500,
+      "min": 90000,
+      "max": 190000
+    },
+    "Bridgestone|TourB|18도": {
+      "count": 8,
+      "median": 190000,
+      "min": 80000,
+      "max": 259000
+    },
+    "XXIO|XXIO12|18도": {
+      "count": 8,
+      "median": 264500,
+      "min": 184000,
+      "max": 350000
+    },
+    "Callaway|Rogue|9도": {
+      "count": 7,
+      "median": 200000,
+      "min": 170000,
+      "max": 270000
+    },
+    "Callaway|Rogue|18도": {
+      "count": 7,
+      "median": 170000,
+      "min": 135000,
+      "max": 253000
+    },
+    "Majesty|Maruman|10.5도": {
+      "count": 7,
+      "median": 289000,
+      "min": 168000,
+      "max": 750000
+    },
+    "Majesty|Maruman|15도": {
+      "count": 7,
+      "median": 196000,
+      "min": 145000,
+      "max": 1480000
+    },
+    "Majesty|Prestigio|18도": {
+      "count": 7,
+      "median": 950000,
+      "min": 119000,
+      "max": 1450000
+    },
+    "Honma|TourWorld|10.5도": {
+      "count": 7,
+      "median": 270000,
+      "min": 135000,
+      "max": 280000
+    },
+    "Titleist|TSR3|10도": {
+      "count": 6,
+      "median": 390000,
+      "min": 350000,
+      "max": 450000
+    },
+    "TaylorMade|Burner|10.5도": {
+      "count": 6,
+      "median": 71000,
+      "min": 45000,
+      "max": 115000
+    },
+    "Callaway|Epic|9도": {
+      "count": 6,
+      "median": 237500,
+      "min": 170000,
+      "max": 290000
+    },
+    "Srixon|Z765|9.5도": {
+      "count": 6,
+      "median": 113500,
+      "min": 55000,
+      "max": 148000
+    },
+    "Callaway|XR|15도": {
+      "count": 6,
+      "median": 120000,
+      "min": 110000,
+      "max": 150000
+    },
+    "Titleist|TSR2|10도": {
+      "count": 6,
+      "median": 398000,
+      "min": 370000,
+      "max": 440000
+    },
+    "PXG|0311|9도": {
+      "count": 6,
+      "median": 400000,
+      "min": 270000,
+      "max": 580000
+    },
+    "Ping|G425|10.5도": {
+      "count": 6,
+      "median": 255000,
+      "min": 230000,
+      "max": 320000
+    },
+    "Majesty|Prestigio|19도": {
+      "count": 6,
+      "median": 292000,
+      "min": 231000,
+      "max": 950000
+    },
+    "Honma|TourWorld|15도": {
+      "count": 6,
+      "median": 157000,
+      "min": 120000,
+      "max": 199000
+    },
+    "Honma|Beres|21도": {
+      "count": 6,
+      "median": 164500,
+      "min": 75000,
+      "max": 189000
+    },
+    "Srixon|ZX|23도": {
+      "count": 6,
+      "median": 157500,
+      "min": 120000,
+      "max": 160000
+    },
+    "XXIO|XXIO13|10.5도": {
+      "count": 6,
+      "median": 293000,
+      "min": 250000,
+      "max": 530000
+    },
+    "Ping|G410|9도": {
+      "count": 5,
+      "median": 210000,
+      "min": 190000,
+      "max": 290000
+    },
+    "Callaway|Elyte|9도": {
+      "count": 5,
+      "median": 420000,
+      "min": 385000,
+      "max": 500000
+    },
+    "Callaway|AiSmoke|9도": {
+      "count": 5,
+      "median": 280000,
+      "min": 273000,
+      "max": 450000
+    },
+    "TaylorMade|Qi35|9도": {
+      "count": 5,
+      "median": 450000,
+      "min": 385000,
+      "max": 532000
+    },
+    "TaylorMade|Burner|15도": {
+      "count": 5,
+      "median": 70000,
+      "min": 70000,
+      "max": 88000
+    },
+    "Titleist|913|15도": {
+      "count": 5,
+      "median": 130000,
+      "min": 99000,
+      "max": 194000
+    },
+    "TaylorMade|Qi10|9도": {
+      "count": 5,
+      "median": 305000,
+      "min": 269000,
+      "max": 330000
+    },
+    "PXG|0311X|9도": {
+      "count": 5,
+      "median": 320000,
+      "min": 250000,
+      "max": 470000
+    },
+    "PXG|0311X|10.5도": {
+      "count": 5,
+      "median": 340000,
+      "min": 210000,
+      "max": 580000
+    },
+    "Ping|G410|10.5도": {
+      "count": 5,
+      "median": 240000,
+      "min": 190000,
+      "max": 245000
+    },
+    "Majesty|Maruman|20도": {
+      "count": 5,
+      "median": 173900,
+      "min": 80000,
+      "max": 289000
+    },
+    "Majesty|Maruman|21도": {
+      "count": 5,
+      "median": 155000,
+      "min": 120000,
+      "max": 220000
+    },
+    "Honma|TourWorld|9.5도": {
+      "count": 5,
+      "median": 135000,
+      "min": 100000,
+      "max": 200000
+    },
+    "Honma|TourWorld|13도": {
+      "count": 5,
+      "median": 179000,
+      "min": 170000,
+      "max": 179000
+    },
+    "Honma|Beres|15도": {
+      "count": 5,
+      "median": 220000,
+      "min": 69000,
+      "max": 770000
+    },
+    "Srixon|Z785|10.5도": {
+      "count": 5,
+      "median": 150000,
+      "min": 80000,
+      "max": 170000
+    },
+    "Srixon|Z355|15도": {
+      "count": 5,
+      "median": 100000,
+      "min": 100000,
+      "max": 120000
+    },
+    "Srixon|ZX|15도": {
+      "count": 5,
+      "median": 160000,
+      "min": 65000,
+      "max": 260000
+    },
+    "Bridgestone|B2|9.5도": {
+      "count": 5,
+      "median": 268000,
+      "min": 190000,
+      "max": 360000
+    },
+    "Bridgestone|JGR|9.5도": {
+      "count": 5,
+      "median": 148000,
+      "min": 42000,
+      "max": 189000
+    },
+    "Bridgestone|B1|9.5도": {
+      "count": 5,
+      "median": 180000,
+      "min": 170000,
+      "max": 220000
+    },
+    "Bridgestone|B3|10.5도": {
+      "count": 5,
+      "median": 190000,
+      "min": 180000,
+      "max": 380000
+    },
+    "Bridgestone|TourB|9.5도": {
+      "count": 5,
+      "median": 87000,
+      "min": 78000,
+      "max": 99000
+    },
+    "Bridgestone|JGR|15도": {
+      "count": 5,
+      "median": 140000,
+      "min": 129000,
+      "max": 189000
+    },
+    "XXIO|MP100|10.5도": {
+      "count": 5,
+      "median": 220000,
+      "min": 175000,
+      "max": 283000
+    },
+    "XXIO|XXIO11|9.5도": {
+      "count": 5,
+      "median": 160000,
+      "min": 100000,
+      "max": 220000
+    },
+    "XXIO|XXIO12|10.5도": {
+      "count": 5,
+      "median": 300000,
+      "min": 280000,
+      "max": 390000
+    }
+  },
+  "byBrandFlex": {
+    "Cobra|driver|S": {
+      "count": 24,
+      "median": 229000,
+      "min": 140000,
+      "max": 400000
+    },
+    "XXIO|driver|R": {
+      "count": 20,
+      "median": 226000,
+      "min": 120000,
+      "max": 860000
+    },
+    "Majesty|driver|R": {
+      "count": 17,
+      "median": 300000,
+      "min": 150000,
+      "max": 990000
+    },
+    "XXIO|driver|S": {
+      "count": 15,
+      "median": 225000,
+      "min": 110000,
+      "max": 370000
+    },
+    "XXIO|driver|L": {
+      "count": 11,
+      "median": 275000,
+      "min": 160000,
+      "max": 390000
+    },
+    "XXIO|driver|SR": {
+      "count": 11,
+      "median": 209000,
+      "min": 70000,
+      "max": 370000
+    },
+    "Majesty|driver|SR": {
+      "count": 10,
+      "median": 363750,
+      "min": 150000,
+      "max": 1050000
+    },
+    "Majesty|driver|L": {
+      "count": 10,
+      "median": 307000,
+      "min": 175000,
+      "max": 800000
+    },
+    "Honma|driver|R": {
+      "count": 10,
+      "median": 398500,
+      "min": 100000,
+      "max": 770000
+    },
+    "TaylorMade|driver|R": {
+      "count": 9,
+      "median": 80000,
+      "min": 45000,
+      "max": 120000
+    },
+    "Ping|driver|SR": {
+      "count": 8,
+      "median": 340000,
+      "min": 50000,
+      "max": 790000
+    },
+    "Majesty|wood_other|R": {
+      "count": 8,
+      "median": 705000,
+      "min": 130000,
+      "max": 1450000
+    },
+    "TaylorMade|driver|S": {
+      "count": 7,
+      "median": 100000,
+      "min": 70000,
+      "max": 660000
+    },
+    "Ping|driver|S": {
+      "count": 7,
+      "median": 180000,
+      "min": 100000,
+      "max": 245000
+    },
+    "Callaway|driver|S": {
+      "count": 7,
+      "median": 220000,
+      "min": 159000,
+      "max": 460000
+    },
+    "Honma|driver|SR": {
+      "count": 7,
+      "median": 399000,
+      "min": 98000,
+      "max": 700000
+    },
+    "Honma|fairway_wood|R": {
+      "count": 7,
+      "median": 198000,
+      "min": 115000,
+      "max": 770000
+    },
+    "Honma|wood_other|R": {
+      "count": 7,
+      "median": 300000,
+      "min": 75000,
+      "max": 770000
+    },
+    "Honma|wedge|R": {
+      "count": 7,
+      "median": 99000,
+      "min": 50000,
+      "max": 169000
+    },
+    "Bridgestone|driver|S": {
+      "count": 7,
+      "median": 75000,
+      "min": 54000,
+      "max": 159000
+    },
+    "TaylorMade|wood_other|S": {
+      "count": 6,
+      "median": 99000,
+      "min": 70000,
+      "max": 130000
+    },
+    "Majesty|driver|S": {
+      "count": 6,
+      "median": 550000,
+      "min": 130000,
+      "max": 820000
+    },
+    "XXIO|wood_other|S": {
+      "count": 6,
+      "median": 260000,
+      "min": 200000,
+      "max": 260000
+    },
+    "Titleist|driver|S": {
+      "count": 5,
+      "median": 110000,
+      "min": 70000,
+      "max": 250000
+    },
+    "Callaway|driver|R": {
+      "count": 5,
+      "median": 170000,
+      "min": 70000,
+      "max": 200000
+    },
+    "Titleist|fairway_wood|S": {
+      "count": 5,
+      "median": 120000,
+      "min": 89000,
+      "max": 249000
+    },
+    "Majesty|wood_other|L": {
+      "count": 5,
+      "median": 350000,
+      "min": 190000,
+      "max": 2300000
+    },
+    "Majesty|wedge|R": {
+      "count": 5,
+      "median": 120000,
+      "min": 99000,
+      "max": 390000
+    },
+    "Honma|driver|S": {
+      "count": 5,
+      "median": 150000,
+      "min": 81000,
+      "max": 150000
+    },
+    "Mizuno|driver|S": {
+      "count": 5,
+      "median": 75000,
+      "min": 55000,
+      "max": 95000
+    },
+    "XXIO|iron|R": {
+      "count": 5,
+      "median": 255000,
+      "min": 100000,
+      "max": 289000
+    },
+    "Titleist|iron|S": {
+      "count": 4,
+      "median": 805000,
+      "min": 550000,
+      "max": 930000
+    },
+    "PXG|driver|S": {
+      "count": 4,
+      "median": 247500,
+      "min": 120000,
+      "max": 340000
+    },
+    "Ping|iron|R": {
+      "count": 4,
+      "median": 720000,
+      "min": 395000,
+      "max": 939000
+    },
+    "Honma|iron|R": {
+      "count": 4,
+      "median": 840000,
+      "min": 330000,
+      "max": 1300000
+    },
+    "Honma|wood_other|L": {
+      "count": 4,
+      "median": 170000,
+      "min": 135000,
+      "max": 770000
+    },
+    "Honma|wood_other|SR": {
+      "count": 4,
+      "median": 350000,
+      "min": 220000,
+      "max": 550000
+    },
+    "Srixon|driver|S": {
+      "count": 4,
+      "median": 170000,
+      "min": 140000,
+      "max": 385000
+    },
+    "Bridgestone|driver|R": {
+      "count": 4,
+      "median": 130000,
+      "min": 72000,
+      "max": 360000
+    },
+    "Callaway|driver|SR": {
+      "count": 3,
+      "median": 690000,
+      "min": 94000,
+      "max": 695000
+    },
+    "Bridgestone|iron|S": {
+      "count": 3,
+      "median": 650000,
+      "min": 650000,
+      "max": 890000
+    },
+    "TaylorMade|wood_other|R": {
+      "count": 3,
+      "median": 70000,
+      "min": 70000,
+      "max": 70000
+    },
+    "PXG|driver|X": {
+      "count": 3,
+      "median": 562000,
+      "min": 235000,
+      "max": 564200
+    },
+    "Ping|iron|A": {
+      "count": 3,
+      "median": 69000,
+      "min": 69000,
+      "max": 69000
+    },
+    "Majesty|iron|R": {
+      "count": 3,
+      "median": 90000,
+      "min": 75000,
+      "max": 359000
+    },
+    "Majesty|fairway_wood|L": {
+      "count": 3,
+      "median": 155000,
+      "min": 135000,
+      "max": 225000
+    },
+    "Honma|driver|L": {
+      "count": 3,
+      "median": 435000,
+      "min": 165000,
+      "max": 530000
+    },
+    "Srixon|iron|R": {
+      "count": 3,
+      "median": 45000,
+      "min": 45000,
+      "max": 45000
+    },
+    "XXIO|wood_other|R": {
+      "count": 3,
+      "median": 230000,
+      "min": 185000,
+      "max": 294000
+    }
+  },
+  "narrow_split_candidates": [
+    {
+      "brand": "Ping",
+      "productType": "iron",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "G430",
+          "count": 22,
+          "median": 880000
+        },
+        {
+          "key": "i230",
+          "count": 8,
+          "median": 725000
+        },
+        {
+          "key": "G400",
+          "count": 7,
+          "median": 400000
+        },
+        {
+          "key": "G425",
+          "count": 11,
+          "median": 250000
+        },
+        {
+          "key": "i500",
+          "count": 7,
+          "median": 85000
+        }
+      ],
+      "minMedian": 85000,
+      "maxMedian": 880000,
+      "spreadPct": 935,
+      "recommendation": "Ping iron sub-model 별 SKU 분리 권장 (top: G430 880,000원 vs bottom: i500 85,000원)"
+    },
+    {
+      "brand": "Majesty",
+      "productType": "iron",
+      "dimension": "shaft",
+      "cohorts": [
+        {
+          "key": "Graphite",
+          "count": 29,
+          "median": 800000
+        },
+        {
+          "key": "LightSteel",
+          "count": 8,
+          "median": 97500
+        }
+      ],
+      "minMedian": 97500,
+      "maxMedian": 800000,
+      "spreadPct": 721,
+      "recommendation": "Majesty iron 샤프트 별 가격 차이 큼"
+    },
+    {
+      "brand": "Titleist",
+      "productType": "iron",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "T100",
+          "count": 27,
+          "median": 750000
+        },
+        {
+          "key": "T300",
+          "count": 13,
+          "median": 600000
+        },
+        {
+          "key": "T200",
+          "count": 25,
+          "median": 550000
+        },
+        {
+          "key": "AP3",
+          "count": 5,
+          "median": 460000
+        },
+        {
+          "key": "AP2",
+          "count": 44,
+          "median": 370000
+        },
+        {
+          "key": "AP1",
+          "count": 5,
+          "median": 95000
+        }
+      ],
+      "minMedian": 95000,
+      "maxMedian": 750000,
+      "spreadPct": 689,
+      "recommendation": "Titleist iron sub-model 별 SKU 분리 권장 (top: T100 750,000원 vs bottom: AP1 95,000원)"
+    },
+    {
+      "brand": "Srixon",
+      "productType": "iron",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "ZX7",
+          "count": 11,
+          "median": 530000
+        },
+        {
+          "key": "ZX5",
+          "count": 10,
+          "median": 387000
+        },
+        {
+          "key": "Z355",
+          "count": 22,
+          "median": 290000
+        },
+        {
+          "key": "Z725",
+          "count": 9,
+          "median": 200000
+        },
+        {
+          "key": "ZX",
+          "count": 27,
+          "median": 150000
+        },
+        {
+          "key": "Z785",
+          "count": 5,
+          "median": 75000
+        }
+      ],
+      "minMedian": 75000,
+      "maxMedian": 530000,
+      "spreadPct": 607,
+      "recommendation": "Srixon iron sub-model 별 SKU 분리 권장 (top: ZX7 530,000원 vs bottom: Z785 75,000원)"
+    },
+    {
+      "brand": "Callaway",
+      "productType": "fairway_wood",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "Epic",
+          "count": 6,
+          "median": 207500
+        },
+        {
+          "key": "Rogue",
+          "count": 6,
+          "median": 172500
+        },
+        {
+          "key": "XR",
+          "count": 9,
+          "median": 110000
+        },
+        {
+          "key": "BigBertha",
+          "count": 7,
+          "median": 30000
+        }
+      ],
+      "minMedian": 30000,
+      "maxMedian": 207500,
+      "spreadPct": 592,
+      "recommendation": "Callaway fairway_wood sub-model 별 SKU 분리 권장 (top: Epic 207,500원 vs bottom: BigBertha 30,000원)"
+    },
+    {
+      "brand": "Callaway",
+      "productType": "wood_other",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "Elyte",
+          "count": 6,
+          "median": 310000
+        },
+        {
+          "key": "Paradym",
+          "count": 9,
+          "median": 200000
+        },
+        {
+          "key": "Epic",
+          "count": 16,
+          "median": 150000
+        },
+        {
+          "key": "XR",
+          "count": 14,
+          "median": 117500
+        },
+        {
+          "key": "Legacy",
+          "count": 6,
+          "median": 79500
+        },
+        {
+          "key": "Steelhead",
+          "count": 6,
+          "median": 77000
+        },
+        {
+          "key": "BigBertha",
+          "count": 10,
+          "median": 50000
+        }
+      ],
+      "minMedian": 50000,
+      "maxMedian": 310000,
+      "spreadPct": 520,
+      "recommendation": "Callaway wood_other sub-model 별 SKU 분리 권장 (top: Elyte 310,000원 vs bottom: BigBertha 50,000원)"
+    },
+    {
+      "brand": "Honma",
+      "productType": "wood_other",
+      "dimension": "condition",
+      "cohorts": [
+        {
+          "key": "New",
+          "count": 8,
+          "median": 465000
+        },
+        {
+          "key": "Used",
+          "count": 18,
+          "median": 80000
+        }
+      ],
+      "minMedian": 80000,
+      "maxMedian": 465000,
+      "spreadPct": 481,
+      "recommendation": "Honma wood_other condition 별 가격 분리 필요 (top: New vs bottom: Used)"
+    },
+    {
+      "brand": "Titleist",
+      "productType": "driver",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "GT2",
+          "count": 5,
+          "median": 650000
+        },
+        {
+          "key": "TSR2",
+          "count": 26,
+          "median": 423500
+        },
+        {
+          "key": "TSR3",
+          "count": 19,
+          "median": 389000
+        },
+        {
+          "key": "TSi3",
+          "count": 12,
+          "median": 283000
+        },
+        {
+          "key": "TSi2",
+          "count": 12,
+          "median": 280000
+        },
+        {
+          "key": "TS3",
+          "count": 8,
+          "median": 210000
+        },
+        {
+          "key": "TS2",
+          "count": 5,
+          "median": 200000
+        },
+        {
+          "key": "917",
+          "count": 9,
+          "median": 157000
+        },
+        {
+          "key": "915",
+          "count": 7,
+          "median": 115000
+        }
+      ],
+      "minMedian": 115000,
+      "maxMedian": 650000,
+      "spreadPct": 465,
+      "recommendation": "Titleist driver sub-model 별 SKU 분리 권장 (top: GT2 650,000원 vs bottom: 915 115,000원)"
+    },
+    {
+      "brand": "TaylorMade",
+      "productType": "wood_other",
+      "dimension": "shaft",
+      "cohorts": [
+        {
+          "key": "Ventus",
+          "count": 5,
+          "median": 225000
+        },
+        {
+          "key": "Steel",
+          "count": 7,
+          "median": 40000
+        }
+      ],
+      "minMedian": 40000,
+      "maxMedian": 225000,
+      "spreadPct": 463,
+      "recommendation": "TaylorMade wood_other 샤프트 별 가격 차이 큼"
+    },
+    {
+      "brand": "Majesty",
+      "productType": "fairway_wood",
+      "dimension": "sex",
+      "cohorts": [
+        {
+          "key": "Men",
+          "count": 12,
+          "median": 840000
+        },
+        {
+          "key": "Women",
+          "count": 11,
+          "median": 150000
+        }
+      ],
+      "minMedian": 150000,
+      "maxMedian": 840000,
+      "spreadPct": 460,
+      "recommendation": "Majesty fairway_wood 남/여 별 SKU 분리 필요"
+    },
+    {
+      "brand": "Honma",
+      "productType": "iron",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "Beres",
+          "count": 30,
+          "median": 1415000
+        },
+        {
+          "key": "TourWorld",
+          "count": 31,
+          "median": 270000
+        }
+      ],
+      "minMedian": 270000,
+      "maxMedian": 1415000,
+      "spreadPct": 424,
+      "recommendation": "Honma iron sub-model 별 SKU 분리 권장 (top: Beres 1,415,000원 vs bottom: TourWorld 270,000원)"
+    },
+    {
+      "brand": "Odyssey",
+      "productType": "putter",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "AiOne",
+          "count": 8,
+          "median": 260000
+        },
+        {
+          "key": "TripleTrack",
+          "count": 7,
+          "median": 145000
+        },
+        {
+          "key": "2Ball",
+          "count": 7,
+          "median": 85000
+        },
+        {
+          "key": "StrokeLab",
+          "count": 5,
+          "median": 85000
+        },
+        {
+          "key": "WhiteHot",
+          "count": 15,
+          "median": 68000
+        },
+        {
+          "key": "DualForce",
+          "count": 7,
+          "median": 50000
+        }
+      ],
+      "minMedian": 50000,
+      "maxMedian": 260000,
+      "spreadPct": 420,
+      "recommendation": "Odyssey putter sub-model 별 SKU 분리 권장 (top: AiOne 260,000원 vs bottom: DualForce 50,000원)"
+    },
+    {
+      "brand": "TaylorMade",
+      "productType": "wood_other",
+      "dimension": "sex",
+      "cohorts": [
+        {
+          "key": "Women",
+          "count": 21,
+          "median": 260000
+        },
+        {
+          "key": "Men",
+          "count": 8,
+          "median": 50000
+        }
+      ],
+      "minMedian": 50000,
+      "maxMedian": 260000,
+      "spreadPct": 420,
+      "recommendation": "TaylorMade wood_other 남/여 별 SKU 분리 필요"
+    },
+    {
+      "brand": "XXIO",
+      "productType": "driver",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "XXIO13",
+          "count": 31,
+          "median": 385000
+        },
+        {
+          "key": "XXIO12",
+          "count": 19,
+          "median": 320000
+        },
+        {
+          "key": "MP100",
+          "count": 9,
+          "median": 220000
+        },
+        {
+          "key": "XXIO11",
+          "count": 11,
+          "median": 220000
+        },
+        {
+          "key": "XXIO10",
+          "count": 10,
+          "median": 217000
+        },
+        {
+          "key": "XXIO8",
+          "count": 8,
+          "median": 182500
+        },
+        {
+          "key": "MP400",
+          "count": 9,
+          "median": 75000
+        }
+      ],
+      "minMedian": 75000,
+      "maxMedian": 385000,
+      "spreadPct": 413,
+      "recommendation": "XXIO driver sub-model 별 SKU 분리 권장 (top: XXIO13 385,000원 vs bottom: MP400 75,000원)"
+    },
+    {
+      "brand": "Srixon",
+      "productType": "wedge",
+      "dimension": "shaft",
+      "cohorts": [
+        {
+          "key": "LightSteel",
+          "count": 8,
+          "median": 337000
+        },
+        {
+          "key": "NSPro",
+          "count": 5,
+          "median": 70000
+        }
+      ],
+      "minMedian": 70000,
+      "maxMedian": 337000,
+      "spreadPct": 381,
+      "recommendation": "Srixon wedge 샤프트 별 가격 차이 큼"
+    },
+    {
+      "brand": "Honma",
+      "productType": "fairway_wood",
+      "dimension": "condition",
+      "cohorts": [
+        {
+          "key": "New",
+          "count": 8,
+          "median": 369500
+        },
+        {
+          "key": "Used",
+          "count": 23,
+          "median": 77000
+        }
+      ],
+      "minMedian": 77000,
+      "maxMedian": 369500,
+      "spreadPct": 380,
+      "recommendation": "Honma fairway_wood condition 별 가격 분리 필요 (top: New vs bottom: Used)"
+    },
+    {
+      "brand": "TaylorMade",
+      "productType": "driver",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "Qi35",
+          "count": 7,
+          "median": 428000
+        },
+        {
+          "key": "Stealth2",
+          "count": 21,
+          "median": 330000
+        },
+        {
+          "key": "Qi10",
+          "count": 12,
+          "median": 310000
+        },
+        {
+          "key": "SIM2",
+          "count": 16,
+          "median": 288000
+        },
+        {
+          "key": "Stealth",
+          "count": 22,
+          "median": 205000
+        },
+        {
+          "key": "M2",
+          "count": 5,
+          "median": 120000
+        },
+        {
+          "key": "Burner",
+          "count": 28,
+          "median": 89500
+        }
+      ],
+      "minMedian": 89500,
+      "maxMedian": 428000,
+      "spreadPct": 378,
+      "recommendation": "TaylorMade driver sub-model 별 SKU 분리 권장 (top: Qi35 428,000원 vs bottom: Burner 89,500원)"
+    },
+    {
+      "brand": "Mizuno",
+      "productType": "iron",
+      "dimension": "shaft",
+      "cohorts": [
+        {
+          "key": "Graphite",
+          "count": 12,
+          "median": 310000
+        },
+        {
+          "key": "Steel",
+          "count": 8,
+          "median": 65000
+        }
+      ],
+      "minMedian": 65000,
+      "maxMedian": 310000,
+      "spreadPct": 377,
+      "recommendation": "Mizuno iron 샤프트 별 가격 차이 큼"
+    },
+    {
+      "brand": "Titleist",
+      "productType": "iron",
+      "dimension": "shaft",
+      "cohorts": [
+        {
+          "key": "Graphite",
+          "count": 14,
+          "median": 600000
+        },
+        {
+          "key": "Steel",
+          "count": 7,
+          "median": 373000
+        },
+        {
+          "key": "NSPro",
+          "count": 8,
+          "median": 370000
+        },
+        {
+          "key": "LightSteel",
+          "count": 15,
+          "median": 130000
+        }
+      ],
+      "minMedian": 130000,
+      "maxMedian": 600000,
+      "spreadPct": 362,
+      "recommendation": "Titleist iron 샤프트 별 가격 차이 큼"
+    },
+    {
+      "brand": "Titleist",
+      "productType": "putter",
+      "dimension": "condition",
+      "cohorts": [
+        {
+          "key": "New",
+          "count": 5,
+          "median": 1350000
+        },
+        {
+          "key": "Used",
+          "count": 24,
+          "median": 308500
+        }
+      ],
+      "minMedian": 308500,
+      "maxMedian": 1350000,
+      "spreadPct": 338,
+      "recommendation": "Titleist putter condition 별 가격 분리 필요 (top: New vs bottom: Used)"
+    },
+    {
+      "brand": "TaylorMade",
+      "productType": "iron",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "P7",
+          "count": 39,
+          "median": 700000
+        },
+        {
+          "key": "M6",
+          "count": 15,
+          "median": 420000
+        },
+        {
+          "key": "SIM2",
+          "count": 5,
+          "median": 400000
+        },
+        {
+          "key": "M2",
+          "count": 6,
+          "median": 385000
+        },
+        {
+          "key": "Burner",
+          "count": 42,
+          "median": 250000
+        },
+        {
+          "key": "R7",
+          "count": 12,
+          "median": 220000
+        },
+        {
+          "key": "Stealth",
+          "count": 6,
+          "median": 167500
+        }
+      ],
+      "minMedian": 167500,
+      "maxMedian": 700000,
+      "spreadPct": 318,
+      "recommendation": "TaylorMade iron sub-model 별 SKU 분리 권장 (top: P7 700,000원 vs bottom: Stealth 167,500원)"
+    },
+    {
+      "brand": "TaylorMade",
+      "productType": "wood_other",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "Qi35",
+          "count": 20,
+          "median": 260000
+        },
+        {
+          "key": "SIM2",
+          "count": 9,
+          "median": 239000
+        },
+        {
+          "key": "Stealth",
+          "count": 8,
+          "median": 209000
+        },
+        {
+          "key": "Burner",
+          "count": 18,
+          "median": 65000
+        }
+      ],
+      "minMedian": 65000,
+      "maxMedian": 260000,
+      "spreadPct": 300,
+      "recommendation": "TaylorMade wood_other sub-model 별 SKU 분리 권장 (top: Qi35 260,000원 vs bottom: Burner 65,000원)"
+    },
+    {
+      "brand": "Callaway",
+      "productType": "iron",
+      "dimension": "shaft",
+      "cohorts": [
+        {
+          "key": "LightSteel",
+          "count": 5,
+          "median": 350000
+        },
+        {
+          "key": "Graphite",
+          "count": 5,
+          "median": 270000
+        },
+        {
+          "key": "Steel",
+          "count": 29,
+          "median": 180000
+        },
+        {
+          "key": "NSPro",
+          "count": 9,
+          "median": 99000
+        }
+      ],
+      "minMedian": 99000,
+      "maxMedian": 350000,
+      "spreadPct": 254,
+      "recommendation": "Callaway iron 샤프트 별 가격 차이 큼"
+    },
+    {
+      "brand": "TaylorMade",
+      "productType": "driver",
+      "dimension": "condition",
+      "cohorts": [
+        {
+          "key": "New",
+          "count": 11,
+          "median": 500000
+        },
+        {
+          "key": "Used",
+          "count": 33,
+          "median": 150000
+        }
+      ],
+      "minMedian": 150000,
+      "maxMedian": 500000,
+      "spreadPct": 233,
+      "recommendation": "TaylorMade driver condition 별 가격 분리 필요 (top: New vs bottom: Used)"
+    },
+    {
+      "brand": "Callaway",
+      "productType": "iron",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "Rogue",
+          "count": 25,
+          "median": 560000
+        },
+        {
+          "key": "Apex",
+          "count": 24,
+          "median": 452000
+        },
+        {
+          "key": "Forged",
+          "count": 6,
+          "median": 437500
+        },
+        {
+          "key": "XR",
+          "count": 6,
+          "median": 365000
+        },
+        {
+          "key": "BigBertha",
+          "count": 36,
+          "median": 180000
+        },
+        {
+          "key": "Steelhead",
+          "count": 22,
+          "median": 175000
+        }
+      ],
+      "minMedian": 175000,
+      "maxMedian": 560000,
+      "spreadPct": 220,
+      "recommendation": "Callaway iron sub-model 별 SKU 분리 권장 (top: Rogue 560,000원 vs bottom: Steelhead 175,000원)"
+    },
+    {
+      "brand": "Honma",
+      "productType": "iron",
+      "dimension": "shaft",
+      "cohorts": [
+        {
+          "key": "LightSteel",
+          "count": 17,
+          "median": 300000
+        },
+        {
+          "key": "Graphite",
+          "count": 8,
+          "median": 94500
+        }
+      ],
+      "minMedian": 94500,
+      "maxMedian": 300000,
+      "spreadPct": 217,
+      "recommendation": "Honma iron 샤프트 별 가격 차이 큼"
+    },
+    {
+      "brand": "PXG",
+      "productType": "driver",
+      "dimension": "shaft",
+      "cohorts": [
+        {
+          "key": "Ventus",
+          "count": 6,
+          "median": 627000
+        },
+        {
+          "key": "Speeder",
+          "count": 22,
+          "median": 563050
+        },
+        {
+          "key": "Diamana",
+          "count": 11,
+          "median": 295000
+        },
+        {
+          "key": "Tensei",
+          "count": 8,
+          "median": 259000
+        },
+        {
+          "key": "TourAD",
+          "count": 5,
+          "median": 200000
+        }
+      ],
+      "minMedian": 200000,
+      "maxMedian": 627000,
+      "spreadPct": 213,
+      "recommendation": "PXG driver 샤프트 별 가격 차이 큼"
+    },
+    {
+      "brand": "XXIO",
+      "productType": "iron",
+      "dimension": "condition",
+      "cohorts": [
+        {
+          "key": "Used",
+          "count": 70,
+          "median": 430000
+        },
+        {
+          "key": "New",
+          "count": 8,
+          "median": 139500
+        }
+      ],
+      "minMedian": 139500,
+      "maxMedian": 430000,
+      "spreadPct": 208,
+      "recommendation": "XXIO iron condition 별 가격 분리 필요 (top: Used vs bottom: New)"
+    },
+    {
+      "brand": "Titleist",
+      "productType": "wood_other",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "TSR3",
+          "count": 34,
+          "median": 380000
+        },
+        {
+          "key": "TSR2",
+          "count": 10,
+          "median": 285000
+        },
+        {
+          "key": "TSi2",
+          "count": 8,
+          "median": 257500
+        },
+        {
+          "key": "TSi3",
+          "count": 18,
+          "median": 250000
+        },
+        {
+          "key": "TS2",
+          "count": 7,
+          "median": 188000
+        },
+        {
+          "key": "915",
+          "count": 5,
+          "median": 165000
+        },
+        {
+          "key": "917",
+          "count": 6,
+          "median": 135000
+        },
+        {
+          "key": "913",
+          "count": 7,
+          "median": 125000
+        }
+      ],
+      "minMedian": 125000,
+      "maxMedian": 380000,
+      "spreadPct": 204,
+      "recommendation": "Titleist wood_other sub-model 별 SKU 분리 권장 (top: TSR3 380,000원 vs bottom: 913 125,000원)"
+    },
+    {
+      "brand": "Honma",
+      "productType": "driver",
+      "dimension": "condition",
+      "cohorts": [
+        {
+          "key": "New",
+          "count": 6,
+          "median": 760000
+        },
+        {
+          "key": "Used",
+          "count": 37,
+          "median": 250000
+        }
+      ],
+      "minMedian": 250000,
+      "maxMedian": 760000,
+      "spreadPct": 204,
+      "recommendation": "Honma driver condition 별 가격 분리 필요 (top: New vs bottom: Used)"
+    },
+    {
+      "brand": "Bridgestone",
+      "productType": "iron",
+      "dimension": "shaft",
+      "cohorts": [
+        {
+          "key": "LightSteel",
+          "count": 11,
+          "median": 260000
+        },
+        {
+          "key": "Graphite",
+          "count": 6,
+          "median": 87000
+        }
+      ],
+      "minMedian": 87000,
+      "maxMedian": 260000,
+      "spreadPct": 199,
+      "recommendation": "Bridgestone iron 샤프트 별 가격 차이 큼"
+    },
+    {
+      "brand": "XXIO",
+      "productType": "wedge",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "XXIO10",
+          "count": 5,
+          "median": 149000
+        },
+        {
+          "key": "XXIO13",
+          "count": 5,
+          "median": 149000
+        },
+        {
+          "key": "MP100",
+          "count": 6,
+          "median": 57000
+        },
+        {
+          "key": "MP400",
+          "count": 9,
+          "median": 50000
+        }
+      ],
+      "minMedian": 50000,
+      "maxMedian": 149000,
+      "spreadPct": 198,
+      "recommendation": "XXIO wedge sub-model 별 SKU 분리 권장 (top: XXIO10 149,000원 vs bottom: MP400 50,000원)"
+    },
+    {
+      "brand": "Majesty",
+      "productType": "driver",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "Prestigio",
+          "count": 47,
+          "median": 690000
+        },
+        {
+          "key": "Maruman",
+          "count": 72,
+          "median": 289500
+        },
+        {
+          "key": "Conquest",
+          "count": 6,
+          "median": 233500
+        }
+      ],
+      "minMedian": 233500,
+      "maxMedian": 690000,
+      "spreadPct": 196,
+      "recommendation": "Majesty driver sub-model 별 SKU 분리 권장 (top: Prestigio 690,000원 vs bottom: Conquest 233,500원)"
+    },
+    {
+      "brand": "Mizuno",
+      "productType": "wood_other",
+      "dimension": "condition",
+      "cohorts": [
+        {
+          "key": "New",
+          "count": 9,
+          "median": 190000
+        },
+        {
+          "key": "Used",
+          "count": 10,
+          "median": 64500
+        }
+      ],
+      "minMedian": 64500,
+      "maxMedian": 190000,
+      "spreadPct": 195,
+      "recommendation": "Mizuno wood_other condition 별 가격 분리 필요 (top: New vs bottom: Used)"
+    },
+    {
+      "brand": "Majesty",
+      "productType": "wood_other",
+      "dimension": "sex",
+      "cohorts": [
+        {
+          "key": "Women",
+          "count": 9,
+          "median": 650000
+        },
+        {
+          "key": "Men",
+          "count": 10,
+          "median": 220000
+        }
+      ],
+      "minMedian": 220000,
+      "maxMedian": 650000,
+      "spreadPct": 195,
+      "recommendation": "Majesty wood_other 남/여 별 SKU 분리 필요"
+    },
+    {
+      "brand": "Ping",
+      "productType": "driver",
+      "dimension": "condition",
+      "cohorts": [
+        {
+          "key": "New",
+          "count": 9,
+          "median": 615000
+        },
+        {
+          "key": "Used",
+          "count": 23,
+          "median": 210000
+        }
+      ],
+      "minMedian": 210000,
+      "maxMedian": 615000,
+      "spreadPct": 193,
+      "recommendation": "Ping driver condition 별 가격 분리 필요 (top: New vs bottom: Used)"
+    },
+    {
+      "brand": "XXIO",
+      "productType": "driver",
+      "dimension": "sex",
+      "cohorts": [
+        {
+          "key": "Women",
+          "count": 23,
+          "median": 320000
+        },
+        {
+          "key": "Men",
+          "count": 16,
+          "median": 110000
+        }
+      ],
+      "minMedian": 110000,
+      "maxMedian": 320000,
+      "spreadPct": 191,
+      "recommendation": "XXIO driver 남/여 별 SKU 분리 필요"
+    },
+    {
+      "brand": "XXIO",
+      "productType": "iron",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "XXIO10",
+          "count": 16,
+          "median": 800000
+        },
+        {
+          "key": "XXIO13",
+          "count": 11,
+          "median": 790000
+        },
+        {
+          "key": "XXIO12",
+          "count": 13,
+          "median": 700000
+        },
+        {
+          "key": "XXIO11",
+          "count": 13,
+          "median": 690000
+        },
+        {
+          "key": "XXIO8",
+          "count": 5,
+          "median": 498000
+        },
+        {
+          "key": "XXIO9",
+          "count": 6,
+          "median": 400000
+        },
+        {
+          "key": "MP500",
+          "count": 8,
+          "median": 330000
+        },
+        {
+          "key": "MP400",
+          "count": 7,
+          "median": 280000
+        }
+      ],
+      "minMedian": 280000,
+      "maxMedian": 800000,
+      "spreadPct": 186,
+      "recommendation": "XXIO iron sub-model 별 SKU 분리 권장 (top: XXIO10 800,000원 vs bottom: MP400 280,000원)"
+    },
+    {
+      "brand": "Srixon",
+      "productType": "driver",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "ZX7",
+          "count": 34,
+          "median": 269500
+        },
+        {
+          "key": "ZX5",
+          "count": 38,
+          "median": 192200
+        },
+        {
+          "key": "ZX",
+          "count": 6,
+          "median": 155000
+        },
+        {
+          "key": "Z565",
+          "count": 12,
+          "median": 150000
+        },
+        {
+          "key": "Z785",
+          "count": 17,
+          "median": 128000
+        },
+        {
+          "key": "Z765",
+          "count": 8,
+          "median": 95000
+        }
+      ],
+      "minMedian": 95000,
+      "maxMedian": 269500,
+      "spreadPct": 184,
+      "recommendation": "Srixon driver sub-model 별 SKU 분리 권장 (top: ZX7 269,500원 vs bottom: Z765 95,000원)"
+    },
+    {
+      "brand": "Bridgestone",
+      "productType": "driver",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "B2",
+          "count": 12,
+          "median": 250000
+        },
+        {
+          "key": "JGR",
+          "count": 21,
+          "median": 225000
+        },
+        {
+          "key": "B3",
+          "count": 9,
+          "median": 190000
+        },
+        {
+          "key": "B1",
+          "count": 13,
+          "median": 189000
+        },
+        {
+          "key": "TourB",
+          "count": 6,
+          "median": 89000
+        }
+      ],
+      "minMedian": 89000,
+      "maxMedian": 250000,
+      "spreadPct": 181,
+      "recommendation": "Bridgestone driver sub-model 별 SKU 분리 권장 (top: B2 250,000원 vs bottom: TourB 89,000원)"
+    },
+    {
+      "brand": "Ping",
+      "productType": "wood_other",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "G440",
+          "count": 10,
+          "median": 319500
+        },
+        {
+          "key": "G430",
+          "count": 5,
+          "median": 283000
+        },
+        {
+          "key": "G425",
+          "count": 25,
+          "median": 210000
+        },
+        {
+          "key": "G400",
+          "count": 5,
+          "median": 165000
+        },
+        {
+          "key": "G20",
+          "count": 6,
+          "median": 119500
+        }
+      ],
+      "minMedian": 119500,
+      "maxMedian": 319500,
+      "spreadPct": 167,
+      "recommendation": "Ping wood_other sub-model 별 SKU 분리 권장 (top: G440 319,500원 vs bottom: G20 119,500원)"
+    },
+    {
+      "brand": "Majesty",
+      "productType": "driver",
+      "dimension": "condition",
+      "cohorts": [
+        {
+          "key": "New",
+          "count": 8,
+          "median": 720000
+        },
+        {
+          "key": "Used",
+          "count": 23,
+          "median": 270000
+        }
+      ],
+      "minMedian": 270000,
+      "maxMedian": 720000,
+      "spreadPct": 167,
+      "recommendation": "Majesty driver condition 별 가격 분리 필요 (top: New vs bottom: Used)"
+    },
+    {
+      "brand": "Ping",
+      "productType": "driver",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "G440",
+          "count": 31,
+          "median": 559000
+        },
+        {
+          "key": "G430",
+          "count": 32,
+          "median": 370000
+        },
+        {
+          "key": "G425",
+          "count": 24,
+          "median": 260000
+        },
+        {
+          "key": "G400",
+          "count": 12,
+          "median": 255000
+        },
+        {
+          "key": "G410",
+          "count": 14,
+          "median": 210000
+        }
+      ],
+      "minMedian": 210000,
+      "maxMedian": 559000,
+      "spreadPct": 166,
+      "recommendation": "Ping driver sub-model 별 SKU 분리 권장 (top: G440 559,000원 vs bottom: G410 210,000원)"
+    },
+    {
+      "brand": "Ping",
+      "productType": "fairway_wood",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "G440",
+          "count": 6,
+          "median": 375000
+        },
+        {
+          "key": "G430",
+          "count": 6,
+          "median": 284500
+        },
+        {
+          "key": "G425",
+          "count": 6,
+          "median": 250000
+        },
+        {
+          "key": "G400",
+          "count": 5,
+          "median": 200000
+        },
+        {
+          "key": "G25",
+          "count": 5,
+          "median": 145000
+        }
+      ],
+      "minMedian": 145000,
+      "maxMedian": 375000,
+      "spreadPct": 159,
+      "recommendation": "Ping fairway_wood sub-model 별 SKU 분리 권장 (top: G440 375,000원 vs bottom: G25 145,000원)"
+    },
+    {
+      "brand": "PXG",
+      "productType": "iron",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "0311XP",
+          "count": 9,
+          "median": 1500000
+        },
+        {
+          "key": "BlackOps",
+          "count": 10,
+          "median": 1110000
+        },
+        {
+          "key": "0311P",
+          "count": 41,
+          "median": 950000
+        },
+        {
+          "key": "0311",
+          "count": 16,
+          "median": 800000
+        },
+        {
+          "key": "0311T",
+          "count": 19,
+          "median": 650000
+        },
+        {
+          "key": "0211",
+          "count": 27,
+          "median": 580000
+        }
+      ],
+      "minMedian": 580000,
+      "maxMedian": 1500000,
+      "spreadPct": 159,
+      "recommendation": "PXG iron sub-model 별 SKU 분리 권장 (top: 0311XP 1,500,000원 vs bottom: 0211 580,000원)"
+    },
+    {
+      "brand": "Titleist",
+      "productType": "wood_other",
+      "dimension": "shaft",
+      "cohorts": [
+        {
+          "key": "Ventus",
+          "count": 14,
+          "median": 450000
+        },
+        {
+          "key": "Tensei",
+          "count": 7,
+          "median": 275000
+        },
+        {
+          "key": "TourAD",
+          "count": 8,
+          "median": 174000
+        }
+      ],
+      "minMedian": 174000,
+      "maxMedian": 450000,
+      "spreadPct": 159,
+      "recommendation": "Titleist wood_other 샤프트 별 가격 차이 큼"
+    },
+    {
+      "brand": "Mizuno",
+      "productType": "fairway_wood",
+      "dimension": "sex",
+      "cohorts": [
+        {
+          "key": "Women",
+          "count": 7,
+          "median": 165000
+        },
+        {
+          "key": "Men",
+          "count": 8,
+          "median": 65000
+        }
+      ],
+      "minMedian": 65000,
+      "maxMedian": 165000,
+      "spreadPct": 154,
+      "recommendation": "Mizuno fairway_wood 남/여 별 SKU 분리 필요"
+    },
+    {
+      "brand": "Honma",
+      "productType": "wedge",
+      "dimension": "condition",
+      "cohorts": [
+        {
+          "key": "New",
+          "count": 5,
+          "median": 149000
+        },
+        {
+          "key": "Used",
+          "count": 39,
+          "median": 59000
+        }
+      ],
+      "minMedian": 59000,
+      "maxMedian": 149000,
+      "spreadPct": 153,
+      "recommendation": "Honma wedge condition 별 가격 분리 필요 (top: New vs bottom: Used)"
+    },
+    {
+      "brand": "Titleist",
+      "productType": "wedge",
+      "dimension": "condition",
+      "cohorts": [
+        {
+          "key": "New",
+          "count": 5,
+          "median": 295000
+        },
+        {
+          "key": "Used",
+          "count": 29,
+          "median": 120000
+        }
+      ],
+      "minMedian": 120000,
+      "maxMedian": 295000,
+      "spreadPct": 146,
+      "recommendation": "Titleist wedge condition 별 가격 분리 필요 (top: New vs bottom: Used)"
+    },
+    {
+      "brand": "TaylorMade",
+      "productType": "fairway_wood",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "SIM2",
+          "count": 6,
+          "median": 214500
+        },
+        {
+          "key": "Stealth",
+          "count": 8,
+          "median": 180000
+        },
+        {
+          "key": "M2",
+          "count": 5,
+          "median": 120000
+        },
+        {
+          "key": "Burner",
+          "count": 11,
+          "median": 88000
+        }
+      ],
+      "minMedian": 88000,
+      "maxMedian": 214500,
+      "spreadPct": 144,
+      "recommendation": "TaylorMade fairway_wood sub-model 별 SKU 분리 권장 (top: SIM2 214,500원 vs bottom: Burner 88,000원)"
+    },
+    {
+      "brand": "Majesty",
+      "productType": "wood_other",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "Prestigio",
+          "count": 25,
+          "median": 500000
+        },
+        {
+          "key": "Maruman",
+          "count": 55,
+          "median": 210000
+        }
+      ],
+      "minMedian": 210000,
+      "maxMedian": 500000,
+      "spreadPct": 138,
+      "recommendation": "Majesty wood_other sub-model 별 SKU 분리 권장 (top: Prestigio 500,000원 vs bottom: Maruman 210,000원)"
+    },
+    {
+      "brand": "Callaway",
+      "productType": "driver",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "Elyte",
+          "count": 16,
+          "median": 420000
+        },
+        {
+          "key": "AiSmoke",
+          "count": 7,
+          "median": 280000
+        },
+        {
+          "key": "Rogue",
+          "count": 15,
+          "median": 250000
+        },
+        {
+          "key": "Paradym",
+          "count": 30,
+          "median": 245000
+        },
+        {
+          "key": "BigBertha",
+          "count": 14,
+          "median": 185000
+        },
+        {
+          "key": "Epic",
+          "count": 27,
+          "median": 180000
+        }
+      ],
+      "minMedian": 180000,
+      "maxMedian": 420000,
+      "spreadPct": 133,
+      "recommendation": "Callaway driver sub-model 별 SKU 분리 권장 (top: Elyte 420,000원 vs bottom: Epic 180,000원)"
+    },
+    {
+      "brand": "Srixon",
+      "productType": "driver",
+      "dimension": "shaft",
+      "cohorts": [
+        {
+          "key": "Ventus",
+          "count": 20,
+          "median": 280000
+        },
+        {
+          "key": "TourAD",
+          "count": 15,
+          "median": 190000
+        },
+        {
+          "key": "Diamana",
+          "count": 16,
+          "median": 187200
+        },
+        {
+          "key": "Speeder",
+          "count": 5,
+          "median": 120000
+        }
+      ],
+      "minMedian": 120000,
+      "maxMedian": 280000,
+      "spreadPct": 133,
+      "recommendation": "Srixon driver 샤프트 별 가격 차이 큼"
+    },
+    {
+      "brand": "Honma",
+      "productType": "wood_other",
+      "dimension": "sex",
+      "cohorts": [
+        {
+          "key": "Women",
+          "count": 11,
+          "median": 183000
+        },
+        {
+          "key": "Men",
+          "count": 10,
+          "median": 80000
+        }
+      ],
+      "minMedian": 80000,
+      "maxMedian": 183000,
+      "spreadPct": 129,
+      "recommendation": "Honma wood_other 남/여 별 SKU 분리 필요"
+    },
+    {
+      "brand": "PXG",
+      "productType": "driver",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "0311",
+          "count": 37,
+          "median": 563000
+        },
+        {
+          "key": "BlackOps",
+          "count": 9,
+          "median": 500000
+        },
+        {
+          "key": "0311X",
+          "count": 15,
+          "median": 320000
+        },
+        {
+          "key": "0211",
+          "count": 11,
+          "median": 250000
+        }
+      ],
+      "minMedian": 250000,
+      "maxMedian": 563000,
+      "spreadPct": 125,
+      "recommendation": "PXG driver sub-model 별 SKU 분리 권장 (top: 0311 563,000원 vs bottom: 0211 250,000원)"
+    },
+    {
+      "brand": "Majesty",
+      "productType": "wedge",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "Prestigio",
+          "count": 12,
+          "median": 310000
+        },
+        {
+          "key": "Maruman",
+          "count": 22,
+          "median": 150000
+        }
+      ],
+      "minMedian": 150000,
+      "maxMedian": 310000,
+      "spreadPct": 107,
+      "recommendation": "Majesty wedge sub-model 별 SKU 분리 권장 (top: Prestigio 310,000원 vs bottom: Maruman 150,000원)"
+    },
+    {
+      "brand": "Titleist",
+      "productType": "fairway_wood",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "TSR2",
+          "count": 6,
+          "median": 280000
+        },
+        {
+          "key": "TSi2",
+          "count": 5,
+          "median": 195000
+        },
+        {
+          "key": "TSi3",
+          "count": 5,
+          "median": 175000
+        },
+        {
+          "key": "915",
+          "count": 7,
+          "median": 140000
+        },
+        {
+          "key": "TS2",
+          "count": 5,
+          "median": 139000
+        }
+      ],
+      "minMedian": 139000,
+      "maxMedian": 280000,
+      "spreadPct": 101,
+      "recommendation": "Titleist fairway_wood sub-model 별 SKU 분리 권장 (top: TSR2 280,000원 vs bottom: TS2 139,000원)"
+    },
+    {
+      "brand": "Callaway",
+      "productType": "wedge",
+      "dimension": "subModel",
+      "cohorts": [
+        {
+          "key": "Forged",
+          "count": 41,
+          "median": 100000
+        },
+        {
+          "key": "Rogue",
+          "count": 7,
+          "median": 82000
+        },
+        {
+          "key": "BigBertha",
+          "count": 9,
+          "median": 50000
+        }
+      ],
+      "minMedian": 50000,
+      "maxMedian": 100000,
+      "spreadPct": 100,
+      "recommendation": "Callaway wedge sub-model 별 SKU 분리 권장 (top: Forged 100,000원 vs bottom: BigBertha 50,000원)"
+    },
+    {
+      "brand": "Callaway",
+      "productType": "wood_other",
+      "dimension": "sex",
+      "cohorts": [
+        {
+          "key": "Men",
+          "count": 16,
+          "median": 150000
+        },
+        {
+          "key": "Women",
+          "count": 12,
+          "median": 75000
+        }
+      ],
+      "minMedian": 75000,
+      "maxMedian": 150000,
+      "spreadPct": 100,
+      "recommendation": "Callaway wood_other 남/여 별 SKU 분리 필요"
+    },
+    {
+      "brand": "Honma",
+      "productType": "wedge",
+      "dimension": "sex",
+      "cohorts": [
+        {
+          "key": "Men",
+          "count": 21,
+          "median": 80000
+        },
+        {
+          "key": "Women",
+          "count": 15,
+          "median": 40000
+        }
+      ],
+      "minMedian": 40000,
+      "maxMedian": 80000,
+      "spreadPct": 100,
+      "recommendation": "Honma wedge 남/여 별 SKU 분리 필요"
+    }
+  ]
+}
