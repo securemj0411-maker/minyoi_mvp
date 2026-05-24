@@ -1857,6 +1857,11 @@ export async function detailStage(deadlineMs: number): Promise<StageStats> {
           detail_error: null,
           updated_at: now,
           ...(scoreDirtyAvailable ? { score_dirty: true } : {}),
+          // Wave 778: bunjang detail 완료 + normal 분류 + sku 매칭 → pool_eligible 즉시 true.
+          //   이전: joongna-ingest 만 pool_eligible=true 박았고 bunjang 누락 → ready 카테고리 매물 stuck.
+          //   Wave 778 RPC backfill 20,969건 발견 = source-level miss 본질.
+          //   non-normal 분류 시 아래 invalidatePoolEntries 가 candidate_pool 에서 제거하므로 안전.
+          ...(storageListingType === "normal" && sku?.id ? { pool_eligible: true } : {}),
         });
         // pool에 이미 들어간 매물이면 last_verified_at 갱신 → pack-open에서 재verify 안 함
         // (cron이 이미 fetchDetail + sold-out 체크 완료한 사실을 pool에 반영)
