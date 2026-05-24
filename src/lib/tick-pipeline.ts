@@ -4643,7 +4643,14 @@ function isAiAuditPoolPass(status: string | null | undefined): boolean {
 }
 
 function isAiAuditDefiniteNonPass(status: string | null | undefined): boolean {
-  return status === "hold" || status === "reject" || status === "skipped_unavailable";
+  // Wave 761 (2026-05-24): hold/skipped_unavailable 매물 invalidate 차단 (Wave 757 release mechanism).
+  //   기존: hold + reject + skipped_unavailable 모두 invalidate → 신발/의류 정상 매물 80% 손실 (24/30 hold).
+  //   AI hold 사유 패턴: "셀러 상세 설명 부족" / "시세보다 싼 가격 의심" — 한국 중고시장 일반 매물.
+  //   사용자 핵심 원칙 (일반인 친화): hold 매물도 사용자가 직접 판단할 수 있도록 풀 유지.
+  //   ready 유지하되 ai_audit_status='hold' 그대로 박혀있어 UI 에서 "AI 검토 중" 표시 가능 (별도 wave).
+  //   skipped_unavailable (AI 호출 실패) 도 invalidate 안 함 — 다음 cron 에서 재시도 기회.
+  //   reject 만 hard invalidate (AI 가 명확히 위험 판단한 매물).
+  return status === "reject";
 }
 
 function aiAuditVerdictFromClassification(
