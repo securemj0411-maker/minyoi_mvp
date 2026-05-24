@@ -259,7 +259,7 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
       // 가품 시그널
       "느낌 좋", "느낌 만점",
     ],
-    msrpKrw: 230000, released: 1994,
+    msrpKrw: 230000, minPriceKrw: 100000, released: 1994,  // Wave 768: Supreme Box Logo 가품 다수, 10만 floor
   },
 
   // ============================================================================

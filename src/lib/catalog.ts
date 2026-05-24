@@ -8806,7 +8806,7 @@ export const CATALOG: Sku[] = [
       "스니커즈", "벨트", "지갑", "모자", "키링", "팔찌", "반지", "목걸이",
       // 스웨터 재킷 = jacket-coat lane 으로 가야.
       "스웨터 재킷", "스웨터재킷", "스웨터 자켓", "스웨터자켓"],
-    msrpKrw: 500000, released: 2020,
+    msrpKrw: 500000, minPriceKrw: 80000, released: 2020,  // Wave 768: RRL knit 가품 floor
     defaultProductType: "knit",
   },
   // Wave 245 (2026-05-19): RRL jacket-coat narrow 신설 — production sample 47건 (broad 42%) 측정.
@@ -8837,7 +8837,7 @@ export const CATALOG: Sku[] = [
       // Wave 490: Grizzly has its own repeatable jacket lane.
       "그리즐리", "grizzly",
       "스니커즈", "벨트", "지갑", "모자", "키링", "팔찌", "반지", "목걸이"],
-    msrpKrw: 3000000, released: 2020,
+    msrpKrw: 3000000, minPriceKrw: 300000, released: 2020,  // Wave 768: RRL leather jacket premium floor
   },
   {
     id: "clothing-polo-rrl-browns-beach-jacket",
@@ -8883,7 +8883,7 @@ export const CATALOG: Sku[] = [
     ],
     mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일", "rrl스타일", "rrl무드",
       "스니커즈", "벨트", "지갑", "모자", "키링", "팔찌", "반지", "목걸이"],
-    msrpKrw: 1450000, released: 2020,
+    msrpKrw: 1450000, minPriceKrw: 200000, released: 2020,  // Wave 768: RRL grizzly premium floor
     defaultProductType: "jacket",
   },
   {
@@ -10635,7 +10635,7 @@ export const CATALOG: Sku[] = [
       "핌플", "여드름", "트러블", "패치 2매", "마스터 패치",
       "바디워시", "body wash", "샴푸",
     ],
-    msrpKrw: 230000, released: 2020,
+    msrpKrw: 230000, minPriceKrw: 30000, released: 2020,  // Wave 768: Acne sweat floor (가품 차단)
     // Wave 236d: multi product-type (hoodie + crewneck) — default 안 박음. text 추출 의존.
   },
   {
@@ -10650,7 +10650,7 @@ export const CATALOG: Sku[] = [
       "밀턴", "몬트리올", "마틴파우",
     ]],
     mustNotContain: ["키즈", "kids", "복각", "rep", "replica", "fake", "오르빗", "orbit", "핸메", "jw anderson", "jw 앤더슨", "앤더슨", "loewe", "로에베", "르샵", "leshop", "le shop"],
-    msrpKrw: 590000, released: 2020,
+    msrpKrw: 590000, minPriceKrw: 50000, released: 2020,  // Wave 768: Acne jacket/coat floor
     // Wave 236d: multi (jacket + coat) — default 안 박음. text 추출 의존 (regex 가 jacket/coat 구분).
   },
   {
@@ -10690,7 +10690,7 @@ export const CATALOG: Sku[] = [
     aliases: ["Acne Knit", "아크네 니트", "아크네 가디건", "Acne Peele"],
     mustContain: [["acne", "아크네"], ["니트", "knit", "스웨터", "sweater", "가디건", "cardigan", "peele"]],
     mustNotContain: ["키즈", "kids", "복각", "rep", "replica", "fake", "머플러", "목도리", "스카프", "scarf"],
-    msrpKrw: 390000, released: 2020,
+    msrpKrw: 390000, minPriceKrw: 30000, released: 2020,  // Wave 768: Acne knit 가품 floor (사용자 #6 발견 15K 매물 차단)
   },
   {
     id: "clothing-acne-polo",

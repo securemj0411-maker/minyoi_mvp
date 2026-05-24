@@ -364,7 +364,7 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     aliases: ["Stone Island Shadow", "스톤아일랜드 쉐도우", "Shadow Project"],
     mustContain: [["stone island", "스톤아일랜드"], ["shadow project", "쉐도우 프로젝트", "쉐도우프로젝트", "shadow"]],
     mustNotContain: [...COMMON_NOISE, "ghost piece", "고스트", "supreme", "슈프림"],
-    msrpKrw: 590000, released: 2008,
+    msrpKrw: 590000, minPriceKrw: 100000, released: 2008,  // Wave 768: Stone Island Shadow premium floor
   },
   {
     id: "clothing-stone-island-ghost-piece",
@@ -373,7 +373,7 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     aliases: ["Stone Island Ghost", "스톤아일랜드 고스트"],
     mustContain: [["stone island", "스톤아일랜드"], ["ghost piece", "고스트 피스", "고스트피스", "ghost"]],
     mustNotContain: [...COMMON_NOISE, "shadow project", "쉐도우"],
-    msrpKrw: 390000, released: 2010,
+    msrpKrw: 390000, minPriceKrw: 80000, released: 2010,  // Wave 768: Stone Island Ghost Piece floor
   },
   {
     id: "clothing-stone-island-crinkle-reps",
@@ -382,7 +382,7 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     aliases: ["Crinkle Reps", "크링클랩스", "크링클 랩스"],
     mustContain: [["stone island", "스톤아일랜드"], ["crinkle reps", "크링클랩스", "크링클 랩스", "crinkle"]],
     mustNotContain: [...COMMON_NOISE, "shadow project", "쉐도우", "supreme", "슈프림"],
-    msrpKrw: 690000, released: 2015,
+    msrpKrw: 690000, minPriceKrw: 100000, released: 2015,  // Wave 768: Stone Island Crinkle Reps floor
   },
 
   // ─── Arc'teryx 누락 ───
