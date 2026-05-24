@@ -22,24 +22,24 @@ export function BrandLogo({ size = 32, className }: { size?: number; className?:
       className={className}
     >
       <rect width="100" height="100" rx="22" fill="#0064FF" />
+      {/* sparkle aura — dashed circle outline only */}
+      <circle cx="50" cy="52" r="38" fill="none" stroke="#fff" strokeWidth="2" strokeDasharray="4 4" opacity="0.5" />
       {/* sparkles */}
       <path d="M14 28 l2 4 l4 2 l-4 2 l-2 4 l-2 -4 l-4 -2 l4 -2 z" fill="#fff" />
       <path d="M86 28 l2 4 l4 2 l-4 2 l-2 4 l-2 -4 l-4 -2 l4 -2 z" fill="#fff" />
       <path d="M84 70 l1.5 3 l3 1.5 l-3 1.5 l-1.5 3 l-1.5 -3 l-3 -1.5 l3 -1.5 z" fill="#fff" />
-      {/* piggy head */}
-      <circle cx="50" cy="52" r="38" fill="#fff" />
       {/* ears */}
       <path d="M28 40 L34 32 L38 48 Z" fill="#fff" />
       <path d="M72 40 L66 32 L62 48 Z" fill="#fff" />
-      {/* inner face */}
-      <circle cx="50" cy="58" r="24" fill="#0064FF" />
-      {/* eyes */}
-      <circle cx="42" cy="54" r="2.4" fill="#fff" />
-      <circle cx="58" cy="54" r="2.4" fill="#fff" />
-      {/* snout */}
-      <ellipse cx="50" cy="66" rx="11" ry="7" fill="#fff" />
-      {/* mouth zigzag */}
-      <path d="M44 64 L46 70 L48 66 L50 70 L52 66 L54 70 L56 64" stroke="#fff" strokeWidth="1.5" fill="none" />
+      {/* piggy face (white) */}
+      <circle cx="50" cy="58" r="24" fill="#fff" />
+      {/* eyes (blue dots on face) */}
+      <circle cx="42" cy="54" r="2.4" fill="#0064FF" />
+      <circle cx="58" cy="54" r="2.4" fill="#0064FF" />
+      {/* blush — translucent */}
+      <ellipse cx="50" cy="66" rx="11" ry="7" fill="#0064FF" opacity="0.16" />
+      {/* mouth — blue zigzag, rounded ends */}
+      <path d="M44 64 L46 70 L48 66 L50 70 L52 66 L54 70 L56 64" stroke="#0064FF" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </svg>
   );
 }
