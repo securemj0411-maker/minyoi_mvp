@@ -3010,7 +3010,10 @@ function trustedMarketMedian(stat: MarketPriceRow | undefined, category?: Sku["c
   // Wave 222 (2026-05-19): bag/clothing 추가 — 매물 수 적어 sample<5 흔함. low confidence + samples≥2 허용.
   //   bag 1067건 / clothing 2149건 매물이 condition별 분리 시 5 sample 미달.
   //   사용자 "ready 진입" 우선. 정확성 trade-off 인정 (다른 가품/AD floor + condition 분리로 보완).
-  const LOW_SAMPLE_ALLOWED_CATEGORIES = new Set<string>(["shoe", "drone", "lego", "kickboard", "perfume", "bag", "clothing"]);
+  // Wave 773 (2026-05-24): game_console + sport_golf 추가 — 사용자 #8 보고.
+  //   Wave 760 narrow SKU 신설 (게임 104 / 골프 62) 후 sample 분산 → n<5 thin_market 차단.
+  //   pool 진입 0 (사용자 6h 기다림). low_sample 허용 → ready 진입 + 시세 sample 점진 누적.
+  const LOW_SAMPLE_ALLOWED_CATEGORIES = new Set<string>(["shoe", "drone", "lego", "kickboard", "perfume", "bag", "clothing", "game_console", "sport_golf"]);
   if (category && LOW_SAMPLE_ALLOWED_CATEGORIES.has(category)) {
     if (total < 2) return null;
   } else {
