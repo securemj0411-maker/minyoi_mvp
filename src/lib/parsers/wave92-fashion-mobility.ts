@@ -35,6 +35,24 @@ function conditionClassToComparableTier(conditionClass: ConditionClass): Exclude
   return null;
 }
 
+// Wave 763 (2026-05-24): condition_grade.tier (UI 표시 5-tier S/A/B/C/D/UNKNOWN) → comparable_key tier 매핑.
+//   사용자 #3 보고: condition_tier (UI) 와 comparable_key 의 tier 가 일치 안 함 (shoe 57.6% / clothing 58.1% 미스매치).
+//   원인: condition_tier column = parsedJson.condition_grade.tier (Wave 714 신 grading)
+//         vs comparable_key 끝 token = parseConditionTier(text) 결과 (구 grading)
+//   3개 source 분리: condition_class (7-tier) / condition_tier (신 5-tier) / parseConditionTier (구 5-tier).
+//   사용자 결정: UI 표시 tier (condition_grade) 상태로 시세 grouping 통일.
+//   효과: UI S급 매물 = comparable_key s_grade pool 과 시세 비교 일관성 보장.
+function gradeChipToComparableKeyTier(tier: ConditionGrade["tier"]): Exclude<ConditionTier, null> {
+  switch (tier) {
+    case "S": return "s_grade";
+    case "A": return "a_grade";
+    case "B": return "b_grade";
+    case "C": return "c_grade";
+    case "D": return "reject";
+    default: return "unknown_condition" as Exclude<ConditionTier, null>;  // UNKNOWN — sample 분리
+  }
+}
+
 // 컨디션 표현 텍스트 → 정량 grade.
 // 셀러 표기는 1단계 깎음 (관용적 인플레 보정).
 // Wave 146-156: 신발 매물 흔한 표현 다수 추가.
@@ -649,7 +667,7 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 // Wave 537 (2026-05-22) shoe v18: Acne Manhattan/Rockaway mixed titles are ambiguous and held out.
 // Wave 756 (2026-05-24): shoe v38→v39 — comparable_key에서 sizeMm 제거 (사용자 정책).
 //   "C 시세에 사이즈 반영은 진짜 아니다" 준수. fragmented sample 통합 → sku_median_unavailable 회복.
-const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v40";  // Wave 762: catalog mustNotContain "클리프톤" + mustContain "마파테" 추가 (Hoka Mafate Satisfy leak fix)
+const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v41";  // Wave 763: comparable_key tier 를 condition_grade (UI) 와 통일 — 57.6% 미스매치 fix
 // Wave 538 (2026-05-22) bag v14: Longchamp Le Pliage requires explicit line text.
 // Wave 756 (2026-05-24): bag v23→v24 — comparable_key에서 sizeVariant 제거 (사용자 정책 일관).
 const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v24";
@@ -677,7 +695,7 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v24";
 // Wave 507 v20: final condition_class rewrites comparable condition token before key materialization.
 // Wave 540 (2026-05-22): Polo Oxford boys/youth sizes no longer enter adult shirt samples.
 // Wave 742 (2026-05-24): 의류 사이즈 추출 (sizeAlpha + sizeKr).
-const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v47";
+const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v48";  // Wave 763: comparable_key tier 를 condition_grade (UI) 와 통일 — 58.1% 미스매치 fix
 
 // ─── 의류 사이즈 추출 (Wave 742) ─────────────────────────────────────────
 // Alpha: XS/S/M/L/XL/XXL/XXXL/2XL/3XL/FREE
@@ -885,6 +903,9 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
   //   bag/clothing (step 2/3) 까지는 빈 배열 유지 (Wave 130 정책).
   let fashionConditionScore: number | null = null;
   let fashionConditionNotes: string[] = [];
+  // Wave 763 (2026-05-24): condition_grade (UI 표시 tier) 를 comparable_key 와 동일화하기 위해
+  //   branch 안에서 미리 계산 → partsForKey 에 직접 사용. parsedJson.condition_grade 에도 같은 값.
+  let fashionConditionGrade: ConditionGrade | null = null;
 
   if (category === "shoe") {
     const opt = parseShoeOptions(text);
@@ -1023,6 +1044,8 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
       needsReview = true;
       criticalUnknown.push("shoe_strong_negative_signal");
     }
+    // Wave 763: condition_grade 미리 계산 — comparable_key 의 tier 와 UI 일치 보장.
+    fashionConditionGrade = gradeShoeCondition({ name: title, description: input.description ?? null, enumLabel: input.bunjangConditionLabel ?? null });
   } else if (category === "bag") {
     const opt = parseBagOptions(text);
     parsedJson.bag_era = opt.era;
@@ -1309,6 +1332,8 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
       needsReview = true;
       criticalUnknown.push("clothing_strong_negative_signal");
     }
+    // Wave 763: condition_grade 미리 계산 — comparable_key 의 tier 와 UI 일치 보장.
+    fashionConditionGrade = gradeClothingCondition({ name: title, description: input.description ?? null, enumLabel: input.bunjangConditionLabel ?? null });
   }
 
   parseConfidence = Math.min(1, Math.max(0, parseConfidence));
@@ -1325,8 +1350,15 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
   const fromMeta = bunjangLabelToConditionClass(input.bunjangConditionLabel);
   conditionClassResult = resolveConditionClass(fromMeta, conditionClassResult, false);
   if (conditionKeyIndex != null) {
-    const comparableTier = conditionClassToComparableTier(conditionClassResult);
-    if (comparableTier) partsForKey[conditionKeyIndex] = comparableTier;
+    // Wave 763 (2026-05-24): UI 표시 tier (condition_grade) 와 comparable_key tier 통일.
+    //   shoe/clothing 은 fashionConditionGrade 박혀있으면 그 결과 사용 → UI = 시세 grouping 일치.
+    //   bag (condition_grade 없음) / fashionConditionGrade UNKNOWN → 기존 conditionClassResult fallback.
+    if (fashionConditionGrade && fashionConditionGrade.tier !== "UNKNOWN") {
+      partsForKey[conditionKeyIndex] = gradeChipToComparableKeyTier(fashionConditionGrade.tier);
+    } else {
+      const comparableTier = conditionClassToComparableTier(conditionClassResult);
+      if (comparableTier) partsForKey[conditionKeyIndex] = comparableTier;
+    }
   }
 
   const comparableKey = partsForKey.map(slug).join("|");
@@ -1397,7 +1429,8 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
       wave92_parser: true,
       // Wave 714 (2026-05-23): 5-tier S/A/B/C/D grading + flags (raw text 기반).
       //   신발/의류만. bag/bike 는 skip (사용자 정책: 가방 ready X).
-      condition_grade: computeConditionGrade(category, title, input.description ?? null, input.bunjangConditionLabel ?? null),
+      // Wave 763 (2026-05-24): fashionConditionGrade 변수에서 가져옴 (중복 호출 방지) — comparable_key 와 동일 source 보장.
+      condition_grade: fashionConditionGrade ?? computeConditionGrade(category, title, input.description ?? null, input.bunjangConditionLabel ?? null),
     },
   };
 }
