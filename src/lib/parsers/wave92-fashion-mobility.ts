@@ -695,7 +695,7 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v24";
 // Wave 507 v20: final condition_class rewrites comparable condition token before key materialization.
 // Wave 540 (2026-05-22): Polo Oxford boys/youth sizes no longer enter adult shirt samples.
 // Wave 742 (2026-05-24): 의류 사이즈 추출 (sizeAlpha + sizeKr).
-const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v50";  // Wave 765: BAPE sub-line 7개 SKU 통합 + multi-size bundle ("S/L") 자동 detection + polo boys 차단
+const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v51";  // Wave 766: 다중 brand 묶음 자동 detection (3+ brand 명시) + 폴로진스/캐시미어100프로 변형 추가
 
 // ─── 의류 사이즈 추출 (Wave 742) ─────────────────────────────────────────
 // Alpha: XS/S/M/L/XL/XXL/XXXL/2XL/3XL/FREE
@@ -1260,15 +1260,45 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     //   청바지 "30/32" (W30 L32) false positive 차단 — 같은 사이즈 단위 두 개만 detect.
     const multiSizeAlpha = /\b(?:xs|s|m|l|xl|xxl|2xl|3xl)\s*[\/,]\s*(?:xs|s|m|l|xl|xxl|2xl|3xl)\b/i.test(title);
     const multiSizeKr = /\b(?:90|95|100|105|110|115|120)\s*[\/,]\s*(?:90|95|100|105|110|115|120)\b/.test(title);
+    // Wave 766 (2026-05-24): 다중 brand 명시 매물 detection — 묶음 매물.
+    //   사용자 #4 deep sweep: "얀13 니트조끼 ... 오일릴리 랑방 지컷 아크네 듀엘 자라" → 6개 brand 매물.
+    //   3개+ brand 명시 = 묶음 거의 확실 (단품에서 다른 brand 비교 표현 false positive 차단).
+    const brandSignals = [
+      /baby|bape|베이프|에이프/i,
+      /polo|폴로|랄프|ralph/i,
+      /stussy|스투시/i,
+      /arcteryx|아크테릭스|아크/i,
+      /moncler|몽클레/i,
+      /thom\s*browne|톰브라운/i,
+      /supreme|슈프림/i,
+      /acne|아크네/i,
+      /carhartt|칼하트|카하트/i,
+      /uniqlo|유니클로/i,
+      /자라|zara/i,
+      /오일릴리|oilily/i,
+      /지컷|g.cut/i,
+      /랑방|lanvin/i,
+      /듀엘|duel/i,
+      /얀13/i,
+      /타미|tommy/i,
+      /라코스테|lacoste/i,
+    ];
+    const matchedBrandCount = brandSignals.filter((re) => re.test(title)).length;
+    const multiBrandBundle = matchedBrandCount >= 3;
     const titleMultiItemBundle =
       /(?:두\s*개|두개|세\s*개|세개|[2-9]\s*개|[2-9]\s*벌|일괄|묶음)/i.test(title)
       || multiSizeAlpha
-      || multiSizeKr;
+      || multiSizeKr
+      || multiBrandBundle;
     parsedJson.clothing_multi_item_bundle = titleMultiItemBundle;
     parsedJson.clothing_multi_size_detected = multiSizeAlpha || multiSizeKr ? true : false;
+    parsedJson.clothing_brand_count = matchedBrandCount;
     if (titleMultiItemBundle) {
       needsReview = true;
-      criticalUnknown.push(multiSizeAlpha || multiSizeKr ? "clothing_multi_size_bundle" : "clothing_multi_item_bundle");
+      const reason = multiBrandBundle ? "clothing_multi_brand_bundle"
+        : (multiSizeAlpha || multiSizeKr) ? "clothing_multi_size_bundle"
+        : "clothing_multi_item_bundle";
+      criticalUnknown.push(reason);
     }
 
     const conditionTier = parseConditionTier(text);

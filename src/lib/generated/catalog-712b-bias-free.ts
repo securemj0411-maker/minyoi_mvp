@@ -245,9 +245,13 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       // Wave 764: 한국 보세/sub-brand 추가 (사용자 #4 audit 발견).
       "마론에디션", "마롱에디션", "maron edition", "에스피오나지", "espionage",
       "벨리에", "vellie", "ballier", "벨리어", "투티", "투티에이나인", "tuti a9", "투티/a9", "투티a9",
-      "polo 진스 컴퍼니", "폴로 진스 컴퍼니", "polo jeans company",  // Polo 진스 = 보세 sub-line (Polo 브랜드 별도)
-      // 캐시미어 100% 별도 라인 (top tier)
-      "캐시미어 100", "100프로 캐시미어", "100% cashmere",
+      // Wave 766 (2026-05-24): polo jeans / polo sport sub-line 변형 보강 + 더 많은 보세 brand.
+      "polo 진스 컴퍼니", "폴로 진스 컴퍼니", "polo jeans company",
+      "폴로진스", "polo jeans", "폴로 진스", "polo sport", "폴로 스포츠",
+      "z pattern", "z패턴", "zpattern",
+      "얀13", "yan13", "오일릴리", "오일 릴리", "oilily", "지컷", "g cut", "g-cut", "듀엘", "duel",
+      // 캐시미어 100% 별도 라인 (top tier) — Wave 766: 순서 변형 추가.
+      "캐시미어 100", "100프로 캐시미어", "100% cashmere", "캐시미어 100프로", "캐시미어100", "100캐시미어",
       "나바호 핸드니트", "navajo handknit",  // Polo Country 한정
     ],
     msrpKrw: 219000, released: 2018,
