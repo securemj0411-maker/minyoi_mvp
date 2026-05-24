@@ -695,7 +695,7 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v24";
 // Wave 507 v20: final condition_class rewrites comparable condition token before key materialization.
 // Wave 540 (2026-05-22): Polo Oxford boys/youth sizes no longer enter adult shirt samples.
 // Wave 742 (2026-05-24): 의류 사이즈 추출 (sizeAlpha + sizeKr).
-const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v49";  // Wave 764: catalog 보세 brand + BAPE sub-line 차단 (마론에디션/에스피오나지/벨리에/투티/APEE BABY)
+const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v50";  // Wave 765: BAPE sub-line 7개 SKU 통합 + multi-size bundle ("S/L") 자동 detection + polo boys 차단
 
 // ─── 의류 사이즈 추출 (Wave 742) ─────────────────────────────────────────
 // Alpha: XS/S/M/L/XL/XXL/XXXL/2XL/3XL/FREE
@@ -1254,11 +1254,21 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
     // Wave 455 (2026-05-21): clothing 단품 비교군에 다중 수량/일괄 매물 섞임 차단.
     // 제목에 "두개/2개/일괄/묶음" 이 있으면 단품 시세 sample 로 쓰기 위험하다.
     // description 은 구성품 설명 false positive 가 많아 title-only 로 제한한다.
-    const titleMultiItemBundle = /(?:두\s*개|두개|세\s*개|세개|[2-9]\s*개|[2-9]\s*벌|일괄|묶음)/i.test(title);
+    // Wave 765 (2026-05-24): "S / L" / "M / L" / "95 / 100" 같이 사이즈 두 개 명시 매물 추가 차단.
+    //   사용자 #4 발견: "** stussy ** 터프기어 맨투맨 블랙/멜란지 오버핏 S / L" — 묶음 매물인데 단품 시세 비교됨.
+    //   알파 사이즈 (XS/S/M/L/XL/XXL) 두 개 명시 또는 한국 사이즈 (95/100/105/110) 두 개 명시.
+    //   청바지 "30/32" (W30 L32) false positive 차단 — 같은 사이즈 단위 두 개만 detect.
+    const multiSizeAlpha = /\b(?:xs|s|m|l|xl|xxl|2xl|3xl)\s*[\/,]\s*(?:xs|s|m|l|xl|xxl|2xl|3xl)\b/i.test(title);
+    const multiSizeKr = /\b(?:90|95|100|105|110|115|120)\s*[\/,]\s*(?:90|95|100|105|110|115|120)\b/.test(title);
+    const titleMultiItemBundle =
+      /(?:두\s*개|두개|세\s*개|세개|[2-9]\s*개|[2-9]\s*벌|일괄|묶음)/i.test(title)
+      || multiSizeAlpha
+      || multiSizeKr;
     parsedJson.clothing_multi_item_bundle = titleMultiItemBundle;
+    parsedJson.clothing_multi_size_detected = multiSizeAlpha || multiSizeKr ? true : false;
     if (titleMultiItemBundle) {
       needsReview = true;
-      criticalUnknown.push("clothing_multi_item_bundle");
+      criticalUnknown.push(multiSizeAlpha || multiSizeKr ? "clothing_multi_size_bundle" : "clothing_multi_item_bundle");
     }
 
     const conditionTier = parseConditionTier(text);

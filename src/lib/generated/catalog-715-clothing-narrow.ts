@@ -30,6 +30,18 @@ const COMMON_NOISE = [
   "가방", "백팩", "토트", "숄더", "크로스백", "bag",
 ] as const;
 
+// Wave 765 (2026-05-24): BAPE 아동/베이비 sub-line 공통 차단.
+//   BAPE women+kids 라인 (APEE/BABY/KIDS/JR) — 가격대 다름 (어른 SKU 시세 ≠ 키즈/베이비 시세).
+//   사용자 #4 발견: "베이프 APEE BABY 카모 반팔" 어른 bape_tee SKU 흡수.
+//   적용 대상: bape_tee / bape_hoodie / bape_hoodie_zip / bape_crewneck / bape_shark_hoodie /
+//             bape_varsity_jacket / bape_coach_jacket.
+export const BAPE_SUBLINE_NOISE = [
+  "apee", "에이피이",
+  "bape baby", "babe bape", "베이프 베이비", "베이비 베이프",
+  "bape kids", "베이프 키즈", "키즈 베이프", "bape jr", "베이프 jr",
+  "키즈사이즈", "키즈 사이즈", "kids size", "아동사이즈", "아동 사이즈",
+] as const;
+
 export const WAVE_715_CLOTHING_NARROW: Sku[] = [
   // ============================================================================
   // ===== Thom Browne 6-split (640건 58x → narrow) =====
@@ -556,6 +568,7 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
     ],
     mustNotContain: [
       ...COMMON_NOISE,
+      ...BAPE_SUBLINE_NOISE,
       "키즈", "kids",
       "coach", "코치", "코치자켓",
       "down", "다운", "패딩",
@@ -575,6 +588,7 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
     ],
     mustNotContain: [
       ...COMMON_NOISE,
+      ...BAPE_SUBLINE_NOISE,
       "키즈", "kids",
       "varsity", "바시티",
     ],

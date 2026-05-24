@@ -41,7 +41,7 @@ import { WAVE_712C_SHOE_BULK } from "@/lib/generated/catalog-712c-shoe-bulk";
 // Wave 715 (2026-05-23): 의류 catalog 체계적 narrow split — Phase 0 audit 결과 20 broad SKU 5-150x spread fix.
 //   Thom Browne 6-split (4-bar/Cardigan/Knit/Shirt/Suit/Sweat) + Polo Vintage + Moncler 3-split (Maya/Grenoble/Tricot)
 //   + Supreme Box Logo + Carhartt WIP Detroit + CDG 3-split (PLAY/Homme Plus/Junya) + Stussy×Nike + Arc'teryx LEAF/Veilance
-import { WAVE_715_CLOTHING_NARROW } from "@/lib/generated/catalog-715-clothing-narrow";
+import { WAVE_715_CLOTHING_NARROW, BAPE_SUBLINE_NOISE } from "@/lib/generated/catalog-715-clothing-narrow";
 // Wave 726 (2026-05-24): agent deep sweep — 신규 brand 신설 (Alpha Industries / Levi's / Discovery).
 //   일반인 친화 가격대 brand 추가. 명품/골프웨어는 별 cycle.
 import { WAVE_726_CLOTHING_BRAND_ADD } from "@/lib/generated/catalog-726-clothing-brand-add";
@@ -8413,7 +8413,7 @@ export const CATALOG: Sku[] = [
       ["피케", "pique", "pk ", "pk티", "pk 티", "카라티", "카라 티", "polo shirt", "폴로 셔츠"],
     ],
     mustNotContain: [
-      "키즈", "kids", "여아", "남아", "토들러", "복각", "rep ", "replica", "fake",
+      "키즈", "kids", "여아", "남아", "토들러", "polo boys", "폴로 보이즈", "폴로보이즈", "polo girls", "폴로 girls", "polo kids", "랄프로렌 보이즈", "랄프로렌 키즈", "복각", "rep ", "replica", "fake",
       "RRL", "purple label", "퍼플라벨", "polo bear", "베어",
       // 다른 brand polo 차단
       "라코스테", "lacoste", "헤지스", "hazzys", "타미힐피거", "tommy hilfiger",
@@ -8443,7 +8443,7 @@ export const CATALOG: Sku[] = [
     //   mustNotContain에 이미 비폴로 brand 모두 차단되어 있어 false positive 위험 낮음.
     mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌", "랄프 로렌"], ["피케", "pique", "pk ", "pk티", "pk 티", "카라티", "카라 티"]],
     mustNotContain: [
-      "RRL", "purple label", "퍼플라벨", "polo bear", "베어", "키즈", "kids", "여아", "남아", "토들러",
+      "RRL", "purple label", "퍼플라벨", "polo bear", "베어", "키즈", "kids", "여아", "남아", "토들러", "polo boys", "폴로 보이즈", "폴로보이즈", "polo girls", "폴로 girls", "polo kids", "랄프로렌 보이즈", "랄프로렌 키즈",
       // Wave 764 (2026-05-24): 보세/sub-brand polo 차단 (사용자 #4 audit 발견).
       //   "에스피오나지 Over Pique Polo Shirt" / "100 폴로 반팔카라티" 같은 보세 한국 브랜드 흡수.
       //   원피스/dress 매물 차단 (Polo Pique = 셔츠 SKU, 원피스 별도 product_type).
@@ -11477,12 +11477,8 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "carbon",
       "후드", "후디", "hoodie", "후드집업", "집업", "zip", "맨투맨", "크루넥", "crewneck", "sweatshirt",
       "샤크", "shark", "yeezy", "스타워즈", "신발", "스니커즈", "운동화",
-      // Wave 764 (2026-05-24): BAPE sub-line 차단 (사용자 #4 audit) — 어른 SKU 흡수 차단.
-      //   "베이프 APEE BABY 카모 반팔" — APEE = BAPE women+kids 라인, 어른 시세와 다름.
-      //   "베이프 에이프 바시티 자켓 105사이즈" — 105사이즈 키즈 의심.
-      "apee", "에이피이", "bape baby", "babe bape", "베이프 베이비", "베이비 베이프",
-      "bape kids", "베이프 키즈", "키즈 베이프", "bape jr", "베이프 jr",
-      "키즈사이즈", "키즈 사이즈", "kids size", "아동사이즈", "아동 사이즈",
+      // Wave 764/765: BAPE sub-line 차단 — 공통 const 로 다른 BAPE SKU 들과 동일.
+      ...BAPE_SUBLINE_NOISE,
       // Wave 241 (2026-05-19): 사용자 코멘트 — BAPE tee SKU 안 콜라보 가격 45~520k 다 한 시세.
       //   collab 별 가격 천차만별 — 별도 SKU 또는 차단 필요.
       "travis scott", "트래비스 스캇", "트래비스스캇", "cactus jack",
@@ -11546,6 +11542,7 @@ export const CATALOG: Sku[] = [
     aliases: ["BAPE Hoodie", "베이프 후드", "베이프 후드티"],
     mustContain: [["bape", "베이프", "a bathing ape"], ["후드", "후드티", "후디", "hoodie"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "샤크", "shark", "집업", "zip", "반집업", "half zip", "신발", "스니커즈", "운동화",
+      ...BAPE_SUBLINE_NOISE,  // Wave 765
       "콜라보", "collab", "travis scott", "트래비스 스캇", "트래비스스캇", "cactus jack", "puma", "푸마", "adidas", "아디다스", "aape", "오마주", "fubu", "푸부",
       "lacoste", "라코스테", "tommy", "타미", "자운드", "jound",
       "네이버후드", "neighborhood", "wtaps", "더블탭스", "갓 셀렉션", "god selection",
@@ -11571,6 +11568,7 @@ export const CATALOG: Sku[] = [
     aliases: ["BAPE Hoodie Zip", "베이프 후드집업", "베이프 집업후드"],
     mustContain: [["bape", "베이프", "a bathing ape"], ["후드집업", "집업후드", "집업", "zip up", "zip-up", "full zip"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "샤크", "shark", "신발", "스니커즈", "운동화",
+      ...BAPE_SUBLINE_NOISE,  // Wave 765
       "콜라보", "collab", "travis scott", "트래비스 스캇", "트래비스스캇", "cactus jack", "puma", "푸마", "adidas", "아디다스", "aape", "오마주", "fubu", "푸부",
       "lacoste", "라코스테", "tommy", "타미", "자운드", "jound",
       "네이버후드", "neighborhood", "wtaps", "더블탭스", "갓 셀렉션", "god selection",
@@ -11591,6 +11589,7 @@ export const CATALOG: Sku[] = [
     aliases: ["BAPE Crewneck", "베이프 맨투맨", "베이프 크루넥"],
     mustContain: [["bape", "베이프", "a bathing ape"], ["맨투맨", "크루넥", "crewneck", "sweatshirt", "스웻셔츠", "스웻 셔츠"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "샤크", "shark", "후드", "hoodie", "집업", "zip", "신발", "스니커즈", "운동화",
+      ...BAPE_SUBLINE_NOISE,  // Wave 765
       "콜라보", "collab", "travis scott", "트래비스 스캇", "트래비스스캇", "cactus jack", "puma", "푸마", "adidas", "아디다스", "aape", "오마주", "fubu", "푸부",
       "lacoste", "라코스테", "tommy", "타미", "자운드", "jound",
       "네이버후드", "neighborhood", "wtaps", "더블탭스", "갓 셀렉션", "god selection",
@@ -11625,6 +11624,7 @@ export const CATALOG: Sku[] = [
     ],
     mustNotContain: [
       "키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "신발", "운동화", "야구", "농구", "축구",
+      ...BAPE_SUBLINE_NOISE,  // Wave 765
       "티셔츠", "tee ", "t-shirt", "tshirt", "롱슬리브", "long sleeve", "팬츠", "pants", "바지", "쇼츠", "shorts", "반바지",
       "맨투맨", "크루넥", "crewneck", "sweatshirt",
       "콜라보", "collab", "puma", "푸마", "adidas", "아디다스", "aape", "오마주", "fubu", "푸부",
