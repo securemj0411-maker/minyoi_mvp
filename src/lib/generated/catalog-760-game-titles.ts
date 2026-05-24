@@ -75,6 +75,8 @@ const GAME_TITLE_NOISE = [
   // 가품/매입
   "복각", "rep ", "replica", "이미테이션", "fake", "짝퉁", "짭", "가품",
   "삽니다", "구합니다", "매입", "구매합니다", "구해요", "구함",
+  // Wave 807: "콘티프로콘택트" tire contains "프로콘" and leaked into Pro Controller.
+  "타이어", "콘티넨탈", "continental", "콘티프로콘택트", "contiprocontact", "procontact",
   // 본체 (game-title SKU 가 본체 SKU 와 충돌 방지)
   "본체만", "본체 단품", "콘솔 본체", "본체 풀박", "본체 풀박스",
   // 일괄/번들 (시세 무의미)

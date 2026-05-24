@@ -558,6 +558,8 @@ const GOLF_CLUB_COMMON_NOISE = [
   "가품", "이미테이션", "fake", "짭", "복각",
   "수리필요", "부품용", "고장", "헤드만", "head only", "샤프트만", "shaft only",
   "헤드커버만", "헤드 커버만",
+  // Wave 807: generic "풀세트" alone pulled non-golf full sets into sport_golf.
+  "바이올린", "악기", "레스큐빔", "다이빙", "랜턴", "렌턴", "카드지갑", "지갑", "wallet",
   // 의류 (Wave 727+ catalog 있음 — golf 의류 제외)
   "골프웨어", "골프복", "골프 의류",
   // 가방 (사용자 정책 가방 ready X)
@@ -7658,7 +7660,10 @@ export const CATALOG: Sku[] = [
     brand: "Generic Golf", category: "sport_golf", laneKey: "sport_golf_full_set_broad",
     modelName: "골프 풀세트 (broad — 모든 brand)",
     aliases: ["골프 풀세트", "골프 풀 세트", "골프 클럽 세트", "Full Set"],
-    mustContain: [["풀세트", "풀 세트", "골프세트", "골프 세트", "클럽 세트", "클럽세트", "full set"]],
+    mustContain: [
+      ["풀세트", "풀 세트", "골프세트", "골프 세트", "클럽 세트", "클럽세트", "full set"],
+      ["골프", "클럽", "아이언", "드라이버", "우드", "퍼터", "웨지", "하이브리드", "유틸리티"],
+    ],
     mustNotContain: [...GOLF_CLUB_COMMON_NOISE,
       "하프세트", "하프 세트", "half set",  // 하프세트는 별도
       "단품", "단일",  // 세트 아님
@@ -7670,7 +7675,10 @@ export const CATALOG: Sku[] = [
     brand: "Generic Golf", category: "sport_golf", laneKey: "sport_golf_half_set_broad",
     modelName: "골프 하프세트 (broad — 입문자/여성용 자주)",
     aliases: ["골프 하프세트", "골프 하프 세트", "Half Set"],
-    mustContain: [["하프세트", "하프 세트", "half set", "하프 클럽 세트"]],
+    mustContain: [
+      ["하프세트", "하프 세트", "half set", "하프 클럽 세트"],
+      ["골프", "클럽", "아이언", "드라이버", "우드", "퍼터", "웨지", "하이브리드", "유틸리티"],
+    ],
     mustNotContain: [...GOLF_CLUB_COMMON_NOISE,
       "풀세트", "풀 세트", "full set",
     ],
@@ -10849,7 +10857,10 @@ export const CATALOG: Sku[] = [
     modelName: "Puma Football / Futsal (울트라 / 킹 / 퓨처)",
     aliases: ["Puma 축구화", "Puma 풋살화", "푸마 울트라", "푸마 킹", "푸마 퓨처"],
     mustContain: [["puma", "푸마", "퓨마"], ["울트라", "ultra", "킹", "king", "퓨처", "future", "축구화", "풋살화", "ag ", "tf ", "mg ", "퓨전니트로"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "스피드캣", "speedcat", "팔레르모", "palermo", "스웨이드", "suede", "농구화"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "스피드캣", "speedcat", "팔레르모", "palermo", "스웨이드", "suede", "농구화",
+      // Wave 807: Future Rider is a lifestyle sneaker, not Puma Future football.
+      "퓨처 라이더", "future rider", "라이더", "rider",
+    ],
     msrpKrw: 150000, released: 2020,
   },
   // Wave 207 (2026-05-18): 미즈노 매물 80건+ 압도적 — 축구화/풋살화 시장 거대.
@@ -13664,6 +13675,7 @@ function hasExchangeRequestMarker(rawText: string, normalizedText: string): bool
     /(?:교환|반품|환불)(?:\s*(?:\/|및|,|&)?\s*(?:교환|반품|환불|취소)){0,3}.{0,12}(?:불가|x|❌|사절|안|어려|어렵)|교환\s*불가|교환불가|교환.{0,12}환불.{0,16}(?:불가|x|❌|사절|안|어려|어렵)|환불.{0,12}교환.{0,16}(?:불가|x|❌|사절|안|어려|어렵)|교환\s*(?:안|않)(?:해|합|받|되)/.test(raw);
   if (safeAftercare) return false;
 
+  if (/(?:교신|판\s*\/\s*교|판매\s*\/\s*교환|교환\s*\/\s*판매)/.test(raw)) return true;
   if (/(?:^|[\s([{])교환\s*(?:글|원함|원합니다|원해요|해요|합니다|하고\s*싶|하실\s*분|해주실\s*분|구함|구해요|만)(?:$|[\s)\]}!.,]|하|원|구)/.test(raw)) {
     return true;
   }

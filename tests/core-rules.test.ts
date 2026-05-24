@@ -1409,6 +1409,37 @@ test("exchange-request posts are excluded before direct catalog matching", () =>
   );
 });
 
+test("recent pool sweep blocks substring and generic full-set catalog leaks", () => {
+  assert.equal(
+    ruleMatch("콘티넨탈 콘티프로콘택트 245 45 19 1본", ""),
+    null,
+  );
+  assert.equal(
+    ruleMatch("다이브타임 레스큐빔V2 신품급 풀세트 팝니다", ""),
+    null,
+  );
+  assert.equal(
+    ruleMatch("바흐 4/4 바이올린(구성품 미사용 풀세트", ""),
+    null,
+  );
+  assert.equal(
+    ruleMatch("보테가베네타 그린 카드지갑 풀세트", ""),
+    null,
+  );
+  assert.equal(
+    ruleMatch("핑 G410 G425 드라이버 우드 아이언 풀세트", "")?.id,
+    "sport-golf-full-set-broad",
+  );
+  assert.equal(
+    ruleMatch("PUMA 푸마 퓨처 라이더 플레이 여성 스니커즈 운동화 240", "Junior puma Green Purple 단독 크리닝 완료 상태 좋아요. SIZE 240"),
+    null,
+  );
+  assert.equal(
+    ruleMatch("베이프 샤크후드(판/교)컴포넌트 교신", "판매는 30 교신가 35"),
+    null,
+  );
+});
+
 test("pool policy gives one shared skip reason for blocked flags", () => {
   // Wave 13: coarse_market_price/market_confidence_low POOL_BLOCK 제거됨.
   // 다른 POOL_BLOCK_FLAGS (risk_keyword_review 등)로 동일 share-reason 동작 검증.
