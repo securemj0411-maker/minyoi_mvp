@@ -30,7 +30,13 @@ import {
   trimmedSellerMarket,
 } from "@/lib/market-math";
 import { notifyOperationalAlerts, type OperationalAlert } from "@/lib/operational-notifier";
-import { bunjangLabelToConditionClass, extractConditionClass, parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
+import {
+  PARSER_VERSION as OPTION_PARSER_VERSION,
+  bunjangLabelToConditionClass,
+  extractConditionClass,
+  parseListingOptions,
+  toParsedListingRow,
+} from "@/lib/option-parser";
 import { conditionFallbackChain, pickByConditionFallback } from "@/lib/condition-fallback";
 import {
   aiHasHardRisk,
@@ -2186,21 +2192,39 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   const remainingAfterPool = Math.max(0, limit - poolRows.length);
   if (remainingAfterPool === 0) return poolRows.slice(0, limit);
 
+  // Wave 807: fashion parser drift backfills should not starve behind a broad fresh-dirty backlog.
+  // 신발/의류는 parser/catalog split 빈도가 높아서 재채점 큐에 올라온 뒤에도 별도 reserve lane이 필요하다.
+  const fashionReserveLimit = Math.min(remainingAfterPool, Math.max(50, Math.floor(limit * 0.35)));
+  const fashionRows = await (async () => {
+    try {
+      return fetchScorableRows(
+        "&or=(sku_id.like.shoe-%2A,sku_id.like.clothing-%2A)",
+        fashionReserveLimit,
+        seenPids,
+      );
+    } catch (err) {
+      console.warn("loadScorableRows fashion reserve fetch failed (non-fatal)", err);
+      return [];
+    }
+  })();
+  const remainingAfterFashion = Math.max(0, limit - poolRows.length - fashionRows.length);
+  if (remainingAfterFashion === 0) return [...poolRows, ...fashionRows].slice(0, limit);
+
   const sourceReserveLimit = Math.min(limit, 100);
   const joongnaRows = await (async () => {
     try {
-      return fetchScorableRows("&source=eq.joongna", Math.min(sourceReserveLimit, remainingAfterPool), seenPids);
+      return fetchScorableRows("&source=eq.joongna", Math.min(sourceReserveLimit, remainingAfterFashion), seenPids);
     } catch (err) {
       console.warn("loadScorableRows joongna fetch failed (non-fatal)", err);
       return [];
     }
   })();
-  const remainingLimit = Math.max(0, limit - poolRows.length - joongnaRows.length);
-  if (remainingLimit === 0) return [...poolRows, ...joongnaRows].slice(0, limit);
+  const remainingLimit = Math.max(0, limit - poolRows.length - fashionRows.length - joongnaRows.length);
+  if (remainingLimit === 0) return [...poolRows, ...fashionRows, ...joongnaRows].slice(0, limit);
 
   const generalRows: ScorableRawRow[] = [];
   for (const source of GENERAL_SCORE_SOURCES) {
-    const sourceRemaining = Math.max(0, limit - poolRows.length - joongnaRows.length - generalRows.length);
+    const sourceRemaining = Math.max(0, limit - poolRows.length - fashionRows.length - joongnaRows.length - generalRows.length);
     if (sourceRemaining === 0) break;
     try {
       generalRows.push(...await fetchScorableRows(`&source=eq.${source}`, sourceRemaining, seenPids));
@@ -2208,7 +2232,7 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
       console.warn(`loadScorableRows ${source} fetch failed (non-fatal)`, err);
     }
   }
-  return [...poolRows, ...joongnaRows, ...generalRows].slice(0, limit);
+  return [...poolRows, ...fashionRows, ...joongnaRows, ...generalRows].slice(0, limit);
 }
 
 async function loadDirtyPoolScorableRows(
@@ -2363,7 +2387,7 @@ async function markStaleLaneBlockedScoreDirty(): Promise<number> {
     const { LANE_READINESS } = await import("@/lib/category-readiness");
     const res = await restFetch(
       `${tableUrl("mvp_candidate_pool")}?select=pid,invalidated_reason&status=eq.invalidated&invalidated_reason=like.lane_blocked_*&limit=2000`,
-      { method: "GET" },
+      { method: "GET", headers: serviceHeaders() },
     );
     if (!res.ok) return 0;
     const rows: Array<{ pid: number; invalidated_reason: string | null }> = await res.json();
@@ -2658,7 +2682,9 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   //   기존 v38: shoe|model|sneaker|255|b_grade|with_box → size별 sample 1-2건 fragmented.
   //   Nike Dunk Panda 47건 sku_median_unavailable 1위. systemic fix.
   //   stale v38 매물 cron이 점진 reparse → size-agnostic comparable_key로 sample 통합.
-  shoe: "wave92-shoe-v39",
+  // Wave 763: shoe v41 — condition_grade.tier(UI)와 comparable_key tier 통일.
+  //   parser 출력값과 drift gate 기대값 sync 유지.
+  shoe: "wave92-shoe-v41",
   // Wave 660 (2026-05-22): bag v23 — Coach Tabby 폴리쉬드 페블 레더 (top tier 820k) 차단.
   // Wave 756 (2026-05-24): bag v24 — comparable_key에서 sizeVariant 제거 (shoe와 일관).
   bag: "wave92-bag-v24",
@@ -2666,20 +2692,31 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // Wave 712a (2026-05-23): clothing v45 — bias-free 14 brand 검증 hotfix. MLB cap 엠엘비 alias + Nike/Murakami directSpecificMatch / Stussy crossbody narrow split + basic-tee shorts 차단 / Adidas trefoil Thug+SFTM+Y3+FOG+Raf 콜라보 차단 / Patagonia Synchilla 신설 (162건 회복) / Polo Big Pony Pique 신설 (193건 black hole 회복).
   // Wave 712b (2026-05-23): clothing v46 — 의류 신설 (Adidas collab 5 / FOG Main Line 4 / Polo 7 / Stone Island sub 3 / Arc'teryx Down / BAPE × Adidas + Longsleeve + Backpack / TNF Novelty + Steep Tech / Junya + CDG Converse broad / Stussy 모델 3 + Nike sub 2 / NB collab 2 / Polo Chief Keef).
   // Wave 742 (2026-05-24): clothing v47 — 의류 사이즈 추출 신설 (sizeAlpha/sizeKr/waistInch). 7,616건 v46 매물 점진 reparse.
-  clothing: "wave216-clothing-v47",
+  // Wave 779/801: clothing v52 — Baltoro/down_jacket key 유지 + fashion pool purity follow-up.
+  //   parser 출력값과 drift gate 기대값 sync 유지.
+  clothing: "wave216-clothing-v52",
   bike: "wave92-fashion-mobility-v7",
-  // Wave 531: generic option-parser v55 blocks exchange-only and accessory-only
-  // full-unit pollution for these active pool categories.
-  home_appliance: "option-parser-v55",
-  drone: "option-parser-v55",
-  // Wave 743 (2026-05-24): 전자기기 카테고리 LATEST 매핑 추가. 24K stale 매물 (smartphone/tablet/laptop/smartwatch/earphone) detection 정확도 향상.
-  // 전자기기는 pool 아니라 자동 reparse 트리거 X — comparable_key 계산 시 stale 정합성만 영향.
-  smartphone: "option-parser-v55",
-  tablet: "option-parser-v55",
-  laptop: "option-parser-v55",
-  smartwatch: "option-parser-v55",
-  earphone: "option-parser-v55",
-  watch: "option-parser-v55",
+  // Generic option-parser categories must track the exported parser version.
+  // Wave 808: v55 literals and missing game/golf/camera/etc. mappings caused the same
+  // stale-parser drift class as fashion: fresh rows could be blocked as stale, while
+  // old rows in unmapped categories never got automatic reparse.
+  camera: OPTION_PARSER_VERSION,
+  desktop: OPTION_PARSER_VERSION,
+  drone: OPTION_PARSER_VERSION,
+  earphone: OPTION_PARSER_VERSION,
+  game_console: OPTION_PARSER_VERSION,
+  home_appliance: OPTION_PARSER_VERSION,
+  kickboard: OPTION_PARSER_VERSION,
+  laptop: OPTION_PARSER_VERSION,
+  lego: OPTION_PARSER_VERSION,
+  monitor: OPTION_PARSER_VERSION,
+  perfume: OPTION_PARSER_VERSION,
+  smartphone: OPTION_PARSER_VERSION,
+  smartwatch: OPTION_PARSER_VERSION,
+  speaker: OPTION_PARSER_VERSION,
+  sport_golf: OPTION_PARSER_VERSION,
+  tablet: OPTION_PARSER_VERSION,
+  watch: OPTION_PARSER_VERSION,
 };
 function isParsedStale(row: ParsedListingRow): boolean {
   if (!row.category) return false;
@@ -3495,11 +3532,17 @@ export async function sourceHealthStage(): Promise<StageStats> {
 // 새: DB 안에서 GROUP BY HAVING — 작은 set 반환. 100배 빠름.
 async function loadFraudGroupHashes(): Promise<Set<string>> {
   try {
-    const res = await restFetch(rpcUrl("get_fraud_group_hashes"), {
+    const timeoutMs = Number(process.env.PIPELINE_FRAUD_GROUP_HASH_TIMEOUT_MS ?? 5_000);
+    const res = await fetch(rpcUrl("get_fraud_group_hashes"), {
       method: "POST",
       headers: serviceHeaders(),
       body: jsonBody({}),
+      signal: AbortSignal.timeout(Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 5_000),
     });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`Supabase REST failed ${res.status} POST /rpc/get_fraud_group_hashes: ${body}`);
+    }
     const rows = (await res.json()) as Array<{ description_hash: string }>;
     return new Set(rows.map((r) => r.description_hash).filter(Boolean));
   } catch (err) {
@@ -4040,13 +4083,62 @@ export async function marketStatsStage(): Promise<StageStats> {
   return stats;
 }
 
-async function invalidatePoolEntries(entries: {
+type PoolInvalidationEntry = {
   pid: number;
   reason: string;
   category?: Sku["category"] | null;
   comparable_key?: string | null;
   condition_class?: string | null;
-}[]) {
+};
+
+type PoolReadyFloorState = {
+  deferCleanup: boolean;
+  readyCount: number;
+  threshold: number;
+};
+
+async function loadPoolReadyFloorState(): Promise<PoolReadyFloorState> {
+  const threshold = Number(process.env.PIPELINE_POOL_CLEANUP_MIN_READY ?? 350);
+  if (!Number.isFinite(threshold) || threshold <= 0) {
+    return { deferCleanup: false, readyCount: -1, threshold: 0 };
+  }
+  try {
+    const res = await restFetch(
+      `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.ready&limit=5000`,
+      { headers: serviceHeaders() },
+    );
+    const rows = (await res.json()) as Array<{ pid: number | string }>;
+    const readyCount = rows.length;
+    return { deferCleanup: readyCount < threshold, readyCount, threshold };
+  } catch (err) {
+    console.warn("pool ready floor check failed; deferring cleanup for safety", err);
+    return { deferCleanup: true, readyCount: -1, threshold };
+  }
+}
+
+async function filterPoolInvalidationsForReadyFloor(
+  entries: PoolInvalidationEntry[],
+  floor: PoolReadyFloorState,
+): Promise<{ entries: PoolInvalidationEntry[]; deferred: number }> {
+  if (!floor.deferCleanup || entries.length === 0) return { entries, deferred: 0 };
+  const pids = [...new Set(entries.map((entry) => Number(entry.pid)).filter(Number.isFinite))];
+  const protectedPids = new Set<number>();
+  for (const part of chunkArray(pids, REST_WRITE_CHUNK_SIZE)) {
+    const res = await restFetch(
+      `${tableUrl("mvp_candidate_pool")}?select=pid,status&pid=in.(${part.join(",")})&status=in.(ready,reserved)&limit=${part.length}`,
+      { headers: serviceHeaders() },
+    );
+    const rows = (await res.json()) as Array<{ pid: number | string; status: string | null }>;
+    for (const row of rows) {
+      const pid = Number(row.pid);
+      if (Number.isFinite(pid)) protectedPids.add(pid);
+    }
+  }
+  const filtered = entries.filter((entry) => !protectedPids.has(Number(entry.pid)));
+  return { entries: filtered, deferred: entries.length - filtered.length };
+}
+
+async function invalidatePoolEntries(entries: PoolInvalidationEntry[]) {
   const byReason = new Map<string, Set<number>>();
   for (const entry of entries) {
     const pid = Number(entry.pid);
@@ -4285,10 +4377,12 @@ async function markStaleInvalidatedPoolRowsDirty(limit: number): Promise<number>
     invalidated_reason: string | null;
   }>;
   const byCategory = new Map<Sku["category"], number[]>();
+  const invalidatedReasonByPid = new Map<number, string | null>();
   for (const row of poolRows) {
     const pid = Number(row.pid);
     const category = row.category;
     if (!Number.isFinite(pid) || !category || !LATEST_PARSER_VERSION_BY_CATEGORY[category]) continue;
+    invalidatedReasonByPid.set(pid, row.invalidated_reason ?? null);
     byCategory.set(category, [...(byCategory.get(category) ?? []), pid]);
   }
   if (byCategory.size === 0) return 0;
@@ -4345,7 +4439,9 @@ async function markStaleInvalidatedPoolRowsDirty(limit: number): Promise<number>
     for (const pid of pids) {
       if (!rawEligible.has(pid)) continue;
       const parserVersion = parsedByPid.get(pid) ?? null;
-      if (parserVersion !== expected) stalePids.push(pid);
+      const reason = invalidatedReasonByPid.get(pid) ?? "";
+      const staleParserReason = reason === `stale_parser_version_${category}` || reason === `stale_parser_version_${category}_residue`;
+      if (parserVersion !== expected || staleParserReason) stalePids.push(pid);
     }
   }
 
@@ -5728,23 +5824,39 @@ export async function housekeeperStage(): Promise<StageStats> {
 export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
-  const unscorableDirtyCleared = await clearUnscorableScoreDirty(Math.max(config.tickScoreLimit * 20, 1000));
-  const nonScorableDirtyCleared = await clearNonScorableScoreDirty(Math.max(config.tickScoreLimit * 2, 500));
-  const poolIneligibleResidues = await invalidatePoolIneligibleResidues(Math.max(config.tickScoreLimit * 2, 1000));
-  const poolLowSellerRatingResidues = await invalidatePoolLowSellerRatingResidues(Math.max(config.tickScoreLimit * 2, 1000));
-  const poolStaleParserResidues = await invalidatePoolStaleParserResidues(Math.max(config.tickScoreLimit * 2, 1000));
-  const staleInvalidatedPoolDirtyMarked = await markStaleInvalidatedPoolRowsDirty(
-    Math.min(Math.max(config.tickScoreLimit, 100), 250),
-  );
-  const skuMedianUnavailableMarketInvalidations = await enqueueSkuMedianUnavailableMarketInvalidations(
-    Math.min(Math.max(config.tickScoreLimit, 100), 250),
-  );
+  const readyFloor = await loadPoolReadyFloorState();
+  const unscorableDirtyCleared = readyFloor.deferCleanup
+    ? 0
+    : await clearUnscorableScoreDirty(Math.max(config.tickScoreLimit * 20, 1000));
+  const nonScorableDirtyCleared = readyFloor.deferCleanup
+    ? 0
+    : await clearNonScorableScoreDirty(Math.max(config.tickScoreLimit * 2, 500));
+  const poolIneligibleResidues = readyFloor.deferCleanup
+    ? 0
+    : await invalidatePoolIneligibleResidues(Math.max(config.tickScoreLimit * 2, 1000));
+  const poolLowSellerRatingResidues = readyFloor.deferCleanup
+    ? 0
+    : await invalidatePoolLowSellerRatingResidues(Math.max(config.tickScoreLimit * 2, 1000));
+  const poolStaleParserResidues = readyFloor.deferCleanup
+    ? 0
+    : await invalidatePoolStaleParserResidues(Math.max(config.tickScoreLimit * 2, 1000));
+  const staleInvalidatedPoolDirtyMarked = readyFloor.deferCleanup
+    ? 0
+    : await markStaleInvalidatedPoolRowsDirty(Math.min(Math.max(config.tickScoreLimit, 100), 250));
+  const skuMedianUnavailableMarketInvalidations = readyFloor.deferCleanup
+    ? 0
+    : await enqueueSkuMedianUnavailableMarketInvalidations(Math.min(Math.max(config.tickScoreLimit, 100), 250));
   // Wave launch-44 (사용자 짚음 "invalidated to ready cron 해결책"):
   //   markRecoveredMarketInvalidatedPoolRowsDirty 호출 제거. recovery-worker (별도 cron) 로 이전.
   //   score_worker 부담 ↓ (33% timeout 대응) + recovery 자체 처리량 ↑ (큰 limit 가능).
-  const poolAiAuditResidues = await invalidatePoolAiAuditResidues(Math.max(config.tickScoreLimit * 2, 1000));
+  const poolAiAuditResidues = readyFloor.deferCleanup
+    ? 0
+    : await invalidatePoolAiAuditResidues(Math.max(config.tickScoreLimit * 2, 1000));
   stats.timingsMs = {
     ...(stats.timingsMs ?? {}),
+    score_pool_ready_floor_count: readyFloor.readyCount,
+    score_pool_ready_floor_threshold: readyFloor.threshold,
+    score_pool_ready_floor_cleanup_deferred: readyFloor.deferCleanup ? 1 : 0,
     score_unscorable_dirty_cleared_rows: unscorableDirtyCleared,
     score_non_scorable_dirty_cleared_rows: nonScorableDirtyCleared,
     score_pool_ineligible_residue_invalidated_rows: poolIneligibleResidues,
@@ -6054,8 +6166,11 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     });
   }
 
+  let parserNeedsReviewPoolInvalidationDeferred = 0;
   if (parserNeedsReviewPoolInvalidations.length > 0) {
-    await invalidatePoolEntries(parserNeedsReviewPoolInvalidations);
+    const guarded = await filterPoolInvalidationsForReadyFloor(parserNeedsReviewPoolInvalidations, readyFloor);
+    parserNeedsReviewPoolInvalidationDeferred = guarded.deferred;
+    await invalidatePoolEntries(guarded.entries);
   }
 
   const aiReview = await applyAiReview(scoredRows, {
@@ -6179,7 +6294,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     "pool",
     new Date(Date.now() + 30 * 60 * 1000).toISOString(),
   );
-  await invalidatePoolEntries([...poolBuild.invalidations, ...runtimePoolEligibilityInvalidations].map((entry) => {
+  const poolInvalidations = [...poolBuild.invalidations, ...runtimePoolEligibilityInvalidations].map((entry) => {
     const parsed = parsedByPid.get(Number(entry.pid));
     return {
       ...entry,
@@ -6187,9 +6302,15 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       comparable_key: parsed?.comparable_key ?? null,
       condition_class: parsed?.condition_class ?? null,
     };
-  }));
-  const postPoolIneligibleResidues = await invalidatePoolIneligibleResidues(Math.max(config.tickScoreLimit * 2, 1000));
-  const postPoolStaleParserResidues = await invalidatePoolStaleParserResidues(Math.max(config.tickScoreLimit * 2, 1000));
+  });
+  const guardedPoolInvalidations = await filterPoolInvalidationsForReadyFloor(poolInvalidations, readyFloor);
+  await invalidatePoolEntries(guardedPoolInvalidations.entries);
+  const postPoolIneligibleResidues = readyFloor.deferCleanup
+    ? 0
+    : await invalidatePoolIneligibleResidues(Math.max(config.tickScoreLimit * 2, 1000));
+  const postPoolStaleParserResidues = readyFloor.deferCleanup
+    ? 0
+    : await invalidatePoolStaleParserResidues(Math.max(config.tickScoreLimit * 2, 1000));
 
   // Wave 238 (2026-05-19): shadow audit — ready 매물 중 AI 안 본 매물 강제 호출.
   //   baseline 91.1% AI 안 봄 → fashion mismatch 근본 source. Option A 본체.
@@ -6236,12 +6357,16 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     console.warn("[wave238] shadow audit failed (non-fatal)", err);
     (stats as Record<string, unknown>).aiL2ShadowAuditError = (err as Error).message?.slice(0, 200) ?? "unknown";
   }
-  const postAuditPoolAiAuditResidues = await invalidatePoolAiAuditResidues(Math.max(config.tickScoreLimit * 2, 1000));
+  const postAuditPoolAiAuditResidues = readyFloor.deferCleanup
+    ? 0
+    : await invalidatePoolAiAuditResidues(Math.max(config.tickScoreLimit * 2, 1000));
   stats.timingsMs = {
     ...(stats.timingsMs ?? {}),
     score_pool_ineligible_pre_upsert_blocked_rows: runtimePoolEligibilityInvalidations.length,
     score_pool_ineligible_post_residue_invalidated_rows: postPoolIneligibleResidues,
     score_pool_stale_parser_post_residue_invalidated_rows: postPoolStaleParserResidues,
+    score_pool_ready_floor_invalidations_deferred_rows: guardedPoolInvalidations.deferred,
+    score_parser_needs_review_ready_floor_deferred_rows: parserNeedsReviewPoolInvalidationDeferred,
     score_pool_ai_audit_synced_from_cache: poolAiAuditCacheSynced,
     score_pool_ai_audit_post_residue_invalidated_rows: postAuditPoolAiAuditResidues,
   };
@@ -6274,7 +6399,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     ...(stats.timingsMs ?? {}),
     score_dirty_cleared_rows: processedPids.length,
     score_needs_review_skipped: needsReviewSkipped,
-    score_needs_review_pool_invalidated: parserNeedsReviewPoolInvalidations.length,
+    score_needs_review_pool_invalidated: parserNeedsReviewPoolInvalidations.length - parserNeedsReviewPoolInvalidationDeferred,
     score_phase2_escrow_selected: phase2EscrowSelected,
     score_phase2_escrow_gate_enabled: isPhase2EscrowEnabled() ? 1 : 0,
     score_phase2_escrow_resolved_pass: aiReview.stats.escrowResolvedPass,
@@ -6314,7 +6439,7 @@ export async function parserDriftStage(deadlineMs: number): Promise<StageStats> 
 
     let rows: Array<{ pid: number | string }> = [];
     try {
-      const res = await restFetch(url);
+      const res = await restFetch(url, { headers: serviceHeaders() });
       if (!res.ok) {
         console.error(`[parserDriftStage] ${category} fetch ${res.status}`);
         continue;
