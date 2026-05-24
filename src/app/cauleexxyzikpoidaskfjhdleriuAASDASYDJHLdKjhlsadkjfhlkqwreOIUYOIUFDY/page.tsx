@@ -17,8 +17,16 @@ type AuthUser = {
   created_at: string;
   last_sign_in_at: string | null;
   app_metadata?: { provider?: string };
-  user_metadata?: { name?: string; full_name?: string; preferred_username?: string; nickname?: string };
-  raw_user_meta_data?: { name?: string; full_name?: string; preferred_username?: string; nickname?: string };
+  user_metadata?: AuthUserMetadata;
+  raw_user_meta_data?: AuthUserMetadata;
+  identities?: Array<{ identity_data?: AuthUserMetadata | null }> | null;
+};
+
+type AuthUserMetadata = Record<string, unknown> & {
+  name?: string;
+  full_name?: string;
+  preferred_username?: string;
+  nickname?: string;
 };
 
 type CreditRow = {
@@ -89,6 +97,64 @@ function nicknameOf(user: AuthUser): string {
   return meta.nickname || meta.name || meta.full_name || meta.preferred_username || "";
 }
 
+const PROFILE_IMAGE_KEYS = [
+  "avatar_url",
+  "picture",
+  "profile_image_url",
+  "profileImageUrl",
+  "profile_image",
+  "image_url",
+  "thumbnail_image_url",
+  "thumbnailImageUrl",
+] as const;
+
+function safeExternalImageUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  try {
+    const url = new URL(trimmed);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+function findProfileImageUrl(meta: AuthUserMetadata | null | undefined): string | null {
+  if (!meta) return null;
+
+  for (const key of PROFILE_IMAGE_KEYS) {
+    const direct = safeExternalImageUrl(meta[key]);
+    if (direct) return direct;
+  }
+
+  const profile = meta.profile;
+  if (profile && typeof profile === "object") {
+    for (const key of PROFILE_IMAGE_KEYS) {
+      const nested = safeExternalImageUrl((profile as Record<string, unknown>)[key]);
+      if (nested) return nested;
+    }
+  }
+
+  return null;
+}
+
+function profileImageUrlOf(user: AuthUser): string | null {
+  const sources = [
+    user.user_metadata,
+    user.raw_user_meta_data,
+    ...(user.identities ?? []).map((identity) => identity.identity_data ?? undefined),
+  ];
+
+  for (const source of sources) {
+    const imageUrl = findProfileImageUrl(source);
+    if (imageUrl) return imageUrl;
+  }
+
+  return null;
+}
+
 export default async function MembersPage() {
   // admin auth 는 layout 에서 처리 (Wave launch-108).
   const [users, credits, plans] = await Promise.all([
@@ -108,6 +174,7 @@ export default async function MembersPage() {
         authUserId: u.id,
         email: u.email ?? null,
         nickname: nicknameOf(u),
+        profileImageUrl: profileImageUrlOf(u),
         createdAt: u.created_at,
         lastSignInAt: u.last_sign_in_at,
         provider: u.app_metadata?.provider ?? null,

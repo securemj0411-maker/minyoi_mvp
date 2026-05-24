@@ -10,6 +10,7 @@ export type MemberRow = {
   authUserId: string;
   email: string | null;
   nickname: string;
+  profileImageUrl: string | null;
   createdAt: string;
   lastSignInAt: string | null;
   provider: string | null;
@@ -56,6 +57,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
   const [error, setError] = useState<string | null>(null);
   const [deleteInProgress, setDeleteInProgress] = useState(false);
   const [actionPending, setActionPending] = useState<Set<string>>(new Set());
+  const [photoPreview, setPhotoPreview] = useState<MemberRow | null>(null);
 
   const filteredRows = useMemo(() => {
     if (!search.trim()) return rows;
@@ -235,6 +237,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                     onChange={() => toggleSelect(row.authUserId)}
                     className="h-4 w-4 cursor-pointer accent-amber-500"
                   />
+                  <ProfileThumb row={row} onOpen={() => setPhotoPreview(row)} />
                   <span className="text-[13px] font-bold text-zinc-100">{row.nickname || "—"}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -299,7 +302,12 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                       className="h-3.5 w-3.5 cursor-pointer accent-amber-500"
                     />
                   </td>
-                  <td className="px-3 py-2 font-semibold text-zinc-200">{row.nickname || "—"}</td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <ProfileThumb row={row} onOpen={() => setPhotoPreview(row)} />
+                      <span className="font-semibold text-zinc-200">{row.nickname || "—"}</span>
+                    </div>
+                  </td>
                   <td className="px-3 py-2 text-zinc-400">{row.email ?? "—"}</td>
                   <td className="px-3 py-2 text-right font-bold tabular-nums text-amber-400">{row.balance?.toLocaleString("ko-KR") ?? "—"}</td>
                   <td className="px-3 py-2">
@@ -337,14 +345,53 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
           onGrant={(amount) => void grantCredits(drawerRow, amount)}
           onRevoke={(amount) => void revokeCredits(drawerRow, amount)}
           onToggleBlock={() => void toggleBlock(drawerRow)}
+          onOpenPhoto={() => setPhotoPreview(drawerRow)}
         />
+      ) : null}
+
+      {photoPreview ? (
+        <ProfilePhotoModal row={photoPreview} onClose={() => setPhotoPreview(null)} />
       ) : null}
     </section>
   );
 }
 
+function profileInitial(row: MemberRow) {
+  return (row.nickname || row.email || "?").trim().slice(0, 1).toUpperCase();
+}
+
+function ProfileThumb({ row, onOpen }: { row: MemberRow; onOpen: () => void }) {
+  const label = row.profileImageUrl ? `${row.nickname || row.email || "회원"} 프로필 사진 크게 보기` : "프로필 사진 없음";
+  if (!row.profileImageUrl) {
+    return (
+      <span
+        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900 text-[10px] font-black text-zinc-500"
+        aria-label={label}
+        title={label}
+      >
+        {profileInitial(row)}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation();
+        onOpen();
+      }}
+      className="group relative inline-flex h-6 w-6 shrink-0 overflow-hidden rounded-full border border-zinc-700 bg-zinc-900 ring-0 transition hover:border-blue-400 hover:ring-2 hover:ring-blue-500/25"
+      aria-label={label}
+      title={label}
+    >
+      <img src={row.profileImageUrl} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+    </button>
+  );
+}
+
 function MemberDrawer({
-  row, onClose, pending, onGrant, onRevoke, onToggleBlock,
+  row, onClose, pending, onGrant, onRevoke, onToggleBlock, onOpenPhoto,
 }: {
   row: MemberRow;
   onClose: () => void;
@@ -352,6 +399,7 @@ function MemberDrawer({
   onGrant: (amount: number) => void;
   onRevoke: (amount: number) => void;
   onToggleBlock: () => void;
+  onOpenPhoto: () => void;
 }) {
   const [grantAmount, setGrantAmount] = useState("");
   const [revokeAmount, setRevokeAmount] = useState("");
@@ -369,10 +417,41 @@ function MemberDrawer({
         className="flex h-full w-full max-w-[420px] flex-col overflow-y-auto border-l border-zinc-800 bg-zinc-950 px-5 py-6 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
       >
         <div className="flex items-start justify-between gap-2">
-          <div>
-            <div className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">MEMBER PROFILE</div>
-            <div className="mt-1 text-lg font-black text-zinc-50">{row.nickname || "—"}</div>
-            <div className="mt-0.5 text-[11px] text-zinc-500">{row.email ?? "—"}</div>
+          <div className="flex min-w-0 items-start gap-3">
+            {row.profileImageUrl ? (
+              <button
+                type="button"
+                onClick={onOpenPhoto}
+                className="group relative mt-0.5 h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900 transition hover:border-blue-400"
+                aria-label={`${row.nickname || row.email || "회원"} 프로필 사진 크게 보기`}
+                title="프로필 사진 크게 보기"
+              >
+                <img src={row.profileImageUrl} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-center text-[8px] font-black uppercase tracking-wide text-zinc-100 opacity-0 transition group-hover:opacity-100">
+                  VIEW
+                </span>
+              </button>
+            ) : (
+              <div className="mt-0.5 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900 text-xl font-black text-zinc-600">
+                {profileInitial(row)}
+              </div>
+            )}
+            <div className="min-w-0">
+              <div className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">MEMBER PROFILE</div>
+              <div className="mt-1 truncate text-lg font-black text-zinc-50">{row.nickname || "—"}</div>
+              <div className="mt-0.5 truncate text-[11px] text-zinc-500">{row.email ?? "—"}</div>
+              {row.profileImageUrl ? (
+                <button
+                  type="button"
+                  onClick={onOpenPhoto}
+                  className="mt-2 rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-[9px] font-black uppercase tracking-wide text-blue-300 transition hover:border-blue-700 hover:bg-blue-950/30"
+                >
+                  PROFILE PHOTO
+                </button>
+              ) : (
+                <div className="mt-2 text-[9px] font-bold uppercase tracking-wide text-zinc-700">NO PROFILE PHOTO</div>
+              )}
+            </div>
           </div>
           <button type="button" onClick={onClose} className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-400 hover:text-zinc-200">CLOSE</button>
         </div>
@@ -455,6 +534,59 @@ function MemberDrawer({
           </div>
         </div>
       </aside>
+    </div>
+  );
+}
+
+function ProfilePhotoModal({ row, onClose }: { row: MemberRow; onClose: () => void }) {
+  if (!row.profileImageUrl) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      onClick={(event) => {
+        event.stopPropagation();
+        onClose();
+      }}
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-4 font-mono backdrop-blur-sm"
+    >
+      <div
+        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-[520px] overflow-hidden rounded-sm border border-zinc-800 bg-zinc-950 shadow-2xl"
+      >
+        <div className="flex items-center justify-between border-b border-zinc-800 px-3 py-2">
+          <div className="min-w-0">
+            <div className="truncate text-[11px] font-black text-zinc-100">{row.nickname || row.email || "—"}</div>
+            <div className="truncate text-[9px] text-zinc-600">{row.profileImageUrl}</div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="ml-3 rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-400 hover:text-zinc-200"
+          >
+            CLOSE
+          </button>
+        </div>
+        <div className="bg-black p-3">
+          <img
+            src={row.profileImageUrl}
+            alt={`${row.nickname || row.email || "회원"} 프로필 사진`}
+            className="mx-auto max-h-[72vh] w-auto max-w-full rounded-sm object-contain"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+        <div className="flex justify-end border-t border-zinc-800 px-3 py-2">
+          <a
+            href={row.profileImageUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-blue-300 hover:border-blue-700"
+          >
+            OPEN ORIGINAL
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
