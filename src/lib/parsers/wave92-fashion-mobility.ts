@@ -649,7 +649,7 @@ const PARSER_VERSION_W92 = "wave92-fashion-mobility-v7";
 // Wave 537 (2026-05-22) shoe v18: Acne Manhattan/Rockaway mixed titles are ambiguous and held out.
 // Wave 756 (2026-05-24): shoe v38→v39 — comparable_key에서 sizeMm 제거 (사용자 정책).
 //   "C 시세에 사이즈 반영은 진짜 아니다" 준수. fragmented sample 통합 → sku_median_unavailable 회복.
-const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v39";
+const PARSER_VERSION_W92_SHOE_V8 = "wave92-shoe-v40";  // Wave 762: catalog mustNotContain "클리프톤" + mustContain "마파테" 추가 (Hoka Mafate Satisfy leak fix)
 // Wave 538 (2026-05-22) bag v14: Longchamp Le Pliage requires explicit line text.
 // Wave 756 (2026-05-24): bag v23→v24 — comparable_key에서 sizeVariant 제거 (사용자 정책 일관).
 const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v24";

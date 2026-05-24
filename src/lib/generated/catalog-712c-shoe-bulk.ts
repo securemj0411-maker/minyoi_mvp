@@ -568,8 +568,12 @@ export const WAVE_712C_SHOE_BULK: Sku[] = [
     brand: "Hoka x Satisfy", category: "shoe", laneKey: "hoka_mafate_satisfy",
     modelName: "Hoka × Satisfy Mafate Speed 4 (premium collab)",
     aliases: ["Hoka Satisfy", "호카 새티스파이"],
-    mustContain: [["hoka", "호카"], ["새티스파이", "세티스파이", "satisfy"]],
-    mustNotContain: [...COMMON_NOISE, "bondi", "본디", "clifton", "클리프턴", "엑슬림", "xlim"],
+    mustContain: [["hoka", "호카"], ["새티스파이", "세티스파이", "satisfy"], ["마파테", "mafate"]],
+    // Wave 762 (2026-05-24): 클리프톤(ㅗ 받침) 변형 추가 — 사용자 #2 발견.
+    //   기존: "클리프턴" 만 박혀서 "클리프톤" 매물 (Clifton LS 다른 모델) 가 Mafate SKU 흡수.
+    //   비교 매물 풀 오염 (clifton 매물이 mafate 시세 sample 로 들어감).
+    //   mustContain "마파테" 추가 → broad "콜라보" 매물 흡수도 차단 (모델명 명시 필요).
+    mustNotContain: [...COMMON_NOISE, "bondi", "본디", "clifton", "클리프턴", "클리프톤", "엑슬림", "xlim"],
     msrpKrw: 290000, released: 2024,
     defaultProductType: "sneaker",
   },
