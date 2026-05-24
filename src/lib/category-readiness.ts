@@ -1645,9 +1645,9 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     minTrustedKeys: 5,
   },
   game_console: {
-    status: "internal_only",
+    status: "ready",
     label: "Game Console",
-    note: "PS5/Switch broad는 보류. ps5_disc_digital_standard + ps5_slim narrow lane만 LANE_READINESS로 별도 ready 처리.",
+    note: "Wave 760 (2026-05-24): 게임 카트리지 104 SKU 신설 (Pokemon/Mario/Zelda/Animal Crossing/Switch+PS+3DS) + isGameTitle 플래그 + 커버 substring fix. lane ready 매물 다수 학습 가능.",
     minReadyPool: 6,
     minParseRate: 0.9,
     minTrustedKeys: 4,
@@ -1678,9 +1678,9 @@ export const CATEGORY_READINESS: Record<Sku["category"], CategoryReadinessConfig
     minTrustedKeys: 5,
   },
   sport_golf: {
-    status: "internal_only",
+    status: "ready",
     label: "Golf",
-    note: "Wave 90 source 다양화 1차 후보. 2026-05-15: loft 옵션 parser 보강 전 사용자 노출 보류, 시세 학습만 허용.",
+    note: "Wave 759+760 (2026-05-24): 24 broad + 20 P2 (웨지/우드/하이브리드/세트) + 18 narrow split (sub-model × shaft × condition × sex) = 62 SKU. 10,628 매물 sweep 기반. option-parser v56 의 golf_grip/face/head/shaft/rounding signal 박힘.",
     minReadyPool: 5,
     minParseRate: 0.9,
     minTrustedKeys: 4,
