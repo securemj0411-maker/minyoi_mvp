@@ -94,6 +94,8 @@ export default function RootLayout({
                   "@id": "https://minyoi-mvp.vercel.app/#website",
                   url: "https://minyoi-mvp.vercel.app/",
                   name: "득템잡이",
+                  // Wave launch-118 (2026-05-24): alternateName — 구글 검색 결과 sitename "Vercel" → "득템잡이" 유도.
+                  alternateName: ["득템잡이", "Deuktem Jabi", "minyoi"],
                   description: "중고 매물 시세 비교 — AI가 알려주는 알뜰 득템 정보",
                   inLanguage: "ko-KR",
                   publisher: { "@id": "https://minyoi-mvp.vercel.app/#org" },
@@ -102,6 +104,7 @@ export default function RootLayout({
                   "@type": "Organization",
                   "@id": "https://minyoi-mvp.vercel.app/#org",
                   name: "득템잡이",
+                  alternateName: ["득템잡이", "Deuktem Jabi"],
                   url: "https://minyoi-mvp.vercel.app/",
                   logo: {
                     "@type": "ImageObject",
