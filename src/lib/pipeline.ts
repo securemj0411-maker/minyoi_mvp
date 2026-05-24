@@ -540,6 +540,37 @@ function categoryScopedNoise(title: string, desc: string, price: number, sku: Sk
     return "damaged";  // floor 미달 = 가품/모호 매물 (시세 sample 제외 + pool 차단)
   }
 
+  // Wave 770 (2026-05-24): universal placeholder price ceiling — 비현실적 고가 매물 차단.
+  //   사용자 audit 발견: galaxywatch_6 999,999,999원 / iphone_14_pro 90,000,000원 / iphone_15 111,111,111원 등.
+  //   셀러 placeholder/test 가격 (실제 거래 의도 X) — 시세 sample 오염 + 사용자 풀 부정확.
+  //   패턴 1: 반복 숫자 (999999999 / 111111111 / 5555555) — 명백한 placeholder
+  //   패턴 2: 1억+ 의류/신발/전자기기 (실제 그 가격대 정품 거의 없음 — bag/watch 명품 명품 제외)
+  const isAllNines = price >= 1_000_000 && /^9{7,}9?$/.test(String(price));
+  const isAllOnes = price >= 1_000_000 && /^1{7,}1?$/.test(String(price));
+  const isRepeatingFives = price >= 1_000_000 && /^[3-9]{6,}$/.test(String(price)) && new Set(String(price)).size === 1;
+  if (isAllNines || isAllOnes || isRepeatingFives) {
+    return "buying";  // placeholder 가격 = 광고/테스트 매물 (정상 거래 X)
+  }
+  // 카테고리별 비현실적 max (luxury bag/watch 제외).
+  const REALISTIC_MAX_KRW: Partial<Record<NonNullable<Sku["category"]>, number>> = {
+    smartphone: 5_000_000,   // 정상 iPhone Pro Max 최고 ~250만
+    tablet: 5_000_000,       // iPad Pro M4 최고 ~300만
+    laptop: 8_000_000,       // MacBook Pro M4 최고 ~600만
+    earphone: 1_500_000,     // AirPods Max 최고 ~80만
+    smartwatch: 2_500_000,   // Apple Watch Ultra 최고 ~120만
+    monitor: 5_000_000,      // 고급 4K/OLED ~300만
+    speaker: 5_000_000,      // 하이엔드 ~300만
+    camera: 15_000_000,      // 풀프레임 미러리스 ~700만
+    desktop: 8_000_000,
+    home_appliance: 3_000_000,
+    game_console: 1_500_000, // PS5 Pro ~90만, Switch 2 ~50만
+    sport_golf: 3_000_000,   // 골프 풀세트 ~150만
+  };
+  const maxAllowed = REALISTIC_MAX_KRW[sku.category];
+  if (maxAllowed && price > maxAllowed) {
+    return "buying";  // unrealistic high → placeholder/광고 매물 차단
+  }
+
   const titleN = nrm(title);
   const textN = nrm(`${title}\n${desc}`);
   const compactTitle = titleN.replace(/\s+/g, "");
