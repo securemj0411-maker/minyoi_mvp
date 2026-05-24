@@ -6335,6 +6335,41 @@ export async function parserDriftStage(deadlineMs: number): Promise<StageStats> 
   return stats;
 }
 
+// Wave 778: systemic pool_eligible RPC hook.
+// 문제 (Wave 772 발견 root): bunjang ingest 시 pool_eligible flag 누락 (joongna 만 박혔음).
+//   → ready 카테고리 (game_console/sport_golf 등) 매물 detail=done 인데 pool_eligible=false 로 영원히 stuck.
+//   → Wave 772 manual SQL 1,347건 fix → Wave 778 manual SQL 20,969건 추가 fix (systemic 누락 확인).
+// systemic fix: cron tick 마다 ready 카테고리 detail=done 매물 자동 pool_eligible=true + score_dirty=true 마킹.
+//   ensure_pool_eligible_for_ready_categories() RPC (SECURITY DEFINER plpgsql) — additive only.
+//   → 미래 모든 신규 ready 카테고리 매물 자동 pool 진입 (manual SQL 불필요).
+//   → bunjang/joongna ingest 누락 source-level fix 까지 시간 벌어줌.
+export async function poolEligibleBackfillStage(deadlineMs: number): Promise<StageStats> {
+  const stats = emptyStats();
+  if (Date.now() > deadlineMs) return stats;
+
+  try {
+    const res = await restFetch(rpcUrl("ensure_pool_eligible_for_ready_categories"), {
+      method: "POST",
+      headers: serviceHeaders(),
+      body: jsonBody({}),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.error(`[poolEligibleBackfillStage] RPC ${res.status}: ${body.slice(0, 200)}`);
+      return stats;
+    }
+    const updated = Number(await res.json().catch(() => 0)) || 0;
+    if (updated > 0) {
+      console.log(`[poolEligibleBackfillStage] flagged ${updated} ready-category matters → pool_eligible=true + score_dirty=true`);
+    }
+    stats.upserted = updated;
+  } catch (err) {
+    console.error(`[poolEligibleBackfillStage] exception`, err);
+  }
+
+  return stats;
+}
+
 export async function runTickPipeline(): Promise<TickResult> {
   const config = loadPipelineRuntimeConfig();
   const stageDurationsMs: Record<string, number> = {};
@@ -6343,8 +6378,10 @@ export async function runTickPipeline(): Promise<TickResult> {
   const detail = await timedStage(stageDurationsMs, "detail", () => detailStage(Date.now() + config.tickDetailBudgetMs));
   // Wave 255: parser_version drift 매물 자동 trigger (score_dirty=false + drift → score_dirty=true)
   const parserDrift = await timedStage(stageDurationsMs, "parser_drift", () => parserDriftStage(Date.now() + 60_000));
+  // Wave 778: ready 카테고리 매물 pool_eligible 자동 backfill (bunjang ingest 누락 systemic safety net)
+  const poolBackfill = await timedStage(stageDurationsMs, "pool_eligible_backfill", () => poolEligibleBackfillStage(Date.now() + 15_000));
   const score = await timedStage(stageDurationsMs, "score", () => scoreStage(Date.now() + config.tickScoreBudgetMs));
-  const total = mergeStats([search, detail, parserDrift, score]);
+  const total = mergeStats([search, detail, parserDrift, poolBackfill, score]);
   return {
     ...total,
     stages: { search, detail, score },
