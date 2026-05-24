@@ -1438,6 +1438,10 @@ test("recent pool sweep blocks substring and generic full-set catalog leaks", ()
     ruleMatch("베이프 샤크후드(판/교)컴포넌트 교신", "판매는 30 교신가 35"),
     null,
   );
+  assert.equal(
+    ruleMatch("베이프 베이프스타 그린 카모 270", "교환 교신 안해요 교신문의 바로 차단합니다")?.id,
+    "shoe-bape-sta",
+  );
 });
 
 test("pool policy gives one shared skip reason for blocked flags", () => {

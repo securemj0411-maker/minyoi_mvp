@@ -13672,10 +13672,10 @@ function hasBuyRequestMarker(rawText: string, normalizedText: string): boolean {
 function hasExchangeRequestMarker(rawText: string, normalizedText: string): boolean {
   const raw = rawText.toLowerCase();
   const safeAftercare =
-    /(?:교환|반품|환불)(?:\s*(?:\/|및|,|&)?\s*(?:교환|반품|환불|취소)){0,3}.{0,12}(?:불가|x|❌|사절|안|어려|어렵)|교환\s*불가|교환불가|교환.{0,12}환불.{0,16}(?:불가|x|❌|사절|안|어려|어렵)|환불.{0,12}교환.{0,16}(?:불가|x|❌|사절|안|어려|어렵)|교환\s*(?:안|않)(?:해|합|받|되)/.test(raw);
+    /(?:교환|교신|반품|환불)(?:\s*(?:\/|및|,|&)?\s*(?:교환|교신|반품|환불|취소)){0,3}.{0,16}(?:불가|x|❌|사절|안|않|차단|어려|어렵)|교환\s*불가|교환불가|교신\s*불가|교신불가|교환.{0,12}환불.{0,16}(?:불가|x|❌|사절|안|어려|어렵)|환불.{0,12}교환.{0,16}(?:불가|x|❌|사절|안|어려|어렵)|(?:교환|교신)\s*(?:안|않)(?:해|합|받|되)/.test(raw);
   if (safeAftercare) return false;
 
-  if (/(?:교신|판\s*\/\s*교|판매\s*\/\s*교환|교환\s*\/\s*판매)/.test(raw)) return true;
+  if (/(?:판\s*\/\s*교|판매\s*\/\s*교환|교환\s*\/\s*판매|교신(?:가|가능|합니다|해요|원함|원해|구함|받|위주)?)/.test(raw)) return true;
   if (/(?:^|[\s([{])교환\s*(?:글|원함|원합니다|원해요|해요|합니다|하고\s*싶|하실\s*분|해주실\s*분|구함|구해요|만)(?:$|[\s)\]}!.,]|하|원|구)/.test(raw)) {
     return true;
   }
