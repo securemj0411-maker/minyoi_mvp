@@ -7,7 +7,6 @@
 
 import Link from "next/link";
 
-import { BrandLogo } from "@/components/brand-logo";
 import { CheckCircleIcon, PackageIcon, SearchIcon, UnlockIcon } from "@/components/icons";
 
 type PreviewItem = {
@@ -96,11 +95,7 @@ export default async function PreviewMaskedDashboardServer() {
     <main className="min-h-screen bg-[#fbfaf7] dark:bg-zinc-950">
       <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-4 px-4 py-3 sm:gap-6 sm:px-6 sm:py-8 lg:grid lg:grid-cols-[minmax(0,0.88fr)_minmax(420px,1fr)] lg:items-start lg:gap-8">
         <section className="pt-0 lg:sticky lg:top-24 lg:pt-8">
-          {/* Wave launch-120 (2026-05-24): piggy brand mark — 메인 hero. */}
-          <div className="mb-3 flex items-center gap-2">
-            <BrandLogo size={40} className="rounded-[9px] shadow-md shadow-blue-500/20" />
-            <span className="text-lg font-black tracking-tight text-zinc-950 dark:text-zinc-50">득템잡이</span>
-          </div>
+          {/* Wave launch-120c (2026-05-24): hero 의 brand mark 중복 제거 (nav 에 이미 있음 — 사용자 정정). */}
           <div className="hidden items-center gap-2 rounded-full border border-[#d9d1c4] bg-white/70 px-3 py-1.5 text-[11px] font-black text-[#526055] shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-300 sm:inline-flex">
             오늘의 추천 매물
           </div>
