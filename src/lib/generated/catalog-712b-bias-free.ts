@@ -776,7 +776,7 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     aliases: ["Sacai LD Waffle", "사카이 LD와플", "LDV", "LDWaffle"],
     mustContain: [["nike", "나이키"], ["sakai", "sacai", "사카이"], ["ld와플", "ld waffle", "ldwaffle", "ldv", "엘디와플"]],
     mustNotContain: [...COMMON_NOISE, "블레이저", "blazer", "베이퍼와플", "vaporwaffle", "cortez", "코르테즈", "magmascape"],
-    msrpKrw: 250000, released: 2019,
+    msrpKrw: 250000, minPriceKrw: 100000, released: 2019,  // Wave 769: Sacai LD Waffle collab 가품 floor
     defaultProductType: "sneaker",
   },
   {

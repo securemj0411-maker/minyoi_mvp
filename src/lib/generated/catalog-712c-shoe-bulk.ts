@@ -140,7 +140,7 @@ export const WAVE_712C_SHOE_BULK: Sku[] = [
       "comme", "꼼데", "준야", "junya",
       "junya watanabe",
     ],
-    msrpKrw: 109000, released: 1906,
+    msrpKrw: 109000, minPriceKrw: 40000, released: 1906,  // Wave 769: NB Generic broad 가품 floor (40K~75만 spread)
     defaultProductType: "sneaker",
   },
   {
