@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import CreditIcon from "@/components/credit-icon";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, HourglassIcon, BookmarkIcon } from "@/components/icons";
+import { BrandLogo } from "@/components/brand-logo";
 import { ConditionChip, ConditionPhotoBadge, ConditionTierPhotoBadge } from "@/components/condition-chip";
 import KakaoLogo from "@/components/kakao-logo";
 import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
@@ -3000,7 +3001,9 @@ export default function ExploreClient({
           aria-live="polite"
           aria-busy="true"
         >
+          {/* Wave launch-122 (2026-05-24): brand mark 자연스럽게 (subtle pulse — 기존 dots/텍스트 keep). */}
           <div className="flex flex-col items-center gap-5">
+            <BrandLogo size={56} className="rounded-[12px] shadow-lg shadow-blue-500/40 animate-pulse" />
             <div className="flex items-end gap-2.5">
               <span className="h-3.5 w-3.5 animate-bounce-high rounded-full bg-[#ffffff] shadow-[0_2px_8px_rgba(255,255,255,0.4)] [animation-delay:-0.32s]" />
               <span className="h-3.5 w-3.5 animate-bounce-high rounded-full bg-[#ffffff] shadow-[0_2px_8px_rgba(255,255,255,0.4)] [animation-delay:-0.16s]" />
