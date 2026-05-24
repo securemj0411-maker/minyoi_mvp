@@ -8444,6 +8444,11 @@ export const CATALOG: Sku[] = [
     mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌", "랄프 로렌"], ["피케", "pique", "pk ", "pk티", "pk 티", "카라티", "카라 티"]],
     mustNotContain: [
       "RRL", "purple label", "퍼플라벨", "polo bear", "베어", "키즈", "kids", "여아", "남아", "토들러",
+      // Wave 764 (2026-05-24): 보세/sub-brand polo 차단 (사용자 #4 audit 발견).
+      //   "에스피오나지 Over Pique Polo Shirt" / "100 폴로 반팔카라티" 같은 보세 한국 브랜드 흡수.
+      //   원피스/dress 매물 차단 (Polo Pique = 셔츠 SKU, 원피스 별도 product_type).
+      "마론에디션", "에스피오나지", "espionage", "벨리에", "vellie", "투티", "투티/a9",
+      "원피스", "dress", "드레스 폴로",
       // Wave 236: 비폴로 brand 매물 차단 (사용자 코멘트 직접 발견 brand 다수).
       "바나나리퍼블릭", "banana republic", "타미힐피거", "tommy hilfiger", "유니클로", "uniqlo",
       "나이키 골프", "nike golf", "아디다스 골프", "adidas golf", "아디다스 스쿼드라", "squadra",
@@ -11472,6 +11477,12 @@ export const CATALOG: Sku[] = [
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "carbon",
       "후드", "후디", "hoodie", "후드집업", "집업", "zip", "맨투맨", "크루넥", "crewneck", "sweatshirt",
       "샤크", "shark", "yeezy", "스타워즈", "신발", "스니커즈", "운동화",
+      // Wave 764 (2026-05-24): BAPE sub-line 차단 (사용자 #4 audit) — 어른 SKU 흡수 차단.
+      //   "베이프 APEE BABY 카모 반팔" — APEE = BAPE women+kids 라인, 어른 시세와 다름.
+      //   "베이프 에이프 바시티 자켓 105사이즈" — 105사이즈 키즈 의심.
+      "apee", "에이피이", "bape baby", "babe bape", "베이프 베이비", "베이비 베이프",
+      "bape kids", "베이프 키즈", "키즈 베이프", "bape jr", "베이프 jr",
+      "키즈사이즈", "키즈 사이즈", "kids size", "아동사이즈", "아동 사이즈",
       // Wave 241 (2026-05-19): 사용자 코멘트 — BAPE tee SKU 안 콜라보 가격 45~520k 다 한 시세.
       //   collab 별 가격 천차만별 — 별도 SKU 또는 차단 필요.
       "travis scott", "트래비스 스캇", "트래비스스캇", "cactus jack",

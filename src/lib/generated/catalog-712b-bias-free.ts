@@ -236,10 +236,16 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       ["니트", "knit", "스웨터", "sweater", "케이블", "cable", "꽈배기", "v넥", "롤넥", "페어아일", "fair isle"],
     ],
     // Wave 800 (2026-05-24) Phase 2: 95x spread — 다른 brand "polo 니트" generic 차단.
+    // Wave 764 (2026-05-24): 보세/sub-brand polo knit 추가 차단 — 사용자 #4 보고.
+    //   "마론에디션 25 blue stripe polo knit" / "벨리에 홀가먼트 폴로 니트" / "투티/A9 폴로 진스 컴퍼니" → polo_knit_sweater 흡수.
     mustNotContain: [...COMMON_NOISE, "RRL", "purple label", "퍼플라벨", "polo bear", "라코스테", "타미힐피거", "rlx",
       // Other brand polo collar knits (false match)
       "믹쏘", "mixxo", "자라", "zara", "wolsey", "월시", "월시폴로",
       "poszer", "포저", "스파오", "유니클로", "uniqlo", "에잇세컨즈",
+      // Wave 764: 한국 보세/sub-brand 추가 (사용자 #4 audit 발견).
+      "마론에디션", "마롱에디션", "maron edition", "에스피오나지", "espionage",
+      "벨리에", "vellie", "ballier", "벨리어", "투티", "투티에이나인", "tuti a9", "투티/a9", "투티a9",
+      "polo 진스 컴퍼니", "폴로 진스 컴퍼니", "polo jeans company",  // Polo 진스 = 보세 sub-line (Polo 브랜드 별도)
       // 캐시미어 100% 별도 라인 (top tier)
       "캐시미어 100", "100프로 캐시미어", "100% cashmere",
       "나바호 핸드니트", "navajo handknit",  // Polo Country 한정

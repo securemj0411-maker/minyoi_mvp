@@ -695,7 +695,7 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v24";
 // Wave 507 v20: final condition_class rewrites comparable condition token before key materialization.
 // Wave 540 (2026-05-22): Polo Oxford boys/youth sizes no longer enter adult shirt samples.
 // Wave 742 (2026-05-24): 의류 사이즈 추출 (sizeAlpha + sizeKr).
-const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v48";  // Wave 763: comparable_key tier 를 condition_grade (UI) 와 통일 — 58.1% 미스매치 fix
+const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v49";  // Wave 764: catalog 보세 brand + BAPE sub-line 차단 (마론에디션/에스피오나지/벨리에/투티/APEE BABY)
 
 // ─── 의류 사이즈 추출 (Wave 742) ─────────────────────────────────────────
 // Alpha: XS/S/M/L/XL/XXL/XXXL/2XL/3XL/FREE
