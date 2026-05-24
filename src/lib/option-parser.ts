@@ -222,7 +222,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v58";  // Wave 774: sport_golf loft 추출 (드라이버/우드/하이브리드 각도 별 시세 분리)
+export const PARSER_VERSION = "option-parser-v59";  // Wave 775: sport_golf shaft 추출 추가 (TourAD/Ventus/Speeder/Diamana 등 — Wave 760 sweep 데이터 활용)
 
 // Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
 //   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
@@ -2095,24 +2095,53 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   })();
 
   // Wave 774 (2026-05-24): sport_golf loft 추출 — 사용자 #10 발견 "TSR2 9도 vs 11도 같은 SKU 묶임".
-  //   드라이버/우드는 loft (각도) 별 시세 다름. 같은 모델이라도 9도 ≠ 10.5도 ≠ 12도.
-  //   동일 SKU 안에서 loft 분리 → comparable_key fragmentation 으로 시세 정확성 향상.
-  //   적용: driver / fairway_wood / hybrid (loft 시세 영향 큼). iron/wedge 는 set / loft = 모델 식별자라 skip.
-  //   parsedJson.golf_loft 에 박음 + comparable_key 끝에 추가.
+  // Wave 775 (2026-05-24): Wave 760 sweep 결과 활용 — shaft 추출 추가 (Honma Beres 10도 81K vs 10.5도 690K = 8.5x).
+  //   sweep audit: TourAD / Speeder / Ventus / Diamana premium shaft median 1.5-2x.
+  //   적용: driver/wood/hybrid loft + driver/iron/wedge/wood shaft.
+  //   parsedJson.golf_loft / golf_shaft 에 박음 + comparable_key 추가.
   let golfLoftKey: string | null = null;
   let golfLoftValue: string | null = null;
+  let golfShaftKey: string | null = null;
+  let golfShaftValue: string | null = null;
   if (category === "sport_golf") {
     const golfText = `${input.title ?? ""}\n${input.description ?? ""}`.toLowerCase();
-    // 드라이버/우드 loft pattern: 9도 / 9.5도 / 10도 / 10.5도 / 12도 / 9° / 9.5°
-    // 한글 \b boundary 작동 안 함 → simple match (loft 숫자 + 도/° 키워드).
+    // loft (driver/wood/hybrid) — text 또는 SKU id 에 driver context 있으면 추출.
     const driverLoftMatch = golfText.match(/(?:^|[^0-9])(\d{1,2}(?:\.\d)?)\s*(?:도(?![가-힣])|°|deg)/i);
-    const driverContext = /(드라이버|driver|우드|wood|하이브리드|hybrid|유틸리티|utility)/i.test(golfText);
+    const driverContextText = /(드라이버|driver|우드|wood|하이브리드|hybrid|유틸리티|utility)/i.test(golfText);
+    const driverContextSku = /(_driver|_wood|_hybrid|-driver|-wood|-hybrid)/i.test(input.skuId ?? "");
+    const driverContext = driverContextText || driverContextSku;
     if (driverLoftMatch && driverContext) {
       const loftNum = Number(driverLoftMatch[1]);
       if (Number.isFinite(loftNum) && loftNum >= 7 && loftNum <= 32) {
         golfLoftValue = String(loftNum);
         golfLoftKey = `loft_${loftNum.toString().replace(".", "_")}`;
       }
+    }
+    // shaft (Wave 760 sweep 결과 기반)
+    // Premium shaft: TourAD (가장 비쌈), Ventus, Speeder, Diamana, Fujikura, Atlas
+    // 일반: Graphite (그라파이트, 카본) / Steel (스틸) / LightSteel (라이트 스틸, NS Pro 등)
+    if (/tour\s*ad|투어\s*ad|tour\s*-?ad/i.test(golfText)) {
+      golfShaftValue = "TourAD"; golfShaftKey = "shaft_tourad";
+    } else if (/ventus/i.test(golfText)) {
+      golfShaftValue = "Ventus"; golfShaftKey = "shaft_ventus";
+    } else if (/speeder/i.test(golfText)) {
+      golfShaftValue = "Speeder"; golfShaftKey = "shaft_speeder";
+    } else if (/diamana|디아마나/i.test(golfText)) {
+      golfShaftValue = "Diamana"; golfShaftKey = "shaft_diamana";
+    } else if (/fujikura|후지쿠라/i.test(golfText)) {
+      golfShaftValue = "Fujikura"; golfShaftKey = "shaft_fujikura";
+    } else if (/atlas|아틀라스/i.test(golfText)) {
+      golfShaftValue = "Atlas"; golfShaftKey = "shaft_atlas";
+    } else if (/tsp\d+/i.test(golfText)) {
+      const tspMatch = golfText.match(/tsp(\d+)/i);
+      golfShaftValue = `TSP${tspMatch?.[1] ?? ""}`;
+      golfShaftKey = `shaft_tsp${tspMatch?.[1] ?? ""}`;
+    } else if (/그라파이트|graphite|카본\s*샤프트|carbon\s*shaft/i.test(golfText)) {
+      golfShaftValue = "Graphite"; golfShaftKey = "shaft_graphite";
+    } else if (/ns\s*pro|n\.s\.pro|라이트\s*스틸|light\s*steel/i.test(golfText)) {
+      golfShaftValue = "LightSteel"; golfShaftKey = "shaft_lightsteel";
+    } else if (/스틸\s*샤프트|steel\s*shaft|dg\s*[a-z0-9]+|dynamic\s*gold/i.test(golfText)) {
+      golfShaftValue = "Steel"; golfShaftKey = "shaft_steel";
     }
   }
 
@@ -2139,9 +2168,13 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     monitorShape,
     tabletGeneration,
   });
-  // Wave 774: sport_golf loft 박힌 경우 comparable_key 끝에 추가 (시세 fragmentation).
-  const partsWithLoft = golfLoftKey && parts ? [...parts, golfLoftKey] : parts;
-  const comparableKey = partsWithLoft?.map(slug).join("|") ?? null;
+  // Wave 774/775: sport_golf loft + shaft comparable_key 추가 (시세 fragmentation).
+  let partsWithGolf = parts;
+  if (partsWithGolf) {
+    if (golfLoftKey) partsWithGolf = [...partsWithGolf, golfLoftKey];
+    if (golfShaftKey) partsWithGolf = [...partsWithGolf, golfShaftKey];
+  }
+  const comparableKey = partsWithGolf?.map(slug).join("|") ?? null;
   const parseConfidence = confidence({
     category,
     model,
@@ -2242,6 +2275,8 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       watch_size_mm: finalWatchSizeMm,
       // Wave 774 (2026-05-24): sport_golf loft 추출 — 시세 fragmentation + UI display.
       golf_loft: golfLoftValue,
+      // Wave 775: sport_golf shaft 추출 (Wave 760 sweep 결과 기반 — TourAD/Ventus/Speeder/Diamana 등).
+      golf_shaft: golfShaftValue,
       // Wave 182 Phase 3 (2026-05-17): base option fallback metadata.
       // 옵션 명시 X → SKU baseOptions 의 가장 낮은 옵션 가정. UI 에서 "기본 옵션 가정" 표시.
       option_base_assumed: optionBaseAssumed.length > 0 ? optionBaseAssumed : null,
