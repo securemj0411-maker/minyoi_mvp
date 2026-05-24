@@ -2237,21 +2237,27 @@ function RevealProductImage({ card }: { card: RevealCard }) {
   ) : null;
 
   return (
-    <div className="relative h-[42dvh] min-h-[280px] max-h-[420px] w-full overflow-hidden rounded-none bg-[#eee7da] dark:bg-zinc-900">
+    // Wave launch-116 (2026-05-24): 사진 원본 비율 유지 (사용자 정정).
+    //   기존: object-cover h-[42dvh] → 사진 위/아래 잘림.
+    //   변경: object-contain + min/max-h + 배경색 letterbox. e-comm detail 표준 (무신사/SSF/쿠팡).
+    //   <Image fill> 부모 dimension 필요 + 외부 thumbnail dimension 모름 → native <img> 사용.
+    //   loading="eager" + decoding="async" 로 첫 paint 보장.
+    //   쉬운 모드에서 이미 가치 인지된 상태라 사진 크기 small/big 영향 작음 — 세련된 느낌 우선.
+    <div className="relative flex w-full items-center justify-center overflow-hidden bg-[#eee7da] dark:bg-zinc-900"
+         style={{ minHeight: 280, maxHeight: "60dvh" }}>
       {/* Wave 393.3: ConditionPhotoBadge 모달에선 nav (좌상 ← 🏠 floating)에 가려서 제거.
           텍스트 영역 LastVerifiedAtBadge 옆에 ConditionChip으로 대체 노출. */}
       {card.thumbnailUrl ? (
         <>
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={card.thumbnailUrl}
             alt={card.name}
-            fill
-            sizes="(max-width: 480px) 100vw, 480px"
-            unoptimized
-            className="object-cover object-center"
-            priority
+            className="h-auto w-auto max-h-[60dvh] max-w-full object-contain"
+            loading="eager"
+            decoding="async"
           />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/18 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/12 to-transparent" />
           {/* Wave 394.7.w (사용자 짚음 + handoff): 좌하 condition pill — nav(top-left)랑 안 겹침.
               Wave 714d (2026-05-23): 신발/의류는 옛 conditionClass pill 숨김 (전자기기용 라벨 정확도 낮음). */}
           {card.marketBasis?.conditionClass
