@@ -4728,15 +4728,17 @@ async function syncPoolAiAuditStatusesFromCurrentCache(
         outputTokens: null,
         costUsd: null,
       });
-      await patchRows(
-        "mvp_candidate_pool",
-        `pid=eq.${pid}`,
-        {
-          ai_audit_status: verdict,
-          ai_audit_at: now,
-          ai_audit_reason: (cached.reason ?? "").slice(0, 200),
-        },
-      );
+      // Wave 771 (2026-05-24): AI hold = "상태 판단 불가" 정책.
+      //   사용자 #7 정책: AI 가 listingType 모름 (hold) 이면 condition 도 모르는 게 일관성 있음.
+      //   condition_class 는 NOT NULL constraint 라 그대로 두고 (parser 값 유지),
+      //   ai_audit_status='hold' flag 가 UI 에 "상태 모름" 배지 표시 trigger.
+      //   향후 schema migration 으로 condition_class nullable 변경 검토 (별도 wave).
+      const patch: Record<string, unknown> = {
+        ai_audit_status: verdict,
+        ai_audit_at: now,
+        ai_audit_reason: (cached.reason ?? "").slice(0, 200),
+      };
+      await patchRows("mvp_candidate_pool", `pid=eq.${pid}`, patch);
       synced += 1;
     }
   }
