@@ -222,7 +222,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v55";
+export const PARSER_VERSION = "option-parser-v56";
 
 const APPLE_LAPTOP_MODEL_HINTS: Record<string, { screenSizeIn?: number; chip?: string; releaseYear?: number }> = {
   a1278: { screenSizeIn: 13, chip: "intel" },
@@ -1260,6 +1260,98 @@ function conditionFromText(
     if (singleSidePattern.test(titleNormalized)) {
       add("single_side_only", -0.4);
     }
+  }
+
+  // Wave 760 (2026-05-24): 게임 카트리지 (game_console isGameTitle SKU) 특화 condition signal.
+  //   Wave 760 sweep: 미개봉/풀박/한정판 매물 시세 1.5~3x normal. used 라벨 손상/디스크 흠집 매물 시세 절반.
+  //   적용: 카트만 (박스 없음) / 디스크 손상 / 라벨 손상 / 정품 박스 / 한정판 / DLC 사용 여부.
+  if (category === "game_console") {
+    // 카트리지/디스크 단품 (박스/매뉴얼/케이스 없음) — 정품 박스 대비 -20~30% 시세.
+    //   "카트만" / "카트리지만" / "디스크만" / "타이틀만" 등.
+    //   negation: "카트 + 박스" / "박스 포함" 같은 풀구성 표현.
+    const noBoxNegation = /(?:박스|케이스|매뉴얼|설명서|풀박|풀세트|풀구성)\s*(?:포함|있|같이|모두)|구성\s*(?:완벽|풀)/.test(lower);
+    if (!noBoxNegation && /카트(?:리지)?\s*(?:만|단품|단독)|디스크\s*(?:만|단품|단독)|타이틀\s*(?:만|단품)|소프트(?:웨어)?\s*(?:만|단품)|(?:박스|케이스|매뉴얼|설명서)\s*(?:없|미포함|분실|없음|없습니다)/.test(lower)) {
+      add("game_cart_only_no_box", -0.1);
+    }
+    // 라벨/디스크 손상 — 게임 매물의 핵심 손상 signal. 작동은 되지만 외관/리딩 문제.
+    //   라벨: "라벨 찢" / "라벨 까짐" / "라벨 손상" / "라벨 더러움".
+    //   디스크: "디스크 깨" / "디스크 금" / "디스크 흠집" / "디스크 손상" / "리딩 불량" / "인식 불량".
+    const noGameDamage = /(?:라벨|디스크|카트)\s*(?:손상|훼손|상처|흠집|문제|불량)\s*(?:없|없음|아님|깨끗|새것)/.test(lower);
+    if (!noGameDamage && /라벨\s*(?:찢|까짐|벗겨|손상|훼손|더러|이염|찍힘|기스|많이\s*닳)|디스크\s*(?:깨|금\s*갔|크랙|손상|훼손|심한\s*기스|많이\s*긁힘|동작\s*불량|리딩\s*불량|인식\s*불량)|카트(?:리지)?\s*(?:손상|훼손|구부|휘어|단자\s*손상)/.test(lower)) {
+      add("game_label_or_disc_damage", -0.2);
+    }
+    // 한정판 / 초회판 / 패키지 / 특전 — 시세 1.5~3x normal. premium signal.
+    //   주의: 일반 매물에서 "한정판" 단어만 잡으면 false positive 위험 — 박스/특전/스틸북 동반 시만.
+    if (/(?:초회\s*한정|초회판|초회\s*특전|한정판\s*박스|스틸북|steelbook|specials?\s*edition|콜렉터스?\s*에디션|collectors?\s*edition|premium\s*edition|픽처\s*디스크|아트북\s*포함|사운드트랙\s*포함|ost\s*포함|특전\s*포함|특전\s*박스)/i.test(lower)) {
+      add("game_limited_edition", 0.05);
+    }
+    // DLC 코드 / 시즌패스 — 사용 여부 따라 시세 영향.
+    //   "DLC 사용 안 함" / "DLC 코드 그대로" / "시즌패스 미사용" = mint signal.
+    //   "DLC 사용함" / "DLC 코드 사용" = 시세 보수적 감안.
+    if (/(?:dlc|시즌\s*패스|season\s*pass)\s*(?:코드\s*)?(?:사용함|썼|사용\s*했)/i.test(lower)) {
+      add("game_dlc_used", -0.05);
+    }
+    if (/(?:dlc|시즌\s*패스|season\s*pass)\s*(?:코드\s*)?(?:미사용|사용\s*안\s*함|안\s*씀|그대로|있음)/i.test(lower)) {
+      add("game_dlc_unused", 0.03);
+    }
+    // 정품 박스 미개봉 — 게임 카트리지 mint signal 강화.
+    //   "박스 미개봉" 은 conditionFromText 본체에서 unopened 잡지만, 게임 한정 강화 (false positive 적음).
+    if (/(?:게임\s*)?(?:박스|패키지|소프트|타이틀|카트(?:리지)?)\s*(?:완전\s*)?미개봉|시일\s*(?:살아\s*있|그대로)|봉인\s*(?:살아\s*있|그대로)/.test(lower)) {
+      add("game_factory_sealed", 0.08);
+    }
+  }
+
+  // Wave 760 (2026-05-24): 골프 클럽 (sport_golf) 특화 condition signal.
+  //   Wave 760 sweep: 그립 새것 / 페이스 깨끗 / 신상 박스 매물 시세 1.4~2x. 헤드 도장 벗 / 샤프트 굽음 매물 시세 절반.
+  //   조정 부위 (loft/lie) 는 시세 영향 작음 — split 생략 (catalog 단계 narrow split 으로 처리됨).
+  if (category === "sport_golf") {
+    // 그립 — 골프 매물의 첫 번째 시각적 wear signal. 교체 가능하지만 매물 가치 영향 큼.
+    //   negation: "그립 새것/교체" 는 mint, "그립 마모/닳음/미끄러움" 은 worn.
+    if (/그립\s*(?:새\s*것|새것|새거|교체|신품|미사용)|그립\s*새로\s*감|그립\s*감은\s*지\s*얼마|새\s*그립/.test(lower)) {
+      add("golf_grip_new", 0.05);
+    }
+    if (/그립\s*(?:마모|닳|미끄러|딱딱|딱딱해|굳|갈라|찢어|벗겨|많이\s*사용)|그립이?\s*(?:마모|닳|미끄러)/.test(lower)) {
+      add("golf_grip_worn", -0.08);
+    }
+    // 페이스 / 스코어라인 — 임팩트 부분. 마모 시 비거리/스핀 영향 → 시세 큼.
+    if (/페이스\s*(?:깨끗|새것|새거|마모\s*없|깨끗합니다|상태\s*좋|좋음)|스코어라인\s*(?:살아\s*있|깨끗|선명|새것)/.test(lower)) {
+      add("golf_face_clean", 0.03);
+    }
+    if (/페이스\s*(?:마모|닳|움푹|푹\s*패|많이\s*패|까짐|타구\s*자국\s*심)|스코어라인\s*(?:다\s*닳|마모\s*심|지워|사라)|페이스에\s*움푹\s*패/.test(lower)) {
+      add("golf_face_worn", -0.15);
+    }
+    // 헤드 / 크라운 — 드라이버/우드 도장 벗겨짐. 외관 손상 signal.
+    if (/(?:헤드|크라운|쇼울더|페이스).{0,8}(?:도장\s*(?:벗|벗겨|박리|들뜸|날아|많이\s*벗|많이\s*까)|페인트\s*(?:벗|벗겨|박리|들뜸|날아)|크랙|많이\s*까짐|많이\s*벗|디봇\s*심|찍힘\s*심|많이\s*찍힘|기스\s*심)/.test(lower)) {
+      add("golf_head_paint_damage", -0.12);
+    }
+    // 샤프트 — 강도/탄성 핵심 부품. 손상 시 reject 직전.
+    const noShaftDamage = /샤프트.{0,8}(?:손상|굽|크랙|갈라)\s*(?:없|없음|아님|깨끗|정상)/.test(lower);
+    if (!noShaftDamage && /샤프트.{0,8}(?:굽|휨|휘었?|크랙|갈라|손상|꺾|부러|만곡|벤딩|뽀개)|샤프트에?\s*금|샤프트.{0,8}심한\s*기스/.test(lower)) {
+      add("golf_shaft_damage", -0.25);
+      if (!notes.includes("repair_or_defect_signal")) {
+        notes.push("repair_or_defect_signal");
+      }
+    }
+    // 라운딩/필드 사용 횟수 — 명시된 사용 빈도 신호.
+    //   라운딩 0~5회 = mint 직전 / 라운딩 50+ = heavily used.
+    const roundingMatch = lower.match(/라운(?:딩|드)\s*(?:횟수\s*)?(\d{1,3})\s*회/);
+    if (roundingMatch) {
+      const r = Number(roundingMatch[1]);
+      if (Number.isFinite(r)) {
+        if (r <= 5) add("golf_rounding_few", 0.05);
+        else if (r >= 50) add("golf_rounding_many", -0.08);
+      }
+    }
+    // 신상 / 박스 미개봉 / 시타 X — 골프 mint signal 강화.
+    //   "시타만" / "시타도 안 함" / "박스 미개봉" / "라운딩 안 함" 등.
+    if (/시타\s*(?:도\s*)?(?:안\s*함|안함|미사용|없)|박스\s*(?:채로\s*)?미개봉|라운(?:딩|드)\s*(?:0회|안\s*함|미사용|미경험)|신품\s*(?:박스|상태)|배송\s*받은\s*그대로/.test(lower)) {
+      add("golf_unused_new", 0.08);
+    }
+    // 풀세트 / 캐디백 / 가방 동반 — premium accessory bundle.
+    if (/풀\s*세트|풀세트|하프\s*세트|하프세트|캐디백\s*(?:포함|같이|증정|동반|드림)|골프백\s*(?:포함|같이|증정|동반|드림)|커버\s*(?:포함|같이|증정)|가방\s*(?:포함|같이|증정)/.test(lower)) {
+      add("golf_full_set_bundle", 0.03);
+    }
+    // 트럭/직배 / 직거래 가능 — 큰 가방 송배 부담 매물의 정상 signal.
   }
 
   // Wave 208 (2026-05-18): 호환 액세서리 매물 일반 차단.
