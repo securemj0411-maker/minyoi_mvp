@@ -225,7 +225,8 @@ export default function ManualDepositClient() {
             계좌이체로 충전
           </h1>
           <p className="mt-2 break-keep text-[12.5px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-            토스페이먼츠 카드결제 가맹심사 중이라 빠르면 이번 주 안에 정식 결제가 열려요.
+            {/* Wave launch-124 (2026-05-24): "토스페이먼츠" → 일반 PG (포트원으로 여러 PG 제휴 중). */}
+            결제 PG사 가맹 심사 중이라 빠르면 이번 주 안에 카드결제가 열려요.
             그전까지는 계좌이체로 도와드릴게요.
           </p>
         </section>
