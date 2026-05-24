@@ -4019,7 +4019,8 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
               )}
               <span className="text-[12px] font-bold text-zinc-900 dark:text-zinc-100">{channel.label}</span>
             </div>
-            <div className="text-[19px] font-black tracking-tight text-blue-700 tabular-nums dark:text-blue-300">
+            {/* Wave launch-117b (2026-05-24): 수익 = emerald (light+dark). */}
+            <div className="text-[19px] font-black tracking-tight text-emerald-700 tabular-nums dark:text-emerald-300">
               +{krw(channel.profit)}
             </div>
             <div className="mt-1 text-[10.5px] font-semibold text-zinc-500 dark:text-zinc-400">{channel.note}</div>
@@ -5114,7 +5115,8 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
       </div>
       <div className="px-4 py-4">
         <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">최종 예상 순익</div>
-        <div className="mt-1 text-[30px] font-black leading-tight text-blue-700 dark:text-blue-300">
+        {/* Wave launch-117b (2026-05-24): 수익 = emerald (light+dark). */}
+        <div className="mt-1 text-[30px] font-black leading-tight text-emerald-700 dark:text-emerald-300">
           {displayProfitRange(card)}
         </div>
         <div className={`mt-3 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${snapshot.confidenceClass}`}>
@@ -5778,7 +5780,8 @@ function RevealCardItem({
   const profitCardClass = isMarketInvalidated
     ? "border-rose-200 bg-gradient-to-br from-rose-50 to-rose-100 shadow-[0_10px_28px_rgba(45,51,42,0.08)] dark:border-rose-900/50 dark:from-rose-950/30 dark:to-zinc-950 dark:shadow-none"
     : "border-blue-200 bg-gradient-to-br from-[#f3faf5] to-[#e6f4ec] shadow-[0_10px_28px_rgba(45,51,42,0.08)] dark:border-blue-900/50 dark:from-blue-950/22 dark:to-zinc-950 dark:shadow-none";
-  const profitToneClass = isMarketInvalidated ? "text-rose-800 dark:text-rose-300" : "text-blue-700 dark:text-blue-300";
+  // Wave launch-117b (2026-05-24): 수익 = emerald (light+dark, 사용자 정정).
+  const profitToneClass = isMarketInvalidated ? "text-rose-800 dark:text-rose-300" : "text-emerald-700 dark:text-emerald-300";
   const profitChipClass = isMarketInvalidated
     ? "bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-200"
     : "bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-200";

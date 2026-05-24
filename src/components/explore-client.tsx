@@ -2550,7 +2550,8 @@ export default function ExploreClient({
                     </div>
                   ) : null}
                   <div className="mt-1.5 flex items-baseline gap-1.5">
-                    <span className={`text-lg font-bold tabular-nums ${isSoldOut ? "text-zinc-500 line-through dark:text-zinc-500" : "text-blue-600 dark:text-blue-400"}`}>
+                    {/* Wave launch-117b (2026-05-24): 수익 = emerald (사용자 정정, light+dark 둘 다). */}
+                    <span className={`text-lg font-bold tabular-nums ${isSoldOut ? "text-zinc-500 line-through dark:text-zinc-500" : "text-emerald-600 dark:text-emerald-400"}`}>
                       {lockedPreview ? lockedProfitLabel(item) : `+${krw(profitAvg(item))}`}
                     </span>
                     {lockedPreview ? (

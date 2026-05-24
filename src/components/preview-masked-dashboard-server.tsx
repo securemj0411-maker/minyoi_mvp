@@ -186,7 +186,8 @@ export default async function PreviewMaskedDashboardServer() {
                           </div>
 
                           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                            <span className="text-[18px] font-black leading-none tabular-nums text-[#3182f6] dark:text-blue-300">
+                            {/* Wave launch-117b (2026-05-24): 수익 = emerald (light+dark). */}
+                            <span className="text-[18px] font-black leading-none tabular-nums text-[#059669] dark:text-emerald-300">
                               {marketGapLabel(item.expectedProfitMin, item.expectedProfitMax)}
                             </span>
                             {(() => {
