@@ -92,7 +92,8 @@ export default async function PreviewMaskedDashboardServer() {
   const items = await fetchPreviewItems();
 
   return (
-    <main className="min-h-screen bg-[#fbfaf7] dark:bg-zinc-950">
+    {/* Wave launch-121 (2026-05-24): 옛 베이지 #fbfaf7 → toss 회색 #f5f7fb (root themeColor 와 통일). */}
+    <main className="min-h-screen bg-[#f5f7fb] dark:bg-zinc-950">
       <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-4 px-4 py-3 sm:gap-6 sm:px-6 sm:py-8 lg:grid lg:grid-cols-[minmax(0,0.88fr)_minmax(420px,1fr)] lg:items-start lg:gap-8">
         <section className="pt-0 lg:sticky lg:top-24 lg:pt-8">
           {/* Wave launch-120c (2026-05-24): hero 의 brand mark 중복 제거 (nav 에 이미 있음 — 사용자 정정). */}
