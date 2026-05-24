@@ -40,9 +40,11 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     // Wave 740 (2026-05-24): og:image 박음 — 카카오 sendScrap 이 자동 fetch.
     //   없으면 카카오가 카드 못 만들어 apps.kakao.com/talk/message/block URL 로 fallback.
-    images: [{ url: "/new_balance.jpeg", width: 1200, height: 630, alt: SITE_NAME }],
+    // Wave launch-119 (2026-05-24): static jpeg → dynamic OG (app/opengraph-image.tsx).
+    //   Next.js 가 /opengraph-image URL 로 자동 serve. brand logo + tagline 박힌 1200×630 PNG.
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: SITE_NAME }],
   },
-  twitter: { card: "summary_large_image", title: `${SITE_NAME} — ${TAGLINE}`, description: DESCRIPTION, images: ["/new_balance.jpeg"] },
+  twitter: { card: "summary_large_image", title: `${SITE_NAME} — ${TAGLINE}`, description: DESCRIPTION, images: ["/opengraph-image"] },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };
 
@@ -108,7 +110,7 @@ export default function RootLayout({
                   url: "https://minyoi-mvp.vercel.app/",
                   logo: {
                     "@type": "ImageObject",
-                    url: "https://minyoi-mvp.vercel.app/new_balance.jpeg",
+                    url: "https://minyoi-mvp.vercel.app/opengraph-image",
                     width: 1200,
                     height: 630,
                   },
