@@ -226,6 +226,17 @@ function accessoryTitleHits(title: string): string[] {
   ) {
     hits.push("box_only");
   }
+  // Wave 760 (2026-05-24): 게임 카트리지 title 의 false positive 제거.
+  //   substring containsAny — "커버" (in ACCESSORY_TITLE_KEYWORDS) 가 "디스커버리" (커비 디스커버리) 매칭 →
+  //   "커비 디스커버리" 같은 정상 게임 매물이 accessory 로 분류되는 버그.
+  //   같은 패턴: "동물의숲" → 어떤 ACC keyword 일치 X but check 안전.
+  //   게임 IP keyword 있으면 (커비/포켓몬/마리오/젤다/동물의숲/스플래툰 등) substring false positive 차단.
+  //   대상 hits: "커버" (디스커버리), "스탠드" (스탠드 차단 안 됨 - 정상 비-게임), "필름" (필름 - 정상 비-게임).
+  //   "커버" 만 제외 (디스커버리 substring 매칭 case).
+  const gameIpSignal = /(커비|kirby|포켓몬|pokemon|마리오|mario|젤다|zelda|동물의\s*숲|동물의숲|스플래툰|splatoon|메트로이드|metroid|피크민|pikmin|스매시\s*브라더스|스매시브라더스|대난투|smash|닌텐도\s*스위치|nintendo\s*switch|switch\s*game|ps5\s*game|ps4\s*game|playstation|닌텐도|nintendo)/i.test(tn);
+  if (gameIpSignal) {
+    hits = hits.filter((hit) => !["커버", "케이블", "필름"].includes(hit));
+  }
   return hits;
 }
 
@@ -594,11 +605,23 @@ function categoryScopedNoise(title: string, desc: string, price: number, sku: Sk
 
   if (sku.category === "game_console") {
     const game = parseGameConsoleListing(title, desc, price);
-    if (game.listingType === "accessory" || game.listingType === "game_title") return "accessory";
-    if (game.listingType === "damaged_or_modded") return "damaged";
-    if (game.listingType === "buying") return "buying";
-    if (game.listingType === "multi_bundle") return "multi";
-    if (game.listingType !== "normal" || game.needsReview) return "unknown";
+    // Wave 760 (2026-05-24): isGameTitle=true SKU는 game_title 정상 분류 (downgrade 차단).
+    //   기본은 game_title 패턴이 본체 SKU 에 오염되는 거 막기 위해 accessory 로 downgrade.
+    //   isGameTitle SKU 는 의도된 게임 카트리지/디스크 매칭 → game_title 자체가 정상.
+    //   parser 의 buying / damaged_or_modded / multi_bundle 은 여전히 차단 (게임 매물도 동일하게 부적격).
+    if (sku.isGameTitle) {
+      if (game.listingType === "buying") return "buying";
+      if (game.listingType === "damaged_or_modded") return "damaged";
+      if (game.listingType === "multi_bundle") return "multi";
+      if (game.listingType === "accessory") return "accessory";
+      // game_title / normal / unknown → null (pipeline 의 다른 검증 통과시 정상 매물).
+    } else {
+      if (game.listingType === "accessory" || game.listingType === "game_title") return "accessory";
+      if (game.listingType === "damaged_or_modded") return "damaged";
+      if (game.listingType === "buying") return "buying";
+      if (game.listingType === "multi_bundle") return "multi";
+      if (game.listingType !== "normal" || game.needsReview) return "unknown";
+    }
   }
 
   if (sku.category === "smartphone") {

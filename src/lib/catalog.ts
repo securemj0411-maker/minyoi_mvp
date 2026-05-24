@@ -62,6 +62,12 @@ import { WAVE_736_MM6_LACOSTE } from "@/lib/generated/catalog-736-mm6-lacoste";
 import { WAVE_746_NEIGHBORHOOD_SCHOTT } from "@/lib/generated/catalog-746-neighborhood-schott";
 import { WAVE_749_SONY_ELECTRONICS } from "@/lib/generated/catalog-749-sony-electronics";
 import { WAVE_737_SHOE_BROAD_2 } from "@/lib/generated/catalog-737-shoe-broad-2";
+// Wave 760 (2026-05-24): 게임 카트리지/타이틀 SKU 100+ 신설 (Pokemon/Mario/Zelda/Animal Crossing 등).
+//   기존 game_console 카테고리 활용 (option B). isGameTitle: true 플래그 박아서
+//   parser game_title 분류 → pipeline downgrade 차단. Switch v1 본체 SKU 가 게임 TITLE 흡수하던
+//   문제 (Wave 758 mustNotContain block) 의 본질적 해결책.
+//   일반인 친화 ⭐⭐⭐ (가품 risk 0, mass 매물, 모든 연령대). ~3000+ 매물 회수 예상.
+import { WAVE_760_GAME_TITLES } from "@/lib/generated/catalog-760-game-titles";
 
 export type Sku = {
   id: string;
@@ -113,6 +119,17 @@ export type Sku = {
   //   미박힘 SKU + text 매칭 실패 → parser needsReview=true → pool 차단 (안전).
   //   값: parser ClothingProductType/BagProductType/ShoeProductType union 문자열.
   defaultProductType?: string;
+  // Wave 760 (2026-05-24): game-title SKU 플래그.
+  //   game-console parser는 default로 "타이틀/카트리지/디스크" 패턴을 game_title 으로 분류 →
+  //   pipeline 이 accessory 로 downgrade → pool 진입 차단. 게임 카트리지/디스크 본품 SKU 에는
+  //   isGameTitle=true 박아서 downgrade 차단 (정상 매물로 살림).
+  //   주의: 이 플래그 박은 SKU 는 mustNotContain 에 "본체"/"풀박" body keyword 박아서
+  //   본체 SKU 와 매칭 충돌 방지.
+  isGameTitle?: boolean;
+  // Wave 760: 본품 가격 tier 분리 — 미개봉/한정판/풀박 변형은 시세군 다름.
+  //   미개봉 = ~1.4x normal, 한정판 = ~2x normal, 풀박 vintage = ~3x normal (DS 포켓몬 130K vs 알칩 35K).
+  //   현재는 reference only — runtime tier 분리 X. 향후 confidence band 조정용.
+  conditionTier?: "mint" | "limited" | "boxed" | "loose";
 };
 
 // Wave 122 (2026-05-15): 모든 카테고리 공통 noise 패턴 (Wave 121 audit 결과).
@@ -5449,6 +5466,199 @@ export const CATALOG: Sku[] = [
     msrpKrw: 400000,
     released: 2022,
   },
+  // ═══════════════════════════════════════════════════════════
+  // Wave 760 (2026-05-24) 골프 narrow split (Wave 760 sweep 결과 기반)
+  // Wave 760 sweep 발견: Ping iron 935% spread, Majesty iron 721%, Titleist iron 689% 등.
+  // Priority A 30+ SKU.
+  // ═══════════════════════════════════════════════════════════
+  // ─── TaylorMade Driver narrow (subModel 별 분리) ───
+  {
+    id: "sport-golf-taylormade-stealth2-driver",
+    brand: "TaylorMade", category: "sport_golf", laneKey: "sport_golf_taylormade_stealth2_driver",
+    modelName: "TaylorMade Stealth2 Driver (신상)",
+    aliases: ["Stealth2", "스텔스2"],
+    mustContain: [["테일러메이드", "taylormade"], ["스텔스2", "스텔스 2", "stealth2", "stealth 2"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE, "qi10", "sim", "burner", "r7"],
+    msrpKrw: 800000, released: 2023,
+  },
+  {
+    id: "sport-golf-taylormade-qi10-driver",
+    brand: "TaylorMade", category: "sport_golf", laneKey: "sport_golf_taylormade_qi10_driver",
+    modelName: "TaylorMade Qi10 Driver (최신)",
+    aliases: ["Qi10"],
+    mustContain: [["테일러메이드", "taylormade"], ["qi10"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE, "qi35", "stealth", "sim", "burner"],
+    msrpKrw: 950000, released: 2024,
+  },
+  {
+    id: "sport-golf-taylormade-stealth-driver",
+    brand: "TaylorMade", category: "sport_golf", laneKey: "sport_golf_taylormade_stealth_driver",
+    modelName: "TaylorMade Stealth Driver",
+    aliases: ["Stealth", "스텔스"],
+    mustContain: [["테일러메이드", "taylormade"], ["스텔스", "stealth"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE, "stealth2", "스텔스2", "qi10"],
+    msrpKrw: 550000, released: 2022,
+  },
+  {
+    id: "sport-golf-taylormade-sim-driver",
+    brand: "TaylorMade", category: "sport_golf", laneKey: "sport_golf_taylormade_sim_driver",
+    modelName: "TaylorMade SIM/SIM2/SIM Max Driver",
+    aliases: ["SIM Driver", "SIM2", "SIM Max", "심맥스"],
+    mustContain: [["테일러메이드", "taylormade"], ["sim", "심맥스", "심2맥스"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE, "stealth", "qi10"],
+    msrpKrw: 350000, released: 2020,
+  },
+  // ─── Ping Iron narrow (G-series) ───
+  {
+    id: "sport-golf-ping-g430-iron",
+    brand: "Ping", category: "sport_golf", laneKey: "sport_golf_ping_g430_iron",
+    modelName: "Ping G430 Iron Set",
+    aliases: ["Ping G430 Iron", "핑 G430 아이언"],
+    mustContain: [["ping", "핑 ", "핑골프"], ["g430"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE, "g440", "g425", "g410", "g400", "i230", "i500", "타핑", "쇼핑", "핑크"],
+    msrpKrw: 1500000, released: 2023,
+  },
+  {
+    id: "sport-golf-ping-g425-iron",
+    brand: "Ping", category: "sport_golf", laneKey: "sport_golf_ping_g425_iron",
+    modelName: "Ping G425 Iron Set",
+    aliases: ["Ping G425 Iron", "핑 G425 아이언"],
+    mustContain: [["ping", "핑 ", "핑골프"], ["g425"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE, "g440", "g430", "g410", "g400", "i230", "i500", "타핑", "쇼핑", "핑크"],
+    msrpKrw: 1200000, released: 2020,
+  },
+  {
+    id: "sport-golf-ping-i230-iron",
+    brand: "Ping", category: "sport_golf", laneKey: "sport_golf_ping_i230_iron",
+    modelName: "Ping i230 Iron Set (forged)",
+    aliases: ["Ping i230 Iron", "핑 i230 아이언"],
+    mustContain: [["ping", "핑 ", "핑골프"], ["i230"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE, "g430", "g425", "i500", "타핑", "쇼핑", "핑크"],
+    msrpKrw: 1400000, released: 2022,
+  },
+  {
+    id: "sport-golf-ping-i500-iron",
+    brand: "Ping", category: "sport_golf", laneKey: "sport_golf_ping_i500_iron",
+    modelName: "Ping i500/i525 Iron Set",
+    aliases: ["Ping i500", "Ping i525", "핑 i500", "핑 i525"],
+    mustContain: [["ping", "핑 ", "핑골프"], ["i500", "i525"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE, "g430", "g425", "i230", "타핑", "쇼핑", "핑크"],
+    msrpKrw: 800000, released: 2018,
+  },
+  // ─── Titleist Iron narrow (T-series + AP-series) ───
+  {
+    id: "sport-golf-titleist-t100-iron",
+    brand: "Titleist", category: "sport_golf", laneKey: "sport_golf_titleist_t100_iron",
+    modelName: "Titleist T100 Iron Set (players)",
+    aliases: ["Titleist T100 Iron", "타이틀리스트 T100"],
+    mustContain: [["타이틀리스트", "titleist"], ["t100"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE, "t200", "t300", "t350", "ap1", "ap2", "ap3"],
+    msrpKrw: 1800000, released: 2023,
+  },
+  {
+    id: "sport-golf-titleist-t200-iron",
+    brand: "Titleist", category: "sport_golf", laneKey: "sport_golf_titleist_t200_iron",
+    modelName: "Titleist T200 Iron Set (forgiving players)",
+    aliases: ["Titleist T200 Iron", "타이틀리스트 T200"],
+    mustContain: [["타이틀리스트", "titleist"], ["t200"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE, "t100", "t300", "t350", "ap1", "ap2", "ap3"],
+    msrpKrw: 1700000, released: 2023,
+  },
+  {
+    id: "sport-golf-titleist-ap-iron",
+    brand: "Titleist", category: "sport_golf", laneKey: "sport_golf_titleist_ap_iron",
+    modelName: "Titleist AP1/AP2/AP3 Iron Set (구형)",
+    aliases: ["Titleist AP1", "Titleist AP2", "Titleist AP3"],
+    mustContain: [["타이틀리스트", "titleist"], ["ap1", "ap2", "ap3", "ap 1", "ap 2", "ap 3"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE, "t100", "t200", "t300", "t350"],
+    msrpKrw: 700000, released: 2018,
+  },
+  // ─── Titleist Driver narrow (GT/TSR/TSi) ───
+  {
+    id: "sport-golf-titleist-gt-driver",
+    brand: "Titleist", category: "sport_golf", laneKey: "sport_golf_titleist_gt_driver",
+    modelName: "Titleist GT2/GT3 Driver (2024 신상)",
+    aliases: ["Titleist GT2", "Titleist GT3", "타이틀리스트 GT"],
+    mustContain: [["타이틀리스트", "titleist"], ["gt2", "gt3", "gt 2", "gt 3"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE, "tsr", "tsi", "ts3", "ts2"],
+    msrpKrw: 1100000, released: 2024,
+  },
+  {
+    id: "sport-golf-titleist-tsi-driver",
+    brand: "Titleist", category: "sport_golf", laneKey: "sport_golf_titleist_tsi_driver",
+    modelName: "Titleist TSi2/TSi3 Driver (구형)",
+    aliases: ["Titleist TSi2", "Titleist TSi3", "타이틀리스트 TSi"],
+    mustContain: [["타이틀리스트", "titleist"], ["tsi2", "tsi3", "tsi 2", "tsi 3"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE, "tsr", "gt2", "gt3", "ts3", "ts2"],
+    msrpKrw: 500000, released: 2020,
+  },
+  // ─── Honma Iron narrow (Beres = premium vs Tour World) ───
+  {
+    id: "sport-golf-honma-beres-iron",
+    brand: "Honma", category: "sport_golf", laneKey: "sport_golf_honma_beres_iron",
+    modelName: "Honma Beres Iron Set (premium 4-5 star)",
+    aliases: ["Honma Beres Iron", "혼마 베레스 아이언"],
+    mustContain: [["혼마", "honma"], ["베레스", "beres"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE, "tour world", "tw series"],
+    msrpKrw: 2500000, released: 2020,
+  },
+  {
+    id: "sport-golf-honma-tour-world-iron",
+    brand: "Honma", category: "sport_golf", laneKey: "sport_golf_honma_tour_world_iron",
+    modelName: "Honma Tour World Iron Set (mid-tier)",
+    aliases: ["Honma Tour World Iron", "혼마 투어월드"],
+    mustContain: [["혼마", "honma"], ["tour world", "tw 시리즈", "투어월드", "투어 월드", "tw747", "tw757", "tw767", "tw777"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE, "베레스", "beres"],
+    msrpKrw: 600000, released: 2018,
+  },
+  // ─── XXIO Driver narrow (신/구세대) ───
+  {
+    id: "sport-golf-xxio-13-12-driver",
+    brand: "XXIO", category: "sport_golf", laneKey: "sport_golf_xxio_13_12_driver",
+    modelName: "XXIO 13/12 Driver (신세대)",
+    aliases: ["XXIO 13", "XXIO 12", "젝시오 13", "젝시오 12"],
+    mustContain: [["젝시오", "xxio"], ["13", "12", "13세대", "12세대", "젝시오13", "젝시오12"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE, "11", "10", "9", "8", "7"],
+    msrpKrw: 950000, released: 2023,
+  },
+  {
+    id: "sport-golf-xxio-11-9-driver",
+    brand: "XXIO", category: "sport_golf", laneKey: "sport_golf_xxio_11_9_driver",
+    modelName: "XXIO 9/10/11 Driver (구세대 4-7년 전)",
+    aliases: ["XXIO 11", "XXIO 10", "XXIO 9"],
+    mustContain: [["젝시오", "xxio"], ["11", "10", "9", "젝시오11", "젝시오10", "젝시오9"], ["드라이버", "driver"]],
+    mustNotContain: [...GOLF_DRIVER_BROAD_NOISE, "13", "12", "mp400", "mp500"],
+    msrpKrw: 350000, released: 2017,
+  },
+  // ─── Callaway Iron narrow ───
+  {
+    id: "sport-golf-callaway-paradym-iron",
+    brand: "Callaway", category: "sport_golf", laneKey: "sport_golf_callaway_paradym_iron",
+    modelName: "Callaway Paradym Iron Set (신상)",
+    aliases: ["Callaway Paradym Iron", "캘러웨이 패러다임"],
+    mustContain: [["캘러웨이", "callaway"], ["paradym", "패러다임"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE, "rogue", "apex", "epic", "mavrik"],
+    msrpKrw: 1500000, released: 2023,
+  },
+  {
+    id: "sport-golf-callaway-apex-iron",
+    brand: "Callaway", category: "sport_golf", laneKey: "sport_golf_callaway_apex_iron",
+    modelName: "Callaway Apex Iron Set (forged premium)",
+    aliases: ["Callaway Apex Iron", "캘러웨이 에이펙스"],
+    mustContain: [["캘러웨이", "callaway"], ["apex", "에이펙스"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE, "paradym", "rogue", "mavrik"],
+    msrpKrw: 1700000, released: 2022,
+  },
+  {
+    id: "sport-golf-callaway-rogue-iron",
+    brand: "Callaway", category: "sport_golf", laneKey: "sport_golf_callaway_rogue_iron",
+    modelName: "Callaway Rogue Iron Set (mid-tier)",
+    aliases: ["Callaway Rogue Iron", "캘러웨이 로그"],
+    mustContain: [["캘러웨이", "callaway"], ["rogue", "로그"], ["아이언"]],
+    mustNotContain: [...GOLF_IRON_BROAD_NOISE, "paradym", "apex", "epic", "mavrik"],
+    msrpKrw: 700000, released: 2018,
+  },
+  // ═══════════════════════════════════════════════════════════
   // ─── PlayStation 5 Slim (Disc/Digital, 2023-11) ─────
   // narrow lane: ps5_slim (Standard/Pro/PSVR/Switch/액세서리 차단)
   {
@@ -8179,6 +8389,7 @@ export const CATALOG: Sku[] = [
   ...WAVE_746_NEIGHBORHOOD_SCHOTT, // Wave 746 — Neighborhood / Schott (Perfecto)
   ...WAVE_749_SONY_ELECTRONICS, // Wave 749 — Sony 이어폰 신설 (WF-1000XM4/5/6 / LinkBuds Open / MDR Pro)
   ...WAVE_737_SHOE_BROAD_2, // Wave 737 — 신발 broad 추가 (Dr.Martens broad/Timberland/Keen/Fila/Clarks/Clae)
+  ...WAVE_760_GAME_TITLES, // Wave 760 — 게임 카트리지/타이틀 SKU 100+ (Pokemon/Mario/Zelda/Animal Crossing 등)
   ...BAG_CATALOG,
   ...BAG_WAVE266_CATALOG, // Wave 266 — 명품 가방 brand-broad fallback 20 SKU
   ...BIKE_CATALOG,
