@@ -267,9 +267,14 @@ function fashionPrecisionReviewReason(input: {
 }
 
 function sellerTrustReviewReason(input: {
+  source?: string | null;
   shopReviewCount?: number | null;
   shopReviewRating?: number | null;
 }): string | null {
+  // Joongna exposes a trust score that we normalize for display; it is not a
+  // Bunjang-style star rating. Keep it as a buyer caution signal instead of a
+  // hard pool blocker, otherwise Joongna supply gets over-filtered.
+  if (input.source === "joongna") return null;
   const count = input.shopReviewCount;
   const rating = input.shopReviewRating;
   if (
@@ -583,6 +588,7 @@ export function buildCandidatePoolRows(input: {
     }
 
     const sellerTrustReason = sellerTrustReviewReason({
+      source: row.source,
       shopReviewCount: row.shopReviewCount,
       shopReviewRating: row.shopReviewRating,
     });

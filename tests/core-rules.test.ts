@@ -1715,6 +1715,49 @@ test("candidate pool builder holds rows from explicitly low-rated sellers", () =
   assert.deepEqual(result.invalidations, [{ pid: 16, reason: "seller_rating_below_3_5_review" }]);
 });
 
+test("candidate pool builder does not treat Joongna trust score as a star rating blocker", () => {
+  const sku = CATALOG.find((item) => item.id === "clothing-polo-oxford-shirt");
+  assert.ok(sku, "expected Polo Oxford Shirt SKU in catalog");
+  const parsedByPid = new Map([
+    [19, {
+      parser_version: "wave216-clothing-v22",
+      category: "clothing" as const,
+      comparable_key: "clothing|polo_oxford_shirt|shirt|a_grade",
+      parse_confidence: 0.95,
+      needs_review: false,
+      condition_class: "clean",
+    }],
+  ]);
+
+  const result = buildCandidatePoolRows({
+    rows: [{
+      pid: 19,
+      source: "joongna",
+      price: 75_000,
+      skuMedian: 120_000,
+      estimatedBuyCost: 75_000,
+      shippingFee: 0,
+      shippingFeeGeneral: 0,
+      riskHits: 0,
+      thumbnailUrl: "https://example.test/polo.jpg",
+      skuId: sku.id,
+      score: 90,
+      scoreFlags: [],
+      shopReviewCount: 2,
+      shopReviewRating: 2.56,
+      saleStatus: "ACTIVE",
+    }],
+    parsedByPid,
+    catalogById: new Map(CATALOG.map((item) => [item.id, item])),
+    categoryReadiness: CATEGORY_READINESS,
+    latestParserVersionByCategory: { clothing: "wave216-clothing-v22" },
+    now: "2026-05-25T00:00:00.000Z",
+  });
+
+  assert.equal(result.invalidations.length, 0);
+  assert.equal(result.entries.length, 1);
+});
+
 test("candidate pool builder does not punish missing seller rating by itself", () => {
   const sku = CATALOG.find((item) => item.id === "clothing-polo-oxford-shirt");
   assert.ok(sku, "expected Polo Oxford Shirt SKU in catalog");
