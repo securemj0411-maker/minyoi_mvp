@@ -12082,7 +12082,7 @@ export const CATALOG: Sku[] = [
       "vault", "볼트", "lx", "베이프", "bape", "마스터마인드", "mastermind", "fdmtl", "펀더멘탈",
       "보테가", "bottega", "수베니어", "souvenir", "end.", "end ", "fragment", "프래그먼트",
     ],
-    msrpKrw: 89000, released: 1977,
+    msrpKrw: 89000, minPriceKrw: 30000, released: 1977,  // Wave 768: Vans Old Skool 가품 floor (9K outlier 차단)
   },
   {
     id: "shoe-vans-sk8-hi",

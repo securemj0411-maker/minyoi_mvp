@@ -737,6 +737,7 @@ export const SHOE_CATALOG: Sku[] = [
       "sacai", "사카이", "이로", "stussy", "스투시", "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손",
     ],
     msrpKrw: 175000,
+    minPriceKrw: 100000,  // Wave 768: Chuck 70 CDG Play collab 가품 다수 (15K outlier 차단)
     released: 2017,
     laneKey: "shoe_limited_exact_model",
   },

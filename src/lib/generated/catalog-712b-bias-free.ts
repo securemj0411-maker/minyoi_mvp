@@ -613,7 +613,7 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       ["lv8", "lv 8", "lv-8", "별포스", "한글날", "hangeul", "독립기념일", "independence day", "40주년", "athletic club"],
     ],
     mustNotContain: [...COMMON_NOISE, "루이비통", "louis vuitton", "virgil"],
-    msrpKrw: 159000, released: 2014,
+    msrpKrw: 159000, minPriceKrw: 50000, released: 2014,  // Wave 768: AF1 LV8 collab 가품 floor (16K outlier 차단)
     defaultProductType: "sneaker",
   },
 
