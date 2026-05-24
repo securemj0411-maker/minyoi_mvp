@@ -130,6 +130,13 @@ export type Sku = {
   //   미개봉 = ~1.4x normal, 한정판 = ~2x normal, 풀박 vintage = ~3x normal (DS 포켓몬 130K vs 알칩 35K).
   //   현재는 reference only — runtime tier 분리 X. 향후 confidence band 조정용.
   conditionTier?: "mint" | "limited" | "boxed" | "loose";
+  // Wave 767 (2026-05-24): 가품 의심 floor 가격 (premium brand sanity check).
+  //   매물 가격 < minPriceKrw 면 parser 가 needsReview + criticalUnknown 박음 → pool 차단.
+  //   사용자 #6 deep sweep 발견: "톰브라운 캐주얼니트 7,900원" 같은 명백한 가품 매물.
+  //   적용 정책: premium brand 정품 최저 가격 보수적 floor (정상 차익 매물도 조금 잃는 trade-off 감수).
+  //   예: thombrowne 50K / moncler 200K / arcteryx_leaf 200K / acne 20K / supreme 30K / polo_rrl 50K.
+  //   미박힘 SKU → floor 검사 skip (기존 동작).
+  minPriceKrw?: number;
 };
 
 // Wave 122 (2026-05-15): 모든 카테고리 공통 noise 패턴 (Wave 121 audit 결과).

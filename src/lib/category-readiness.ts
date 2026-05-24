@@ -750,6 +750,13 @@ export const LANE_READINESS: LaneReadinessMap = {
   polo_rrl_sneaker: { status: "ready", label: "Polo RRL Sneaker", note: "Wave 218 — shoe 카테고리" },
   polo_rrl_jacket_coat: { status: "blocked", label: "Polo RRL Jacket / Coat", note: "Wave 539: broad jacket/coat p25/p75=82만/264만 is too wide for public ready. Keep split RRL denim/leather/grizzly/Browns Beach lanes only." },
   polo_rrl_broad: { status: "blocked", label: "Polo RRL (broad fallback)", note: "Wave 407: clothing broad fallback hold — narrow RRL lanes only." },
+  // Wave 767 (2026-05-24): broad SKU 명시 hold — 239x spread 감수 안 함 (사용자 결정).
+  //   기존: clothing category gate 가 lane 없으면 자동 차단. 명시 hold 로 안전성 강화.
+  //   239x spread (polo_apparel_broad), 73x (polo_knit), 82x (thombrowne) — narrow split 신설 시 release.
+  polo_apparel_broad: { status: "blocked", label: "Polo Apparel (broad fallback)", note: "Wave 767: 239x spread — narrow split 신설 전 사용자 노출 차단. Polo Vintage (Wave 715) narrow lane 활용." },
+  stussy_apparel_broad: { status: "blocked", label: "Stussy Apparel (broad fallback)", note: "Wave 767: broad spread — narrow lane 신설 전 hold." },
+  thombrowne_apparel_broad: { status: "blocked", label: "Thom Browne Apparel (broad fallback)", note: "Wave 767: 6 narrow lane (4bar/cardigan/knit/shirt/suit/sweat) 활용. broad hold." },
+  junya_watanabe_apparel_broad: { status: "blocked", label: "Junya Watanabe (broad fallback)", note: "Wave 767: 23x spread — broad hold, collab narrow 신설 전 차단." },
   tnf_nuptse_1996: { status: "ready", label: "TNF 1996 Retro Nuptse", note: "Wave 198" },
   tnf_mountain_jacket: { status: "ready", label: "TNF Mountain Jacket (Gore-Tex)", note: "Wave 198" },
   tnf_denali_fleece: { status: "ready", label: "TNF Denali Fleece", note: "Wave 198" },

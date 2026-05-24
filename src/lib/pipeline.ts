@@ -532,6 +532,14 @@ function monitorPreSkuNoise(title: string, desc: string, price: number): Listing
 }
 
 function categoryScopedNoise(title: string, desc: string, price: number, sku: Sku): ListingType | null {
+  // Wave 767 (2026-05-24): 가품 의심 floor 가격 sanity check (사용자 #6 deep sweep 결정).
+  //   premium brand SKU 에 minPriceKrw 박힌 경우 매물 price 비교.
+  //   비현실적 저가 (예: 톰브라운 7,900원) → "damaged" 분류 → pool 차단 + 시세 sample 제외.
+  //   trade-off: 진짜 차익 매물도 소량 차단 가능 — 가품 매물 시세 오염 차단 이익이 더 큼.
+  if (sku.minPriceKrw && price > 0 && price < sku.minPriceKrw) {
+    return "damaged";  // floor 미달 = 가품/모호 매물 (시세 sample 제외 + pool 차단)
+  }
+
   const titleN = nrm(title);
   const textN = nrm(`${title}\n${desc}`);
   const compactTitle = titleN.replace(/\s+/g, "");

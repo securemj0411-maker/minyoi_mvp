@@ -61,7 +61,7 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
       ...COMMON_NOISE, "tom ford", "톰포드",
       "톰브라운 스타일", "톰브라운스타일", "강아지", "애견", "반려견", "dog",
     ],
-    msrpKrw: 1500000, released: 2003,
+    msrpKrw: 1500000, minPriceKrw: 100000, released: 2003,  // Wave 767: 가품 floor
   },
 
   // ─── Thom Browne Cardigan (시그니처 단추 가디건) ───
@@ -80,7 +80,7 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
       // 4-bar는 별도 SKU
       "4-bar", "4바", "포바", "사바",
     ],
-    msrpKrw: 1100000, released: 2003,
+    msrpKrw: 1100000, minPriceKrw: 100000, released: 2003,  // Wave 767: 가품 floor
   },
 
   // ─── Thom Browne Knit Sweater ───
@@ -99,7 +99,7 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
       "가디건", "카디건", "cardigan",
       "4-bar", "4바", "포바", "사바",
     ],
-    msrpKrw: 950000, released: 2003,
+    msrpKrw: 950000, minPriceKrw: 50000, released: 2003,  // Wave 767: 가품 floor (사용자 #6 7,900원 매물 차단)
   },
 
   // ─── Thom Browne Shirt (옥스포드/드레스 셔츠) ───
@@ -117,7 +117,7 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
       "톰브라운 스타일", "톰브라운스타일",
       "4-bar", "4바", "포바", "사바",
     ],
-    msrpKrw: 550000, released: 2003,
+    msrpKrw: 550000, minPriceKrw: 50000, released: 2003,  // Wave 767: 가품 floor
   },
 
   // ─── Thom Browne Suit / Blazer / Coat (premium tier) ───
@@ -137,7 +137,7 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
       "4-bar", "4바", "포바", "사바",
       // 자켓은 별도 SKU (선택적, 분리 가능)
     ],
-    msrpKrw: 2500000, released: 2003,
+    msrpKrw: 2500000, minPriceKrw: 200000, released: 2003,  // Wave 767: 가품 floor (코트 premium)
   },
 
   // ─── Thom Browne Sweat / Hoodie ───
@@ -156,7 +156,7 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
       "4-bar", "4바", "포바", "사바",
       "니트", "knit", "스웨터", "sweater",
     ],
-    msrpKrw: 750000, released: 2003,
+    msrpKrw: 750000, minPriceKrw: 50000, released: 2003,  // Wave 767: 가품 floor
   },
 
   // ============================================================================
@@ -203,7 +203,7 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
     mustNotContain: [
       ...COMMON_NOISE, "키즈 마야", "kids maya",
     ],
-    msrpKrw: 2200000, released: 2015,
+    msrpKrw: 2200000, minPriceKrw: 300000, released: 2015,  // Wave 767: Moncler Maya 가품 다수, 30만 floor
   },
 
   // ─── Moncler Grenoble (skiwear premium line) ───
@@ -219,7 +219,7 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
     mustNotContain: [
       ...COMMON_NOISE,
     ],
-    msrpKrw: 3000000, released: 2010,
+    msrpKrw: 3000000, minPriceKrw: 300000, released: 2010,  // Wave 767: Grenoble premium floor
   },
 
   // ─── Moncler Tricot (니트/카디건 sub-line) ───
@@ -235,7 +235,7 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
     mustNotContain: [
       ...COMMON_NOISE, "maya", "마야", "grenoble", "그르노블",
     ],
-    msrpKrw: 1200000, released: 2015,
+    msrpKrw: 1200000, minPriceKrw: 100000, released: 2015,  // Wave 767: Moncler Tricot floor
   },
 
   // ============================================================================
@@ -621,7 +621,7 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
       "drypack", "dry pack", "전술배낭", "전술 배낭", "배낭", "백팩", "backpack",
       "리프 가방", "리프 백팩", "포치", "pouch", "체스트 리그", "chest rig",
     ],
-    msrpKrw: 1200000, released: 2010,
+    msrpKrw: 1200000, minPriceKrw: 200000, released: 2010,  // Wave 767: Arc'teryx LEAF 군용 premium floor
   },
 
   // ─── Arc'teryx Veilance (도시 premium minimalist) ───
@@ -638,6 +638,6 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
       ...COMMON_NOISE,
       "leaf", "리프",
     ],
-    msrpKrw: 950000, released: 2009,
+    msrpKrw: 950000, minPriceKrw: 150000, released: 2009,  // Wave 767: Veilance 도시 premium floor
   },
 ];
