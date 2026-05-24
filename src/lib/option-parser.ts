@@ -222,7 +222,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v60";  // Wave 776: sport_golf sex + iron_set 추출 (Majesty Men/Women 5.6배 차이)
+export const PARSER_VERSION = "option-parser-v61";  // Wave 777: sport_golf generation 추출 (Beres NX/BB/B+/S, Ping G410/425/430, PXG GEN, TM SIM/Stealth/Qi10, Titleist TS/TSi/TSR/GT, XXIO 9-13)
 
 // Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
 //   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
@@ -2167,6 +2167,60 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     }
   }
 
+  // Wave 777 (2026-05-24): sport_golf generation 추출 — sub-model 안 generation 분리.
+  //   Honma Beres NX / Beres BB / Beres B-PLUS / Beres S — broad SKU 안에서 generation 별 시세 다름.
+  //   Ping G410 / G425 / G430 — 신/구세대 시세 차이.
+  //   PXG 0311 GEN1-6 — 세대별 가격대 다름.
+  //   사용자 #13 정당한 지적 — broad SKU 안 generation 별 시세 분리해야 정밀 측정 가능.
+  let golfGenerationKey: string | null = null;
+  let golfGenerationValue: string | null = null;
+  if (category === "sport_golf") {
+    const golfText = `${input.title ?? ""}\n${input.description ?? ""}`.toLowerCase();
+    // Honma Beres 세대: NX (구), BB (신), B-PLUS, S (시니어)
+    if (/베레스|beres/i.test(golfText)) {
+      if (/beres\s*nx|베레스\s*nx/i.test(golfText)) { golfGenerationValue = "Beres_NX"; golfGenerationKey = "gen_beres_nx"; }
+      else if (/beres\s*bb|베레스\s*bb/i.test(golfText)) { golfGenerationValue = "Beres_BB"; golfGenerationKey = "gen_beres_bb"; }
+      else if (/beres\s*b[- ]?plus|베레스\s*b[- ]?plus/i.test(golfText)) { golfGenerationValue = "Beres_BPLUS"; golfGenerationKey = "gen_beres_bplus"; }
+      else if (/beres\s*s\b|베레스\s*s\b/i.test(golfText)) { golfGenerationValue = "Beres_S"; golfGenerationKey = "gen_beres_s"; }
+    }
+    // Ping G 시리즈: G410 (2019), G425 (2021), G430 (2023)
+    if (!golfGenerationKey && /\bping\b|핑\s/i.test(golfText)) {
+      const pingGen = golfText.match(/g\s*(400|410|425|430)/i);
+      if (pingGen) { golfGenerationValue = `Ping_G${pingGen[1]}`; golfGenerationKey = `gen_ping_g${pingGen[1]}`; }
+    }
+    // PXG 0311 GEN
+    if (!golfGenerationKey && /pxg|0311/i.test(golfText)) {
+      const pxgGen = golfText.match(/gen\s*(1|2|3|4|5|6)|0311\s*(?:t|p|sgi|xf)?\s*gen\s*(1|2|3|4|5|6)/i);
+      if (pxgGen) {
+        const g = pxgGen[1] || pxgGen[2];
+        golfGenerationValue = `PXG_GEN${g}`; golfGenerationKey = `gen_pxg_gen${g}`;
+      }
+    }
+    // TaylorMade: SIM / SIM2 / Stealth / Stealth2 / Qi10 (catalog narrow 있지만 broad 안에서도)
+    if (!golfGenerationKey && /테일러메이드|taylormade/i.test(golfText)) {
+      if (/qi10/i.test(golfText)) { golfGenerationValue = "TM_Qi10"; golfGenerationKey = "gen_tm_qi10"; }
+      else if (/stealth\s*2|스텔스\s*2/i.test(golfText)) { golfGenerationValue = "TM_Stealth2"; golfGenerationKey = "gen_tm_stealth2"; }
+      else if (/stealth|스텔스/i.test(golfText)) { golfGenerationValue = "TM_Stealth"; golfGenerationKey = "gen_tm_stealth"; }
+      else if (/sim\s*2|sim2/i.test(golfText)) { golfGenerationValue = "TM_SIM2"; golfGenerationKey = "gen_tm_sim2"; }
+      else if (/sim\b/i.test(golfText)) { golfGenerationValue = "TM_SIM"; golfGenerationKey = "gen_tm_sim"; }
+    }
+    // Titleist: TS / TSi / TSR / GT (각각 신구 세대)
+    if (!golfGenerationKey && /타이틀리스트|titleist/i.test(golfText)) {
+      if (/gt[23]?\b/i.test(golfText)) { golfGenerationValue = "Titleist_GT"; golfGenerationKey = "gen_titleist_gt"; }
+      else if (/tsr[23]?\b/i.test(golfText)) { golfGenerationValue = "Titleist_TSR"; golfGenerationKey = "gen_titleist_tsr"; }
+      else if (/tsi[23]?\b/i.test(golfText)) { golfGenerationValue = "Titleist_TSi"; golfGenerationKey = "gen_titleist_tsi"; }
+      else if (/ts[1-4]?\b/i.test(golfText)) { golfGenerationValue = "Titleist_TS"; golfGenerationKey = "gen_titleist_ts"; }
+    }
+    // XXIO: 9/10/11 (구세대) vs 12/13 (신세대) — Wave 760 narrow 분리 있음
+    if (!golfGenerationKey && /xxio|젝시오/i.test(golfText)) {
+      const xxioGen = golfText.match(/xxio\s*(9|10|11|12|13)|젝시오\s*(9|10|11|12|13)/i);
+      if (xxioGen) {
+        const g = xxioGen[1] || xxioGen[2];
+        golfGenerationValue = `XXIO_${g}`; golfGenerationKey = `gen_xxio_${g}`;
+      }
+    }
+  }
+
   const parts = comparableParts({
     category,
     family,
@@ -2190,9 +2244,10 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     monitorShape,
     tabletGeneration,
   });
-  // Wave 774/775/776: sport_golf loft + shaft + sex + iron_set comparable_key 추가.
+  // Wave 774/775/776/777: sport_golf loft + shaft + sex + iron_set + generation comparable_key.
   let partsWithGolf = parts;
   if (partsWithGolf) {
+    if (golfGenerationKey) partsWithGolf = [...partsWithGolf, golfGenerationKey];
     if (golfLoftKey) partsWithGolf = [...partsWithGolf, golfLoftKey];
     if (golfShaftKey) partsWithGolf = [...partsWithGolf, golfShaftKey];
     if (golfSexKey) partsWithGolf = [...partsWithGolf, golfSexKey];
@@ -2304,6 +2359,8 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       // Wave 776: sport_golf sex + iron_set 추출 (Majesty wood Men 840K vs Women 150K = 5.6배).
       golf_sex: golfSexValue,
       golf_iron_set: golfIronSetValue,
+      // Wave 777: sport_golf generation 추출 (Honma Beres NX/BB/B-PLUS/S, Ping G410/425/430, PXG GEN, TM SIM/Stealth/Qi10, Titleist TS/TSi/TSR/GT, XXIO 9-13).
+      golf_generation: golfGenerationValue,
       // Wave 182 Phase 3 (2026-05-17): base option fallback metadata.
       // 옵션 명시 X → SKU baseOptions 의 가장 낮은 옵션 가정. UI 에서 "기본 옵션 가정" 표시.
       option_base_assumed: optionBaseAssumed.length > 0 ? optionBaseAssumed : null,
