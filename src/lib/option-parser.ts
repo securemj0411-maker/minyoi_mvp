@@ -222,7 +222,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v59";  // Wave 775: sport_golf shaft 추출 추가 (TourAD/Ventus/Speeder/Diamana 등 — Wave 760 sweep 데이터 활용)
+export const PARSER_VERSION = "option-parser-v60";  // Wave 776: sport_golf sex + iron_set 추출 (Majesty Men/Women 5.6배 차이)
 
 // Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
 //   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
@@ -2103,6 +2103,10 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   let golfLoftValue: string | null = null;
   let golfShaftKey: string | null = null;
   let golfShaftValue: string | null = null;
+  let golfSexKey: string | null = null;
+  let golfSexValue: string | null = null;
+  let golfIronSetKey: string | null = null;
+  let golfIronSetValue: string | null = null;
   if (category === "sport_golf") {
     const golfText = `${input.title ?? ""}\n${input.description ?? ""}`.toLowerCase();
     // loft (driver/wood/hybrid) — text 또는 SKU id 에 driver context 있으면 추출.
@@ -2143,6 +2147,24 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     } else if (/스틸\s*샤프트|steel\s*shaft|dg\s*[a-z0-9]+|dynamic\s*gold/i.test(golfText)) {
       golfShaftValue = "Steel"; golfShaftKey = "shaft_steel";
     }
+    // Wave 776 (2026-05-24): Sex 추출 — Wave 760 sweep "Majesty wood Men 840K vs Women 150K (5.6배)".
+    // 명시 없으면 default (men) — 매물 대부분 남성용.
+    if (/여성용|여성\s*골프|여성\s*드라이버|여성\s*아이언|여자\s*골프|레이디|lady|women|woman|wmn/i.test(golfText)) {
+      golfSexValue = "women"; golfSexKey = "sex_women";
+    } else if (/남성용|남자\s*골프|men's|men\b|시니어\s*남성/i.test(golfText)) {
+      golfSexValue = "men"; golfSexKey = "sex_men";
+    }
+    // Wave 776: Iron set 구성 추출 — 풀세트 (5번~PW) vs 하프세트 (7번~PW) vs 스타터.
+    //   풀세트 ~9 클럽 / 하프 ~6 클럽 / 스타터 ~4-5 클럽. 시세 영향 큼.
+    if (/iron|아이언/i.test(golfText)) {
+      if (/5번?\s*[-~]\s*pw|5\s*-\s*p|5\s*~\s*p|5번?\s*[-~]\s*aw|풀\s*세트|풀세트/i.test(golfText)) {
+        golfIronSetValue = "full"; golfIronSetKey = "set_full";
+      } else if (/7번?\s*[-~]\s*pw|7\s*-\s*p|7\s*~\s*p|하프\s*세트|하프세트|half\s*set/i.test(golfText)) {
+        golfIronSetValue = "half"; golfIronSetKey = "set_half";
+      } else if (/스타터|starter|입문/i.test(golfText)) {
+        golfIronSetValue = "starter"; golfIronSetKey = "set_starter";
+      }
+    }
   }
 
   const parts = comparableParts({
@@ -2168,11 +2190,13 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     monitorShape,
     tabletGeneration,
   });
-  // Wave 774/775: sport_golf loft + shaft comparable_key 추가 (시세 fragmentation).
+  // Wave 774/775/776: sport_golf loft + shaft + sex + iron_set comparable_key 추가.
   let partsWithGolf = parts;
   if (partsWithGolf) {
     if (golfLoftKey) partsWithGolf = [...partsWithGolf, golfLoftKey];
     if (golfShaftKey) partsWithGolf = [...partsWithGolf, golfShaftKey];
+    if (golfSexKey) partsWithGolf = [...partsWithGolf, golfSexKey];
+    if (golfIronSetKey) partsWithGolf = [...partsWithGolf, golfIronSetKey];
   }
   const comparableKey = partsWithGolf?.map(slug).join("|") ?? null;
   const parseConfidence = confidence({
@@ -2277,6 +2301,9 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       golf_loft: golfLoftValue,
       // Wave 775: sport_golf shaft 추출 (Wave 760 sweep 결과 기반 — TourAD/Ventus/Speeder/Diamana 등).
       golf_shaft: golfShaftValue,
+      // Wave 776: sport_golf sex + iron_set 추출 (Majesty wood Men 840K vs Women 150K = 5.6배).
+      golf_sex: golfSexValue,
+      golf_iron_set: golfIronSetValue,
       // Wave 182 Phase 3 (2026-05-17): base option fallback metadata.
       // 옵션 명시 X → SKU baseOptions 의 가장 낮은 옵션 가정. UI 에서 "기본 옵션 가정" 표시.
       option_base_assumed: optionBaseAssumed.length > 0 ? optionBaseAssumed : null,
