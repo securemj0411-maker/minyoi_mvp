@@ -1,6 +1,5 @@
-// Wave launch-119 (2026-05-24): OG image dynamic — 카톡/Twitter/Facebook 공유 카드.
-//   기존 /new_balance.jpeg (Wave 740) → brand logo + tagline.
-//   1200×630 PNG, Next.js ImageResponse build 시 자동 생성.
+// Wave launch-120 (2026-05-24): piggy brand mark — OG image (1200×630).
+//   카톡/Twitter/Facebook 공유 카드. 흰 배경 + piggy 로고 + brand text + tagline.
 
 import { ImageResponse } from "next/og";
 
@@ -24,37 +23,25 @@ export default function OgImage() {
           padding: 80,
         }}
       >
-        {/* Logo */}
+        {/* piggy — 흰 배경 (#0064FF rect 대신) */}
         <svg width="200" height="200" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <rect width="100" height="100" rx="22" fill="white" />
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M52 16 L82 16 Q86 16 86 20 L86 50 Q86 53 84 55 L50 89 Q47 92 44 89 L13 58 Q10 55 13 52 L47 18 Q49 16 52 16 Z M50 60 L55 50 L65 45 L55 40 L50 30 L45 40 L35 45 L45 50 Z M70 32 m-5 0 a5 5 0 1 1 10 0 a5 5 0 1 1 -10 0 Z"
-            fill="#0064FF"
-          />
+          <rect width="100" height="100" rx="22" fill="#fff" />
+          <path d="M14 28 l2 4 l4 2 l-4 2 l-2 4 l-2 -4 l-4 -2 l4 -2 z" fill="#0064FF" />
+          <path d="M86 28 l2 4 l4 2 l-4 2 l-2 4 l-2 -4 l-4 -2 l4 -2 z" fill="#0064FF" />
+          <path d="M84 70 l1.5 3 l3 1.5 l-3 1.5 l-1.5 3 l-1.5 -3 l-3 -1.5 l3 -1.5 z" fill="#0064FF" />
+          <circle cx="50" cy="52" r="38" fill="#0064FF" />
+          <path d="M28 40 L34 32 L38 48 Z" fill="#0064FF" />
+          <path d="M72 40 L66 32 L62 48 Z" fill="#0064FF" />
+          <circle cx="50" cy="58" r="24" fill="#fff" />
+          <circle cx="42" cy="54" r="2.4" fill="#0064FF" />
+          <circle cx="58" cy="54" r="2.4" fill="#0064FF" />
+          <ellipse cx="50" cy="66" rx="11" ry="7" fill="#0064FF" />
+          <path d="M44 64 L46 70 L48 66 L50 70 L52 66 L54 70 L56 64" stroke="#0064FF" strokeWidth="1.5" fill="none" />
         </svg>
-        {/* 브랜드명 */}
-        <div
-          style={{
-            marginTop: 40,
-            fontSize: 96,
-            fontWeight: 900,
-            letterSpacing: "-0.04em",
-            lineHeight: 1,
-          }}
-        >
+        <div style={{ marginTop: 40, fontSize: 96, fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1 }}>
           득템잡이
         </div>
-        {/* Tagline */}
-        <div
-          style={{
-            marginTop: 24,
-            fontSize: 32,
-            fontWeight: 600,
-            opacity: 0.95,
-          }}
-        >
+        <div style={{ marginTop: 24, fontSize: 32, fontWeight: 600, opacity: 0.95 }}>
           AI 중고 시세 비교 — 시세보다 저렴한 매물만
         </div>
       </div>

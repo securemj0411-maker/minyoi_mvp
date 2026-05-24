@@ -7,6 +7,7 @@
 
 import Link from "next/link";
 
+import { BrandLogo } from "@/components/brand-logo";
 import { CheckCircleIcon, PackageIcon, SearchIcon, UnlockIcon } from "@/components/icons";
 
 type PreviewItem = {
@@ -95,17 +96,9 @@ export default async function PreviewMaskedDashboardServer() {
     <main className="min-h-screen bg-[#fbfaf7] dark:bg-zinc-950">
       <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-4 px-4 py-3 sm:gap-6 sm:px-6 sm:py-8 lg:grid lg:grid-cols-[minmax(0,0.88fr)_minmax(420px,1fr)] lg:items-start lg:gap-8">
         <section className="pt-0 lg:sticky lg:top-24 lg:pt-8">
-          {/* Wave launch-119 (2026-05-24): brand mark 노출 (메인 hero). */}
+          {/* Wave launch-120 (2026-05-24): piggy brand mark — 메인 hero. */}
           <div className="mb-3 flex items-center gap-2">
-            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="h-10 w-10 shadow-md shadow-blue-500/20">
-              <rect width="100" height="100" rx="22" fill="#0064FF" />
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M52 16 L82 16 Q86 16 86 20 L86 50 Q86 53 84 55 L50 89 Q47 92 44 89 L13 58 Q10 55 13 52 L47 18 Q49 16 52 16 Z M50 60 L55 50 L65 45 L55 40 L50 30 L45 40 L35 45 L45 50 Z M70 32 m-5 0 a5 5 0 1 1 10 0 a5 5 0 1 1 -10 0 Z"
-                fill="#FFFFFF"
-              />
-            </svg>
+            <BrandLogo size={40} className="rounded-[9px] shadow-md shadow-blue-500/20" />
             <span className="text-lg font-black tracking-tight text-zinc-950 dark:text-zinc-50">득템잡이</span>
           </div>
           <div className="hidden items-center gap-2 rounded-full border border-[#d9d1c4] bg-white/70 px-3 py-1.5 text-[11px] font-black text-[#526055] shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-300 sm:inline-flex">

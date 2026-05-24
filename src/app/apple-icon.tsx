@@ -1,5 +1,4 @@
-// Wave launch-119 (2026-05-24): Apple Touch icon — 사용자 정식 로고 path.
-//   180×180 PNG. iOS Safari 홈화면 + 카톡 공유.
+// Wave launch-120 (2026-05-24): piggy brand mark — Apple Touch icon.
 
 import { ImageResponse } from "next/og";
 
@@ -9,23 +8,20 @@ export const contentType = "image/png";
 export default function AppleIcon() {
   return new ImageResponse(
     (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
+      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <svg width="180" height="180" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
           <rect width="100" height="100" rx="22" fill="#0064FF" />
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M52 16 L82 16 Q86 16 86 20 L86 50 Q86 53 84 55 L50 89 Q47 92 44 89 L13 58 Q10 55 13 52 L47 18 Q49 16 52 16 Z M50 60 L55 50 L65 45 L55 40 L50 30 L45 40 L35 45 L45 50 Z M70 32 m-5 0 a5 5 0 1 1 10 0 a5 5 0 1 1 -10 0 Z"
-            fill="#FFFFFF"
-          />
+          <path d="M14 28 l2 4 l4 2 l-4 2 l-2 4 l-2 -4 l-4 -2 l4 -2 z" fill="#fff" />
+          <path d="M86 28 l2 4 l4 2 l-4 2 l-2 4 l-2 -4 l-4 -2 l4 -2 z" fill="#fff" />
+          <path d="M84 70 l1.5 3 l3 1.5 l-3 1.5 l-1.5 3 l-1.5 -3 l-3 -1.5 l3 -1.5 z" fill="#fff" />
+          <circle cx="50" cy="52" r="38" fill="#fff" />
+          <path d="M28 40 L34 32 L38 48 Z" fill="#fff" />
+          <path d="M72 40 L66 32 L62 48 Z" fill="#fff" />
+          <circle cx="50" cy="58" r="24" fill="#0064FF" />
+          <circle cx="42" cy="54" r="2.4" fill="#fff" />
+          <circle cx="58" cy="54" r="2.4" fill="#fff" />
+          <ellipse cx="50" cy="66" rx="11" ry="7" fill="#fff" />
+          <path d="M44 64 L46 70 L48 66 L50 70 L52 66 L54 70 L56 64" stroke="#fff" strokeWidth="1.5" fill="none" />
         </svg>
       </div>
     ),
