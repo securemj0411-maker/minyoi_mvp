@@ -399,9 +399,16 @@ export default function AppNav() {
             className={`hidden h-2 w-2 rounded-full transition-colors md:block ${adminOverride ? "bg-blue-500" : "bg-zinc-300 dark:bg-zinc-700"}`}
           />
           <Link href="/" className="hidden items-center gap-2 md:flex">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-sm font-black text-white shadow-md shadow-blue-500/20">
-              D
-            </div>
+            {/* Wave launch-119 (2026-05-24): "D" placeholder → 사용자 정식 brand mark SVG. */}
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="h-8 w-8 shadow-md shadow-blue-500/20">
+              <rect width="100" height="100" rx="22" fill="#0064FF" />
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M52 16 L82 16 Q86 16 86 20 L86 50 Q86 53 84 55 L50 89 Q47 92 44 89 L13 58 Q10 55 13 52 L47 18 Q49 16 52 16 Z M50 60 L55 50 L65 45 L55 40 L50 30 L45 40 L35 45 L45 50 Z M70 32 m-5 0 a5 5 0 1 1 10 0 a5 5 0 1 1 -10 0 Z"
+                fill="#FFFFFF"
+              />
+            </svg>
             <span className="font-black tracking-tight text-zinc-950 dark:text-white">득템잡이</span>
             <span className="rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-700 ring-1 ring-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:ring-blue-900">
               Beta
@@ -409,8 +416,18 @@ export default function AppNav() {
           </Link>
         </div>
 
-        {/* 가운데: mobile = "득템잡이" 텍스트, desktop = nav links */}
-        <Link href={mobileHomeHref} className="flex items-center justify-self-center md:hidden">
+        {/* 가운데: mobile = logo + "득템잡이", desktop = nav links */}
+        <Link href={mobileHomeHref} className="flex items-center gap-1.5 justify-self-center md:hidden">
+          {/* Wave launch-119: 모바일 brand 옆에도 로고. */}
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="h-6 w-6">
+            <rect width="100" height="100" rx="22" fill="#0064FF" />
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M52 16 L82 16 Q86 16 86 20 L86 50 Q86 53 84 55 L50 89 Q47 92 44 89 L13 58 Q10 55 13 52 L47 18 Q49 16 52 16 Z M50 60 L55 50 L65 45 L55 40 L50 30 L45 40 L35 45 L45 50 Z M70 32 m-5 0 a5 5 0 1 1 10 0 a5 5 0 1 1 -10 0 Z"
+              fill="#FFFFFF"
+            />
+          </svg>
           <span className="text-base font-black tracking-tight text-zinc-950 dark:text-white">득템잡이</span>
         </Link>
 
