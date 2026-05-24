@@ -304,7 +304,7 @@ export default function PreviewMaskedDashboard() {
                       </div>
 
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                        <span className="text-[18px] font-black leading-none tabular-nums text-[#059669] dark:text-blue-300">
+                        <span className="text-[18px] font-black leading-none tabular-nums text-[#3182f6] dark:text-blue-300">
                           {marketGapLabel(item.expectedProfitMin, item.expectedProfitMax)}
                         </span>
                         {(() => {
@@ -318,7 +318,7 @@ export default function PreviewMaskedDashboard() {
                       </div>
 
                       <div className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-black text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 sm:hidden">
-                        <CheckCircleIcon width={13} height={13} className={signal.tone === "seller" ? "text-[#059669]" : "text-zinc-500"} />
+                        <CheckCircleIcon width={13} height={13} className={signal.tone === "seller" ? "text-[#3182f6]" : "text-zinc-500"} />
                         <span className="truncate">{signal.label}</span>
                       </div>
                     </div>
@@ -326,7 +326,7 @@ export default function PreviewMaskedDashboard() {
                     <div className="hidden shrink-0 text-right sm:block">
                       <div className="text-[11px] font-black text-zinc-400 dark:text-zinc-500">{budgetLabel}</div>
                       <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 px-2.5 py-1 text-[11px] font-black text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
-                        <CheckCircleIcon width={13} height={13} className={signal.tone === "seller" ? "text-[#059669]" : "text-zinc-500"} />
+                        <CheckCircleIcon width={13} height={13} className={signal.tone === "seller" ? "text-[#3182f6]" : "text-zinc-500"} />
                         {signal.label}
                       </div>
                     </div>
@@ -341,7 +341,7 @@ export default function PreviewMaskedDashboard() {
           <div className="border-t border-zinc-200 bg-white/55 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/30 sm:px-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
-                <SearchIcon width={18} height={18} className="text-[#059669]" />
+                <SearchIcon width={18} height={18} className="text-[#3182f6]" />
                 <div>
                   <div className="text-[14px] font-black text-[var(--rd-ink)] dark:text-zinc-50">이름과 원본 링크까지 열어볼까요?</div>
                   <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-500">첫 3개 상세 리포트는 무료로 확인할 수 있어요.</div>
@@ -349,7 +349,7 @@ export default function PreviewMaskedDashboard() {
               </div>
             <Link
               href="/login"
-                className="inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl bg-[#059669] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[#047857]"
+                className="inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl bg-[#3182f6] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[#1c64dd]"
             >
                 무료로 시작
             </Link>

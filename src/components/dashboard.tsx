@@ -127,13 +127,13 @@ function categoryOf(item: ListingCandidate): CategoryFilter {
 
 function cashoutHintClass(item: ListingCandidate) {
   const hint = cashoutHint(item);
-  if (hint === "빠름") return "text-emerald-600 dark:text-blue-400";
+  if (hint === "빠름") return "text-blue-600 dark:text-blue-400";
   if (hint === "보통") return "text-sky-600 dark:text-sky-400";
   return "text-zinc-500";
 }
 
 function labelClass(label: CandidateBand) {
-  if (label === "고순익 후보") return "bg-emerald-100 text-emerald-800 ring-emerald-200";
+  if (label === "고순익 후보") return "bg-blue-100 text-blue-800 ring-blue-200";
   if (label === "순익 후보") return "bg-sky-100 text-sky-800 ring-sky-200";
   if (label === "검토필요") return "bg-amber-100 text-amber-800 ring-amber-200";
   if (label === "제외") return "bg-red-100 text-red-800 ring-red-200";
@@ -141,7 +141,7 @@ function labelClass(label: CandidateBand) {
 }
 
 function barColor(value: number) {
-  if (value >= 0.75) return "bg-emerald-500";
+  if (value >= 0.75) return "bg-blue-500";
   if (value >= 0.45) return "bg-sky-500";
   return "bg-zinc-400";
 }
@@ -154,7 +154,7 @@ function statusLabel(status?: CandidateStatus) {
 }
 
 function statusClass(status?: CandidateStatus) {
-  if (status === "interested") return "bg-emerald-50 text-emerald-800 ring-emerald-200";
+  if (status === "interested") return "bg-blue-50 text-blue-800 ring-blue-200";
   if (status === "hold") return "bg-indigo-50 text-indigo-800 ring-indigo-200";
   if (status === "hidden") return "bg-zinc-100 text-zinc-600 ring-zinc-200";
   return "";
@@ -162,7 +162,7 @@ function statusClass(status?: CandidateStatus) {
 
 function AccentBar({ label }: { label: CandidateBand }) {
   if (label === "고순익 후보")
-    return <div className="h-[3px] w-full flex-none bg-gradient-to-r from-emerald-400 to-emerald-600" />;
+    return <div className="h-[3px] w-full flex-none bg-gradient-to-r from-blue-400 to-blue-600" />;
   if (label === "순익 후보")
     return <div className="h-[3px] w-full flex-none bg-gradient-to-r from-sky-400 to-sky-500" />;
   if (label === "검토필요")
@@ -265,11 +265,11 @@ function Navbar() {
     <nav className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/90 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/90">
       <div className="mx-auto flex max-w-[1500px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-sm font-black text-white shadow-md shadow-emerald-500/30">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-sm font-black text-white shadow-md shadow-blue-500/30">
             M
           </div>
           <span className="font-black tracking-tight text-zinc-900 dark:text-white">득템잡이</span>
-          <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200 dark:bg-blue-950/50 dark:text-blue-400 dark:ring-blue-900">
+          <span className="rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-700 ring-1 ring-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:ring-blue-900">
             Beta
           </span>
         </div>
@@ -337,7 +337,7 @@ function SignalPills({ signals, tone }: { signals: CandidateSignal[]; tone: "goo
   if (signals.length === 0) return null;
   const className =
     tone === "good"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-400"
+      ? "border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-400"
       : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950/50 dark:text-amber-400";
 
   return (
@@ -385,7 +385,7 @@ function ProfitBreakdown({ item }: { item: ListingCandidate }) {
         ))}
         <div className="flex justify-between gap-3 border-t border-zinc-200 pt-2.5 dark:border-zinc-700">
           <span className="font-bold text-zinc-950 dark:text-zinc-50">예상 순익</span>
-          <span className="font-bold text-emerald-600 dark:text-blue-400">{profit}</span>
+          <span className="font-bold text-blue-600 dark:text-blue-400">{profit}</span>
         </div>
       </div>
     </div>
@@ -395,7 +395,7 @@ function ProfitBreakdown({ item }: { item: ListingCandidate }) {
 function AlertPreview({ item }: { item: ListingCandidate }) {
   return (
     <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4 font-mono text-xs leading-6 text-zinc-100">
-      <div className="text-emerald-400">리셀갭 후보 발견</div>
+      <div className="text-blue-400">리셀갭 후보 발견</div>
       <div className="font-semibold">{item.name}</div>
       <br />
       <div>가격: {krw(item.price)}</div>
@@ -594,7 +594,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
               ].map(({ label, value, highlight }) => (
                 <div key={label} className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 dark:border-zinc-800 dark:bg-zinc-900">
                   <span className="text-xs text-zinc-400">{label} </span>
-                  <span className={`text-sm font-bold tabular-nums ${highlight ? "text-emerald-600 dark:text-blue-400" : "text-zinc-800 dark:text-zinc-200"}`}>
+                  <span className={`text-sm font-bold tabular-nums ${highlight ? "text-blue-600 dark:text-blue-400" : "text-zinc-800 dark:text-zinc-200"}`}>
                     {value}
                   </span>
                 </div>
@@ -614,7 +614,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
           {/* Status chips */}
           <section className="flex flex-wrap gap-2">
             {[
-              { label: `관심 ${interestedCount}건`, cls: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-400" },
+              { label: `관심 ${interestedCount}건`, cls: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-400" },
               { label: `보류 ${holdCount}건`, cls: "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-400" },
               { label: `숨김 ${hiddenCount}건`, cls: "border-zinc-200 bg-white text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-400" },
             ].map(({ label, cls }) => (
@@ -637,7 +637,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                   onClick={() => setSelectedPid(item.pid)}
                   className={`group flex h-full flex-col overflow-hidden rounded-2xl border text-left transition-all duration-200 hover:-translate-y-1.5 ${
                     isPremium
-                      ? "border-emerald-200 bg-white shadow-lg shadow-emerald-500/10 hover:border-emerald-300 hover:shadow-2xl hover:shadow-emerald-500/20 dark:border-blue-900/50 dark:bg-zinc-900 dark:shadow-blue-950/50 dark:hover:border-blue-800"
+                      ? "border-blue-200 bg-white shadow-lg shadow-blue-500/10 hover:border-blue-300 hover:shadow-2xl hover:shadow-blue-500/20 dark:border-blue-900/50 dark:bg-zinc-900 dark:shadow-blue-950/50 dark:hover:border-blue-800"
                       : "border-zinc-200/80 bg-white shadow-md hover:border-zinc-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
                   }`}
                 >
@@ -652,7 +652,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                       <div className="flex items-end justify-between gap-2">
                         <div className="min-w-0">
                           <div className="text-[9px] font-bold uppercase tracking-wider text-white/50">예상 순익</div>
-                          <div className={`text-xl font-black leading-tight ${isPremium ? "text-emerald-300" : "text-white"}`}>
+                          <div className={`text-xl font-black leading-tight ${isPremium ? "text-blue-300" : "text-white"}`}>
                             {profitLabel(item)}
                           </div>
                         </div>
@@ -697,7 +697,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                       </div>
                       <div className="text-right">
                         <div className="text-[10px] font-medium text-zinc-400">시세갭</div>
-                        <div className={`text-sm font-bold ${item.priceGap >= 0.15 ? "text-emerald-600 dark:text-blue-400" : "text-zinc-700 dark:text-zinc-300"}`}>
+                        <div className={`text-sm font-bold ${item.priceGap >= 0.15 ? "text-blue-600 dark:text-blue-400" : "text-zinc-700 dark:text-zinc-300"}`}>
                           {percent(item.priceGap)}
                         </div>
                       </div>
@@ -723,7 +723,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                 {/* Modal header */}
                 <div className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-200 bg-white/95 px-5 py-4 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">
                   <div className="min-w-0">
-                    <div className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-blue-400">
+                    <div className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                       리셀갭 상세
                     </div>
                     <div className="truncate text-sm font-bold text-zinc-950 dark:text-zinc-50">{selected.name}</div>
@@ -775,7 +775,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                         <div className="mt-1 text-sm text-zinc-500">{selected.skuName}</div>
                       </div>
                       <div className="shrink-0 text-right">
-                        <div className="text-3xl font-black text-emerald-600 dark:text-blue-400">{profitLabel(selected)}</div>
+                        <div className="text-3xl font-black text-blue-600 dark:text-blue-400">{profitLabel(selected)}</div>
                         <div className="text-xs text-zinc-400">예상 순익</div>
                       </div>
                     </div>
@@ -852,7 +852,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                       <button
                         type="button"
                         onClick={() => setStatus(selected.pid, "interested")}
-                        className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-bold text-emerald-800 transition hover:bg-emerald-100 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-400 dark:hover:bg-blue-950/60"
+                        className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm font-bold text-blue-800 transition hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-400 dark:hover:bg-blue-950/60"
                       >
                         관심
                       </button>
@@ -887,7 +887,7 @@ export default function Dashboard({ generatedAt, candidates }: Props) {
                       target="_blank"
                       rel="noreferrer"
                       onClick={() => logOpen(selected.pid)}
-                      className="mt-4 block rounded-xl bg-emerald-600 px-4 py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-700 hover:shadow-emerald-500/30"
+                      className="mt-4 block rounded-xl bg-blue-600 px-4 py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-700 hover:shadow-blue-500/30"
                     >
                       번개장터에서 보기
                     </a>

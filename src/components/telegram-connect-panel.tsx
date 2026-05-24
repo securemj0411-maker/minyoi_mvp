@@ -216,7 +216,7 @@ function ConnectedView({ status, onDisconnect, actionLoading }: {
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-blue-900/50 dark:text-blue-300">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
               <CheckCircleIcon className="h-4 w-4" />
             </span>
             <span className="text-base font-black text-[#223127] dark:text-zinc-100">연결됨</span>

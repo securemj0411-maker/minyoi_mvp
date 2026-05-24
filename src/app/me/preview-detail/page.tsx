@@ -109,8 +109,8 @@ const tokens = {
   ink2: "#344136",
   ink3: "#6f7c6d",
   ink4: "#98a497",
-  em: "#059669",
-  em700: "#047857",
+  em: "#3182f6",
+  em700: "#1c64dd",
   em50: "#ecfdf5",
   amber: "#b45309",
   amberBg: "#fef7e0",
@@ -252,7 +252,7 @@ type ChipTone = "default" | "em" | "amber" | "rose" | "sky" | "dark" | "cream";
 function Chip({ children, tone = "default", size = "sm" }: { children: ReactNode; tone?: ChipTone; size?: "xs" | "sm" }) {
   const tones: Record<ChipTone, { bg: string; fg: string; bd: string }> = {
     default: { bg: "#f3eee3", fg: "#5a6056", bd: "transparent" },
-    em: { bg: "#e6f4ec", fg: "#047857", bd: "transparent" },
+    em: { bg: "#e6f4ec", fg: "#1c64dd", bd: "transparent" },
     amber: { bg: "#fef3c7", fg: "#92400e", bd: "transparent" },
     rose: { bg: "#ffe4e6", fg: "#9f1239", bd: "transparent" },
     sky: { bg: "linear-gradient(90deg,#fff 0%,#eff7ff 50%,#d1f1eb 100%)", fg: "#0c4a6e", bd: "#bcdfff" },
@@ -286,7 +286,7 @@ function Chip({ children, tone = "default", size = "sm" }: { children: ReactNode
 }
 
 function Eyebrow({ children, tone = "em", right }: { children: ReactNode; tone?: "em" | "amber" | "rose" | "muted"; right?: ReactNode }) {
-  const colors = { em: "#047857", amber: "#92400e", rose: "#9f1239", muted: "#6f7c6d" };
+  const colors = { em: "#1c64dd", amber: "#92400e", rose: "#9f1239", muted: "#6f7c6d" };
   return (
     <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
       <span
@@ -540,7 +540,7 @@ function TitleBlock({ data }: { data: BoundData | null }) {
             <span style={{ fontVariantNumeric: "tabular-nums", fontSize: 28, fontWeight: 900, color: tokens.em700, lineHeight: 1, letterSpacing: -0.5 }}>{score}</span>
             <span style={{ fontVariantNumeric: "tabular-nums", fontSize: 13, fontWeight: 700, color: tokens.ink4 }}>/100</span>
           </div>
-          <div style={{ marginTop: 5, width: 70, height: 3, borderRadius: 99, background: "linear-gradient(90deg, #10b981 0%, #059669 100%)", marginLeft: "auto" }} />
+          <div style={{ marginTop: 5, width: 70, height: 3, borderRadius: 99, background: "linear-gradient(90deg, #10b981 0%, #3182f6 100%)", marginLeft: "auto" }} />
         </div>
       </div>
     </div>
@@ -581,7 +581,7 @@ function ProfitHero({ data }: { data: BoundData | null }) {
           overflow: "hidden",
         }}
       >
-        <div style={{ position: "absolute", right: -16, top: -16, opacity: 0.05, fontSize: 100, fontWeight: 900, color: "#059669", lineHeight: 1 }}>₩</div>
+        <div style={{ position: "absolute", right: -16, top: -16, opacity: 0.05, fontSize: 100, fontWeight: 900, color: "#3182f6", lineHeight: 1 }}>₩</div>
         <Eyebrow tone="em" right={<span style={{ color: "#6f7c6d", fontWeight: 600, whiteSpace: "nowrap" }}>{firstSeen} · 비교 {sample}개</span>}>
           예상 순익
         </Eyebrow>
@@ -619,9 +619,9 @@ function ProfitHero({ data }: { data: BoundData | null }) {
             whiteSpace: "nowrap",
           }}
         >
-          <span style={{ display: "inline-flex", alignItems: "center" }}>{Icon.search("#047857")}</span>
+          <span style={{ display: "inline-flex", alignItems: "center" }}>{Icon.search("#1c64dd")}</span>
           <span>계산식 · 비교 매물 {sample}개 보기</span>
-          <span style={{ display: "inline-flex", alignItems: "center" }}>{Icon.chevRight("#047857")}</span>
+          <span style={{ display: "inline-flex", alignItems: "center" }}>{Icon.chevRight("#1c64dd")}</span>
         </button>
       </div>
     </div>
@@ -728,7 +728,7 @@ function PriceGraph() {
           ))}
           <svg viewBox="0 0 320 110" preserveAspectRatio="none" style={{ position: "absolute", inset: 16, width: "calc(100% - 32px)", height: "calc(100% - 32px)" }}>
             <path d="M 0 60 Q 80 50, 160 55 T 320 50" stroke="#cad8c9" strokeWidth="1.5" fill="none" strokeDasharray="3 4" />
-            <circle cx="0" cy="60" r="3" fill="#059669" />
+            <circle cx="0" cy="60" r="3" fill="#3182f6" />
             <text x="6" y="50" fontSize="9" fill="#6f7c6d" fontWeight="700">오늘</text>
           </svg>
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: tokens.ink4, fontSize: 12, fontWeight: 600, letterSpacing: -0.2 }}>
@@ -751,7 +751,7 @@ function NegotiationGuide() {
   type RowTone = "em" | "amber" | "rose";
   const Row = ({ icon, tone, label, sub, value }: { icon: string; tone: RowTone; label: string; sub?: string; value: string }) => {
     const tones = {
-      em: { bg: "#e6f4ec", fg: "#047857", icon: "#10b981" },
+      em: { bg: "#e6f4ec", fg: "#1c64dd", icon: "#10b981" },
       amber: { bg: "#fef3c7", fg: "#92400e", icon: "#d97706" },
       rose: { bg: "#ffe4e6", fg: "#9f1239", icon: "#e11d48" },
     } as const;

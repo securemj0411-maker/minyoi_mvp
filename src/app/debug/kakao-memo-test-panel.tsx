@@ -138,7 +138,7 @@ export function KakaoMemoTestPanel() {
             </span>
             <span className={`rounded-full px-2 py-1 ring-1 ${
               sessionState.hasKakaoToken
-                ? "bg-emerald-50 text-emerald-800 ring-emerald-200"
+                ? "bg-blue-50 text-blue-800 ring-blue-200"
                 : "bg-white text-amber-800 ring-yellow-200"
             }`}>
               {sessionState.checked
@@ -216,7 +216,7 @@ export function KakaoMemoTestPanel() {
       {result.status !== "idle" ? (
         <div className={`mt-4 rounded-md border px-3 py-2 text-sm ${
           result.status === "success"
-            ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+            ? "border-blue-200 bg-blue-50 text-blue-800"
             : result.status === "error"
               ? "border-red-200 bg-red-50 text-red-800"
               : "border-yellow-200 bg-white text-zinc-700"

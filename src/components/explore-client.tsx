@@ -871,7 +871,7 @@ function DetailAccessPaywallModal({
                 </div>
                 <div className="rounded-[16px] bg-white px-3 py-2.5 ring-1 ring-blue-50 dark:bg-zinc-950/65 dark:ring-blue-900/40">
                   <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">예상 기회 수익</div>
-                  <div className="mt-1 text-[15px] font-black text-emerald-700 dark:text-blue-300">
+                  <div className="mt-1 text-[15px] font-black text-blue-700 dark:text-blue-300">
                     +{krw(summary.expectedProfitTotal)}
                   </div>
                 </div>
@@ -2131,7 +2131,7 @@ export default function ExploreClient({
 
       {/* Wave 383+393: 6h lag 제거 + 사이트 핵심 가치 (band-aware 비교) 강조. */}
       <div className="mb-2 hidden rounded-xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40 sm:block">
-        <div className="flex items-center gap-1.5 text-[12px] font-bold text-emerald-800 dark:text-blue-300">
+        <div className="flex items-center gap-1.5 text-[12px] font-bold text-blue-800 dark:text-blue-300">
           <span aria-hidden="true">⚖</span>
           <span>같은 상태 매물끼리만 비교 — 진짜 싼 매물만</span>
         </div>
@@ -2146,7 +2146,7 @@ export default function ExploreClient({
           </span>
           <Link
             href="/plans"
-            className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:underline dark:text-blue-300"
+            className="inline-flex items-center gap-1 font-bold text-blue-700 hover:underline dark:text-blue-300"
           >
             <ZapIcon className="h-3 w-3" />
             대기 없이 즉시 받기 →
@@ -2219,7 +2219,7 @@ export default function ExploreClient({
                   }}
                   className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
                     isActive
-                      ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-200"
+                      ? "border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-200"
                       : "border-zinc-200 bg-white text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400"
                   }`}
                 >
@@ -2299,8 +2299,8 @@ export default function ExploreClient({
                   <div className="h-3 w-3/4 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
                 </div>
                 <div className="flex items-baseline gap-1.5">
-                  <div className="h-5 w-20 animate-pulse rounded bg-emerald-100 dark:bg-blue-950/40" />
-                  <div className="h-3 w-8 animate-pulse rounded-full bg-emerald-50 dark:bg-blue-950/30" />
+                  <div className="h-5 w-20 animate-pulse rounded bg-blue-100 dark:bg-blue-950/40" />
+                  <div className="h-3 w-8 animate-pulse rounded-full bg-blue-50 dark:bg-blue-950/30" />
                 </div>
                 <div className="h-2.5 w-2/3 animate-pulse rounded bg-zinc-100 dark:bg-zinc-800/60" />
                 <div className="flex gap-1.5">
@@ -2482,8 +2482,8 @@ export default function ExploreClient({
                   isSoldOut
                     ? "cursor-not-allowed sm:border-zinc-200 sm:bg-zinc-50 dark:sm:border-zinc-800 dark:sm:bg-zinc-900/30"
                     : detailAccessLoadingPid === item.pid
-                      ? "cursor-wait sm:border-emerald-200 sm:bg-emerald-50/50 dark:sm:border-blue-900 dark:sm:bg-blue-950/20"
-                    : "active:bg-zinc-50 dark:active:bg-zinc-900/40 sm:border-zinc-200 sm:bg-white sm:hover:border-emerald-300 sm:hover:shadow-md dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40 dark:sm:hover:border-blue-700"
+                      ? "cursor-wait sm:border-blue-200 sm:bg-blue-50/50 dark:sm:border-blue-900 dark:sm:bg-blue-950/20"
+                    : "active:bg-zinc-50 dark:active:bg-zinc-900/40 sm:border-zinc-200 sm:bg-white sm:hover:border-blue-300 sm:hover:shadow-md dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40 dark:sm:hover:border-blue-700"
                 }`}
               >
                 {/* Wave launch-63 + launch-90: 사진 = 무료 남았을 때만 표시.
@@ -2503,7 +2503,7 @@ export default function ExploreClient({
                       자물쇠 SVG → CategoryIcon (의류면 셔츠, 폰이면 폰, 신발이면 신발).
                       어두운 overlay → emerald/sky gradient (브랜드 톤) — 잠금이지만 답답 X. */}
                   {fullLocked && !isSoldOut ? (
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-500/35 via-sky-500/25 to-blue-600/30 backdrop-blur-[1px] dark:from-blue-700/45 dark:via-sky-800/35 dark:to-blue-900/45">
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-500/35 via-sky-500/25 to-blue-600/30 backdrop-blur-[1px] dark:from-blue-700/45 dark:via-sky-800/35 dark:to-blue-900/45">
                       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 shadow-[0_4px_14px_rgba(15,23,42,0.18)] ring-1 ring-white/60 dark:bg-zinc-950/90 dark:ring-zinc-700/60">
                         <CategoryIcon
                           category={categoryFromComparableKey(item.comparableKey ?? null) ?? "default"}
@@ -2545,12 +2545,12 @@ export default function ExploreClient({
 
 
                   {lockedPreview && freeDetailAvailable ? (
-                    <div className="mt-1 text-[11px] font-bold text-emerald-600 dark:text-blue-400">
+                    <div className="mt-1 text-[11px] font-bold text-blue-600 dark:text-blue-400">
                       무료 상세 {freeDetailRemaining.toLocaleString("ko-KR")}회 남음
                     </div>
                   ) : null}
                   <div className="mt-1.5 flex items-baseline gap-1.5">
-                    <span className={`text-lg font-bold tabular-nums ${isSoldOut ? "text-zinc-500 line-through dark:text-zinc-500" : "text-emerald-600 dark:text-blue-400"}`}>
+                    <span className={`text-lg font-bold tabular-nums ${isSoldOut ? "text-zinc-500 line-through dark:text-zinc-500" : "text-blue-600 dark:text-blue-400"}`}>
                       {lockedPreview ? lockedProfitLabel(item) : `+${krw(profitAvg(item))}`}
                     </span>
                     {lockedPreview ? (
@@ -2558,7 +2558,7 @@ export default function ExploreClient({
                         {freeDetailAvailable ? "무료 상세 가능" : "정확한 금액 잠김"}
                       </span>
                     ) : pct != null ? (
-                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${isSoldOut ? "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500" : "bg-emerald-50 text-emerald-700 dark:bg-blue-950/40 dark:text-blue-200"}`}>
+                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${isSoldOut ? "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500" : "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-200"}`}>
                         +{pct}%
                       </span>
                     ) : null}
@@ -2627,7 +2627,7 @@ export default function ExploreClient({
                           );
                         })()}
                         {isPremiumSeller ? (
-                          <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-emerald-700 dark:bg-blue-950/40 dark:text-blue-200">
+                          <span className="flex items-center gap-0.5 rounded-full bg-blue-50 px-1.5 py-0.5 text-blue-700 dark:bg-blue-950/40 dark:text-blue-200">
                             <TrophyIcon className="h-3 w-3" />
                             우수 셀러
                           </span>
@@ -2678,8 +2678,8 @@ export default function ExploreClient({
       {!loading && !scrapOnly && items.length > 0 ? (
         <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900/50">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-blue-950/40">
-              <HourglassIcon className="h-5 w-5 text-emerald-700 dark:text-blue-300" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950/40">
+              <HourglassIcon className="h-5 w-5 text-blue-700 dark:text-blue-300" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
@@ -2753,7 +2753,7 @@ export default function ExploreClient({
                 </div>
               ) : null}
               {!creditFeedEnabled ? (
-                <div className="mt-2 flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-1.5 text-[11px] font-bold text-emerald-800 dark:bg-blue-950/40 dark:text-blue-200">
+                <div className="mt-2 flex items-center gap-1.5 rounded-md bg-blue-50 px-2 py-1.5 text-[11px] font-bold text-blue-800 dark:bg-blue-950/40 dark:text-blue-200">
                   <ZapIcon className="h-3 w-3" />
                   <span>크레딧 1개 이상이면 대기 없이 피드 계속 보기</span>
                 </div>
@@ -2884,7 +2884,7 @@ export default function ExploreClient({
 
               {!canRefresh ? (
                 <>
-                  <div className="mt-3 mb-3 rounded-2xl border border-emerald-200 bg-emerald-50/90 p-4 shadow-[0_10px_28px_rgba(16,185,129,0.12)] dark:border-blue-900/70 dark:bg-blue-950/30">
+                  <div className="mt-3 mb-3 rounded-2xl border border-blue-200 bg-blue-50/90 p-4 shadow-[0_10px_28px_rgba(16,185,129,0.12)] dark:border-blue-900/70 dark:bg-blue-950/30">
                     <div className="flex items-start gap-3">
                       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm dark:bg-zinc-900/70">
                         <CreditIcon size={26} />
@@ -2893,7 +2893,7 @@ export default function ExploreClient({
                         <div className="text-base font-black tracking-tight text-[#123c2b] dark:text-blue-100">
                           크레딧 보유자는 피드 계속 보기
                         </div>
-                        <div className="mt-1 text-[12px] font-bold leading-5 text-emerald-800/80 dark:text-blue-200/80">
+                        <div className="mt-1 text-[12px] font-bold leading-5 text-blue-800/80 dark:text-blue-200/80">
                           1개 이상 있으면 다음 매물이 자동으로 이어지고, 피드는 차감 0개예요.
                         </div>
                       </div>
@@ -2916,7 +2916,7 @@ export default function ExploreClient({
 
                             <Link
                               href="/plans"
-                              className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl bg-emerald-500 px-5 py-4 text-left shadow-[0_4px_14px_rgba(16,185,129,0.35)] transition hover:bg-emerald-600 active:scale-[0.99]"
+                              className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl bg-blue-500 px-5 py-4 text-left shadow-[0_4px_14px_rgba(16,185,129,0.35)] transition hover:bg-blue-600 active:scale-[0.99]"
                             >
                               <div className="flex min-w-0 items-center gap-2.5">
                                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-white/20">

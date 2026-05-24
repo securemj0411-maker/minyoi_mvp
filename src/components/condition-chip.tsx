@@ -43,7 +43,7 @@ const CHIP_STYLES: Record<string, ChipStyle> = {
   mint: {
     label: "S급",
     friendlyLabel: "거의 새것",
-    bg: "border border-emerald-300/70 bg-gradient-to-r from-emerald-950 via-emerald-800 to-[#b78a2c] shadow-sm shadow-emerald-950/15 dark:border-blue-300/30 dark:from-blue-400/25 dark:via-blue-900/70 dark:to-amber-500/25",
+    bg: "border border-blue-300/70 bg-gradient-to-r from-blue-950 via-blue-800 to-[#b78a2c] shadow-sm shadow-blue-950/15 dark:border-blue-300/30 dark:from-blue-400/25 dark:via-blue-900/70 dark:to-amber-500/25",
     text: "text-amber-50 dark:text-blue-50",
     desc: "실사용 거의 없음 (AI 판정 — 사이클 적음 / 거의 새것).",
   },
@@ -100,8 +100,8 @@ const PHOTO_BADGE_STYLES: Record<string, PhotoBadgeStyle> = {
     compactLabel: "S급",
     mark: "S",
     // Wave 356: 미니멀 럭셔리 — zinc-950 단색 배경 + emerald 텍스트 + 가는 emerald 보더.
-    className: "border-emerald-400/40 bg-zinc-950/95 text-emerald-200 shadow-[0_4px_12px_rgba(0,0,0,0.25)] dark:border-blue-300/30 dark:bg-zinc-950 dark:text-blue-100",
-    markClassName: "bg-emerald-200 text-zinc-950 dark:bg-blue-100 dark:text-zinc-950",
+    className: "border-blue-400/40 bg-zinc-950/95 text-blue-200 shadow-[0_4px_12px_rgba(0,0,0,0.25)] dark:border-blue-300/30 dark:bg-zinc-950 dark:text-blue-100",
+    markClassName: "bg-blue-200 text-zinc-950 dark:bg-blue-100 dark:text-zinc-950",
     desc: "S급 — 실사용 거의 없음",
   },
   clean: {
@@ -267,8 +267,8 @@ const TIER_PHOTO_BADGE_STYLES: Record<string, { label: string; mark: string; cla
   S: {
     label: "S급",
     mark: "S",
-    className: "border-emerald-400/40 bg-zinc-950/95 text-emerald-200 shadow-[0_4px_12px_rgba(0,0,0,0.25)] dark:border-blue-300/30 dark:bg-zinc-950 dark:text-blue-100",
-    markClassName: "bg-emerald-200 text-zinc-950 dark:bg-blue-100 dark:text-zinc-950",
+    className: "border-blue-400/40 bg-zinc-950/95 text-blue-200 shadow-[0_4px_12px_rgba(0,0,0,0.25)] dark:border-blue-300/30 dark:bg-zinc-950 dark:text-blue-100",
+    markClassName: "bg-blue-200 text-zinc-950 dark:bg-blue-100 dark:text-zinc-950",
     desc: "S급 — 박스/풀구성 + kream/매장 + 미시착 2축 이상 동시 (최상급)",
   },
   A: {
@@ -379,7 +379,7 @@ const TIER_STYLES: Record<string, TierStyle> = {
     label: "S급",
     friendlyLabel: "최상급",
     // gold + green — 가장 strong (2축 이상 매칭).
-    bg: "border border-emerald-300/70 bg-gradient-to-r from-emerald-950 via-emerald-800 to-[#b78a2c] shadow-sm shadow-emerald-950/15 dark:border-blue-300/30 dark:from-blue-400/25 dark:via-blue-900/70 dark:to-amber-500/25",
+    bg: "border border-blue-300/70 bg-gradient-to-r from-blue-950 via-blue-800 to-[#b78a2c] shadow-sm shadow-blue-950/15 dark:border-blue-300/30 dark:from-blue-400/25 dark:via-blue-900/70 dark:to-amber-500/25",
     text: "text-amber-50 dark:text-blue-50",
     desc: "박스/풀구성 + 미시착/실착 1-2회 + 정품 anchor (kream/매장) 2축 이상 동시. 데이터 1.85~2.3x premium.",
   },
@@ -569,7 +569,7 @@ export function ConditionChipsList({
         if (!badge) return null;
         const colorClass =
           badge.type === "positive"
-            ? "bg-emerald-50 text-emerald-800 dark:bg-blue-900/30 dark:text-blue-200"
+            ? "bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
             : badge.type === "negative"
               ? "bg-rose-50 text-rose-800 dark:bg-rose-900/30 dark:text-rose-200"
               : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";

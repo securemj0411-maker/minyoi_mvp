@@ -310,7 +310,7 @@ export default async function DetailEventsAdminPage() {
                         </div>
                       </td>
                       <td className="py-2 pr-3">
-                        <div className="font-black text-emerald-700 dark:text-blue-300">{money(listing?.price ?? null)}</div>
+                        <div className="font-black text-blue-700 dark:text-blue-300">{money(listing?.price ?? null)}</div>
                         <div className="mt-0.5 text-[11px] text-[#7b8378] dark:text-zinc-500">{listing?.sellerReview ?? "-"}</div>
                       </td>
                       <td className="py-2 pr-3 font-mono text-[11px] text-[#354239] dark:text-zinc-300">

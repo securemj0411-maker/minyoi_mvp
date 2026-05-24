@@ -210,9 +210,9 @@ export default function CheckoutClient() {
 
         <div className="overflow-hidden rounded-[26px] border border-zinc-200 bg-white shadow-[0_30px_60px_rgba(15,23,42,0.10)] dark:border-zinc-800 dark:bg-zinc-900">
           {/* PG 심사용 결제창 placeholder — 실제 PG 채널 연동 후 교체. */}
-          <div className="flex items-center justify-between border-b border-zinc-200 bg-[#059669] px-5 py-4 dark:border-zinc-800">
+          <div className="flex items-center justify-between border-b border-zinc-200 bg-[#3182f6] px-5 py-4 dark:border-zinc-800">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-sm font-black text-[#059669]">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white text-sm font-black text-[#3182f6]">
                 ₩
               </div>
               <span className="text-base font-black tracking-tight text-white">득템잡이 크레딧 충전</span>
@@ -289,7 +289,7 @@ export default function CheckoutClient() {
                 onChange={(event) => setBuyerEmail(event.target.value.slice(0, 120))}
                 placeholder="you@example.com"
                 disabled={needsLogin || stage === "processing"}
-                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-blue-950/60"
+                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#3182f6] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-blue-950/60"
               />
             </label>
 
@@ -304,7 +304,7 @@ export default function CheckoutClient() {
                 onChange={(event) => setBuyerName(event.target.value.slice(0, 40))}
                 placeholder="홍길동"
                 disabled={needsLogin || stage === "processing"}
-                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-blue-950/60"
+                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#3182f6] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-blue-950/60"
               />
             </label>
 
@@ -320,7 +320,7 @@ export default function CheckoutClient() {
                 onChange={(event) => setBuyerPhone(normalizePhoneNumber(event.target.value))}
                 placeholder="01012345678"
                 disabled={needsLogin || stage === "processing"}
-                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black tabular-nums text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#059669] focus:bg-white focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-blue-950/60"
+                className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base font-black tabular-nums text-[#1a1f1c] outline-none transition placeholder:text-[#aaa091] focus:border-[#3182f6] focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-blue-950/60"
               />
               <span className="mt-1.5 block text-[11px] leading-5 text-[#8a8a7c]">
                 KG이니시스 결제창 호출에 필요한 정보입니다. 결제 알림과 승인 확인에만 사용됩니다.
@@ -336,7 +336,7 @@ export default function CheckoutClient() {
                 type="button"
                 onClick={handlePay}
                 disabled={needsLogin || stage === "processing"}
-                className="flex h-12 w-full items-center justify-center rounded-xl bg-[#059669] text-base font-black text-white shadow-[0_12px_24px_rgba(5,150,105,0.25)] transition hover:bg-[#047857] disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex h-12 w-full items-center justify-center rounded-xl bg-[#3182f6] text-base font-black text-white shadow-[0_12px_24px_rgba(5,150,105,0.25)] transition hover:bg-[#1c64dd] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {stage === "processing" ? "결제 진행 중…" : `${formatKrw(plan.priceKrw)} 결제하기`}
               </button>

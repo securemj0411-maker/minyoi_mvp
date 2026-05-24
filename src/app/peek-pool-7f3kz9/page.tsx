@@ -17,7 +17,7 @@ export default function BetaPoolPage() {
     <main className="min-h-screen bg-zinc-50 px-3 py-4 dark:bg-zinc-950 sm:px-6 sm:py-6">
       <div className="mx-auto max-w-7xl">
         <header className="mb-4">
-          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-700">
+          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-700">
             Beta · 풀 검토
           </div>
           <h1 className="mt-1 text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">

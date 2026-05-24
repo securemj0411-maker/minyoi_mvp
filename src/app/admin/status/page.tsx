@@ -65,7 +65,7 @@ type FamilyParserSummary = {
 };
 
 const STAGE_LABELS: Record<string, { ko: string; emoji: string; color: string }> = {
-  owner_review_ready: { ko: "실전 후보 대기", emoji: "✅", color: "bg-emerald-100 text-emerald-900 border-emerald-300" },
+  owner_review_ready: { ko: "실전 후보 대기", emoji: "✅", color: "bg-blue-100 text-blue-900 border-blue-300" },
   internal_candidate: { ko: "내부 후보", emoji: "🟦", color: "bg-blue-100 text-blue-900 border-blue-300" },
   internal_learning: { ko: "내부 학습 중", emoji: "🔍", color: "bg-sky-100 text-sky-900 border-sky-300" },
   ai_l2_escrow: { ko: "AI 판단 영역", emoji: "🤖", color: "bg-violet-100 text-violet-900 border-violet-300" },
@@ -233,7 +233,7 @@ function diagnose(
     return {
       headline: `🟢 결정론 완성 — 감시만 (${sku.toFixed(0)}%)`,
       sub: `${sampleNote} · 추가 패치 금지`,
-      tone: "text-emerald-700",
+      tone: "text-blue-700",
     };
   }
 
@@ -249,7 +249,7 @@ function diagnose(
     return {
       headline: "✅ 실전 후보 — 오너 승인 시 수집",
       sub: `${sampleNote} · 활성 매물 검증 완료`,
-      tone: "text-emerald-700",
+      tone: "text-blue-700",
     };
   }
 
@@ -465,7 +465,7 @@ export default async function StatusPage() {
   const sourceHealth = state?.operationalHealth.sourceHealth ?? "unknown";
   const healthBadge =
     sourceHealth === "healthy"
-      ? { label: "정상", color: "bg-emerald-100 text-emerald-800 border-emerald-300" }
+      ? { label: "정상", color: "bg-blue-100 text-blue-800 border-blue-300" }
       : sourceHealth === "degraded"
         ? { label: "관찰 중", color: "bg-amber-100 text-amber-800 border-amber-300" }
         : { label: "주의", color: "bg-rose-100 text-rose-800 border-rose-300" };
@@ -505,7 +505,7 @@ export default async function StatusPage() {
           <StatCard
             label="팩 오픈 정상도"
             value={state?.operationalHealth.packReveal ?? "—"}
-            accent="bg-emerald-50 text-emerald-800 border-emerald-200"
+            accent="bg-blue-50 text-blue-800 border-blue-200"
           />
           <StatCard
             label="크론 실패율"
@@ -530,7 +530,7 @@ export default async function StatusPage() {
           <StatCard
             label="기본 ready SKU"
             value={`${state?.productMainline?.defaultReadySkus ?? "—"}개`}
-            accent="bg-emerald-50 text-emerald-800 border-emerald-200"
+            accent="bg-blue-50 text-blue-800 border-blue-200"
           />
         </div>
       </section>
@@ -566,17 +566,17 @@ export default async function StatusPage() {
             const pct = c.fetched > 0 ? Math.round((c.activeClean / c.fetched) * 100) : 0;
             const accuracy = r ? Number(r.skuMatchPct) : null;
             return (
-              <article key={c.lane} className="rounded-lg border border-emerald-200 bg-white p-4 shadow-sm">
+              <article key={c.lane} className="rounded-lg border border-blue-200 bg-white p-4 shadow-sm">
                 <h3 className="text-sm font-semibold text-slate-900">{toKorean(c.lane)}</h3>
                 <p className="mt-0.5 text-[11px] text-slate-400">{c.lane}</p>
                 <dl className="mt-3 space-y-3">
                   <div>
                     <dt className="text-xs text-slate-500">활성 매물 (검증 통과)</dt>
                     <dd className="mt-1 flex items-baseline gap-1.5">
-                      <span className="text-lg font-bold text-emerald-700">{c.activeClean}</span>
+                      <span className="text-lg font-bold text-blue-700">{c.activeClean}</span>
                       <span className="text-xs text-slate-500">/ 전체 {c.fetched}개</span>
                     </dd>
-                    <ProgressBar pct={pct} color="bg-emerald-500" />
+                    <ProgressBar pct={pct} color="bg-blue-500" />
                   </div>
                   {accuracy !== null ? (
                     <div>
@@ -629,7 +629,7 @@ export default async function StatusPage() {
                         <span
                           className={`font-semibold ${
                             accuracy >= 90
-                              ? "text-emerald-700"
+                              ? "text-blue-700"
                               : accuracy >= 70
                                 ? "text-sky-700"
                                 : accuracy >= 50

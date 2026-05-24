@@ -84,7 +84,7 @@ export default function ExploreMonitorClient() {
           type="button"
           onClick={load}
           disabled={loading}
-          className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+          className="rounded-xl bg-blue-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
         >
           {loading ? "로딩..." : "새로고침"}
         </button>
@@ -135,7 +135,7 @@ export default function ExploreMonitorClient() {
                     </div>
                     <div className="relative h-5 flex-1 overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-800">
                       <div
-                        className="absolute inset-y-0 left-0 bg-emerald-500"
+                        className="absolute inset-y-0 left-0 bg-blue-500"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -175,7 +175,7 @@ function Stat({ label, value, sub, tone }: {
   tone?: "good" | "info" | "emerald" | "rose" | "zinc";
 }) {
   const valueColor = tone === "good" || tone === "emerald"
-    ? "text-emerald-600 dark:text-blue-300"
+    ? "text-blue-600 dark:text-blue-300"
     : tone === "rose"
       ? "text-rose-600 dark:text-rose-300"
       : "text-zinc-900 dark:text-zinc-100";

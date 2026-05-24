@@ -204,7 +204,7 @@ export default function AdminClassificationBrowser() {
                       {item.listingType}
                     </span>
                     {item.listingTypeOverride && (
-                      <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-blue-900 dark:text-blue-200">
+                      <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-900 dark:text-blue-200">
                         override → {item.listingTypeOverride}
                       </span>
                     )}
@@ -260,7 +260,7 @@ export default function AdminClassificationBrowser() {
                         type="button"
                         disabled={overrideBusy === item.pid}
                         onClick={() => handleOverride(item.pid, "normal")}
-                        className="rounded-lg bg-emerald-600 px-2 py-1 text-[11px] font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
+                        className="rounded-lg bg-blue-600 px-2 py-1 text-[11px] font-bold text-white hover:bg-blue-700 disabled:opacity-50"
                       >
                         본품 override
                       </button>

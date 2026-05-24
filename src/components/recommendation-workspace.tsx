@@ -252,7 +252,7 @@ function ctaClasses(tone: PackDef["ctaTone"], disabled: boolean) {
 
 function rangeAccentClass(band: PackBand) {
   if (band === 3) return "accent-amber-500";
-  if (band === 2) return "accent-emerald-500";
+  if (band === 2) return "accent-blue-500";
   return "accent-sky-500";
 }
 

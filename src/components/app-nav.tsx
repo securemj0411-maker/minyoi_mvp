@@ -396,7 +396,7 @@ export default function AppNav() {
             type="button"
             onClick={handleAdminDotClick}
             aria-label="admin-toggle"
-            className={`hidden h-2 w-2 rounded-full transition-colors md:block ${adminOverride ? "bg-emerald-500" : "bg-zinc-300 dark:bg-zinc-700"}`}
+            className={`hidden h-2 w-2 rounded-full transition-colors md:block ${adminOverride ? "bg-blue-500" : "bg-zinc-300 dark:bg-zinc-700"}`}
           />
           <Link href="/" className="hidden items-center gap-2 md:flex">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-sm font-black text-white shadow-md shadow-blue-500/20">

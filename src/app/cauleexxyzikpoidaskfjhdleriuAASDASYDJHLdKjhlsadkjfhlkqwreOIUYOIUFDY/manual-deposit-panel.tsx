@@ -51,7 +51,7 @@ function formatCountdown(seconds: number): string {
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   pending: { label: "대기 중", cls: "bg-amber-100 text-amber-800" },
-  approved: { label: "운영자 승인", cls: "bg-emerald-100 text-emerald-700" },
+  approved: { label: "운영자 승인", cls: "bg-blue-100 text-blue-700" },
   auto_approved: { label: "자동 지급", cls: "bg-sky-100 text-sky-700" },
   rejected: { label: "거절", cls: "bg-rose-100 text-rose-700" },
 };
@@ -143,7 +143,7 @@ export default function ManualDepositPanel() {
       </div>
 
       {notice ? (
-        <div className="mb-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-300">
+        <div className="mb-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-300">
           {notice}
         </div>
       ) : null}
@@ -185,7 +185,7 @@ export default function ManualDepositPanel() {
                       type="button"
                       onClick={() => void decide(r.id, "approve")}
                       disabled={inProgress}
-                      className="flex-1 rounded-sm border border-emerald-700/60 bg-emerald-900/40 py-2 text-[12px] font-black text-emerald-300 hover:bg-emerald-900/60 disabled:opacity-40"
+                      className="flex-1 rounded-sm border border-blue-700/60 bg-blue-900/40 py-2 text-[12px] font-black text-blue-300 hover:bg-blue-900/60 disabled:opacity-40"
                     >{inProgress ? "..." : "✓ 승인"}</button>
                     <button
                       type="button"
@@ -257,7 +257,7 @@ export default function ManualDepositPanel() {
                             type="button"
                             onClick={() => void decide(r.id, "approve")}
                             disabled={inProgress}
-                            className="inline-flex h-7 items-center rounded-md bg-emerald-600 px-2.5 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                            className="inline-flex h-7 items-center rounded-md bg-blue-600 px-2.5 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
                           >
                             {inProgress ? "..." : "✓ 승인"}
                           </button>

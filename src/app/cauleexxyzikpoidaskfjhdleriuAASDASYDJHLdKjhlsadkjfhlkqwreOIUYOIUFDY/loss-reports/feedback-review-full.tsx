@@ -34,7 +34,7 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 const STATUS_BADGE: Record<string, string> = {
   pending: "border-amber-700/60 bg-amber-900/30 text-amber-300",
-  approved: "border-emerald-700/60 bg-emerald-900/30 text-emerald-300",
+  approved: "border-blue-700/60 bg-blue-900/30 text-blue-300",
   rejected: "border-rose-700/60 bg-rose-900/30 text-rose-300",
 };
 
@@ -138,7 +138,7 @@ export default function FeedbackReviewFull() {
       </div>
 
       {notice ? (
-        <div className="mb-2 rounded-sm border border-emerald-900/50 bg-emerald-950/30 px-2.5 py-1.5 text-[10px] font-bold text-emerald-300">{notice}</div>
+        <div className="mb-2 rounded-sm border border-blue-900/50 bg-blue-950/30 px-2.5 py-1.5 text-[10px] font-bold text-blue-300">{notice}</div>
       ) : null}
       {error ? (
         <div className="mb-2 rounded-sm border border-rose-900/50 bg-rose-950/30 px-2.5 py-1.5 text-[10px] font-bold text-rose-300">{error}</div>
@@ -183,7 +183,7 @@ export default function FeedbackReviewFull() {
                       type="button"
                       onClick={() => void decide(r.id, "approve")}
                       disabled={busy}
-                      className="flex-1 rounded-sm border border-emerald-700/60 bg-emerald-900/40 py-2 text-[12px] font-black text-emerald-300 hover:bg-emerald-900/60 disabled:opacity-40"
+                      className="flex-1 rounded-sm border border-blue-700/60 bg-blue-900/40 py-2 text-[12px] font-black text-blue-300 hover:bg-blue-900/60 disabled:opacity-40"
                     >{busy ? "..." : "✓ APPROVE +20"}</button>
                     <button
                       type="button"
@@ -264,7 +264,7 @@ export default function FeedbackReviewFull() {
                               type="button"
                               onClick={() => void decide(r.id, "approve")}
                               disabled={busy}
-                              className="rounded-sm border border-emerald-800 bg-emerald-900/40 px-2 py-1 text-[9px] font-black uppercase text-emerald-300 hover:bg-emerald-900/60 disabled:opacity-40"
+                              className="rounded-sm border border-blue-800 bg-blue-900/40 px-2 py-1 text-[9px] font-black uppercase text-blue-300 hover:bg-blue-900/60 disabled:opacity-40"
                             >{busy ? "..." : "APPROVE +20"}</button>
                             <button
                               type="button"
@@ -306,7 +306,7 @@ export default function FeedbackReviewFull() {
                             </>) : null}
                             {r.reward_granted_at ? (<>
                               <dt className="font-bold uppercase tracking-wide text-zinc-500">REWARD</dt>
-                              <dd className="font-mono text-[10px] text-emerald-400">+{r.reward_amount} @ {fmt(r.reward_granted_at)}</dd>
+                              <dd className="font-mono text-[10px] text-blue-400">+{r.reward_amount} @ {fmt(r.reward_granted_at)}</dd>
                             </>) : null}
                           </dl>
                         </td>

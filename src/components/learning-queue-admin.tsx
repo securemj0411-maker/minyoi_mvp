@@ -160,7 +160,7 @@ export default function LearningQueueAdmin() {
           type="button"
           onClick={load}
           disabled={loading}
-          className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+          className="rounded-xl bg-blue-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
         >
           {loading ? "로딩..." : "새로고침"}
         </button>
@@ -329,7 +329,7 @@ export default function LearningQueueAdmin() {
                       type="button"
                       onClick={() => approve(item.id, item.skuId)}
                       disabled={actionBusy === item.id || item.suggestedMustNotContain.length === 0}
-                      className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-40"
+                      className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-40"
                       title={item.suggestedMustNotContain.length === 0 ? "패턴 없음 — approve 불가" : ""}
                     >
                       approve → patch 큐
@@ -346,7 +346,7 @@ export default function LearningQueueAdmin() {
                 ) : (
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                     item.status === "approved"
-                      ? "bg-emerald-100 text-emerald-700 dark:bg-blue-950/40 dark:text-blue-300"
+                      ? "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
                       : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
                   }`}>
                     {item.status} · {item.reviewedBy ?? "—"}
@@ -394,7 +394,7 @@ export default function LearningQueueAdmin() {
                       href={sample.url ?? `https://m.bunjang.co.kr/products/${sample.pid}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group block overflow-hidden rounded-lg border border-zinc-200 transition hover:border-emerald-300 hover:shadow-sm dark:border-zinc-800 dark:hover:border-blue-700"
+                      className="group block overflow-hidden rounded-lg border border-zinc-200 transition hover:border-blue-300 hover:shadow-sm dark:border-zinc-800 dark:hover:border-blue-700"
                     >
                       {sample.thumbnail_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -403,7 +403,7 @@ export default function LearningQueueAdmin() {
                         <div className="aspect-square w-full bg-zinc-100 dark:bg-zinc-800" />
                       )}
                       <div className="px-2 py-1.5">
-                        <div className="line-clamp-2 text-[11px] font-medium text-zinc-800 group-hover:text-emerald-700 dark:text-zinc-200 dark:group-hover:text-blue-300">
+                        <div className="line-clamp-2 text-[11px] font-medium text-zinc-800 group-hover:text-blue-700 dark:text-zinc-200 dark:group-hover:text-blue-300">
                           {sample.name ?? `pid ${sample.pid}`}
                         </div>
                         <div className="mt-0.5 flex items-center justify-between text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
@@ -459,7 +459,7 @@ function Stat({ label, value, sub, tone }: {
   tone?: "good" | "info" | "emerald" | "rose" | "zinc";
 }) {
   const valueColor = tone === "good" || tone === "emerald"
-    ? "text-emerald-600 dark:text-blue-300"
+    ? "text-blue-600 dark:text-blue-300"
     : tone === "rose"
       ? "text-rose-600 dark:text-rose-300"
       : "text-zinc-900 dark:text-zinc-100";

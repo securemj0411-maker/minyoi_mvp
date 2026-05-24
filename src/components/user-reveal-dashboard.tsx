@@ -142,7 +142,7 @@ function listingStateLabel(state: string): { label: string; tone: "active" | "so
 
 function listingStateChipClass(tone: "active" | "sold" | "unknown"): string {
   if (tone === "sold") return "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200";
-  if (tone === "active") return "bg-emerald-50 text-emerald-700 dark:bg-blue-900/30 dark:text-blue-300";
+  if (tone === "active") return "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300";
   return "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300";
 }
 
@@ -1033,9 +1033,9 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
             </div>
           ) : null}
         </div>
-        <div className="rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-2.5 dark:border-blue-900/50 dark:bg-blue-950/20">
-          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 dark:text-blue-300">판매중</div>
-          <div className="mt-1 text-xl font-black tabular-nums text-emerald-800 dark:text-blue-200">{dashboardSummary.activeCount.toLocaleString("ko-KR")}건</div>
+        <div className="rounded-xl border border-blue-100 bg-blue-50/70 px-3 py-2.5 dark:border-blue-900/50 dark:bg-blue-950/20">
+          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">판매중</div>
+          <div className="mt-1 text-xl font-black tabular-nums text-blue-800 dark:text-blue-200">{dashboardSummary.activeCount.toLocaleString("ko-KR")}건</div>
         </div>
         <div className="rounded-xl border border-amber-100 bg-amber-50/70 px-3 py-2.5 dark:border-amber-900/50 dark:bg-amber-950/20">
           <div className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-700 dark:text-amber-300">평균 차익</div>
@@ -1063,14 +1063,14 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl dark:bg-zinc-900" onClick={(e) => e.stopPropagation()}>
             {lossReportResult?.ok ? (
               <>
-                <div className="flex items-center gap-2 text-base font-black text-emerald-700 dark:text-blue-300">
+                <div className="flex items-center gap-2 text-base font-black text-blue-700 dark:text-blue-300">
                   신고 접수됨
                 </div>
                 <div className="mt-3 text-sm leading-relaxed text-zinc-700 dark:text-zinc-200">
                   {lossReportResult.message}
                 </div>
                 {lossReportResult.compensation && lossReportResult.compensation > 0 ? (
-                  <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200">
+                  <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-800 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200">
                     토큰 +{lossReportResult.compensation}개 지급 완료
                   </div>
                 ) : lossReportResult.pendingCompensation && lossReportResult.pendingCompensation > 0 ? (
@@ -1599,7 +1599,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   );
                 })()}
               </div>
-              <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-none border-0 bg-transparent px-0 py-0 shadow-none dark:bg-transparent sm:mt-2 sm:rounded-lg sm:border sm:border-emerald-200/80 sm:bg-emerald-50/35 sm:px-2.5 sm:py-2 dark:sm:border-blue-900/55 dark:sm:bg-blue-950/20">
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-none border-0 bg-transparent px-0 py-0 shadow-none dark:bg-transparent sm:mt-2 sm:rounded-lg sm:border sm:border-blue-200/80 sm:bg-blue-50/35 sm:px-2.5 sm:py-2 dark:sm:border-blue-900/55 dark:sm:bg-blue-950/20">
                 {/* Wave 194 (2026-05-18): current_profit 박혀있으면 그 값 우선 표시. snapshot 과
                     다르면 부가 라벨 ("추천 당시 +57K → 현재 +10K"). marketStale=true는 Wave 224에서
                     이 블록에 오기 전에 판매완료 tombstone으로 접는다. */}
@@ -1642,7 +1642,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                         const label = verdictUiLabel(guidance.verdict);
                         if (!label) return null;
                         const cls = label.tone === "em"
-                          ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200 dark:bg-blue-950/30 dark:text-blue-200 dark:ring-blue-900/60"
+                          ? "bg-blue-50 text-blue-800 ring-1 ring-blue-200 dark:bg-blue-950/30 dark:text-blue-200 dark:ring-blue-900/60"
                           : label.tone === "amber"
                             ? "bg-amber-50 text-amber-800 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-200 dark:ring-amber-900/60"
                             : "bg-rose-50 text-rose-800 ring-1 ring-rose-200 dark:bg-rose-950/30 dark:text-rose-200 dark:ring-rose-900/60";
@@ -1786,7 +1786,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           // Wave launch-19 (audit HIGH): 빈 상태 CTA 박음. 이전엔 안내 한 줄 + 행동 0 → 사용자 막힘.
           // 신규 사용자가 들어왔을 때 다음 step 명확.
           <div className="mx-3 mt-4 rounded-2xl border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-950 sm:mx-0">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-blue-950/40 dark:text-blue-300">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
               <BookmarkIcon className="h-6 w-6" />
             </div>
             <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">

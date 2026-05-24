@@ -278,7 +278,7 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen }: {
             </div>
             <div>
               <div className="text-[10px] uppercase tracking-wide text-[#7a8577] dark:text-zinc-500">차익</div>
-              <div className="mt-0.5 font-black text-emerald-700 dark:text-blue-300">
+              <div className="mt-0.5 font-black text-blue-700 dark:text-blue-300">
                 ₩{profitWan.toLocaleString("ko-KR")}만 ({pct}%)
               </div>
             </div>
@@ -300,7 +300,7 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen }: {
             href={lst.bunjangUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={`inline-flex h-9 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-xs font-black text-white transition hover:bg-emerald-700 ${busy ? "pointer-events-none opacity-50" : ""}`}
+            className={`inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-xs font-black text-white transition hover:bg-blue-700 ${busy ? "pointer-events-none opacity-50" : ""}`}
           >
             <CheckCircleIcon className="h-3.5 w-3.5" /> 번장에서 거래
           </a>

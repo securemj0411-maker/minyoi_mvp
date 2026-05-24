@@ -84,21 +84,21 @@ export function SavedMoneyCounter() {
           💰 {data.monthLabel} 가치
         </span>
         {data.compensationGrantedThisMonth > 0 && (
-          <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-blue-950/40 dark:text-blue-200">
+          <span className="rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold text-blue-800 dark:bg-blue-950/40 dark:text-blue-200">
             신고 보상 토큰 +{data.compensationGrantedThisMonth}
           </span>
         )}
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
         {/* 안 잃은 돈 (loss aversion ×2.5 — 더 sticky한 신호. 왼쪽 hero 위치). */}
-        <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-blue-900/60 dark:bg-blue-950/30">
-          <div className="text-[11px] font-bold text-emerald-700 dark:text-blue-300">
+        <div className="rounded-xl border-2 border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-900/60 dark:bg-blue-950/30">
+          <div className="text-[11px] font-bold text-blue-700 dark:text-blue-300">
             🛡️ 안 잃은 돈 (추정)
           </div>
-          <div className="mt-1 text-2xl font-black tabular-nums text-emerald-900 dark:text-blue-100">
+          <div className="mt-1 text-2xl font-black tabular-nums text-blue-900 dark:text-blue-100">
             ₩{krw(data.savedThisMonthSiteWideKrw)}원
           </div>
-          <div className="mt-1 text-[10px] text-emerald-700/80 dark:text-blue-300/80">
+          <div className="mt-1 text-[10px] text-blue-700/80 dark:text-blue-300/80">
             득템잡이가 차단한 위험 매물 <b>{data.blockedCountThisMonth.toLocaleString()}건</b> 기반 추정 (사이트 전체)
           </div>
         </div>

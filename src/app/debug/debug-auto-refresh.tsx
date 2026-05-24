@@ -57,7 +57,7 @@ export function DebugAutoRefresh({ intervalSeconds = 60, defaultEnabled = true }
         onClick={() => setEnabled((value) => !value)}
         className={`rounded-md border px-4 py-2 text-sm font-semibold transition ${
           enabled
-            ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+            ? "border-blue-200 bg-blue-50 text-blue-800"
             : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400"
         }`}
       >

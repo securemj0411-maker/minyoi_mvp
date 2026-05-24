@@ -219,11 +219,11 @@ export function MyFeedbackActivity() {
                 </div>
                 <div className="text-[9px] font-bold text-zinc-600 dark:text-zinc-400">신고</div>
               </div>
-              <div className="rounded-lg bg-emerald-100 px-2 py-2 dark:bg-blue-900/40">
-                <div className="text-base font-black tabular-nums text-emerald-900 dark:text-blue-100">
+              <div className="rounded-lg bg-blue-100 px-2 py-2 dark:bg-blue-900/40">
+                <div className="text-base font-black tabular-nums text-blue-900 dark:text-blue-100">
                   {thisMonth.resolvedCount}
                 </div>
-                <div className="text-[9px] font-bold text-emerald-800 dark:text-blue-300">보정</div>
+                <div className="text-[9px] font-bold text-blue-800 dark:text-blue-300">보정</div>
               </div>
               <div className="rounded-lg bg-amber-100 px-2 py-2 dark:bg-amber-900/40">
                 <div className="text-base font-black tabular-nums text-amber-900 dark:text-amber-100">
@@ -243,7 +243,7 @@ export function MyFeedbackActivity() {
             {/* 누적 (allTime) — thisMonth 와 다르면 표시 */}
             {allTime.totalCount > thisMonth.totalCount && (
               <div className="mt-2 text-[10px] text-zinc-600 dark:text-zinc-400">
-                누적: 신고 <b>{allTime.totalCount}건</b> · 보정 <b className="text-emerald-700 dark:text-blue-300">{allTime.resolvedCount}건</b> · 토큰 <b>+{allTime.tokensReceived}</b>
+                누적: 신고 <b>{allTime.totalCount}건</b> · 보정 <b className="text-blue-700 dark:text-blue-300">{allTime.resolvedCount}건</b> · 토큰 <b>+{allTime.tokensReceived}</b>
               </div>
             )}
 
@@ -349,7 +349,7 @@ export function MyFeedbackActivity() {
                           <div className="shrink-0 text-right">
                             <span className={`inline-block rounded-full px-1.5 py-0.5 text-[10px] font-black ${
                               report.adminStatus === "resolved"
-                                ? "bg-emerald-100 text-emerald-800 dark:bg-blue-900/40 dark:text-blue-200"
+                                ? "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200"
                                 : report.adminStatus === "dismissed"
                                   ? "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
                                   : "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
@@ -359,7 +359,7 @@ export function MyFeedbackActivity() {
                                 : "대기 중"}
                             </span>
                             {report.compensationTokens > 0 && (
-                              <div className="mt-1 text-[10px] font-bold text-emerald-600 dark:text-blue-400">
+                              <div className="mt-1 text-[10px] font-bold text-blue-600 dark:text-blue-400">
                                 토큰 +{report.compensationTokens}
                               </div>
                             )}
@@ -372,14 +372,14 @@ export function MyFeedbackActivity() {
                           <div className={`mt-1 rounded border px-2 py-1 text-[11px] dark:bg-blue-950/30 dark:text-blue-200 ${
                             report.unread
                               ? "border-rose-300 bg-rose-50 text-rose-900 ring-2 ring-rose-400 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-100 dark:ring-rose-600"
-                              : "border-emerald-200 bg-emerald-50 text-emerald-900"
+                              : "border-blue-200 bg-blue-50 text-blue-900"
                           }`}>
                             <span className="font-black">
                               {report.unread && "신규 "}운영자 응답:
                             </span> {report.adminResponseNote}
                             {report.adminRespondedAt && (
                               <div className={`mt-0.5 text-[9px] ${
-                                report.unread ? "text-rose-700 dark:text-rose-300" : "text-emerald-700 dark:text-blue-400"
+                                report.unread ? "text-rose-700 dark:text-rose-300" : "text-blue-700 dark:text-blue-400"
                               }`}>
                                 {timeLabel(report.adminRespondedAt)} ({relAge(report.adminRespondedAt)})
                               </div>

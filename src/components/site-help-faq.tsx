@@ -106,7 +106,7 @@ export default function SiteHelpFaq() {
         aria-label="AI 도움말 열기"
         className="fixed bottom-4 right-4 z-[70] flex h-12 w-12 items-center justify-center rounded-full border border-[#bfd2c1] bg-[#f8fff5]/95 text-xl font-black text-[#263d2f] shadow-[0_16px_42px_rgba(31,65,45,0.26)] backdrop-blur transition hover:-translate-y-0.5 hover:border-[#82aa88] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8bb993] dark:border-blue-900/70 dark:bg-zinc-900/95 dark:text-zinc-100 sm:bottom-5 sm:right-5"
       >
-        <span className="absolute inset-0 rounded-full bg-emerald-300/20 blur-md" />
+        <span className="absolute inset-0 rounded-full bg-blue-300/20 blur-md" />
         <HeadsetIcon className="relative h-6 w-6" />
         <span className="absolute -right-1 -top-1 rounded-full border border-white bg-[#214233] px-1.5 py-0.5 text-[9px] font-black text-white shadow-sm dark:border-zinc-950">
           AI
@@ -144,7 +144,7 @@ export default function SiteHelpFaq() {
                 </button>
               </div>
               <div className="mt-2 flex items-center gap-2 text-[12px] font-bold text-[#637063] dark:text-zinc-400">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.14)]" />
+                <span className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_0_4px_rgba(16,185,129,0.14)]" />
                 질문을 고르면 바로 답해드릴게요
               </div>
             </header>

@@ -74,7 +74,7 @@ function statusLabel(run: CollectRun) {
 function statusClass(run: CollectRun) {
   if (isStaleRunning(run)) return "bg-red-100 text-red-800 ring-red-200";
   const status = run.status;
-  if (status === "succeeded") return "bg-emerald-100 text-emerald-800 ring-emerald-200";
+  if (status === "succeeded") return "bg-blue-100 text-blue-800 ring-blue-200";
   if (status === "failed") return "bg-red-100 text-red-800 ring-red-200";
   return "bg-amber-100 text-amber-800 ring-amber-200";
 }
@@ -990,7 +990,7 @@ function StagePanel({ run }: { run: CollectRun }) {
                 <span className={`rounded-full px-2 py-1 text-xs font-semibold ring-1 ${
                   stageTimedOut(stats)
                     ? "bg-amber-100 text-amber-800 ring-amber-200"
-                    : "bg-emerald-100 text-emerald-800 ring-emerald-200"
+                    : "bg-blue-100 text-blue-800 ring-blue-200"
                 }`}>
                   {stageTimedOut(stats) ? "budget stop" : "완료"}
                 </span>
@@ -1034,7 +1034,7 @@ function WorkerStatusPanel({ runs }: { runs: CollectRun[] }) {
               ? "bg-red-100 text-red-800 ring-red-200"
               : latest.status === "running"
                 ? "bg-amber-100 text-amber-800 ring-amber-200"
-                : "bg-emerald-100 text-emerald-800 ring-emerald-200";
+                : "bg-blue-100 text-blue-800 ring-blue-200";
           return (
             <div key={item.mode} className="rounded-md border border-zinc-200 p-4">
               <div className="flex items-start justify-between gap-3">
@@ -1150,7 +1150,7 @@ function WorkerAlertPanel({ runs }: { runs: CollectRun[] }) {
         ? "border-red-200 bg-red-50"
         : alerts.length > 0
           ? "border-amber-200 bg-amber-50"
-          : "border-emerald-200 bg-emerald-50"
+          : "border-blue-200 bg-blue-50"
     }`}>
       <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
         <div>
@@ -1164,14 +1164,14 @@ function WorkerAlertPanel({ runs }: { runs: CollectRun[] }) {
             ? "bg-red-100 text-red-800 ring-red-200"
             : alerts.length > 0
               ? "bg-amber-100 text-amber-800 ring-amber-200"
-              : "bg-emerald-100 text-emerald-800 ring-emerald-200"
+              : "bg-blue-100 text-blue-800 ring-blue-200"
         }`}>
           {alerts.length === 0 ? "정상" : `${num(alerts.length)}개 알림`}
         </span>
       </div>
 
       {alerts.length === 0 ? (
-        <div className="mt-4 rounded-md border border-emerald-100 bg-white/60 p-3 text-sm text-emerald-800">
+        <div className="mt-4 rounded-md border border-blue-100 bg-white/60 p-3 text-sm text-blue-800">
           최근 worker 실패율 기준으로 즉시 조치할 알림은 없습니다.
         </div>
       ) : (
@@ -1302,7 +1302,7 @@ function MarketVelocityPanel({ stats }: { stats: Awaited<ReturnType<typeof loadM
             이미 계산된 daily high/medium summary만 읽습니다. raw 재집계는 하지 않습니다.
           </div>
         </div>
-        <span className="w-fit rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
+        <span className="w-fit rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-200">
           {stats.date}
         </span>
       </div>
@@ -1352,7 +1352,7 @@ function MarketInvalidationPanel({ stats }: { stats: Awaited<ReturnType<typeof l
             ? "bg-red-100 text-red-800 ring-red-200"
             : stats.pending > 0
               ? "bg-amber-100 text-amber-800 ring-amber-200"
-              : "bg-emerald-100 text-emerald-800 ring-emerald-200"
+              : "bg-blue-100 text-blue-800 ring-blue-200"
         }`}>
           {stats.failed > 0 ? "확인 필요" : stats.pending > 0 ? "대기 있음" : "정상"}
         </span>
@@ -1407,7 +1407,7 @@ function MarketInvalidationPanel({ stats }: { stats: Awaited<ReturnType<typeof l
 }
 
 function sourceHealthClass(status: string) {
-  if (status === "healthy") return "bg-emerald-100 text-emerald-800 ring-emerald-200";
+  if (status === "healthy") return "bg-blue-100 text-blue-800 ring-blue-200";
   if (status === "degraded") return "bg-amber-100 text-amber-800 ring-amber-200";
   return "bg-red-100 text-red-800 ring-red-200";
 }
@@ -1476,7 +1476,7 @@ function SourceHealthPanel({ health }: { health: Awaited<ReturnType<typeof loadS
                 <div className="text-zinc-500">
                   실행 {num(row.total)}회 · 검색 {num(row.collected)}건 · 상세 {num(row.enriched)}건
                 </div>
-                <div className={row.failed > 0 ? "text-right font-semibold text-red-700" : "text-right font-semibold text-emerald-700"}>
+                <div className={row.failed > 0 ? "text-right font-semibold text-red-700" : "text-right font-semibold text-blue-700"}>
                   실패 {num(row.failed)}
                 </div>
               </div>
@@ -1617,7 +1617,7 @@ function BottleneckPanel({ stats }: { stats: Awaited<ReturnType<typeof loadBottl
                 <div className="font-semibold text-zinc-800">{row.label}</div>
                 <div className={
                   row.status === "ready"
-                    ? "w-fit rounded-full bg-emerald-100 px-2 py-1 font-semibold text-emerald-800"
+                    ? "w-fit rounded-full bg-blue-100 px-2 py-1 font-semibold text-blue-800"
                     : row.status === "internal_only"
                       ? "w-fit rounded-full bg-amber-100 px-2 py-1 font-semibold text-amber-800"
                       : "w-fit rounded-full bg-zinc-100 px-2 py-1 font-semibold text-zinc-600"
@@ -1670,7 +1670,7 @@ function FeedbackPanel({ stats }: { stats: Awaited<ReturnType<typeof loadFeedbac
             후보 공개 후 사용자가 남긴 실제 반응입니다. false positive와 sold race를 찾는 신호로 씁니다.
           </div>
         </div>
-        <span className="w-fit rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
+        <span className="w-fit rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-200">
           user ROI loop
         </span>
       </div>
@@ -1850,7 +1850,7 @@ function ApprovalQueuePanel({ stats }: { stats: Awaited<ReturnType<typeof loadAp
           riskyPending.length > 0
             ? "bg-amber-100 text-amber-800 ring-amber-200"
             : stats.ok
-              ? "bg-emerald-100 text-emerald-800 ring-emerald-200"
+              ? "bg-blue-100 text-blue-800 ring-blue-200"
               : "bg-red-100 text-red-800 ring-red-200"
         }`}>
           {stats.ok ? `갱신 ${formatTime(stats.generatedAt)}` : "리포트 없음"}
@@ -1880,7 +1880,7 @@ function ApprovalQueuePanel({ stats }: { stats: Awaited<ReturnType<typeof loadAp
                   <div className="text-[10px] text-zinc-400">{queue.updatedAt ? formatTime(queue.updatedAt) : "-"}</div>
                 </div>
                 <div className="text-right text-amber-700">{num(queue.pending)}</div>
-                <div className="text-right text-emerald-700">{num(queue.approved)}</div>
+                <div className="text-right text-blue-700">{num(queue.approved)}</div>
                 <div className="text-right text-red-700">{num(queue.rejected)}</div>
               </div>
             ))}
@@ -1905,7 +1905,7 @@ function ApprovalQueuePanel({ stats }: { stats: Awaited<ReturnType<typeof loadAp
                 </div>
                 <div className="flex flex-wrap gap-1 lg:justify-end">
                   {row.riskFlags.length === 0 ? (
-                    <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-100">
+                    <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-100">
                       clean pending
                     </span>
                   ) : row.riskFlags.map((flag) => (
@@ -1960,7 +1960,7 @@ function RequestPanel({ run }: { run: CollectRun }) {
         </div>
         <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-3">
           <div className="text-zinc-500">인증</div>
-          <div className={run.authOk ? "text-emerald-700" : "text-red-700"}>
+          <div className={run.authOk ? "text-blue-700" : "text-red-700"}>
             {run.authOk ? "통과" : "실패"} · {run.authReason ?? "-"}
           </div>
         </div>
@@ -2120,7 +2120,7 @@ export default async function DebugPage({ searchParams }: { searchParams?: Promi
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-4 border-b border-zinc-200 pb-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-medium text-emerald-700">운영 로그</p>
+            <p className="text-sm font-medium text-blue-700">운영 로그</p>
             <h1 className="mt-1 text-2xl font-semibold tracking-normal text-zinc-950 sm:text-3xl">
               수집 파이프라인 상태
             </h1>

@@ -31,7 +31,7 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 const STATUS_BADGE: Record<string, string> = {
   pending: "bg-amber-950/40 text-amber-300 border-amber-800/50",
-  approved: "bg-emerald-950/40 text-emerald-300 border-emerald-800/50",
+  approved: "bg-blue-950/40 text-blue-300 border-blue-800/50",
   rejected: "bg-rose-950/40 text-rose-300 border-rose-800/50",
 };
 
@@ -103,7 +103,7 @@ export default function FeedbackPanel() {
       </div>
 
       {notice ? (
-        <div className="mb-2 rounded-sm border border-emerald-900/50 bg-emerald-950/30 px-2.5 py-1.5 text-[10px] font-bold text-emerald-300">{notice}</div>
+        <div className="mb-2 rounded-sm border border-blue-900/50 bg-blue-950/30 px-2.5 py-1.5 text-[10px] font-bold text-blue-300">{notice}</div>
       ) : null}
       {error ? (
         <div className="mb-2 rounded-sm border border-rose-900/50 bg-rose-950/30 px-2.5 py-1.5 text-[10px] font-bold text-rose-300">{error}</div>
@@ -117,7 +117,7 @@ export default function FeedbackPanel() {
         </div>
         <div className="bg-zinc-950 px-3 py-3">
           <div className="text-[9px] font-bold uppercase tracking-[0.16em] text-zinc-500">APPROVED (7D)</div>
-          <div className="mt-1 text-[18px] font-black tabular-nums text-emerald-400">{approved7d}</div>
+          <div className="mt-1 text-[18px] font-black tabular-nums text-blue-400">{approved7d}</div>
         </div>
         <div className="bg-zinc-950 px-3 py-3">
           <div className="text-[9px] font-bold uppercase tracking-[0.16em] text-zinc-500">REJECTED (7D)</div>

@@ -201,7 +201,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
       </div>
 
       {notice ? (
-        <div className="mb-2 rounded-sm border border-emerald-900/50 bg-emerald-950/30 px-2.5 py-1.5 text-[10px] font-bold text-emerald-300">
+        <div className="mb-2 rounded-sm border border-blue-900/50 bg-blue-950/30 px-2.5 py-1.5 text-[10px] font-bold text-blue-300">
           {notice}
         </div>
       ) : null}
@@ -409,17 +409,17 @@ function MemberDrawer({
         <div className="mt-6 space-y-3">
           {/* grant */}
           <div>
-            <div className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-emerald-400">▌GRANT CREDIT</div>
+            <div className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-blue-400">▌GRANT CREDIT</div>
             <div className="flex gap-2">
               <input
                 type="number" min={1} step={1} value={grantAmount}
                 onChange={(e) => setGrantAmount(e.target.value)}
                 placeholder="amount"
-                className="h-8 flex-1 rounded-sm border border-zinc-800 bg-zinc-900 px-2 text-right text-[11px] tabular-nums text-zinc-200 focus:border-emerald-700 focus:outline-none"
+                className="h-8 flex-1 rounded-sm border border-zinc-800 bg-zinc-900 px-2 text-right text-[11px] tabular-nums text-zinc-200 focus:border-blue-700 focus:outline-none"
               />
               <button
                 type="button" disabled={pending || !grantAmount} onClick={() => onGrant(Math.round(Number(grantAmount)))}
-                className="rounded-sm border border-emerald-800 bg-emerald-900/40 px-3 text-[10px] font-black uppercase tracking-wide text-emerald-300 hover:bg-emerald-900/60 disabled:opacity-40"
+                className="rounded-sm border border-blue-800 bg-blue-900/40 px-3 text-[10px] font-black uppercase tracking-wide text-blue-300 hover:bg-blue-900/60 disabled:opacity-40"
               >GRANT</button>
             </div>
           </div>

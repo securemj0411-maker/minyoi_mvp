@@ -88,7 +88,7 @@ export default function AdminTopBar() {
           <span className="font-black tracking-[0.22em] text-amber-400">▌MINYOI TERM</span>
           <span className="text-zinc-600">v1.0</span>
           <span className="text-zinc-600">·</span>
-          <span className="text-emerald-400">●LIVE</span>
+          <span className="text-blue-400">●LIVE</span>
         </div>
         <div className="flex items-center gap-3 text-zinc-500">
           <span className="tabular-nums">{now} KST</span>

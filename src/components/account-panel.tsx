@@ -21,7 +21,7 @@ function UsageBar({
   if (unlimited) {
     return (
       <div className="h-2 w-full overflow-hidden rounded-full bg-[#e5dccf] dark:bg-zinc-800">
-        <div className="h-full w-full bg-gradient-to-r from-emerald-400 to-emerald-500" />
+        <div className="h-full w-full bg-gradient-to-r from-blue-400 to-blue-500" />
       </div>
     );
   }
@@ -39,7 +39,7 @@ function UsageBar({
         ? "bg-red-500"
         : ratio >= 60
           ? "bg-amber-500"
-          : "bg-emerald-500";
+          : "bg-blue-500";
   return (
     <div className="h-2 w-full overflow-hidden rounded-full bg-[#e5dccf] dark:bg-zinc-800">
       <div
