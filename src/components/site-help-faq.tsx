@@ -200,14 +200,16 @@ export default function SiteHelpFaq() {
               <div className="mt-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/70">
                 <div className="text-sm font-black text-zinc-950 dark:text-zinc-100">직접 연락</div>
                 <p className="mt-1 text-[13px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
-                  계정, 결제, 입금 문제는 메일로 보내주세요. 매물 오류는 위 제보나 상세 화면 신고가 더 빠릅니다.
+                  계정, 결제, 입금처럼 바로 확인이 필요한 일은 오픈카톡 고객센터로 보내주세요. 매물 오류는 상세 화면 제보가 더 정확합니다.
                 </p>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <a
-                    href="mailto:mj12270411@gmail.com?subject=%EB%93%9D%ED%85%9C%EC%9E%A1%EC%9D%B4%20%ED%94%BC%EB%93%9C%EB%B0%B1"
+                    href="https://open.kakao.com/o/g6prauwi"
+                    target="_blank"
+                    rel="noreferrer"
                     className="flex h-10 items-center justify-center rounded-xl bg-zinc-950 px-3 text-xs font-black text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
                   >
-                    고객센터
+                    오픈카톡 고객센터
                   </a>
                   <a
                     href="/me#my-reveals-list"
