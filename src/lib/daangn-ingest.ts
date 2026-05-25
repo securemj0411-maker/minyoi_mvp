@@ -266,25 +266,35 @@ function buildRawListingRow(
     article.status === "Ongoing" &&
     !article.user.webCrawlNotAllowed;
 
+  // mvp_raw_listings NOT NULL columns — 안전 fallback 박기 (NOT NULL no-default 모두 cover):
+  //   pid, url, name, price (no-default — 위에서 skip 처리)
+  //   그 외 default 있는 것 (num_faved, free_shipping, query, source, description_preview, sale_status,
+  //   shop_review_count, listing_type, detail_status, raw_json, listing_state, missing_count,
+  //   seller_source, score_dirty) 는 default 사용 가능하지만 명시 박기.
+  const priceInt = Math.max(0, Math.round(Number(article.price)));
   const raw: Record<string, unknown> = {
     pid,
     source: DAANGN_SOURCE_ID,
     url: fullUrl,
-    name: title,
-    price: article.price ?? null,
-    num_faved: article.favoriteCount ?? null,
-    num_comment: article.chatCount ?? null,  // 당근 chatCount ≈ 번개 num_comment 유사 신호
+    name: title || "(no title)",
+    price: priceInt,
+    num_faved: article.favoriteCount ?? 0,
+    num_comment: article.chatCount ?? 0,
+    free_shipping: false,
     thumbnail_url: article.thumbnail ?? null,
-    description_preview: description.slice(0, 500),
-    query: `daangn:${article.region.name ?? article.region.dbId ?? "?"}`,
-    seller_uid: article.user.dbId,
+    description_preview: (description ?? "").slice(0, 500),
+    query: `daangn:${article.region.name ?? article.region.dbId ?? "unknown"}`,
+    seller_uid: article.user.dbId ?? null,
     seller_source: DAANGN_SOURCE_ID,
     listing_state: article.status === "Ongoing" ? "active" : "disappeared",
     listing_type: storageListingType,
     sku_id: skuId,
     sku_name: skuName,
-    sale_status: article.status === "Ongoing" ? "saling" : article.status?.toLowerCase() ?? "",
-    detail_status: "done",   // 당근은 search payload 안 content 있어서 단일 단계로 처리 가능.
+    sale_status: article.status === "Ongoing" ? "saling" : (article.status?.toLowerCase() ?? ""),
+    shop_review_count: 0,
+    image_count: 0,
+    missing_count: 0,
+    detail_status: "done",
     detail_enriched_at: nowIso,
     source_updated_at: article.boostedAt ?? article.createdAt ?? nowIso,
     last_seen_at: nowIso,
@@ -577,7 +587,8 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
       rawUpserted = await upsertDaangnRawListings(allArticles, detailRecords);
     } catch (err) {
       sourceHealthStatus = "degraded";
-      sourceHealthReason = `db_write_error:${err instanceof Error ? err.message.slice(0, 200) : String(err).slice(0, 200)}`;
+      // 디버그 측면에서 충분히 보이도록 800자까지 보존
+      sourceHealthReason = `db_write_error:${err instanceof Error ? err.message.slice(0, 800) : String(err).slice(0, 800)}`;
     }
   }
 
