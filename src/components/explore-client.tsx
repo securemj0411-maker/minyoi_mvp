@@ -978,13 +978,51 @@ function DirectTradeConfirmModal({
   onClose: () => void;
   onConfirm: (item: PoolItem) => void;
 }) {
+  const [resolvedLocation, setResolvedLocation] = useState<string | null>(null);
+  const [isLocationLoading, setIsLocationLoading] = useState(false);
+  const activePid = state?.item.pid ?? null;
+  const initialLocation = state?.item.directTradeLocation?.trim() ?? "";
+
+  useEffect(() => {
+    setResolvedLocation(null);
+    if (!activePid || initialLocation) {
+      setIsLocationLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setIsLocationLoading(true);
+    fetch("/api/packs/pool/direct-location", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pid: activePid }),
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then((res) => res.ok ? res.json() : null)
+      .then((data: { location?: unknown } | null) => {
+        const location = typeof data?.location === "string" ? data.location.trim() : "";
+        if (location) setResolvedLocation(location);
+      })
+      .catch((err) => {
+        if ((err as { name?: string })?.name !== "AbortError") {
+          console.warn("[direct-location] fetch failed", err);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLocationLoading(false);
+      });
+    return () => controller.abort();
+  }, [activePid, initialLocation]);
+
   if (!state) return null;
-  // Wave launch-36 (사용자 짚음): "원본에서 위치 확인 필요" 카피 정직화.
-  // 진단: 중고나라 raw_json 에 location 키 없음 (collector list API 만 사용).
-  // 진짜 위치 = 매물 원본 페이지에만. 따라서 카피를 명확히 + "원본에서 위치 보기" 버튼 추가.
-  const location = state.item.directTradeLocation?.trim();
+  const location = initialLocation || resolvedLocation?.trim() || "";
   const hasLocation = Boolean(location);
-  const listingUrl = state.item.listingUrl ?? null;
+  const locationParts = hasLocation
+    ? location.split(/\s*[·,]\s*/).map((part) => part.trim()).filter(Boolean).slice(0, 3)
+    : [];
+  const confirmItem = resolvedLocation && !initialLocation
+    ? { ...state.item, directTradeLocation: resolvedLocation }
+    : state.item;
 
   return (
     <div
@@ -1020,33 +1058,34 @@ function DirectTradeConfirmModal({
               거래 가능 지역
             </div>
             {hasLocation ? (
-              <div className="mt-1.5 break-keep text-lg font-black text-zinc-950 dark:text-zinc-50">
-                {location}
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {locationParts.map((part) => (
+                  <span
+                    key={part}
+                    className="inline-flex min-h-9 items-center rounded-full bg-white px-3 text-[14px] font-black text-zinc-950 ring-1 ring-zinc-200 dark:bg-zinc-950 dark:text-zinc-50 dark:ring-zinc-700"
+                  >
+                    {part}
+                  </span>
+                ))}
+              </div>
+            ) : isLocationLoading ? (
+              <div className="mt-1.5 break-keep text-[15px] font-bold leading-6 text-zinc-700 dark:text-zinc-200">
+                거래 동네를 확인하고 있어요
               </div>
             ) : (
               <div className="mt-1.5 break-keep text-[15px] font-bold leading-6 text-zinc-700 dark:text-zinc-200">
-                직거래 동네는 매물 원본 페이지에 표시돼요
+                아직 동네 정보를 가져오지 못했어요
               </div>
             )}
             <div className="mt-3 text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-              위치가 멀면 수익이 좋아 보여도 시간비용이 커질 수 있어요. 상세 분석 열기 전 원본에서 동네 확인 권장.
+              위치가 멀면 수익이 좋아 보여도 이동 시간 때문에 손해일 수 있어요. 지역이 맞는지 보고 열어주세요.
             </div>
-            {!hasLocation && listingUrl ? (
-              <a
-                href={listingUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-flex h-9 items-center justify-center gap-1 rounded-full bg-white px-3.5 text-[12px] font-black text-zinc-800 ring-1 ring-zinc-200 transition hover:bg-zinc-50 dark:bg-zinc-950 dark:text-zinc-100 dark:ring-zinc-700 dark:hover:bg-zinc-900"
-              >
-                원본에서 위치 확인 →
-              </a>
-            ) : null}
           </div>
 
           <div className="mt-5 grid gap-2">
             <button
               type="button"
-              onClick={() => onConfirm(state.item)}
+              onClick={() => onConfirm(confirmItem)}
               className="flex min-h-12 items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-base font-black text-white shadow-[0_12px_26px_rgba(49,130,246,0.28)] transition hover:bg-[#1c6fe8]"
             >
               그래도 상세 분석 열기

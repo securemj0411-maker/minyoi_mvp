@@ -89,3 +89,15 @@ test("joongna detail parser extracts Next payload fields", () => {
   assert.equal(parsed.sourceUpdatedAt, "2026-05-20T23:56:30.000Z");
   assert.deepEqual(parsed.labels, ["직거래", "배송비 포함"]);
 });
+
+test("joongna detail parser keeps multiple direct-trade locations", () => {
+  const html = `
+    <html><body>
+      <script>self.__next_f.push([1,"22:[\\"$\\",\\"$L38\\",null,{\\"product\\":{\\"productSeq\\":229000111,\\"productTitle\\":\\"Seiko Prospex SPB103J1\\",\\"productStatus\\":0,\\"productPrice\\":680000,\\"productTradeType\\":4,\\"locations\\":[{\\"locationName\\":\\"원천동\\"},{\\"locationName\\":\\"영통1동\\"},{\\"locationName\\":\\"청담동\\"}]}}]\\n"])</script>
+    </body></html>
+  `;
+
+  const parsed = parseJoongnaDetailHtml("https://web.joongna.com/product/229000111", html, 200);
+
+  assert.equal(parsed.tradeLocation, "원천동 · 영통1동 · 청담동");
+});

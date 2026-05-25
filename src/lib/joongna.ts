@@ -490,34 +490,49 @@ function detectJoongnaSoldOutPage(html: string): boolean {
 //   - "tradeDetail":[{... "subContents":[{"text":"<u>송하동</u>","location":{...}}]}]
 //   이 두 키가 button 보다 안정적 (button 없는 매물도 location 박힘).
 //   payload 는 escape 됐을 수도 (`\"locationName\":\"송하동\"`) 안 됐을 수도 — 둘 다 시도.
-const HANGUL_LOCATION_TOKEN = /[가-힣]{1,8}(?:동|시|구|군|읍|면)/;
+const HANGUL_LOCATION_TOKEN = /[가-힣][가-힣0-9]{0,11}(?:동|시|구|군|읍|면)/;
 
 function extractJoongnaTradeLocation(html: string): string | null {
+  const locations: string[] = [];
+  const addLocation = (raw: string | undefined | null) => {
+    const text = raw?.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    if (!text || !HANGUL_LOCATION_TOKEN.test(text) || locations.includes(text)) return;
+    locations.push(text);
+  };
+
   // 1) React Flight escape 형태 — \"locationName\":\"송하동\"
   //    joongna.ts 의 escapedStringField 와 동일 패턴.
-  const escapedLocation = /\\"locationName\\"\s*:\s*\\"([^\\"]{1,30})\\"/.exec(html)?.[1];
-  if (escapedLocation && HANGUL_LOCATION_TOKEN.test(escapedLocation)) {
-    return escapedLocation.trim();
+  for (const match of html.matchAll(/\\"locationName\\"\s*:\s*\\"([^\\"]{1,30})\\"/g)) {
+    addLocation(match[1]);
+    if (locations.length >= 3) break;
   }
 
   // 2) Unescape 형태 — "locationName":"송하동"
   //    SSR 후 hydration data, 또는 다른 inline script.
-  const plainLocation = /"locationName"\s*:\s*"([^"]{1,30})"/.exec(html)?.[1];
-  if (plainLocation && HANGUL_LOCATION_TOKEN.test(plainLocation)) {
-    return plainLocation.trim();
+  if (locations.length < 3) {
+    for (const match of html.matchAll(/"locationName"\s*:\s*"([^"]{1,30})"/g)) {
+      addLocation(match[1]);
+      if (locations.length >= 3) break;
+    }
   }
 
   // 3) tradeDetail.subContents[].text — <u>송하동</u> 패턴 (escape 형태)
-  const escapedSubText = /\\"text\\"\s*:\s*\\"<u>([^<]{1,30})<\\\/u>\\"/.exec(html)?.[1];
-  if (escapedSubText && HANGUL_LOCATION_TOKEN.test(escapedSubText)) {
-    return escapedSubText.trim();
+  if (locations.length < 3) {
+    for (const match of html.matchAll(/\\"text\\"\s*:\s*\\"<u>([^<]{1,30})<\\\/u>\\"/g)) {
+      addLocation(match[1]);
+      if (locations.length >= 3) break;
+    }
   }
 
   // 4) tradeDetail.subContents[].text — unescape 형태
-  const plainSubText = /"text"\s*:\s*"<u>([^<]{1,30})<\/u>"/.exec(html)?.[1];
-  if (plainSubText && HANGUL_LOCATION_TOKEN.test(plainSubText)) {
-    return plainSubText.trim();
+  if (locations.length < 3) {
+    for (const match of html.matchAll(/"text"\s*:\s*"<u>([^<]{1,30})<\/u>"/g)) {
+      addLocation(match[1]);
+      if (locations.length >= 3) break;
+    }
   }
+
+  if (locations.length > 0) return locations.join(" · ");
 
   // 5) Fallback: 기존 button regex (render flow 의존, 가장 약함)
   const buttonMatch = html.match(/만나서\s*직거래<\/dt>[\s\S]{0,800}?role="button"[^>]*>([^<]{1,40})<\/span>/);

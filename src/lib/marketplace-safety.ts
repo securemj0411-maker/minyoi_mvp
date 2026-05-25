@@ -109,6 +109,8 @@ function textFromUnknown(value: unknown): string | null {
   if (direct) return direct;
   const record = asRecord(value);
   return (
+    cleanText(record.locationName) ??
+    cleanText(record.dongName) ??
     cleanText(record.location) ??
     cleanText(record.region) ??
     cleanText(record.regionName) ??
@@ -440,6 +442,64 @@ function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
 
+const LOCATION_TOKEN_PATTERN = /[가-힣][가-힣0-9]{0,11}(?:동|시|구|군|읍|면)/;
+const LOCATION_SPLIT_PATTERN = /\s*(?:[,\n/|·]+)\s*/;
+
+function pushLocationCandidate(out: string[], value: unknown) {
+  const raw = textFromUnknown(value);
+  if (!raw) return;
+  const cleaned = raw
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleaned || !LOCATION_TOKEN_PATTERN.test(cleaned)) return;
+  const parts = cleaned.includes(",") || cleaned.includes("·") || cleaned.includes("\n") || cleaned.includes("/") || cleaned.includes("|")
+    ? cleaned.split(LOCATION_SPLIT_PATTERN)
+    : [cleaned];
+  for (const part of parts) {
+    const text = part.trim();
+    if (!text || !LOCATION_TOKEN_PATTERN.test(text) || BAD_TOKENS.has(text)) continue;
+    if (!out.includes(text)) out.push(text.slice(0, 80));
+    if (out.length >= 3) return;
+  }
+}
+
+function collectLocationCandidates(out: string[], value: unknown, depth = 0) {
+  if (out.length >= 3 || value == null || depth > 4) return;
+  if (Array.isArray(value)) {
+    for (const entry of value) {
+      collectLocationCandidates(out, entry, depth + 1);
+      if (out.length >= 3) return;
+    }
+    return;
+  }
+  pushLocationCandidate(out, value);
+  if (out.length >= 3) return;
+  const record = asRecord(value);
+  if (Object.keys(record).length === 0) return;
+  for (const key of [
+    "locationName",
+    "dongName",
+    "location",
+    "locations",
+    "tradeLocation",
+    "tradeLocations",
+    "transactionLocations",
+    "tradeRegion",
+    "region",
+    "regionName",
+    "areaName",
+    "address",
+    "text",
+    "subContents",
+    "tradeDetail",
+    "tradeDetails",
+  ]) {
+    collectLocationCandidates(out, record[key], depth + 1);
+    if (out.length >= 3) return;
+  }
+}
+
 export function marketplaceFactsFromRawJson(input: {
   marketplaceSource?: string | null;
   marketplaceLabel?: string | null;
@@ -476,24 +536,38 @@ export function marketplaceLocationFromRawJson(rawJson: unknown): string | null 
   const search = asRecord(raw.search);
   const product = asRecord(raw.product);
   const seller = asRecord(raw.seller);
+  const found: string[] = [];
   const candidates = [
     raw.location,
+    raw.locations,
     raw.tradeLocation,
+    raw.tradeLocations,
+    raw.transactionLocations,
     raw.tradeRegion,
+    raw.tradeDetail,
+    raw.tradeDetails,
     raw.region,
     raw.regionName,
     raw.areaName,
     raw.address,
     searchMeta.location,
+    searchMeta.locations,
     searchMeta.tradeLocation,
+    searchMeta.tradeLocations,
     searchMeta.region,
     searchMeta.regionName,
     search.location,
+    search.locations,
     search.tradeLocation,
+    search.tradeLocations,
     search.region,
     search.regionName,
     product.location,
+    product.locations,
     product.tradeLocation,
+    product.tradeLocations,
+    product.tradeDetail,
+    product.tradeDetails,
     product.region,
     product.regionName,
     product.areaName,
@@ -503,10 +577,10 @@ export function marketplaceLocationFromRawJson(rawJson: unknown): string | null 
     seller.areaName,
   ];
   for (const candidate of candidates) {
-    const text = textFromUnknown(candidate);
-    if (text) return text;
+    collectLocationCandidates(found, candidate);
+    if (found.length >= 3) break;
   }
-  return null;
+  return found.length > 0 ? found.join(" · ") : null;
 }
 
 // Wave launch-37 (사용자 짚음): 중고나라 collector 가 list API 만 → raw_json 에 location 없음.
@@ -530,12 +604,12 @@ function extractDongFromText(text: string): string | null {
     const window = normalized.slice(idx, idx + 100);
     // 1순위: "안동 송하동", "강남구 역삼동" 같은 두 단어 — "[도시] [동]"
     //   도시 단어 = 동/시/구/군/읍/면 으로 끝나는 2~5글자 ("안동", "강남구", "수원시")
-    const twoWord = window.match(/([가-힣]{2,5}(?:동|시|구|군|읍|면))\s+([가-힣]{1,5}동)/);
+    const twoWord = window.match(/([가-힣][가-힣0-9]{1,8}(?:동|시|구|군|읍|면))\s+([가-힣][가-힣0-9]{0,8}동)/);
     if (twoWord && !BAD_TOKENS.has(twoWord[1]) && !BAD_TOKENS.has(twoWord[2])) {
       return `${twoWord[1]} ${twoWord[2]}`;
     }
     // 2순위: 단독 "동" 단어
-    const dongOnly = window.match(/([가-힣]{1,5}동)\b/);
+    const dongOnly = window.match(/([가-힣][가-힣0-9]{0,8}동)\b/);
     if (dongOnly && !BAD_TOKENS.has(dongOnly[1])) return dongOnly[1];
     // 3순위: 단독 시/구/군
     const cityOnly = window.match(/([가-힣]{2,5}(?:시|구|군))/);

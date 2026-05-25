@@ -104,6 +104,19 @@ test("marketplace location is extracted from stored raw metadata for direct-only
     }),
     "대구 수성구",
   );
+
+  assert.equal(
+    marketplaceLocationFromRawJson({
+      product: {
+        locations: [
+          { locationName: "원천동" },
+          { locationName: "영통1동" },
+          { locationName: "청담동" },
+        ],
+      },
+    }),
+    "원천동 · 영통1동 · 청담동",
+  );
 });
 
 test("source-aware verdicts do not emit joongna rating or free-shipping badges", () => {

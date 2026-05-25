@@ -178,11 +178,14 @@ test("direct-only items ask for confirmation before spending detail access", () 
   assert.match(poolRoute, /directTradeLocation: marketplaceLocationCombined\(meta\?\.raw_json, meta\?\.description_preview \?\? null\)/);
   assert.match(poolRoute, /directTradeLocation: null/);
   assert.match(detailAccessRoute, /directTradeLocation: marketplaceLocationCombined\(meta\?\.raw_json, meta\?\.description_preview \?\? null\)/);
+  assert.match(detailAccessRoute, /directTradeLocation: detail\.tradeLocation \?\? item\.directTradeLocation/);
   assert.match(explore, /type DirectTradeConfirmState/);
   assert.match(explore, /function DirectTradeConfirmModal/);
   assert.match(explore, /이 상품은 직거래만 가능한 매물이에요/);
   assert.match(explore, /거래 가능 지역/);
   assert.match(explore, /그래도 상세 분석 열기/);
+  assert.match(explore, /\/api\/packs\/pool\/direct-location/);
+  assert.doesNotMatch(explore, /원본에서 위치 확인/);
   assert.match(explore, /const hasDetailEntitlement = hasPaidOrFreeDetailAccess\(detailAccessSnapshot, freeDetailRemaining\)/);
   assert.match(explore, /isDirectOnlyItem\(item\) && hasDetailEntitlement/);
   assert.match(explore, /openItemDetail\(item, \{ directTradeConfirmed: true \}\)/);

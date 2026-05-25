@@ -320,7 +320,16 @@ async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAcce
     }
 
     await patchPoolVerified(item.pid);
-    return { ok: true, item: { ...item, listingState: "active", saleStatus, tradeLocation: detail.tradeLocation } };
+    return {
+      ok: true,
+      item: {
+        ...item,
+        listingState: "active",
+        saleStatus,
+        tradeLocation: detail.tradeLocation,
+        directTradeLocation: detail.tradeLocation ?? item.directTradeLocation,
+      },
+    };
   }
 
   const detail = await fetchDetail(String(item.pid));
