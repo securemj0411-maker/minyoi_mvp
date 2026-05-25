@@ -355,26 +355,38 @@ async function upsertDaangnRawListings(
   const parsedRows = [...byPid.values()].map((b) => b.parsed).filter((p): p is Record<string, unknown> => Boolean(p));
   if (rawRows.length === 0) return 0;
 
-  // upsert raw (joongna 패턴 동일)
-  const rawRes = await restFetch(`${tableUrl("mvp_raw_listings")}?on_conflict=pid`, {
-    method: "POST",
-    headers: serviceHeaders("resolution=merge-duplicates,return=minimal"),
-    body: jsonBody(rawRows),
-  });
-  if (!rawRes.ok) {
-    throw new Error(`mvp_raw_listings upsert failed: ${rawRes.status} ${await rawRes.text()}`);
-  }
+  // Phase 6i++ chunked upsert: 250 rows × 1 POST 가 ~60s. 50 rows × 5 POST 는 각 ~5-10s.
+  //   Supabase 가 같은 시간에 더 많이 처리 (큰 single body 보다 작은 chunks 가 효율적).
+  //   진짜 효율 개선 — trade-off 없음, 결과 동일.
+  const CHUNK_SIZE = 50;
 
-  // upsert parsed (score-worker 가 sku 매칭 매물 처리하려면 필수)
-  if (parsedRows.length > 0) {
-    const parsedRes = await restFetch(`${tableUrl("mvp_listing_parsed")}?on_conflict=pid`, {
+  // upsert raw chunked
+  for (let i = 0; i < rawRows.length; i += CHUNK_SIZE) {
+    const chunk = rawRows.slice(i, i + CHUNK_SIZE);
+    const rawRes = await restFetch(`${tableUrl("mvp_raw_listings")}?on_conflict=pid`, {
       method: "POST",
       headers: serviceHeaders("resolution=merge-duplicates,return=minimal"),
-      body: jsonBody(parsedRows),
+      body: jsonBody(chunk),
     });
-    if (!parsedRes.ok) {
-      // parsed upsert 실패는 fatal X — raw 는 박혔으니 다음 cron 재시도
-      console.warn(`mvp_listing_parsed upsert failed: ${parsedRes.status} ${await parsedRes.text()}`);
+    if (!rawRes.ok) {
+      throw new Error(`mvp_raw_listings upsert failed (chunk ${i}-${i + chunk.length}): ${rawRes.status} ${await rawRes.text()}`);
+    }
+  }
+
+  // upsert parsed chunked (score-worker 가 sku 매칭 매물 처리하려면 필수)
+  if (parsedRows.length > 0) {
+    for (let i = 0; i < parsedRows.length; i += CHUNK_SIZE) {
+      const chunk = parsedRows.slice(i, i + CHUNK_SIZE);
+      const parsedRes = await restFetch(`${tableUrl("mvp_listing_parsed")}?on_conflict=pid`, {
+        method: "POST",
+        headers: serviceHeaders("resolution=merge-duplicates,return=minimal"),
+        body: jsonBody(chunk),
+      });
+      if (!parsedRes.ok) {
+        // parsed upsert 실패는 fatal X — raw 는 박혔으니 다음 cron 재시도
+        console.warn(`mvp_listing_parsed upsert failed (chunk ${i}-${i + chunk.length}): ${parsedRes.status} ${await parsedRes.text()}`);
+        break;  // 후속 chunks 도 fail 가능성 — 한 번에 중단
+      }
     }
   }
 
