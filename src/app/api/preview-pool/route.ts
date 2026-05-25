@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import sharp from "sharp";
 import { teaserBudgetRangeLabel, teaserProfitLabel } from "@/lib/feed-price-display";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
@@ -8,8 +7,8 @@ import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 //
 // 정책:
 // - 카테고리 다양화 5개 (애플 편향 차단 — smartphone/watch/airpods/laptop/etc 1개씩)
-// - teaser 정보만 반환 (pid X, 원본명 X, 원본 image URL X, 정확 가격 X)
-// - 수익/예산/할인율은 범위형 label 로만 반환 (guest feed 와 /me locked feed parity)
+// - 이미 지나간 샘플은 실제 제목/사진/매입/시세를 보여줘서 acquisition hook 을 살린다.
+// - pid / source / 원본 링크 / 진행 중 매물 접근은 로그인 후로 유지한다.
 // - 번개 API 검증 skip (비로그인 = 식별 X, 검증 비용 0)
 // - 캐시 60초 (재방문 시 다양성 + 부담 ↓)
 
@@ -58,26 +57,6 @@ const HIGH_PROFIT_MARKETPLACE_VARIANCE_CATEGORIES = new Set([
   "sport_golf",
   "bike",
 ]);
-
-// 2026-05-17: 진짜 thumbnail 서버 사이드 blur 처리.
-// 원본 URL 노출 X → blur 된 base64 data URL 만 클라이언트 전송. DevTools 우회 차단.
-// sharp blur sigma=10 (적당한 블러 — 사진 인식 OK + 정확 식별 어려움).
-async function fetchAndBlurImage(url: string | null | undefined): Promise<string | null> {
-  if (!url) return null;
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) return null;
-    const buf = Buffer.from(await res.arrayBuffer());
-    const blurred = await sharp(buf)
-      .resize(160, 160, { fit: "cover" })
-      .blur(10)
-      .jpeg({ quality: 70 })
-      .toBuffer();
-    return `data:image/jpeg;base64,${blurred.toString("base64")}`;
-  } catch {
-    return null;
-  }
-}
 
 // 2026-05-17: 매물명 마스킹 강화 — 사용자 보안 우려.
 // Wave launch-111 (2026-05-24): 별표 *** 마스킹 폐기 → 카테고리 친화 라벨.
@@ -187,7 +166,8 @@ export async function GET() {
     // Wave launch-113 (2026-05-24): 비로그인 hook 강화 — sold 표본을 내부 소스로 사용.
     // Wave launch-115 (2026-05-24): 7일 → 14일 + scan limit 500 (3개만 보이는 frustration fix).
     //   배경: 7일 sold + tier dedup 5겹 거치면 5개 못 채우는 케이스 발생.
-    // Wave 2026-05-25: public 응답은 active/sold 식별키를 모두 숨긴 teaser label 만 내려준다.
+    // Wave 2026-05-25 correction: public sample 은 lock feed 가 아니라 실제 후크 샘플이다.
+    //   거래완료 문구는 숨기되, 사진/제목/매입/시세/차익은 보여준다.
     const sinceIso = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
     const soldPidsRes = await restFetch(
       `${tableUrl("mvp_raw_listings")}?select=pid,sold_detected_at&listing_state=in.(sold_confirmed,disappeared)&sold_detected_at=gte.${encodeURIComponent(sinceIso)}&order=sold_detected_at.desc&limit=500`,
@@ -303,12 +283,6 @@ export async function GET() {
       });
     }
 
-    // 2026-05-17: 서버 사이드 blur — 진짜 thumbnail fetch + sharp blur(20) + base64.
-    // 원본 URL 클라이언트 노출 X. DevTools 봐도 blur 된 data URL 만 보임.
-    const blurredImages = await Promise.all(
-      selected.map((row) => fetchAndBlurImage(rawByPid.get(row.pid)?.thumbnail_url)),
-    );
-
     // confidence: pool.confidence (0~1) → high (>=0.8) / medium (>=0.6) / low.
     function confLabel(c: number | null): "high" | "medium" | "low" {
       if (c == null || !Number.isFinite(c)) return "low";
@@ -382,22 +356,24 @@ export async function GET() {
       const raw = rawByPid.get(row.pid);
       const meta = metaByPid.get(row.pid);
       const avgProfit = (Number(row.expected_profit_min ?? 0) + Number(row.expected_profit_max ?? 0)) / 2;
+      const fallbackTitle = categoryFriendlyLabel(row.category);
       return {
         slot: idx + 1,
-        // Public preview는 exact 식별키를 내리지 않는다. 내부 표본이어도 feed teaser 정책과 통일.
-        previewTitle: `${categoryFriendlyLabel(row.category)} 후보`,
+        name: raw?.name ?? fallbackTitle,
+        thumbnailUrl: raw?.thumbnail_url ?? null,
+        previewTitle: raw?.name ?? fallbackTitle,
         profitLabel: teaserProfitLabel(avgProfit),
         budgetLabel: teaserBudgetRangeLabel(raw?.price ?? null),
         priceSignalLabel: relativeDiscountLabel(raw?.price ?? null, raw?.sku_median ?? null),
         // (deprecated) launch-111 호환성 — 클라이언트 fallback.
-        maskedName: categoryFriendlyLabel(row.category),
-        blurredImage: blurredImages[idx],
+        maskedName: raw?.name ?? fallbackTitle,
+        blurredImage: raw?.thumbnail_url ?? null,
         category: row.category ?? "other",
         conditionClass: row.condition_class,
-        price: 0,
-        skuMedian: null,
-        expectedProfitMin: 0,
-        expectedProfitMax: 0,
+        price: raw?.price ?? 0,
+        skuMedian: raw?.sku_median ?? null,
+        expectedProfitMin: row.expected_profit_min,
+        expectedProfitMax: row.expected_profit_max,
         profitBand: row.profit_band,
         // 2026-05-17: 신뢰 시그널 chips (dashboard 패턴).
         confidence: confLabel(row.confidence),

@@ -14,6 +14,8 @@ import {
 
 type PreviewItem = {
   slot: number;
+  name?: string;
+  thumbnailUrl?: string | null;
   previewTitle?: string;
   profitLabel?: string;
   budgetLabel?: string;
@@ -41,6 +43,23 @@ type PreviewItem = {
 
 type PreviewSignalTone = "seller" | "speed" | "market" | "verified";
 type PreviewSignal = { label: string; tone: PreviewSignalTone };
+
+function krw(value: number) {
+  return `${Math.round(value).toLocaleString("ko-KR")}원`;
+}
+
+function marketGapLabel(min: number, max: number): string {
+  if (Math.round(min) === Math.round(max)) return `${Math.round(min).toLocaleString("ko-KR")}원 낮음`;
+  return `${Math.round(min).toLocaleString("ko-KR")}~${Math.round(max).toLocaleString("ko-KR")}원 낮음`;
+}
+
+function marketGapPctLabel(price: number, gapMin: number, gapMax: number): string | null {
+  if (!Number.isFinite(price) || price <= 0) return null;
+  const avg = (gapMin + gapMax) / 2;
+  const pct = Math.round((avg / price) * 100);
+  if (!Number.isFinite(pct)) return null;
+  return `${pct}% 낮음`;
+}
 
 function priceBandLabel(price: number): string {
   if (!Number.isFinite(price) || price <= 0) return "예산 확인 중";
@@ -145,7 +164,7 @@ export default function PreviewMaskedDashboard() {
             같은 상태끼리 가격을 맞춰보고, 배송비와 수수료까지 계산한 추천 매물만 보여줘요.
           </p>
           <p className="mt-1.5 max-w-[460px] break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400 sm:text-[12px]">
-            로그인하면 지금 진행 중인 추천 매물의 이름과 원본 링크를 볼 수 있어요.
+            로그인하면 지금 진행 중인 추천 매물과 원본 링크를 볼 수 있어요.
           </p>
 
           <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:flex sm:flex-row sm:gap-2.5">
@@ -172,7 +191,7 @@ export default function PreviewMaskedDashboard() {
               <div className="mt-0.5 text-[16px] font-black text-[var(--rd-ink)] dark:text-zinc-50">오늘의 추천 매물</div>
             </div>
             <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black text-[#3182f6] dark:bg-blue-950/40 dark:text-blue-200">
-              로그인 후 공개
+              진행 중 매물은 로그인 후
             </div>
           </div>
 
@@ -191,9 +210,9 @@ export default function PreviewMaskedDashboard() {
             <div className="space-y-2">
             {items.map((item) => {
               const signal = previewSignal(item);
-              const budgetLabel = item.budgetLabel ?? priceBandLabel(item.price);
-              const profitLabel = item.profitLabel ?? "수익 후보";
+              const budgetLabel = priceBandLabel(item.price);
               const priceSignalLabel = item.priceSignalLabel ?? "시세 비교 완료";
+              const imageUrl = item.thumbnailUrl ?? item.blurredImage;
               return (
                 <Link
                   href="/login"
@@ -202,18 +221,15 @@ export default function PreviewMaskedDashboard() {
                 >
                   <div className="flex items-center gap-3">
                     <div className="relative flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 sm:h-[104px] sm:w-[104px]">
-                      {item.blurredImage ? (
+                      {imageUrl ? (
                         <img
-                          src={item.blurredImage}
-                          alt="마스킹된 추천 매물"
-                          className="h-full w-full scale-105 object-cover blur-[7px]"
+                          src={imageUrl}
+                          alt={item.name ?? item.previewTitle ?? "추천 매물"}
+                          className="h-full w-full object-cover"
                         />
                       ) : (
                         <PackageIcon width={36} height={36} />
                       )}
-                      <div className="pointer-events-none absolute inset-x-2 bottom-2 rounded-full bg-zinc-950/70 px-2 py-1 text-center text-[10px] font-black text-white shadow">
-                        상세에서 원문 공개
-                      </div>
                     </div>
 
                     <div className="min-w-0 flex-1">
@@ -225,19 +241,29 @@ export default function PreviewMaskedDashboard() {
                       </div>
 
                       <div className="mt-2 line-clamp-2 text-[14px] font-black tracking-tight text-zinc-950 dark:text-zinc-100 sm:text-[16px]">
-                        {item.previewTitle ?? item.maskedName}
+                        {item.name ?? item.previewTitle ?? item.maskedName}
                       </div>
 
                       <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
-                        <span>필요 예산 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{budgetLabel}</span></span>
-                        <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                        <span>정확 시세 잠김</span>
+                        <span>매입 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krw(item.price)}</span></span>
+                        {item.skuMedian && item.skuMedian > 0 ? (
+                          <>
+                            <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                            <span>시세 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krw(item.skuMedian)}</span></span>
+                          </>
+                        ) : null}
                       </div>
 
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
                         <span className="text-[18px] font-black leading-none tabular-nums text-[#059669] dark:text-emerald-300">
-                          {profitLabel}
+                          {marketGapLabel(item.expectedProfitMin, item.expectedProfitMax)}
                         </span>
+                        {(() => {
+                          const pct = marketGapPctLabel(item.price, item.expectedProfitMin, item.expectedProfitMax);
+                          return pct ? (
+                            <span className="text-[11px] font-black text-zinc-500 dark:text-zinc-400">{pct}</span>
+                          ) : null;
+                        })()}
                         <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-200">
                           {priceSignalLabel}
                         </span>
@@ -269,8 +295,8 @@ export default function PreviewMaskedDashboard() {
               <div className="flex items-center gap-2">
                 <SearchIcon width={18} height={18} className="text-[#3182f6]" />
                 <div>
-                  <div className="text-[14px] font-black text-[var(--rd-ink)] dark:text-zinc-50">이름과 원본 링크까지 열어볼까요?</div>
-                  <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-500">로그인하면 진행 중인 매물의 상세 분석을 볼 수 있어요.</div>
+                  <div className="text-[14px] font-black text-[var(--rd-ink)] dark:text-zinc-50">진행 중인 매물까지 열어볼까요?</div>
+                  <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-500">첫 상세 1개는 무료로 확인할 수 있어요.</div>
                 </div>
               </div>
             <Link

@@ -365,46 +365,45 @@ test("/me keeps dashboard summary compact on mobile", () => {
   assert.match(dashboard, /hidden gap-2 sm:grid/);
 });
 
-test("guest preview API returns teaser labels instead of exact listing identifiers", () => {
+test("guest preview API keeps public sample visible without exposing original link identifiers", () => {
   const api = source("src/app/api/preview-pool/route.ts");
 
+  assert.match(api, /name:\s*raw\?\.name/);
+  assert.match(api, /thumbnailUrl:\s*raw\?\.thumbnail_url/);
+  assert.match(api, /price:\s*raw\?\.price/);
+  assert.match(api, /skuMedian:\s*raw\?\.sku_median/);
+  assert.match(api, /expectedProfitMin:\s*row\.expected_profit_min/);
+  assert.match(api, /expectedProfitMax:\s*row\.expected_profit_max/);
   assert.match(api, /previewTitle/);
   assert.match(api, /profitLabel/);
   assert.match(api, /budgetLabel/);
   assert.match(api, /priceSignalLabel/);
-  assert.match(api, /teaserBudgetRangeLabel/);
-  assert.match(api, /teaserProfitLabel/);
-  assert.match(api, /blurredImage: blurredImages\[idx\]/);
-  assert.doesNotMatch(api, /thumbnailUrl:/);
-  assert.doesNotMatch(api, /name:\s*raw/);
   assert.doesNotMatch(api, /soldAt:/);
-  assert.doesNotMatch(api, /price:\s*raw/);
-  assert.doesNotMatch(api, /skuMedian:\s*raw/);
+  assert.doesNotMatch(api, /price:\s*0/);
+  assert.doesNotMatch(api, /skuMedian:\s*null/);
 });
 
-test("guest main preview uses /me teaser copy and avoids sold/exact-price language", () => {
+test("guest main preview shows sample photo and market price, but avoids sold language", () => {
   const clientPreview = source("src/components/preview-masked-dashboard.tsx");
   const serverPreview = source("src/components/preview-masked-dashboard-server.tsx");
   const api = source("src/app/api/preview-pool/route.ts");
 
   for (const preview of [clientPreview, serverPreview]) {
-    assert.match(preview, /previewTitle/);
-    assert.match(preview, /profitLabel/);
-    assert.match(preview, /budgetLabel/);
+    assert.match(preview, /item\.thumbnailUrl/);
+    assert.match(preview, /item\.name/);
+    assert.match(preview, /krw\(item\.price\)/);
+    assert.match(preview, /krw\(item\.skuMedian\)/);
+    assert.match(preview, /marketGapLabel\(item\.expectedProfitMin, item\.expectedProfitMax\)/);
     assert.match(preview, /priceSignalLabel/);
-    assert.match(preview, /alt="마스킹된 추천 매물"/);
-    assert.match(preview, /상세에서 원문 공개/);
-    assert.match(preview, /필요 예산/);
-    assert.match(preview, /정확 시세 잠김/);
-    assert.match(preview, /로그인하면 지금 진행 중인 추천 매물/);
+    assert.match(preview, /진행 중 매물은 로그인 후/);
+    assert.match(preview, /첫 상세 1개/);
     assert.doesNotMatch(preview, /최근 거래된 실제 매물/);
     assert.doesNotMatch(preview, /거래 완료/);
     assert.doesNotMatch(preview, /이미 거래/);
     assert.doesNotMatch(preview, /soldAgoLabel/);
-    assert.doesNotMatch(preview, /item\.name/);
-    assert.doesNotMatch(preview, /item\.thumbnailUrl/);
-    assert.doesNotMatch(preview, /krw\(item\.price\)/);
-    assert.doesNotMatch(preview, /krw\(item\.skuMedian\)/);
+    assert.doesNotMatch(preview, /정확 시세 잠김/);
+    assert.doesNotMatch(preview, /마스킹된 추천 매물/);
+    assert.doesNotMatch(preview, /상세에서 원문 공개/);
   }
 
   assert.match(api, /shop_review_rating,shop_review_count/);
