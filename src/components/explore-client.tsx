@@ -1158,8 +1158,9 @@ function FirstFeedOnboardingCard({
     >
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-[520px] flex-col px-6 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-[calc(env(safe-area-inset-top)+18px)]">
         <div className="flex items-center justify-between">
-          <div className="flex gap-1.5" aria-label={`${step + 1}/2`}>
-            {[0, 1].map((idx) => (
+          {/* Wave launch-125 (2026-05-25): onboarding 4 step (의심 mirror → 답 + 예시 → 풀 통계 → 예산). */}
+          <div className="flex gap-1.5" aria-label={`${step + 1}/4`}>
+            {[0, 1, 2, 3].map((idx) => (
               <span
                 key={idx}
                 className={`h-1.5 rounded-full transition-all ${idx === step ? "w-7 bg-[#3182f6]" : "w-1.5 bg-zinc-300 dark:bg-zinc-700"}`}
@@ -1176,6 +1177,64 @@ function FirstFeedOnboardingCard({
         </div>
 
         {step === 0 ? (
+          /* Wave launch-125 step 0: 의심 mirror — 사용자 머릿속 의심 정직히 인용. */
+          <div className="flex flex-1 flex-col justify-center pb-24">
+            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">의심 한 번 짚고 갈게요</div>
+            <h2 className="mt-3 break-keep text-[34px] font-black leading-[1.12] tracking-tight sm:text-[42px]">
+              중고 시세 15만원인데
+              <br />
+              <span className="text-[#3182f6] dark:text-blue-300">5만원</span>?
+            </h2>
+            <p className="mt-6 break-keep text-[16px] font-bold leading-7 text-zinc-600 dark:text-zinc-300">
+              사람들은 보통 이렇게 생각합니다.
+            </p>
+            <div className="mt-4 rounded-[18px] border-l-4 border-zinc-300 bg-white/60 px-4 py-4 text-[17px] font-black italic leading-7 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
+              &ldquo;하자 있으니까 싸겠지.&rdquo;
+            </div>
+          </div>
+        ) : step === 1 ? (
+          /* Wave launch-125 step 1: 우리 답 + 예시 매물 카드 2개. */
+          <div className="flex flex-1 flex-col justify-center pb-24">
+            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">근데 진짜 돈 되는 매물은 다릅니다</div>
+            <h2 className="mt-3 break-keep text-[26px] font-black leading-[1.18] tracking-tight sm:text-[30px]">
+              득템잡이는
+              <br />
+              <span className="text-[#3182f6] dark:text-blue-300">같은 상태·같은 구성</span> 기준에서도
+              <br />
+              유난히 싼 매물만 골라드려요.
+            </h2>
+
+            {/* mockup 매물 카드 2개 (hardcoded — 시각 안정성) */}
+            <div className="mt-6 space-y-2.5">
+              <div className="flex items-center gap-3 rounded-[18px] border border-zinc-200 bg-white px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
+                <div className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-[14px] bg-zinc-100 text-[28px] dark:bg-zinc-800">🎧</div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">A급 · 무료배송</div>
+                  <div className="mt-0.5 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">에어팟 프로 2세대</div>
+                  <div className="mt-1 flex items-baseline gap-1.5">
+                    <span className="text-[15px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">+7만원</span>
+                    <span className="text-[10px] font-bold text-zinc-500">매입 5만 · A급 시세 12만</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 rounded-[18px] border border-zinc-200 bg-white px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
+                <div className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-[14px] bg-zinc-100 text-[28px] dark:bg-zinc-800">👞</div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">A급 · 우수 셀러</div>
+                  <div className="mt-0.5 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">닥터마틴 1461 스무스</div>
+                  <div className="mt-1 flex items-baseline gap-1.5">
+                    <span className="text-[15px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">+6만원</span>
+                    <span className="text-[10px] font-bold text-zinc-500">매입 8만 · A급 시세 14만</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p className="mt-4 text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+              ※ 예시 매물. 실제 추천은 다음 화면부터 시작.
+            </p>
+          </div>
+        ) : step === 2 ? (
+          /* (기존 step 0) — 풀 통계. */
           <div className="flex flex-1 flex-col justify-center pb-24">
             <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">첫 피드 준비</div>
             {/* Wave launch-104 (사용자 정정 — 일반인 친화 카피):
@@ -1222,6 +1281,7 @@ function FirstFeedOnboardingCard({
             ) : null}
           </div>
         ) : (
+          /* step === 3 — 예산 (기존 step 1). */
           <div className="flex flex-1 flex-col justify-center pb-24">
             {/* Wave launch-104: "감당 가능한" + "후보" 어색 → "예산" + "상품" 친화 카피. */}
             <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">예산</div>
@@ -1260,10 +1320,27 @@ function FirstFeedOnboardingCard({
 
         <div className="fixed bottom-0 left-0 right-0 z-[91] bg-[linear-gradient(180deg,rgba(245,247,251,0)_0%,#f5f7fb_34%)] px-6 pb-[calc(env(safe-area-inset-bottom)+18px)] pt-8 dark:bg-[linear-gradient(180deg,rgba(9,9,11,0)_0%,#09090b_34%)]">
           <div className="mx-auto max-w-[520px]">
+            {/* Wave launch-125: 4 step CTA — 의심 → 답 → 풀 통계 → 예산. */}
             {step === 0 ? (
               <button
                 type="button"
                 onClick={() => setStep(1)}
+                className="flex min-h-[56px] w-full items-center justify-center rounded-[20px] bg-[#3182f6] text-[16px] font-black text-white shadow-[0_14px_34px_rgba(49,130,246,0.28)] active:scale-[0.99]"
+              >
+                근데, 진짜 다른가요? →
+              </button>
+            ) : step === 1 ? (
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className="flex min-h-[56px] w-full items-center justify-center rounded-[20px] bg-[#3182f6] text-[16px] font-black text-white shadow-[0_14px_34px_rgba(49,130,246,0.28)] active:scale-[0.99]"
+              >
+                지금 보러 가기 →
+              </button>
+            ) : step === 2 ? (
+              <button
+                type="button"
+                onClick={() => setStep(3)}
                 className="flex min-h-[56px] w-full items-center justify-center rounded-[20px] bg-[#3182f6] text-[16px] font-black text-white shadow-[0_14px_34px_rgba(49,130,246,0.28)] active:scale-[0.99]"
               >
                 내 예산 맞춰보기
