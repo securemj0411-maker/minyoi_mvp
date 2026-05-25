@@ -521,10 +521,11 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   // Phase 6f: env 의존 제거 — 코드 default 가 항상 우선.
   //   사용자가 Vercel env 매번 변경하는 부담 제거.
   //   options 으로만 override 가능 (test/특수 케이스).
-  // Phase 6i+ budget fix: firehose 모드 30 region × ~250 matters = 80s timeout (production 측정).
-  //   10 region 으로 낮추면 ~2500 raw upsert 가 budget 안에 들어옴.
-  //   24h 누적: 10 × 288 tick = 2880 region-hit / day → 111 region pool 26 cycle / day.
-  const maxCombos = boundedInt(options.maxCombos, 10, 1, 200);
+  // Phase 6i+ budget fix v2: 10 region 도 80s timeout (Vercel rate-limit slowdown 의심).
+  //   3 region 으로 안전 마진 — 19:35/19:40/19:45/19:50 cron 다 timeout 났음.
+  //   24h 누적: 3 × 288 tick = 864 region-hit / day → 111 region pool 8 cycle / day.
+  //   대형 batch upsert path 최적화 후 다시 증가 (별도 wave).
+  const maxCombos = boundedInt(options.maxCombos, 3, 1, 200);
   const maxDetailSamples = boundedInt(options.maxDetailSamples, 15, 0, 100);
   const delayMs = boundedInt(options.delayMs, 400, 200, 5000);
   const activeWindowHours = boundedInt(options.activeWindowHours, 72, 1, 720);
