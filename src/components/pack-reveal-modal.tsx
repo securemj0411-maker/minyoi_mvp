@@ -486,7 +486,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
 
   if (safety.isJoongna) {
     return {
-      eyebrow: "3. 판매자 신뢰",
+      eyebrow: "4. 판매자 신뢰",
       title: "먼저 상품과 판매자를 같이 봐요",
       metric: safety.sellerTrust.metric,
       metricLabel: safety.sellerTrust.metricLabel,
@@ -499,7 +499,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
 
   if (rating != null && rating >= 4.8 && reviewCount >= SELLER_TRUST_MIN_REVIEW_COUNT) {
     return {
-      eyebrow: "3. 판매자 신뢰",
+      eyebrow: "4. 판매자 신뢰",
       title: "먼저 상품과 판매자를 같이 봐요",
       metric: safety.sellerTrust.metric,
       metricLabel: `평점 ${rating.toFixed(1)}점`,
@@ -513,7 +513,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
 
   if (rating != null && reviewCount > 0) {
     return {
-      eyebrow: "3. 판매자 신뢰",
+      eyebrow: "4. 판매자 신뢰",
       title: "먼저 상품과 판매자를 같이 봐요",
       metric: safety.sellerTrust.metric,
       metricLabel: `평점 ${rating.toFixed(1)}점`,
@@ -528,7 +528,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
   }
 
   return {
-    eyebrow: "3. 판매자 신뢰",
+    eyebrow: "4. 판매자 신뢰",
     title: "먼저 상품과 판매자를 같이 봐요",
     metric: safety.sellerTrust.metric,
     metricLabel: rating == null ? "평점 없음" : `평점 ${rating.toFixed(1)}점`,
@@ -720,7 +720,7 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
         : `${groupLabel} 기준과 거의 비슷한 가격이에요.`;
 
     return {
-      eyebrow: "1. 비교 매물",
+      eyebrow: "2. 비교 매물",
       title,
       metric,
       metricLabel: `비슷한 상태 시세 ${krw(median)} · 이 매물 ${krw(card.price)}`,
@@ -736,7 +736,7 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
   }
 
   return {
-    eyebrow: "1. 비교 매물",
+    eyebrow: "2. 비교 매물",
     title: "시세 표본을 더 모으는 중이에요",
     metric: "표본 부족",
     metricLabel: market?.label ?? card.skuName,
@@ -771,7 +771,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
     const label = velocityHoursLabel(velocity.medianHoursToSold);
     const dailySold = dailySoldCountLabel(velocity.sold7dCount);
     return {
-      eyebrow: "4. 판매 속도",
+      eyebrow: "5. 판매 속도",
       title: `되팔면 보통 ${label} 안에 팔리는 편이에요`,
       metric: label,
       metricLabel: `동일 모델 하루 평균 판매량 ${dailySold}`,
@@ -790,7 +790,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
       ? velocityHoursLabel(velocity.medianHoursToSold)
       : `${velocity.sold7dCount.toLocaleString("ko-KR")}건`;
     return {
-      eyebrow: "4. 판매 속도",
+      eyebrow: "5. 판매 속도",
       title: hasHours
         ? `되팔면 보통 ${label} 안에 팔리는 편이에요`
         : `최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}건 거래됐어요`,
@@ -805,7 +805,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
   // Wave 394.7.ab: marketBasis 자체가 안 채워졌으면 lazy-fill 진행 중. 정직 카피.
   if (analysisPending) {
     return {
-      eyebrow: "4. 판매 속도",
+      eyebrow: "5. 판매 속도",
       title: "거래 기록 데이터를 받는 중이에요",
       metric: "잠시만요",
       metricLabel: "분석 진행 중",
@@ -817,7 +817,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
 
   // Wave 394.7.ab: 판매 기록 자체 부족 — 정직 카피 ("수집 중" 단어 X).
   return {
-    eyebrow: "4. 판매 속도",
+    eyebrow: "5. 판매 속도",
     title: marketSoldSample > 0 ? "거래 기록은 있지만 판매까지 걸린 시간은 부족해요" : "이 모델은 거래 기록 표본이 부족해요",
     metric: marketSoldSample > 0 ? `${marketSoldSample.toLocaleString("ko-KR")}건` : (marketActiveSample > 0 ? `${marketActiveSample.toLocaleString("ko-KR")}건` : "—"),
     metricLabel: marketSoldSample > 0 ? "비슷한 거래 기록" : (marketActiveSample > 0 ? "현재 비교 매물" : "표본 부족"),
@@ -835,14 +835,17 @@ function finalMoneyGuideStep(card: RevealCard): BeginnerGuideStep {
   const snapshot = costAssuranceSnapshot(card);
   const feeRateLabel = `${Math.round(SELLING_FEE_RATE * 1000) / 10}%`;
   const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} (${krw(snapshot.sellingFee)})`;
+  const marketPriceLabel = card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0
+    ? krw(card.marketBasis.medianPrice)
+    : snapshot.salePriceLabel;
 
   return {
-    eyebrow: "5. 최종 순익",
-    title: "최종으로 손에 남는 돈을 봐요",
+    eyebrow: "1. 숫자 요약",
+    title: "정확한 숫자부터 볼게요",
     metric: displayProfitRange(card),
-    metricLabel: "매입가·배송비·수수료 반영",
-    body: `상품가 ${krw(card.price)}에 구매 배송비를 더하고, 되팔 때 안전결제 수수료 ${sellingFeeLabel}, 재배송비 ${krw(RESELL_SHIPPING_FEE)}, 안전버퍼 ${krw(SAFETY_BUFFER)}까지 뺀 값이에요.`,
-    note: "배송비와 수수료를 따로 보지 말고 최종 순익 기준으로 판단하면 됩니다.",
+    metricLabel: "배송비·수수료·안전버퍼 반영",
+    body: `매입가 ${krw(card.price)}, 시세 ${marketPriceLabel}, 예상 순익 ${displayProfitRange(card)}를 먼저 봐요.`,
+    note: `순익은 구매 배송비와 되팔 때 안전결제 수수료 ${sellingFeeLabel}, 재배송비 ${krw(RESELL_SHIPPING_FEE)}, 안전버퍼 ${krw(SAFETY_BUFFER)}까지 감안한 값이에요.`,
     tone: "buy",
   };
 }
@@ -858,7 +861,7 @@ function channelGuideStep(card: RevealCard): BeginnerGuideStep {
   const betterChannel = daangnProfit > marketplaceProfit ? "당근 직거래가 더 남을 수 있지만" : "중고 마켓 재판매는";
 
   return {
-    eyebrow: "2. 되팔 곳",
+    eyebrow: "3. 되팔 곳",
     title: "팔 곳에 따라 남는 돈이 달라요",
     metric: displayProfitRange(card),
     metricLabel: "중고 마켓 기준 예상 차익",
@@ -894,20 +897,19 @@ function summaryGuideStep(card: RevealCard): BeginnerGuideStep {
 
 function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
   // Wave 394.7.y: 안전결제 step 제거 → 셀러 신뢰 안으로 흡수. 10→9 step.
-  // Wave 394.7.z (사용자 피드백): 구매 전 체크 #2 → 끝쪽으로. 흐름 =
-  //   신뢰(셀러) → 시세 사실(비교/추이/속도) → 돈(매입/리셀/채널) → "사기로 했네, 그럼 뭐 확인할까" (구매 전 체크)
-  //   → 요약. 사용자 의사결정 순서 그대로.
+  // Wave 2026-05-25: 피드에서 정확가/시세를 잠근 뒤 상세에 들어오므로 쉬운모드 첫 장은
+  //   돈 숫자 요약으로 시작한다. 그다음 비교 매물 → 채널 → 셀러 → 속도 → 요약.
   // Wave 500: "오늘 걸러낸 매물" 가치는 첫 방문 피드 온보딩으로 이동.
   // 상세 쉬운모드는 반복 피로를 줄이기 위해 바로 이 매물의 판단 근거부터 시작한다.
   // Wave launch-69 (사용자 짚음 "둘러보려고 온 건데 매 상품마다 구매 전 체크 나오면 피로"):
   //   purchaseCheckGuideStep 제거 — "원본 보러가기" 클릭 시 confirm 모달 에서 한 번만 표시.
   //   funnel 상 사용자가 진짜 살 의도 있을 때만 보여주는 게 자연스러움.
   return [
+    finalMoneyGuideStep(card),
     marketCompareGuideStep(card),
     channelGuideStep(card),
     sellerTrustGuideStep(card),
     velocityGuideStep(card),
-    finalMoneyGuideStep(card),
     summaryGuideStep(card),
   ];
 }
@@ -5123,16 +5125,44 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
   const snapshot = costAssuranceSnapshot(card);
   const feeRateLabel = `${Math.round(SELLING_FEE_RATE * 1000) / 10}%`;
   const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} · ${krw(snapshot.sellingFee)}`;
+  const marketPriceLabel = card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0
+    ? krw(card.marketBasis.medianPrice)
+    : snapshot.salePriceLabel;
 
   return (
-    <div data-beginner-guide-final-money data-beginner-guide-buy-cost className="mt-4 overflow-hidden rounded-[22px] bg-white/84 ring-1 ring-zinc-200 dark:bg-zinc-950/60 dark:ring-zinc-800">
-      <div className="px-4 py-4">
-        <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">수익 계산 흐름</div>
-        <div className="mt-1 break-keep text-[17px] font-black leading-6 text-[#172019] dark:text-zinc-50">
-          매입가, 기준 시세, 되팔 때 비용을 뺀 뒤 마지막에 순익을 봐요
+    <div data-beginner-guide-final-money data-beginner-guide-buy-cost className="mt-4 space-y-3">
+      <div data-beginner-guide-money-summary className="overflow-hidden rounded-[28px] bg-[#f5f9ff] p-4 ring-1 ring-blue-100 dark:bg-blue-950/18 dark:ring-blue-900/50">
+        <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">정확 숫자 요약</div>
+        <div className="mt-2 text-[34px] font-black leading-none tracking-tight text-emerald-700 dark:text-emerald-300">
+          {displayProfitRange(card)}
+        </div>
+        <div className="mt-2 break-keep text-[12px] font-bold leading-5 text-[#667164] dark:text-zinc-400">
+          구매 배송비, 판매 수수료, 재배송비, 안전버퍼까지 감안한 예상 순익이에요.
+        </div>
+        <div className="mt-4 grid grid-cols-3 gap-1.5">
+          <div className="rounded-[16px] bg-white/86 px-2.5 py-2.5 ring-1 ring-blue-100/70 dark:bg-zinc-950/50 dark:ring-blue-900/40">
+            <div className="text-[10px] font-black text-[#7b8378] dark:text-zinc-500">매입가</div>
+            <div className="mt-1 break-all text-[12px] font-black leading-tight tabular-nums text-[#172019] dark:text-zinc-50">{krw(card.price)}</div>
+          </div>
+          <div className="rounded-[16px] bg-white/86 px-2.5 py-2.5 ring-1 ring-blue-100/70 dark:bg-zinc-950/50 dark:ring-blue-900/40">
+            <div className="text-[10px] font-black text-[#7b8378] dark:text-zinc-500">시세</div>
+            <div className="mt-1 break-all text-[12px] font-black leading-tight tabular-nums text-[#172019] dark:text-zinc-50">{marketPriceLabel}</div>
+          </div>
+          <div className="rounded-[16px] bg-white/86 px-2.5 py-2.5 ring-1 ring-blue-100/70 dark:bg-zinc-950/50 dark:ring-blue-900/40">
+            <div className="text-[10px] font-black text-[#7b8378] dark:text-zinc-500">구매비용</div>
+            <div className="mt-1 break-all text-[12px] font-black leading-tight tabular-nums text-[#172019] dark:text-zinc-50">{snapshot.buyerCostLabel}</div>
+          </div>
         </div>
       </div>
-      <div className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+
+      <div className="overflow-hidden rounded-[22px] bg-white/84 ring-1 ring-zinc-200 dark:bg-zinc-950/60 dark:ring-zinc-800">
+        <div className="px-4 py-4">
+          <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">수익 계산 흐름</div>
+          <div className="mt-1 break-keep text-[17px] font-black leading-6 text-[#172019] dark:text-zinc-50">
+            매입가, 기준 시세, 되팔 때 비용을 뺀 뒤 마지막에 순익을 봐요
+          </div>
+        </div>
+        <div className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
         <div className="flex items-center justify-between gap-4 px-4 py-3">
           <div>
             <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">실제 매입가</div>
@@ -5157,15 +5187,16 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
             <div className="mt-0.5 text-[11px] font-bold tabular-nums text-amber-700/80 dark:text-amber-300/80">+ {krw(RESELL_SHIPPING_FEE + SAFETY_BUFFER)}</div>
           </div>
         </div>
-      </div>
-      <div className="px-4 py-4">
-        <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">최종 예상 순익</div>
-        {/* Wave launch-117b (2026-05-24): 수익 = emerald (light+dark). */}
-        <div className="mt-1 text-[30px] font-black leading-tight text-emerald-700 dark:text-emerald-300">
-          {displayProfitRange(card)}
         </div>
-        <div className={`mt-3 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${snapshot.confidenceClass}`}>
-          {snapshot.confidenceLabel}
+        <div className="px-4 py-4">
+          <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">최종 예상 순익</div>
+          {/* Wave launch-117b (2026-05-24): 수익 = emerald (light+dark). */}
+          <div className="mt-1 text-[30px] font-black leading-tight text-emerald-700 dark:text-emerald-300">
+            {displayProfitRange(card)}
+          </div>
+          <div className={`mt-3 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${snapshot.confidenceClass}`}>
+            {snapshot.confidenceLabel}
+          </div>
         </div>
       </div>
     </div>

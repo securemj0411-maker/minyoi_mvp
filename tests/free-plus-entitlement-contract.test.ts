@@ -114,6 +114,7 @@ test("pool feed is a free teaser and exact purchase info opens only through deta
   assert.match(explore, /필요 예산/);
   assert.match(explore, /정확 시세 잠김/);
   assert.match(explore, /출처 잠금/);
+  assert.doesNotMatch(explore, /lockedPreview && item\.marketSignalLabel/);
   assert.match(explore, /상세에서 제목·가격 공개/);
   assert.match(explore, /type TierBadgeCategory = "shoe" \| "clothing" \| "game_console" \| "sport_golf"/);
   assert.match(explore, /function tierBadgeCategoryForItem/);

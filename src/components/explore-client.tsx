@@ -2669,11 +2669,6 @@ export default function ExploreClient({
                             {item.priceSignalLabel}
                           </span>
                         ) : null}
-                        {lockedPreview && item.marketSignalLabel ? (
-                          <span className="rounded-full bg-blue-50 px-1.5 py-0.5 font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-200">
-                            {item.marketSignalLabel}
-                          </span>
-                        ) : null}
                         {lockedPreview && item.velocitySignalLabel ? (
                           <span className="rounded-full bg-violet-50 px-1.5 py-0.5 font-bold text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
                             {item.velocitySignalLabel}
