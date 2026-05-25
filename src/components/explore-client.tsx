@@ -19,8 +19,7 @@ import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/prof
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 // Wave 338+339 (Phase 1a + 1b — Freemium /explore):
-// 무료 사용자 매물 풀 browsing. 30개 풀 + 2h cooldown.
-// 크레딧 1개 이상 보유자는 피드 탐색 무제한, 크레딧은 상세 분석 열람 때만 차감.
+// 매물 풀 browsing. 피드는 무료 teaser, 크레딧은 상세 분석/원문 공개 때만 차감.
 // + 통계 배너 + paywall 예고 + sold out 오버레이 + PackRevealModal 통합.
 const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 3;
 
@@ -67,6 +66,13 @@ type PoolItem = {
   conditionConfidence?: number | null;
   conditionFlags?: Record<string, unknown> | null;
   conditionChips?: string[] | null;
+  feedPreviewLocked?: boolean;
+  productLineLabel?: string | null;
+  priceBandLabel?: string | null;
+  marketPriceBandLabel?: string | null;
+  priceSignalLabel?: string | null;
+  sellerSignalLabel?: string | null;
+  marketSignalLabel?: string | null;
 };
 
 type ScrappedPoolItem = PoolItem & {
@@ -398,6 +404,14 @@ function lockedPreviewCategoryLabel(item: PoolItem) {
 
 function lockedPreviewTitle(item: PoolItem) {
   return `${lockedPreviewCategoryLabel(item)} · ${conditionPreviewLabel(item.conditionClass)} 후보`;
+}
+
+function isFeedTeaserLocked(item: PoolItem) {
+  return item.feedPreviewLocked === true || Boolean(item.accessToken);
+}
+
+function hasPaidOrFreeDetailAccess(snapshot: DetailAccessSnapshot, freeDetailRemaining: number) {
+  return freeDetailRemaining > 0 || Number(snapshot.creditBalance ?? 0) > 0;
 }
 
 type SortOption = "profit_desc" | "latest" | "price_asc";
@@ -1231,15 +1245,11 @@ export default function ExploreClient({
   const [safetyStatsLoaded, setSafetyStatsLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [creditFeedEnabled, setCreditFeedEnabled] = useState(false);
   const [detailAccessSnapshot, setDetailAccessSnapshot] = useState<DetailAccessSnapshot>(() => readDetailAccessSnapshot(storageScope));
   const [feedExhausted, setFeedExhausted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailAccessLimit, setDetailAccessLimit] = useState<DetailAccessLimitModal | null>(null);
-  // Wave launch-93 (사용자 정정 — "4번째 클릭할 때 잠그라니까"):
-  //   paywall 한 번이라도 트리거된 적이 있으면 true. 4번째 클릭 시점에 set.
-  //   3번째 다 본 후에도 카드 보임 → 4번째 클릭 = paywall 응답 받을 때 잠금 시작.
-  //   새로고침해도 유지 — localStorage 박음. 충전 후엔 creditFeedEnabled=true 라 자동 unlock.
+  // Wave launch-93: paywall 노출 이력은 모달 가치 요약/후속 CTA에만 사용한다.
   const [hasSeenPaywall, setHasSeenPaywall] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     try { return window.localStorage.getItem(`minyoi:has-seen-paywall:${storageScope}`) === "1"; } catch { return false; }
@@ -1254,7 +1264,6 @@ export default function ExploreClient({
   const openedDetailPidsRef = useRef<Set<number>>(new Set());
   const [openedDetailPids, setOpenedDetailPids] = useState<Set<number>>(() => new Set());
   const detailAccessValueRef = useRef<DetailAccessValueSummary | null>(null);
-  const infiniteFeedSentinelRef = useRef<HTMLDivElement | null>(null);
   const [scrapItems, setScrapItems] = useState<ScrappedPoolItem[]>([]);
   const [legacySavedPids, setLegacySavedPids] = useState<Set<number>>(() => new Set());
   const [now, setNow] = useState(Date.now());
@@ -1592,7 +1601,7 @@ export default function ExploreClient({
     return Math.max(0, Math.ceil(ms / 1000));
   }, [cooldown, now]);
 
-  const canRefresh = creditFeedEnabled || remainingSec === 0;
+  const canRefresh = true;
 
   const trackDetailEvent = useCallback((
     pid: number,
@@ -1688,7 +1697,6 @@ export default function ExploreClient({
           }
         }
         setCooldown(data.cooldown);
-        setCreditFeedEnabled(data.creditFeed === true || data.feedMode === "credit");
         if (data.detailAccess) {
           const nextDetailAccess = normalizeDetailAccessSnapshot(data.detailAccess) ?? defaultDetailAccessSnapshot();
           setDetailAccessSnapshot(nextDetailAccess);
@@ -1770,24 +1778,8 @@ export default function ExploreClient({
     void loadPool(false);
   }, [loadPool, showFirstFeedOnboarding]);
 
-  // Wave launch-39 (사용자 짚음): error 가드 추가. error 발생 시 IntersectionObserver
-  // 자체 비활성 — 빨간 box 깜빡임의 근원이 sentinel 자동 retry.
-  useEffect(() => {
-    if (!creditFeedEnabled || loading || refreshing || feedExhausted || scrapOnly || items.length === 0 || error) return;
-    const el = infiniteFeedSentinelRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          void loadPool(true, { autoScrollNew: false });
-        }
-      },
-      { rootMargin: "1800px 0px" },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [creditFeedEnabled, error, feedExhausted, items.length, loadPool, loading, refreshing, scrapOnly]);
+  // Feed browsing is manual now. Auto-infinite loading made the feed feel like a free shopping catalog,
+  // while the paid value sits in detail access.
 
   // Wave 353: 클라이언트 사이드 카테고리 필터. 전체 풀(items)에서 selectedCategories에 속한 매물만.
   // category가 null이면 selectedCategories 활성 시 제외 (안전).
@@ -1887,7 +1879,7 @@ export default function ExploreClient({
       beginDetailSession(item, { accessType: "already_opened_local" });
       return;
     }
-    const hasDetailEntitlement = creditFeedEnabled || freeDetailRemaining > 0;
+    const hasDetailEntitlement = hasPaidOrFreeDetailAccess(detailAccessSnapshot, freeDetailRemaining);
     if (!options?.directTradeConfirmed && isDirectOnlyItem(item) && hasDetailEntitlement) {
       setDetailAccessLimit(null);
       setDirectTradeConfirm({
@@ -1969,9 +1961,6 @@ export default function ExploreClient({
       if (Number(data.creditSpent ?? 0) > 0 && typeof window !== "undefined") {
         window.dispatchEvent(new Event("minyoi:credits-changed"));
       }
-      if (data.creditBalance != null) {
-        setCreditFeedEnabled(Number(data.creditBalance) > 0);
-      }
       if (data.freeLimit != null && data.freeUsed != null) {
         const nextDetailAccess = normalizeDetailAccessSnapshot({
           creditBalance: data.creditBalance ?? null,
@@ -2014,7 +2003,7 @@ export default function ExploreClient({
     } finally {
       setDetailAccessLoadingPid((prev) => (prev === item.pid ? null : prev));
     }
-  }, [beginDetailSession, creditFeedEnabled, detailAccessSnapshot, freeDetailRemaining, storageScope, trackDetailEvent]);
+  }, [beginDetailSession, detailAccessSnapshot, freeDetailRemaining, storageScope, trackDetailEvent]);
 
   const confirmDirectTradeDetail = useCallback((item: PoolItem) => {
     setDirectTradeConfirm(null);
@@ -2441,16 +2430,12 @@ export default function ExploreClient({
                 ? "배송비 포함"
                 : item.freeShipping ? "무료배송" : null;
             const isSoldOut = item.soldOut;
-            const freePreviewUnlocked = !creditFeedEnabled && freeDetailRemaining > 0;
-            const exactUnlocked = creditFeedEnabled || freePreviewUnlocked || scrapOnly || savedPidSet.has(item.pid) || openedDetailPids.has(item.pid);
+            const teaserLocked = isFeedTeaserLocked(item);
+            const exactUnlocked = !teaserLocked || scrapOnly || savedPidSet.has(item.pid) || openedDetailPids.has(item.pid);
             const lockedPreview = !exactUnlocked;
-            const freeDetailAvailable = lockedPreview && !creditFeedEnabled && freeDetailRemaining > 0;
-            // Wave launch-90 → launch-93 (사용자 정정 — "4번째 클릭할 때 잠그라니까"):
-            //   잠금 trigger = paywall 한 번 떴는가 (hasSeenPaywall).
-            //   3번째 클릭 후엔 freeDetailRemaining=0 이지만 hasSeenPaywall=false → 카드 그대로 보임.
-            //   4번째 클릭 = paywall 응답 받음 → markPaywallSeen() → 그 후부터 잠금 적용.
-            //   creditFeedEnabled (충전된 사용자) 또는 이미 본 매물은 lockedPreview=false 라 영향 X.
-            const fullLocked = lockedPreview && !freeDetailAvailable && hasSeenPaywall;
+            const freeDetailAvailable = lockedPreview && freeDetailRemaining > 0;
+            const detailCreditAvailable = lockedPreview && Number(detailAccessSnapshot.creditBalance ?? 0) > 0;
+            const fullLocked = false;
             return (
               <button
                 key={item.pid}
@@ -2487,8 +2472,6 @@ export default function ExploreClient({
                     : "active:bg-zinc-50 dark:active:bg-zinc-900/40 sm:border-zinc-200 sm:bg-white sm:hover:border-blue-300 sm:hover:shadow-md dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40 dark:sm:hover:border-blue-700"
                 }`}
               >
-                {/* Wave launch-63 + launch-90: 사진 = 무료 남았을 때만 표시.
-                    무료 다 쓴 후 (fullLocked=true) → blur + 자물쇠 overlay. */}
                 <div className={`relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 ${isSoldOut ? "grayscale" : ""}`}>
                   {item.thumbnailUrl ? (
                     <Image
@@ -2497,31 +2480,31 @@ export default function ExploreClient({
                       fill
                       sizes="120px"
                       unoptimized
-                      className={`object-cover ${isSoldOut ? "opacity-60" : ""} ${fullLocked ? "scale-110 blur-md" : ""}`}
+                      className={`object-cover ${isSoldOut ? "opacity-60" : ""} ${lockedPreview ? "scale-105 blur-[1.5px]" : ""}`}
                     />
                   ) : null}
-                  {/* Wave launch-91 (사용자 정정 — "기존에 카테고리별 예쁜 아이콘 있었는데"):
-                      자물쇠 SVG → CategoryIcon (의류면 셔츠, 폰이면 폰, 신발이면 신발).
-                      어두운 overlay → emerald/sky gradient (브랜드 톤) — 잠금이지만 답답 X. */}
-                  {fullLocked && !isSoldOut ? (
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-500/35 via-sky-500/25 to-blue-600/30 backdrop-blur-[1px] dark:from-blue-700/45 dark:via-sky-800/35 dark:to-blue-900/45">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 shadow-[0_4px_14px_rgba(15,23,42,0.18)] ring-1 ring-white/60 dark:bg-zinc-950/90 dark:ring-zinc-700/60">
+                  {lockedPreview && !isSoldOut ? (
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-br from-black/10 via-transparent to-black/20">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/88 shadow-[0_4px_14px_rgba(15,23,42,0.16)] ring-1 ring-white/70 backdrop-blur dark:bg-zinc-950/82 dark:ring-zinc-700/60">
                         <CategoryIcon
-                          category={categoryFromComparableKey(item.comparableKey ?? null) ?? "default"}
+                          category={item.category ?? categoryFromComparableKey(item.comparableKey ?? null) ?? "default"}
                           className="h-5 w-5 text-[#3182f6] dark:text-blue-300"
                           strokeWidth={1.9}
                         />
                       </div>
+                      <span className="absolute bottom-2 left-2 rounded-full bg-black/58 px-2 py-0.5 text-[9px] font-black text-white backdrop-blur">
+                        상세에서 원문 공개
+                      </span>
                     </div>
                   ) : null}
                   {/* Wave 355: unopened/mint만 사진 위 럭셔리 배지 ("전설템" 느낌).
                       Wave 714p (2026-05-23): 신발/의류는 옛 conditionClass 뱃지 hide (전자기기용 라벨 정확도 낮음).
                       Wave 714q (2026-05-23): 신발/의류는 새 5-tier (S/A/B/C/D) 뱃지로 대체. UNKNOWN 은 표시 X. */}
-                  {!isSoldOut && (item.comparableKey?.startsWith("shoe|") || item.comparableKey?.startsWith("clothing|")) ? (
+                  {!isSoldOut && (item.category === "shoe" || item.category === "clothing" || item.comparableKey?.startsWith("shoe|") || item.comparableKey?.startsWith("clothing|")) ? (
                     <ConditionTierPhotoBadge
                       tier={item.conditionTier}
                       compact
-                      category={item.comparableKey?.startsWith("clothing|") ? "clothing" : "shoe"}
+                      category={item.category === "clothing" || item.comparableKey?.startsWith("clothing|") ? "clothing" : "shoe"}
                     />
                   ) : !isSoldOut && (item.conditionClass === "unopened" || item.conditionClass === "mint") ? (
                     <ConditionPhotoBadge conditionClass={item.conditionClass} compact />
@@ -2539,15 +2522,18 @@ export default function ExploreClient({
                 </div>
                 <div className={`min-w-0 ${isSoldOut ? "opacity-60" : ""}`}>
                   <div className="line-clamp-2 text-sm font-bold leading-tight text-zinc-900 dark:text-zinc-100">
-                    {/* Wave launch-63 + launch-90 (사용자 정정): 무료 남았을 때만 제목 노출.
-                        무료 다 쓴 후 (fullLocked) → 카테고리 placeholder ("의류 후보" / "신발 후보"). */}
-                    {fullLocked ? lockedPreviewTitle(item) : item.name}
+                    {item.name || lockedPreviewTitle(item)}
                   </div>
 
 
                   {lockedPreview && freeDetailAvailable ? (
                     <div className="mt-1 text-[11px] font-bold text-blue-600 dark:text-blue-400">
-                      무료 상세 {freeDetailRemaining.toLocaleString("ko-KR")}회 남음
+                      첫 상세 무료 {freeDetailRemaining.toLocaleString("ko-KR")}회 남음
+                    </div>
+                  ) : null}
+                  {lockedPreview && !freeDetailAvailable && detailCreditAvailable ? (
+                    <div className="mt-1 text-[11px] font-bold text-blue-600 dark:text-blue-400">
+                      1크레딧으로 정확한 매물 열기
                     </div>
                   ) : null}
                   <div className="mt-1.5 flex items-baseline gap-1.5">
@@ -2557,7 +2543,7 @@ export default function ExploreClient({
                     </span>
                     {lockedPreview ? (
                       <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                        {freeDetailAvailable ? "무료 상세 가능" : "정확한 금액 잠김"}
+                        {freeDetailAvailable ? "첫 상세 무료" : "정확가 잠김"}
                       </span>
                     ) : pct != null ? (
                       <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${isSoldOut ? "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500" : "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-200"}`}>
@@ -2569,7 +2555,7 @@ export default function ExploreClient({
                     <span>
                       매입{" "}
                       <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
-                        {lockedPreview ? krwTenThousandBand(item.price) : krw(item.price)}
+                        {lockedPreview ? (item.priceBandLabel ?? krwTenThousandBand(item.price)) : krw(item.price)}
                       </span>
                     </span>
                     {item.skuMedian ? (
@@ -2578,7 +2564,7 @@ export default function ExploreClient({
                         <span>
                           시세{" "}
                           <span className="font-bold tabular-nums">
-                            {lockedPreview ? krwTenThousandBand(item.skuMedian) : krw(item.skuMedian)}
+                            {lockedPreview ? (item.marketPriceBandLabel ?? krwTenThousandBand(item.skuMedian)) : krw(item.skuMedian)}
                           </span>
                         </span>
                       </>
@@ -2597,6 +2583,8 @@ export default function ExploreClient({
                         {item.conditionClass
                           && item.conditionClass !== "unopened"
                           && item.conditionClass !== "mint"
+                          && item.category !== "shoe"
+                          && item.category !== "clothing"
                           && !item.comparableKey?.startsWith("shoe|")
                           && !item.comparableKey?.startsWith("clothing|") ? (
                           <ConditionChip conditionClass={item.conditionClass} variant="friendly" />
@@ -2608,7 +2596,28 @@ export default function ExploreClient({
                             ? `${hoursAgoLabel(item.firstSeenAt)} 등록`
                             : hoursAgoLabel(item.lastVerifiedAt)}
                         </span>
-                        <MarketplaceSourceBadge source={item.marketplaceSource} label={item.marketplaceLabel} />
+                        {lockedPreview ? (
+                          <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                            출처 잠금
+                          </span>
+                        ) : (
+                          <MarketplaceSourceBadge source={item.marketplaceSource} label={item.marketplaceLabel} />
+                        )}
+                        {lockedPreview && item.priceSignalLabel ? (
+                          <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
+                            {item.priceSignalLabel}
+                          </span>
+                        ) : null}
+                        {lockedPreview && item.marketSignalLabel ? (
+                          <span className="rounded-full bg-blue-50 px-1.5 py-0.5 font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-200">
+                            {item.marketSignalLabel}
+                          </span>
+                        ) : null}
+                        {lockedPreview && item.sellerSignalLabel ? (
+                          <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                            {item.sellerSignalLabel}
+                          </span>
+                        ) : null}
                         {/* Wave launch-17: 가품 위험 chip — 메인 feed 카드에서도 1차 노출 (사용자 보호). */}
                         {(() => {
                           const category = categoryFromComparableKey(item.comparableKey ?? null);
@@ -2663,7 +2672,7 @@ export default function ExploreClient({
                         ) : null}
                         {lockedPreview ? (
                           <span className="rounded-full bg-blue-50 px-1.5 py-0.5 font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-200">
-                            {freeDetailAvailable ? "무료 상세 열기" : "상세 열면 원본 공개"}
+                            {freeDetailAvailable ? "첫 상세 무료" : "상세에서 제목·가격 공개"}
                           </span>
                         ) : null}
                       </>
@@ -2685,28 +2694,20 @@ export default function ExploreClient({
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
-                {creditFeedEnabled
-                  ? feedExhausted
-                    ? budgetFilter !== "all"
-                      ? `${budgetOption.label} 조건은 오늘 여기까지예요`
-                      : "오늘 볼 수 있는 추천 매물은 여기까지예요"
-                    : "계속 내려보면 새 매물이 이어져요"
-                  : canRefresh
-                    ? "다른 30개 매물 받을 수 있어요"
-                    : "쿨다운 대기 중"}
+                {feedExhausted
+                  ? budgetFilter !== "all"
+                    ? `${budgetOption.label} 조건은 오늘 여기까지예요`
+                    : "오늘 볼 수 있는 추천 매물은 여기까지예요"
+                  : "더 찾아보면 새 후보가 이어져요"}
               </div>
               <div className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                {creditFeedEnabled
-                  ? feedExhausted
-                    ? budgetFilter !== "all"
-                      ? `${budgetOption.label}에서 수익, 시세, 상태 조건을 통과한 후보만 남긴 결과예요. 가격대를 넓히면 더 볼 수 있어요.`
-                      : "수익, 시세, 상태 조건을 통과한 매물만 남긴 결과예요."
-                    : "피드 탐색은 무제한 · 크레딧은 상세 분석을 열 때만 차감"
-                  : canRefresh
-                  ? "새로운 매물 풀로 갱신 · 다양한 카테고리"
-                  : `${formatCooldown(remainingSec)} 후 새 매물 자동으로 풀려요`}
+                {feedExhausted
+                  ? budgetFilter !== "all"
+                    ? `${budgetOption.label}에서 수익, 시세, 상태 조건을 통과한 후보만 남긴 결과예요. 가격대를 넓히면 더 볼 수 있어요.`
+                    : "수익, 시세, 상태 조건을 통과한 매물만 남긴 결과예요."
+                  : "피드는 무료예요. 정확한 제목·가격·출처·원문은 상세 분석에서 열려요."}
               </div>
-              {creditFeedEnabled && feedExhausted && budgetFilter !== "all" ? (
+              {feedExhausted && budgetFilter !== "all" ? (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {nextBudgetOption ? (
                     <button
@@ -2729,7 +2730,7 @@ export default function ExploreClient({
               {/* Wave launch-33 (사용자 짚음): feed exhausted 상태에도 신뢰 메시지.
                * 사용자가 끝까지 스크롤하고 "왜 이것밖에 없냐" 의문 → 우리 시스템이 얼마나
                * 빡세게 거른 후 보여주는지 사회적 증명 + 정직. */}
-              {creditFeedEnabled && feedExhausted && stats && (stats.scannedToday || stats.caughtToday) ? (
+              {feedExhausted && stats && (stats.scannedToday || stats.caughtToday) ? (
                 <div className="mt-4 rounded-xl border border-zinc-200 bg-white px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/60">
                   <div className="text-[12px] font-bold text-zinc-900 dark:text-zinc-100">
                     지금 살만한 매물만 모은 결과예요
@@ -2754,12 +2755,10 @@ export default function ExploreClient({
                   </ul>
                 </div>
               ) : null}
-              {!creditFeedEnabled ? (
-                <div className="mt-2 flex items-center gap-1.5 rounded-md bg-blue-50 px-2 py-1.5 text-[11px] font-bold text-blue-800 dark:bg-blue-950/40 dark:text-blue-200">
-                  <ZapIcon className="h-3 w-3" />
-                  <span>크레딧 1개 이상이면 대기 없이 피드 계속 보기</span>
-                </div>
-              ) : null}
+              <div className="mt-2 flex items-center gap-1.5 rounded-md bg-blue-50 px-2 py-1.5 text-[11px] font-bold text-blue-800 dark:bg-blue-950/40 dark:text-blue-200">
+                <ZapIcon className="h-3 w-3" />
+                <span>크레딧은 마음에 드는 매물의 상세 분석을 열 때만 써요</span>
+              </div>
             </div>
           </div>
         </div>
@@ -2772,7 +2771,7 @@ export default function ExploreClient({
       {/* Wave 390: "다른 매물 찾기" → "더 찾아보기".
           canRefresh이면 모달 X, 직접 loadPool(true) — 자연스럽게 append.
           !canRefresh면 cooldown 모달 (카톡/즉시받기/대기). */}
-      {!loading && !scrapOnly && !creditFeedEnabled && items.length > 0 ? (
+      {!loading && !scrapOnly && items.length > 0 ? (
         <div className="sticky bottom-4 z-20 mt-4 flex justify-center px-4 sm:mt-6 sm:px-0">
           <button
             type="button"
@@ -2789,16 +2788,6 @@ export default function ExploreClient({
             <SearchIcon className="h-4 w-4" />
             {refreshing ? "받는 중..." : "더 찾아보기"}
           </button>
-        </div>
-      ) : null}
-
-      {!loading && !scrapOnly && creditFeedEnabled && !feedExhausted && items.length > 0 ? (
-        <div
-          ref={infiniteFeedSentinelRef}
-          data-credit-infinite-feed-sentinel
-          className="mt-4 flex min-h-16 items-center justify-center px-4 text-center text-xs font-bold text-zinc-500 dark:text-zinc-400"
-        >
-          {refreshing ? "조건 맞는 후보를 미리 찾는 중..." : "계속 내려보면 새 매물이 이어져요"}
         </div>
       ) : null}
 

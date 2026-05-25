@@ -18,19 +18,18 @@ import { isBetaTesterAuthId } from "@/lib/beta-tester";
 // 정책:
 // - 인증 필수 (로그인 사용자만)
 // - 30개 매물 / 1 페이지 (limit)
-// - 무료 "새 30개 받기" = 2h cooldown (mvp_user_credits.last_free_browse_at)
-// - 크레딧 1개 이상 보유자는 피드 탐색 쿨다운 우회. 크레딧은 상세 분석 열람 때만 차감.
+// - 피드 탐색은 무료. 크레딧은 상세 분석/원문 공개 때만 차감.
 // - 정렬: profit_band desc, expected_profit_max desc (안정적 = 같은 사용자 같은 매물)
-// - 무료 피드는 원본 pid/name/image/정확한 가격을 서버에서 마스킹
+// - 피드는 구매 실행 식별키(pid/name/정확가/source/link)를 서버에서 teaser로 치환
 //
 // 응답:
 // {
 //   items: [...30 매물...],
-//   cooldown: { canRefresh: bool, remainingSec: number, nextAvailableAt: string }
+//   cooldown: { canRefresh: true, remainingSec: 0, nextAvailableAt: null }
 // }
 //
 // 액션 (POST 또는 ?refresh=1):
-//   cooldown 체크 → 통과 시 last_free_browse_at 갱신 + 새 매물 응답.
+//   새 teaser 매물 응답. 상세보기 진입 시에만 실시간 검증 + 차감.
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,10 +38,7 @@ export const revalidate = 0;
 const PAGE_SIZE = 30;
 const READY_SLOTS = 25; // 살아있는 매물
 const SOLD_OUT_SLOTS = 5; // 오늘 잡힌 매물 (FOMO)
-// Wave 383: 30min → 2h. 6h 매물 lag 제거 (모든 신선 매물 노출) 대신 cooldown 4배 ↑.
-// 초기 가치 체감 ↑ + 답답함으로 paywall 압박.
-const COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2시간
-// Wave 383: 6h lag 제거 (0으로). 신선도 차별 X → cooldown 차별화에 집중.
+// Wave 383: 6h lag 제거 (0으로). 피드 신선도는 teaser에서도 동일하게 유지.
 const FRESH_LAG_HOURS = 0;
 // Wave 346: 카테고리 다양화 — 한 카테고리에 5개 이상 몰리지 않게.
 // 이어폰 풀이 가장 커서 profit_band 정렬하면 다 이어폰. 다양화 필수.
@@ -96,12 +92,6 @@ type RawListingMeta = {
   listing_state: string | null;
 };
 
-type UserCreditsRow = {
-  user_ref: string;
-  balance: number | null;
-  last_free_browse_at: string | null;
-};
-
 const LOCKED_CATEGORY_LABELS: Record<string, string> = {
   earphone: "이어폰/헤드셋",
   smartphone: "휴대폰",
@@ -111,6 +101,13 @@ const LOCKED_CATEGORY_LABELS: Record<string, string> = {
   shoe: "신발",
   bag: "가방",
   clothing: "의류",
+  drone: "드론",
+  speaker: "스피커",
+  appliance: "가전",
+  game_console: "게임기",
+  desktop: "데스크탑",
+  lego: "레고",
+  camera: "카메라",
 };
 
 const LOCKED_CONDITION_LABELS: Record<string, string> = {
@@ -134,25 +131,66 @@ function lockedPreviewTitle(category: string | null, conditionClass: string | nu
   return `${categoryLabel} · ${conditionLabel} 후보`;
 }
 
-function computeCooldown(lastBrowseAt: string | null): {
-  canRefresh: boolean;
-  remainingSec: number;
-  nextAvailableAt: string | null;
-} {
-  if (!lastBrowseAt) {
-    return { canRefresh: true, remainingSec: 0, nextAvailableAt: null };
+function compactProductLineLabel(value: string | null | undefined, category: string | null, conditionClass: string | null) {
+  const raw = String(value ?? "").trim();
+  const categoryLabel = LOCKED_CATEGORY_LABELS[category ?? ""] ?? "추천 매물";
+  const conditionLabel = conditionClass ? (LOCKED_CONDITION_LABELS[conditionClass] ?? "상태 확인") : "상태 확인";
+  if (!raw) return lockedPreviewTitle(category, conditionClass);
+  const cleaned = raw
+    .replace(/\s*\((?:broad|narrow|basic|clean|normal|worn|mint|unopened|러닝|캔버스|데님|카코트|필드)[^)]*\)\s*/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleaned) return lockedPreviewTitle(category, conditionClass);
+  const suffix = /계열|후보|매물$/.test(cleaned) ? "" : " 계열";
+  return `${cleaned}${suffix} · ${conditionLabel}`;
+}
+
+function priceBandLabel(value: number | null | undefined) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return "가격대 확인";
+  const manwon = Math.floor(n / 10000);
+  if (manwon <= 0) return "1만원 미만";
+  if (manwon < 10) return `${manwon}만원대`;
+  const ten = Math.floor(manwon / 10) * 10;
+  return `${ten}만원대`;
+}
+
+function relativeDiscountLabel(price: number, marketPrice: number | null | undefined) {
+  const market = Number(marketPrice ?? 0);
+  if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(market) || market <= 0 || price >= market) return null;
+  const discount = Math.max(1, Math.round(((market - price) / market) * 100));
+  const rounded = discount >= 10 ? Math.round(discount / 5) * 5 : discount;
+  return `시세보다 약 ${rounded}% 낮음`;
+}
+
+function sellerSignalLabel(item: {
+  marketplaceSource?: string | null;
+  sellerReviewRating?: number | null;
+  sellerReviewCount?: number | null;
+  joongnaTrustScore?: number | null;
+  joongnaSafeOrderSalesCount?: number | null;
+}) {
+  const reviewCount = Number(item.sellerReviewCount ?? 0);
+  if (item.marketplaceSource === "joongna") {
+    const trust = Number(item.joongnaTrustScore ?? 0);
+    const safeSales = Number(item.joongnaSafeOrderSalesCount ?? 0);
+    if (trust >= 700 || reviewCount >= 10 || safeSales >= 3) return "판매자 신호 양호";
+    if (trust >= 400 || reviewCount > 0 || safeSales > 0) return "판매자 이력 확인 가능";
+    return "판매자 정보 상세 확인";
   }
-  const lastMs = new Date(lastBrowseAt).getTime();
-  if (!Number.isFinite(lastMs)) {
-    return { canRefresh: true, remainingSec: 0, nextAvailableAt: null };
-  }
-  const nextMs = lastMs + COOLDOWN_MS;
-  const remainingMs = Math.max(0, nextMs - Date.now());
-  return {
-    canRefresh: remainingMs <= 0,
-    remainingSec: Math.ceil(remainingMs / 1000),
-    nextAvailableAt: new Date(nextMs).toISOString(),
-  };
+  const rating = Number(item.sellerReviewRating ?? 0);
+  if (rating >= 4.8 && reviewCount >= 30) return "후기 많은 셀러";
+  if (rating >= 4.5 && reviewCount >= 5) return "판매자 신호 양호";
+  if (reviewCount > 0) return "거래후기 확인 가능";
+  return "판매자 정보 상세 확인";
+}
+
+function confidenceSignalLabel(confidence: number | null | undefined) {
+  const value = Number(confidence ?? 0);
+  if (value >= 95) return "시세 신뢰 높음";
+  if (value >= 85) return "비교 기준 양호";
+  if (value > 0) return "비교 기준 확인";
+  return null;
 }
 
 // Wave 247.2 (2026-05-19): band-aware sku_median fallback.
@@ -561,52 +599,59 @@ function buildItems(
         conditionConfidence: gradingByPid.get(row.pid)?.confidence ?? null,
         conditionFlags: gradingByPid.get(row.pid)?.flags ?? null,
         conditionChips: gradingByPid.get(row.pid)?.chips ?? null,
+        feedPreviewLocked: false,
+        productLineLabel: compactProductLineLabel(meta?.sku_name ?? null, row.category, row.condition_class),
+        priceBandLabel: priceBandLabel(raw.price),
+        marketPriceBandLabel: priceBandLabel(skuMedianFinal),
+        priceSignalLabel: relativeDiscountLabel(raw.price, skuMedianFinal),
+        sellerSignalLabel: sellerSignalLabel({
+          marketplaceSource,
+          sellerReviewRating: meta?.shop_review_rating ?? null,
+          sellerReviewCount: meta?.shop_review_count ?? 0,
+          joongnaTrustScore: facts.joongnaTrustScore ?? null,
+          joongnaSafeOrderSalesCount: facts.joongnaSafeOrderSalesCount ?? null,
+        }),
+        marketSignalLabel: confidenceSignalLabel(row.confidence),
       };
     })
     .filter((x): x is NonNullable<typeof x> => x != null);
 }
 
-function maskFreeFeedItems<T extends ReturnType<typeof buildItems>[number]>(items: T[]) {
+function buildTeaserFeedItems<T extends ReturnType<typeof buildItems>[number]>(items: T[]) {
   return items.map((item) => {
     const accessToken = createPoolAccessToken(item.pid);
+    const roundedPrice = roundDownTenThousand(item.price) ?? 0;
+    const roundedMarketPrice = roundDownTenThousand(item.skuMedian);
     return {
       ...item,
       pid: syntheticPidForPoolToken(accessToken),
       accessToken,
-      name: lockedPreviewTitle(item.category, item.conditionClass),
-      price: roundDownTenThousand(item.price) ?? 0,
-      skuMedian: roundDownTenThousand(item.skuMedian),
-      thumbnailUrl: null,
+      feedPreviewLocked: true,
+      name: item.productLineLabel ?? lockedPreviewTitle(item.category, item.conditionClass),
+      listingUrl: null,
+      marketplaceSource: null,
+      marketplaceLabel: null,
+      price: roundedPrice,
+      skuMedian: roundedMarketPrice,
+      thumbnailUrl: item.thumbnailUrl,
       skuId: null,
       skuName: null,
+      comparableKey: null,
       expectedProfitMin: roundDownTenThousand(item.expectedProfitMin) ?? 0,
       expectedProfitMax: roundDownTenThousand(item.expectedProfitMax) ?? 0,
       sellerReviewRating: null,
       sellerReviewCount: 0,
+      joongnaTrustScore: null,
+      joongnaSafeOrderSalesCount: null,
+      joongnaSafeOrderSalesText: null,
       directTradeLocation: null,
       descriptionPreview: "",
+      priceBandLabel: priceBandLabel(roundedPrice),
+      marketPriceBandLabel: priceBandLabel(roundedMarketPrice),
+      priceSignalLabel: item.priceSignalLabel,
+      sellerSignalLabel: item.sellerSignalLabel,
+      marketSignalLabel: item.marketSignalLabel,
     };
-  });
-}
-
-async function loadUserCredits(headers: Record<string, string>, userRef: string): Promise<UserCreditsRow | null> {
-  const res = await restFetch(
-    `${tableUrl("mvp_user_credits")}?select=user_ref,balance,last_free_browse_at&user_ref=eq.${encodeURIComponent(userRef)}&limit=1`,
-    { headers },
-  );
-  const rows = (await res.json()) as UserCreditsRow[];
-  return rows[0] ?? null;
-}
-
-async function upsertLastBrowse(headers: Record<string, string>, userRef: string, authUserId: string) {
-  await restFetch(`${tableUrl("mvp_user_credits")}?on_conflict=user_ref`, {
-    method: "POST",
-    headers: { ...headers, "Content-Type": "application/json", Prefer: "resolution=merge-duplicates" },
-    body: JSON.stringify({
-      user_ref: userRef,
-      auth_user_id: authUserId,
-      last_free_browse_at: new Date().toISOString(),
-    }),
   });
 }
 
@@ -617,7 +662,6 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
     const userRef = userRefForAuthUser(auth.user.id);
-    const authUserId = auth.user.id;
     const url = new URL(req.url);
     const refresh = url.searchParams.get("refresh") === "1";
     // Wave 340: 정렬 옵션. Wave 353: 카테고리 필터는 클라이언트로 이동 (전체 vs 카테고리 일관성).
@@ -660,32 +704,9 @@ export async function GET(req: Request) {
     const excludeAllPids = [...new Set([...excludePids, ...excludeTokenPids])];
 
     const headers = serviceHeaders();
-    const credits = await loadUserCredits(headers, userRef);
     const unlimitedAccess = isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
     const detailAccess = await getDetailAccessSnapshot({ user: auth.user, userRef, unlimited: unlimitedAccess });
-    const creditFeed = unlimitedAccess || Number(credits?.balance ?? 0) > 0;
-    const cooldown = computeCooldown(credits?.last_free_browse_at ?? null);
-    const effectiveCooldown = creditFeed
-      ? { canRefresh: true, remainingSec: 0, nextAvailableAt: null }
-      : cooldown;
-
-    // refresh 요청인데 cooldown 안 끝났으면 거부
-    if (refresh && !creditFeed && !cooldown.canRefresh) {
-      return NextResponse.json({
-        items: [],
-        cooldown,
-        feedMode: "free",
-        creditFeed: false,
-        detailAccess,
-        message: `${Math.ceil(cooldown.remainingSec / 60)}분 후 새 30개 매물을 받을 수 있어요.`,
-      }, { status: 200 });
-    }
-
-    // refresh 요청이고 무료 cooldown 통과면 last_free_browse_at 갱신.
-    // 크레딧 보유자는 피드 탐색에는 과금/쿨다운을 걸지 않는다.
-    if (refresh && !creditFeed && cooldown.canRefresh) {
-      await upsertLastBrowse(headers, userRef, authUserId);
-    }
+    const feedCooldown = { canRefresh: true, remainingSec: 0, nextAvailableAt: null };
 
     const readyCandidateLimit = refresh ? FETCH_POOL_OVERFETCH : READY_SLOTS;
     const appliedBudget: "150k" | "300k" | "500k" | "unlimited" =
@@ -730,36 +751,20 @@ export async function GET(req: Request) {
       items = [...items].sort((a, b) => b.expectedProfitMax - a.expectedProfitMax);
     }
     items = items.slice(0, PAGE_SIZE);
-    const freePreviewRemaining = Math.max(0, Number(detailAccess.freeLimit) - Number(detailAccess.freeUsed));
-    const exactFeedAllowed = creditFeed || freePreviewRemaining > 0;
-    const responseItems = exactFeedAllowed ? items : maskFreeFeedItems(items);
-
-    // refresh 후 새 cooldown 정보
-    const nextCooldown = creditFeed
-      ? effectiveCooldown
-      : refresh && cooldown.canRefresh
-      ? computeCooldown(new Date().toISOString())
-      : cooldown;
-
-    // Wave launch-12: refresh=false (기본 fetch) 응답 사용자별 15초 캐시.
-    // refresh=true 또는 credit feed = DB write / 사용자별 카운터 갱신이라 캐시 X.
-    // private = 사용자별 캐시 (CDN 공유 X — detailAccess 같은 사용자별 정보 노출 차단).
-    const cacheHeader = !refresh && !creditFeed
-      ? { "Cache-Control": "private, max-age=15" }
-      : { "Cache-Control": "no-store" };
+    const responseItems = buildTeaserFeedItems(items);
 
     return NextResponse.json({
       items: responseItems,
-      cooldown: nextCooldown,
-      feedMode: creditFeed ? "credit" : "free",
-      creditFeed,
+      cooldown: feedCooldown,
+      feedMode: "free",
+      creditFeed: false,
       detailAccess,
       total: responseItems.length,
       pageSize: PAGE_SIZE,
       freshLagHours: FRESH_LAG_HOURS,
       // Wave 382: 사용자 예산이 fallback됐는지 (사용자 안내용).
       appliedBudget,
-    }, { headers: cacheHeader });
+    }, { headers: { "Cache-Control": "no-store" } });
   } catch (err) {
     // Wave launch-23 (audit HIGH 잔존): raw err.message client 노출 차단. 상세는 server console.
     console.error("packs/pool failed", err instanceof Error ? err.message : String(err));
