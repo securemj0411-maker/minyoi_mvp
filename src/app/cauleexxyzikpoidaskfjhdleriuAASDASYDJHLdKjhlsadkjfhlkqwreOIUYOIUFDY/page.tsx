@@ -215,7 +215,7 @@ export default async function MembersPage() {
             href={OPS_ADMIN_REVEAL_ANALYTICS_PATH}
             className="ml-auto inline-flex items-center gap-2 rounded-sm border border-emerald-700 bg-emerald-950/40 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-300 transition hover:border-emerald-500 hover:bg-emerald-950/70"
           >
-            <span>REVEAL ANALYTICS</span>
+            <span>전체 REVEAL 통계</span>
             <span className="text-emerald-500">↗</span>
           </Link>
         </div>

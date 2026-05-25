@@ -38,7 +38,7 @@ const NAV_ITEMS: Array<{ href: string; label: string; match: (p: string) => bool
   { href: OPS_ADMIN_POOL_PATH, label: "POOL", match: (p) => p.startsWith(OPS_ADMIN_POOL_PATH) },
   { href: OPS_ADMIN_LOSS_REPORTS_PATH, label: "REPORTS", match: (p) => p.startsWith(OPS_ADMIN_LOSS_REPORTS_PATH) },
   { href: OPS_ADMIN_FEEDBACK_STATS_PATH, label: "STATS", match: (p) => p.startsWith(OPS_ADMIN_FEEDBACK_STATS_PATH) },
-  { href: OPS_ADMIN_REVEAL_ANALYTICS_PATH, label: "REVEALS", match: (p) => p.startsWith(OPS_ADMIN_REVEAL_ANALYTICS_PATH) },
+  { href: OPS_ADMIN_REVEAL_ANALYTICS_PATH, label: "REVEAL STATS", match: (p) => p.startsWith(OPS_ADMIN_REVEAL_ANALYTICS_PATH) },
   { href: OPS_ADMIN_DETAIL_EVENTS_PATH, label: "EVENTS", match: (p) => p.startsWith(OPS_ADMIN_DETAIL_EVENTS_PATH) },
 ];
 

@@ -259,7 +259,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                   onClick={(e) => e.stopPropagation()}
                   className="rounded-sm border border-emerald-800 bg-emerald-950/35 px-2 py-1 font-black tracking-wide text-emerald-300"
                 >
-                  REVEALS
+                  회원별
                 </Link>
               </div>
             </div>
@@ -291,7 +291,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
               <th className="px-3 py-2 text-right">CREDIT</th>
               <th className="px-3 py-2">STATUS</th>
               <th className="px-3 py-2">PROV</th>
-              <th className="px-3 py-2 text-right">REVEALS</th>
+              <th className="px-3 py-2 text-right">회원별 내역</th>
             </tr>
           </thead>
           <tbody>
@@ -337,7 +337,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                       href={`${OPS_ADMIN_REVEAL_ANALYTICS_PATH}?userRef=${encodeURIComponent(row.userRef)}`}
                       className="inline-flex rounded-sm border border-emerald-800 bg-emerald-950/35 px-2 py-1 text-[9px] font-black uppercase tracking-wide text-emerald-300 transition hover:border-emerald-600 hover:bg-emerald-950/60"
                     >
-                      OPEN
+                      보기
                     </Link>
                   </td>
                 </tr>
@@ -528,7 +528,7 @@ function MemberDrawer({
               href={`${OPS_ADMIN_REVEAL_ANALYTICS_PATH}?userRef=${encodeURIComponent(row.userRef)}`}
               className="flex w-full items-center justify-between rounded-sm border border-emerald-800 bg-emerald-950/30 px-3 py-2 text-[10px] font-black uppercase tracking-wide text-emerald-300 transition hover:border-emerald-600 hover:bg-emerald-950/50"
             >
-              <span>OPEN USER REVEALS</span>
+              <span>회원별 REVEAL 내역</span>
               <span className="text-emerald-500">↗</span>
             </Link>
           </div>

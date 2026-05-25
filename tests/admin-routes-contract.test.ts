@@ -29,7 +29,7 @@ test("operator nav uses absolute admin paths and legacy short paths redirect saf
   assert.match(topBar, /OPS_ADMIN_FEEDBACK_STATS_PATH/);
   assert.match(topBar, /OPS_ADMIN_DETAIL_EVENTS_PATH/);
   assert.match(topBar, /OPS_ADMIN_REVEAL_ANALYTICS_PATH/);
-  assert.match(topBar, /REVEALS/);
+  assert.match(topBar, /REVEAL STATS/);
   assert.match(membersTable, /OPS_ADMIN_REVEAL_ANALYTICS_PATH/);
   assert.match(membersTable, /userRef/);
   assert.match(detailEventsPage, /mvp_detail_events/);
