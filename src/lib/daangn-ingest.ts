@@ -121,6 +121,18 @@ export type DaangnIngestResult = {
   blockedSignals: DaangnBlockSignal[];
   sourceHealthStatus: "healthy" | "degraded" | "unhealthy";
   sourceHealthReason: string;
+
+  // Phase 6i+++ timing instrumentation — 진짜 병목 식별용
+  timingsMs?: {
+    searchFetch?: number;   // Promise.all 5 region fetch
+    searchParse?: number;   // parseDaangnSearchHtml + push
+    summarize?: number;     // summarizeDaangnArticles
+    detailClassify?: number; // pre-classify for detail priority sort
+    detailFetch?: number;   // sequential 5 detail fetches
+    rawUpsert?: number;     // upsertDaangnRawListings (raw + parsed)
+    healthCheck?: number;   // source health 평가
+    total?: number;
+  };
 };
 
 export type DaangnIngestOptions = {
@@ -595,9 +607,14 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const allArticles: DaangnSearchArticle[] = [];
   const ongoingSeenUrls = new Set<string>();
 
+  // Phase 6i+++ timing instrumentation
+  const timings: NonNullable<DaangnIngestResult["timingsMs"]> = {};
+  const tIngestStart = Date.now();
+
   // Phase 6i++ parallel search: sequential 5 region × ~50s = 250s. Promise.all 로 동시 → ~50s.
   //   동일 결과, 단순 동시성. delayMs 는 sequential 시 rate-limit 회피용이라 parallel 에서는 의미 X.
   //   block signal 감지 시 후속 결과 모두 무시 (race condition X — 결과 받은 후 평가).
+  const tSearchFetchStart = Date.now();
   const comboPromises = combos.map(async (combo) => {
     const url = buildDaangnSearchUrl({
       regionId: combo.region.id || undefined,
@@ -612,8 +629,10 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     }
   });
   const comboResults = await Promise.all(comboPromises);
+  timings.searchFetch = Date.now() - tSearchFetchStart;
 
   // 결과 평가 — block 감지 시 후속 결과는 모두 무시 (안전).
+  const tSearchParseStart = Date.now();
   let blockedDetected = false;
   for (const { combo: _combo, resp, error } of comboResults) {
     if (blockedDetected) break;
@@ -642,13 +661,16 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
       failedCombos += 1;
     }
   }
+  timings.searchParse = Date.now() - tSearchParseStart;
 
   // Summarize
+  const tSummarizeStart = Date.now();
   const summary = summarizeDaangnArticles(allArticles, {
     freshWindowHours,
     activeWindowHours,
     staleBoostedDays: 14,
   });
+  timings.summarize = Date.now() - tSummarizeStart;
   const nowMs = Date.now();
 
   // Phase 6i+: Detail fetch 선별 priority — [sku_id 매칭 우선, then 신선도]
@@ -656,6 +678,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   //         freshest 15 = 거의 noise → detail 낭비.
   //   대응: top 200 freshest 만 pre-classify (200ms cost), sku 매칭된 매물 우선
   //         enrich → shipping_possible/direct_only 정확도 ↑ → pool entry 정확도 ↑.
+  const tDetailClassifyStart = Date.now();
   const eligibleForDetail = allArticles
     .filter((a) => shouldFetchDaangnDetailCandidate(a, { activeWindowHours, nowMs }))
     .map((a) => ({ article: a, hours: ageHours(a.boostedAt ?? a.createdAt, nowMs) }))
@@ -688,6 +711,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
       return (a.hours ?? Infinity) - (b.hours ?? Infinity);  // 그 다음 fresh 우선
     })
     .slice(0, maxDetailSamples);
+  timings.detailClassify = Date.now() - tDetailClassifyStart;
 
   let detailFetched = 0;
   let detailParsed = 0;
@@ -695,6 +719,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const shipping = { shipping_possible: 0, direct_only: 0, unknown: 0 };
   const detailRecords: DaangnIngestDetailRecord[] = [];
 
+  const tDetailFetchStart = Date.now();
   for (const cand of detailCandidates) {
     const url = cand.article.href.startsWith("http") ? cand.article.href : `https://www.daangn.com${cand.article.href}`;
     let resp;
@@ -736,8 +761,10 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
 
     if (delayMs > 0) await sleep(delayMs);
   }
+  timings.detailFetch = Date.now() - tDetailFetchStart;
 
   // Source health 평가
+  const tHealthStart = Date.now();
   let sourceHealthStatus: DaangnIngestResult["sourceHealthStatus"] = "healthy";
   let sourceHealthReason = "ok";
   if (blockedSignals.length > 0) {
@@ -747,8 +774,10 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     sourceHealthStatus = "degraded";
     sourceHealthReason = `failed_rate_${Math.round((failedCombos / combos.length) * 100)}pct`;
   }
+  timings.healthCheck = Date.now() - tHealthStart;
 
   // DB write (Stage 1 = Shadow Mode — raw_listings 까지만, pool_eligible=false hard-coded)
+  const tRawUpsertStart = Date.now();
   let rawUpserted = 0;
   let rawSkippedExisting = 0;
   if (!dryRun) {
@@ -760,6 +789,8 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
       sourceHealthReason = `db_write_error:${err instanceof Error ? err.message.slice(0, 800) : String(err).slice(0, 800)}`;
     }
   }
+  timings.rawUpsert = Date.now() - tRawUpsertStart;
+  timings.total = Date.now() - tIngestStart;
 
   const finishedAt = new Date();
   return {
@@ -794,5 +825,6 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     blockedSignals,
     sourceHealthStatus,
     sourceHealthReason,
+    timingsMs: timings,
   };
 }
