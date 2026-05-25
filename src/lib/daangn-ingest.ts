@@ -363,39 +363,46 @@ async function upsertDaangnRawListings(
   const parsedRows = [...byPid.values()].map((b) => b.parsed).filter((p): p is Record<string, unknown> => Boolean(p));
   if (rawRows.length === 0) return 0;
 
-  // Phase 6i++ chunked upsert: 250 rows × 1 POST 가 ~60s. 50 rows × 5 POST 는 각 ~5-10s.
-  //   Supabase 가 같은 시간에 더 많이 처리 (큰 single body 보다 작은 chunks 가 효율적).
-  //   진짜 효율 개선 — trade-off 없음, 결과 동일.
+  // Phase 6i+++ chunked upsert + parallel:
+  //   - chunked alone: 27 chunks × 8s sequential = 220s (production 측정)
+  //   - parallel 5 concurrent: 27/5 = 6 batches × 8s = ~48s (5x 단축)
+  //   - trade-off: Supabase 5 동시 connection 사용, 다른 worker 영향 거의 X.
   const CHUNK_SIZE = 50;
+  const CONCURRENCY = 5;
 
-  // upsert raw chunked
-  for (let i = 0; i < rawRows.length; i += CHUNK_SIZE) {
-    const chunk = rawRows.slice(i, i + CHUNK_SIZE);
-    const rawRes = await restFetch(`${tableUrl("mvp_raw_listings")}?on_conflict=pid`, {
-      method: "POST",
-      headers: serviceHeaders("resolution=merge-duplicates,return=minimal"),
-      body: jsonBody(chunk),
-    });
-    if (!rawRes.ok) {
-      throw new Error(`mvp_raw_listings upsert failed (chunk ${i}-${i + chunk.length}): ${rawRes.status} ${await rawRes.text()}`);
+  // 헬퍼: parallel chunked upsert with concurrency limit
+  async function chunkedUpsert(rows: Record<string, unknown>[], url: string, label: string, fatal: boolean) {
+    const chunks: Record<string, unknown>[][] = [];
+    for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
+      chunks.push(rows.slice(i, i + CHUNK_SIZE));
+    }
+    // CONCURRENCY 씩 batch 단위로 parallel
+    for (let i = 0; i < chunks.length; i += CONCURRENCY) {
+      const batch = chunks.slice(i, i + CONCURRENCY);
+      const results = await Promise.all(batch.map(async (chunk) => {
+        const res = await restFetch(url, {
+          method: "POST",
+          headers: serviceHeaders("resolution=merge-duplicates,return=minimal"),
+          body: jsonBody(chunk),
+        });
+        return { ok: res.ok, status: res.status, text: res.ok ? "" : await res.text() };
+      }));
+      for (const r of results) {
+        if (!r.ok) {
+          const msg = `${label} upsert failed: ${r.status} ${r.text}`;
+          if (fatal) throw new Error(msg);
+          console.warn(msg);
+          return;  // non-fatal — 한 번 fail 하면 후속 중단
+        }
+      }
     }
   }
 
-  // upsert parsed chunked (score-worker 가 sku 매칭 매물 처리하려면 필수)
+  await chunkedUpsert(rawRows, `${tableUrl("mvp_raw_listings")}?on_conflict=pid`, "mvp_raw_listings", true);
+
+  // upsert parsed parallel chunked (score-worker 가 sku 매칭 매물 처리하려면 필수, but non-fatal)
   if (parsedRows.length > 0) {
-    for (let i = 0; i < parsedRows.length; i += CHUNK_SIZE) {
-      const chunk = parsedRows.slice(i, i + CHUNK_SIZE);
-      const parsedRes = await restFetch(`${tableUrl("mvp_listing_parsed")}?on_conflict=pid`, {
-        method: "POST",
-        headers: serviceHeaders("resolution=merge-duplicates,return=minimal"),
-        body: jsonBody(chunk),
-      });
-      if (!parsedRes.ok) {
-        // parsed upsert 실패는 fatal X — raw 는 박혔으니 다음 cron 재시도
-        console.warn(`mvp_listing_parsed upsert failed (chunk ${i}-${i + chunk.length}): ${parsedRes.status} ${await parsedRes.text()}`);
-        break;  // 후속 chunks 도 fail 가능성 — 한 번에 중단
-      }
-    }
+    await chunkedUpsert(parsedRows, `${tableUrl("mvp_listing_parsed")}?on_conflict=pid`, "mvp_listing_parsed", false);
   }
 
   return rawRows.length;
