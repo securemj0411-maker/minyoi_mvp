@@ -9,6 +9,7 @@ import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-mod
 import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, HourglassIcon, BookmarkIcon } from "@/components/icons";
 import { BrandLogo } from "@/components/brand-logo";
 import { ConditionPhotoBadge, ConditionTierPhotoBadge } from "@/components/condition-chip";
+import { CategoryWatermark } from "@/components/category-watermark";
 import KakaoLogo from "@/components/kakao-logo";
 import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
@@ -2544,7 +2545,14 @@ export default function ExploreClient({
                       unoptimized
                       className={`object-cover ${isSoldOut ? "opacity-60" : ""} ${lockedPreview ? "scale-105 blur-[1.5px]" : ""}`}
                     />
-                  ) : null}
+                  ) : (
+                    // Wave 749 (2026-05-25): 썸네일 없을 때 카테고리 워터마크 placeholder.
+                    <CategoryWatermark
+                      category={item.category}
+                      comparableKey={item.comparableKey ?? null}
+                      size={60}
+                    />
+                  )}
                   {lockedPreview && !isSoldOut ? (
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-br from-black/10 via-transparent to-black/20">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/88 shadow-[0_4px_14px_rgba(15,23,42,0.16)] ring-1 ring-white/70 backdrop-blur dark:bg-zinc-950/82 dark:ring-zinc-700/60">

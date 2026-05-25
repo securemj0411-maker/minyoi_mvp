@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
 import { MarketSourceDebug } from "@/components/market-source-debug";
 import { ConditionChip, ConditionTierChip, ConditionChipsList } from "@/components/condition-chip";
+import { CategoryWatermark } from "@/components/category-watermark";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { LiquidityCurveMini } from "@/components/liquidity-curve-mini";
 import { DanawaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
@@ -551,7 +552,14 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                       className="h-[100px] w-[100px] shrink-0 rounded object-cover"
                     />
                   ) : (
-                    <div className="h-[100px] w-[100px] shrink-0 rounded bg-zinc-200 dark:bg-zinc-800" />
+                    // Wave 749 (2026-05-25): 썸네일 없을 때 카테고리 워터마크 placeholder.
+                    <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded bg-zinc-200 dark:bg-zinc-800">
+                      <CategoryWatermark
+                        category={item.category}
+                        comparableKey={item.comparableKey ?? null}
+                        size={64}
+                      />
+                    </div>
                   )}
                   <div className="min-w-0 flex-1 space-y-1 text-xs">
                     <div className="line-clamp-2 text-[13px] font-bold text-zinc-900 dark:text-zinc-100">{item.name}</div>

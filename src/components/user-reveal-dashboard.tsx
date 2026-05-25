@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ConditionPhotoBadge, ConditionTierChip, ConditionChipsList } from "@/components/condition-chip";
+import { CategoryWatermark } from "@/components/category-watermark";
 import { BookmarkIcon } from "@/components/icons";
 import { BunjangSourceBadge, DanawaSourceBadge, MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
@@ -1520,7 +1521,13 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   unoptimized
                   className="object-cover"
                 />
-              ) : null}
+              ) : (
+                // Wave 749 (2026-05-25): 썸네일 없을 때 카테고리 워터마크 placeholder.
+                <CategoryWatermark
+                  comparableKey={item.comparableKey ?? null}
+                  size={56}
+                />
+              )}
             </div>
             <div className="min-w-0 self-center">
               <div className="flex items-start gap-1.5">

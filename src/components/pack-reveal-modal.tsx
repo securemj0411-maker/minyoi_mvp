@@ -6,6 +6,7 @@ import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, ty
 import MarketHistoryChart, { type ChartState as MarketChartState } from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
 import { ConditionChip, ConditionPhotoBadge, ConditionTierChip, ConditionChipsList } from "@/components/condition-chip";
+import { CategoryWatermark } from "@/components/category-watermark";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { BunjangLogo, DanawaLogo, JoongnaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import {
@@ -2285,8 +2286,15 @@ function RevealProductImage({ card }: { card: RevealCard }) {
           {typeof document !== "undefined" ? createPortal(largePreview, document.body) : largePreview}
         </>
       ) : (
-        <div className="flex h-full items-center justify-center text-xs font-semibold text-zinc-400">
-          이미지 없음
+        // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder.
+        <div className="relative flex h-full w-full items-center justify-center">
+          <CategoryWatermark
+            comparableKey={card.marketBasis?.comparableKey ?? null}
+            size={120}
+          />
+          <span className="pointer-events-none absolute bottom-4 text-[11px] font-bold text-zinc-400 dark:text-zinc-500">
+            사진 준비 중
+          </span>
         </div>
       )}
     </div>
@@ -2684,7 +2692,11 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                 {card.thumbnailUrl ? (
                   <Image src={card.thumbnailUrl} alt="" fill sizes="(max-width: 640px) 44px, 52px" unoptimized className="object-cover" />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
+                  // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder.
+                  <CategoryWatermark
+                    comparableKey={card.marketBasis?.comparableKey ?? null}
+                    size={28}
+                  />
                 )}
               </div>
               <div className="min-w-0 flex-1">
@@ -2749,7 +2761,11 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                         {item.thumbnailUrl ? (
                           <Image src={item.thumbnailUrl} alt="" fill sizes="52px" unoptimized className="object-cover" />
                         ) : (
-                          <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
+                          // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder — 같은 SKU 비교 매물이므로 card 의 comparableKey 사용.
+                          <CategoryWatermark
+                            comparableKey={card.marketBasis?.comparableKey ?? null}
+                            size={32}
+                          />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -4504,8 +4520,15 @@ function BeginnerGuideProductVisual({ card }: { card: RevealCard }) {
             priority={false}
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm font-bold text-zinc-500 dark:text-zinc-400">
-            이미지 없음
+          // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder.
+          <div className="relative flex h-full w-full items-center justify-center">
+            <CategoryWatermark
+              comparableKey={card.marketBasis?.comparableKey ?? null}
+              size={110}
+            />
+            <span className="pointer-events-none absolute bottom-5 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
+              사진 준비 중
+            </span>
           </div>
         )}
       </div>
@@ -5002,7 +5025,11 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
                 {card.thumbnailUrl ? (
                   <Image src={card.thumbnailUrl} alt="" fill sizes="(max-width: 640px) 44px, 48px" unoptimized className="object-cover" />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
+                  // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder.
+                  <CategoryWatermark
+                    comparableKey={card.marketBasis?.comparableKey ?? null}
+                    size={28}
+                  />
                 )}
               </div>
               <div className="min-w-0 flex-1">
@@ -5044,7 +5071,11 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
                         {item.thumbnailUrl ? (
                           <Image src={item.thumbnailUrl} alt="" fill sizes="48px" unoptimized className="object-cover" />
                         ) : (
-                          <div className="flex h-full items-center justify-center text-[8px] text-zinc-400">없음</div>
+                          // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder — 같은 SKU 비교 매물이므로 card 의 comparableKey 사용.
+                          <CategoryWatermark
+                            comparableKey={card.marketBasis?.comparableKey ?? null}
+                            size={32}
+                          />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -6658,9 +6689,11 @@ function RelatedRevealStrip({
                       className="object-cover"
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center px-2 text-center text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
-                      사진 없음
-                    </div>
+                    // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder.
+                    <CategoryWatermark
+                      comparableKey={item.marketBasis?.comparableKey ?? null}
+                      size={72}
+                    />
                   )}
                 </div>
                 <div className="flex flex-1 flex-col px-2.5 py-2.5">
