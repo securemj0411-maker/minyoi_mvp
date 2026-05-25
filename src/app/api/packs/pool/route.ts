@@ -5,6 +5,7 @@ import { pickByConditionFallback } from "@/lib/condition-fallback";
 import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombined } from "@/lib/marketplace-safety";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { createPoolAccessToken, decodePoolAccessToken, syntheticPidForPoolToken } from "@/lib/pool-access-token";
+import { localizeProductLineLabel } from "@/lib/product-line-display";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -148,9 +149,10 @@ function compactProductLineLabel(value: string | null | undefined, category: str
     .replace(/\s+/g, " ")
     .trim();
   if (!cleaned) return lockedPreviewTitle(category, conditionClass);
-  const suffix = /계열|후보|매물$/.test(cleaned) ? "" : " 계열";
-  if (usesLatestTierPreviewCategory(category)) return `${cleaned}${suffix}`;
-  return `${cleaned}${suffix} · ${conditionLabel}`;
+  const localized = localizeProductLineLabel(cleaned);
+  const suffix = /계열|후보|매물$/.test(localized) ? "" : " 계열";
+  if (usesLatestTierPreviewCategory(category)) return `${localized}${suffix}`;
+  return `${localized}${suffix} · ${conditionLabel}`;
 }
 
 function priceBandLabel(value: number | null | undefined) {

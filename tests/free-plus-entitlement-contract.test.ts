@@ -68,7 +68,9 @@ test("pool feed is a free teaser and exact purchase info opens only through deta
   assert.match(poolRoute, /marketSignalLabel/);
   assert.match(poolRoute, /LATEST_TIER_PREVIEW_CATEGORIES = new Set\(\["shoe", "clothing", "game_console", "sport_golf"\]\)/);
   assert.match(poolRoute, /if \(usesLatestTierPreviewCategory\(category\)\) return `\$\{categoryLabel\} 후보`;/);
-  assert.match(poolRoute, /if \(usesLatestTierPreviewCategory\(category\)\) return `\$\{cleaned\}\$\{suffix\}`;/);
+  assert.match(poolRoute, /import \{ localizeProductLineLabel \} from "@\/lib\/product-line-display"/);
+  assert.match(poolRoute, /const localized = localizeProductLineLabel\(cleaned\)/);
+  assert.match(poolRoute, /if \(usesLatestTierPreviewCategory\(category\)\) return `\$\{localized\}\$\{suffix\}`;/);
   assert.match(poolRoute, /feedMode: "free"/);
   assert.match(poolRoute, /creditFeed: false/);
   assert.match(poolRoute, /getDetailAccessSnapshot/);
