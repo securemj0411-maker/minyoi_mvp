@@ -146,7 +146,13 @@ export default function RevealAnalyticsClient() {
         const params = new URLSearchParams({ days: String(days), limit: userRef ? "1000" : "3000" });
         if (userRef.trim()) params.set("userRef", userRef.trim());
         const res = await fetch(`/api/admin/reveal-analytics?${params.toString()}`, { cache: "no-store" });
-        const json = (await res.json()) as ApiData | { error?: string };
+        const text = await res.text();
+        let json: ApiData | { error?: string };
+        try {
+          json = text ? JSON.parse(text) as ApiData | { error?: string } : { error: `empty response (${res.status})` };
+        } catch {
+          json = { error: `invalid response (${res.status}): ${text.slice(0, 120) || "empty"}` };
+        }
         if (!res.ok) throw new Error("error" in json && json.error ? json.error : `request failed ${res.status}`);
         if (!stopped) setData(json as ApiData);
       } catch (err) {

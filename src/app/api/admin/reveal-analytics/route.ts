@@ -199,6 +199,7 @@ export async function GET(req: NextRequest) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   if (!isAdminUser(auth.user)) return NextResponse.json({ error: "admin only" }, { status: 403 });
 
+  try {
   const url = new URL(req.url);
   const days = intParam(url.searchParams.get("days"), 30, 1, 365);
   const limit = intParam(url.searchParams.get("limit"), 500, 50, MAX_REVEALS);
@@ -350,4 +351,9 @@ export async function GET(req: NextRequest) {
     },
     rows,
   });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "unknown error";
+    console.error("[admin-reveal-analytics] failed", { message });
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
