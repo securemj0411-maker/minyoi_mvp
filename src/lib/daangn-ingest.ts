@@ -27,15 +27,18 @@
 //   - robots.txt 우회 X (/kr/buy-sell/?in=... 만 사용)
 
 import {
+  DAANGN_BASE_URL,
   DAANGN_FASHION_CATEGORIES,
   DAANGN_SOURCE_ID,
   DEFAULT_DAANGN_FASHION_QUERY_SEEDS,
   DEFAULT_DAANGN_REGION_SEEDS,
   buildDaangnSearchUrl,
+  daangnInternalPid,
   detectDaangnBlockSignal,
   fetchDaangnText,
   getDaangnSourceMode,
   parseDaangnDetailHtml,
+  parseDaangnExternalId,
   parseDaangnSearchHtml,
   shouldFetchDaangnDetailCandidate,
   summarizeDaangnArticles,
@@ -47,6 +50,7 @@ import {
   type DaangnSearchArticle,
   type DaangnSourceMode,
 } from "@/lib/daangn";
+import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 // ───────────────────────────────────────────────────────────────────────────
 // Types
@@ -209,6 +213,102 @@ function sleep(ms: number) {
 }
 
 // ───────────────────────────────────────────────────────────────────────────
+// DB upsert
+// ───────────────────────────────────────────────────────────────────────────
+
+function buildRawListingRow(
+  article: DaangnSearchArticle | DaangnDetailArticle,
+  shipping: DaangnShippingInference | null,
+  nowIso: string,
+): Record<string, unknown> | null {
+  const externalId = parseDaangnExternalId(article.href);
+  if (!externalId) return null;
+  const pid = daangnInternalPid(externalId);
+  const fullUrl = article.href.startsWith("http") ? article.href : `${DAANGN_BASE_URL}${article.href}`;
+  return {
+    pid,
+    source: DAANGN_SOURCE_ID,
+    url: fullUrl,
+    name: article.title ?? "",
+    price: article.price ?? null,
+    num_faved: article.favoriteCount ?? null,
+    num_comment: article.chatCount ?? null,  // 당근 chatCount ≈ 번개 num_comment 유사 신호 (대화 = 흥정)
+    thumbnail_url: article.thumbnail ?? null,
+    description_preview: (article.content ?? "").slice(0, 500),
+    query: `daangn:${article.region.name ?? article.region.dbId ?? "?"}`,
+    seller_uid: article.user.dbId,
+    seller_source: DAANGN_SOURCE_ID,
+    listing_state: article.status === "Ongoing" ? "active" : "disappeared",
+    listing_type: "unknown",  // detail enrichment + classifier 가 필요. Phase 1 = unknown.
+    sale_status: article.status === "Ongoing" ? "saling" : article.status?.toLowerCase() ?? "",
+    detail_status: "pending",  // 당근 detail 별도 fetch (Phase 5+).
+    source_updated_at: article.boostedAt ?? article.createdAt ?? nowIso,
+    last_seen_at: nowIso,
+    last_changed_at: nowIso,
+    updated_at: nowIso,
+    pool_eligible: false,  // Stage 1 (Shadow Mode) — pool 진입 차단.
+    raw_json: {
+      source: DAANGN_SOURCE_ID,
+      externalId,
+      region: article.region,
+      category: article.category,
+      createdAt: article.createdAt,
+      boostedAt: article.boostedAt,
+      viewCount: article.viewCount,
+      chatCount: article.chatCount,
+      favoriteCount: article.favoriteCount,
+      user: article.user,
+    },
+    // Daangn 전용 컬럼 (Phase 3 schema migration)
+    daangn_region_id: article.region.dbId,
+    daangn_region_name: article.region.name,
+    daangn_boosted_at: article.boostedAt,
+    daangn_web_crawl_allowed: !article.user.webCrawlNotAllowed,
+    daangn_shipping_inferred: shipping ?? "unknown",
+  };
+}
+
+async function upsertDaangnRawListings(
+  articles: DaangnSearchArticle[],
+  detailRecords: DaangnIngestDetailRecord[],
+): Promise<number> {
+  if (articles.length === 0) return 0;
+  const nowIso = new Date().toISOString();
+
+  // detail enriched 매물 (shipping 추론됨) 은 우선 사용
+  const detailShippingByExternal = new Map<string, DaangnShippingInference>();
+  for (const r of detailRecords) {
+    const ext = parseDaangnExternalId(r.article.href);
+    if (ext) detailShippingByExternal.set(ext, r.shipping);
+  }
+
+  // dedupe by pid (같은 매물 여러 combo 중복 검색됨)
+  const byPid = new Map<number, Record<string, unknown>>();
+  for (const article of articles) {
+    const ext = parseDaangnExternalId(article.href);
+    if (!ext) continue;
+    const shipping = detailShippingByExternal.get(ext) ?? null;
+    const row = buildRawListingRow(article, shipping, nowIso);
+    if (!row) continue;
+    byPid.set(row.pid as number, row);
+  }
+
+  const rows = [...byPid.values()];
+  if (rows.length === 0) return 0;
+
+  // upsert on pid (joongna 패턴 동일)
+  const res = await restFetch(`${tableUrl("mvp_raw_listings")}?on_conflict=pid`, {
+    method: "POST",
+    headers: serviceHeaders("resolution=merge-duplicates,return=minimal"),
+    body: jsonBody(rows),
+  });
+  if (!res.ok) {
+    throw new Error(`mvp_raw_listings upsert failed: ${res.status} ${await res.text()}`);
+  }
+  return rows.length;
+}
+
+// ───────────────────────────────────────────────────────────────────────────
 // Combo selection (rotation strategy)
 // ───────────────────────────────────────────────────────────────────────────
 
@@ -280,8 +380,8 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   for (let i = 0; i < combos.length; i += 1) {
     const combo = combos[i];
     const url = buildDaangnSearchUrl({
-      regionDbId: combo.region.id,
-      categoryDbId: combo.category.id,
+      regionId: combo.region.id,
+      categoryId: combo.category.id,
       search: combo.query.search,
     });
 
@@ -322,7 +422,11 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   }
 
   // Summarize
-  const summary = summarizeDaangnArticles(allArticles, { activeWindowHours });
+  const summary = summarizeDaangnArticles(allArticles, {
+    freshWindowHours,
+    activeWindowHours,
+    staleBoostedDays: 14,
+  });
   const nowMs = Date.now();
 
   // Detail fetch candidates — fresh 우선 (boostedAt 기준)
@@ -391,12 +495,16 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     sourceHealthReason = `failed_rate_${Math.round((failedCombos / combos.length) * 100)}pct`;
   }
 
-  // DB write (Stage 1 = dry-run skip)
+  // DB write (Stage 1 = Shadow Mode — raw_listings 까지만, pool_eligible=false hard-coded)
   let rawUpserted = 0;
   let rawSkippedExisting = 0;
   if (!dryRun) {
-    // TODO Phase 1: schema migration 후 활성화
-    // rawUpserted = await upsertDaangnRawListings(allArticles, detailRecords);
+    try {
+      rawUpserted = await upsertDaangnRawListings(allArticles, detailRecords);
+    } catch (err) {
+      sourceHealthStatus = "degraded";
+      sourceHealthReason = `db_write_error:${err instanceof Error ? err.message.slice(0, 200) : String(err).slice(0, 200)}`;
+    }
   }
 
   const finishedAt = new Date();
@@ -413,7 +521,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     blockedCombos,
     failedCombos,
 
-    articles: summary.articles,
+    articles: summary.total,
     ongoing: summary.ongoing,
     crawlAllowedOngoing: summary.crawlAllowedOngoing,
     freshBoosted24h: summary.freshBoosted24h,

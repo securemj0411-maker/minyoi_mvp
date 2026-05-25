@@ -19,7 +19,9 @@ export type CronWorkerMode =
   | "score_worker"
   // Wave launch-44 (사용자 짚음 "invalidated to ready cron 해결책"):
   //   recovery cron 별도 worker 분리. score_worker 부담 ↓ (33% timeout 대응) + 회복 처리량 ↑.
-  | "recovery_worker";
+  | "recovery_worker"
+  // Phase 4 (당근 ingest cron, Shadow Mode 시작): 5분 간격.
+  | "daangn_worker";
 
 type CronGuardSkipReason = "cooldown" | "same_worker_running" | "source_health_unhealthy";
 
@@ -89,6 +91,7 @@ const DEFAULT_COOLDOWN_MS: Record<CronWorkerMode, number> = {
   joongna_worker: 5 * 60_000,
   score_worker: 60_000,
   recovery_worker: 60_000,
+  daangn_worker: 5 * 60_000,
 };
 
 const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
@@ -108,6 +111,7 @@ const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
   joongna_worker: 2 * 60_000,
   score_worker: 90_000,
   recovery_worker: 60_000,
+  daangn_worker: 90_000,
 };
 
 const HEAVY_SOURCE_HEALTH_GUARD_MODES = new Set<CronWorkerMode>([
@@ -116,6 +120,7 @@ const HEAVY_SOURCE_HEALTH_GUARD_MODES = new Set<CronWorkerMode>([
   "pool_warmer",
   "lifecycle_terminal_recheck",
   "joongna_worker",
+  "daangn_worker",
 ]);
 
 let sourceHealthLoaderForTests: (() => Promise<SourceHealthForGuard | null>) | null = null;

@@ -1,6 +1,27 @@
+import { createHash } from "node:crypto";
+
 export const DAANGN_SOURCE_ID = "daangn" as const;
 export const DAANGN_BASE_URL = "https://www.daangn.com";
 export const DAANGN_ROBOTS_URL = `${DAANGN_BASE_URL}/robots.txt`;
+
+// pid namespace (joongna = 7_000_000_000_000+, bunjang = native, daangn = 9_000_000_000_000+).
+// String slug ID 를 deterministic 64-bit hash 로 변환해서 bigint pid 로 매핑.
+const DAANGN_PID_BASE = 9_000_000_000_000;
+
+export function daangnInternalPid(externalId: string): number {
+  if (!externalId) throw new Error("daangnInternalPid: empty externalId");
+  const digest = createHash("sha256").update(`${DAANGN_SOURCE_ID}:${externalId}`).digest();
+  const hash32 = digest.readUInt32BE(0);
+  return DAANGN_PID_BASE + hash32;
+}
+
+export function parseDaangnExternalId(href: string): string | null {
+  if (!href) return null;
+  // /kr/buy-sell/<slug>/
+  const m = /\/kr\/buy-sell\/([^/?#]+)\/?/.exec(href);
+  if (!m) return null;
+  return decodeURIComponent(m[1]);
+}
 
 export type DaangnSourceMode = "off" | "probe" | "active";
 

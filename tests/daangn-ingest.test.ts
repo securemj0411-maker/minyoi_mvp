@@ -14,6 +14,8 @@ import {
   DAANGN_FASHION_CATEGORIES,
   DEFAULT_DAANGN_FASHION_QUERY_SEEDS,
   DEFAULT_DAANGN_REGION_SEEDS,
+  daangnInternalPid,
+  parseDaangnExternalId,
   type DaangnDetailArticle,
   type DaangnSearchArticle,
 } from "../src/lib/daangn";
@@ -105,6 +107,38 @@ describe("inferDaangnShipping (conservative default)", () => {
     const a = makeArticle({ content: "직거래만 받습니다 택배 가능 문의" });
     // 정책: 직거래 only 명시가 더 강한 신호 → direct_only
     assert.equal(inferDaangnShipping(a), "direct_only");
+  });
+
+  it("daangnInternalPid is deterministic + in 9_000_000_000_000+ namespace", () => {
+    const ext = "나이키-덩크-로우-범고래-275mm-m6kfak8ich21";
+    const pid1 = daangnInternalPid(ext);
+    const pid2 = daangnInternalPid(ext);
+    assert.equal(pid1, pid2, "deterministic for same input");
+    assert.ok(pid1 >= 9_000_000_000_000, "in daangn pid namespace");
+    assert.ok(pid1 < 10_000_000_000_000, "below 10 trillion (32-bit hash range)");
+  });
+
+  it("daangnInternalPid different for different externalIds", () => {
+    const a = daangnInternalPid("article-a-m1");
+    const b = daangnInternalPid("article-b-m2");
+    assert.notEqual(a, b);
+  });
+
+  it("daangnInternalPid throws on empty", () => {
+    assert.throws(() => daangnInternalPid(""), /empty externalId/);
+  });
+
+  it("parseDaangnExternalId extracts slug from /kr/buy-sell/<slug>/", () => {
+    assert.equal(
+      parseDaangnExternalId("/kr/buy-sell/나이키-덩크-275-m6kfak8ich21/"),
+      "나이키-덩크-275-m6kfak8ich21",
+    );
+    assert.equal(
+      parseDaangnExternalId("https://www.daangn.com/kr/buy-sell/abc-xyz123/"),
+      "abc-xyz123",
+    );
+    assert.equal(parseDaangnExternalId("/invalid-path/"), null);
+    assert.equal(parseDaangnExternalId(""), null);
   });
 
   it("detail article (with extra fields) works same as search article", () => {
