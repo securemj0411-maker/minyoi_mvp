@@ -45,6 +45,24 @@ test("raw listing type storage rejects internal triage labels", () => {
   assert.equal(rawListingTypeForStorage("unchanged_detail"), "unknown");
 });
 
+test("pool policy treats legacy Daangn saling typo as active", () => {
+  const base = {
+    profitMin: 20_000,
+    profitMax: 30_000,
+    price: 80_000,
+    skuMedian: 120_000,
+    riskHits: 0,
+    thumbnailUrl: "https://example.test/item.jpg",
+    categoryCanEnterPool: true,
+    comparableKey: "shoe|sample|sneaker|a_grade",
+    needsReview: false,
+    confidence: 0.9,
+    scoreFlags: [],
+  };
+  assert.equal(poolSkipReason({ ...base, saleStatus: "selling" }), null);
+  assert.equal(poolSkipReason({ ...base, saleStatus: "saling" }), null);
+});
+
 test("search seller cache skips unchanged recent sellers", () => {
   const nowMs = Date.parse("2026-05-11T12:00:00.000Z");
   const oneHour = 60 * 60 * 1000;
