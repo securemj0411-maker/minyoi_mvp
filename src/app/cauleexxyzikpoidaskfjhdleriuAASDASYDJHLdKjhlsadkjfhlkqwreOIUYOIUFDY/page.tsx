@@ -223,6 +223,23 @@ export default async function MembersPage() {
 
       <ManualDepositPanel />
       <FeedbackPanel />
+      <section className="mb-4 rounded-sm border border-emerald-800 bg-emerald-950/30 p-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">▌전체 REVEAL 통계</div>
+            <p className="mt-1 text-[11px] font-bold text-zinc-400">
+              가격대 · 카테고리 · SKU · source · 원본 클릭률을 전체 사용자 기준으로 봅니다.
+            </p>
+          </div>
+          <Link
+            href={OPS_ADMIN_REVEAL_ANALYTICS_PATH}
+            className="inline-flex items-center gap-2 rounded-sm border border-emerald-600 bg-emerald-500/10 px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-emerald-200 transition hover:bg-emerald-500/20"
+          >
+            전체 통계 페이지 열기
+            <span>↗</span>
+          </Link>
+        </div>
+      </section>
       <MembersTable initialRows={rows} />
     </main>
   );
