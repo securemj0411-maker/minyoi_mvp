@@ -52,6 +52,9 @@ import {
 } from "@/lib/daangn";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { buildDaangnQueryPool } from "@/lib/daangn-query-pool";
+import { classifyListing } from "@/lib/pipeline";
+import { ruleMatch } from "@/lib/catalog";
+import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 
 // ───────────────────────────────────────────────────────────────────────────
 // Types
@@ -221,33 +224,71 @@ function buildRawListingRow(
   article: DaangnSearchArticle | DaangnDetailArticle,
   shipping: DaangnShippingInference | null,
   nowIso: string,
-): Record<string, unknown> | null {
+): { raw: Record<string, unknown>; parsed: Record<string, unknown> | null; sku_id: string | null } | null {
   const externalId = parseDaangnExternalId(article.href);
   if (!externalId) return null;
   const pid = daangnInternalPid(externalId);
   const fullUrl = article.href.startsWith("http") ? article.href : `${DAANGN_BASE_URL}${article.href}`;
-  return {
+
+  // Phase 6 — classifier + parser 통합 (bunjang detail-worker 패턴).
+  //   sku_id 매칭 → score-worker 가 처리 가능.
+  //   detail.content 가 있으면 description 으로 사용 (parser quality ↑).
+  const title = article.title ?? "";
+  const description = ((article as DaangnDetailArticle).content ?? article.content ?? "") as string;
+  const price = Number(article.price ?? 0);
+  const classified = classifyListing(title, description, price);
+  const storageListingType = classified.listingType === "normal" ? "normal" : (classified.listingType ?? "unknown");
+  const matched = classified.listingType === "normal" ? ruleMatch(title, description) : null;
+  const parsedOptions = matched
+    ? parseListingOptions({
+      title,
+      description,
+      skuId: matched.id,
+      skuName: matched.modelName,
+      category: matched.category,
+    })
+    : null;
+  const skuId = parsedOptions && !parsedOptions.needsReview ? matched?.id ?? null : null;
+  const skuName = parsedOptions && !parsedOptions.needsReview ? matched?.modelName ?? null : null;
+  const parsedRow = parsedOptions ? toParsedListingRow(pid, parsedOptions) : null;
+
+  // pool_eligible 정책 (Phase 6 수정 — 사용자 정책):
+  //   당근 매물 = 동네 직거래 default OK.
+  //   direct_only / unknown / shipping_possible 모두 pool 진입 후보.
+  //   매물 노출 시 사용자 동네 매칭은 per-user filter (Phase 7).
+  //   sku_id NULL = 분류 실패 → pool 차단.
+  const poolEligible =
+    Boolean(skuId) &&
+    storageListingType === "normal" &&
+    article.status === "Ongoing" &&
+    !article.user.webCrawlNotAllowed;
+
+  const raw: Record<string, unknown> = {
     pid,
     source: DAANGN_SOURCE_ID,
     url: fullUrl,
-    name: article.title ?? "",
+    name: title,
     price: article.price ?? null,
     num_faved: article.favoriteCount ?? null,
-    num_comment: article.chatCount ?? null,  // 당근 chatCount ≈ 번개 num_comment 유사 신호 (대화 = 흥정)
+    num_comment: article.chatCount ?? null,  // 당근 chatCount ≈ 번개 num_comment 유사 신호
     thumbnail_url: article.thumbnail ?? null,
-    description_preview: (article.content ?? "").slice(0, 500),
+    description_preview: description.slice(0, 500),
     query: `daangn:${article.region.name ?? article.region.dbId ?? "?"}`,
     seller_uid: article.user.dbId,
     seller_source: DAANGN_SOURCE_ID,
     listing_state: article.status === "Ongoing" ? "active" : "disappeared",
-    listing_type: "unknown",  // detail enrichment + classifier 가 필요. Phase 1 = unknown.
+    listing_type: storageListingType,
+    sku_id: skuId,
+    sku_name: skuName,
     sale_status: article.status === "Ongoing" ? "saling" : article.status?.toLowerCase() ?? "",
-    detail_status: "pending",  // 당근 detail 별도 fetch (Phase 5+).
+    detail_status: "done",   // 당근은 search payload 안 content 있어서 단일 단계로 처리 가능.
+    detail_enriched_at: nowIso,
     source_updated_at: article.boostedAt ?? article.createdAt ?? nowIso,
     last_seen_at: nowIso,
     last_changed_at: nowIso,
     updated_at: nowIso,
-    pool_eligible: false,  // Stage 1 (Shadow Mode) — pool 진입 차단.
+    pool_eligible: poolEligible,
+    score_dirty: poolEligible,  // sku 매칭 + normal → score-worker 가 다음 cycle 에 처리
     raw_json: {
       source: DAANGN_SOURCE_ID,
       externalId,
@@ -267,6 +308,7 @@ function buildRawListingRow(
     daangn_web_crawl_allowed: !article.user.webCrawlNotAllowed,
     daangn_shipping_inferred: shipping ?? "unknown",
   };
+  return { raw, parsed: parsedRow, sku_id: skuId };
 }
 
 async function upsertDaangnRawListings(
@@ -284,29 +326,44 @@ async function upsertDaangnRawListings(
   }
 
   // dedupe by pid (같은 매물 여러 combo 중복 검색됨)
-  const byPid = new Map<number, Record<string, unknown>>();
+  const byPid = new Map<number, { raw: Record<string, unknown>; parsed: Record<string, unknown> | null }>();
   for (const article of articles) {
     const ext = parseDaangnExternalId(article.href);
     if (!ext) continue;
     const shipping = detailShippingByExternal.get(ext) ?? null;
-    const row = buildRawListingRow(article, shipping, nowIso);
-    if (!row) continue;
-    byPid.set(row.pid as number, row);
+    const built = buildRawListingRow(article, shipping, nowIso);
+    if (!built) continue;
+    byPid.set(built.raw.pid as number, { raw: built.raw, parsed: built.parsed });
   }
 
-  const rows = [...byPid.values()];
-  if (rows.length === 0) return 0;
+  const rawRows = [...byPid.values()].map((b) => b.raw);
+  const parsedRows = [...byPid.values()].map((b) => b.parsed).filter((p): p is Record<string, unknown> => Boolean(p));
+  if (rawRows.length === 0) return 0;
 
-  // upsert on pid (joongna 패턴 동일)
-  const res = await restFetch(`${tableUrl("mvp_raw_listings")}?on_conflict=pid`, {
+  // upsert raw (joongna 패턴 동일)
+  const rawRes = await restFetch(`${tableUrl("mvp_raw_listings")}?on_conflict=pid`, {
     method: "POST",
     headers: serviceHeaders("resolution=merge-duplicates,return=minimal"),
-    body: jsonBody(rows),
+    body: jsonBody(rawRows),
   });
-  if (!res.ok) {
-    throw new Error(`mvp_raw_listings upsert failed: ${res.status} ${await res.text()}`);
+  if (!rawRes.ok) {
+    throw new Error(`mvp_raw_listings upsert failed: ${rawRes.status} ${await rawRes.text()}`);
   }
-  return rows.length;
+
+  // upsert parsed (score-worker 가 sku 매칭 매물 처리하려면 필수)
+  if (parsedRows.length > 0) {
+    const parsedRes = await restFetch(`${tableUrl("mvp_listing_parsed")}?on_conflict=pid`, {
+      method: "POST",
+      headers: serviceHeaders("resolution=merge-duplicates,return=minimal"),
+      body: jsonBody(parsedRows),
+    });
+    if (!parsedRes.ok) {
+      // parsed upsert 실패는 fatal X — raw 는 박혔으니 다음 cron 재시도
+      console.warn(`mvp_listing_parsed upsert failed: ${parsedRes.status} ${await parsedRes.text()}`);
+    }
+  }
+
+  return rawRows.length;
 }
 
 // ───────────────────────────────────────────────────────────────────────────
