@@ -120,6 +120,10 @@ type RelatedRevealItem = {
   expectedProfitMax: number;
   marketBasis: RevealCard["marketBasis"] | null;
   revealedAt: string;
+  // Wave 752 (2026-05-25): 잠금 매물 처리 — 사진 블러 + 카테고리 워터마크 + 차익/가격 숨김.
+  // 사용자가 결제/언락 안 한 매물이면 true. explore-client 의 lockedPreview 와 동일 논리.
+  locked?: boolean;
+  category?: string | null;
 };
 
 type PreviewSide = "left" | "right";
@@ -6685,6 +6689,7 @@ function RelatedRevealStrip({
         >
           {visibleItems.map((item) => {
             const profitPct = item.price > 0 ? Math.round((item.expectedProfitMax / item.price) * 100) : 0;
+            const isLocked = item.locked === true;
             return (
               <button
                 key={item.pid}
@@ -6694,7 +6699,8 @@ function RelatedRevealStrip({
               >
                 <div className="relative aspect-square w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
                   {/* Wave 714d (2026-05-23 fix): 신발/의류는 기존 ConditionPhotoBadge 숨김. */}
-                  {!(item.marketBasis?.comparableKey?.startsWith("shoe|") || item.marketBasis?.comparableKey?.startsWith("clothing|")) && (
+                  {/* Wave 752 (2026-05-25): 잠금 상태에선 condition 배지도 숨김 (정보 새지 않게). */}
+                  {!isLocked && !(item.marketBasis?.comparableKey?.startsWith("shoe|") || item.marketBasis?.comparableKey?.startsWith("clothing|")) && (
                     <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
                   )}
                   {item.thumbnailUrl ? (
@@ -6705,18 +6711,33 @@ function RelatedRevealStrip({
                         fill
                         sizes="140px"
                         unoptimized
-                        className="object-cover"
+                        className={`object-cover ${isLocked ? "scale-105 blur-[2px]" : ""}`}
                       />
-                      {/* Wave 751 (2026-05-25): 카테고리 워터마크 배지. */}
-                      <CategoryWatermark
-                        comparableKey={item.marketBasis?.comparableKey ?? null}
-                        size={28}
-                        variant="corner"
-                      />
+                      {/* Wave 752 (2026-05-25): 잠금 상태면 카테고리 배지 + 어두운 overlay (feed lockedPreview 일관). */}
+                      {isLocked ? (
+                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-br from-black/15 via-transparent to-black/25">
+                          <CategoryWatermark
+                            category={item.category}
+                            comparableKey={item.marketBasis?.comparableKey ?? null}
+                            size={48}
+                          />
+                          <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/58 px-1.5 py-0.5 text-[9px] font-black text-white backdrop-blur">
+                            상세에서 확인
+                          </span>
+                        </div>
+                      ) : (
+                        /* Wave 751 (2026-05-25): 언락 매물은 우하단 카테고리 워터마크 배지만. */
+                        <CategoryWatermark
+                          comparableKey={item.marketBasis?.comparableKey ?? null}
+                          size={28}
+                          variant="corner"
+                        />
+                      )}
                     </>
                   ) : (
                     // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder.
                     <CategoryWatermark
+                      category={item.category}
                       comparableKey={item.marketBasis?.comparableKey ?? null}
                       size={72}
                     />
@@ -6724,14 +6745,23 @@ function RelatedRevealStrip({
                 </div>
                 <div className="flex flex-1 flex-col px-2.5 py-2.5">
                   <div className="line-clamp-2 min-h-[32px] text-[11px] font-bold leading-tight text-zinc-700 dark:text-zinc-300">
-                    {item.name}
+                    {isLocked ? "상세에서 공개" : item.name}
                   </div>
-                  <div className="mt-1.5 text-[13px] font-black leading-none tabular-nums tracking-tight text-blue-700 dark:text-blue-300">
-                    {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
-                  </div>
-                  <div className="mt-0.5 text-[10px] font-bold tabular-nums text-zinc-500 dark:text-zinc-400">
-                    매입 {krw(item.price)} · +{profitPct}%
-                  </div>
+                  {isLocked ? (
+                    /* Wave 752 (2026-05-25): 잠금 매물은 차익/매입가 숨김 — 정보 누출 방지. */
+                    <div className="mt-1.5 text-[12px] font-black leading-none text-zinc-400 dark:text-zinc-500">
+                      상세에서 확인
+                    </div>
+                  ) : (
+                    <>
+                      <div className="mt-1.5 text-[13px] font-black leading-none tabular-nums tracking-tight text-blue-700 dark:text-blue-300">
+                        {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
+                      </div>
+                      <div className="mt-0.5 text-[10px] font-bold tabular-nums text-zinc-500 dark:text-zinc-400">
+                        매입 {krw(item.price)} · +{profitPct}%
+                      </div>
+                    </>
+                  )}
                 </div>
               </button>
             );

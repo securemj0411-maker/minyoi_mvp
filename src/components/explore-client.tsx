@@ -1884,6 +1884,7 @@ export default function ExploreClient({
 
   // Wave 349: 모달 안 "다른 매물 추천" — 현재 매물 제외 + 같은 카테고리 우선 + 8개.
   // sold out 매물 제외 (클릭 불가).
+  // Wave 752 (2026-05-25): 각 매물별 lockedPreview 계산 → 잠금 매물은 strip 에서도 블러 + 차익/가격 숨김.
   const relatedItems = useMemo(() => {
     if (!selectedCard) return [];
     const currentPid = selectedCard.pid;
@@ -1894,37 +1895,45 @@ export default function ExploreClient({
     const otherCategory = candidates.filter((it) => it.category !== currentCategory);
     const ordered = [...sameCategory, ...otherCategory].slice(0, 8);
     // Wave 366: marketBasis null → minimal로 채워서 시세 표시되도록.
-    return ordered.map((it) => ({
-      pid: it.pid,
-      name: it.name,
-      price: it.price,
-      thumbnailUrl: it.thumbnailUrl,
-      expectedProfitMin: it.expectedProfitMin,
-      expectedProfitMax: it.expectedProfitMax,
-      marketBasis: it.skuMedian
-        ? {
-            comparableKey: it.comparableKey,
-            label: it.skuName ?? it.name,
-            p25Price: null,
-            medianPrice: it.skuMedian,
-            p75Price: null,
-            sampleCount: 0,
-            activeSampleCount: 0,
-            soldSampleCount: 0,
-            disappearedSampleCount: 0,
-            confidence: null,
-            priceSource: "market" as const,
-            computedAt: null,
-            excludedExamples: [],
-            conditionClass: it.conditionClass,
-            conditionLabel: null,
-            fallbackUsed: false,
-            otherConditions: [],
-          }
-        : null,
-      revealedAt: it.lastVerifiedAt,
-    }));
-  }, [items, selectedCard]);
+    return ordered.map((it) => {
+      // Wave 752 (2026-05-25): feed 카드 lockedPreview 와 동일 로직.
+      const teaserLocked = isFeedTeaserLocked(it);
+      const exactUnlocked = !teaserLocked || scrapOnly || savedPidSet.has(it.pid) || openedDetailPids.has(it.pid);
+      const locked = !exactUnlocked;
+      return {
+        pid: it.pid,
+        name: it.name,
+        price: it.price,
+        thumbnailUrl: it.thumbnailUrl,
+        expectedProfitMin: it.expectedProfitMin,
+        expectedProfitMax: it.expectedProfitMax,
+        marketBasis: it.skuMedian
+          ? {
+              comparableKey: it.comparableKey,
+              label: it.skuName ?? it.name,
+              p25Price: null,
+              medianPrice: it.skuMedian,
+              p75Price: null,
+              sampleCount: 0,
+              activeSampleCount: 0,
+              soldSampleCount: 0,
+              disappearedSampleCount: 0,
+              confidence: null,
+              priceSource: "market" as const,
+              computedAt: null,
+              excludedExamples: [],
+              conditionClass: it.conditionClass,
+              conditionLabel: null,
+              fallbackUsed: false,
+              otherConditions: [],
+            }
+          : null,
+        revealedAt: it.lastVerifiedAt,
+        locked,
+        category: it.category,
+      };
+    });
+  }, [items, selectedCard, scrapOnly, savedPidSet, openedDetailPids]);
 
   const freeDetailRemaining = Math.max(
     0,
