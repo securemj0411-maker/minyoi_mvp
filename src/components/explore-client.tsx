@@ -1177,26 +1177,45 @@ function FirstFeedOnboardingCard({
         </div>
 
         {step === 0 ? (
-          /* Wave launch-125 step 0: 의심 mirror — 사용자 머릿속 의심 정직히 인용. */
+          /* Wave launch-125b (2026-05-25): 의심 mirror — 카드 1개 + 사용자 머릿속 의심 그대로. */
           <div className="flex flex-1 flex-col justify-center pb-24">
             <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">의심 한 번 짚고 갈게요</div>
-            <h2 className="mt-3 break-keep text-[34px] font-black leading-[1.12] tracking-tight sm:text-[42px]">
-              중고 시세 15만원인데
+
+            {/* 예시 매물 카드 1개 (의심 trigger 용). 사진은 public/intro/airpods-pro-2.jpg 박혀야 path 동작. */}
+            <div className="mt-4 flex items-center gap-3 rounded-[18px] border border-zinc-200 bg-white px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/intro/airpods-pro-2.jpg"
+                alt="에어팟 프로 2세대"
+                className="h-[80px] w-[80px] shrink-0 rounded-[14px] bg-zinc-100 object-cover dark:bg-zinc-800"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">A급 · 무료배송</div>
+                <div className="mt-0.5 truncate text-[15px] font-black text-zinc-950 dark:text-zinc-50">에어팟 프로 2세대</div>
+                <div className="mt-1.5 flex items-baseline gap-1.5">
+                  <span className="text-[18px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">5만원</span>
+                  <span className="text-[11px] font-bold text-zinc-500">중고 시세 15만</span>
+                </div>
+              </div>
+            </div>
+
+            <h2 className="mt-6 break-keep text-[22px] font-black leading-[1.32] tracking-tight">
+              이 매물 중고 시세 15만원인데
               <br />
-              <span className="text-[#3182f6] dark:text-blue-300">5만원</span>?
+              <span className="text-[#3182f6] dark:text-blue-300">5만원</span>에 나왔다고…?
             </h2>
-            <p className="mt-6 break-keep text-[16px] font-bold leading-7 text-zinc-600 dark:text-zinc-300">
+            <p className="mt-4 break-keep text-[15px] font-bold leading-7 text-zinc-600 dark:text-zinc-300">
               사람들은 보통 이렇게 생각합니다.
             </p>
-            <div className="mt-4 rounded-[18px] border-l-4 border-zinc-300 bg-white/60 px-4 py-4 text-[17px] font-black italic leading-7 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
-              &ldquo;하자 있으니까 싸겠지.&rdquo;
+            <div className="mt-3 rounded-[18px] border-l-4 border-zinc-300 bg-white/60 px-4 py-4 text-[16px] font-black italic leading-7 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
+              &ldquo;싼 데는 다 이유가 있겠지…&rdquo;
             </div>
           </div>
         ) : step === 1 ? (
           /* Wave launch-125 step 1: 우리 답 + 예시 매물 카드 2개. */
           <div className="flex flex-1 flex-col justify-center pb-24">
             <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">근데 진짜 돈 되는 매물은 다릅니다</div>
-            <h2 className="mt-3 break-keep text-[26px] font-black leading-[1.18] tracking-tight sm:text-[30px]">
+            <h2 className="mt-3 break-keep text-[24px] font-black leading-[1.22] tracking-tight sm:text-[28px]">
               득템잡이는
               <br />
               <span className="text-[#3182f6] dark:text-blue-300">같은 상태·같은 구성</span> 기준에서도
@@ -1204,10 +1223,15 @@ function FirstFeedOnboardingCard({
               유난히 싼 매물만 골라드려요.
             </h2>
 
-            {/* mockup 매물 카드 2개 (hardcoded — 시각 안정성) */}
-            <div className="mt-6 space-y-2.5">
+            {/* mockup 매물 카드 2개. 사진은 public/intro/*.jpg 박혀야 동작. */}
+            <div className="mt-5 space-y-2.5">
               <div className="flex items-center gap-3 rounded-[18px] border border-zinc-200 bg-white px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
-                <div className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-[14px] bg-zinc-100 text-[28px] dark:bg-zinc-800">🎧</div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/intro/airpods-pro-2.jpg"
+                  alt="에어팟 프로 2세대"
+                  className="h-[64px] w-[64px] shrink-0 rounded-[14px] bg-zinc-100 object-cover dark:bg-zinc-800"
+                />
                 <div className="min-w-0 flex-1">
                   <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">A급 · 무료배송</div>
                   <div className="mt-0.5 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">에어팟 프로 2세대</div>
@@ -1218,7 +1242,12 @@ function FirstFeedOnboardingCard({
                 </div>
               </div>
               <div className="flex items-center gap-3 rounded-[18px] border border-zinc-200 bg-white px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
-                <div className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-[14px] bg-zinc-100 text-[28px] dark:bg-zinc-800">👞</div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/intro/dr-martens-1461.jpg"
+                  alt="닥터마틴 1461 스무스"
+                  className="h-[64px] w-[64px] shrink-0 rounded-[14px] bg-zinc-100 object-cover dark:bg-zinc-800"
+                />
                 <div className="min-w-0 flex-1">
                   <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">A급 · 우수 셀러</div>
                   <div className="mt-0.5 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">닥터마틴 1461 스무스</div>
