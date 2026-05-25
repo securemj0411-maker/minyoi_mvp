@@ -595,36 +595,42 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const allArticles: DaangnSearchArticle[] = [];
   const ongoingSeenUrls = new Set<string>();
 
-  for (let i = 0; i < combos.length; i += 1) {
-    const combo = combos[i];
+  // Phase 6i++ parallel search: sequential 5 region × ~50s = 250s. Promise.all 로 동시 → ~50s.
+  //   동일 결과, 단순 동시성. delayMs 는 sequential 시 rate-limit 회피용이라 parallel 에서는 의미 X.
+  //   block signal 감지 시 후속 결과 모두 무시 (race condition X — 결과 받은 후 평가).
+  const comboPromises = combos.map(async (combo) => {
     const url = buildDaangnSearchUrl({
-      regionId: combo.region.id || undefined,  // 빈 ID = 전국 검색
+      regionId: combo.region.id || undefined,
       categoryId: combo.category.id,
       search: combo.query.search,
     });
-
-    let resp;
     try {
-      resp = await fetchDaangnText(url, timeoutMs);
+      const resp = await fetchDaangnText(url, timeoutMs);
+      return { combo, resp, error: null as Error | null };
     } catch (err) {
+      return { combo, resp: null, error: err as Error };
+    }
+  });
+  const comboResults = await Promise.all(comboPromises);
+
+  // 결과 평가 — block 감지 시 후속 결과는 모두 무시 (안전).
+  let blockedDetected = false;
+  for (const { combo: _combo, resp, error } of comboResults) {
+    if (blockedDetected) break;
+    if (error || !resp) {
       failedCombos += 1;
-      if (delayMs > 0) await sleep(delayMs);
       continue;
     }
-
     if (resp.blockSignal.blocked) {
       blockedCombos += 1;
       blockedSignals.push(resp.blockSignal);
-      // 차단 감지 즉시 중단 (안전)
+      blockedDetected = true;
       break;
     }
-
     if (!resp.ok) {
       failedCombos += 1;
-      if (delayMs > 0) await sleep(delayMs);
       continue;
     }
-
     try {
       const parsed = parseDaangnSearchHtml(resp.body);
       for (const a of parsed.articles) {
@@ -632,11 +638,9 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
         if (a.status === "Ongoing" && a.href) ongoingSeenUrls.add(a.href);
       }
       executedCombos += 1;
-    } catch (err) {
+    } catch {
       failedCombos += 1;
     }
-
-    if (delayMs > 0) await sleep(delayMs);
   }
 
   // Summarize
