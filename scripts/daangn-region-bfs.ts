@@ -16,20 +16,23 @@
 
 import { fetchDaangnText, parseRobotsTxt, type DaangnRegionSeed } from "../src/lib/daangn";
 
+// Phase 6d: known region seeds (Codex probe) + BFS 통해 인접 확장.
+// 알려진 id 가 모두 같은 area (서울 강남/동작/서초/동대문) 라 BFS 가 한 area 갇혔던 문제 fix:
+//   1. seed 별로 SEARCH_KEYWORDS 다양화 (나이키, 맥북, 골프채, 가방 등) → 다른 매물 분포 발견 가능
+//   2. visited 외 다른 area 의 동 이름 우선 fetch (서울 25구 + 경기 주요시)
 const SEED_REGIONS: DaangnRegionSeed[] = [
   { id: "6091", name: "사당동" },
   { id: "6126", name: "반포동" },
   { id: "366", name: "서초4동" },
   { id: "6085", name: "장안동" },
-  { id: "6084", name: "이문동" },
-  { id: "6081", name: "답십리동" },
-  { id: "6087", name: "휘경동" },
-  { id: "6083", name: "용두동" },
 ];
 
+// BFS 시 sample search keyword — 다양한 카테고리로 인접 region 다각화.
+const SEARCH_KEYWORDS = ["나이키", "맥북", "골프채", "가방", "아이폰", "원피스"];
+
 const MAX_REGIONS = 200;
-const MAX_DEPTH = 3;
-const DELAY_MS = 1000;
+const MAX_DEPTH = 4;
+const DELAY_MS = 700;
 
 // 검색 페이지 HTML 에서 "주변 지역" link 추출
 function extractNearbyRegions(html: string): DaangnRegionSeed[] {
@@ -63,12 +66,16 @@ async function bfs() {
     depth: 0,
   }));
 
+  let kwIdx = 0;
   while (queue.length > 0 && result.size < MAX_REGIONS) {
     const { region, depth } = queue.shift()!;
     if (depth >= MAX_DEPTH) continue;
 
-    const url = `https://www.daangn.com/kr/buy-sell/?in=${encodeURIComponent(region.name)}-${region.id}&search=%EB%82%98%EC%9D%B4%ED%82%A4`;
-    process.stderr.write(`[BFS depth=${depth} size=${result.size}] fetching ${region.name} (${region.id})...\n`);
+    // search keyword rotate — 같은 region 도 다른 keyword 로 다른 nearby 보임
+    const keyword = SEARCH_KEYWORDS[kwIdx % SEARCH_KEYWORDS.length];
+    kwIdx += 1;
+    const url = `https://www.daangn.com/kr/buy-sell/?in=${encodeURIComponent(region.name)}-${region.id}&search=${encodeURIComponent(keyword)}`;
+    process.stderr.write(`[BFS d=${depth} size=${result.size}] ${region.name}(${region.id}) kw=${keyword}\n`);
 
     let resp;
     try {

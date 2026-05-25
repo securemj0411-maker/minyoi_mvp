@@ -425,9 +425,12 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     return buildEmptyResult(mode, "mode_off", startedAt);
   }
 
-  const maxCombos = boundedInt(options.maxCombos ?? process.env.DAANGN_INGEST_MAX_COMBOS, 12, 1, 200);
-  const maxDetailSamples = boundedInt(options.maxDetailSamples ?? process.env.DAANGN_INGEST_MAX_DETAIL_SAMPLES, 8, 0, 100);
-  const delayMs = boundedInt(options.delayMs ?? process.env.DAANGN_INGEST_DELAY_MS, 600, 200, 5000);
+  // Phase 6c (영업 시작): 매물 양 3x 늘리기 위해 default 값 상향.
+  //   probe 검증 결과 (30 combos × 18 region): block 0, articles 265, active72h 11.
+  //   env 로 override 가능 (운영자 튜닝).
+  const maxCombos = boundedInt(options.maxCombos ?? process.env.DAANGN_INGEST_MAX_COMBOS, 30, 1, 200);
+  const maxDetailSamples = boundedInt(options.maxDetailSamples ?? process.env.DAANGN_INGEST_MAX_DETAIL_SAMPLES, 15, 0, 100);
+  const delayMs = boundedInt(options.delayMs ?? process.env.DAANGN_INGEST_DELAY_MS, 400, 200, 5000);
   const activeWindowHours = boundedInt(options.activeWindowHours ?? process.env.DAANGN_INGEST_ACTIVE_HOURS, 72, 1, 720);
   const freshWindowHours = boundedInt(options.freshWindowHours ?? process.env.DAANGN_INGEST_FRESH_HOURS, 24, 1, 168);
   const timeoutMs = boundedInt(options.timeoutMs, 10_000, 1_000, 30_000);
