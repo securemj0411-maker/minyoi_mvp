@@ -227,6 +227,9 @@ function buildRawListingRow(
 ): { raw: Record<string, unknown>; parsed: Record<string, unknown> | null; sku_id: string | null } | null {
   const externalId = parseDaangnExternalId(article.href);
   if (!externalId) return null;
+  // mvp_raw_listings.price 는 NOT NULL (no default).
+  // 당근 매물 중 price=null = "가격 협의" 등 → reseller 가치 0 → skip.
+  if (article.price == null || !Number.isFinite(Number(article.price))) return null;
   const pid = daangnInternalPid(externalId);
   const fullUrl = article.href.startsWith("http") ? article.href : `${DAANGN_BASE_URL}${article.href}`;
 
