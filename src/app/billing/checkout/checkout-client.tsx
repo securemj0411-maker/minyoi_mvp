@@ -9,11 +9,13 @@ import { formatKrw, planForKey, type PlanKey } from "@/lib/plan-config";
 import { createPortOnePaymentId, PORTONE_CHANNEL_KEY, PORTONE_STORE_ID } from "@/lib/portone-config";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
-const VALID: Exclude<PlanKey, "free">[] = ["starter", "plus", "pro"];
+const VALID: Exclude<PlanKey, "free">[] = ["single", "trial", "starter", "plus", "pro"];
 const CREDIT_PACKAGE_TO_PLAN: Record<string, Exclude<PlanKey, "free">> = {
+  "1": "single",
+  "5": "trial",
   "20": "starter",
-  "200": "plus",
-  "500": "pro",
+  "45": "plus",
+  "130": "pro",
 };
 const EMAIL_STORAGE_KEY = "minyoi-checkout-email-v1";
 const NAME_STORAGE_KEY = "minyoi-checkout-name-v1";
@@ -50,7 +52,7 @@ export default function CheckoutClient() {
     ? CREDIT_PACKAGE_TO_PLAN[creditPackageParam]
     : VALID.includes(planKeyParam as Exclude<PlanKey, "free">)
       ? planKeyParam as Exclude<PlanKey, "free">
-      : "plus";
+      : "starter";
   const plan = planForKey(planKey);
 
   const [stage, setStage] = useState<Stage>("ready");

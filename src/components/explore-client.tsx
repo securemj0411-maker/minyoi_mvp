@@ -22,7 +22,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 // Wave 338+339 (Phase 1a + 1b — Freemium /explore):
 // 매물 풀 browsing. 피드는 무료 teaser, 크레딧은 상세 분석/원문 공개 때만 차감.
 // + 통계 배너 + paywall 예고 + sold out 오버레이 + PackRevealModal 통합.
-const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 3;
+const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 1;
 
 type PoolItem = {
   pid: number;
@@ -74,6 +74,7 @@ type PoolItem = {
   priceSignalLabel?: string | null;
   sellerSignalLabel?: string | null;
   marketSignalLabel?: string | null;
+  velocitySignalLabel?: string | null;
 };
 
 type ScrappedPoolItem = PoolItem & {
@@ -165,10 +166,8 @@ type DetailAccessLimitModal = {
 
 type DetailAccessValueSummary = {
   openedCount: number;
-  comparableCount: number;
   expectedProfitTotal: number;
   cautionCount: number;
-  estimatedMinutesSaved: number;
 };
 
 type DirectTradeConfirmState = {
@@ -253,10 +252,8 @@ function accessValueForItem(item: PoolItem): DetailAccessValueSummary {
 
   return {
     openedCount: 1,
-    comparableCount: 12,
     expectedProfitTotal: Math.max(0, profitAvg(item)),
     cautionCount,
-    estimatedMinutesSaved: 15,
   };
 }
 
@@ -267,10 +264,8 @@ function mergeAccessValueSummary(
   if (!left) return right;
   return {
     openedCount: left.openedCount + right.openedCount,
-    comparableCount: left.comparableCount + right.comparableCount,
     expectedProfitTotal: left.expectedProfitTotal + right.expectedProfitTotal,
     cautionCount: left.cautionCount + right.cautionCount,
-    estimatedMinutesSaved: left.estimatedMinutesSaved + right.estimatedMinutesSaved,
   };
 }
 
@@ -504,11 +499,12 @@ function defaultDetailAccessSnapshot(): DetailAccessSnapshot {
 function normalizeDetailAccessSnapshot(value: unknown): DetailAccessSnapshot | null {
   if (!value || typeof value !== "object") return null;
   const record = value as Partial<DetailAccessSnapshot>;
-  const freeLimit = Number(record.freeLimit ?? DEFAULT_FREE_DETAIL_ACCESS_LIMIT);
+  const rawFreeLimit = Number(record.freeLimit ?? DEFAULT_FREE_DETAIL_ACCESS_LIMIT);
+  const freeLimit = Math.min(rawFreeLimit, DEFAULT_FREE_DETAIL_ACCESS_LIMIT);
   const freeUsed = Number(record.freeUsed ?? 0);
   const creditBalance = record.creditBalance == null ? null : Number(record.creditBalance);
   const unlimited = record.unlimited === true;
-  if (!Number.isFinite(freeLimit) || freeLimit <= 0 || !Number.isFinite(freeUsed)) return null;
+  if (!Number.isFinite(rawFreeLimit) || !Number.isFinite(freeLimit) || freeLimit <= 0 || !Number.isFinite(freeUsed)) return null;
   return {
     creditBalance: creditBalance != null && Number.isFinite(creditBalance) ? creditBalance : null,
     freeUsed: unlimited ? freeLimit : Math.min(Math.max(0, freeUsed), freeLimit),
@@ -788,7 +784,7 @@ function DetailAccessPaywallModal({
 }) {
   if (!state) return null;
   const variant = state.variant ?? "paywall";
-  const freeLimit = state.freeLimit && state.freeLimit > 0 ? state.freeLimit : 3;
+  const freeLimit = state.freeLimit && state.freeLimit > 0 ? state.freeLimit : DEFAULT_FREE_DETAIL_ACCESS_LIMIT;
   const freeUsed = Math.min(freeLimit, Math.max(0, state.freeUsed ?? freeLimit));
   const segments = Math.min(3, Math.max(1, freeLimit));
   const creditBalance = Math.max(0, Number(state.creditBalance ?? 0));
@@ -871,7 +867,7 @@ function DetailAccessPaywallModal({
 
           {/* Wave launch-88 (사용자 정정 — 모바일 화면 안에 다 안 들어옴):
               4 row (header / progress / 설명 / 보유 크레딧) → 2 row 로 압축.
-              설명 텍스트 ("첫 3개 상품은 무료로 열리고...") 제거 — 모달 body 와 의미 중복.
+              설명 텍스트 ("첫 상품 1개는 무료로 열리고...") 제거 — 모달 body 와 의미 중복.
               "보유 크레딧" 정보는 헤더 row 에 inline. progress bar h-2.5 → h-1.5 (얇게). */}
           {isPaywall ? (
             <div className="mt-4 rounded-[18px] bg-zinc-50 p-3 dark:bg-zinc-900/70">
@@ -904,17 +900,17 @@ function DetailAccessPaywallModal({
           {isPaywall && summary && summary.openedCount > 0 ? (
             <div className="mt-3 rounded-[22px] bg-[#f5f9ff] p-4 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
               <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">
-                무료 {summary.openedCount.toLocaleString("ko-KR")}건 동안 이렇게 봤어요
+                무료 상세에서 확인한 것
               </div>
-              <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="mt-3 grid grid-cols-3 gap-2">
                 <div className="rounded-[16px] bg-white px-3 py-2.5 ring-1 ring-blue-50 dark:bg-zinc-950/65 dark:ring-blue-900/40">
-                  <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">비교 매물</div>
+                  <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">열어본 상세</div>
                   <div className="mt-1 text-[15px] font-black text-[#3182f6] dark:text-blue-300">
-                    {summary.comparableCount.toLocaleString("ko-KR")}건
+                    {summary.openedCount.toLocaleString("ko-KR")}건
                   </div>
                 </div>
                 <div className="rounded-[16px] bg-white px-3 py-2.5 ring-1 ring-blue-50 dark:bg-zinc-950/65 dark:ring-blue-900/40">
-                  <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">예상 기회 수익</div>
+                  <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">확인한 수익</div>
                   <div className="mt-1 text-[15px] font-black text-blue-700 dark:text-blue-300">
                     +{krw(summary.expectedProfitTotal)}
                   </div>
@@ -923,12 +919,6 @@ function DetailAccessPaywallModal({
                   <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">주의 신호</div>
                   <div className="mt-1 text-[15px] font-black text-amber-700 dark:text-amber-300">
                     {summary.cautionCount.toLocaleString("ko-KR")}개
-                  </div>
-                </div>
-                <div className="rounded-[16px] bg-white px-3 py-2.5 ring-1 ring-blue-50 dark:bg-zinc-950/65 dark:ring-blue-900/40">
-                  <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">판단 시간</div>
-                  <div className="mt-1 text-[15px] font-black text-zinc-900 dark:text-zinc-50">
-                    약 {summary.estimatedMinutesSaved.toLocaleString("ko-KR")}분 절약
                   </div>
                 </div>
               </div>
@@ -948,7 +938,7 @@ function DetailAccessPaywallModal({
                 type="button"
                 disabled={kakaoShareLoading || !kakaoShareReady}
                 onClick={onKakaoShare}
-                title={kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : (kakaoShareReady ? "카톡으로 공유하고 크레딧 3개 받기" : "카카오 공유 로딩 중...")}
+                title={kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : (kakaoShareReady ? "카톡으로 공유하고 크레딧 1개 받기" : "카카오 공유 로딩 중...")}
                 className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left transition ${
                   kakaoShareReady && kakaoShareCooldownHours === 0
                     ? "bg-[#fbe300] shadow-[0_4px_14px_rgba(251,227,0,0.35)] hover:bg-[#fae100] active:scale-[0.99]"
@@ -959,7 +949,7 @@ function DetailAccessPaywallModal({
                   <KakaoLogo className={`h-6 w-6 shrink-0 rounded-[6px] ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "" : "opacity-80"}`} />
                   <div className="min-w-0">
                     <div className={`text-sm font-bold ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]" : "text-[#3b1e1e]/80"}`}>
-                      {kakaoShareCooldownHours > 0 ? "오늘은 이미 받았어요" : kakaoShareLoading ? "공유 처리 중..." : "카톡 공유하고 무료로 3개 받기"}
+                      {kakaoShareCooldownHours > 0 ? "오늘은 이미 받았어요" : kakaoShareLoading ? "공유 처리 중..." : "카톡 공유하고 무료로 1개 받기"}
                     </div>
                     <div className={`mt-0.5 text-[11px] font-medium ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]/70" : "text-[#3b1e1e]/60"}`}>
                       {kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : "하루 1번 · 충전 안 해도 OK"}
@@ -2684,6 +2674,11 @@ export default function ExploreClient({
                             {item.marketSignalLabel}
                           </span>
                         ) : null}
+                        {lockedPreview && item.velocitySignalLabel ? (
+                          <span className="rounded-full bg-violet-50 px-1.5 py-0.5 font-bold text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
+                            {item.velocitySignalLabel}
+                          </span>
+                        ) : null}
                         {lockedPreview && item.sellerSignalLabel ? (
                           <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                             {item.sellerSignalLabel}
@@ -2989,7 +2984,7 @@ export default function ExploreClient({
                                     크레딧 충전하러 가기
                                   </div>
                                   <div className="mt-0.5 text-[11px] font-medium text-white/85">
-                                    20크레딧 3,900원부터
+                                    1크레딧 690원부터
                                   </div>
                                 </div>
                               </div>

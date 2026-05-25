@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "크레딧 충전",
-  description: "득템잡이 크레딧 충전 — 3,900원 20크레딧 / 19,900원 200크레딧 / 39,900원 500크레딧. 자동 갱신 없는 단건 결제 방식입니다.",
+  description: "득템잡이 크레딧 충전 — 690원 1크레딧 / 2,900원 5크레딧 / 9,900원 20크레딧 / 19,900원 45크레딧 / 49,900원 130크레딧. 자동 갱신 없는 단건 결제 방식입니다.",
 };
 
 export default function PlansLayout({ children }: { children: React.ReactNode }) {

@@ -115,7 +115,7 @@ export function AccountPanel({
           </div>
         </div>
         <div className="mt-3 rounded-xl bg-white/70 px-3 py-2 text-[11px] font-semibold leading-5 text-[#7a8478] ring-1 ring-[#eadfce] dark:bg-zinc-950/50 dark:text-zinc-400 dark:ring-zinc-800">
-          첫 3개 상품은 무료로 열리고, 이후 새 상품은 1크레딧씩 차감됩니다. 이미 본 상품은 다시 봐도 차감되지 않아요.
+          첫 상품 1개는 무료로 열리고, 이후 새 상품은 1크레딧씩 차감됩니다. 이미 본 상품은 다시 봐도 차감되지 않아요.
         </div>
         <Link
           href="/plans"

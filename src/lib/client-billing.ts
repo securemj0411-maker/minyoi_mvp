@@ -1,9 +1,10 @@
 "use client";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import type { PlanKey } from "@/lib/plan-config";
 
 export type ClientPlanState = {
-  planKey: "free" | "starter" | "plus" | "pro";
+  planKey: PlanKey;
   planName: string;
   monthlyCredits: number;
   status: "active" | "cancelled" | "none";
@@ -82,7 +83,7 @@ function shouldRetry(status: number, hadResponse: boolean): boolean {
   return false;
 }
 
-export async function subscribeClientPlan(planKey: "starter" | "plus" | "pro", paymentId: string, orderId: string) {
+export async function subscribeClientPlan(planKey: Exclude<PlanKey, "free">, paymentId: string, orderId: string) {
   let lastError: Error | null = null;
   for (let attempt = 1; attempt <= SUBSCRIBE_MAX_ATTEMPTS; attempt += 1) {
     try {

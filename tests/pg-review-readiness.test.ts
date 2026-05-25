@@ -22,18 +22,18 @@ test("PG review public pages expose legal links and business information", () =>
   assert.match(footer, /통신판매업신고/);
   assert.match(footer, /주소/);
   assert.match(footer, /대표번호/);
-  assert.match(plans, /3가지 충전권/);
+  assert.match(plans, /필요한 만큼 충전/);
   assert.match(plans, /자동 갱신 없이 한 번만 결제/);
   assert.match(plans, /1년 동안 사용할 수/);
   assert.match(plans, /타인 양도·재판매·현금화가 불가/);
   assert.match(plans, /환불정책 확인/);
-  assert.match(terms, /통신판매중개 구조를 운영하지 않습니다/);
-  assert.match(terms, /지급일로부터 1년/);
-  assert.match(terms, /양도, 대여, 담보 제공, 재판매/);
-  assert.match(terms, /전환·출금·현금화/);
-  assert.match(refundPolicy, /유효기간은 지급일로부터 1년/);
-  assert.match(refundPolicy, /양도, 대여, 담보 제공, 재판매/);
-  assert.match(refundPolicy, /전환·출금·현금화/);
+  assert.match(terms, /매물 거래의 당사자가 아니며/);
+  assert.match(terms, /크레딧 상품의 가격과 사용 기준/);
+  assert.match(terms, /현금으로 전환되거나 이용자 간 양도되지 않습니다/);
+  assert.match(terms, /청약 철회/);
+  assert.match(refundPolicy, /결제일로부터 7일 이내/);
+  assert.match(refundPolicy, /크레딧은 현금으로 전환되거나 이용자 간 양도되지 않습니다/);
+  assert.match(refundPolicy, /PG사 수수료/);
 });
 
 test("PG review checkout collects Inicis required buyer fields", () => {

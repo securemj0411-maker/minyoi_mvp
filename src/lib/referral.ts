@@ -21,11 +21,13 @@ const REFERRAL_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
 export const SIGNUP_REWARD_CREDITS = 5;
 
-// 결제 보너스 — 플랜 비례 (사용자 결정: 15%/15%/12%)
+// 결제 보너스 — 새 크레딧 패키지 비례. 단건은 추천 보너스 없음.
 export const PAYMENT_BONUS_BY_PLAN: Record<string, number> = {
-  starter: 3,   // 3,900원 → +3 크레딧 (~585원, 15%)
-  plus: 30,     // 19,900원 → +30 크레딧 (~3,000원, 15%)
-  pro: 60,      // 39,900원 → +60 크레딧 (~4,800원, 12%)
+  single: 0,
+  trial: 1,
+  starter: 3,
+  plus: 5,
+  pro: 12,
 };
 
 /**

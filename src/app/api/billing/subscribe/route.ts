@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   }
 
   const planKey = String(body.planKey ?? "").toLowerCase();
-  if (planKey !== "starter" && planKey !== "plus" && planKey !== "pro") {
+  if (planKey !== "single" && planKey !== "trial" && planKey !== "starter" && planKey !== "plus" && planKey !== "pro") {
     return NextResponse.json({ error: "invalid_plan" }, { status: 400 });
   }
   const plan = planForKey(planKey);

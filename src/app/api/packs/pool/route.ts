@@ -213,6 +213,17 @@ type MarketBandRow = {
   disappeared_sample_count: number | null;
 };
 
+type MarketVelocityRow = {
+  comparable_key: string;
+  condition_class: string;
+  observed_sold_sample_count: number | null;
+  sold_7d_count: number | null;
+  confidence: string | null;
+  median_hours_to_sold: number | null;
+  date: string | null;
+  computed_at: string | null;
+};
+
 async function loadMarketBandsForPool(
   headers: Record<string, string>,
   comparableKeys: string[],
@@ -245,6 +256,54 @@ async function loadMarketBandsForPool(
     byKey.set(row.comparable_key, byCondition);
   }
   return byKey;
+}
+
+function velocitySignalLabel(row: MarketVelocityRow | null | undefined) {
+  const medianHours = Number(row?.median_hours_to_sold ?? 0);
+  const sold7d = Number(row?.sold_7d_count ?? 0);
+  const soldSample = Number(row?.observed_sold_sample_count ?? 0);
+  if (!Number.isFinite(medianHours) || medianHours <= 0) return null;
+  if (sold7d <= 0 && soldSample <= 0) return null;
+  if (medianHours < 24) {
+    return `보통 ${Math.max(1, Math.round(medianHours))}시간 내 팔림`;
+  }
+  return `보통 ${Math.max(1, Math.round(medianHours / 24))}일 내 팔림`;
+}
+
+async function loadVelocitySignalsForPool(
+  headers: Record<string, string>,
+  comparableKeys: string[],
+): Promise<Map<string, string>> {
+  const unique = [...new Set(comparableKeys.filter((k): k is string => Boolean(k)))];
+  if (unique.length === 0) return new Map();
+  const cols = [
+    "comparable_key",
+    "condition_class",
+    "observed_sold_sample_count",
+    "sold_7d_count",
+    "confidence",
+    "median_hours_to_sold",
+    "date",
+    "computed_at",
+  ].join(",");
+  const encoded = unique.map((k) => encodeURIComponent(k)).join(",");
+  try {
+    const res = await restFetch(
+      `${tableUrl("mvp_market_velocity_daily")}?select=${cols}&comparable_key=in.(${encoded})&condition_class=eq.all&order=date.desc,computed_at.desc,observed_sold_sample_count.desc&limit=${Math.max(100, unique.length * 2)}`,
+      { headers },
+    );
+    const rows = (await res.json()) as MarketVelocityRow[];
+    const signals = new Map<string, string>();
+    for (const row of rows) {
+      if (signals.has(row.comparable_key)) continue;
+      const label = velocitySignalLabel(row);
+      if (label) signals.set(row.comparable_key, label);
+    }
+    return signals;
+  } catch (err) {
+    console.warn("[pool] velocity signal fetch failed (non-fatal)", err instanceof Error ? err.message : String(err));
+    return new Map();
+  }
 }
 
 function bandAwareMedian(
@@ -283,6 +342,7 @@ async function loadPool(
   metas: RawListingMeta[];
   marketBands: Map<string, Map<string, MarketBandRow>>;
   v7SiblingPresence: V7SiblingPresenceMap;
+  velocitySignals: Map<string, string>;
   parsedGradingRows: Array<{
     pid: number;
     condition_tier: string | null;
@@ -397,7 +457,7 @@ async function loadPool(
   const pool = options.sort === "latest"
     ? [...readyRows, ...soldOutRows]
     : [...readyRows, ...soldOutRows].sort(() => Math.random() - 0.5);
-  if (pool.length === 0) return { pool: [], raws: [], metas: [], marketBands: new Map(), v7SiblingPresence: new Map(), parsedGradingRows: [] };
+  if (pool.length === 0) return { pool: [], raws: [], metas: [], marketBands: new Map(), v7SiblingPresence: new Map(), velocitySignals: new Map(), parsedGradingRows: [] };
 
   const pids = pool.map((r) => r.pid);
   // raws는 이미 rawByPid에 있음 — pool pids만 추출.
@@ -405,7 +465,7 @@ async function loadPool(
 
   // meta + marketBands fetch (pool pids만).
   const comparableKeys = [...new Set(pool.map((r) => r.comparable_key).filter((k): k is string => Boolean(k)))];
-  const [metaRes, marketBands, v7SiblingPresence, parsedGradingRes] = await Promise.all([
+  const [metaRes, marketBands, v7SiblingPresence, velocitySignals, parsedGradingRes] = await Promise.all([
     restFetch(
       // Wave launch-4: listing_state 컬럼 추가 select. 응답 후 ready 였지만 active 아닌 row 차단.
       `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,raw_json,listing_state&pid=in.(${pids.join(",")})`,
@@ -413,6 +473,7 @@ async function loadPool(
     ),
     loadMarketBandsForPool(headers, comparableKeys),
     loadV7SiblingPresence(headers, comparableKeys),
+    loadVelocitySignalsForPool(headers, comparableKeys),
     // Wave 714k (2026-05-23): 신발/의류 5-tier grading + chips column fetch.
     restFetch(
       `${tableUrl("mvp_listing_parsed")}?select=pid,condition_tier,condition_cluster,condition_confidence,condition_flags,parsed_json&pid=in.(${pids.join(",")})`,
@@ -455,7 +516,7 @@ async function loadPool(
   const filteredRaws = raws.filter((r) => !blockedPids.has(r.pid));
   const filteredMetas = metas.filter((m) => !blockedPids.has(m.pid));
 
-  return { pool: filteredPool, raws: filteredRaws, metas: filteredMetas, marketBands, v7SiblingPresence, parsedGradingRows };
+  return { pool: filteredPool, raws: filteredRaws, metas: filteredMetas, marketBands, v7SiblingPresence, velocitySignals, parsedGradingRows };
 }
 
 function buildItems(
@@ -464,6 +525,7 @@ function buildItems(
   metas: RawListingMeta[],
   marketBands: Map<string, Map<string, MarketBandRow>>,
   v7SiblingPresence: V7SiblingPresenceMap,
+  velocitySignals: Map<string, string>,
   parsedGradingRows: Array<{
     pid: number;
     condition_tier: string | null;
@@ -617,6 +679,7 @@ function buildItems(
           joongnaSafeOrderSalesCount: facts.joongnaSafeOrderSalesCount ?? null,
         }),
         marketSignalLabel: confidenceSignalLabel(row.confidence),
+        velocitySignalLabel: row.comparable_key ? (velocitySignals.get(row.comparable_key) ?? null) : null,
       };
     })
     .filter((x): x is NonNullable<typeof x> => x != null);
@@ -656,6 +719,7 @@ function buildTeaserFeedItems<T extends ReturnType<typeof buildItems>[number]>(i
       priceSignalLabel: item.priceSignalLabel,
       sellerSignalLabel: item.sellerSignalLabel,
       marketSignalLabel: item.marketSignalLabel,
+      velocitySignalLabel: item.velocitySignalLabel,
     };
   });
 }
@@ -724,14 +788,14 @@ export async function GET(req: Request) {
     // 예산 필터가 있을 때 더 넓은 가격대로 조용히 fallback하지 않는다.
     // 15만원 이하를 보고 있는데 서버가 30/50만원 매물을 가져와도 프론트에서 다시 숨겨져
     // "새 매물 붙이는 중"만 길게 보이는 문제가 생긴다.
-    const { pool, raws, metas, marketBands, v7SiblingPresence, parsedGradingRows } = await loadPool(headers, {
+    const { pool, raws, metas, marketBands, v7SiblingPresence, velocitySignals, parsedGradingRows } = await loadPool(headers, {
       sort,
       source,
       priceMax,
       excludePids: excludeAllPids,
       readyCandidateLimit,
     });
-    items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence, parsedGradingRows);
+    items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence, velocitySignals, parsedGradingRows);
 
     // Wave 373: 성향 정렬 — preference 따라 우선순위 재정렬.
     //   safe: 우수 셀러 (평점 4.5+ & 후기 10+) 우선

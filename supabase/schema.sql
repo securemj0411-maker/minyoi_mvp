@@ -2148,14 +2148,14 @@ grant execute on function public.prune_raw_listings_dead_text(integer, integer, 
 
 -- =====================================================================
 -- 크레딧 충전권/일일 안전 한도 (2026-05-15 추가)
--- Starter (20크 충전권) / Plus (200크 충전권) / Pro (500크 충전권)
+-- Single (1크) / Trial (5크) / Starter (20크) / Plus (45크) / Pro (130크)
 -- mock Toss 결제 — 실제 결제 연동 전까지 mvp_payment_events에 mock 기록.
 -- =====================================================================
 
 create table if not exists public.mvp_user_plans (
   user_ref text primary key,
   auth_user_id uuid not null unique,
-  plan_key text not null default 'free' check (plan_key in ('free','starter','plus','pro')),
+  plan_key text not null default 'free' check (plan_key in ('free','single','trial','starter','plus','pro')),
   status text not null default 'active' check (status in ('active','cancelled')),
   cancel_at_period_end boolean not null default false,
   current_period_start timestamptz not null default now(),
@@ -2225,7 +2225,7 @@ declare
 begin
   v_user_ref := nullif(left(trim(coalesce(p_user_ref,'')), 64), '');
   if v_user_ref is null then raise exception 'missing user ref'; end if;
-  if p_plan_key not in ('starter','plus','pro') then
+  if p_plan_key not in ('single','trial','starter','plus','pro') then
     raise exception 'invalid plan: %', p_plan_key;
   end if;
 

@@ -13,32 +13,42 @@ function source(path: string) {
 test("credit top-up package prices and grants stay aligned", () => {
   assert.equal(FREE_CREDIT_GRANT, 0);
 
-  assert.equal(PLANS.starter.priceKrw, 3_900);
+  assert.equal(PLANS.single.priceKrw, 690);
+  assert.equal(PLANS.single.monthlyCredits, 1);
+  assert.equal(PLANS.single.dailyOpenLimit, 1);
+
+  assert.equal(PLANS.trial.priceKrw, 2_900);
+  assert.equal(PLANS.trial.monthlyCredits, 5);
+  assert.equal(PLANS.trial.dailyOpenLimit, 5);
+
+  assert.equal(PLANS.starter.priceKrw, 9_900);
   assert.equal(PLANS.starter.monthlyCredits, 20);
   assert.equal(PLANS.starter.dailyOpenLimit, 20);
 
   assert.equal(PLANS.plus.priceKrw, 19_900);
-  assert.equal(PLANS.plus.monthlyCredits, 200);
-  assert.equal(PLANS.plus.dailyOpenLimit, 200);
+  assert.equal(PLANS.plus.monthlyCredits, 45);
+  assert.equal(PLANS.plus.dailyOpenLimit, 45);
 
-  assert.equal(PLANS.pro.priceKrw, 39_900);
-  assert.equal(PLANS.pro.monthlyCredits, 500);
-  assert.equal(PLANS.pro.dailyOpenLimit, 500);
+  assert.equal(PLANS.pro.priceKrw, 49_900);
+  assert.equal(PLANS.pro.monthlyCredits, 130);
+  assert.equal(PLANS.pro.dailyOpenLimit, 130);
 
-  assert.equal(formatKrw(3_900), "3,900원");
+  assert.equal(formatKrw(690), "690원");
 });
 
 test("plans page is a compact credit top-up menu", () => {
   const plans = source("src/app/plans/page.tsx");
 
   assert.match(plans, /크레딧 충전/);
-  assert.match(plans, /3가지 충전권/);
+  assert.match(plans, /필요한 만큼 충전/);
   assert.match(plans, /상세보기 1회 = 1크레딧/);
   assert.match(plans, /자동 갱신 없이 한 번만 결제/);
+  assert.match(plans, /이번 매물 하나만 바로 확인/);
+  assert.match(plans, /가장 많이 쓰는 기본 충전권/);
   assert.match(plans, /여러 모델을 비교하며 살 만한 후보 추리기/);
   assert.match(plans, /예상 순익, 시세 그래프, 비교 매물, 원본 링크/);
   assert.match(plans, /실제 거래 결과는 가격·상태·거래 조건에 따라 달라집니다/);
-  assert.match(plans, /"starter", "plus", "pro"/);
+  assert.match(plans, /"single", "trial", "starter", "plus", "pro"/);
   assert.match(plans, /<CreditIcon size=\{22\}/);
   assert.match(plans, /<span className="text-\[15px\] sm:text-\[16px\]">크레딧<\/span>/);
   assert.match(plans, /원\/1크레딧/);
@@ -51,11 +61,14 @@ test("plans page is a compact credit top-up menu", () => {
   assert.doesNotMatch(plans, /무조건|본전|평균 수익|수익 보장|돈을 벌|얼마를 벌/);
 });
 
-test("checkout accepts credit package URLs while keeping legacy plan keys compatible", () => {
+test("checkout accepts new credit package URLs while keeping plan keys compatible", () => {
   const checkout = source("src/app/billing/checkout/checkout-client.tsx");
 
   assert.match(checkout, /CREDIT_PACKAGE_TO_PLAN/);
-  assert.match(checkout, /"200": "plus"/);
+  assert.match(checkout, /"1": "single"/);
+  assert.match(checkout, /"5": "trial"/);
+  assert.match(checkout, /"45": "plus"/);
+  assert.match(checkout, /"130": "pro"/);
   assert.match(checkout, /params\.get\("credits"\)/);
   assert.match(checkout, /params\.get\("plan"\)/);
 });

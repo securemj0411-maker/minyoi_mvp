@@ -17,11 +17,13 @@ const ACCOUNT_RAW = "1002367160511";
 const ACCOUNT_HOLDER = "이민제";
 
 const CREDIT_PACKAGE_TO_PLAN: Record<string, Exclude<PlanKey, "free">> = {
+  "1": "single",
+  "5": "trial",
   "20": "starter",
-  "200": "plus",
-  "500": "pro",
+  "45": "plus",
+  "130": "pro",
 };
-const VALID: Exclude<PlanKey, "free">[] = ["starter", "plus", "pro"];
+const VALID: Exclude<PlanKey, "free">[] = ["single", "trial", "starter", "plus", "pro"];
 
 function formatCountdown(seconds: number): string {
   const safe = Math.max(0, Math.floor(seconds));
@@ -44,7 +46,7 @@ export default function ManualDepositClient() {
       ? CREDIT_PACKAGE_TO_PLAN[creditPackageParam]
       : VALID.includes(planKeyParam as Exclude<PlanKey, "free">)
         ? (planKeyParam as Exclude<PlanKey, "free">)
-        : "plus";
+        : "starter";
   const plan = planForKey(planKey);
 
   const [depositorName, setDepositorName] = useState("");

@@ -9,22 +9,24 @@ function source(path: string) {
   return readFileSync(new URL(path, ROOT), "utf8");
 }
 
-test("free and 200-credit package define the first paid entitlement boundary", () => {
+test("free and credit packages define the first paid entitlement boundary", () => {
   assert.equal(PLANS.free.monthlyCredits, 0);
-  assert.equal(PLANS.free.dailyOpenLimit, 3);
-  assert.match(PLANS.free.features.join(" "), /첫 상세보기 3개 무료/);
+  assert.equal(PLANS.free.dailyOpenLimit, 1);
+  assert.match(PLANS.free.features.join(" "), /첫 상세보기 1회 무료/);
   assert.match(PLANS.free.features.join(" "), /새 상품 1개당 1크레딧/);
 
-  assert.equal(PLANS.plus.dailyOpenLimit, 200);
-  assert.equal(PLANS.plus.name, "200 크레딧");
-  assert.match(PLANS.plus.features.join(" "), /상세보기\/원본 확인 200회분/);
+  assert.equal(PLANS.single.priceKrw, 690);
+  assert.equal(PLANS.starter.priceKrw, 9_900);
+  assert.equal(PLANS.plus.dailyOpenLimit, 45);
+  assert.equal(PLANS.plus.name, "45 크레딧");
+  assert.match(PLANS.plus.features.join(" "), /상세보기\/원본 확인 45회분/);
 });
 
-test("pool detail access gives first three unique pids free, then spends one credit", () => {
+test("pool detail access gives the first unique pid free, then spends one credit", () => {
   const helper = source("src/lib/detail-access.ts");
   const route = source("src/app/api/packs/pool/detail-access/route.ts");
 
-  assert.match(helper, /FREE_DETAIL_ACCESS_LIMIT = 3/);
+  assert.match(helper, /FREE_DETAIL_ACCESS_LIMIT = 1/);
   assert.match(helper, /spendUserCredits/);
   assert.match(helper, /amount: 1/);
   assert.match(helper, /source: "detail_access"/);
@@ -68,6 +70,8 @@ test("pool feed is a free teaser and exact purchase info opens only through deta
   assert.match(poolRoute, /sellerSignalLabel/);
   assert.match(poolRoute, /priceSignalLabel/);
   assert.match(poolRoute, /marketSignalLabel/);
+  assert.match(poolRoute, /velocitySignalLabel/);
+  assert.match(poolRoute, /loadVelocitySignalsForPool/);
   assert.match(poolRoute, /LATEST_TIER_PREVIEW_CATEGORIES = new Set\(\["shoe", "clothing", "game_console", "sport_golf"\]\)/);
   assert.match(poolRoute, /if \(usesLatestTierPreviewCategory\(category\)\) return `\$\{categoryLabel\} 후보`;/);
   assert.match(poolRoute, /import \{ localizeProductLineLabel \} from "@\/lib\/product-line-display"/);
@@ -90,7 +94,8 @@ test("pool feed is a free teaser and exact purchase info opens only through deta
   assert.match(analysisRoute, /detail_access_required/);
 
   assert.doesNotMatch(explore, /creditFeedEnabled/);
-  assert.match(explore, /DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 3/);
+  assert.match(explore, /DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 1/);
+  assert.match(explore, /Math\.min\(rawFreeLimit, DEFAULT_FREE_DETAIL_ACCESS_LIMIT\)/);
   assert.match(explore, /DETAIL_ACCESS_SNAPSHOT_STORAGE_KEY/);
   assert.match(explore, /readDetailAccessSnapshot\(storageScope\)/);
   assert.match(explore, /writeDetailAccessSnapshot\(storageScope, nextDetailAccess\)/);
@@ -173,13 +178,15 @@ test("explore opens the modal only after detail access is granted", () => {
   assert.match(explore, /DetailAccessPaywallModal/);
   assert.match(explore, /setDetailAccessLimit/);
   assert.match(explore, /크레딧 충전하러 가기/);
-  assert.match(explore, /첫 3개 상품은 무료로 열리고/);
+  assert.match(explore, /첫 상품 1개는 무료로 열리고/);
   assert.match(explore, /1크레딧으로 정확한 매물 열기/);
   assert.match(explore, /DetailAccessValueSummary/);
-  assert.match(explore, /무료 \{summary\.openedCount\.toLocaleString\("ko-KR"\)\}건 동안 이렇게 봤어요/);
-  assert.match(explore, /비교 매물/);
-  assert.match(explore, /예상 기회 수익/);
-  assert.match(explore, /판단 시간/);
+  assert.match(explore, /무료 상세에서 확인한 것/);
+  assert.match(explore, /열어본 상세/);
+  assert.match(explore, /확인한 수익/);
+  assert.doesNotMatch(explore, /comparableCount:\s*12/);
+  assert.doesNotMatch(explore, /estimatedMinutesSaved:\s*15/);
+  assert.doesNotMatch(explore, /판단 시간/);
   assert.match(explore, /accessValueForItem\(exactItem\)/);
   assert.match(explore, /data\.item/);
   assert.match(explore, /minyoi:credits-changed/);

@@ -2,10 +2,12 @@ import Link from "next/link";
 import CreditIcon from "@/components/credit-icon";
 import { PLANS, formatKrw, type PlanDefinition, type PlanKey } from "@/lib/plan-config";
 
-const ORDER: PlanKey[] = ["starter", "plus", "pro"];
+const ORDER: PlanKey[] = ["single", "trial", "starter", "plus", "pro"];
 
 const PACKAGE_VALUE_COPY: Record<Exclude<PlanKey, "free">, string> = {
-  starter: "처음 써보며 관심 매물만 가볍게 확인",
+  single: "이번 매물 하나만 바로 확인",
+  trial: "처음 결제 부담을 낮춘 체험팩",
+  starter: "가장 많이 쓰는 기본 충전권",
   plus: "여러 모델을 비교하며 살 만한 후보 추리기",
   pro: "대량 탐색과 반복 시세 확인이 많은 날에",
 };
@@ -101,7 +103,7 @@ export default function PlansPage() {
               크레딧 충전
             </h1>
             <p className="mt-0.5 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
-              3가지 충전권
+              필요한 만큼 충전
             </p>
           </div>
 

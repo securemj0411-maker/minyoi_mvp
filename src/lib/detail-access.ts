@@ -3,7 +3,7 @@ import { isAdminUser } from "@/lib/auth-users";
 import { getUserCreditsReadOnly, spendUserCredits } from "@/lib/user-credits";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
-export const FREE_DETAIL_ACCESS_LIMIT = 3;
+export const FREE_DETAIL_ACCESS_LIMIT = 1;
 const DETAIL_ACCESS_UNLOCK_WINDOW_SECONDS = 10 * 365 * 24 * 60 * 60;
 
 type RateLimitRow = {

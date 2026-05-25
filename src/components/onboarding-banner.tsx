@@ -53,11 +53,11 @@ export default function OnboardingBanner({ onStart }: { onStart?: () => void }) 
               가입 환영
             </span>
             <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-black text-blue-800 dark:bg-blue-900/60 dark:text-blue-200">
-              상세보기 3개 무료
+              상세보기 1개 무료
             </span>
           </div>
           <h3 className="mt-1 text-base font-black text-[#223127] dark:text-zinc-100">
-            첫 3개 상품은 무료로 볼 수 있어요
+            첫 상품 1개는 무료로 볼 수 있어요
           </h3>
           <p className="mt-1 text-xs font-semibold leading-6 text-[#5a6658] dark:text-zinc-300">
             “추천 상품 받기”에서 <strong>안전</strong> 또는 <strong>균형</strong> 프로필로 시작해보세요.
