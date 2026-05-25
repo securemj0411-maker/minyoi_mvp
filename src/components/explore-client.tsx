@@ -1192,9 +1192,10 @@ function FirstFeedOnboardingCard({
               <div className="min-w-0 flex-1">
                 <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">A급 · 무료배송</div>
                 <div className="mt-0.5 truncate text-[15px] font-black text-zinc-950 dark:text-zinc-50">에어팟 프로 2세대</div>
+                {/* Wave launch-125c: 중고 시세 폰트 11→13. */}
                 <div className="mt-1.5 flex items-baseline gap-1.5">
                   <span className="text-[18px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">5만원</span>
-                  <span className="text-[11px] font-bold text-zinc-500">중고 시세 15만</span>
+                  <span className="text-[13px] font-bold text-zinc-500">중고 시세 15만</span>
                 </div>
               </div>
             </div>
@@ -1204,10 +1205,8 @@ function FirstFeedOnboardingCard({
               <br />
               <span className="text-[#3182f6] dark:text-blue-300">5만원</span>에 나왔다고…?
             </h2>
-            <p className="mt-4 break-keep text-[15px] font-bold leading-7 text-zinc-600 dark:text-zinc-300">
-              사람들은 보통 이렇게 생각합니다.
-            </p>
-            <div className="mt-3 rounded-[18px] border-l-4 border-zinc-300 bg-white/60 px-4 py-4 text-[16px] font-black italic leading-7 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
+            {/* Wave launch-125c: "사람들은 보통 이렇게 생각" 줄 제거 (밑 인용박스로 의도 명확). 인용 폰트 16→22. */}
+            <div className="mt-5 rounded-[18px] border-l-4 border-zinc-300 bg-white/60 px-4 py-5 text-[22px] font-black italic leading-[1.4] text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
               &ldquo;싼 데는 다 이유가 있겠지…&rdquo;
             </div>
           </div>
@@ -1223,21 +1222,21 @@ function FirstFeedOnboardingCard({
               유난히 싼 매물만 골라드려요.
             </h2>
 
-            {/* mockup 매물 카드 2개. 사진은 public/intro/*.jpg 박혀야 동작. */}
+            {/* Wave launch-125c: 에어팟 (1페이지 재등장 어색) → 뉴발란스 + 닥마. "매입" → "매입가". */}
             <div className="mt-5 space-y-2.5">
               <div className="flex items-center gap-3 rounded-[18px] border border-zinc-200 bg-white px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/%EC%97%90%EC%96%B4%ED%8C%9F%EC%A4%91%EA%B3%A0.jpg"
-                  alt="에어팟 프로 2세대"
+                  src="/%EB%89%B4%EB%B0%9C%EB%9E%80%EC%8A%A4%EC%A4%91%EA%B3%A0.jpeg"
+                  alt="뉴발란스 993"
                   className="h-[64px] w-[64px] shrink-0 rounded-[14px] bg-zinc-100 object-cover dark:bg-zinc-800"
                 />
                 <div className="min-w-0 flex-1">
                   <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">A급 · 무료배송</div>
-                  <div className="mt-0.5 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">에어팟 프로 2세대</div>
+                  <div className="mt-0.5 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">뉴발란스 993 그레이</div>
                   <div className="mt-1 flex items-baseline gap-1.5">
-                    <span className="text-[15px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">+7만원</span>
-                    <span className="text-[10px] font-bold text-zinc-500">매입 5만 · A급 시세 12만</span>
+                    <span className="text-[15px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">+5만원</span>
+                    <span className="text-[10px] font-bold text-zinc-500">매입가 9만 · A급 시세 15만</span>
                   </div>
                 </div>
               </div>
@@ -1253,12 +1252,19 @@ function FirstFeedOnboardingCard({
                   <div className="mt-0.5 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">닥터마틴 1461 스무스</div>
                   <div className="mt-1 flex items-baseline gap-1.5">
                     <span className="text-[15px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">+6만원</span>
-                    <span className="text-[10px] font-bold text-zinc-500">매입 8만 · A급 시세 14만</span>
+                    <span className="text-[10px] font-bold text-zinc-500">매입가 8만 · A급 시세 14만</span>
                   </div>
                 </div>
               </div>
             </div>
-            <p className="mt-4 text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+            {/* Wave launch-125c: 회전률 정보 — "팔면 보통 얼마만에 팔림?" 답. */}
+            <div className="mt-4 flex items-center gap-2 rounded-[14px] bg-blue-50 px-3.5 py-2.5 dark:bg-blue-950/30">
+              <span className="text-[14px]">⏱️</span>
+              <p className="break-keep text-[12.5px] font-bold leading-5 text-blue-700 dark:text-blue-300">
+                이런 매물은 보통 <span className="font-black">1~2주</span> 안에 다시 거래돼요.
+              </p>
+            </div>
+            <p className="mt-3 text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
               ※ 예시 매물. 실제 추천은 다음 화면부터 시작.
             </p>
           </div>
