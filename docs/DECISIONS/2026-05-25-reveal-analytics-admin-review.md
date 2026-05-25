@@ -50,6 +50,13 @@
 - 현재 UX에서 운영자가 말하는 reveal은 피드 카드 상세보기 진입이므로 `detail_opened` 이벤트가 기준이다.
 - `mvp_pack_reveals`는 보조 데이터(과거 unlock/current profit/hidden/link clicked fallback)로만 사용한다.
 
+## Production Schema Fix
+
+- 2026-05-26 KST: 운영 DB에서 `public.mvp_detail_events`가 누락되어 PostgREST `PGRST205` 404가 발생했다.
+- 기존 migration `supabase/migrations/20260521094703_detail_analytics_events.sql`을 운영 DB에 직접 적용했다.
+- `notify pgrst, 'reload schema'` 실행 후 REST 조회가 `200 []`로 복구됨을 확인했다.
+- 테이블 생성 전 발생한 상세 열람 이벤트는 저장되지 않았을 가능성이 높다. 이후 상세 열람부터 집계된다.
+
 ## Hold
 
 - feed impression 대비 reveal 전환율은 현재 원장만으로는 정확하지 않다. 필요하면 `feed_impression`, `feed_card_clicked`, `paywall_seen` 계열 이벤트를 추가해야 한다.
