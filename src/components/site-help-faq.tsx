@@ -180,45 +180,29 @@ export default function SiteHelpFaq() {
 
               <div className="mt-3 rounded-2xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900/80">
                 <div className="flex items-start gap-2.5">
-                  <AlertTriangleIcon className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+                  <AlertTriangleIcon className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-300" />
                   <div>
                     <div className="text-sm font-black text-zinc-950 dark:text-zinc-100">특정 매물이 이상하다면</div>
                     <p className="mt-1 text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
-                      시세, 상태, 가품 의심처럼 상품 하나에 대한 제보는 상세 화면 신고가 가장 정확해요. 매물 정보가 같이 들어와서 검토가 빠르고, 승인되면 +20크레딧 보상도 바로 연결됩니다.
+                      그 매물의 상세 화면을 열고 상단 제보 아이콘이나 아래 제보 카드에서 보내주세요. 그렇게 보내야 매물 정보와 시세 기준이 같이 들어와서 검토와 보상이 정확해집니다.
                     </p>
                   </div>
                 </div>
-                <a
-                  href="/me#my-reveals-list"
-                  onClick={() => setOpen(false)}
-                  className="mt-3 flex h-10 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-3 text-xs font-black text-blue-700 transition hover:bg-blue-100 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-950/50"
-                >
-                  상세 화면에서 신고하기
-                </a>
               </div>
 
               <div className="mt-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/70">
-                <div className="text-sm font-black text-zinc-950 dark:text-zinc-100">직접 연락</div>
+                <div className="text-sm font-black text-zinc-950 dark:text-zinc-100">계정·결제 문의</div>
                 <p className="mt-1 text-[13px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
-                  계정, 결제, 입금처럼 바로 확인이 필요한 일은 오픈카톡 고객센터로 보내주세요. 매물 오류는 상세 화면 제보가 더 정확합니다.
+                  입금 확인, 크레딧, 로그인처럼 대화가 필요한 일은 오픈카톡으로 보내주세요. 매물 오류는 해당 매물 상세 화면에서 제보하는 게 가장 정확합니다.
                 </p>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <a
-                    href="https://open.kakao.com/o/g6prauwi"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex h-10 items-center justify-center rounded-xl bg-zinc-950 px-3 text-xs font-black text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
-                  >
-                    오픈카톡 고객센터
-                  </a>
-                  <a
-                    href="/me#my-reveals-list"
-                    onClick={() => setOpen(false)}
-                    className="flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 text-xs font-black text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                  >
-                    상세 신고
-                  </a>
-                </div>
+                <a
+                  href="https://open.kakao.com/o/g6prauwi"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 flex h-10 items-center justify-center rounded-xl bg-zinc-950 px-3 text-xs font-black text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                >
+                  오픈카톡으로 문의하기
+                </a>
                 <p className="mt-2 text-[11px] font-bold text-zinc-400 dark:text-zinc-500">
                   피드백은 운영자가 검토한 뒤 보상 여부를 결정합니다.
                 </p>
