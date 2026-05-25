@@ -430,21 +430,27 @@ export async function fetchDaangnText(url: string, timeoutMs = 10_000): Promise<
 }
 
 export function buildDaangnSearchUrl(input: {
-  search: string;
-  regionId?: string | null;   // optional — 없으면 전국 검색 (당근 web 기본 동작)
+  search?: string | null;      // optional — 없으면 region firehose (Phase 6i)
+  regionId?: string | null;
   categoryId?: number | string | null;
 }): string {
   const params = new URLSearchParams();
-  // Phase 6e: region 없이도 전국 검색 가능 (확인된 당근 web 동작).
-  //   region 명시 시: 그 동네 매물 우선
-  //   region 없이: 전국 매물 mix (서울 전역 + 일부 경기/지방)
+  // region 명시 시: 해당 region 매물 / 없을 때 (실제로는 empty payload — sharding)
   if (input.regionId && input.regionId.trim()) {
     params.set("in", input.regionId.trim());
   }
-  if (input.categoryId != null && String(input.categoryId).trim()) {
+  // Phase 6i: empty/0 categoryId 시 filter 생략 (전체 카테고리 firehose)
+  if (
+    input.categoryId != null
+    && String(input.categoryId).trim()
+    && String(input.categoryId) !== "0"
+  ) {
     params.set("category_id", String(input.categoryId).trim());
   }
-  params.set("search", input.search);
+  // Phase 6i: empty search 시 param 생략 (region firehose 모드 — 키워드 무관 지역 최신 매물 통째).
+  if (input.search && input.search.trim()) {
+    params.set("search", input.search.trim());
+  }
   // Keep the query form, not /kr/buy-sell/s/*, because the latter is disallowed
   // in robots.txt for generic crawlers.
   return `${DAANGN_BASE_URL}/kr/buy-sell/?${params.toString()}`;

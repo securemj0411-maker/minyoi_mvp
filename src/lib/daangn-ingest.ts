@@ -134,6 +134,8 @@ export type DaangnIngestOptions = {
   regions?: DaangnRegionSeed[];
   queries?: DaangnQuerySeed[];
   categories?: DaangnCategorySeed[];
+  // Phase 6i: region firehose 모드 (default true). false 시 legacy keyword combo 모드.
+  useRegionFirehose?: boolean;
   // dry-run: DB write 안 함 (Stage 1 default)
   dryRun?: boolean;
 };
@@ -468,6 +470,42 @@ function shuffleArray<T>(arr: readonly T[]): T[] {
   return out;
 }
 
+// Phase 6i: Region firehose 모드 sentinel.
+//   ?in=구-id 만으로 fetch (키워드/카테고리 filter X) → 지역 최신 매물 통째 ingest.
+//   keyword combo 의 99% 흘림 문제 해결 — 자릿수 다른 ingest 양.
+const DAANGN_FIREHOSE_QUERY: DaangnQuerySeed = {
+  label: "firehose",
+  search: "",
+  categoryIds: [],
+};
+const DAANGN_FIREHOSE_CATEGORY: DaangnCategorySeed = {
+  id: 0,  // sentinel — buildDaangnSearchUrl 가 0 / empty 시 category_id param 생략
+  name: "전체",
+};
+
+// Phase 6i: 지역 피드 firehose combo 생성기.
+//   - input.maxRegions 만큼 region 선택 (shuffle 시 매 tick 다른 region)
+//   - 각 region 당 1 combo (no keyword × no category filter)
+//   - selectDaangnCombos 의 keyword × cat × region 매트릭스 우회
+export function selectDaangnFirehoseCombos(input: {
+  regions: DaangnRegionSeed[];
+  maxRegions: number;
+  shuffleRegions?: boolean;
+}): DaangnComboSelection {
+  const shuffleRegions = input.shuffleRegions ?? false;
+  const order = shuffleRegions ? shuffleArray(input.regions) : input.regions;
+  const limit = Math.min(input.maxRegions, order.length);
+  const combos: DaangnIngestCombo[] = [];
+  for (let i = 0; i < limit; i += 1) {
+    combos.push({
+      region: order[i],
+      query: DAANGN_FIREHOSE_QUERY,
+      category: DAANGN_FIREHOSE_CATEGORY,
+    });
+  }
+  return { combos, totalSpace: input.regions.length };
+}
+
 // ───────────────────────────────────────────────────────────────────────────
 // Main ingest
 // ───────────────────────────────────────────────────────────────────────────
@@ -492,28 +530,41 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const dryRun = options.dryRun ?? mode !== "active";
 
   // Region 기반 ingest (Phase 6g — 6e 전국 검색 가설 폐기).
-  //   로컬 dry-run 결과: region 없는 ?search= 는 158KB body 응답하지만 articles 0.
-  //   당근 web 은 region 필수 — region 매핑 풀 확장이 sustainable 한 방향.
   //   options.regions 으로 override 가능 (테스트/실험용).
   const regions = options.regions ?? DEFAULT_DAANGN_REGION_SEEDS;
-  // Catalog 기반 query 자동 생성 (Phase 6 B):
-  //   ready category/lane 통과한 SKU 의 alias → 50+ query 자동.
-  //   options.queries override 가능 (테스트/실험용).
-  //   build 실패 시 fallback to static DEFAULT.
-  let queries = options.queries;
-  if (!queries || queries.length === 0) {
-    try {
-      const built = buildDaangnQueryPool({ maxQueries: 50, includeBroad: true });
-      queries = built.length > 0 ? built : DEFAULT_DAANGN_FASHION_QUERY_SEEDS;
-    } catch (err) {
-      console.warn("buildDaangnQueryPool failed (non-fatal)", err);
-      queries = DEFAULT_DAANGN_FASHION_QUERY_SEEDS;
-    }
-  }
-  const categories = options.categories ?? DAANGN_FASHION_CATEGORIES;
 
-  // shuffleRegions=true: 매 tick 마다 region order 무작위 → 24h 누적 시 111 region 골고루.
-  const { combos } = selectDaangnCombos({ regions, queries, categories, maxCombos, shuffleRegions: true });
+  // Phase 6i: Region firehose 모드 default ON.
+  //   배경: keyword × region combo 가 99% 매물 흘림 (지역 firehose 가 진짜 프리미티브).
+  //   `?in=구-id` 단독 fetch → 지역 최신 매물 50+개 통째 ingest → 자릿수 다른 throughput.
+  //   options.useRegionFirehose=false 로 keyword 모드 fallback 가능 (실험/테스트).
+  const useRegionFirehose = options.useRegionFirehose ?? true;
+
+  let combos: DaangnIngestCombo[];
+  if (useRegionFirehose) {
+    // Firehose 모드: keyword/category filter X, region 만 iteration.
+    //   maxCombos = 한 tick 에서 fetch 할 region 수.
+    const result = selectDaangnFirehoseCombos({
+      regions,
+      maxRegions: maxCombos,
+      shuffleRegions: true,
+    });
+    combos = result.combos;
+  } else {
+    // Legacy keyword 모드: catalog query × region × category combo (Phase 6g 동작).
+    let queries = options.queries;
+    if (!queries || queries.length === 0) {
+      try {
+        const built = buildDaangnQueryPool({ maxQueries: 50, includeBroad: true });
+        queries = built.length > 0 ? built : DEFAULT_DAANGN_FASHION_QUERY_SEEDS;
+      } catch (err) {
+        console.warn("buildDaangnQueryPool failed (non-fatal)", err);
+        queries = DEFAULT_DAANGN_FASHION_QUERY_SEEDS;
+      }
+    }
+    const categories = options.categories ?? DAANGN_FASHION_CATEGORIES;
+    const result = selectDaangnCombos({ regions, queries, categories, maxCombos, shuffleRegions: true });
+    combos = result.combos;
+  }
 
   // 진행 통계
   let executedCombos = 0;
