@@ -439,23 +439,21 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     return buildEmptyResult(mode, "mode_off", startedAt);
   }
 
-  // Phase 6c (영업 시작): 매물 양 3x 늘리기 위해 default 값 상향.
-  //   probe 검증 결과 (30 combos × 18 region): block 0, articles 265, active72h 11.
-  //   env 로 override 가능 (운영자 튜닝).
-  const maxCombos = boundedInt(options.maxCombos ?? process.env.DAANGN_INGEST_MAX_COMBOS, 30, 1, 200);
-  const maxDetailSamples = boundedInt(options.maxDetailSamples ?? process.env.DAANGN_INGEST_MAX_DETAIL_SAMPLES, 15, 0, 100);
-  const delayMs = boundedInt(options.delayMs ?? process.env.DAANGN_INGEST_DELAY_MS, 400, 200, 5000);
-  const activeWindowHours = boundedInt(options.activeWindowHours ?? process.env.DAANGN_INGEST_ACTIVE_HOURS, 72, 1, 720);
-  const freshWindowHours = boundedInt(options.freshWindowHours ?? process.env.DAANGN_INGEST_FRESH_HOURS, 24, 1, 168);
+  // Phase 6f: env 의존 제거 — 코드 default 가 항상 우선.
+  //   사용자가 Vercel env 매번 변경하는 부담 제거.
+  //   options 으로만 override 가능 (test/특수 케이스).
+  const maxCombos = boundedInt(options.maxCombos, 30, 1, 200);
+  const maxDetailSamples = boundedInt(options.maxDetailSamples, 15, 0, 100);
+  const delayMs = boundedInt(options.delayMs, 400, 200, 5000);
+  const activeWindowHours = boundedInt(options.activeWindowHours, 72, 1, 720);
+  const freshWindowHours = boundedInt(options.freshWindowHours, 24, 1, 168);
   const timeoutMs = boundedInt(options.timeoutMs, 10_000, 1_000, 30_000);
-  const dryRun = options.dryRun ?? mode !== "active"; // probe 모드 = dry-run
+  const dryRun = options.dryRun ?? mode !== "active";
 
-  // Phase 6e: region 명시 안 함 = 전국 검색 (당근 web 기본 동작).
-  //   region pool 매핑 불필요. query 만 rotation.
-  //   env 또는 options 으로 override 가능 (특정 동네 사용자 매칭 시).
-  const regionEnv = process.env.DAANGN_INGEST_REGIONS_MODE;
-  const useNationwide = regionEnv !== "regions" && options.regions === undefined;
-  const regions = useNationwide ? [] : (options.regions ?? DEFAULT_DAANGN_REGION_SEEDS);
+  // 전국 검색 mode (region 매핑 불필요).
+  //   당근 web 의 ?search= form 은 region 없이도 전국 매물 cover (블로그 + moajung 검증).
+  //   options.regions 명시 시만 동네 매칭 (사용자별 future).
+  const regions = options.regions ?? [];
   // Catalog 기반 query 자동 생성 (Phase 6 B):
   //   ready category/lane 통과한 SKU 의 alias → 50+ query 자동.
   //   options.queries override 가능 (테스트/실험용).

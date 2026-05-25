@@ -35,7 +35,8 @@ function envInt(name: string, fallback: number, min: number, max: number): numbe
 }
 
 function daangnWorkerBudgetMs() {
-  return envInt("DAANGN_WORKER_BUDGET_MS", 40_000, 5_000, 70_000);
+  // Phase 6f: env 의존 제거. 코드 default 40s 고정.
+  return 40_000;
 }
 
 async function handleDaangnWorker(req: NextRequest) {
