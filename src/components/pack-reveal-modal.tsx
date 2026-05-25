@@ -30,6 +30,7 @@ import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 import { buyPriceGuidance, verdictUiLabel } from "@/lib/buy-price-guidance";
+import { computeDealScore, type DealScore } from "@/lib/deal-score";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
 import {
   counterfeitChecklistFor,
@@ -919,50 +920,21 @@ function displayProfitRange(card: RevealCard) {
   return profitRange(card.expectedProfitMin, card.expectedProfitMax);
 }
 
-// Wave 359+362: "득템 점수" — 100점 만점. 차익 + 신뢰도 + 셀러 + 시세 표본 종합.
-// 기본 50점. 차익률 ↑↑↑ 가장 강한 가중치. 미뇨이 자체 메트릭 (°C 당근 따라 X).
-type DealScore = {
-  score: number; // 0~100
-  label: string;
-  toneClass: string;
-};
+// Wave 750 (2026-05-25): 득템 점수 통합 — `src/lib/deal-score.ts` 의 computeDealScore 사용.
+// 기존 base 50 + cap 30% 공식 (`pack-reveal-modal::calculateDealScore`) 폐기.
+// 사용자 보고: "100점 만점에 100점이 저렇게 많은건지" — 차익 27%+ 면 무조건 +40 cap → 풀 거의 다 100점.
+// 새 공식은 base 30 + profit cap 50% + 다단계 confidence/sample/seller. 100 = unicorn 만 도달.
 
 function calculateDealScore(card: RevealCard): DealScore {
-  const profitPct = netProfitPercent(card) ?? 0;
-  const confidence = card.confidence ?? 0;
-  const sellerRating = card.savedDetail?.sellerReviewRating ?? null;
-  const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
-  const sampleCount = card.marketBasis?.sampleCount ?? 0;
-
-  let score = 50;
-  // 차익률: 5% → +7.5, 10% → +15, 30%+ → +40 (cap)
-  if (profitPct > 0) score += Math.min(profitPct * 1.5, 40);
-  // AI 신뢰도
-  if (confidence >= 0.8) score += 8;
-  else if (confidence >= 0.6) score += 4;
-  // 셀러 신뢰
-  if (sellerRating != null && sellerRating >= 4.8 && reviewCount >= SELLER_TRUST_MIN_REVIEW_COUNT) score += 6;
-  else if (sellerRating != null && sellerRating >= 4.5) score += 2;
-  // 시세 표본
-  if (sampleCount >= 20) score += 4;
-  else if (sampleCount >= 10) score += 2;
-
-  score = Math.min(100, Math.max(0, Math.round(score)));
-
-  // Wave 363: 빨강 (rose)은 "위험" 시그널. 점수 ↑ = 좋은 매물 = 초록 진해짐.
-  let label = "보통";
-  let toneClass = "text-zinc-500 dark:text-zinc-400";
-  if (score >= 90) {
-    label = "최고";
-    toneClass = "text-blue-700 dark:text-blue-300";
-  } else if (score >= 80) {
-    label = "강추";
-    toneClass = "text-blue-600 dark:text-blue-400";
-  } else if (score >= 70) {
-    label = "좋음";
-    toneClass = "text-blue-500 dark:text-blue-400";
-  }
-  return { score, label, toneClass };
+  return computeDealScore({
+    price: card.price,
+    expectedProfitMin: card.expectedProfitMin,
+    expectedProfitMax: card.expectedProfitMax,
+    confidence: card.confidence ?? null,
+    sampleCount: card.marketBasis?.sampleCount ?? null,
+    sellerReviewRating: card.savedDetail?.sellerReviewRating ?? null,
+    sellerReviewCount: card.savedDetail?.sellerReviewCount ?? null,
+  });
 }
 
 function krwRange(min: number, max: number) {
@@ -5196,25 +5168,25 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
         <div className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
         <div className="flex items-center justify-between gap-4 px-4 py-3">
           <div>
-            <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">실제 매입가</div>
+            <div className="text-[12.5px] font-black text-[#172019] dark:text-zinc-50">실제 매입가</div>
             <div className="mt-0.5 text-[11px] font-semibold text-[#7b8378] dark:text-zinc-400">상품가 + 구매 배송비</div>
           </div>
-          <div className="text-[16px] font-black tabular-nums text-[#172019] dark:text-zinc-50">{snapshot.buyerCostLabel}</div>
+          <div className="text-[15px] font-black tabular-nums text-[#172019] dark:text-zinc-50">{snapshot.buyerCostLabel}</div>
         </div>
-        <div className="flex items-center justify-between gap-4 px-4 py-3">
+        <div className="flex items-center justify-between gap-3 px-3.5 py-2.5">
           <div>
-            <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">수익 기준 시세</div>
+            <div className="text-[12.5px] font-black text-[#172019] dark:text-zinc-50">수익 기준 시세</div>
             <div className="mt-0.5 text-[11px] font-semibold text-[#7b8378] dark:text-zinc-400">상세 근거 기준</div>
           </div>
-          <div className="text-[16px] font-black tabular-nums text-[#172019] dark:text-zinc-50">{snapshot.salePriceLabel}</div>
+          <div className="text-[15px] font-black tabular-nums text-[#172019] dark:text-zinc-50">{snapshot.salePriceLabel}</div>
         </div>
-        <div className="flex items-center justify-between gap-4 px-4 py-3">
+        <div className="flex items-center justify-between gap-3 px-3.5 py-2.5">
           <div>
-            <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">되팔 때 비용</div>
+            <div className="text-[12.5px] font-black text-[#172019] dark:text-zinc-50">되팔 때 비용</div>
             <div className="mt-0.5 text-[11px] font-semibold text-[#7b8378] dark:text-zinc-400">수수료 + 재배송 + 안전버퍼</div>
           </div>
           <div className="text-right">
-            <div className="text-[15px] font-black tabular-nums text-amber-700 dark:text-amber-300">{sellingFeeLabel}</div>
+            <div className="text-[14px] font-black tabular-nums text-amber-700 dark:text-amber-300">{sellingFeeLabel}</div>
             <div className="mt-0.5 text-[11px] font-bold tabular-nums text-amber-700/80 dark:text-amber-300/80">+ {krw(RESELL_SHIPPING_FEE + SAFETY_BUFFER)}</div>
           </div>
         </div>

@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { userRefForAuthUser } from "@/lib/user-ref";
+import { computeDealScore } from "@/lib/deal-score";
 
 type MeReveal = {
   pid: number;
@@ -515,15 +516,17 @@ function StickyCTA() {
 }
 
 function calcDealScore(reveal: MeReveal): number {
-  // 간이 득템 점수 — 차익률 + confidence + 시세 표본 + 셀러 평점 종합. 50 base.
-  const profitAvg = (reveal.expectedProfitMin + reveal.expectedProfitMax) / 2;
-  const profitPct = reveal.price > 0 ? (profitAvg / reveal.price) * 100 : 0;
-  const profitScore = Math.min(40, Math.max(0, profitPct * 0.6));
-  const confScore = Math.min(20, (reveal.confidence ?? 0) * 0.2);
-  const sampleScore = Math.min(15, (reveal.marketBasis?.sampleCount ?? 0) * 0.5);
-  const sellerScore = Math.min(15, ((reveal.sellerReviewRating ?? 0) / 5) * 15);
-  const total = 10 + profitScore + confScore + sampleScore + sellerScore;
-  return Math.round(Math.max(0, Math.min(100, total)));
+  // Wave 750 (2026-05-25): `src/lib/deal-score.ts` 의 computeDealScore 통합.
+  // 기존 공식 폐기 (confidence bug: 0~1 * 0.2 = max 0.2 → confidence 가 점수에 거의 영향 X).
+  return computeDealScore({
+    price: reveal.price,
+    expectedProfitMin: reveal.expectedProfitMin,
+    expectedProfitMax: reveal.expectedProfitMax,
+    confidence: reveal.confidence ?? null,
+    sampleCount: reveal.marketBasis?.sampleCount ?? null,
+    sellerReviewRating: reveal.sellerReviewRating,
+    sellerReviewCount: reveal.sellerReviewCount,
+  }).score;
 }
 
 function TitleBlock({ data }: { data: BoundData | null }) {
