@@ -57,37 +57,45 @@ function resolveWatermark(
 export interface CategoryWatermarkProps {
   category?: SkuCategory | string | null;
   comparableKey?: string | null;
-  /** 워터마크 크기 (px) — Image width/height 에 박힘. 기본 부모 thumb 의 약 55%. */
+  /** 워터마크 크기 (px). Image width/height 에 박힘. */
   size?: number;
-  /** 추가 className (예: opacity 조절) */
+  /** 추가 className */
   className?: string;
+  /**
+   * 배치 mode:
+   *   - "fallback" (기본): 부모 inset:0 채우고 중앙 표시. thumbnailUrl 없을 때 placeholder.
+   *   - "corner": 우하단 작은 배지. 사진 위에 overlay. 사진 안 가림.
+   */
+  variant?: "fallback" | "corner";
 }
 
 /**
- * 매물 썸네일 자리에 배치하는 카테고리 워터마크.
+ * 매물 썸네일 자리/위에 표시하는 카테고리 워터마크 배지.
  * 부모 element 는 position:relative 여야 함.
- * 부모를 inset:0 으로 채우고, 중앙에 원형 SVG 배지를 표시한다.
+ *
+ * - `variant="fallback"`: 사진 없을 때 placeholder (중앙 fill).
+ * - `variant="corner"`: 사진 위 우하단 작은 배지 (항상 표시).
  */
 export function CategoryWatermark({
   category,
   comparableKey,
   size = 64,
   className = "",
+  variant = "fallback",
 }: CategoryWatermarkProps) {
   const name = resolveWatermark(category, comparableKey);
-  if (!name) {
-    // 매핑 없으면 워터마크 없이 빈 영역 (호출 측에서 bg-zinc-100 등으로 처리)
-    return null;
-  }
+  if (!name) return null;
 
   const light = `/deuktem_watermarks_svg/light/${name}.svg`;
   const dark = `/deuktem_watermarks_svg/dark/${name}.svg`;
 
+  const wrapperClass =
+    variant === "corner"
+      ? `pointer-events-none absolute bottom-1 right-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)] ${className}`
+      : `pointer-events-none absolute inset-0 flex items-center justify-center ${className}`;
+
   return (
-    <div
-      className={`pointer-events-none absolute inset-0 flex items-center justify-center ${className}`}
-      aria-hidden="true"
-    >
+    <div className={wrapperClass} aria-hidden="true">
       {/* 라이트 모드 — 흰 원 + 토스 블루 stroke */}
       <Image
         src={light}

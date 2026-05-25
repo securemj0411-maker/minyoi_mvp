@@ -1528,6 +1528,14 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   size={56}
                 />
               )}
+              {/* Wave 751 (2026-05-25): 사진 위 우하단 카테고리 워터마크 배지. */}
+              {item.thumbnailUrl ? (
+                <CategoryWatermark
+                  comparableKey={item.comparableKey ?? null}
+                  size={22}
+                  variant="corner"
+                />
+              ) : null}
             </div>
             <div className="min-w-0 self-center">
               <div className="flex items-start gap-1.5">

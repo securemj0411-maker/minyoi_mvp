@@ -2233,6 +2233,12 @@ function RevealProductImage({ card }: { card: RevealCard }) {
             decoding="async"
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/12 to-transparent" />
+          {/* Wave 751 (2026-05-25): 사진 위 우하단 카테고리 워터마크 배지. */}
+          <CategoryWatermark
+            comparableKey={card.marketBasis?.comparableKey ?? null}
+            size={44}
+            variant="corner"
+          />
           {/* Wave 394.7.w (사용자 짚음 + handoff): 좌하 condition pill — nav(top-left)랑 안 겹침.
               Wave 714d (2026-05-23): 신발/의류는 옛 conditionClass pill 숨김 (전자기기용 라벨 정확도 낮음). */}
           {card.marketBasis?.conditionClass
@@ -2662,7 +2668,15 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
             <li className="flex items-center gap-2.5 bg-[#fffbef] px-2.5 py-3 dark:bg-amber-950/20 sm:gap-3 sm:px-3">
               <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[9px] bg-zinc-100 ring-2 ring-amber-300 dark:bg-zinc-800 dark:ring-amber-700 sm:h-[52px] sm:w-[52px]">
                 {card.thumbnailUrl ? (
-                  <Image src={card.thumbnailUrl} alt="" fill sizes="(max-width: 640px) 44px, 52px" unoptimized className="object-cover" />
+                  <>
+                    <Image src={card.thumbnailUrl} alt="" fill sizes="(max-width: 640px) 44px, 52px" unoptimized className="object-cover" />
+                    {/* Wave 751 (2026-05-25): 카테고리 워터마크 배지 (corner). */}
+                    <CategoryWatermark
+                      comparableKey={card.marketBasis?.comparableKey ?? null}
+                      size={16}
+                      variant="corner"
+                    />
+                  </>
                 ) : (
                   // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder.
                   <CategoryWatermark
@@ -2731,7 +2745,15 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                     >
                       <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[9px] bg-zinc-100 dark:bg-zinc-800">
                         {item.thumbnailUrl ? (
-                          <Image src={item.thumbnailUrl} alt="" fill sizes="52px" unoptimized className="object-cover" />
+                          <>
+                            <Image src={item.thumbnailUrl} alt="" fill sizes="52px" unoptimized className="object-cover" />
+                            {/* Wave 751 (2026-05-25): 카테고리 워터마크 배지 (corner). */}
+                            <CategoryWatermark
+                              comparableKey={card.marketBasis?.comparableKey ?? null}
+                              size={18}
+                              variant="corner"
+                            />
+                          </>
                         ) : (
                           // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder — 같은 SKU 비교 매물이므로 card 의 comparableKey 사용.
                           <CategoryWatermark
@@ -4482,15 +4504,23 @@ function BeginnerGuideProductVisual({ card }: { card: RevealCard }) {
     >
       <div className="relative h-[166px] w-full overflow-hidden rounded-[28px] bg-white shadow-[0_18px_36px_rgba(15,23,42,0.14)] ring-1 ring-white/80 dark:bg-zinc-900 dark:ring-zinc-800 sm:h-[212px]">
         {card.thumbnailUrl ? (
-          <Image
-            src={card.thumbnailUrl}
-            alt={card.name}
-            fill
-            sizes="(max-width: 639px) 100vw, 640px"
-            unoptimized
-            className="rounded-[28px] object-contain object-center p-2.5"
-            priority={false}
-          />
+          <>
+            <Image
+              src={card.thumbnailUrl}
+              alt={card.name}
+              fill
+              sizes="(max-width: 639px) 100vw, 640px"
+              unoptimized
+              className="rounded-[28px] object-contain object-center p-2.5"
+              priority={false}
+            />
+            {/* Wave 751 (2026-05-25): 사진 위 우하단 카테고리 워터마크 배지. */}
+            <CategoryWatermark
+              comparableKey={card.marketBasis?.comparableKey ?? null}
+              size={40}
+              variant="corner"
+            />
+          </>
         ) : (
           // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder.
           <div className="relative flex h-full w-full items-center justify-center">
@@ -4995,7 +5025,15 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
             <div className="flex items-center gap-2.5 bg-[#fffbef] px-3 py-3 dark:bg-amber-950/20 sm:gap-3 sm:px-4">
               <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[12px] bg-zinc-100 ring-2 ring-amber-300 dark:bg-zinc-800 dark:ring-amber-700 sm:h-12 sm:w-12">
                 {card.thumbnailUrl ? (
-                  <Image src={card.thumbnailUrl} alt="" fill sizes="(max-width: 640px) 44px, 48px" unoptimized className="object-cover" />
+                  <>
+                    <Image src={card.thumbnailUrl} alt="" fill sizes="(max-width: 640px) 44px, 48px" unoptimized className="object-cover" />
+                    {/* Wave 751 (2026-05-25): 카테고리 워터마크 배지. */}
+                    <CategoryWatermark
+                      comparableKey={card.marketBasis?.comparableKey ?? null}
+                      size={16}
+                      variant="corner"
+                    />
+                  </>
                 ) : (
                   // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder.
                   <CategoryWatermark
@@ -5041,7 +5079,15 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
                     <div key={item.pid} className="flex items-center gap-3 px-4 py-3">
                       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-zinc-100 dark:bg-zinc-800">
                         {item.thumbnailUrl ? (
-                          <Image src={item.thumbnailUrl} alt="" fill sizes="48px" unoptimized className="object-cover" />
+                          <>
+                            <Image src={item.thumbnailUrl} alt="" fill sizes="48px" unoptimized className="object-cover" />
+                            {/* Wave 751 (2026-05-25): 카테고리 워터마크 배지. */}
+                            <CategoryWatermark
+                              comparableKey={card.marketBasis?.comparableKey ?? null}
+                              size={18}
+                              variant="corner"
+                            />
+                          </>
                         ) : (
                           // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder — 같은 SKU 비교 매물이므로 card 의 comparableKey 사용.
                           <CategoryWatermark
@@ -6652,14 +6698,22 @@ function RelatedRevealStrip({
                     <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
                   )}
                   {item.thumbnailUrl ? (
-                    <Image
-                      src={item.thumbnailUrl}
-                      alt=""
-                      fill
-                      sizes="140px"
-                      unoptimized
-                      className="object-cover"
-                    />
+                    <>
+                      <Image
+                        src={item.thumbnailUrl}
+                        alt=""
+                        fill
+                        sizes="140px"
+                        unoptimized
+                        className="object-cover"
+                      />
+                      {/* Wave 751 (2026-05-25): 카테고리 워터마크 배지. */}
+                      <CategoryWatermark
+                        comparableKey={item.marketBasis?.comparableKey ?? null}
+                        size={28}
+                        variant="corner"
+                      />
+                    </>
                   ) : (
                     // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder.
                     <CategoryWatermark

@@ -567,14 +567,23 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                 )}
                 <div className="flex gap-3">
                   {item.thumbnailUrl ? (
-                    <Image
-                      src={item.thumbnailUrl}
-                      alt={item.name}
-                      width={100}
-                      height={100}
-                      unoptimized
-                      className="h-[100px] w-[100px] shrink-0 rounded object-cover"
-                    />
+                    // Wave 751 (2026-05-25): 사진 + 우하단 카테고리 워터마크 배지.
+                    <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded">
+                      <Image
+                        src={item.thumbnailUrl}
+                        alt={item.name}
+                        width={100}
+                        height={100}
+                        unoptimized
+                        className="h-[100px] w-[100px] object-cover"
+                      />
+                      <CategoryWatermark
+                        category={item.category}
+                        comparableKey={item.comparableKey ?? null}
+                        size={26}
+                        variant="corner"
+                      />
+                    </div>
                   ) : (
                     // Wave 749 (2026-05-25): 썸네일 없을 때 카테고리 워터마크 placeholder.
                     <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded bg-zinc-200 dark:bg-zinc-800">
