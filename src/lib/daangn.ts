@@ -209,18 +209,57 @@ export const DAANGN_FASHION_CATEGORIES: DaangnCategorySeed[] = [
   { id: 5, name: "여성의류" },
 ];
 
-// Phase 6: region pool 전국 확대.
+// Phase 6: region pool 서울 핵심 47개 (BFS + brute scan 합산).
 //
-// ID 출처:
-//   - BFS scraper (scripts/daangn-region-bfs.ts) — 당근 검색 페이지 "주변 지역" 자동 발견.
-//   - 18 region (서울 강남/동작/서초/동대문 일대) 자동 확보.
+// 출처:
+//   - BFS scraper (scripts/daangn-region-bfs.ts) — 18 (서초/동작/동대문)
+//   - Brute scan (scripts/daangn-region-brute-scan.ts) — 29 추가 (종로/중구/용산)
+//   - 총 47 region (dedup, sort)
 //
-// 운영 관점:
-//   - cron 마다 maxCombos cap → region rotation 자연 발생
-//   - 18 region × 50 query × overlap = 2700+ combos space
-//   - 영업 시작 임박 — 일단 18 region 으로 시작 + 매물 양 측정.
-//   - 추가 region (서울 강북/은평/마포/서대문 + 경기/광역시) 는 별도 wave (BFS scraper 다른 area seed 부터 재실행).
+// 구 분포:
+//   종로구  15동: 청운효자/사직/삼청/부암/평창/무악/교남/가회/이화/혜화/창신1-3/숭인1-2
+//   중구    12동: 소공/회현/명동/필동/장충/광희/을지로/신당/다산/약수/청구/중림
+//   용산구   2동: 원효로1, 한강로
+//   동대문구 6동: 답십리/용두/이문/장안/전농/휘경
+//   동작구   6동: 흑석/대방/노량진/사당/상도/신대방
+//   서초구   6동: 서초3-4/잠원/반포/방배/서초
+//
+// 영업 시작 가능 = YES (서울 핵심 인구밀집 + 6개 구 cover).
+// 추가 region (강남/송파/마포/은평/노원/광진/성동 등 19구) 는 별도 wave.
 export const DEFAULT_DAANGN_REGION_SEEDS: DaangnRegionSeed[] = [
+  // 종로구
+  { id: "3", name: "청운효자동" },
+  { id: "4", name: "사직동" },
+  { id: "5", name: "삼청동" },
+  { id: "6", name: "부암동" },
+  { id: "7", name: "평창동" },
+  { id: "8", name: "무악동" },
+  { id: "9", name: "교남동" },
+  { id: "10", name: "가회동" },
+  { id: "13", name: "이화동" },
+  { id: "14", name: "혜화동" },
+  { id: "15", name: "창신제1동" },
+  { id: "16", name: "창신제2동" },
+  { id: "17", name: "창신제3동" },
+  { id: "18", name: "숭인제1동" },
+  { id: "19", name: "숭인제2동" },
+  // 중구
+  { id: "21", name: "소공동" },
+  { id: "22", name: "회현동" },
+  { id: "23", name: "명동" },
+  { id: "24", name: "필동" },
+  { id: "25", name: "장충동" },
+  { id: "26", name: "광희동" },
+  { id: "27", name: "을지로동" },
+  { id: "28", name: "신당동" },
+  { id: "29", name: "다산동" },
+  { id: "30", name: "약수동" },
+  { id: "31", name: "청구동" },
+  { id: "35", name: "중림동" },
+  // 용산구
+  { id: "41", name: "원효로제1동" },
+  { id: "45", name: "한강로동" },
+  // 동작구 + 동대문구 + 서초구 (BFS 발견)
   { id: "331", name: "흑석동" },
   { id: "337", name: "대방동" },
   { id: "365", name: "서초3동" },
@@ -321,11 +360,16 @@ export async function fetchDaangnText(url: string, timeoutMs = 10_000): Promise<
 
 export function buildDaangnSearchUrl(input: {
   search: string;
-  regionId: string;
+  regionId?: string | null;   // optional — 없으면 전국 검색 (당근 web 기본 동작)
   categoryId?: number | string | null;
 }): string {
   const params = new URLSearchParams();
-  params.set("in", input.regionId);
+  // Phase 6e: region 없이도 전국 검색 가능 (확인된 당근 web 동작).
+  //   region 명시 시: 그 동네 매물 우선
+  //   region 없이: 전국 매물 mix (서울 전역 + 일부 경기/지방)
+  if (input.regionId && input.regionId.trim()) {
+    params.set("in", input.regionId.trim());
+  }
   if (input.categoryId != null && String(input.categoryId).trim()) {
     params.set("category_id", String(input.categoryId).trim());
   }

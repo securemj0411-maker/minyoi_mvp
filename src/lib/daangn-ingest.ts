@@ -397,14 +397,28 @@ export function selectDaangnCombos(input: {
   const { regions, queries, categories, maxCombos } = input;
   const out: DaangnIngestCombo[] = [];
   let space = 0;
-  // round-robin: region × query × category
-  // 우선 region rotation 이 가장 우선 (지역 부담 분산)
-  outer: for (const region of regions) {
+
+  // Phase 6e: regions 가 빈 배열이면 region 없이 전국 검색 (당근 web 기본 동작).
+  //   query 별로 1 combo (region 무관) — 매물 양 폭증, region mapping 불필요.
+  if (regions.length === 0) {
+    const placeholderRegion: DaangnRegionSeed = { id: "", name: "전국" };
     for (const query of queries) {
       for (const cat of categories) {
         space += 1;
         if (out.length >= maxCombos) continue;
-        // query 의 categoryIds 가 있으면 그 category 만
+        if (query.categoryIds.length > 0 && !query.categoryIds.includes(cat.id)) continue;
+        out.push({ region: placeholderRegion, query, category: cat });
+      }
+    }
+    return { combos: out, totalSpace: space };
+  }
+
+  // region 있을 때: 기존 round-robin (region × query × category)
+  for (const region of regions) {
+    for (const query of queries) {
+      for (const cat of categories) {
+        space += 1;
+        if (out.length >= maxCombos) continue;
         if (query.categoryIds.length > 0 && !query.categoryIds.includes(cat.id)) continue;
         out.push({ region, query, category: cat });
       }
@@ -436,7 +450,12 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const timeoutMs = boundedInt(options.timeoutMs, 10_000, 1_000, 30_000);
   const dryRun = options.dryRun ?? mode !== "active"; // probe 모드 = dry-run
 
-  const regions = options.regions ?? DEFAULT_DAANGN_REGION_SEEDS;
+  // Phase 6e: region 명시 안 함 = 전국 검색 (당근 web 기본 동작).
+  //   region pool 매핑 불필요. query 만 rotation.
+  //   env 또는 options 으로 override 가능 (특정 동네 사용자 매칭 시).
+  const regionEnv = process.env.DAANGN_INGEST_REGIONS_MODE;
+  const useNationwide = regionEnv !== "regions" && options.regions === undefined;
+  const regions = useNationwide ? [] : (options.regions ?? DEFAULT_DAANGN_REGION_SEEDS);
   // Catalog 기반 query 자동 생성 (Phase 6 B):
   //   ready category/lane 통과한 SKU 의 alias → 50+ query 자동.
   //   options.queries override 가능 (테스트/실험용).
@@ -467,7 +486,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   for (let i = 0; i < combos.length; i += 1) {
     const combo = combos[i];
     const url = buildDaangnSearchUrl({
-      regionId: combo.region.id,
+      regionId: combo.region.id || undefined,  // 빈 ID = 전국 검색
       categoryId: combo.category.id,
       search: combo.query.search,
     });
