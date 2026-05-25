@@ -3199,12 +3199,12 @@ function FeedbackReportPanel({
 
   if (stage === "done") {
     return (
-      <section ref={panelRef} className="mt-3 scroll-mt-16 rounded-2xl border border-blue-200 bg-blue-50/60 px-4 py-4 dark:border-blue-900/60 dark:bg-blue-950/30">
-        <div className="flex items-center gap-2 text-[13px] font-black text-blue-800 dark:text-blue-200">
+      <section ref={panelRef} className="mt-3 scroll-mt-16 rounded-[20px] border border-blue-100 bg-blue-50/70 px-4 py-4 dark:border-blue-900/50 dark:bg-blue-950/20">
+        <div className="flex items-center gap-2 text-[13px] font-black text-blue-700 dark:text-blue-200">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-          신고 접수됐어요
+          제보 접수됐어요
         </div>
-        <p className="mt-1.5 text-[12px] font-bold leading-5 text-blue-700/90 dark:text-blue-300/90">
+        <p className="mt-1.5 text-[12px] font-bold leading-5 text-blue-700/80 dark:text-blue-300/90">
           운영자가 검토 후 정당하면 +20 크레딧 지급해드릴게요.
         </p>
       </section>
@@ -3212,31 +3212,34 @@ function FeedbackReportPanel({
   }
 
   return (
-    <section ref={panelRef} className="mt-3 scroll-mt-16 rounded-2xl border border-amber-200 bg-amber-50/60 px-4 py-3.5 dark:border-amber-900/50 dark:bg-amber-950/20">
+    <section ref={panelRef} className="mt-3 scroll-mt-16 rounded-[20px] border border-zinc-200 bg-white px-4 py-3.5 shadow-[0_10px_28px_rgba(15,23,42,0.05)] dark:border-zinc-800 dark:bg-zinc-900/80">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between gap-3 text-left"
       >
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 text-[13px] font-black text-amber-900 dark:text-amber-200">
-            <span aria-hidden="true">🚨</span>
-            <span>이 매물 정보 잘못됐어요?</span>
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 ring-1 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-300 dark:ring-blue-900/60">
+            <AlertTriangleIcon className="h-4 w-4" />
           </div>
-          <div className="mt-1 text-[11.5px] font-bold leading-5 text-amber-800/85 dark:text-amber-300/80">
-            가품 의심 / 시세 이상 / 카테고리 오분류 등 — 운영자 검토 후 <b className="text-amber-900 dark:text-amber-100">+20 크레딧</b>
+          <div className="min-w-0">
+            <div className="text-[13px] font-black text-zinc-950 dark:text-zinc-100">
+              이 매물 정보가 이상한가요?
+            </div>
+            <div className="mt-1 text-[11.5px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+              시세, 상태, 모델 분류가 틀린 것 같으면 알려주세요. 운영자 확인 후 적절하면 +20크레딧을 드려요.
+            </div>
           </div>
         </div>
-        <span className={`shrink-0 rounded-full bg-amber-200/70 px-2.5 py-1 text-[11px] font-black text-amber-900 transition group-hover:bg-amber-300 dark:bg-amber-900/50 dark:text-amber-100 ${open ? "rotate-90" : ""}`}>
-          {open ? "닫기" : "신고하기 →"}
+        <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-blue-700 ring-1 ring-blue-100 transition hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:ring-blue-900/60">
+          {open ? "닫기" : "제보"}
         </span>
       </button>
 
       {open ? (
         <div className="mt-3 space-y-3">
-          {/* 카테고리 */}
           <div>
-            <label className="text-[11px] font-bold text-amber-800 dark:text-amber-300">카테고리</label>
+            <label className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">문제 유형</label>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {categories.map((c) => (
                 <button
@@ -3245,8 +3248,8 @@ function FeedbackReportPanel({
                   onClick={() => setCategory(c.value)}
                   className={`rounded-full px-2.5 py-1 text-[11px] font-black transition ${
                     category === c.value
-                      ? "bg-amber-600 text-white"
-                      : "bg-white text-amber-900 ring-1 ring-amber-200 hover:bg-amber-100 dark:bg-zinc-900 dark:text-amber-200 dark:ring-amber-900/50"
+                      ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20"
+                      : "bg-white text-zinc-700 ring-1 ring-zinc-200 hover:bg-blue-50 hover:text-blue-700 hover:ring-blue-100 dark:bg-zinc-950 dark:text-zinc-200 dark:ring-zinc-800 dark:hover:bg-blue-950/20 dark:hover:text-blue-300"
                   }`}
                 >
                   {c.label}
@@ -3255,9 +3258,8 @@ function FeedbackReportPanel({
             </div>
           </div>
 
-          {/* 내용 */}
           <div>
-            <label htmlFor="feedback-message" className="text-[11px] font-bold text-amber-800 dark:text-amber-300">
+            <label htmlFor="feedback-message" className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
               어떻게 잘못됐는지 알려주세요 (5자 이상)
             </label>
             <textarea
@@ -3268,7 +3270,7 @@ function FeedbackReportPanel({
               placeholder="예) 가품 같아요. 박음질이 조잡하고 사진의 폰트가 다름..."
               rows={3}
               disabled={stage === "submitting"}
-              className="mt-1 w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-[12.5px] leading-5 text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-900/50 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+              className="mt-1 w-full resize-none rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-[12.5px] font-semibold leading-5 text-zinc-900 placeholder:text-zinc-400 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-700 dark:focus:ring-blue-950/40"
             />
           </div>
 
@@ -3280,7 +3282,7 @@ function FeedbackReportPanel({
             type="button"
             onClick={submit}
             disabled={stage === "submitting" || message.trim().length < 5}
-            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 text-[13px] font-black text-white shadow-sm transition hover:bg-amber-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-55"
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-[13px] font-black text-white shadow-sm shadow-blue-500/20 transition hover:bg-blue-500 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-55"
           >
             {stage === "submitting" ? (
               <>
@@ -3289,11 +3291,11 @@ function FeedbackReportPanel({
                 <span className="h-2 w-2 animate-bounce rounded-full bg-white" />
               </>
             ) : (
-              <>신고 제출 — 검토 후 +20 크레딧</>
+              <>제보 보내기</>
             )}
           </button>
-          <p className="text-[10.5px] font-medium text-amber-700/80 dark:text-amber-300/70">
-            운영자 검토 결과는 텔레그램으로 알려드려요. 정당한 신고만 보상돼요.
+          <p className="text-[10.5px] font-bold text-zinc-400 dark:text-zinc-500">
+            매물 정보가 함께 전달돼요. 검토 후 정당한 제보만 보상됩니다.
           </p>
         </div>
       ) : null}
@@ -4457,7 +4459,7 @@ function RevealReportShortcutButton({
   onClick: () => void;
 }) {
   const floating = variant === "floating";
-  const label = "매물 정보 신고";
+  const label = "매물 정보 제보";
   return (
     <button
       type="button"
@@ -4468,13 +4470,12 @@ function RevealReportShortcutButton({
       data-report-shortcut-button
       className={
         floating
-          ? "pointer-events-auto inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-rose-600/95 px-3 text-[12px] font-black text-white shadow-[0_8px_22px_rgba(190,18,60,0.34)] ring-1 ring-white/45 backdrop-blur transition hover:bg-rose-500 active:scale-90"
-          : "pointer-events-auto inline-flex h-9 items-center justify-center gap-1 rounded-full px-2.5 text-[11px] font-black text-rose-600 transition hover:bg-rose-50 active:scale-90 dark:text-rose-300 dark:hover:bg-rose-950/30"
+          ? "pointer-events-auto inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90"
+          : "pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-full text-zinc-900 transition hover:bg-zinc-100 active:scale-90 dark:text-zinc-100 dark:hover:bg-zinc-800"
       }
       style={floating ? { filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.55))" } : undefined}
     >
-      <AlertTriangleIcon className="h-4 w-4" />
-      <span>신고</span>
+      <AlertTriangleIcon className="h-5 w-5" />
     </button>
   );
 }
