@@ -27,11 +27,64 @@ const COLLAB_BLOCK = [
   "aimé leon dore", "aime leon dore", "ald", "에임레온도르",
   "jjjjound", "자운드",
   "carhartt", "칼하트",
+  "ader error", "adererror", "아더에러",
+  "feng chen wang", "fengchenwang", "fcw", "펑첸왕",
   "rick owens", "릭오웬스",
   "한정", "한정판", "콜라보", "collaboration", "collab",
 ];
 
 export const SHOE_WAVE140_CATALOG: Sku[] = [
+  {
+    id: "shoe-converse-chuck70-ambiguous",
+    brand: "Converse",
+    category: "shoe",
+    modelName: "Converse Chuck 70 (high/low unspecified internal learning lane)",
+    aliases: ["Converse Chuck 70", "컨버스 척70", "컨버스 척테일러 70"],
+    mustContain: [
+      ["컨버스", "converse", "척테일러", "chuck taylor", "척", "chuck"],
+      ["70", "척70", "chuck70", "ct70", "1970", "1970s", " 70s "],
+    ],
+    mustNotContain: [
+      "하이", "high", "hi top", "하이탑", "hi ",
+      "low", " 로우 ", "로우탑", "로우 탑", "ox", "ox로우", "ox 로우",
+      "플러스", "plus",
+      "미션v", "미션 v", "mission v",
+      "atcx", "at-cx", "at cx",
+      "스케치화이트", "스케치 화이트", "sketch white",
+      "화이트팩", "화이트 팩", "white pack",
+      "컬러체인지", "컬러 체인지", "color change",
+      "쇼츠", "shoreline",
+      "슬램잼", "slam jam", "키아라", "페라그니", "chiara", "ferragni",
+      ...COMMON_BLOCK,
+      ...COLLAB_BLOCK,
+    ],
+    msrpKrw: 99000,
+    released: 2013,
+    defaultProductType: "sneaker",
+  },
+  {
+    id: "shoe-converse-chuck70-plus-high",
+    brand: "Converse",
+    category: "shoe",
+    modelName: "Converse Chuck 70 Plus High (internal learning lane)",
+    aliases: ["Converse Chuck 70 Plus High", "컨버스 척70 플러스 하이"],
+    mustContain: [
+      ["컨버스", "converse", "척테일러", "chuck taylor", "척", "chuck"],
+      ["70", "척70", "chuck70", "ct70", "1970", "1970s", " 70s "],
+      ["플러스", "plus"],
+      ["하이", "high", "hi top", "하이탑", "hi "],
+    ],
+    mustNotContain: [
+      "low", " 로우 ", "로우탑", "로우 탑", "쇼츠", "shoreline",
+      "슬램잼", "slam jam", "키아라", "페라그니", "chiara", "ferragni",
+      ...COMMON_BLOCK,
+      ...COLLAB_BLOCK,
+    ],
+    msrpKrw: 129000,
+    released: 2022,
+    defaultProductType: "sneaker",
+  },
+
   // ─── 컨버스 척70 하이 broad (variant 컬러 다양, msrp 가격 안정) ──
   // 측정 결과 (Iter 6): 컬러별 분리 SKU 시 매물 컬러 너무 다양해서 0건 매칭.
   // 일반 컬러 (파치먼트/러쉬블루/미드나잇/헤리티지 블루) variant 가격 차이 작음 → broad 정책.
@@ -44,11 +97,11 @@ export const SHOE_WAVE140_CATALOG: Sku[] = [
     aliases: ["컨버스 척70 하이", "Chuck 70 High", "Chuck 1970s High"],
     mustContain: [
       ["컨버스", "converse", "척테일러", "chuck taylor", "척", "chuck"],
-      ["70", "척70", "chuck70", "ct70", "1970", "1970s"],
+      ["70", "척70", "chuck70", "ct70", "1970", "1970s", " 70s "],
       ["하이", "high", "hi top", "하이탑", "hi "],
     ],
     mustNotContain: [
-      "low", "로우", "쇼츠", "shoreline",
+      "low", " 로우 ", "로우탑", "로우 탑", "쇼츠", "shoreline",
       // 콜라보 (가격 다름)
       "다크쉐도우", "dark shadow", "터보다크", "turbo dark",
       "골프왕", "golf wang", "tyler the creator", "타일러",
@@ -62,6 +115,13 @@ export const SHOE_WAVE140_CATALOG: Sku[] = [
       "앰부쉬", "ambush",
       "펑첸왕", "feng chen wang", "fengchenwang",
       "투인원", "two-in-one",
+      // Wave 818: broad sample audit found collab/special-edition pollution.
+      "코카콜라", "coca cola", "coca-cola",
+      "키아라", "페라그니", "chiara", "ferragni",
+      "킴 존스", "킴존스", "kim jones",
+      "피어 오브 갓", "피어오브갓", "fear of god", "essentials", "에센셜",
+      "슬램잼", "slam jam",
+      "플러스", "plus", "at-cx", "at cx",
       ...COMMON_BLOCK,
       ...COLLAB_BLOCK,
     ],

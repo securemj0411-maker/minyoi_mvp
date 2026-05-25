@@ -3549,7 +3549,7 @@ export async function sourceHealthStage(): Promise<StageStats> {
 // 새: DB 안에서 GROUP BY HAVING — 작은 set 반환. 100배 빠름.
 async function loadFraudGroupHashes(): Promise<Set<string>> {
   try {
-    const timeoutMs = Number(process.env.PIPELINE_FRAUD_GROUP_HASH_TIMEOUT_MS ?? 5_000);
+    const timeoutMs = Number(process.env.PIPELINE_FRAUD_GROUP_HASH_TIMEOUT_MS ?? 1_500);
     const res = await fetch(rpcUrl("get_fraud_group_hashes"), {
       method: "POST",
       headers: serviceHeaders(),
@@ -3578,16 +3578,19 @@ async function loadLowVolumeSkuIds(): Promise<Set<string>> {
   try {
     const since7dIso = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
     const since2dMs = Date.now() - 2 * 24 * 3600 * 1000;
+    const maxRows = Number(process.env.PIPELINE_LOW_VOLUME_MAX_ROWS ?? 1_000);
     const all: Array<{ sku_id: string; first_seen_at: string }> = [];
     let offset = 0;
     const PAGE = 1000;
-    while (true) {
-      const url = `${tableUrl("mvp_raw_listings")}?select=sku_id,first_seen_at&sku_id=not.is.null&first_seen_at=gte.${encodeURIComponent(since7dIso)}&listing_state=eq.active&or=(sku_id.like.shoe-%2A,sku_id.like.clothing-%2A,sku_id.like.bag-%2A)&limit=${PAGE}&offset=${offset}`;
+    while (!Number.isFinite(maxRows) || maxRows <= 0 || all.length < maxRows) {
+      const pageLimit = Number.isFinite(maxRows) && maxRows > 0 ? Math.min(PAGE, maxRows - all.length) : PAGE;
+      if (pageLimit <= 0) break;
+      const url = `${tableUrl("mvp_raw_listings")}?select=sku_id,first_seen_at&sku_id=not.is.null&first_seen_at=gte.${encodeURIComponent(since7dIso)}&listing_state=eq.active&or=(sku_id.like.shoe-%2A,sku_id.like.clothing-%2A,sku_id.like.bag-%2A)&order=first_seen_at.desc&limit=${pageLimit}&offset=${offset}`;
       const res = await restFetch(url, { headers: serviceHeaders() });
       const rows = (await res.json()) as Array<{ sku_id: string; first_seen_at: string }>;
       all.push(...rows);
-      if (rows.length < PAGE) break;
-      offset += PAGE;
+      if (rows.length < pageLimit) break;
+      offset += pageLimit;
     }
     const d7BySku = new Map<string, number>();
     const d2BySku = new Map<string, number>();

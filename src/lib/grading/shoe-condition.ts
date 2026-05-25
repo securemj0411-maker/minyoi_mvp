@@ -64,8 +64,9 @@ export function gradeShoeCondition(input: ShoeGradeInput): ConditionGrade {
     description: input.description,
   });
 
-  // raw text 부족 → UNKNOWN (false positive 차단).
-  if (rawTextLength < 50) {
+  // raw text 부족 + 매칭 0건 → UNKNOWN. 제목만 짧아도 "새상품/민트급"처럼
+  // 명확한 축 신호가 있으면 아래 hard-rule grading을 탄다.
+  if (rawTextLength < 50 && positiveMatches.length === 0 && negativeMatches.length === 0) {
     const fallback = applyEnumPrior(enumPrior);
     return {
       tier: fallback,
@@ -208,6 +209,8 @@ function applyEnumPrior(label: string | null): ConditionTier {
       return "B"; // 데미지 15.9% 섞임 — 보수적
     case "LIGHTLY_USED":
       return "B";
+    case "USED":
+      return "C";
     case "HEAVILY_USED":
       return "C";
     case "DAMAGED":

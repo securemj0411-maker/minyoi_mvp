@@ -462,10 +462,13 @@ function parseClothingProductType(text: string): ClothingProductType {
   // pants — "RRL 데님 팬츠" 등 (jeans 보다 narrow 한 데님은 위에서 잡힘).
   // Wave 438: bare "카고/cargo" is not enough. "카고 자켓/카고 바람막이" was parsed as pants.
   if (/팬츠|pants\b|바지(?!\s*받침)|trouser|트라우저|치노|chino|슬랙스|slacks|조거|jogger|카고 ?(?:팬츠|바지)|cargo ?(?:pants|trouser)|트랙 ?팬츠|track ?pants|카펜터|carpenter|워크팬츠|workwear ?pants/.test(t)) return "pants";
+  // vest must beat down/nano-puff model wording: "Nano Puff Vest" is a vest comp, not down_jacket.
+  if (/조끼|베스트(?!\s*조끼)|vest\b|gilet/.test(t)) return "vest";
 
   // ── PRIORITY 2: 모델명 기반 / 일반 product_type 키워드 ──
   // down jacket — 눕시 / 푸퍼 / 다운 라이너 등.
-  if (/패딩|다운 ?재킷|다운 ?자켓|down ?jacket|푸퍼|puffer|nano puff|nanopuff|구스다운|덕다운|눕시|nuptse|다운 ?베스트|다운 ?베어|다운 ?재킷|다운 ?파카|down ?parka/.test(t)) return "down_jacket";
+  if (/nano ?puff.{0,24}pullover|pullover.{0,24}nano ?puff|나노 ?퍼프.{0,24}풀오버|풀오버.{0,24}나노 ?퍼프/.test(t)) return "jacket";
+  if (/패딩|다운 ?재킷|다운 ?자켓|다운 ?스웨터|down ?jacket|down ?sweater|푸퍼|puffer|nano puff|nanopuff|구스다운|덕다운|눕시|nuptse|발토로|baltoro|다운 ?베스트|다운 ?베어|다운 ?재킷|다운 ?파카|down ?parka/.test(t)) return "down_jacket";
   if (/코트(?!\s*디테일)|coat\b|trench|트렌치|체스터필드|chesterfield|피코트|peacoat|카코트|발마칸|balmacaan|울 ?코트/.test(t)) return "coat";
   // Wave 264: 가디건 (한글 변형) 추가.
   if (/카디건|cardigan|가디건|니트 ?집업|knit ?zip/.test(t)) return "cardigan";
@@ -473,7 +476,6 @@ function parseClothingProductType(text: string): ClothingProductType {
   if (/(니트|knit).{0,10}(긴팔|long ?sleeve).{0,10}(티 ?셔츠|tee|t-shirt|tshirt)/.test(t)) return "long_sleeve_tee";
   // Wave 236b: 터틀넥/폴라넥/모크넥 추가.
   if (/니트(?!\s*집업)|knit(?! ?zip)|스웨터|sweater|터틀넥|turtleneck|폴라넥|모크넥|mockneck|crewneck ?knit/.test(t)) return "knit";
-  if (/조끼|베스트(?!\s*조끼)|vest\b|gilet/.test(t)) return "vest";
   if (/플리스|후리스|fleece|레트로 ?x|retro ?x|덴알리|denali|숄카라|숄 ?카라|shawl/.test(t)) return "jacket"; // 플리스/베스트 자켓 류
   // Wave 236b: windbreaker/바람막이/아노락/안타르티카/마운틴 라이트 등 자켓 류.
   // Wave 264: 윈드러너/스팁 테크/패딩 자켓 보강 (TNF Supreme collab).
@@ -592,6 +594,14 @@ function parseShoeProductType(text: string): ShoeProductType {
   if (/풋살화|\btf\b|터프|turf/.test(t)) return "football_tf" as ShoeProductType;
   if (/(?:^|[^a-z])fg(?:$|[^a-z])|천연\s*잔디|천연잔디/.test(t)) return "football_fg" as ShoeProductType;
   if (/(?:^|[^a-z])(?:ag|mg|hg)(?:$|[^a-z])|인조\s*잔디|인조잔디/.test(t)) return "football_ag_mg" as ShoeProductType;
+  // Wave 856: Nike Air Superfly is a lifestyle sneaker. Do not let the
+  // generic Superfly football token force it into football_shoe buckets.
+  if (
+    /air ?superfly|에어\s*superfly|에어\s*슈퍼플라이|에어슈퍼플라이/.test(t) &&
+    !/mercurial|머큐리얼|축구화|풋살화|football ?boot|football ?shoes|(?:^|[^a-z])(?:fg|ag|mg|hg|tf)(?:$|[^a-z])/.test(t)
+  ) {
+    return "sneaker" as ShoeProductType;
+  }
   if (/축구화|풋볼화|football ?boot|football ?shoes|mercurial|머큐리얼|superfly|슈퍼플라이|tiempo|티엠포|f50|프레데터|predator|코파(?:\s|$)|copa\b|네메지즈|nemeziz|메시|messi|crazyfast|크레이지 ?패스트/.test(t)) {
     return "football_shoe" as ShoeProductType;
   }
@@ -695,7 +705,7 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v24";
 // Wave 507 v20: final condition_class rewrites comparable condition token before key materialization.
 // Wave 540 (2026-05-22): Polo Oxford boys/youth sizes no longer enter adult shirt samples.
 // Wave 742 (2026-05-24): 의류 사이즈 추출 (sizeAlpha + sizeKr).
-const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v51";  // Wave 766: 다중 brand 묶음 자동 detection (3+ brand 명시) + 폴로진스/캐시미어100프로 변형 추가
+const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v52";  // Wave 779: Baltoro/발토로는 자켓 wording이어도 down_jacket key 유지
 
 // ─── 의류 사이즈 추출 (Wave 742) ─────────────────────────────────────────
 // Alpha: XS/S/M/L/XL/XXL/XXXL/2XL/3XL/FREE
@@ -758,6 +768,27 @@ function slug(token: string): string {
   return token.toLowerCase().replace(/[^a-z0-9가-힣_]/g, "").replace(/__+/g, "_");
 }
 
+const SHOE_COLLAB_MODEL_OVERRIDES: Record<string, string> = {
+  // Wave 810: these collab IDs do not end with "-collab", so the generic shoe
+  // model fallback dropped the collaborator and mixed them with plain Nike buckets.
+  "shoe-offwhite-nike-blazer-mid": "offwhite_nike_blazer_mid",
+  "shoe-offwhite-nike-blazer-low": "offwhite_nike_blazer_low",
+  "shoe-readymade-nike-blazer-mid": "readymade_nike_blazer_mid",
+  "shoe-supreme-nike-sb-blazer": "supreme_nike_sb_blazer",
+  "shoe-stranger-things-nike-blazer": "stranger_things_nike_blazer",
+  "shoe-travis-nike-airmax-1": "travis_nike_airmax_1",
+  "shoe-bape-sta": "bape_sta",
+  "shoe-adidas-football-f50": "adidas_football_f50",
+  "shoe-adidas-football-predator": "adidas_football_predator",
+  "shoe-adidas-football-copa": "adidas_football_copa",
+  "shoe-puma-football-ultra": "puma_football_ultra",
+  "shoe-puma-football-future": "puma_football_future",
+  "shoe-puma-football-king": "puma_football_king",
+  "shoe-carhartt-converse-one-star": "carhartt_converse_one_star",
+  "shoe-carhartt-converse-chuck70": "carhartt_converse_chuck70",
+  "shoe-carhartt-converse-jack-purcell": "carhartt_converse_jack_purcell",
+};
+
 function modelFromSku(
   skuId: string | null | undefined,
   _skuName: string | null | undefined,
@@ -774,6 +805,14 @@ function modelFromSku(
   // Wave 429 (2026-05-21): broad "football" model key가 Adidas/Puma 축구화 샘플을
   // 같은 comparable_key로 섞었다. 축구화 broad lane은 브랜드 가격대가 달라 brand 포함.
   if (category === "shoe") {
+    const collabOverride = SHOE_COLLAB_MODEL_OVERRIDES[skuId];
+    if (collabOverride) return collabOverride;
+    // Wave 806: UGG "Classic Mini/Tasman/Disquette" names are generic enough
+    // that dropping the brand creates fragile keys. Keep the UGG axis.
+    if (skuId.startsWith("shoe-ugg-")) {
+      const parts = skuId.split("-").slice(1);
+      return parts.length > 0 ? parts.join("_") : null;
+    }
     if (skuId === "shoe-adidas-football") return "adidas_football";
     if (skuId === "shoe-puma-football") return "puma_football";
     // Wave 500: collab shoes must keep the collaborator axis.
@@ -1390,10 +1429,9 @@ export function parseFashionMobility(input: ParseInput): ParsedListingOptions {
   const fromMeta = bunjangLabelToConditionClass(input.bunjangConditionLabel);
   conditionClassResult = resolveConditionClass(fromMeta, conditionClassResult, false);
   if (conditionKeyIndex != null) {
-    // Wave 763 (2026-05-24): UI 표시 tier (condition_grade) 와 comparable_key tier 통일.
-    //   shoe/clothing 은 fashionConditionGrade 박혀있으면 그 결과 사용 → UI = 시세 grouping 일치.
-    //   bag (condition_grade 없음) / fashionConditionGrade UNKNOWN → 기존 conditionClassResult fallback.
-    if (fashionConditionGrade && fashionConditionGrade.tier !== "UNKNOWN") {
+    // Wave 882: UNKNOWN grade must also drive the comparable key.
+    // Otherwise low-evidence rows stayed in A/C samples while UI said UNKNOWN.
+    if (fashionConditionGrade) {
       partsForKey[conditionKeyIndex] = gradeChipToComparableKeyTier(fashionConditionGrade.tier);
     } else {
       const comparableTier = conditionClassToComparableTier(conditionClassResult);

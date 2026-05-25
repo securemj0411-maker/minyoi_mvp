@@ -299,9 +299,29 @@ export function evaluatePoolGate(
 ): CategoryReadinessDecision {
   const laneMap = maps.laneReadiness ?? LANE_READINESS;
   const laneDecision = evaluateLaneReadinessForSku(input.sku ?? undefined, laneMap);
-  if (laneDecision && laneDecision.status === "ready") return laneDecision;
-
   const categoryDecision = evaluateCategoryReadiness(input.category, maps.categoryReadiness);
+
+  // Wave 809: shoe broad/fallback lanes are internal watch by default. The
+  // safety audit found 193 non-empty broad/family lanes with no public-ready
+  // proof; exact/collab/model lanes may still release through LANE_READINESS.
+  if (
+    input.category === "shoe" &&
+    input.sku &&
+    (
+      input.sku.id.endsWith("-broad") ||
+      input.sku.laneKey?.endsWith("_broad")
+    )
+  ) {
+    return {
+      ...categoryDecision,
+      status: "blocked",
+      canEnterPool: false,
+      reason: "category_internal_only_shoe_broad_lane_required",
+      laneKey: input.sku.laneKey,
+    };
+  }
+
+  if (laneDecision && laneDecision.status === "ready") return laneDecision;
 
   // Lane exists but is blocked → surface the lane reason instead of silently
   // falling through to category readiness (which might be `ready`).

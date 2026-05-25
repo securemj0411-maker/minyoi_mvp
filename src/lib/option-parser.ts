@@ -1448,7 +1448,7 @@ function conditionFromText(
   // Wave 209 (2026-05-18): cosmetic_wear negation 보강 — "사용감 적음/없음" 자체는 wear 아님.
   // 사용자 #159 매물 description "사용감 적음" — 셀러 명시적 부정인데 cosmetic_wear 박힘 → worn 분류 잘못.
   // 사용자 정책: "사용감 적음/없음" 은 정상 (cosmetic_wear 박지 X). "사용감 있음/많음/심함" 만 worn 신호.
-  const noUseFeeling = /사용감\s*(?:거의\s*)?(?:적음|적은|없음|없|매우\s*적|아주\s*적|덜|미세)/i.test(lower);
+  const noUseFeeling = /사용감\s*(?:(?:거의|전혀)\s*)?(?:적음|적은|없음|없|없는|매우\s*적|아주\s*적|덜|미세)/i.test(lower);
   const hasUseFeeling = !noUseFeeling && /사용감/.test(lower);
   const hasOtherWear = /기스|스크래치|찍힘|생활기스|흠집/.test(lower);
   if (hasUseFeeling || hasOtherWear) add("cosmetic_wear", -0.1);

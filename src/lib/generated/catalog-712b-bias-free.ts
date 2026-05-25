@@ -39,17 +39,31 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     ],
     msrpKrw: 100000, released: 2025,
   },
+  // Wave 868: 팀가이스트 레더 자켓은 후디와 상품 타입/시세축이 달라 별도 held lane.
+  {
+    id: "clothing-thugclub-teamgeist-leather-jacket",
+    brand: "Adidas x Thug Club", category: "clothing", laneKey: "thugclub_teamgeist_leather_jacket",
+    modelName: "Thug Club × Adidas Team Geist Leather Jacket",
+    aliases: ["Team Geist Leather Jacket", "팀가이스트 레더 자켓"],
+    mustContain: [
+      ["adidas", "아디다스", "떠그클럽", "thug club", "떠그 클럽", "팀가이스트", "team geist"],
+      ["레더", "leather", "가죽"],
+      ["자켓", "재킷", "jacket"],
+    ],
+    mustNotContain: [...COMMON_NOISE, "스니커즈", "sneaker", "운동화", "후드", "후디", "hoodie", "후드티"],
+    msrpKrw: 630000, released: 2025,
+  },
   // Wave 716: 팀가이스트 후디 별도 narrow (median 63만 — 일반 트랙탑 10만과 6배 차이).
   {
     id: "clothing-thugclub-teamgeist-hoodie",
     brand: "Adidas x Thug Club", category: "clothing", laneKey: "thugclub_teamgeist_hoodie",
-    modelName: "Thug Club × Adidas Team Geist Hoodie / Leather",
-    aliases: ["Team Geist Hoodie", "팀가이스트 후드", "팀가이스트 레더"],
+    modelName: "Thug Club × Adidas Team Geist Hoodie",
+    aliases: ["Team Geist Hoodie", "팀가이스트 후드"],
     mustContain: [
       ["떠그클럽", "thug club", "떠그 클럽", "팀가이스트", "team geist"],
-      ["후드", "후디", "hoodie", "후드티", "레더", "leather", "가죽"],
+      ["후드", "후디", "hoodie", "후드티"],
     ],
-    mustNotContain: [...COMMON_NOISE, "스니커즈", "sneaker", "운동화"],
+    mustNotContain: [...COMMON_NOISE, "스니커즈", "sneaker", "운동화", "레더 자켓", "레더자켓", "leather jacket", "가죽 자켓", "가죽자켓"],
     msrpKrw: 630000, released: 2025,
   },
   {
@@ -70,8 +84,12 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     brand: "Adidas x SFTM", category: "clothing", laneKey: "adidas_sftm_collab",
     modelName: "SFTM (Song For The Mute) × Adidas (자켓/팬츠/롱슬리브)",
     aliases: ["SFTM Adidas", "송포더뮤트 아디다스"],
-    mustContain: [["adidas", "아디다스"], ["sftm", "송포더뮤트", "song for the mute", "송 포 더 뮤트"]],
-    mustNotContain: [...COMMON_NOISE, "country og", "superstar 82", "campus", "shadow turf", "스니커즈", "운동화"],
+    mustContain: [
+      ["adidas", "아디다스"],
+      ["sftm", "송포더뮤트", "song for the mute", "송 포 더 뮤트"],
+      ["자켓", "재킷", "jacket", "팬츠", "pants", "바지", "롱슬리브", "long sleeve", "셔츠", "shirt", "티셔츠", "tee", "후드", "hoodie", "맨투맨", "sweat", "져지", "jersey", "트랙탑", "트랙 팬츠", "트랙팬츠"],
+    ],
+    mustNotContain: [...COMMON_NOISE, "country og", "superstar 82", "campus", "shadow turf", "컨트리", "adistar", "아디스타", "태권도화", "스니커즈", "운동화", "신발"],
     msrpKrw: 170000, released: 2024,
   },
   {
@@ -80,7 +98,13 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     modelName: "Y-3 (Yohji Yamamoto) × Adidas 의류",
     aliases: ["Y-3 Adidas", "요지 야마모토 아디다스", "야마모토 Y3"],
     mustContain: [["y-3", "y3", "요지", "yohji", "yamamoto", "야마모토"], ["아디다스", "adidas"]],
-    mustNotContain: [...COMMON_NOISE, "스니커즈", "sneaker", "운동화", "신발"],
+    mustNotContain: [
+      ...COMMON_NOISE, "스니커즈", "sneaker", "sneakers", "운동화", "신발", "shoe", "shoes", "슈즈",
+      // Wave 881: Y-3 shoe model titles often carry Yohji/Yamamoto/Adidas wording and were being absorbed by apparel.
+      "qasa", "콰사", "콰사 하이", "qasa high", "qasa elle",
+      "kaiwa", "카이와", "adios", "아디오스", "takumi", "타쿠미",
+      "pureboost", "퓨어부스트", "runner 4d", "러너 4d", "4d runner", "zg knit", "zg-knit",
+    ],
     msrpKrw: 200000, released: 2024,
   },
   {
@@ -125,6 +149,10 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       "이터널", "eternal", "eternal collection",  // Eternal premium (700k-1M)
       "애슬래틱 푸퍼", "athletic puffer",  // Athletic Puffer 시그니처
       "센스x", "센스 x", "sense x",  // 4th 센스 collab
+      // Wave 812: sample audit found broad material/season outliers in this lane.
+      "5th", "6th", "8th", "라이더", "rider", "스웨이드", "suede",
+      "퍼자켓", "퍼 자켓", "fur jacket", "fur", "쉐르파", "sherpa",
+      "데님 자켓", "데님재킷", "트러커", "trucker", "초어", "chore",
     ],
     msrpKrw: 800000, released: 2018,
   },
@@ -156,11 +184,12 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     mustContain: [
       ["nike", "나이키"],
       ["피어오브갓", "피오갓", "fear of god", "fog "],
+      ["warm up", "warmup", "웜업", "윔업", "후드", "hoodie", "후디", "자켓", "재킷", "jacket", "팬츠", "pants", "바지", "쇼츠", "shorts", "반바지"],
     ],
     mustNotContain: [
       ...COMMON_NOISE, "essentials", "에센셜",
       // 신발 차단
-      "스니커즈", "sneaker", "운동화", "신발", "에어 피어", "air fear of god",
+      "스니커즈", "sneaker", "운동화", "신발", "air fear of god 1",
       // London Fog 차단
       "london fog", "런던포그",
     ],
@@ -175,7 +204,12 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       ["피어오브갓", "피오갓", "fear of god", "fog "],
       ["티셔츠", "반팔", "tee ", "롱슬리브", "long sleeve"],
     ],
-    mustNotContain: [...COMMON_NOISE, "essentials", "에센셜", "1977"],
+    mustNotContain: [
+      ...COMMON_NOISE, "essentials", "에센셜", "1977",
+      // Wave 812: jacket/material wording must not fall through to tee via description noise.
+      "자켓", "재킷", "jacket", "봄버", "bomber", "블루종", "코트", "coat",
+      "트러커", "trucker", "스웨이드", "suede", "퍼자켓", "fur jacket", "쉐르파", "sherpa",
+    ],
     msrpKrw: 370000, released: 2018,
   },
   {
@@ -187,7 +221,12 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       ["피어오브갓", "피오갓", "fear of god", "fog "],
       ["후드", "hoodie", "후디"],
     ],
-    mustNotContain: [...COMMON_NOISE, "essentials", "에센셜", "1977"],
+    mustNotContain: [
+      ...COMMON_NOISE, "essentials", "에센셜", "1977",
+      // Wave 812: jacket/material wording must stay out of the hoodie lane.
+      "자켓", "재킷", "jacket", "봄버", "bomber", "블루종", "코트", "coat",
+      "트러커", "trucker", "스웨이드", "suede", "퍼자켓", "fur jacket", "쉐르파", "sherpa",
+    ],
     msrpKrw: 430000, released: 2018,
   },
 
@@ -208,7 +247,8 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       // 별 product type
       "블레이저", "blazer", "재킷", "자켓",
       "도스킨", "doeskin", "울 플란넬 블레이저", "wool flannel blazer",
-      "리미티드", "limited", "한정 셔츠", "패치워크",
+      // Patchwork flannel shirts are still a shirt-pattern lane; jacket/blazer tokens above keep outerwear out.
+      "리미티드", "limited", "한정 셔츠",
       "금장", "gold button",
     ],
     msrpKrw: 159000, released: 2018,
@@ -238,18 +278,31 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     // Wave 800 (2026-05-24) Phase 2: 95x spread — 다른 brand "polo 니트" generic 차단.
     // Wave 764 (2026-05-24): 보세/sub-brand polo knit 추가 차단 — 사용자 #4 보고.
     //   "마론에디션 25 blue stripe polo knit" / "벨리에 홀가먼트 폴로 니트" / "투티/A9 폴로 진스 컴퍼니" → polo_knit_sweater 흡수.
-    mustNotContain: [...COMMON_NOISE, "RRL", "purple label", "퍼플라벨", "polo bear", "라코스테", "타미힐피거", "rlx",
+    mustNotContain: [...COMMON_NOISE, "RRL", "purple label", "퍼플라벨", "polo bear", "베어", "라코스테", "타미힐피거", "rlx",
       // Other brand polo collar knits (false match)
       "믹쏘", "mixxo", "자라", "zara", "wolsey", "월시", "월시폴로",
       "poszer", "포저", "스파오", "유니클로", "uniqlo", "에잇세컨즈",
+      "cos", "코스", "솔리드옴므", "솔리드 옴므", "solid homme",
+      "나이키", "nike", "아디다스", "adidas", "클롯", "clot",
+      "더 니트 컴퍼니", "the knit company", "인더로우", "in the row",
+      "라벨 아카이브", "label archive", "브룩스브라더스", "brooks brothers",
+      "챕스", "chaps", "마르니", "marni", "럭비 랄프로렌", "rugby ralph lauren",
+      "로렌 랄프로렌", "lauren ralph lauren",
       // Wave 764: 한국 보세/sub-brand 추가 (사용자 #4 audit 발견).
       "마론에디션", "마롱에디션", "maron edition", "에스피오나지", "espionage",
       "벨리에", "vellie", "ballier", "벨리어", "투티", "투티에이나인", "tuti a9", "투티/a9", "투티a9",
+      "빈폴", "beanpole", "시스템", "system", "타임", "time", "에피그램", "epigram",
+      "코오롱스포츠", "kolon sport", "kolon", "k2", "아미", "ami",
+      "스튜디오 톰보이", "톰보이", "studio tomboy", "tomboy",
+      "잭니클라우스", "jack nicklaus", "유타", "utar",
+      "dancing skeletons", "dancing skeleton",
       // Wave 766 (2026-05-24): polo jeans / polo sport sub-line 변형 보강 + 더 많은 보세 brand.
       "polo 진스 컴퍼니", "폴로 진스 컴퍼니", "polo jeans company",
-      "폴로진스", "polo jeans", "폴로 진스", "polo sport", "폴로 스포츠",
+      "폴로진스", "폴로(polo)진스", "polo)진스", "polo jeans", "폴로 진스", "polo sport", "폴로 스포츠",
+      "걸즈", "girls", "보이즈", "boys", "주니어", "youth",
       "z pattern", "z패턴", "zpattern",
       "얀13", "yan13", "오일릴리", "오일 릴리", "oilily", "지컷", "g cut", "g-cut", "듀엘", "duel",
+      "그레일즈", "grailz", "g sports", "g-sports", "gsports",
       // 캐시미어 100% 별도 라인 (top tier) — Wave 766: 순서 변형 추가.
       "캐시미어 100", "100프로 캐시미어", "100% cashmere", "캐시미어 100프로", "캐시미어100", "100캐시미어",
       "나바호 핸드니트", "navajo handknit",  // Polo Country 한정
@@ -265,7 +318,14 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       ["폴로", "polo", "ralph lauren", "랄프로렌"],
       ["치노", "chino", "슬랙스", "slacks", "와이드", "카고", "cargo", "코듀로이", "corduroy"],
     ],
-    mustNotContain: [...COMMON_NOISE, "RRL", "purple label", "퍼플라벨", "polo bear", "라코스테", "타미힐피거", "rlx"],
+    mustNotContain: [
+      ...COMMON_NOISE, "RRL", "purple label", "퍼플라벨", "polo bear", "라코스테", "타미힐피거", "rlx",
+      // Wave 816: cap/jacket/shorts polluted chino pants samples.
+      "모자", "캡", "볼캡", "baseball cap", "베이스 볼 캡", "베이스볼캡", "cap", "hat",
+      "자켓", "재킷", "jacket", "치노자켓", "치노 자켓",
+      "셔츠", "shirt", "오버셔츠", "오버 셔츠",
+      "반바지", "하프 팬츠", "하프팬츠", "쇼츠", "shorts",
+    ],
     msrpKrw: 179000, released: 2018,
   },
   {
@@ -362,7 +422,7 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     brand: "Stone Island Shadow Project", category: "clothing", laneKey: "stone_island_shadow_project",
     modelName: "Stone Island Shadow Project (premium DPM/Marina)",
     aliases: ["Stone Island Shadow", "스톤아일랜드 쉐도우", "Shadow Project"],
-    mustContain: [["stone island", "스톤아일랜드"], ["shadow project", "쉐도우 프로젝트", "쉐도우프로젝트", "shadow"]],
+    mustContain: [["stone island", "스톤아일랜드"], ["shadow project", "쉐도우 프로젝트", "쉐도우프로젝트", "쉐도우", "섀도우", "shadow"]],
     mustNotContain: [...COMMON_NOISE, "ghost piece", "고스트", "supreme", "슈프림"],
     msrpKrw: 590000, minPriceKrw: 100000, released: 2008,  // Wave 768: Stone Island Shadow premium floor
   },
@@ -383,6 +443,26 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     mustContain: [["stone island", "스톤아일랜드"], ["crinkle reps", "크링클랩스", "크링클 랩스", "crinkle"]],
     mustNotContain: [...COMMON_NOISE, "shadow project", "쉐도우", "supreme", "슈프림"],
     msrpKrw: 690000, minPriceKrw: 100000, released: 2015,  // Wave 768: Stone Island Crinkle Reps floor
+  },
+  {
+    id: "clothing-stone-island-overshirt",
+    brand: "Stone Island", category: "clothing", laneKey: "stone_island_overshirt",
+    modelName: "Stone Island Overshirt / Nylon Metal / Old Effect",
+    aliases: ["Stone Island Overshirt", "스톤아일랜드 오버셔츠", "Stone Island Nylon Metal"],
+    mustContain: [
+      ["stone island", "스톤아일랜드", "스톤 아일랜드"],
+      ["오버셔츠", "오버 셔츠", "overshirt", "나일론메탈", "나일론 메탈", "nylon metal", "올드이펙트", "올드 이펙트", "올드이팩트", "올드 이팩트", "old effect", "스트레치 코튼 트윌"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE,
+      "shadow project", "쉐도우 프로젝트", "쉐도우프로젝트",
+      "ghost piece", "고스트 피스", "고스트피스",
+      "크링클랩스", "크링클 랩스", "crinkle reps", "crinkle",
+      "패딩", "다운", "down", "puffer", "베스트", "vest", "조끼",
+      "팬츠", "바지", "조거", "트랙팬츠", "카고", "pants", "trousers", "jogger", "cargo",
+    ],
+    msrpKrw: 590000, minPriceKrw: 100000, released: 2018,
+    defaultProductType: "shirt",
   },
 
   // ─── Arc'teryx 누락 ───
@@ -487,6 +567,9 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       "자켓", "재킷", "jacket",
       // Wave 800 (2026-05-24) Phase 2: 324x spread — Martin Rose collab + dyed bomber 차단.
       "martin rose", "마틴 로즈", "마틴로즈",
+      "아워레가시", "아워 레가시", "ourlegacy", "our legacy",
+      "돌리", "dolly", "blush pink",
+      "8볼", "8 ball", "8ball", "에잇볼",
       "stussy dyed nylon", "dyed nylon bomber",  // 다른 product type (bomber jacket)
       "올리브", "olive",  // dyed nylon olive bomber 시그니처
     ],
@@ -571,7 +654,11 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     modelName: "NB × Salehe Bembury (2002R/992 한정)",
     aliases: ["NB Salehe", "살레헤 뉴발란스"],
     mustContain: [["new balance", "newbalance", "뉴발란스", "뉴발", "nb"], ["살레헤", "salehe", "벰버리", "bembury"]],
-    mustNotContain: [...COMMON_NOISE],
+    mustNotContain: [
+      ...COMMON_NOISE,
+      "캡", "cap", "모자", "hat", "볼캡", "ball cap", "메쉬캡", "트러커캡",
+      "티셔츠", "tee", "후드", "hoodie", "맨투맨", "자켓", "jacket", "가방", "bag",
+    ],
     msrpKrw: 290000, released: 2023,
     defaultProductType: "sneaker",
   },
@@ -586,7 +673,10 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     brand: "Onitsuka Tiger", category: "shoe", laneKey: "onitsuka_mexico_66",
     modelName: "Onitsuka Tiger Mexico 66 (Slip-on/SD/VIN/Sabot/Mary Jane)",
     aliases: ["Onitsuka Mexico 66", "오니츠카 멕시코 66", "Mexico 66"],
-    mustContain: [["onitsuka", "오니츠카", "오니츠카타이거", "오니츠카티이거", "오니츠카카이거"], ["mexico", "멕시코", "맥시코"]],
+    mustContain: [
+      ["onitsuka", "오니츠카", "오니츠카타이거", "오니츠카티이거", "오니츠카카이거"],
+      ["mexico", "멕시코", "맥시코", "오니츠카타이거 66", "오니츠카 66", "onitsuka 66"],
+    ],
     mustNotContain: [...COMMON_NOISE],
     msrpKrw: 119000, released: 1966,
     defaultProductType: "sneaker",
@@ -649,7 +739,7 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     modelName: "Salomon RX Slide 3.0 (시그니처 슬리퍼)",
     aliases: ["Salomon RX Slide", "살로몬 RX 슬라이드", "RX 슬라이즈"],
     mustContain: [["salomon", "살로몬"], ["rx slide", "rx-slide", "rx 슬라이드", "rx슬라이드", "rx 슬라이즈", "rx 슬라이더"]],
-    mustNotContain: [...COMMON_NOISE, "mm6", "margiela", "마르지엘라", "cdg", "꼼데", "sandy liang", "broken arm", "brokenarm", "beams"],
+    mustNotContain: [...COMMON_NOISE, "mm6", "margiela", "마르지엘라", "cdg", "꼼데", "sandy liang", "broken arm", "brokenarm", "브로큰암", "the broken arm", "beams", "빔즈", "ltr", "leather", "가죽", "코르크", "cork", "moc"],
     msrpKrw: 69000, released: 2020,
     defaultProductType: "sandal",
   },
@@ -729,23 +819,21 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
   // ─── Mizuno Golf segment (사용자 메모 누락) ───
   {
     id: "club-mizuno-jpx",
-    brand: "Mizuno", category: "shoe", laneKey: "mizuno_jpx_golf",
+    brand: "Mizuno", category: "sport_golf", laneKey: "mizuno_jpx_golf",
     modelName: "Mizuno JPX 골프 아이언 (800/825/850/900/921/923/925/E500/Forged)",
     aliases: ["Mizuno JPX", "미즈노 JPX", "JPX Forged"],
     mustContain: [["mizuno", "미즈노"], ["jpx"]],
     mustNotContain: [...COMMON_NOISE, "축구화", "풋살화", "러닝화", "스니커즈", "운동화", "모렐리아", "morelia", "알파", "alpha"],
     msrpKrw: 800000, released: 2015,
-    defaultProductType: "boot",
   },
   {
     id: "club-mizuno-mx",
-    brand: "Mizuno", category: "shoe", laneKey: "mizuno_mx_golf",
+    brand: "Mizuno", category: "sport_golf", laneKey: "mizuno_mx_golf",
     modelName: "Mizuno MX 골프 (한국 베스트셀러 — 17/23/25/30/70/100/200)",
     aliases: ["Mizuno MX", "미즈노 MX"],
     mustContain: [["mizuno", "미즈노"], ["mx-", "mx23", "mx25", "mx30", "mx70", "mx100", "mx200", "mx17"]],
     mustNotContain: [...COMMON_NOISE, "축구화", "풋살화", "러닝화", "스니커즈", "운동화", "모렐리아", "알파", "jpx"],
     msrpKrw: 400000, released: 2010,
-    defaultProductType: "boot",
   },
   {
     id: "shoe-mizuno-wave-prophecy",
@@ -911,7 +999,15 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     modelName: "Vans Style 36 (Era 76)",
     aliases: ["Vans Style 36", "반스 스타일 36"],
     mustContain: [["반스", "vans"], ["스타일 36", "스타일36", "style 36"]],
-    mustNotContain: [...COMMON_NOISE, "컨버스", "converse"],
+    mustNotContain: [
+      ...COMMON_NOISE,
+      "컨버스", "converse",
+      // Wave 810: Vault/OG/LX and premium collabs use a different resale curve.
+      "볼트", "vault", " og ", " og)", "og)", " lx ", " lx)", "lx)",
+      "팝 트레이딩", "pop trading", "재팬", "japan",
+      // Wave 825: open-back mule silhouette should not price with normal Style 36.
+      "뮬", "mule",
+    ],
     msrpKrw: 89000, released: 2017,
     defaultProductType: "sneaker",
   },
@@ -987,7 +1083,7 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     mustContain: [["컨버스", "converse"], ["올스타", "all star", "척테일러", "chuck taylor"]],
     // Wave 737 leak fix: mustNotContain "70" 단독 제거 — 사이즈 "270mm/280mm"에 매칭되어 519건 leak.
     //   "70" 자체가 substring 검색이라 사이즈 표기 다 차단됨. "chuck 70/척 70/ct70/1970" specific만 유지.
-    mustNotContain: [...COMMON_NOISE, "1970", "chuck 70", "척 70", "척70", "ct70", "ct 70", "1970s", "cdg", "꼼데", "stussy", "스투시", "ader error", "아더에러", "carhartt", "칼하트", "펑첸왕"],
+    mustNotContain: [...COMMON_NOISE, "1970", "chuck 70", "chuck taylor 70", "all star 70", "척 70", "척70", "척테일러 70", "올스타 70", "ct70", "ct 70", "1970s", " 70s ", "cdg", "꼼데", "stussy", "스투시", "ader error", "아더에러", "carhartt", "칼하트", "펑첸왕"],
     msrpKrw: 79000, released: 1923,
     defaultProductType: "sneaker",
   },
@@ -996,8 +1092,14 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
     brand: "Converse", category: "shoe", laneKey: "converse_chuck70_low_broad",
     modelName: "Converse Chuck 70 Low / Ox (모든 컬러)",
     aliases: ["Chuck 70 Low", "척70 로우", "Chuck70 Ox"],
-    mustContain: [["컨버스", "converse"], ["70", "척70", "chuck70", "ct70", "1970", "1970s"], ["로우", "low", "ox"]],
-    mustNotContain: [...COMMON_NOISE, "하이", "high", "hi top", "cdg", "꼼데", "stussy", "스투시", "ader error", "carhartt"],
+    mustContain: [["컨버스", "converse"], ["70", "척70", "chuck70", "ct70", "1970", "1970s", " 70s "], [" 로우 ", "로우탑", "로우 탑", "low", "ox", "ox로우", "ox 로우"]],
+    mustNotContain: [...COMMON_NOISE, "하이", "high", "hi top", "cdg", "꼼데", "stussy", "스투시", "ader error", "carhartt",
+      "미션v", "미션 v", "mission v",
+      "atcx", "at-cx", "at cx",
+      "스케치화이트", "스케치 화이트", "sketch white",
+      "이자벨마랑", "이자벨 마랑", "isabel marant",
+      "화이트팩", "화이트 팩", "white pack",
+      "컬러체인지", "컬러 체인지", "color change"],
     msrpKrw: 99000, released: 2013,
     defaultProductType: "sneaker",
   },

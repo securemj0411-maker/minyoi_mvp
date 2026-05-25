@@ -139,7 +139,7 @@ export const WAVE_733_SHOE_BROAD: Sku[] = [
       "cielo", "치엘로",
       // collab
       "engineered garments", "엔지니어드 가먼츠",
-      "xlim", "satisfy", "사티스파이",
+      "xlim", "satisfy", "사티스파이", "새티스파이", "세티스파이",
     ],
     msrpKrw: 199000, released: 2009,
   },

@@ -2,6 +2,7 @@
 // 카탈로그 SKU 19개 + generated mining catalog + normalize + ruleMatch.
 
 import { GENERATED_CATALOG } from "@/lib/generated/catalog";
+import { LANE_READINESS } from "@/lib/category-readiness";
 // Wave 91 (2026-05-15): 일반인 친화 카테고리 확장 (신발/가방/자전거). 모두 본품만, resale ≤200만.
 import { SHOE_CATALOG } from "@/lib/generated/catalog-shoe-wave91";
 // Wave 133 (2026-05-16): broad SKU 5개 신설 → Wave 134에서 narrow 30개로 교체 (variant 가격 차이 +151%).
@@ -68,6 +69,16 @@ import { WAVE_737_SHOE_BROAD_2 } from "@/lib/generated/catalog-737-shoe-broad-2"
 //   문제 (Wave 758 mustNotContain block) 의 본질적 해결책.
 //   일반인 친화 ⭐⭐⭐ (가품 risk 0, mass 매물, 모든 연령대). ~3000+ 매물 회수 예상.
 import { WAVE_760_GAME_TITLES } from "@/lib/generated/catalog-760-game-titles";
+// Wave 805 (2026-05-24): clothing/shoe high-spread axis split.
+//   Arc'teryx Atom/Beta/Proton sub-lines + Stussy hoodie/zip/crewneck + Stussy Nike Air Penny.
+import { WAVE_805_FASHION_AXIS_SPLITS } from "@/lib/generated/catalog-805-fashion-axis-splits";
+// Wave 806 (2026-05-24): active fashion/shoe spread repair.
+//   Asics Kiko/Gel-Quantum/Nimbus + Puma Nitro + Mizuno Prophecy + Carhartt Converse exact sub-lanes.
+import { WAVE_806_FASHION_SHOE_AXIS_SPLITS } from "@/lib/generated/catalog-806-fashion-shoe-axis-splits";
+// Wave 811 (2026-05-25): shoe broad internal lanes → explicit public model axes.
+//   Asics Kayano generation split + Adidas/Puma football model split.
+import { WAVE_811_SHOE_EXACT_AXIS_SPLITS } from "@/lib/generated/catalog-811-shoe-exact-axis-splits";
+import { WAVE_880_FASHION_CURRENT_DRIFT } from "@/lib/generated/catalog-880-fashion-current-drift";
 
 export type Sku = {
   id: string;
@@ -139,6 +150,42 @@ export type Sku = {
   minPriceKrw?: number;
 };
 
+const FOG_ESSENTIALS_BRAND_SIGNAL = ["fog", "fear of god", "피오갓", "피어오브갓", "피오지"];
+
+const FASHION_AXIS_DIRECT_OVERRIDE_IDS = new Set([
+  "clothing-arcteryx-atom-lt-hoody",
+  "clothing-arcteryx-atom-lt-jacket",
+  "clothing-arcteryx-atom-sl",
+  "clothing-arcteryx-atom-ar-heavyweight",
+  "clothing-arcteryx-beta-lt",
+  "clothing-arcteryx-beta-sl",
+  "clothing-arcteryx-beta-ar",
+  "clothing-arcteryx-proton-lt",
+  "clothing-arcteryx-proton-fl",
+  "clothing-arcteryx-proton-sv",
+  "clothing-arcteryx-proton-ar",
+  "clothing-stussy-crewneck-sweat",
+  "clothing-stussy-zip-hoodie",
+  "clothing-stussy-hoodie",
+  "shoe-stussy-nike-air-penny",
+]);
+
+function isFashionAxisDirectOverrideCompatible(titleChoice: Sku, combinedDirect: Sku) {
+  if (!FASHION_AXIS_DIRECT_OVERRIDE_IDS.has(combinedDirect.id)) return false;
+  if (titleChoice.id === combinedDirect.id) return true;
+  if (titleChoice.id === "clothing-arcteryx-atom" && combinedDirect.id.startsWith("clothing-arcteryx-atom-")) return true;
+  if (titleChoice.id === "clothing-arcteryx-beta" && combinedDirect.id.startsWith("clothing-arcteryx-beta-")) return true;
+  if (titleChoice.id === "clothing-arcteryx-proton" && combinedDirect.id.startsWith("clothing-arcteryx-proton-")) return true;
+  if (
+    titleChoice.id === "clothing-stussy-hoodie" &&
+    (combinedDirect.id === "clothing-stussy-hoodie" ||
+      combinedDirect.id === "clothing-stussy-crewneck-sweat" ||
+      combinedDirect.id === "clothing-stussy-zip-hoodie")
+  ) return true;
+  if (titleChoice.id === "shoe-stussy-nike-collab" && combinedDirect.id === "shoe-stussy-nike-air-penny") return true;
+  return false;
+}
+
 // Wave 122 (2026-05-15): 모든 카테고리 공통 noise 패턴 (Wave 121 audit 결과).
 // 휴대폰 audit에서 발견 — 다른 카테고리 (laptop/tablet/earphone/smartwatch/speaker)도 동일 noise 가능.
 // 사용자 통찰: "다른 brand까지 빠짐없이 모두 같은 패턴 차단"
@@ -165,6 +212,19 @@ const WAVE188_NEW_CATEGORY_NOISE = [
   "노즐 툴", "노즐 툴 세트", "툴 세트", "툴 키트", "툴만",
   // DJI 드론 — ND/필터 키트 단품 (본품 X)
   "필터 키트", "nd 필터", "nd16", "nd64", "nd256", "k&f", "k & f", "kf concept",
+];
+
+// Wave 805: Nintendo Switch body lanes must not absorb game-title rows that
+// are not yet covered by narrow title SKUs. Keep this on body consoles only;
+// OLED/Zelda/Splatoon/Pokemon console editions may be legitimate bundles.
+const SWITCH_BODY_GAME_TITLE_NOISE = [
+  "호그와트", "hogwarts", "레거시", "legacy",
+  "라보", "labo", "토이콘", "toy-con", "toycon",
+  "디지몬", "digimon", "동키콩 리턴즈", "donkey kong returns",
+  "아틀리에", "atelier", "마리의 아틀리에", "피크민", "pikmin",
+  "드래곤퀘스트", "드래곤 퀘스트", "dragon quest", "드퀘",
+  "저스트댄스", "저스트 댄스", "just dance",
+  "나루토", "naruto", "소닉", "sonic",
 ];
 
 // DJI/GoPro drone-class 필터 액세서리 단품 (본품 X). drone SKU spread 용.
@@ -5250,6 +5310,7 @@ export const CATALOG: Sku[] = [
       "sweetch", "스위치 케이스", "스위치케이스 브랜드", "헬멧백",
       // 동봉/일괄 패턴 (단품 시세 무의미)
       "타이틀 일괄", "게임 일괄", "타이틀 합본", "게임 합본",
+      ...SWITCH_BODY_GAME_TITLE_NOISE,
     ],
     msrpKrw: 360000,
     released: 2017,
@@ -5688,6 +5749,7 @@ export const CATALOG: Sku[] = [
       "switch", "닌텐도", "nintendo",
       "ps4", "ps3", "ps2", "ps1",
       "컨트롤러만", "듀얼센스만", "dualsense만", "충전기만", "케이스만", "스탠드만",
+      "디스크 드라이브", "disc drive",
       "기프트", "gift card", "월정액",
       "ssd만", "ssd 단품",
       "구합니다", "삽니다", "매입",
@@ -8405,6 +8467,10 @@ export const CATALOG: Sku[] = [
   ...WAVE_749_SONY_ELECTRONICS, // Wave 749 — Sony 이어폰 신설 (WF-1000XM4/5/6 / LinkBuds Open / MDR Pro)
   ...WAVE_737_SHOE_BROAD_2, // Wave 737 — 신발 broad 추가 (Dr.Martens broad/Timberland/Keen/Fila/Clarks/Clae)
   ...WAVE_760_GAME_TITLES, // Wave 760 — 게임 카트리지/타이틀 SKU 100+ (Pokemon/Mario/Zelda/Animal Crossing 등)
+  ...WAVE_805_FASHION_AXIS_SPLITS, // Wave 805 — Arc'teryx/Stussy 의류·신발 가격 축 strict split
+  ...WAVE_806_FASHION_SHOE_AXIS_SPLITS, // Wave 806 — 신발 broad spread를 명시 모델 lane으로 분리
+  ...WAVE_811_SHOE_EXACT_AXIS_SPLITS, // Wave 811 — Kayano/football broad에서 안전한 exact shoe lane 승격
+  ...WAVE_880_FASHION_CURRENT_DRIFT, // Wave 880 — recent current-replay exact/internal fashion lanes
   ...BAG_CATALOG,
   ...BAG_WAVE266_CATALOG, // Wave 266 — 명품 가방 brand-broad fallback 20 SKU
   ...BIKE_CATALOG,
@@ -8456,17 +8522,20 @@ export const CATALOG: Sku[] = [
     // Wave 737 leak fix (2026-05-24): group 2 ["랄프", "포니", "rl"] 제거 — group 0의 "폴로/polo/랄프로렌"으로 충분.
     //   462건 unmatched 분석: 매물 "폴로 피케티 카라티 네이비"는 group 0/1 매칭하지만 group 2 없어 leak.
     //   mustNotContain에 이미 비폴로 brand 모두 차단되어 있어 false positive 위험 낮음.
-    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌", "랄프 로렌"], ["피케", "pique", "pk ", "pk티", "pk 티", "카라티", "카라 티"]],
+    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌", "랄프 로렌"], ["피케", "pique", "pk ", "pk티", "pk 티", "pk반팔", "pk 반팔", "카라티", "카라 티"]],
     mustNotContain: [
       "RRL", "purple label", "퍼플라벨", "polo bear", "베어", "키즈", "kids", "여아", "남아", "토들러", "polo boys", "폴로 보이즈", "폴로보이즈", "polo girls", "폴로 girls", "polo kids", "랄프로렌 보이즈", "랄프로렌 키즈",
       // Wave 764 (2026-05-24): 보세/sub-brand polo 차단 (사용자 #4 audit 발견).
       //   "에스피오나지 Over Pique Polo Shirt" / "100 폴로 반팔카라티" 같은 보세 한국 브랜드 흡수.
       //   원피스/dress 매물 차단 (Polo Pique = 셔츠 SKU, 원피스 별도 product_type).
       "마론에디션", "에스피오나지", "espionage", "벨리에", "vellie", "투티", "투티/a9",
+      "로어즈", "loars",
       "원피스", "dress", "드레스 폴로",
       // Wave 236: 비폴로 brand 매물 차단 (사용자 코멘트 직접 발견 brand 다수).
       "바나나리퍼블릭", "banana republic", "타미힐피거", "tommy hilfiger", "유니클로", "uniqlo",
-      "나이키 골프", "nike golf", "아디다스 골프", "adidas golf", "아디다스 스쿼드라", "squadra",
+      // Wave 803: Nike polo shirt wording is a garment type, not Polo Ralph Lauren.
+      "나이키", "nike", "나이키 골프", "nike golf", "아디다스 골프", "adidas golf", "아디다스 스쿼드라", "squadra",
+      "말본", "malbon", "마크앤로나", "마크앤 로나", "marklona", "mark & lona", "mark and lona",
       "dkny", "디케이엔와이", "무스너클", "moose knuckle", "라코스테", "lacoste",
       "헤지스", "hazzys", "빌보콰", "vilebrequin", "폴스미스", "paul smith",
       "세터", "setter", "렉토", "recto", "캐피탈", "kapital", "마뗑킴", "matin kim", "matinkim",
@@ -8511,10 +8580,23 @@ export const CATALOG: Sku[] = [
     // Wave 737 leak fix: group 0 "폴로 랄프로렌" compound → 분리. 한국 셀러 "폴로" 단독 표기 많음.
     //   pony_tee + tee bucket 726건 unmatched. mustNotContain 이미 비폴로 brand 다 차단.
     mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌", "랄프 로렌"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "크루넥"]],
-    mustNotContain: ["RRL", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "pique", "긴팔", "롱슬리브", "키즈", "kids", "토들러",
+    mustNotContain: ["RRL", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "pique", "pk ", "pk티", "pk 티", "pk반팔", "pk 반팔", "긴팔", "롱슬리브", "키즈", "kids", "토들러", "보이즈", "boys", "걸즈", "girls", "주니어", "youth",
+      // Wave 812: BAPE shark/polo wording polluted Polo Pony Tee sample groups.
+      "bape", "베이프", "a bathing ape", "샤크", "shark",
       // Wave 223: 다른 brand 의 "폴로/Polo" 단어 매물 차단.
       "타이틀리스트", "titleist", "캘러웨이", "callaway", "푸마 폴로", "puma polo",
       "골프 폴로", "골프폴로", "골프티", "골프 티",
+      // Wave 802: generic/sub-brand "polo shirt" wording must not imply Polo Ralph Lauren.
+      "z pattern", "z패턴", "zpattern", "cos", "코스", "솔리드옴므", "솔리드 옴므", "solid homme",
+      "더 니트 컴퍼니", "the knit company", "인더로우", "in the row",
+      "라벨 아카이브", "label archive", "브룩스브라더스", "brooks brothers",
+      "챕스", "chaps",
+      "빈폴", "beanpole", "시스템", "system", "타임", "time", "에피그램", "epigram",
+      "코오롱스포츠", "kolon sport", "kolon", "k2", "아미", "ami",
+      "스튜디오 톰보이", "톰보이", "studio tomboy", "tomboy",
+      "잭니클라우스", "jack nicklaus", "유타", "utar",
+      "dancing skeletons", "dancing skeleton",
+      "나이키", "nike",
       // Wave 236f (2026-05-19): audit 발견 — polo 카라티 (polo_shirt) 매물 차단.
       //   Polo Pony Tee = 라운드넥 tee + 포니 로고. 카라티 별도 SKU (Polo Pique Classic).
       "카라티", "카라 티", "카라넥", "collar tee", "단추", "카라 셔츠",
@@ -8531,6 +8613,9 @@ export const CATALOG: Sku[] = [
     mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌"], ["옥스포드", "oxford"]],
     // RRL 옥스포드는 별도 SKU (가격 5배)
     mustNotContain: ["RRL", "더블 알엘", "double rl", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "키즈", "kids", "보이즈", "boys", "주니어", "youth", "14~16", "14-16",
+      "아미", "ami", "ami paris", "아미 파리스",
+      "polo 진스 컴퍼니", "폴로 진스 컴퍼니", "polo jeans company", "폴로진스", "폴로(polo)진스", "polo)진스", "polo jeans", "폴로 진스",
+      "rugby ralph lauren", "럭비 랄프로렌", "로렌 랄프로렌", "lauren ralph lauren",
       // Wave 593d: BEAMS 한정 collab + 90s 빈티지 outlier 차단.
       "빔즈", "beams", "x beams", "beams x", "리미티드", "limited edition", "한정판",
       "90s ", "90's", "90s 폴로", "vintage polo", "빈티지 폴로",
@@ -8636,6 +8721,7 @@ export const CATALOG: Sku[] = [
     // Wave 228 (2026-05-19): jacket/coat 차단 (jacket-coat lane 으로 가야).
     mustNotContain: ["키즈", "kids", "rrl 무드", "스니커즈", "벨트", "지갑", "모자",
       "그리즐리", "grizzly", "자켓", "jacket", "코트", "coat", "재킷", "트러커", "trucker",
+      "필드팬츠", "필드 팬츠", "field pants", "field pant", "우븐 필드",
       // Wave 596b: 리미티드 빈티지 한정 라인 (900k outlier vs 일반 230~700k).
       "리미티드 빈티지", "limited vintage", "리미티드 라인",
       // Wave 637: 추가 한정 표기 (pid 402179391 '리미티드에디션 빈티지파이브포켓 올리브' 750k).
@@ -8689,6 +8775,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["RRL", "rrl", "더블 알엘", "double rl", "더블알엘"], ["oxford", "옥스포드", "버튼다운", "버튼 다운", "체크셔츠", "체크 셔츠", "샴브레이", "chambray", "워크셔츠", "워크 셔츠", "오버셔츠", "오버 셔츠", "웨스턴", "western", "린넨 셔츠", "린넨셔츠", "헨리 셔츠", "henley", "헨리넥", "플란넬", "flannel", "남방", "다이아 체크", "윈드페인"]],
     mustNotContain: ["키즈", "kids", "rrl 무드", "rrl 스타일", "스니커즈",
       "리바이스", "levis", "levi's", "lvc", "rugby", "러그비",
+      "h bar c", "hbarc", "h-bar-c", "에이치바씨", "에이치 바 씨",
       // shirt 외 product-type 차단
       "팬츠", "pants", "바지", "치노", "chino", "슬랙스", "트라우저", "trouser", "카펜터", "carpenter", "카고", "cargo", "오피서", "officer", "jodhpur", "조드퍼",
       "자켓", "jacket", "코트", "coat", "재킷", "블레이저", "blazer", "점퍼", "봄버", "bomber", "트러커", "trucker", "카코트", "피코트", "덱자켓", "초어", "chore",
@@ -8724,6 +8811,8 @@ export const CATALOG: Sku[] = [
       "니트", "knit", "카디건", "cardigan", "스웨터", "sweater",
       "벨트", "지갑", "wallet", "월렛", "모자", "캡\\b", "넥타이", "키링",
       "목걸이", "925", "팔찌", "bracelet", "반지",
+      // Limited/special RRL pants price far above general chino/pants lane.
+      "리미티드 에디션", "limited edition", "리미티드에디션", "limited-edition",
       // denim 모델명 (denim lane 으로)
       "빈파포", "파이브포켓", "파이브 포켓", "5포켓", "기빈스", "미드랜드", "이스트웨스트", "에이버리", "브룸필드", "힐스뷰", "벤튼", "클리어빌"],
     msrpKrw: 380000, released: 2020,
@@ -9006,6 +9095,8 @@ export const CATALOG: Sku[] = [
     //   - 1994/1992/1990/에코 (pid 395757345 "1994 눕시" 130k, 에코눕시 등) — 다른 에디션
     mustNotContain: [
       "supreme", "슈프림", "gucci", "구찌", "mm6", "마르지엘라",
+      "화이트라벨", "화이트 라벨", "화이트레이블", "화이트 레이블", "white label", "white-label",
+      "노벨티", "novelty",
       "키즈", "kids", "퍼플라벨", "purple label", "뮬", "mule", "슬리퍼",
       // Wave 248: shorts variant — 다운자켓이 아닌 반바지 매물 차단
       "쇼츠", "반바지", "shorts", "short pants", "쇼츠 m", "쇼츠 l",
@@ -9520,6 +9611,7 @@ export const CATALOG: Sku[] = [
     // Wave 726 (2026-05-24): "롱슬리브/긴팔티/긴팔" 추가 (agent + foreground 검증 — 209건 unmatched 중 105건이 반팔/롱슬리브 누락).
     mustContain: [["stussy", "스투시", "stüssy"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "롱슬리브", "롱 슬리브", "긴팔티", "긴팔 티", "long sleeve", "8 ball", "8ball", "8볼", "world tour", "월드투어", "stock", "스톡", "script", "스크립트"]],
     mustNotContain: ["nike", "나이키", "dior", "디올", "birkenstock", "버켄스탁", "carhartt", "칼하트", "키즈", "kids", "후드", "hoodie", "맨투맨", "복각", "rep ", "replica",
+      "니트", "knit", "스웨터", "sweater",
       "자켓", "재킷", "jacket", "코치자켓", "coach jacket", "쉘 자켓", "shell jacket", "바람막이", "윈드브레이커",
       // Wave 712a (2026-05-23) HOTFIX: bias-free 검증 — STOCK WATER SHORT 5건/월드투어 셔츠 2건 false positive 차단.
       "워터 쇼츠", "water short", "비치팬츠", "워터쇼츠", "비치 팬츠", "쇼츠", "shorts", "반바지", "셔츠", "shirt",
@@ -9550,11 +9642,15 @@ export const CATALOG: Sku[] = [
       "파리", "paris", "스투시 파리",
       "런던", "london",
       "뉴욕", "new york", "ny limited",
-      "도버스트릿", "도버 스트릿", "dover street", "dsm",
+      "도버스트릿", "도버 스트릿", "도버 스트리트", "도버 스트리트 마켓", "dover street", "dover street market", "dsm",
       "마틴로즈", "martine rose", "martin rose",
       "써멀", "thermal", "thermal tee",
       "썬 페이디드", "썬페이디드", "sun faded", "sunfaded",
       "스투시 ic", "stussy ic", "스투시 ix",
+      // Wave 812: sample-key cleanup found Mountain Hardwear collab, pigment, and Dice rows in basic tee.
+      "마운틴하드웨어", "마운틴 하드웨어", "mountain hardwear", "mountain hardware",
+      "피그먼트", "pigment",
+      "주사위", "주사위 반팔", "dice tee",
     ],
     msrpKrw: 89000, released: 2020,
     defaultProductType: "tee", // Wave 236d — Basic Tee = tee 확정.
@@ -9562,10 +9658,16 @@ export const CATALOG: Sku[] = [
   {
     id: "clothing-stussy-hoodie",
     brand: "Stussy", category: "clothing", laneKey: "stussy_hoodie",
-    modelName: "Stüssy Hoodie / Crewneck",
-    aliases: ["Stussy Hoodie", "스투시 후드", "Stussy Crewneck", "스투시 맨투맨"],
-    mustContain: [["stussy", "스투시", "stüssy"], ["후드", "hoodie", "맨투맨", "크루넥", "crewneck", "sweatshirt", "스웻셔츠"]],
+    modelName: "Stüssy Hoodie (pullover)",
+    aliases: ["Stussy Hoodie", "스투시 후드", "스투시 후드티"],
+    mustContain: [["stussy", "스투시", "stüssy"], ["후드", "후디", "후드티", "hoodie", "hoody", "hooded"]],
     mustNotContain: ["nike", "나이키", "dior", "디올", "birkenstock", "버켄스탁", "carhartt", "칼하트", "키즈", "kids", "반팔", "복각", "rep ", "replica",
+      // Wave 805: crewneck/sweatshirt and zip hoodie are separate price lanes.
+      "후드집업", "후드 집업", "집업후드", "집업 후드", "zip up", "zipup", "full zip", "hoodie zip", "zip hoodie",
+      "반집업", "반 집업", "하프집업", "하프 집업", "half zip", "half-zip", "quarter zip", "1/2 zip",
+      "맨투맨", "크루넥", "crewneck", "sweatshirt", "sweat shirt", "스웻셔츠", "스웨트셔츠", "스웻 셔츠", "스웨트 셔츠",
+      "후드자켓", "후드 자켓", "후드재킷", "후드 재킷", "hooded jacket", "자켓", "재킷", "jacket",
+      "니트", "knit", "스웨터", "sweater", "유니온", "union",
       // Wave 545 (2026-05-22): 시어링 (양털/가죽 라인, 160만 한정) 차단 — 일반 후드 8~25만 대비 +6배.
       "시어링", "shearling", "쉬어링", "fleece collar shearling",
       "레더", "leather", "가죽 자켓",
@@ -9584,7 +9686,8 @@ export const CATALOG: Sku[] = [
       // Wave 655 (2026-05-22): c_grade spread 8.4x audit — 월드투어/CPFM/월드 트라이브/SKULL & BONES 등 추가.
       "월드투어", "world tour", "월드 투어",  // Wave 631 "월드투어 후드"만 → 모든 월드투어 variant
       "월드 트라이브", "월드트라이브", "world tribe", "world-tribe",
-      "skull & bones", "skull and bones", "스컬 본즈", "스컬 앤 본즈",
+      "skull & bones", "skull and bones", "skull bones", "skull", "bones", "스컬 본즈", "스컬 앤 본즈",
+      "pig. dyed", "pig dyed", "pigdye",
       "id 매거진", "iD 매거진", "id magazine", "스투시 id", "stussy id",
       "스택드", "stacked", "스택드 피그먼트",
       "다이아 후드", "diamond hoodie", "피그먼트 다이아",
@@ -9593,12 +9696,17 @@ export const CATALOG: Sku[] = [
       "부아나", "boana",
       "마틴로즈", "martine rose", "마틴 로즈",
       "8볼 후드", "8 ball hoodie", "8볼 hoodie", "8ball 후드", "8ball hoodie",
+      "도버스트릿", "도버 스트릿", "도버 스트리트", "도버 스트리트 마켓", "dover street", "dover street market", "dsm",
+      "스탁 서울", "stock seoul", "스투시서울", "스투시 서울", "서울 후드",
+      "다이스", "dice", "다이스 아웃", "dice out",
+      "futura", "퓨추라",
       "soul 1980", "soul1980",
       "슈페리어", "superior",
       "스프레이 다이드", "spray dyed", "spray-dyed", "sprayed",
       "피그먼트 다이드", "pigment dyed", "피그먼트다이드",
     ],
     msrpKrw: 159000, released: 2020,
+    defaultProductType: "hoodie",
   },
   {
     id: "bag-stussy-waist-bag",
@@ -9691,8 +9799,12 @@ export const CATALOG: Sku[] = [
     brand: "Lacoste", category: "clothing", laneKey: "lacoste_pique_polo",
     modelName: "Lacoste Pique Polo Shirt (시그니처)",
     aliases: ["Lacoste Pique", "라코스테 피케", "Lacoste Polo Shirt", "라코스테 폴로셔츠"],
-    mustContain: [["라코스테", "lacoste"], ["피케", "pique", "폴로", "polo", "셔츠", "shirt"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "스니커즈", "운동화", "가방", "bag", "토트", "원피스", "스커트", "시계", "골프 원피스",
+    mustContain: [["라코스테", "lacoste"], ["피케", "pique", "pk", "폴로", "polo", "폴로셔츠", "폴로 셔츠", "폴로티", "카라티", "카라 티"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "스니커즈", "운동화", "가방", "bag", "토트", "원피스", "드레스", "dress", "스커트", "시계", "골프 원피스",
+      "린넨", "linen", "체크셔츠", "체크 셔츠", "남방",
+      "니트", "knit", "스웨터", "sweater", "가디건", "cardigan",
+      "구스다운", "다운", "패딩", "down", "puffer", "베스트", "vest",
+      "긴팔", "롱슬리브", "long sleeve", "long-sleeve",
       // Wave 492: CDG Shirt x Lacoste collab is not comparable to plain Lacoste pique.
       "꼼데", "꼼데가르송", "cdg", "comme des", "comme des garcons"],
     msrpKrw: 159000, released: 2020,
@@ -9718,6 +9830,88 @@ export const CATALOG: Sku[] = [
   },
   // Wave 200 (2026-05-18): Tier 3 mining — 꼼데가르송 / Stussy×Converse / Polo Big Pony.
   // 꼼데가르송 매물 다수 (faved 30~51), Nike/NB/Vans/Salomon collab 신발 압도적 + 시그니처 PVC 가방.
+  // Wave 817 (2026-05-25): broad CDG Nike is blocked; exact model lanes below may release.
+  {
+    id: "shoe-cdg-nike-dunk-low-collab",
+    brand: "Nike x CDG", category: "shoe", laneKey: "cdg_nike_dunk_low_collab",
+    modelName: "Nike × CDG Dunk Low",
+    aliases: ["CDG Nike Dunk Low", "꼼데가르송 나이키 덩크 로우", "꼼데 덩크"],
+    mustContain: [["nike", "나이키"], ["꼼데", "cdg", "comme des garcons", "commedesgarcons"], ["덩크", "dunk"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "터미네이터", "terminator", "페가수스", "pegasus", "프레스토", "presto", "테니스", "tennis", "센스", "sense", "폼포짓", "foamposite", "탈라리아", "talaria", "힐 프리미어", "heel premier", "에어맥스", "air max", "블레이저", "blazer"],
+    msrpKrw: 250000, released: 2020, defaultProductType: "sneaker",
+  },
+  {
+    id: "shoe-cdg-nike-terminator-high-collab",
+    brand: "Nike x CDG", category: "shoe", laneKey: "cdg_nike_terminator_high_collab",
+    modelName: "Nike × CDG Terminator High",
+    aliases: ["CDG Nike Terminator", "꼼데가르송 나이키 터미네이터"],
+    mustContain: [["nike", "나이키"], ["꼼데", "cdg", "comme des garcons", "commedesgarcons"], ["터미네이터", "terminator"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "덩크", "dunk", "페가수스", "pegasus", "프레스토", "presto", "테니스", "tennis", "센스", "sense", "폼포짓", "foamposite", "탈라리아", "talaria"],
+    msrpKrw: 200000, released: 2022, defaultProductType: "sneaker",
+  },
+  {
+    id: "shoe-cdg-nike-pegasus-collab",
+    brand: "Nike x CDG", category: "shoe", laneKey: "cdg_nike_pegasus_collab",
+    modelName: "Nike × CDG Air Pegasus",
+    aliases: ["CDG Nike Pegasus", "꼼데가르송 나이키 페가수스"],
+    mustContain: [["nike", "나이키"], ["꼼데", "cdg", "comme des garcons", "commedesgarcons"], ["페가수스", "pegasus"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "덩크", "dunk", "터미네이터", "terminator", "프레스토", "presto", "테니스", "tennis", "센스", "sense", "폼포짓", "foamposite", "탈라리아", "talaria"],
+    msrpKrw: 250000, released: 2020, defaultProductType: "sneaker",
+  },
+  {
+    id: "shoe-cdg-nike-presto-tent-collab",
+    brand: "Nike x CDG", category: "shoe", laneKey: "cdg_nike_presto_tent_collab",
+    modelName: "Nike × CDG Presto Foot Tent",
+    aliases: ["CDG Nike Presto Tent", "꼼데가르송 나이키 프레스토 텐트", "프레스토풋 텐트"],
+    mustContain: [["nike", "나이키"], ["꼼데", "cdg", "comme des garcons", "commedesgarcons"], ["프레스토", "presto", "풋 텐트", "foot tent", "텐트"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "덩크", "dunk", "터미네이터", "terminator", "페가수스", "pegasus", "테니스", "tennis", "센스", "sense", "폼포짓", "foamposite", "탈라리아", "talaria"],
+    msrpKrw: 220000, released: 2002, defaultProductType: "sneaker",
+  },
+  {
+    id: "shoe-cdg-nike-tennis-classic-collab",
+    brand: "Nike x CDG", category: "shoe", laneKey: "cdg_nike_tennis_classic_collab",
+    modelName: "Nike × CDG Tennis Classic",
+    aliases: ["CDG Nike Tennis Classic", "꼼데가르송 나이키 테니스 클래식"],
+    mustContain: [["nike", "나이키"], ["꼼데", "cdg", "comme des garcons", "commedesgarcons"], ["테니스 클래식", "tennis classic"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "덩크", "dunk", "터미네이터", "terminator", "페가수스", "pegasus", "프레스토", "presto", "센스", "sense", "폼포짓", "foamposite", "탈라리아", "talaria"],
+    msrpKrw: 220000, released: 2015, defaultProductType: "sneaker",
+  },
+  {
+    id: "shoe-cdg-nike-sense96-collab",
+    brand: "Nike x CDG", category: "shoe", laneKey: "cdg_nike_sense96_collab",
+    modelName: "Nike × CDG Sense 96",
+    aliases: ["CDG Nike Sense 96", "꼼데가르송 나이키 센스 96"],
+    mustContain: [["nike", "나이키"], ["꼼데", "cdg", "comme des garcons", "commedesgarcons"], ["센스 96", "sense 96", "sense96"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "덩크", "dunk", "터미네이터", "terminator", "페가수스", "pegasus", "프레스토", "presto", "테니스", "tennis", "폼포짓", "foamposite", "탈라리아", "talaria"],
+    msrpKrw: 300000, released: 2019, defaultProductType: "sneaker",
+  },
+  {
+    id: "shoe-cdg-nike-foamposite-collab",
+    brand: "Nike x CDG", category: "shoe", laneKey: "cdg_nike_foamposite_collab",
+    modelName: "Nike × CDG Air Foamposite One",
+    aliases: ["CDG Nike Foamposite", "꼼데가르송 나이키 폼포짓"],
+    mustContain: [["nike", "나이키"], ["꼼데", "cdg", "comme des garcons", "commedesgarcons"], ["폼포짓", "foamposite"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "덩크", "dunk", "터미네이터", "terminator", "페가수스", "pegasus", "프레스토", "presto", "테니스", "tennis", "센스", "sense", "탈라리아", "talaria"],
+    msrpKrw: 550000, released: 2021, defaultProductType: "sneaker",
+  },
+  {
+    id: "shoe-cdg-nike-talaria-collab",
+    brand: "Nike x CDG", category: "shoe", laneKey: "cdg_nike_talaria_collab",
+    modelName: "Nike × CDG Air Zoom Talaria SP",
+    aliases: ["CDG Nike Talaria", "꼼데가르송 나이키 탈라리아"],
+    mustContain: [["nike", "나이키"], ["꼼데", "cdg", "comme des garcons", "commedesgarcons"], ["탈라리아", "talaria"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "덩크", "dunk", "터미네이터", "terminator", "페가수스", "pegasus", "프레스토", "presto", "테니스", "tennis", "센스", "sense", "폼포짓", "foamposite"],
+    msrpKrw: 350000, released: 2017, defaultProductType: "sneaker",
+  },
+  {
+    id: "shoe-cdg-nike-heel-premier-collab",
+    brand: "Nike x CDG", category: "shoe", laneKey: "cdg_nike_heel_premier_collab",
+    modelName: "Nike × CDG Heel Premier",
+    aliases: ["CDG Nike Heel Premier", "꼼데가르송 나이키 힐 프리미어"],
+    mustContain: [["nike", "나이키"], ["꼼데", "cdg", "comme des garcons", "commedesgarcons"], ["힐 프리미어", "heel premier"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "덩크", "dunk", "터미네이터", "terminator", "페가수스", "pegasus", "프레스토", "presto", "테니스", "tennis", "센스", "sense", "폼포짓", "foamposite", "탈라리아", "talaria"],
+    msrpKrw: 500000, released: 2024, defaultProductType: "sneaker",
+  },
   {
     id: "shoe-cdg-nike-collab",
     brand: "Nike x CDG", category: "shoe", laneKey: "cdg_nike_collab",
@@ -10124,7 +10318,9 @@ export const CATALOG: Sku[] = [
     modelName: "Supreme × Nike Air Max (collab)",
     aliases: ["Supreme Air Max", "슈프림 에어맥스", "슈프림 휴마라", "슈프림 테일윈드"],
     mustContain: [["supreme", "슈프림"], ["nike", "나이키"], ["에어맥스", "air max", "airmax", "휴마라", "humara", "테일윈드", "tailwind", "샥스", "shox"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "구찌", "gucci", "팀버랜드", "닥터마틴", "vans", "반스", "sb 덩크", "sb dunk"],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "구찌", "gucci", "팀버랜드", "닥터마틴", "vans", "반스", "sb 덩크", "sb dunk",
+      // Wave 813: Supreme/Nike Air Max wording appears on caps; keep shoe lane footwear-only.
+      "캠프캡", "캠프 캡", "camp cap", "모자", "볼캡", "cap", "hat"],
     msrpKrw: 320000, released: 2016,
   },
   {
@@ -10133,7 +10329,10 @@ export const CATALOG: Sku[] = [
     modelName: "Supreme × Nike SB (덩크 / 블레이저 / 에어포스2)",
     aliases: ["Supreme SB", "슈프림 SB", "Supreme Dunk SB", "슈프림 SB 덩크"],
     mustContain: [["supreme", "슈프림"], ["nike", "나이키", "나이키sb", "nike sb", "nikesb", "sb"], ["sb", "덩크", "dunk", "덩크 sb", "덩크sb", "sb 덩크", "sb덩크", "블레이저 sb", "블레이저sb", "에어포스 2", "airforce 2"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "구찌", "gucci", "팀버랜드", "닥터마틴", "vans", "반스", "에어포스 1", "af1"],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "구찌", "gucci", "팀버랜드", "닥터마틴", "vans", "반스", "에어포스 1", "af1",
+      // Wave 878: exact Supreme SB Dunk Low lane exists and should own explicit Dunk Low rows.
+      "덩크 로우", "덩크로우", "dunk low",
+    ],
     msrpKrw: 290000, released: 2018,
   },
   {
@@ -10405,6 +10604,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["crocs", "크록스"], ["슬리퍼", "slipper", "샌들", "sandal", "산라", "sanrah", "슬라이드", "slide", "털"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake",
       "클로그", "clog", "boots", "부츠",
+      "나이키", "nike", "조던", "jordan", "아디다스", "adidas", "뉴발란스", "new balance",
       "삽니다", "구합니다", "매입"],
     msrpKrw: 69000, released: 2020, defaultProductType: "slipper",
   },
@@ -10543,6 +10743,7 @@ export const CATALOG: Sku[] = [
     mustContain: [["acne", "아크네"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake",
       "티셔츠", "tee", "롱슬리브", "롱 슬리브", "긴팔티", "반팔티",
+      "세트", "set", "120-130", "120 130", "dkny", "디케이엔와이", "미니로디니", "mini rodini", "minirodini",
       "자켓", "재킷", "저켓", "jacket", "코트", "coat", "무스탕", "블레이저", "야상", "점퍼", "봄버", "ma-1", "ma1", "후리스", "플리스", "fleece",
       "반바지", "shorts", "쇼츠", "밴딩쇼츠",
       "원피스", "dress",
@@ -10652,7 +10853,7 @@ export const CATALOG: Sku[] = [
     modelName: "Acne Studios Jacket / Coat",
     aliases: ["Acne 자켓", "Acne 코트"],
     // Wave 726 (2026-05-24): 모델명 + 다운/패딩 추가 (agent + sample 검증 — 154건 unmatched 중 46건이 코트/롱패딩/트렌치 누락).
-    mustContain: [["acne", "아크네"], ["자켓", "jacket", "코트", "coat", "재킷", "저켓", "무스탕", "블레이저", "야상", "점퍼", "봄버", "ma-1", "ma1", "후리스", "플리스", "fleece",
+    mustContain: [["acne", "아크네"], ["자켓", "jacket", "jacke", "코트", "coat", "재킷", "저켓", "무스탕", "블레이저", "야상", "점퍼", "봄버", "ma-1", "ma1", "후리스", "플리스", "fleece",
       "후드코트", "롱패딩", "트렌치", "다운", "패딩", "수트",
       // 모델명
       "밀턴", "몬트리올", "마틴파우",
@@ -10667,7 +10868,11 @@ export const CATALOG: Sku[] = [
     modelName: "Acne Studios Shorts",
     aliases: ["Acne Shorts", "아크네 반바지", "아크네 쇼츠"],
     mustContain: [["acne", "아크네"], ["반바지", "shorts", "쇼츠", "밴딩쇼츠"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep", "replica", "fake", "데님", "denim", "두개", "두 개", "2개", "2 개", "세개", "세 개", "3개", "묶음", "일괄"],
+    mustNotContain: [
+      "키즈", "kids", "복각", "rep", "replica", "fake", "데님", "denim",
+      "두개", "두 개", "2개", "2 개", "세개", "세 개", "3개", "묶음", "일괄",
+      "세트", "set", "120-130", "120 130", "dkny", "디케이엔와이", "미니로디니", "mini rodini", "minirodini",
+    ],
     msrpKrw: 250000, released: 2020,
     defaultProductType: "shorts",
   },
@@ -10687,7 +10892,12 @@ export const CATALOG: Sku[] = [
     modelName: "Acne Studios Pants / Trousers",
     aliases: ["Acne Pants", "아크네 팬츠", "아크네 트라우저"],
     mustContain: [["acne", "아크네"], ["팬츠", "pants", "트라우저", "trouser", "치노팬츠", "치노 팬츠", "슬랙스", "slacks"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep", "replica", "fake", "반바지", "shorts", "쇼츠", "데님", "denim", "청바지", "jeans"],
+    mustNotContain: [
+      "키즈", "kids", "복각", "rep", "replica", "fake", "반바지", "shorts", "쇼츠", "데님", "denim", "청바지", "jeans",
+      // Wave 872: shoe listings can mention pants in styling text ("슬랙스와 잘 어울림").
+      "락어웨이", "락 어웨이", "rockaway", "맨하탄", "맨해튼", "manhattan",
+      "정품박스", "정품 박스", "밑창", "아웃솔", "스니커즈", "운동화", "신발",
+    ],
     msrpKrw: 320000, released: 2020,
     defaultProductType: "pants",
   },
@@ -10697,7 +10907,12 @@ export const CATALOG: Sku[] = [
     modelName: "Acne Studios Knit / Cardigan",
     aliases: ["Acne Knit", "아크네 니트", "아크네 가디건", "Acne Peele"],
     mustContain: [["acne", "아크네"], ["니트", "knit", "스웨터", "sweater", "가디건", "cardigan", "peele"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep", "replica", "fake", "머플러", "목도리", "스카프", "scarf"],
+    mustNotContain: [
+      "키즈", "kids", "복각", "rep", "replica", "fake", "머플러", "목도리", "스카프", "scarf",
+      // Wave 816: multi-brand listing bait such as "얀13 ... 아크네 듀엘 자라".
+      "얀13", "yan13", "오일릴리", "오일 릴리", "oilily", "듀엘", "duel", "자라", "zara",
+      "지컷", "g cut", "g-cut", "랑방", "lanvin",
+    ],
     msrpKrw: 390000, minPriceKrw: 30000, released: 2020,  // Wave 768: Acne knit 가품 floor (사용자 #6 발견 15K 매물 차단)
   },
   {
@@ -10783,6 +10998,7 @@ export const CATALOG: Sku[] = [
       "super baggy", "슈퍼 배기", "슈퍼배기",
       "반바지", "shorts", "쇼츠", "오버롤", "멜빵", "점프수트", "overall",
       "기프트", "패키지", "쇼핑백", "스카프", "머플러", "목도리", "scarf",
+      "river", "리버", "rodeo", "로데오", "1995",
       // Wave 629: 한정 라인 분리 (시세 5-7배 outlier).
       "2021m", "1992m", "2003 ", "2003 데님",
       // Wave 716 (2026-05-23): 50x spread audit — Petit 750k outlier 차단 (premium narrow로 routing).
@@ -10853,13 +11069,19 @@ export const CATALOG: Sku[] = [
   },
   {
     id: "shoe-puma-football",
-    brand: "Puma", category: "shoe", laneKey: "puma_football",
+    brand: "Puma", category: "shoe", laneKey: "puma_football_broad",
     modelName: "Puma Football / Futsal (울트라 / 킹 / 퓨처)",
     aliases: ["Puma 축구화", "Puma 풋살화", "푸마 울트라", "푸마 킹", "푸마 퓨처"],
     mustContain: [["puma", "푸마", "퓨마"], ["울트라", "ultra", "킹", "king", "퓨처", "future", "축구화", "풋살화", "ag ", "tf ", "mg ", "퓨전니트로"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "스피드캣", "speedcat", "팔레르모", "palermo", "스웨이드", "suede", "농구화",
       // Wave 807: Future Rider is a lifestyle sneaker, not Puma Future football.
       "퓨처 라이더", "future rider", "라이더", "rider",
+      // Wave 811: exact football lanes handle true model rows; block common substring/accessory leaks in broad.
+      "퓨처캣", "futurecat", "future cat", "라퓨마", "트래킹화", "트레킹화", "마킹", "풀마킹", "유니폼", "저지", "져지",
+      "court ultra", "court", "코트", "75 years", "셀돔", "cell dome", "dua lipa", "두아리파",
+      "네이마르", "neymar", "월드컵", "world cup", "한정", "한정판", "limited",
+      "런칭", "런칭팩", "launch", "creativity팩", "creativity pack", "크리에이티비티",
+      "풀리시치", "pulisic", "크리스티안", "주니어", "유소년",
     ],
     msrpKrw: 150000, released: 2020,
   },
@@ -10990,7 +11212,7 @@ export const CATALOG: Sku[] = [
   },
   {
     id: "shoe-asics-gel-kayano",
-    brand: "Asics", category: "shoe", laneKey: "asics_gel_kayano",
+    brand: "Asics", category: "shoe", laneKey: "asics_gel_kayano_broad",
     modelName: "Asics Gel Kayano (14 / 26 / 27)",
     aliases: ["Asics Gel Kayano", "아식스 카야노", "Kayano 14", "젤 카야노"],
     mustContain: [["asics", "아식스"], ["kayano", "카야노", "캬아노"]],
@@ -11036,10 +11258,13 @@ export const CATALOG: Sku[] = [
   {
     id: "shoe-asics-novablast",
     brand: "Asics", category: "shoe", laneKey: "asics_novablast",
-    modelName: "Asics Novablast / Superblast (러닝)",
-    aliases: ["Asics Novablast", "아식스 노바블라스트", "Asics Superblast", "슈퍼블라스트"],
-    mustContain: [["asics", "아식스"], ["novablast", "노바블라스트", "superblast", "슈퍼블라스트"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "키코", "kiko", "프로토"],
+    modelName: "Asics Novablast (러닝)",
+    aliases: ["Asics Novablast", "아식스 노바블라스트"],
+    mustContain: [["asics", "아식스"], ["novablast", "노바블라스트"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "키코", "kiko", "프로토",
+      // Wave 876: Superblast already has a ready exact SKU; keep the price axis out of Novablast.
+      "superblast", "슈퍼블라스트", "슈퍼 블라스트",
+    ],
     msrpKrw: 199000, released: 2020,
   },
   {
@@ -11207,7 +11432,7 @@ export const CATALOG: Sku[] = [
     modelName: "Nike Air Max 95 (broad)",
     aliases: ["Nike Air Max 95", "나이키 에어맥스 95"],
     mustContain: [["nike", "나이키"], ["에어맥스 95", "에어맥스95", "나이키에어맥스95", "에어맥스95og", "에어맥스95se", "에어맥스 95og", "에어맥스 95se", "air max 95", "airmax 95", "airmax95"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "에어맥스 1", "에어맥스 90", "에어맥스 97", "off-white", "오프화이트", "꼼데", "cdg", "리바이스", "levis", "코르테이즈", "카하트", "carhartt", "fog ",
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "에어맥스 1", "에어맥스 90", "에어맥스 97", "off-white", "오프화이트", "꼼데", "cdg", "리바이스", "levis", "코르테이즈", "카하트", "칼하트", "carhartt", "wip", "fog ",
       // Wave 624: collab/한정 색상 차단.
       "캑터스 플라워", "cactus flower",
       "스투시", "stussy",
@@ -11284,7 +11509,13 @@ export const CATALOG: Sku[] = [
     modelName: "Nike × Sacai (Blazer / Vaporwaffle / LDV / Cortez)",
     aliases: ["Nike Sacai", "나이키 사카이", "사카이 블레이저", "Sacai Vaporwaffle"],
     mustContain: [["nike", "나이키"], ["sakai", "sacai", "사카이"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "꼼데", "cdg", "fragment", "프래그먼트"],
+    mustNotContain: [
+      "키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "꼼데", "cdg", "fragment", "프래그먼트",
+      // Wave 876: exact Sacai model lanes should beat this old broad fallback.
+      "베이퍼와플", "베이퍼 와플", "vaporwaffle", "vapor waffle",
+      "ld와플", "ld waffle", "ldwaffle", "ldv", "엘디와플",
+      "블레이저 로우", "블레이져 로우", "blazer low", "코르테즈", "cortez",
+    ],
     msrpKrw: 350000, released: 2019,
   },
   // Wave 212 (2026-05-19): 아디다스 추가 13 SKU — 매물 폭발적 (셔링백 faved 252~255!).
@@ -11356,7 +11587,13 @@ export const CATALOG: Sku[] = [
     modelName: "Adidas Stan Smith (broad)",
     aliases: ["Adidas Stan Smith", "아디다스 스탠스미스", "Stan Smith"],
     mustContain: [["adidas", "아디다스"], ["스탠스미스", "스탠 스미스", "stan smith"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "발렌시아가", "balenciaga", "양면져지", "져지"],
+    mustNotContain: [
+      "키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
+      "발렌시아가", "balenciaga", "양면져지", "져지",
+      "케이스스터디", "케이스 스터디", "case study", "casestudy",
+      "피터팬", "팅커벨", "tinkerbell", "disney", "디즈니",
+      "한정판", "한정", "limited",
+    ],
     msrpKrw: 119000, released: 1971,
   },
   {
@@ -11385,6 +11622,7 @@ export const CATALOG: Sku[] = [
       // "프리미엄", "premium", "메탈토", "metal toe",  ← 제거
       "farm", "팜", "parley", "팔리",
       "슬립온", "slip-on", "slip on", "slipon", "360",
+      "퍼피렛", "pufflet",
       "마운티어링", "mountaineering", "d-mop", "dmop", "디몹",
       "발렌타인", "한정판",
       "레고", "lego", "보네가", "bonega",
@@ -11397,6 +11635,12 @@ export const CATALOG: Sku[] = [
       "songforthemute", "송포더뮤트",  // 이미 있음 보강
       "30주년", "30 anniversary", "duke", "듀스",  // 30주년/Duke 한정
       "콘 슈퍼스타", "콘슈퍼스타",  // 콘 (콘솔/캐릭터) variant
+      // Wave 820: latest broad sample audit — non-shoe/accessory and collab variants.
+      "볼캡", "모자", "cap", "골프화", "golf",
+      "human made", "humanmade", "휴먼메이드",
+      "willy chavarria", "윌리 차바리아", "차바리아",
+      "beyonce", "비욘세", "disney", "디즈니",
+      "caroline hu", "caroline", "캐롤라인",
     ],
     msrpKrw: 119000, released: 1969,
   },
@@ -11406,7 +11650,12 @@ export const CATALOG: Sku[] = [
     modelName: "Adidas Ultra Boost (21/24/5.0)",
     aliases: ["Adidas Ultraboost", "아디다스 울트라부스트", "Ultra Boost"],
     mustContain: [["adidas", "아디다스"], ["울트라부스트", "ultraboost", "ultra boost"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake"],
+    mustNotContain: [
+      "키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
+      // Wave 811: Nemeziz/Tango football trainers often mention Ultra Boost
+      // cushioning in the description; keep them in the football broad lane.
+      "네메시스", "nemeziz", "탱고", "tango", "축구화", "풋살화", "축구트레이닝화", "football",
+    ],
     msrpKrw: 219000, released: 2015,
   },
   {
@@ -11421,7 +11670,7 @@ export const CATALOG: Sku[] = [
   },
   {
     id: "shoe-adidas-football",
-    brand: "Adidas", category: "shoe", laneKey: "adidas_football",
+    brand: "Adidas", category: "shoe", laneKey: "adidas_football_broad",
     modelName: "Adidas Football (F50 / Predator / Copa / X Crazyfast / Nemeziz / Messi)",
     aliases: ["Adidas F50", "아디다스 F50", "Adidas Predator", "프레데터", "Adidas X Crazyfast"],
     mustContain: [["adidas", "아디다스"], ["f50", "f50tf", "f50ag", "f50fg", "f50엘리트", "f50 elite", "프레데터", "predator", "copa", "코파", "crazyfast", "크레이지패스트", "네메시스", "nemeziz", "메시", "messi", "축구화", "풋살화"]],
@@ -11444,6 +11693,7 @@ export const CATALOG: Sku[] = [
       //   주의: "f50 엘리트" 단독은 test fixture 정상 매물 expectation → 차단 X.
       //   대신: 메시 시그니처 라인 + 축구공 동봉 세트만 차단 (variant 분산 큼).
       "축구공 세트", "축구공/가방", "축구공 가방", "축구공 동봉", "축구공포함",
+      "축구공", "미니볼", "공인구", "매치볼",
       "메시 튜닛 엘리트", "messi tunit elite", "메시 튜닛",
       "최상급 축구화",
       // Wave 751 (2026-05-24) Pareto: 960x spread audit — goalkeeper gloves false match.
@@ -11539,6 +11789,11 @@ export const CATALOG: Sku[] = [
       "사쿠라 포토", "sakura photo", "사쿠라",
       "빅사루", "big saru", "big-saru",
       "베이비 마일로", "baby milo", "babymilo", "milo on",
+      // Wave 812 follow-up: sample groups still had high-spread special tees.
+      "레이디스", "우먼", "women", "womens", "크롭", "crop",
+      "나고야", "nagoya", "go! ape", "go ape",
+      "스트로베리", "strawberry",
+      "클라우드 카모", "japanese cloud", "재패니즈 클라우드",
       // 빈티지 시즌 (2013~2020 빈티지 시세 별도)
       "2013 베이프", "2014 베이프", "2015 베이프", "2016 베이프",
       "2017 베이프", "2018 베이프", "2019 베이프",
@@ -11559,12 +11814,12 @@ export const CATALOG: Sku[] = [
     modelName: "BAPE Hoodie (basic/camo, non-Shark)",
     aliases: ["BAPE Hoodie", "베이프 후드", "베이프 후드티"],
     mustContain: [["bape", "베이프", "a bathing ape"], ["후드", "후드티", "후디", "hoodie"]],
-    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "샤크", "shark", "집업", "zip", "반집업", "half zip", "신발", "스니커즈", "운동화",
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "샤크", "shark", "집업", "zip", "풀집", "풀 집", "풀집업", "풀 집업", "반집업", "half zip", "신발", "스니커즈", "운동화",
       ...BAPE_SUBLINE_NOISE,  // Wave 765
-      "콜라보", "collab", "travis scott", "트래비스 스캇", "트래비스스캇", "cactus jack", "puma", "푸마", "adidas", "아디다스", "aape", "오마주", "fubu", "푸부",
+      "콜라보", "collab", "travis scott", "트래비스 스캇", "트래비스스캇", "cactus jack", "puma", "푸마", "adidas", "아디다스", "new balance", "newbalance", "뉴발란스", "뉴발", "aape", "오마주", "fubu", "푸부",
       "lacoste", "라코스테", "tommy", "타미", "자운드", "jound",
       "네이버후드", "neighborhood", "wtaps", "더블탭스", "갓 셀렉션", "god selection",
-      "톰과제리", "tom and jerry", "chocolate", "chocolte", "스노우보드자켓", "스노우보드재킷", "snowboard",
+      "톰과제리", "tom and jerry", "chocolate", "chocolte", "자켓", "재킷", "jacket", "스노우보드자켓", "스노우보드재킷", "snowboard",
       // Wave 680 (2026-05-22): spread 20x audit — collab/한정 추가 차단 + 가품 시그널.
       "ponr", "point of no return", "스페이스 카모",
       "patchwork", "패치워크", "abc camo patchwork", "패치워크 후드",
@@ -11584,10 +11839,10 @@ export const CATALOG: Sku[] = [
     brand: "A Bathing Ape (BAPE)", category: "clothing", laneKey: "bape_hoodie_zip",
     modelName: "BAPE Hoodie Zip (basic/camo, non-Shark)",
     aliases: ["BAPE Hoodie Zip", "베이프 후드집업", "베이프 집업후드"],
-    mustContain: [["bape", "베이프", "a bathing ape"], ["후드집업", "집업후드", "집업", "zip up", "zip-up", "full zip"]],
+    mustContain: [["bape", "베이프", "a bathing ape"], ["후드집업", "집업후드", "집업", "풀집", "풀 집", "풀집업", "풀 집업", "zip up", "zip-up", "full zip"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "샤크", "shark", "신발", "스니커즈", "운동화",
       ...BAPE_SUBLINE_NOISE,  // Wave 765
-      "콜라보", "collab", "travis scott", "트래비스 스캇", "트래비스스캇", "cactus jack", "puma", "푸마", "adidas", "아디다스", "aape", "오마주", "fubu", "푸부",
+      "콜라보", "collab", "travis scott", "트래비스 스캇", "트래비스스캇", "cactus jack", "puma", "푸마", "adidas", "아디다스", "new balance", "newbalance", "뉴발란스", "뉴발", "aape", "오마주", "fubu", "푸부",
       "lacoste", "라코스테", "tommy", "타미", "자운드", "jound",
       "네이버후드", "neighborhood", "wtaps", "더블탭스", "갓 셀렉션", "god selection",
       "톰과제리", "tom and jerry", "chocolate", "chocolte",
@@ -11596,6 +11851,7 @@ export const CATALOG: Sku[] = [
       "patchwork", "패치워크",
       "85주년", "85th",
       "흑계", "대장급", "탑급",
+      "스타베이프", "star vape", "스웨터", "sweater", "니트", "knit",
       "2013 베이프", "2014 베이프", "2015 베이프", "2016 베이프",
       "2017 베이프", "2018 베이프", "2019 베이프"],
     msrpKrw: 360000, released: 1993,
@@ -11746,6 +12002,11 @@ export const CATALOG: Sku[] = [
       "데이즈", "daze",  // Daze 한정 컬러
       // 여성 size 별도 시세 (남성과 가격 변동) — Wave 539 패턴 (Polo boys hold)
       "여성 2xl", "여성2xl", "우먼스 2xl", "women's 2xl",  // 여성 큰 사이즈 narrow
+      // Wave 805: SL/LT/AR have different price bands. Explicit sub-line
+      // rows must go to strict lanes; ambiguous "Beta jacket" can stay here.
+      "베타 lt", "베타lt", "beta lt", "betalt",
+      "베타 sl", "베타sl", "beta sl", "betasl",
+      "베타 ar", "베타ar", "beta ar", "betaar",
     ],
     msrpKrw: 590000, released: 1998,
     defaultProductType: "jacket", // Wave 236d — Beta = Gore-Tex 자켓 라인 확정.
@@ -11772,7 +12033,7 @@ export const CATALOG: Sku[] = [
       "포지션", "포지셔닝", "비교", "vs",
       // Wave 572 (2026-05-22): production audit — "아크테릭스 LEAF Alpha G2 멀티캠" 345만 catch (LEAF = 군용 라인).
       //   일반 Alpha SV 80~130만 vs LEAF 345만 = +3배. 별도 시세군.
-      "leaf", "alpha g2", "alpha g 2", "멀티캠", "multicam", "law enforcement",
+      "leaf", "리프", "리프 알파", "leaf alpha", "alpha g2", "alpha g 2", "멀티캠", "multicam", "law enforcement",
       "law enforcement and armed forces",
     ],
     msrpKrw: 850000, released: 1998,
@@ -11784,7 +12045,13 @@ export const CATALOG: Sku[] = [
     modelName: "Arc'teryx Atom (LT / SL / Heavyweight) insulated",
     aliases: ["Atom LT", "아톰 LT", "Atom Heavyweight", "Atom Hoody"],
     mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["atom", "아톰"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance",
+      // Wave 805: Atom LT hoody/non-hood, SL, and AR/Heavyweight split.
+      // If LT has no hood/jacket signal, hold it instead of broad-pooling.
+      "아톰 lt", "아톰lt", "atom lt", "atomlt",
+      "아톰 sl", "아톰sl", "atom sl", "atomsl",
+      "아톰 ar", "아톰ar", "atom ar", "atomar", "heavyweight", "헤비웨이트",
+    ],
     msrpKrw: 320000, released: 2010,
     defaultProductType: "jacket", // Wave 236d — Atom = insulated 자켓 확정.
   },
@@ -11991,6 +12258,9 @@ export const CATALOG: Sku[] = [
       "80s patagonia", "90s patagonia", "00s patagonia",
       "80s 파타고니아", "90s 파타고니아", "00s 파타고니아",
       "빈티지 파타고니아", "vintage patagonia", "us made", "usa made",
+      // Wave 844: Nike/Nocta down listings sometimes append Patagonia as
+      // reference wording; keep them out of Patagonia down comparisons.
+      "나이키", "nike", "녹타", "nocta", "acg",
     ],
     msrpKrw: 290000, released: 2004,
     defaultProductType: "down_jacket", // Wave 236d — Patagonia Down = 다운 자켓 라인.
@@ -12223,7 +12493,9 @@ export const CATALOG: Sku[] = [
     aliases: ["NB 574", "뉴발란스 574", "뉴발 574"],
     mustContain: [["574"], ["뉴발란스", "newbalance", "new balance", "nb ", "뉴발"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
-      "짭", "가품", "미러", "샘플", "1:1", "11급", "삽니다", "구합니다", "매입"],
+      "짭", "가품", "미러", "샘플", "1:1", "11급", "삽니다", "구합니다", "매입",
+      "miu miu", "miumiu", "미우미우", "미우 미우",
+      "stray rats", "스트레이 랫츠", "스트레이랫츠"],
     msrpKrw: 99000, released: 1988,
   },
   {
@@ -12317,9 +12589,8 @@ export const CATALOG: Sku[] = [
     brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials_broad",
     modelName: "Fear of God Essentials (broad — 베스트/니트/플리스/카라티/모자 등)",
     aliases: ["FOG Essentials", "피오갓 에센셜", "피어오브갓 에센셜", "에센셜"],
-    // Wave 734 leak fix: FOG signal optional — 한국 셀러는 "에센셜"만 적음.
-    //   group 1 (FOG) 제거, group 2 (essentials)만 mandatory.
-    mustContain: [["essentials", "에센셜"]],
+    // Wave 779: "에센셜"은 Adidas/Nike 등 mass-line generic word라 brand signal mandatory.
+    mustContain: [FOG_ESSENTIALS_BRAND_SIGNAL, ["essentials", "에센셜"]],
     // FOG Main Line (3rd-7th 시즌별) 한정/명품 - mustNotContain 차단.
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "짭", "가품",
       // Main Line (시즌 번호) 차단 — 별도 SKU 또는 가격대 다름.
@@ -12364,9 +12635,8 @@ export const CATALOG: Sku[] = [
     brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials_hoodie",
     modelName: "FOG Essentials Hoodie",
     aliases: ["FOG Essentials 후디", "피오갓 에센셜 후드", "에센셜 후디"],
-    // Wave 734 leak fix: FOG signal mandatory 제거 — 한국 셀러는 "에센셜 후드티"만 적음.
-    //   "essentials/에센셜" + product type 으로 충분히 unique. 다른 brand essentials 는 mustNotContain.
-    mustContain: [["essentials", "에센셜"], ["후디", "hoodie", "후드티", "후드"]],
+    // Wave 779: generic "에센셜 후드"만으로 Adidas Essentials가 흡수됨 → FOG brand signal mandatory.
+    mustContain: [FOG_ESSENTIALS_BRAND_SIGNAL, ["essentials", "에센셜"], ["후디", "hoodie", "후드티", "후드"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품",
       "3rd", "4th", "5th", "6th", "7th", "1st", "2nd",
       "제냐", "zegna", "nike", "나이키",
@@ -12376,7 +12646,9 @@ export const CATALOG: Sku[] = [
       "essential oil", "에센셜 오일",
       "기타 ", "guitar",
       // 다른 product-type 차단 (각 narrow lane 으로 가게).
-      "맨투맨", "크루넥", "팬츠", "바지", "쇼츠", "반바지", "자켓", "재킷"],
+      "맨투맨", "크루넥", "팬츠", "바지", "쇼츠", "반바지", "자켓", "재킷",
+      // Wave 812: zip hoodie has a different comparison axis than pullover hoodie.
+      "후드집업", "후드 집업", "집업후드", "집업 후드", "zip-up", "zip up", "zipup", "full zip", "zip hoodie", "hoodie zip"],
     msrpKrw: 160000, released: 2018,
     defaultProductType: "hoodie",
   },
@@ -12385,8 +12657,8 @@ export const CATALOG: Sku[] = [
     brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials_crewneck",
     modelName: "FOG Essentials Crewneck / Sweat (스웻셔츠/맨투맨)",
     aliases: ["FOG Essentials 맨투맨", "피오갓 에센셜 스웻", "에센셜 크루넥"],
-    // Wave 734 leak fix
-    mustContain: [["essentials", "에센셜"], ["맨투맨", "크루넥", "crewneck", "스웻", "sweat"]],
+    // Wave 779: generic "에센셜" brand leak 방지.
+    mustContain: [FOG_ESSENTIALS_BRAND_SIGNAL, ["essentials", "에센셜"], ["맨투맨", "크루넥", "crewneck", "스웻", "sweat"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품",
       "3rd", "4th", "5th", "6th", "7th", "1st", "2nd",
       "제냐", "zegna", "nike", "나이키",
@@ -12401,8 +12673,8 @@ export const CATALOG: Sku[] = [
     brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials_tee",
     modelName: "FOG Essentials Tee / T-Shirt / Long-Sleeve",
     aliases: ["FOG Essentials 티", "피오갓 에센셜 반팔", "에센셜 티"],
-    // Wave 734 leak fix
-    mustContain: [["essentials", "에센셜"], ["티셔츠", "반팔", "롱슬리브", "긴팔티", "tee shirt", "t-shirt"]],
+    // Wave 779: generic "에센셜" brand leak 방지.
+    mustContain: [FOG_ESSENTIALS_BRAND_SIGNAL, ["essentials", "에센셜"], ["티셔츠", "반팔", "롱슬리브", "긴팔티", "tee shirt", "t-shirt"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품",
       "3rd", "4th", "5th", "6th", "7th", "1st", "2nd",
       "제냐", "zegna", "nike", "나이키",
@@ -12419,8 +12691,8 @@ export const CATALOG: Sku[] = [
     brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials_pants",
     modelName: "FOG Essentials Pants (스웻팬츠/조거/트레이닝)",
     aliases: ["FOG Essentials 팬츠", "피오갓 에센셜 조거", "에센셜 스웻팬츠"],
-    // Wave 734 leak fix
-    mustContain: [["essentials", "에센셜"], ["팬츠", "pants", "바지", "조거", "jogger", "스웻팬츠", "sweatpants", "트레이닝"]],
+    // Wave 779: generic "에센셜" brand leak 방지.
+    mustContain: [FOG_ESSENTIALS_BRAND_SIGNAL, ["essentials", "에센셜"], ["팬츠", "pants", "바지", "조거", "jogger", "스웻팬츠", "sweatpants", "트레이닝"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품",
       "3rd", "4th", "5th", "6th", "7th", "1st", "2nd",
       "제냐", "zegna", "nike", "나이키",
@@ -12435,8 +12707,8 @@ export const CATALOG: Sku[] = [
     brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials_shorts",
     modelName: "FOG Essentials Shorts (반바지/하프팬츠)",
     aliases: ["FOG Essentials 쇼츠", "피오갓 에센셜 반바지", "에센셜 하프팬츠"],
-    // Wave 734 leak fix
-    mustContain: [["essentials", "에센셜"], ["쇼츠", "shorts", "반바지", "하프팬츠", "숏팬츠"]],
+    // Wave 779: generic "에센셜" brand leak 방지.
+    mustContain: [FOG_ESSENTIALS_BRAND_SIGNAL, ["essentials", "에센셜"], ["쇼츠", "shorts", "반바지", "하프팬츠", "숏팬츠"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품",
       "3rd", "4th", "5th", "6th", "7th", "1st", "2nd",
       "제냐", "zegna", "nike", "나이키",
@@ -12457,11 +12729,14 @@ export const CATALOG: Sku[] = [
     brand: "Fear of God Essentials", category: "clothing", laneKey: "fog_essentials_jacket",
     modelName: "FOG Essentials Jacket (자켓/아노락/봄버)",
     aliases: ["FOG Essentials 자켓", "피오갓 에센셜 아노락"],
-    // Wave 734 leak fix
-    mustContain: [["essentials", "에센셜"], ["자켓", "jacket", "재킷", "블레이저", "점퍼", "코트", "coat", "아노락"]],
+    // Wave 779: generic "에센셜" brand leak 방지.
+    mustContain: [FOG_ESSENTIALS_BRAND_SIGNAL, ["essentials", "에센셜"], ["자켓", "jacket", "재킷", "블레이저", "점퍼", "코트", "coat", "아노락"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake", "짭", "가품",
       "3rd", "4th", "5th", "6th", "7th", "1st", "2nd",
       "제냐", "zegna", "nike", "나이키",
+      "adidas", "아디다스", "terrex", "테렉스", "멀티에센셜",
+      "new balance", "newbalance", "뉴발란스", "뉴발",
+      "리바이스", "levis", "levi's", "셀비지", "selvedge", "스타일", "style",
       "후디", "hoodie", "맨투맨", "크루넥", "티셔츠", "반팔", "팬츠", "바지", "쇼츠", "반바지"],
     msrpKrw: 180000, released: 2018,
     // multi (jacket + coat + 아노락) — defaultProductType 안 박음.
@@ -12576,6 +12851,8 @@ export const CATALOG: Sku[] = [
       "누빔", "누빔 바람막이", "누빔 자켓", "퀼팅 트랙", "퀼팅 자켓",
       "플라워 삼선", "플라워자켓", "꽃무늬 자켓", "플라워 트랙",
       "빈티지 블루종", "빈티지블루종", "올드스쿨 블루종", "제펜 올드스쿨", "japan old school",
+      // Wave 816: tee/tank rows were polluting the jacket comparable key.
+      "티셔츠", "반팔티", "반팔 티", "반팔 카라", "tank top", "탱크탑", "민소매", "t-shirt", "tee",
       // 가방 차단
       "가방", "bag", "backpack", "백팩",
       // Wave 715 P2 (2026-05-23): adidas_trefoil_archive 신설 → vintage 명확 차단.
@@ -12592,8 +12869,14 @@ export const CATALOG: Sku[] = [
     modelName: "Yeezy Boost 350 (V1/V2)",
     aliases: ["Yeezy Boost 350", "이지 부스트 350", "Yeezy 350"],
     mustContain: [["yeezy", "이지"], ["350", "boost 350"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "이지페이", "이지카", "이지쉐어", "이지팟", "이지에어웨이", "boost 500", "boost 700", "slide", "슬라이드", "foam", "폼"],
-    msrpKrw: 290000, released: 2015,
+    mustNotContain: [
+      "키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
+      "이지페이", "이지카", "이지쉐어", "이지팟", "이지에어웨이",
+      "boost 500", "boost 700", "slide", "슬라이드", "foam", "폼",
+      // Wave 824: multi-size order / dropship style rows are not trustworthy market comps.
+      "주문방법", "요청사항", "주문가능사이즈", "색상/사이즈", "해외발송", "배송완료 5-7",
+    ],
+    msrpKrw: 290000, released: 2015, defaultProductType: "sneaker",
   },
   {
     id: "shoe-yeezy-boost-500-700",
@@ -12628,12 +12911,33 @@ export const CATALOG: Sku[] = [
     brand: "A Bathing Ape (BAPE)", category: "shoe", laneKey: "bape_sta",
     modelName: "BAPE STA (Bapesta 시그니처 신발)",
     aliases: ["BAPE STA", "Bapesta", "베이프스타", "베이프 스타"],
-    mustContain: [["bape", "베이프"], ["sta", "스타"]],
+    // Wave 810: generic "sta/스타" was catching caps, keychains, Superstar and Instapump rows.
+    // Require the Bapesta model phrase as a single intent token.
+    mustContain: [["bape sta", "bapesta", "베이프스타", "베이프 스타"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "샤크 후드", "shark hoodie", "후드", "hoodie", "티셔츠",
       // Wave 636: 한정 variant 차단 (Skull Sta + 새상품 한정 컬러).
       "스컬 스타", "skull sta", "skullsta",
+      // Wave 810: BAPE STA sample-pool pollution from non-Bapesta goods or distinct BAPE shoe families.
+      "키체인", "키 체인", "keychain", "key chain",
+      "리복", "reebok", "인스타 펌프", "인스타펌프", "insta pump", "instapump",
+      "슈퍼스타", "superstar",
+      "스케이트스타", "스케이트 스타", "sk8", "sk8 sta", "sk8sta",
+      "매드 스타", "매드스타", "mad sta", "madsta",
+      "apestation", "ape station",
+      "솔박스", "solebox",
+      // Wave 823: "베이프 스타벅스" contains the loose Korean phrase "베이프 스타";
+      // keep BAPE STA shoes, reject goods/accessories and custom non-comparable rows.
+      "스타벅스", "스벅", "starbucks",
+      "베이비마일로", "베이비 마일로", "baby milo", "milo",
+      "피규어", "figure", "toy", "토이",
+      "머그", "mug", "코스터", "coaster",
+      "목베개", "목쿠션", "neck pillow", "pillow", "쿠션", "cushion",
+      "머리핀", "헤어핀", "hairpin", "핀",
+      "컨버스", "converse",
+      "커스텀", "custom",
+      "한정", "limited",
     ],
-    msrpKrw: 390000, released: 2002,
+    msrpKrw: 390000, released: 2002, defaultProductType: "sneaker",
   },
   // Stussy 8 Ball Knit — 한정
   {
@@ -12641,7 +12945,7 @@ export const CATALOG: Sku[] = [
     brand: "Stussy", category: "clothing", laneKey: "stussy_8ball_knit",
     modelName: "Stüssy 8 Ball Knit Sweater (한정)",
     aliases: ["Stussy 8 Ball Knit", "스투시 8볼 니트", "8 Ball Knit"],
-    mustContain: [["stussy", "스투시", "stüssy"], ["8 ball", "8ball", "8볼"], ["knit", "니트", "sweater", "스웨터"]],
+    mustContain: [["stussy", "스투시", "stüssy"], ["8 ball", "8ball", "8볼", "에잇볼"], ["knit", "니트", "sweater", "스웨터"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake", "nike", "나이키", "converse", "컨버스", "dior"],
     msrpKrw: 290000, released: 2018,
   },
@@ -12900,6 +13204,10 @@ const GLOBAL_FASHION_NOISE: string[] = [
   "가방 2개", "가방 3개", "가방 4개", "가방2개", "가방3개", "가방4개",
   "옷 2벌", "옷 3벌", "옷 4벌", "2벌 일괄", "3벌 일괄",
   "신발 2켤레", "신발 3켤레",
+  "신발 2개", "신발2개", "신발 3개", "신발3개", "신발 4개", "신발4개",
+  "운동화 2개", "운동화2개", "운동화 3개", "운동화3개",
+  "스니커즈 2개", "스니커즈2개", "스니커즈 3개", "스니커즈3개",
+  "슈즈 2개", "슈즈2개", "슈즈 3개", "슈즈3개",
   "1개랑", "2개랑", "3개랑", "4개랑",
   // Wave 619: 추가 묶음 패턴 — production 발견 (pid 395485532 '개당가격입니다').
   "개당가격", "개당 가격", "각 5만", "각 10만", "각 20만", "각 30만", "각 50만",
@@ -12931,14 +13239,17 @@ const GLOBAL_FASHION_NOISE: string[] = [
   //   주의: "스럽" / "느낌" / "감성" 단독은 "디스럽트" (Nike Dunk Disrupt) / "느낌 좋음" 같은 정상 매물과
   //   substring collision. 명시적 "X 맛" 패턴만 차단.
   "슈프림 맛", "노스 맛", "베이프 맛", "구찌 맛", "프라다 맛", "디올 맛", "롤렉스 맛",
-  "슈프림맛", "노스페이스맛", "베이프맛", "구찌맛", "프라다맛",
+  "사카이 맛", "sacai 맛", "sakai 맛",
+  "슈프림맛", "노스페이스맛", "베이프맛", "구찌맛", "프라다맛", "사카이맛", "sacai맛", "sakai맛",
   "맛 슈프림", "맛 노스",
+  "사카이 스타일", "sacai style", "sakai style",
   // X 스럽 (한글 어미) — 공백 있는 형태만 (디스럽트 collision 차단)
   "슈프림 스럽", "노스 스럽", "베이프 스럽", "구찌 스럽",
   // Wave 231 (2026-05-19): alteration — 사이즈/형태 변형 매물 (시세 다름).
   //   "노수선" / "무수선" 은 정상 매물 → 정확한 alteration 단어만.
   "기장수선", "기장 수선", "발볼 늘림", "밑창 수리", "재봉 보수", "리사이즈",
   "커스텀 슬림핏", "커스텀 사이즈", "커스텀 변형", "커스텀 핏", "커스텀 페인팅",
+  "커스터마이징", "customized", "custom painted", "리폼", "reform",
   // Wave 231: 매물 신뢰도 약함 — 출처 모호 / 비전문
   "지인이 받은", "지인에게 받은", "친구한테 받은", "선물 받은", "받은 거", "받은 선물",
   "대신 판매", "대신판매", "대신 팔아", "판매 대행", "판매대행",
@@ -12986,6 +13297,13 @@ const CATEGORY_FASHION_NOISE: Partial<Record<NonNullable<Sku["category"]>, strin
   shoe: [
     "자켓", "jacket", "코트", "coat", "재킷",
     "티셔츠", "tee ", "맨투맨", "후드", "후디", "hoodie", "셔츠", "shirt",
+    // Wave 809: operator sample audit — BAPE/MM6/ADER shoe buckets were polluted
+    // by same-brand caps, collar tees, and Starbucks cup/tumbler goods.
+    "카라티", "카라 티", "피케", "pique", "폴로티", "폴로 티",
+    "볼캡", "볼 캡", "메쉬캡", "메쉬 캡", "트러커캡", "트러커 캡",
+    "러닝캡", "러닝 캡", "캠프캡", "캠프 캡", "running cap", "camp cap",
+    " 캡 ", "cap", "mesh cap", "모자", "hat",
+    " 컵 ", "리유저블 컵", "텀블러", "tumbler", "mug",
     "팬츠", "pants", "바지", "쇼츠",
     "니트", "knit", "패딩", "down jacket", "롱슬리브",
     "가방", "backpack", "백팩", "토트백", "월렛", "지갑",
@@ -13025,7 +13343,7 @@ const CATEGORY_FASHION_NOISE: Partial<Record<NonNullable<Sku["category"]>, strin
 //   기존 GLOBAL_FASHION_NOISE 의 "구매 원함" 등은 fashion 카테고리만 적용 → 다른 카테고리 누락.
 //   근본 fix: 의미 자체가 역경매인 패턴은 모든 카테고리 차단.
 const UNIVERSAL_BUY_REQUEST_NOISE: string[] = [
-  "구함\\b", "구해요", "구합니다", "구해봅니다", "구해 봅니다",
+  "구함\\b", "구해요", "구합니다", "구해봅니다", "구해 봅니다", "구매글",
   "구매 원함", "구매원함", "구매원해요", "구매 원해요", "구매원합니다", "구매 원합니다",
   // Wave 237 (2026-05-19): production audit — Apple Watch Ultra "구매합니다(가격상의)" 500k 매물 통과.
   "구매합니다", "구매 합니다",
@@ -13226,6 +13544,25 @@ const GLOBAL_DESIGNER_COLLAB_NOISE: string[] = [
   "트라팔가", "trafalgar",
 ];
 
+function isFullBoxShoeSetText(normalizedText: string): boolean {
+  const hasFullBoxSignal =
+    /(?:풀\s*박\s*세트|풀박세트|풀\s*박스|풀박스|풀\s*구성|풀구성|풀\s*패키지|풀패키지|full\s*(?:box|set|package)|fullbox|fullset)/i.test(normalizedText);
+  const hasStrongShoeSignal =
+    /스니커즈|스니커|운동화|러닝화|런닝화|신발(?!\s*(?:상자|박스))|슈즈|구두|로퍼|샌들|슬리퍼|sneaker|shoes?|loafer|sandal|slipper/i.test(normalizedText);
+  const accessoryOnly =
+    /(?:박스만|상자만|더스트백만|신발\s*상자|신발\s*박스|박스\s*단품|상자\s*단품|더스트백\s*단품)/i.test(normalizedText);
+  return hasFullBoxSignal && hasStrongShoeSignal && !accessoryOnly;
+}
+
+function isVansVaultCapLxShoeText(sku: Sku, normalizedText: string): boolean {
+  if (sku.id !== "shoe-vans-vault-broad") return false;
+  const hasVansVault =
+    /(?:vans|반스).{0,24}(?:vault|볼트)|(?:vault|볼트).{0,24}(?:vans|반스)/i.test(normalizedText);
+  const hasCapModel = /(?:cap\s*lx|캡\s*lx|old\s*skool|올드\s*스쿨|sk8|skate|스케이트|authentic|어센틱)/i.test(normalizedText);
+  const hatOnly = /(?:모자|볼캡|ball\s*cap|트러커|메쉬캡|hat)/i.test(normalizedText);
+  return hasVansVault && hasCapModel && /(?:\bcap\b|캡)/i.test(normalizedText) && !hatOnly;
+}
+
 function skuMatches(sku: Sku, normalizedText: string): boolean {
   for (const group of sku.mustContain) {
     if (!group.some((token) => tokenHit(normalizedText, token))) return false;
@@ -13255,11 +13592,20 @@ function skuMatches(sku: Sku, normalizedText: string): boolean {
         token === "카드" &&
         /카드\s*(?:포함|있|동봉)|보증\s*카드|개런티\s*카드|정품\s*카드/.test(normalizedText)
       ) continue;
+      // Wave 851: "풀박세트/풀박스 + 정품" is a shoe full-package phrase,
+      // while "세트 정품" noise was added for multi-bag bundle pollution.
+      if (sku.category === "shoe" && token === "세트 정품" && isFullBoxShoeSetText(normalizedText)) continue;
       if (tokenHit(normalizedText, token)) return false;
     }
     const catNoise = CATEGORY_FASHION_NOISE[sku.category];
     if (catNoise) {
       for (const token of catNoise) {
+        if (sku.category === "shoe" && (token === " 캡 " || token === "cap") && isVansVaultCapLxShoeText(sku, normalizedText)) continue;
+        if (
+          sku.id === "shoe-lacoste-sneakers" &&
+          (token === "피케" || token === "pique") &&
+          /(?:카나비|canaby)/i.test(normalizedText)
+        ) continue;
         if (tokenHit(normalizedText, token)) return false;
       }
     }
@@ -13385,6 +13731,29 @@ function directSpecificMatch(text: string): Sku | null {
   const compact = normalizedText.replace(/\s+/g, "");
   const rawLower = String(text ?? "").toLowerCase();
   const rawCompact = rawLower.replace(/\s+/g, "");
+  const converseChuck70WhiteText =
+    /(?:컨버스|converse).{0,32}(?:척\s*70|척70|척테일러\s*70|chuck\s*70|chuck70|ct\s*70|ct70|162439c).{0,32}(?:화이트|white|162439c)|(?:컨버스|converse).{0,32}(?:화이트|white).{0,32}(?:척\s*70|척70|척테일러\s*70|chuck\s*70|chuck70|ct\s*70|ct70|162439c)/i.test(normalizedText);
+  const converseChuck70WhiteVariant =
+    /(?:미션\s*v|mission\s*v|at\s*-?\s*cx|스케치\s*화이트|sketch\s*white|화이트\s*팩|white\s*pack|컬러\s*체인지|color\s*change|이자벨\s*마랑|isabel\s*marant|슬램잼|slam\s*jam|cdg|꼼데|sacai|사카이|콜라보|collab|한정판?)/i.test(normalizedText);
+  if (converseChuck70WhiteText && !converseChuck70WhiteVariant) {
+    return skuById("shoe-converse-chuck70-white") ?? null;
+  }
+  const hokaBondi7Text =
+    /(?:호카|hoka).{0,32}(?:본디\s*7|본디7|bondi\s*7|bondi7)|(?:본디\s*7|본디7|bondi\s*7|bondi7).{0,32}(?:호카|hoka)/i.test(normalizedText);
+  const hokaBondi7Variant =
+    /(?:본디\s*8|본디8|bondi\s*8|bondi8|본디\s*9|본디9|bondi\s*9|bondi9|본디\s*x|본디x|bondi\s*x|새티스파이|satisfy|콜라보|collab)/i.test(normalizedText);
+  if (hokaBondi7Text && !hokaBondi7Variant) {
+    return skuById("shoe-hoka-bondi-7") ?? null;
+  }
+  const rawWithoutHashtags = rawLower.replace(/#[^\s]+/g, " ");
+  const normalizedWithoutHashtags = normalize(rawWithoutHashtags);
+  if (
+    /(?:뉴발란스|뉴발|new\s*balance|newbalance|\bnb\b)/i.test(normalizedWithoutHashtags) &&
+    /(?:에임\s*레온\s*도르|에임레온도르|에메레온도르|aime\s*leon\s*dore|aimé\s*leon\s*dore|\bald\b)/i.test(normalizedWithoutHashtags) &&
+    !/(?:조\s*프레(?:시|쉬)굿즈|joe\s*freshgoods|자운드|jjjjound|jound|kith|키스|오라리|auralee|카사블랑카|casablanca|러닝캡|모자|cap)/i.test(normalizedWithoutHashtags)
+  ) {
+    return skuById("shoe-newbalance-aime-leon-dore-collab") ?? null;
+  }
   // Wave 429 (2026-05-21): "에어팟 4세대 노캔 ㄴㄴ/안됨"은 ANC 모델이 아니라
   // 일반 AirPods 4다. airpods-4 mustNotContain 의 bare "노캔" 안전장치를 우회하되,
   // 부정 표현이 명확한 경우에만 direct match 한다.
@@ -13402,9 +13771,180 @@ function directSpecificMatch(text: string): Sku | null {
   if (/(아이패드|ipad).{0,24}a17pro/i.test(compact) || /(아이패드|ipad).{0,32}a17\s*pro/i.test(normalizedText)) {
     return skuById("ipad-mini") ?? null;
   }
+  // Wave 804: PS5 game-title broad has to accept "PS5 디스크" game discs,
+  // but body listings also say "PS5 디스크 팝니다". Strong body/edition
+  // signals get pinned to the console SKU before broad game candidates collide.
+  if (
+    /(?:ps5|플스\s*5|플스5|플레이스테이션\s*5|playstation\s*5)/i.test(normalizedText) &&
+    /(?:디스크|disc)/i.test(normalizedText) &&
+    /(?:초기형|구형|스탠다드|standard|본체|콘솔|풀박|풀박스|디스크\s*(?:에디션|버전)|disc\s*(?:edition|version)|cfi|10[01]8|11[01]8|12[01]8)/i.test(normalizedText) &&
+    !/(?:슬림|slim|프로|pro)/i.test(normalizedText) &&
+    !/(?:디스크\s*드라이브|disc\s*drive|게임\s*디스크|게임\s*타이틀|타이틀|스파이더맨|갓\s*오브\s*워|라스트\s*오브\s*어스|호라이즌|엘든\s*링|철권|파이널\s*판타지|파판|발더스|원피스|오디세이)/i.test(normalizedText)
+  ) {
+    return skuById("ps5-disc-standard") ?? null;
+  }
+  if (
+    /(?:prada|프라다)/i.test(normalizedText) &&
+    /(?:아메리카\s*컵|아메리카컵|아메리칸\s*컵|america'?s?\s*cup)/i.test(normalizedText) &&
+    /(?:스니커즈|sneaker|운동화|신발|shoe)/i.test(normalizedText) &&
+    !/(?:가방|백팩|토트|숄더|크로스백|지갑|wallet|카드지갑|키링|캡|모자|박스만|더스트백만)/i.test(normalizedText)
+  ) {
+    return skuById("shoe-prada-america-cup") ?? null;
+  }
+  if (
+    /(?:hermes|에르메스)/i.test(normalizedText) &&
+    /(?:오란|oran)/i.test(normalizedText) &&
+    /(?:샌들|sandal)/i.test(normalizedText) &&
+    !/(?:가방|백팩|토트|숄더|크로스백|지갑|wallet|카드지갑|키링|캡|모자|박스만|더스트백만)/i.test(normalizedText)
+  ) {
+    return skuById("shoe-hermes-oran-sandal") ?? null;
+  }
+  const arcteryxText = /(?:arcteryx|arc\s*teryx|아크테릭스)/i.test(normalizedText) || /(?:arcteryx|arcteryx|아크테릭스)/i.test(compact);
+  if (arcteryxText) {
+    const hasAtom = /(?:atom|아톰)/i.test(normalizedText) || /(?:atom|아톰)/i.test(compact);
+    const atomLt = /(?:아톰\s*lt|atom\s*lt)/i.test(normalizedText) || /(?:아톰lt|atomlt)/i.test(compact);
+    const atomSl = /(?:아톰\s*sl|atom\s*sl)/i.test(normalizedText) || /(?:아톰sl|atomsl)/i.test(compact);
+    const atomArHeavy = /(?:아톰\s*ar|atom\s*ar|heavyweight|헤비웨이트)/i.test(normalizedText) || /(?:아톰ar|atomar)/i.test(compact);
+    if (hasAtom && atomSl) return skuById("clothing-arcteryx-atom-sl") ?? null;
+    if (hasAtom && atomArHeavy) return skuById("clothing-arcteryx-atom-ar-heavyweight") ?? null;
+    if (hasAtom && atomLt) {
+      const explicitNoHood = /(?:논\s*후드|노\s*후드|no\s*hood|non\s*hood|후드\s*없|후드없)/i.test(normalizedText) ||
+        /(?:논후드|노후드|nohood|nonhood|후드없)/i.test(compact);
+      const hoodSignal = /(?:후디|후드티|후드|hoodie|hoody|hooded)/i.test(normalizedText);
+      const jacketSignal = /(?:자켓|재킷|jacket)/i.test(normalizedText);
+      if (explicitNoHood || (!hoodSignal && jacketSignal)) return skuById("clothing-arcteryx-atom-lt-jacket") ?? null;
+      if (hoodSignal) return skuById("clothing-arcteryx-atom-lt-hoody") ?? null;
+      return null;
+    }
+
+    const hasBeta = /(?:beta|베타)/i.test(normalizedText) || /(?:beta|베타)/i.test(compact);
+    const betaBlocked = /(?:베타\s*sv|beta\s*sv|인슐레이티드|insulated|하이브리드|hybrid|팬츠|pants|beams|빔즈|vitality|바이탈리티)/i.test(normalizedText) ||
+      /(?:베타sv|betasv)/i.test(compact);
+    if (hasBeta && !betaBlocked) {
+      if (/(?:베타\s*lt|beta\s*lt)/i.test(normalizedText) || /(?:베타lt|betalt)/i.test(compact)) return skuById("clothing-arcteryx-beta-lt") ?? null;
+      if (/(?:베타\s*sl|beta\s*sl)/i.test(normalizedText) || /(?:베타sl|betasl)/i.test(compact)) return skuById("clothing-arcteryx-beta-sl") ?? null;
+      if (/(?:베타\s*ar|beta\s*ar)/i.test(normalizedText) || /(?:베타ar|betaar)/i.test(compact)) return skuById("clothing-arcteryx-beta-ar") ?? null;
+    }
+
+    const hasProton = /(?:proton|프로톤)/i.test(normalizedText) || /(?:proton|프로톤)/i.test(compact);
+    if (hasProton && !/(?:팬츠|pants|veilance|베일런스|leaf|리프)/i.test(normalizedText)) {
+      if (/(?:프로톤\s*lt|proton\s*lt)/i.test(normalizedText) || /(?:프로톤lt|protonlt)/i.test(compact)) return skuById("clothing-arcteryx-proton-lt") ?? null;
+      if (/(?:프로톤\s*fl|proton\s*fl)/i.test(normalizedText) || /(?:프로톤fl|protonfl)/i.test(compact)) return skuById("clothing-arcteryx-proton-fl") ?? null;
+      if (/(?:프로톤\s*sv|proton\s*sv)/i.test(normalizedText) || /(?:프로톤sv|protonsv)/i.test(compact)) return skuById("clothing-arcteryx-proton-sv") ?? null;
+      if (/(?:프로톤\s*ar|proton\s*ar)/i.test(normalizedText) || /(?:프로톤ar|protonar)/i.test(compact)) return skuById("clothing-arcteryx-proton-ar") ?? null;
+    }
+  }
+
+  const stussyText = /(?:stussy|stüssy|스투시)/i.test(normalizedText) || /(?:stussy|스투시)/i.test(compact);
+  const nikeText = /(?:nike|나이키|나투시)/i.test(normalizedText) || /(?:nike|나이키|나투시)/i.test(compact);
+  if (
+    stussyText &&
+    nikeText &&
+    (/(?:에어\s*페니|air\s*penny|페니\s*2|penny\s*(?:2|ii))/i.test(normalizedText) || /(?:에어페니|페니2)/i.test(compact)) &&
+    !/(?:후드|후디|hoodie|맨투맨|티셔츠|자켓|재킷|팬츠|spiridon|스피리돈|af1|에어포스|air\s*force|베나시|benassi|허라취|허라치|huarache|ld\s*1000|ld-1000)/i.test(normalizedText)
+  ) {
+    return skuById("shoe-stussy-nike-air-penny") ?? null;
+  }
+  if (stussyText && !nikeText && !/(?:dior|디올|birkenstock|버켄스탁)/i.test(normalizedText)) {
+    const stussySpecialAxis = /(?:8\s*ball|8ball|8\s*볼|8볼|에잇볼|피그먼트|pigment|pig\.?\s*dyed|skull|bones|cpfm|cactus\s*plant|월드\s*투어|월드투어|world\s*tour|도버\s*스트릿|도버\s*스트리트|dover\s*street|dsm|아워\s*레가시|아워레가시|our\s*legacy|ourlegacy|마틴\s*로즈|마틴로즈|martine\s*rose|martin\s*rose|futura|퓨추라|스탁\s*서울|stock\s*seoul|스투시\s*서울|스투시서울|다이스|dice|stars\s*hoodie|스타즈\s*후드|더블\s*페이스|double\s*face|soul\s*1980|soul1980|유니온|union|니트|knit|스웨터|sweater|후드\s*자켓|후드\s*재킷|hooded\s*jacket|자켓|재킷|jacket|반\s*집업|하프\s*집업|half[-\s]*zip|quarter\s*zip|1\/2\s*zip)/i.test(normalizedText);
+    if (stussySpecialAxis) return null;
+    if (/(?:후드\s*집업|집업\s*후드|zip\s*up\s*hoodie|zipup\s*hoodie|hoodie\s*zip|zip\s*hoodie|full\s*zip\s*hoodie|풀\s*집업\s*후드)/i.test(normalizedText) || /(?:후드집업|집업후드)/i.test(compact)) {
+      return skuById("clothing-stussy-zip-hoodie") ?? null;
+    }
+    if (/(?:맨투맨|크루넥|crewneck|sweat\s*shirt|sweatshirt|스웻\s*셔츠|스웨트\s*셔츠)/i.test(normalizedText)) {
+      return skuById("clothing-stussy-crewneck-sweat") ?? null;
+    }
+    if (/(?:후드티|후디|후드|hoodie|hoody|hooded)/i.test(normalizedText)) {
+      return skuById("clothing-stussy-hoodie") ?? null;
+    }
+  }
+  if (
+    /(?:metaspeed|메타\s*스피드|메타스피드)/i.test(normalizedText) &&
+    /(?:sky|스카이|edge|엣지|ray|레이|tokyo|도쿄|paris|파리|ekiden|에키덴|\+)/i.test(normalizedText) &&
+    !/(?:싱글렛|singlet|하프\s*타이즈|타이즈|tights|shirt|셔츠|티셔츠|반팔|나시|웨어|의류|apparel|top|스파이크|spike|중거리|육상|track\s*and\s*field)/i.test(normalizedText)
+  ) {
+    return skuById("shoe-asics-metaspeed") ?? null;
+  }
+  const hokaSatisfyText =
+    /(?:hoka|호카|호카원원)/i.test(normalizedText) &&
+    /(?:satisfy|새티스파이|세티스파이|사티스파이)/i.test(normalizedText);
+  if (hokaSatisfyText) {
+    const hokaSatisfyOtherModel = /(?:clifton|클리프톤|클리프턴|bondi|본디|mach|마하|xlim|엑슬림)/i.test(normalizedText);
+    if (/(?:clifton|클리프톤|클리프턴)/i.test(normalizedText)) {
+      return skuById("shoe-hoka-satisfy-clifton-ls-collab") ?? null;
+    }
+    if (
+      !hokaSatisfyOtherModel &&
+      /(?:mafate|마파테|light\s*coffee|라이트\s*커피|라이트커피|\bcoffee\b|커피|light\s*rubber|라이트\s*러버|라이트러버|light\s*bone|라이트\s*본|라이트본|sulfur|sulphur|설퍼)/i.test(normalizedText)
+    ) {
+      return skuById("shoe-hoka-mafate-satisfy-collab") ?? null;
+    }
+  }
+  const asicsText = /(?:asics|아식스)/i.test(normalizedText);
+  if (asicsText) {
+    if (/(?:cecilie|bahnsen|세실리에|반센)/i.test(normalizedText)) {
+      return skuById("shoe-asics-cecilie-bahnsen-collab") ?? null;
+    }
+    const kikoText = /(?:키코|kiko|kostadinov|코스타디노프)/i.test(normalizedText);
+    if (kikoText) {
+      if (/(?:젤\s*키릴|젤키릴|gel\s*-?\s*kiril|gelkiril)/i.test(normalizedText)) return skuById("shoe-asics-kiko-gel-kiril") ?? null;
+      if (/(?:젤\s*소켓|젤소켓|gel\s*-?\s*sokat|sokat)/i.test(normalizedText)) return skuById("shoe-asics-kiko-gel-sokat") ?? null;
+      if (/(?:젤\s*코리카|젤코리카|gel\s*-?\s*korika|korika)/i.test(normalizedText)) return skuById("shoe-asics-kiko-gel-korika") ?? null;
+      if (/(?:로크로스|gel\s*-?\s*lokros|lokros)/i.test(normalizedText)) return skuById("shoe-asics-kiko-gel-lokros") ?? null;
+      if (/(?:테레모아|teremoa|gel\s*-?\s*teremoa)/i.test(normalizedText)) return skuById("shoe-asics-kiko-novalis-gel-teremoa") ?? null;
+      if (/(?:heaven|헤븐)/i.test(normalizedText)) return skuById("shoe-asics-kiko-heaven") ?? null;
+    }
+    if (/(?:nimbus|님버스|젤님버스|젤\s*님버스)/i.test(normalizedText)) {
+      if (/(?:10\.1|10\s*1|10-1)/i.test(normalizedText)) return skuById("shoe-asics-gel-nimbus-10-1") ?? null;
+      if (/(?:ub3\s*-?\s*s|젤\s*님버스\s*9|젤님버스\s*9|nimbus\s*9)/i.test(normalizedText)) return skuById("shoe-asics-gel-nimbus-9") ?? null;
+    }
+    if (/(?:quantum|퀀텀|kinetic|키네틱)/i.test(normalizedText)) {
+      if (/(?:kinetic|키네틱)/i.test(normalizedText) && /(?:\bsp\b|sp\s|키네틱\s*sp)/i.test(normalizedText)) return skuById("shoe-asics-gel-kinetic-sp") ?? null;
+      if (/(?:cp\s*company|c\.p\.|cp컴퍼니|c\.p\.\s*company)/i.test(normalizedText)) return skuById("shoe-asics-gel-quantum-cp-company") ?? null;
+      if (/(?:quantum|퀀텀)/i.test(normalizedText) && /(?:360)/i.test(normalizedText)) return skuById("shoe-asics-gel-quantum-360") ?? null;
+      if (/(?:quantum|퀀텀)/i.test(normalizedText) && /(?:90)/i.test(normalizedText)) return skuById("shoe-asics-gel-quantum-90") ?? null;
+    }
+  }
+  const pumaText = /(?:puma|푸마|퓨마)/i.test(normalizedText);
+  if (pumaText && /(?:nitro|나이트로)/i.test(normalizedText)) {
+    if (/(?:deviate|디비에이트)/i.test(normalizedText) && /(?:elite|엘리트)/i.test(normalizedText)) return skuById("shoe-puma-deviate-nitro-elite") ?? null;
+    if (/(?:deviate|디비에이트)/i.test(normalizedText)) return skuById("shoe-puma-deviate-nitro") ?? null;
+    if (/(?:velocity|벨로시티)/i.test(normalizedText)) return skuById("shoe-puma-velocity-nitro") ?? null;
+  }
+  const mizunoText = /(?:mizuno|미즈노)/i.test(normalizedText);
+  if (mizunoText && /(?:prophecy|프로페시|프로페서)/i.test(normalizedText)) {
+    if (/(?:graphpaper|그라프페이퍼)/i.test(normalizedText)) return skuById("shoe-mizuno-wave-prophecy-graphpaper") ?? null;
+    if (/(?:blankof|블랭코브)/i.test(normalizedText)) return skuById("shoe-mizuno-wave-prophecy-blankof") ?? null;
+    if (/(?:moc|\b목\b|프로페시\s*목)/i.test(normalizedText)) return skuById("shoe-mizuno-wave-prophecy-moc") ?? null;
+    if (/(?:beta|베타)/i.test(normalizedText)) return skuById("shoe-mizuno-wave-prophecy-beta") ?? null;
+    if (/(?:\bls\b|ls\s)/i.test(normalizedText)) return skuById("shoe-mizuno-wave-prophecy-ls") ?? null;
+  }
+  if (
+    /(?:carhartt|칼하트)/i.test(normalizedText) &&
+    /(?:active\s*work|active\s*jacket|액티브\s*워크|액티브\s*자켓|액티브\s*후드\s*자켓|j130)/i.test(normalizedText) &&
+    /(?:jacket|자켓|재킷|점퍼|후드)/i.test(normalizedText)
+  ) {
+    return skuById("clothing-carhartt-active-jacket") ?? null;
+  }
+  if (
+    /(?:converse|컨버스)/i.test(normalizedText) &&
+    /(?:carhartt|칼하트)/i.test(normalizedText)
+  ) {
+    if (/(?:one\s*star|onestar|원스타)/i.test(normalizedText)) return skuById("shoe-carhartt-converse-one-star") ?? null;
+    if (/(?:jack\s*purcell|jackpurcell|잭퍼셀)/i.test(normalizedText)) return skuById("shoe-carhartt-converse-jack-purcell") ?? null;
+    if (/(?:chuck\s*70|chuck70|척\s*70|척70|척테일러|chuck\s*taylor)/i.test(normalizedText)) return skuById("shoe-carhartt-converse-chuck70") ?? null;
+  }
   const lvWalletText = /(?:루이비통|louis\s*vuitton|louisvuitton|lv)/i.test(normalizedText) || /(?:루이비통|louisvuitton|lv)/i.test(compact);
   const lvWalletBlocked = /(?:다미에|damier|앙프렝뜨|empreinte|에삐|epi|코인|coin|콤팩트|compact|그래피티|graffiti)/i.test(normalizedText) ||
     /(?:다미에|damier|앙프렝뜨|empreinte|에삐|epi|코인|coin|콤팩트|compact|그래피티|graffiti)/i.test(compact);
+  if (
+    lvWalletText &&
+    /(?:알마\s*bb|alma\s*bb|알마bb|almabb)/i.test(normalizedText) &&
+    /(?:모노그램|monogram|m53152|캔버스|canvas)/i.test(normalizedText) &&
+    !/(?:\bpm\b|\bmm\b|\bgm\b|네오|neo|버블그램|bubblegram|백팩|backpack|에삐|epi|베르니|vernis|다미에|damier|앙프렝뜨|empreinte|넥타이핀|키링|키체인|스트랩\s*단품|체인만|장식만|스트로공|벨트)/i.test(normalizedText)
+  ) {
+    return skuById("bag-lv-monogram-alma-bb") ?? null;
+  }
   if (lvWalletText && !lvWalletBlocked && /(?:지피월릿|지피장지갑|zippywallet)/i.test(compact)) {
     return skuById("bag-lv-zippy-wallet-monogram") ?? null;
   }
@@ -13515,7 +14055,7 @@ function directSpecificMatch(text: string): Sku | null {
   if (
     acneText &&
     /(?:니트|knit|스웨터|sweater|가디건|cardigan)/i.test(normalizedText) &&
-    !/(?:머플러|목도리|스카프|scarf|원피스|dress)/i.test(normalizedText)
+    !/(?:머플러|목도리|스카프|scarf|원피스|dress|얀13|yan13|오일릴리|오일\s*릴리|oilily|듀엘|duel|자라|zara|지컷|g\s*cut|g-cut|랑방|lanvin)/i.test(normalizedText)
   ) {
     return skuById("clothing-acne-knit") ?? null;
   }
@@ -13578,13 +14118,47 @@ function chooseUniqueCandidate(candidates: Sku[]): Sku | null {
   }
 
   const fashionLaneCandidates = candidates.filter(
-    (sku) => FASHION_PROMOTE_CATEGORIES.has(sku.category) && Boolean(sku.laneKey) && !isFashionBroadPromotionTarget(sku),
+    (sku) => FASHION_PROMOTE_CATEGORIES.has(sku.category) && Boolean(skuReadyLaneKey(sku)) && !isFashionBroadPromotionTarget(sku),
   );
   if (
     fashionLaneCandidates.length === 1 &&
     candidates.every((sku) => sku.id === fashionLaneCandidates[0].id || isFashionBroadPromotionTarget(sku))
   ) {
     return fashionLaneCandidates[0];
+  }
+
+  // Clothing lanes do not inherit category-level public readiness. If a single
+  // exact/internal clothing lane matches alongside broad siblings, prefer that
+  // lane instead of dropping to null; the pool gate will keep it internal until
+  // the lane is explicitly promoted.
+  const clothingInternalLaneCandidates = candidates.filter(
+    (sku) => sku.category === "clothing" && Boolean(sku.laneKey) && !isFashionBroadPromotionTarget(sku),
+  );
+  if (
+    clothingInternalLaneCandidates.length === 1 &&
+    candidates.every((sku) => sku.id === clothingInternalLaneCandidates[0].id || isFashionBroadPromotionTarget(sku))
+  ) {
+    return clothingInternalLaneCandidates[0];
+  }
+
+  // Wave 881: sport_golf exact lanes can overlap brand/product broad lanes
+  // (ex. Mizuno JPX iron also matches Mizuno Iron broad). Prefer the single
+  // exact ready lane when every other hit is a broad sibling.
+  const sportGolfExactLaneCandidates = candidates.filter(
+    (sku) => sku.category === "sport_golf" &&
+      Boolean(sku.laneKey) &&
+      !sku.id.endsWith("-broad") &&
+      !sku.laneKey?.endsWith("_broad"),
+  );
+  if (
+    sportGolfExactLaneCandidates.length === 1 &&
+    candidates.every((sku) =>
+      sku.id === sportGolfExactLaneCandidates[0].id ||
+      sku.id.endsWith("-broad") ||
+      sku.laneKey?.endsWith("_broad")
+    )
+  ) {
+    return sportGolfExactLaneCandidates[0];
   }
 
   // Narrow lane SKUs are stricter than generated broad family SKUs. If exactly
@@ -13618,8 +14192,17 @@ function isFashionBroadPromotionTarget(sku: Sku) {
   return (
     laneKey.endsWith("_broad") ||
     laneKey.endsWith("_apparel") ||
+    laneKey === "cdg_nike_collab" ||
     sku.id.endsWith("-broad")
   );
+}
+
+function skuReadyLaneKey(sku: Sku): string | null {
+  const fallbackKey = sku.id.replace(/-/g, "_");
+  const key = [sku.laneKey, fallbackKey].find((candidate): candidate is string =>
+    Boolean(candidate && LANE_READINESS[candidate]?.status === "ready")
+  );
+  return key ?? null;
 }
 
 function tryNarrowLanePromotion(broad: Sku, combined: string, titleNorm: string): Sku | null {
@@ -13631,7 +14214,7 @@ function tryNarrowLanePromotion(broad: Sku, combined: string, titleNorm: string)
   if (combined === titleNorm) return null; // description 없으면 의미 X
   let narrowCandidates = CATALOG_WITH_NOISE_W94.filter(
     (s) => (
-      Boolean(s.laneKey) &&
+      Boolean(skuReadyLaneKey(s)) &&
       s.category === broad.category &&
       (!FASHION_PROMOTE_CATEGORIES.has(broad.category) || !isFashionBroadPromotionTarget(s)) &&
       skuMatches(s, combined)
@@ -13672,7 +14255,7 @@ function hasBuyRequestMarker(rawText: string, normalizedText: string): boolean {
 function hasExchangeRequestMarker(rawText: string, normalizedText: string): boolean {
   const raw = rawText.toLowerCase();
   const safeAftercare =
-    /(?:교환|교신|반품|환불)(?:\s*(?:\/|및|,|&)?\s*(?:교환|교신|반품|환불|취소)){0,3}.{0,16}(?:불가|x|❌|사절|안|않|차단|어려|어렵)|교환\s*불가|교환불가|교신\s*불가|교신불가|교환.{0,12}환불.{0,16}(?:불가|x|❌|사절|안|어려|어렵)|환불.{0,12}교환.{0,16}(?:불가|x|❌|사절|안|어려|어렵)|(?:교환|교신)\s*(?:안|않)(?:해|합|받|되)/.test(raw);
+    /(?:교환|교신|반품|환불)(?:\s*(?:\/|및|,|&)?\s*(?:교환|교신|반품|환불|취소)){0,3}.{0,16}(?:불가|x|×|❌|사절|사양|안|않|차단|어려|어렵)|교환\s*불가|교환불가|교신\s*불가|교신불가|교환.{0,12}환불.{0,16}(?:불가|x|×|❌|사절|사양|안|어려|어렵)|환불.{0,12}교환.{0,16}(?:불가|x|×|❌|사절|사양|안|어려|어렵)|(?:교환|교신)\s*(?:안|않)(?:해|합|받|되)|(?:교환|교신)[\s\S]{0,40}(?:문의|문의시|제안)[\s\S]{0,40}(?:차단|사절|사양|안\s*받|받지\s*않|불가)/.test(raw);
   if (safeAftercare) return false;
 
   if (/(?:판\s*\/\s*교|판매\s*\/\s*교환|교환\s*\/\s*판매|교신(?:가|가능|합니다|해요|원함|원해|구함|받|위주)?)/.test(raw)) return true;
@@ -13688,12 +14271,34 @@ function hasExchangeRequestMarker(rawText: string, normalizedText: string): bool
   return false;
 }
 
+function hasFashionReferenceOnlyFalsePositive(titleNorm: string): boolean {
+  const styleRef = /(?:맛|스타일|무드|느낌|대체|st\.?|st\)|st$)/i.test(titleNorm);
+  if (
+    styleRef &&
+    /(?:아크테릭스|arcteryx|arc'teryx).{0,24}(?:베일런스|veilance)|(?:베일런스|veilance).{0,24}(?:아크테릭스|arcteryx|arc'teryx)/i.test(titleNorm) &&
+    /(?:유니클로|uniqlo|데상트|descente|블레이저|브라운자켓|브라운\s*자켓)/i.test(titleNorm)
+  ) {
+    return true;
+  }
+  if (
+    /(?:\brrl\b|더블\s*알엘|더블알엘|double\s*rl)/i.test(titleNorm) &&
+    (
+      /(?:맛|스타일|무드|느낌|대체)/i.test(titleNorm) ||
+      /(?:랭글러|wrangler|lvc|리바이스|levi'?s).{0,40}(?:\brrl\b|더블\s*알엘|더블알엘)|(?:\brrl\b|더블\s*알엘|더블알엘).{0,40}(?:랭글러|wrangler|lvc|리바이스|levi'?s)/i.test(titleNorm)
+    )
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export function ruleMatch(title: string, description = ""): Sku | null {
   const titleNorm = normalize(title);
   const combinedRaw = `${title} ${stripLinkLikeText(description).slice(0, 200)}`;
   const combined = normalize(combinedRaw);
   if (hasBuyRequestMarker(combinedRaw, combined)) return null;
   if (hasExchangeRequestMarker(combinedRaw, combined)) return null;
+  if (hasFashionReferenceOnlyFalsePositive(titleNorm)) return null;
   const titleDirect = directSpecificMatch(title);
   if (titleDirect) return requiresCombinedLaneVeto(titleDirect) && !skuMatches(titleDirect, combined) ? null : titleDirect;
 
@@ -13702,6 +14307,7 @@ export function ruleMatch(title: string, description = ""): Sku | null {
   if (titleChoice) {
     const combinedDirect = directSpecificMatch(combinedRaw);
     if (titleChoice.id === "airpods-4-anc" && combinedDirect?.id === "airpods-4") return combinedDirect;
+    if (combinedDirect && isFashionAxisDirectOverrideCompatible(titleChoice, combinedDirect)) return combinedDirect;
     // Wave 108: title이 broad만 잡혔으면 narrow lane 재시도
     const narrowPromoted = tryNarrowLanePromotion(titleChoice, combined, titleNorm);
     if (narrowPromoted) {

@@ -180,6 +180,9 @@ export const WAVE_732_MULTI_BRAND: Sku[] = [
       "supreme", "슈프림",
       "마메", "mame", "이네스", "ines",
       "퍼피 숄더백", "유틸리티백",  // 가방
+      // Wave 849: description-only sizing reference ("유니클로 XL 입으면") must not reroute other brands.
+      // Keep coach-jacket silhouettes valid for real Uniqlo titles; block Coach brand/collab contexts instead.
+      "champion", "챔피언", "coach x", "x coach", "코치 x", "x 코치", "코치x", "x코치", "가죽자켓", "레더슬리브",
     ],
     msrpKrw: 39000, released: 1949,
   },

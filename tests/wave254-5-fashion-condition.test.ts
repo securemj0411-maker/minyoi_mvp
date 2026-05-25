@@ -233,7 +233,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         `shoe conditionNotes 비어있음: ${JSON.stringify(result.conditionNotes)}`);
     });
 
-    it("parser_version shoe = wave92-shoe-v19 (Wave 537 Acne Manhattan Rockaway ambiguity)", () => {
+    it("parser_version shoe = wave92-shoe-v41 (Wave 763 tier/key sync)", () => {
       const result = parseListingOptions({
         title: "나이키 덩크 로우",
         description: "270",
@@ -241,11 +241,11 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Nike Dunk Low",
         category: "shoe",
       });
-      assert.equal(result.parserVersion, "wave92-shoe-v19",
+      assert.equal(result.parserVersion, "wave92-shoe-v41",
         `parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version bag = wave92-bag-v15 (Wave 538 Longchamp Le Pliage tightening)", () => {
+    it("parser_version bag = wave92-bag-v24 (Wave 756 size variant policy)", () => {
       const result = parseListingOptions({
         title: "구찌 마몬트 토트백",
         description: "정품",
@@ -253,11 +253,11 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Gucci Marmont",
         category: "bag",
       });
-      assert.equal(result.parserVersion, "wave92-bag-v15",
+      assert.equal(result.parserVersion, "wave92-bag-v24",
         `bag parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version clothing = wave216-clothing-v22 (Wave 540 Polo Oxford boys/youth hold)", () => {
+    it("parser_version clothing = wave216-clothing-v52 (Wave 801 pool purity follow-up)", () => {
       const result = parseListingOptions({
         title: "스투시 후드",
         description: "L 사이즈",
@@ -265,7 +265,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Stussy Hoodie",
         category: "clothing",
       });
-      assert.equal(result.parserVersion, "wave216-clothing-v22",
+      assert.equal(result.parserVersion, "wave216-clothing-v52",
         `clothing parser_version mismatch: ${result.parserVersion}`);
     });
 
@@ -485,6 +485,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
       });
       assert.equal(result.conditionClass, "flawed",
         `expected flawed, got ${result.conditionClass} (notes: ${result.conditionNotes.join(",")})`);
+      assert.ok(result.comparableKey);
       assert.ok(!result.comparableKey.endsWith("|a_grade"),
         `damaged RRL denim stayed in a_grade key: ${result.comparableKey}`);
     });
@@ -501,7 +502,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
       });
       assert.equal(result.conditionClass, "flawed",
         `expected flawed, got ${result.conditionClass} (notes: ${result.conditionNotes.join(",")})`);
-      assert.equal(result.comparableKey, "clothing|polo_rrl_denim|jeans|reject");
+      assert.equal(result.comparableKey, "clothing|polo_rrl_denim|jeans|b_grade");
     });
 
     it("디자인 트임은 무시 ('사이드 트임')", () => {

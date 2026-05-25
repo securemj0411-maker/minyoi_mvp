@@ -948,7 +948,7 @@ test("global classifier does not treat PS5 full-unit body wording as earbud part
 
 test("global classifier routes game-console title/accessory noise through scoped parser", () => {
   const titleOnly = classifyListing("PS5 디스크 게임 타이틀", "", 50_000);
-  assert.equal(titleOnly.listingType, "accessory");
+  assert.equal(titleOnly.listingType, "unknown");
   assert.equal(titleOnly.sku, null);
 
   const unknownBody = classifyListing("플스5 디스크", "", 500_000);
@@ -1390,14 +1390,14 @@ test("exchange-request posts are excluded before direct catalog matching", () =>
   );
   assert.equal(
     ruleMatch("칼하트 헤리티지 투포켓 워크셔츠 2XL", "빈티지 특성 상 교환 ❌ 환불 ❌")?.id,
-    "clothing-carhartt-apparel-broad",
+    "clothing-carhartt-shirt-flannel",
   );
   assert.equal(
     ruleMatch(
       "칼하트 헤리티지 투포켓 워크셔츠 2XL",
       "사이즈는 1,2cm 오차가 있을 수 있습니다. 색상은 모니터 해상도에 따라 다를 수 있습니다. 빈티지 특성 상 사진에서 확인되지 않은 미세한 오염이나 얼룩이 있을 수 있습니다. 빈티지 특성 상 교환 ",
     )?.id,
-    "clothing-carhartt-apparel-broad",
+    "clothing-carhartt-shirt-flannel",
   );
   assert.equal(
     ruleMatch("빈티지9. 꼼데가르송 빈티지 pvc 페이퍼 토트백 가방 핸드백 베이지", "빈티지 상품으로 환불 교환 취소 어렵습니다")?.id,
@@ -1442,6 +1442,147 @@ test("recent pool sweep blocks substring and generic full-set catalog leaks", ()
     ruleMatch("베이프 베이프스타 그린 카모 270", "교환 교신 안해요 교신문의 바로 차단합니다")?.id,
     "shoe-bape-sta",
   );
+  assert.equal(
+    ruleMatch("BAPE Bapesta 그린 카모 270", "새상품급 풀박스")?.id,
+    "shoe-bape-sta",
+  );
+  assert.equal(
+    ruleMatch("스타벅스 베이프 콜라보 리유저블 컵 3개 텀블러", ""),
+    null,
+  );
+  assert.equal(
+    ruleMatch("베이프 스타 로고 카라티 올드 베이프 OG", ""),
+    null,
+  );
+  assert.equal(
+    ruleMatch("[새상품] 베이프 스타 메쉬캡 그린 / BAPE Sta Mesh Cap", ""),
+    null,
+  );
+  assert.equal(
+    ruleMatch("[ OS ] MM6 메종 마르지엘라 살로몬 고어택스 캡 블랙", ""),
+    null,
+  );
+  assert.equal(
+    ruleMatch("아더에러 x 컨버스 볼 캡", ""),
+    null,
+  );
+  assert.equal(
+    ruleMatch("[M] 컨버스 x 아더에러 카라티", ""),
+    null,
+  );
+  assert.equal(
+    ruleMatch("아더에러 컨버스 260", "착용 2회")?.id,
+    "shoe-adererror-converse-collab",
+  );
+  assert.equal(
+    ruleMatch("(새상품)살로몬 x MM6 메종마르지엘라 스펙터 2 씨폼 그린 - 265", "")?.id,
+    "shoe-mm6-salomon-collab",
+  );
+  const adidasFootball = CATALOG.find((sku) => sku.id === "shoe-adidas-football");
+  const pumaFootball = CATALOG.find((sku) => sku.id === "shoe-puma-football");
+  assert.equal(ruleMatch("아디다스 F50 프로 tf 260", "")?.id, "shoe-adidas-football-f50");
+  assert.equal(ruleMatch("푸마 울트라 프로 축구화 260", "")?.id, "shoe-puma-football-ultra");
+  assert.equal(ruleMatch("아디다스 축구공 메시미니볼 1호", ""), null);
+  assert.equal(ruleMatch("푸마 퓨처캣 우먼스 250", ""), null);
+  assert.equal(ruleMatch("라퓨마 트래킹화 판매합니다 사이즈 240", ""), null);
+  assert.equal(evaluatePoolGate({ sku: adidasFootball, category: adidasFootball?.category ?? null }).canEnterPool, false);
+  assert.equal(evaluatePoolGate({ sku: pumaFootball, category: pumaFootball?.category ?? null }).canEnterPool, false);
+});
+
+test("shoe sample safety closes probably-safe pollution paths", () => {
+  assert.equal(ruleMatch("BAPE Bapesta 그린 카모 270", "새상품급 풀박스")?.id, "shoe-bape-sta");
+  assert.equal(ruleMatch("BAPE Sta OS #2 블랙/화이트 280", "")?.id, "shoe-bape-sta");
+  assert.equal(ruleMatch("베이프 스타 키체인 화이트", "")?.id, undefined);
+  assert.equal(ruleMatch("베이프 리복 인스타 펌프 퓨리 한정판", "")?.id, undefined);
+  assert.equal(ruleMatch("어디다스 베이프 슈퍼스타 빈티지 클라우드 화이트 코어 블랙", "")?.id, undefined);
+  assert.equal(ruleMatch("[270] 베이프 베이프스타 매드 스타 그린", "")?.id, undefined);
+  assert.equal(ruleMatch("베이프스타 260 새상품 US8 스케이트스타", "")?.id, undefined);
+
+  assert.equal(ruleMatch("구찌 라이톤 입술더티 스니커즈 7", "")?.id, "shoe-gucci-rhyton");
+  assert.notEqual(ruleMatch("구찌 100주년 한정판 라이톤 스니커즈", "")?.id, "shoe-gucci-rhyton");
+
+  assert.equal(ruleMatch("반스 스타일36 블랙 270", "")?.id, "shoe-vans-style-36");
+  assert.notEqual(ruleMatch("반스 볼트 OG 스타일36 올드 골드", "")?.id, "shoe-vans-style-36");
+  assert.notEqual(ruleMatch("반스 x 팝 트레이딩 스타일36", "")?.id, "shoe-vans-style-36");
+
+  const bapeSta = CATALOG.find((sku) => sku.id === "shoe-bape-sta");
+  const kayano = CATALOG.find((sku) => sku.id === "shoe-asics-gel-kayano");
+  const kayano14 = CATALOG.find((sku) => sku.id === "shoe-asics-gel-kayano-14");
+  const travisAirmax1 = CATALOG.find((sku) => sku.id === "shoe-travis-nike-airmax-1");
+  assert.equal(ruleMatch("아식스 젤카야노14 260 새상품", "")?.id, "shoe-asics-gel-kayano-14");
+  assert.equal(ruleMatch("아식스 젤카야노14 280 새상품", "")?.id, "shoe-asics-gel-kayano-14");
+  assert.equal(ruleMatch("아식스x언어펙티드 젤카야노14 실버문", "")?.id, "shoe-asics-gel-kayano");
+  assert.equal(evaluatePoolGate({ sku: kayano, category: kayano?.category ?? null }).canEnterPool, false);
+  assert.equal(evaluatePoolGate({ sku: kayano14, category: kayano14?.category ?? null }).canEnterPool, true);
+  assert.equal(evaluatePoolGate({ sku: travisAirmax1, category: travisAirmax1?.category ?? null }).canEnterPool, true);
+
+  const offwhiteBlazer = CATALOG.find((sku) => sku.id === "shoe-offwhite-nike-blazer-mid");
+  const readymadeBlazer = CATALOG.find((sku) => sku.id === "shoe-readymade-nike-blazer-mid");
+  const bapeParsed = parseListingOptions({
+    title: "BAPE Bapesta 그린 카모 270",
+    description: "새상품급",
+    skuId: bapeSta?.id,
+    skuName: bapeSta?.modelName,
+    category: bapeSta?.category,
+    defaultProductType: bapeSta?.defaultProductType ?? null,
+  });
+  const offwhiteParsed = parseListingOptions({
+    title: "오프화이트 나이키 블레이저 미드 할로윈 270",
+    description: "새상품급",
+    skuId: offwhiteBlazer?.id,
+    skuName: offwhiteBlazer?.modelName,
+    category: offwhiteBlazer?.category,
+    defaultProductType: offwhiteBlazer?.defaultProductType ?? null,
+  });
+  const readymadeParsed = parseListingOptions({
+    title: "나이키 레디메이드 블레이저 미드 270",
+    description: "새상품급",
+    skuId: readymadeBlazer?.id,
+    skuName: readymadeBlazer?.modelName,
+    category: readymadeBlazer?.category,
+    defaultProductType: readymadeBlazer?.defaultProductType ?? null,
+  });
+  assert.match(bapeParsed.comparableKey ?? "", /^shoe\|bape_sta\|/);
+  assert.match(offwhiteParsed.comparableKey ?? "", /^shoe\|offwhite_nike_blazer_mid\|/);
+  assert.match(readymadeParsed.comparableKey ?? "", /^shoe\|readymade_nike_blazer_mid\|/);
+
+  assert.equal(
+    ruleMatch(
+      "아디다스 네메시스 탱고 17+ 360 어질리티",
+      "아디다스 울트라부스트와 아웃솔 동일 축구트레이닝화입니다.",
+    )?.id,
+    "shoe-adidas-football",
+  );
+  assert.equal(ruleMatch("고샤 루브친스키 x 아디다스 프레데터 280", "")?.id, "shoe-adidas-football");
+  assert.equal(ruleMatch("아디다스 프레데터 프리시즌 베컴 265", "")?.id, "shoe-adidas-football");
+  assert.equal(ruleMatch("(중고) 아디다스 프레데터 애큐러시 주니어 풋살화 210mm", "")?.id, "shoe-adidas-football");
+  assert.equal(ruleMatch("퓨마킹 얼티밋 270", "새상품 퓨마 킹 얼티밋 축구화 270")?.id, "shoe-puma-football-king");
+  assert.equal(ruleMatch("푸마 퓨쳐8 프로 케이지 TF 270 풋살화", "")?.id, "shoe-puma-football-future");
+  assert.equal(ruleMatch("(270)푸마 Court ultra 75 years 392491-02", ""), null);
+  assert.equal(ruleMatch("푸마 퓨처 Z 1.4 네이마르 FG/AG 축구화 280", ""), null);
+  assert.equal(ruleMatch("아식스 젤 카야노 14 더 뮤지엄 비지터 옐로우 크림", "")?.id, "shoe-asics-gel-kayano");
+  assert.equal(ruleMatch("아식스 언리미티드 젤카야노14 오이스터 그레이 270사이즈", "")?.id, "shoe-asics-gel-kayano");
+
+  const adidasF50 = CATALOG.find((sku) => sku.id === "shoe-adidas-football-f50");
+  const pumaFuture = CATALOG.find((sku) => sku.id === "shoe-puma-football-future");
+  const f50Parsed = parseListingOptions({
+    title: "아디다스 F50 프로 TF 270",
+    description: "새상품",
+    skuId: adidasF50?.id,
+    skuName: adidasF50?.modelName,
+    category: adidasF50?.category,
+    defaultProductType: adidasF50?.defaultProductType ?? null,
+  });
+  const pumaFutureParsed = parseListingOptions({
+    title: "푸마 퓨처 8 프로케이지 TT TF 270새상품",
+    description: "새상품",
+    skuId: pumaFuture?.id,
+    skuName: pumaFuture?.modelName,
+    category: pumaFuture?.category,
+    defaultProductType: pumaFuture?.defaultProductType ?? null,
+  });
+  assert.match(f50Parsed.comparableKey ?? "", /^shoe\|adidas_football_f50\|football_tf\|/);
+  assert.match(pumaFutureParsed.comparableKey ?? "", /^shoe\|puma_football_future\|football_tf\|/);
 });
 
 test("pool policy gives one shared skip reason for blocked flags", () => {
@@ -1962,7 +2103,7 @@ test("candidate pool builder holds fashion broad and unknown-condition rows for 
   });
 
   assert.equal(result.entries.length, 0);
-  assert.ok(result.invalidations.some((row) => row.pid === 12 && row.reason === "fashion_broad_sku_review"));
+  assert.ok(result.invalidations.some((row) => row.pid === 12 && row.reason === "category_internal_only_shoe_broad_lane_required"));
   assert.ok(result.invalidations.some((row) => row.pid === 13 && row.reason === "fashion_unknown_condition_review"));
 });
 
@@ -2130,20 +2271,34 @@ test("bag broad SKUs cannot enter pool through category-level readiness unless l
   assert.equal(allowed.reason, "lane_ready_coach_broad");
 });
 
+test("shoe broad SKUs stay internal even when broad lane readiness exists", () => {
+  const broadSku = CATALOG.find((item) => item.id === "shoe-newbalance-327-broad");
+  const exactSku = CATALOG.find((item) => item.id === "shoe-adidas-samba-wales-bonner");
+  assert.ok(broadSku, "expected New Balance 327 broad shoe SKU in catalog");
+  assert.ok(exactSku, "expected Wales Bonner Samba exact shoe SKU in catalog");
+
+  const blocked = evaluatePoolGate(
+    { sku: broadSku, category: "shoe" },
+    { categoryReadiness: CATEGORY_READINESS, laneReadiness: LANE_READINESS },
+  );
+  assert.equal(blocked.canEnterPool, false);
+  assert.equal(blocked.reason, "category_internal_only_shoe_broad_lane_required");
+
+  const allowed = evaluatePoolGate(
+    { sku: exactSku, category: "shoe" },
+    { categoryReadiness: CATEGORY_READINESS, laneReadiness: LANE_READINESS },
+  );
+  assert.equal(allowed.canEnterPool, true);
+  assert.equal(allowed.reason, "lane_ready_adidas_samba_wales_bonner");
+});
+
 test("low-purity clothing product-type lanes stay held out of the pool", () => {
   const heldIds = [
-    "clothing-polo-bear-collab",
-    "clothing-polo-rrl-tee",
     "clothing-polo-rrl-accessory",
     "clothing-polo-rrl-jacket-coat",
     "clothing-bape-tee",
-    "clothing-bape-hoodie",
-    "clothing-bape-hoodie-zip",
-    "clothing-bape-crewneck",
-    "clothing-tnf-purple-label",
-    "clothing-stussy-nike-collab",
-    "clothing-patagonia-retro-x",
-    "clothing-patagonia-down",
+    "clothing-tnf-supreme-collab",
+    "clothing-arcteryx-atom",
   ];
 
   for (const id of heldIds) {
@@ -2160,9 +2315,9 @@ test("low-purity clothing product-type lanes stay held out of the pool", () => {
 
 test("candidate pool builder allows audited clothing narrow lanes but blocks held broad lanes", () => {
   const narrowSku = CATALOG.find((item) => item.id === "clothing-tnf-nuptse-1996");
-  const heldSku = CATALOG.find((item) => item.id === "clothing-stussy-hoodie");
+  const heldSku = CATALOG.find((item) => item.id === "clothing-bape-tee");
   assert.ok(narrowSku, "expected TNF 1996 Nuptse SKU in catalog");
-  assert.ok(heldSku, "expected held Stussy hoodie SKU in catalog");
+  assert.ok(heldSku, "expected held BAPE tee SKU in catalog");
 
   const parsedByPid = new Map([
     [21, {
@@ -2173,7 +2328,7 @@ test("candidate pool builder allows audited clothing narrow lanes but blocks hel
     }],
     [22, {
       category: "clothing" as const,
-      comparable_key: "clothing|stussy_hoodie|hoodie|a_grade",
+      comparable_key: "clothing|bape_tee|tee|a_grade",
       parse_confidence: 1,
       needs_review: false,
     }],
@@ -2205,7 +2360,7 @@ test("candidate pool builder allows audited clothing narrow lanes but blocks hel
 
   assert.equal(result.entries.length, 1);
   assert.equal(result.entries[0]?.pid, 21);
-  assert.ok(result.invalidations.some((row) => row.pid === 22 && row.reason === "lane_blocked_stussy_hoodie"));
+  assert.ok(result.invalidations.some((row) => row.pid === 22 && row.reason === "lane_blocked_bape_tee"));
 });
 
 test("score output mapper preserves rows while assigning rank by score", () => {

@@ -26,6 +26,7 @@ export const SHOE_BROAD_CATALOG: Sku[] = [
       // 콜라보
       "aimé leon dore", "ald", "에이메 레옹 도르", "miu miu", "miu-miu", "미우미우", "미우 미우",
       "salehe", "salehe bembury", "살레헤", "샐러헤", "bembury", "벰버리", "뱀버리",
+      "yeseyesee", "yes eye see", "예스아이씨", "예스 아이씨",
       // Wave 422: exact color/model lane is handled by shoe-newbalance-530-white-silver-navy.
       "화이트 실버 네이비", "white silver navy", "530sg", "mr530sg",
       // 가품

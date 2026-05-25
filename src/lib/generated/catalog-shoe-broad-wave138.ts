@@ -29,16 +29,19 @@ export const SHOE_BROAD_WAVE138_CATALOG: Sku[] = [
       "aimé leon dore", "aime leon dore", "ald", "에임레온도르",
       "kith", "키스 ",
       "stussy", "스투시",
+      "staud", "스태우드",
+      "sabotage", "사보타지",
       "ganni", "가니",
       "concepts", "콘셉트",
       "miu miu", "미우미우",
+      "nike", "나이키", "데이브레이크", "daybreak",
       "언다이드", "undyed",  // 한정 컬러
       "프라이머리", "primary pack",  // 한정
       "x ",  // 일반 매물에 "x" 가운데는 콜라보 표시
       // 가품
       "짭", "가품", "레플리카", "replica", "fake", "미러", "샘플", "sample", "1:1", "11급",
       // 키즈
-      "td", "ps", "키즈", "유아", "아동", "toddler", "kids", "infant",
+      "td", "ps", "키즈", "유아", "아동", "남아", "여아", "남아여아", "toddler", "kids", "infant",
       // 단품/매입
       "한짝", "한쪽만", "사이즈 미상", "파손", "찢어짐",
       "삽니다", "구합니다", "구해요", "매입",
@@ -88,6 +91,9 @@ export const SHOE_BROAD_WAVE138_CATALOG: Sku[] = [
       ["아디다스 가젤", "adidas gazelle", "가젤", "gazelle"],
     ],
     mustNotContain: [
+      // Wave 861: legacy duplicate. Use `shoe-adidas-gazelle-broad`
+      // from Wave 134; keeping this active makes normal Gazelle rows ambiguous.
+      "가젤", "gazelle",
       // 인도어 별도 SKU
       "인도어", "indoor",
       "spzl", "spezial", "스페지알",

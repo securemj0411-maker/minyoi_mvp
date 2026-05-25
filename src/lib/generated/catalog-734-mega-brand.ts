@@ -82,6 +82,11 @@ export const WAVE_734_MEGA_BRAND: Sku[] = [
       // Acne 데님 premium은 별 SKU (Wave 716)
       "2021m", "2003 시그니처", "petit",
       "데님 premium", "premium denim",
+      // Denim and named denim fits should not leak into apparel broad.
+      "데님", "denim", "청바지", "jean", "jeans",
+      "max", "맥스", "river", "리버", "rodeo", "로데오", "1995",
+      // Kids/multi-brand set wording should not use Acne as the active brand.
+      "세트", "set", "120-130", "120 130", "dkny", "디케이엔와이", "미니로디니", "mini rodini", "minirodini",
       // 명품 collab
       "supreme",
     ],

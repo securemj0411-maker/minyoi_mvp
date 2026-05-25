@@ -121,11 +121,12 @@ async function handleReparse(req: NextRequest) {
   const legacyOnly = req.nextUrl.searchParams.get("legacy") === "1";
   // Wave 756 (2026-05-24): category filter for legacy reparse (e.g., ?category=shoe).
   const categoryFilter = req.nextUrl.searchParams.get("category");
-  // Wave 756: shoe latest parser version은 wave92-shoe-v39 — option-parser-v55와 다름.
+  // Fashion categories use their category parser versions, not option-parser-v55.
+  // Keep these in sync with parseListingOptions() output and tick-pipeline drift gate.
   // category 명시 시 해당 카테고리의 latest version과 비교 (currentVersion override).
-  const legacyVersion = categoryFilter === "shoe" ? "wave92-shoe-v39"
+  const legacyVersion = categoryFilter === "shoe" ? "wave92-shoe-v41"
     : categoryFilter === "bag" ? "wave92-bag-v24"
-    : categoryFilter === "clothing" ? "wave216-clothing-v47"
+    : categoryFilter === "clothing" ? "wave216-clothing-v52"
     : PARSER_VERSION;
   // 2026-05-16 v46 cleanup: option-parser.PARSER_VERSION import — silent drift 차단 (이전 별도 const).
   const rows = legacyOnly

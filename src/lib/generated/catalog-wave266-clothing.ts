@@ -119,6 +119,15 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "라코스테", "lacoste",  // 빈번한 polo 혼동
       "타미", "tommy", "타미힐피거",  // 이미 일부 SKU에 있지만 broad에 명시
       "바나나리퍼블릭", "banana republic",
+      // Wave 812: polo-as-garment wording from other knit brands should not land in Polo broad.
+      "더 니트 컴퍼니", "the knit company", "인더로우", "in the row",
+      "라벨 아카이브", "label archive", "브룩스브라더스", "brooks brothers",
+      "챕스", "chaps",
+      "빈폴", "beanpole", "시스템", "system", "타임", "time", "에피그램", "epigram",
+      "코오롱스포츠", "kolon sport", "kolon", "k2", "아미", "ami",
+      "스튜디오 톰보이", "톰보이", "studio tomboy", "tomboy",
+      "잭니클라우스", "jack nicklaus", "유타", "utar",
+      "dancing skeletons", "dancing skeleton",
       // Wave 750 bias-free (2026-05-24): 한정/premium 라인 차단 (spread 6.8x → 4x 이하 target)
       "80s", "80년대",  // vintage 80s 별 라인
       "70s", "70년대",
@@ -167,6 +176,7 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "꼼데가르송", "cdg",
       "타미", "tommy",
       "아디다스", "adidas",
+      "뉴발란스", "뉴발", "new balance", "newbalance",
       "aape", "오마주", "fubu", "푸부",
       "콜라보", "collab", "lacoste", "라코스테", "자운드", "jound",
       // Wave 716 (2026-05-23): 40x spread audit — varsity/coach narrow 신설.
@@ -584,7 +594,7 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
     aliases: ["Carhartt", "칼하트", "Carhartt WIP", "칼하트 WIP"],
     mustContain: [
       ["carhartt", "칼하트"],
-      ["active jacket", "액티브 자켓", "액티브 후드자켓", "j130"],
+      ["active jacket", "액티브 자켓", "액티브 후드자켓", "액티브 후드 자켓", "액티브 워크", "액티브 워크 후드 자켓", "active work", "j130"],
     ],
     mustNotContain: [
       ...CLOTHING_COMMON_NOISE,
@@ -977,6 +987,102 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
   // 노스페이스 추가 변형 (Nuptse general / Denali fleece)
   // ═══════════════════════════════════════════════════════════
   {
+    id: "clothing-tnf-nuptse-1992",
+    brand: "The North Face",
+    category: "clothing",
+    laneKey: "tnf_nuptse_1992",
+    modelName: "TNF Nuptse 1992 (internal learning lane)",
+    aliases: ["TNF 1992 Nuptse", "노스페이스 1992 눕시", "1992 눕시"],
+    mustContain: [
+      ["north face", "노스페이스", "노페", "tnf"],
+      ["nuptse", "눕시"],
+      ["1992", "1992눕시", "1992 눕시"],
+    ],
+    mustNotContain: [
+      ...CLOTHING_COMMON_NOISE,
+      "supreme", "슈프림", "gucci", "구찌", "mm6", "margiela", "마르지엘라",
+      "베스트", "vest", "조끼",
+      "키즈", "kids", "baby", "베이비", "아동", "유아",
+      "셔츠", "shirt", "롱슬리브", "long sleeve", "반팔", "tee",
+    ],
+    msrpKrw: 459000,
+    released: 1992,
+    defaultProductType: "down_jacket",
+  },
+  {
+    id: "clothing-tnf-nuptse-vest",
+    brand: "The North Face",
+    category: "clothing",
+    laneKey: "tnf_nuptse_vest",
+    modelName: "TNF Nuptse Vest (internal learning lane)",
+    aliases: ["TNF Nuptse Vest", "노스페이스 눕시 베스트", "눕시 조끼"],
+    mustContain: [
+      ["north face", "노스페이스", "노페", "tnf"],
+      ["nuptse", "눕시"],
+      ["베스트", "vest", "조끼", "다운 베스트", "다운 조끼", "패딩조끼", "패딩 조끼"],
+    ],
+    mustNotContain: [
+      ...CLOTHING_COMMON_NOISE,
+      "supreme", "슈프림", "gucci", "구찌", "mm6", "margiela", "마르지엘라",
+      "화이트라벨", "화이트 라벨", "화이트레이블", "화이트 레이블", "white label", "white-label",
+      "노벨티", "novelty",
+      "키즈", "kids", "baby", "베이비", "아동", "유아",
+      "셔츠", "shirt", "롱슬리브", "long sleeve", "반팔", "tee",
+    ],
+    msrpKrw: 299000,
+    released: 1996,
+    defaultProductType: "vest",
+  },
+  {
+    id: "clothing-tnf-nuptse-eco",
+    brand: "The North Face",
+    category: "clothing",
+    laneKey: "tnf_nuptse_eco",
+    modelName: "TNF Eco Nuptse (internal learning lane)",
+    aliases: ["TNF Eco Nuptse", "노스페이스 에코 눕시", "에코눕시"],
+    mustContain: [
+      ["north face", "노스페이스", "노페", "tnf"],
+      ["nuptse", "눕시"],
+      ["eco", "에코", "에코눕시", "에코 눕시"],
+    ],
+    mustNotContain: [
+      ...CLOTHING_COMMON_NOISE,
+      "supreme", "슈프림", "gucci", "구찌", "mm6", "margiela", "마르지엘라",
+      "화이트라벨", "화이트 라벨", "화이트레이블", "화이트 레이블", "white label", "white-label",
+      "노벨티", "novelty",
+      "베스트", "vest", "조끼",
+      "키즈", "kids", "baby", "베이비", "아동", "유아",
+      "셔츠", "shirt", "롱슬리브", "long sleeve", "반팔", "tee",
+    ],
+    msrpKrw: 459000,
+    released: 2020,
+    defaultProductType: "down_jacket",
+  },
+  {
+    id: "clothing-tnf-nuptse-special",
+    brand: "The North Face",
+    category: "clothing",
+    laneKey: "tnf_nuptse_special",
+    modelName: "TNF Nuptse Special / Collab-like variants (internal learning lane)",
+    aliases: ["TNF Nuptse Special", "노스페이스 눕시 스페셜", "눕시 카우스"],
+    mustContain: [
+      ["north face", "노스페이스", "노페", "tnf"],
+      ["nuptse", "눕시"],
+      ["kaws", "카우스", "센터로고", "센터 로고", "center logo", "rmst", "칸예", "kanye"],
+    ],
+    mustNotContain: [
+      ...CLOTHING_COMMON_NOISE,
+      "supreme", "슈프림", "gucci", "구찌", "mm6", "margiela", "마르지엘라",
+      "1992", "1992눕시", "1992 눕시",
+      "베스트", "vest", "조끼",
+      "키즈", "kids", "baby", "베이비", "아동", "유아",
+      "셔츠", "shirt", "롱슬리브", "long sleeve", "반팔", "tee",
+    ],
+    msrpKrw: 599000,
+    released: 1996,
+    defaultProductType: "down_jacket",
+  },
+  {
     id: "clothing-tnf-nuptse-broad",
     brand: "The North Face",
     category: "clothing",
@@ -1003,8 +1109,10 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       // Wave 633: 한정 라인 차단 (broad 시세 부풀림).
       "레더 눕시", "레더눕시", "가죽 눕시", "leather nuptse", "leather-nuptse",
       "화이트라벨", "화이트 라벨", "white label", "white-label",
-      "노벨티 눕시", "novelty nuptse", "novelty",
+      "노벨티", "노벨티 눕시", "novelty nuptse", "novelty",
+      "에코 눕시", "에코눕시", "eco nuptse", "eco",
       "카모 눕시", "camo nuptse",
+      "kaws", "카우스", "센터로고", "센터 로고", "center logo", "rmst", "칸예", "kanye",
       // Wave 652 (2026-05-22): c_grade spread 10x audit — 추가 변형/한정 차단.
       // 화이트라벨/노벨티 표기 변형 (Wave 633 보강 후에도 c_grade에 흘러들어옴).
       "화이트레이블", "화이트 레이블", "whitelabel", "wl 눕시",
@@ -1126,6 +1234,8 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "텐트", "침낭",
       // 가방
       "백팩", "boston bag", "보스턴백", "크로스백", "토트백", "tote bag", "메신저백",
+      // Wave 844: other-brand down/apparel rows using Patagonia as reference text.
+      "나이키", "nike", "녹타", "nocta", "acg",
     ],
     msrpKrw: 159000,
     released: 1973,
@@ -1160,7 +1270,9 @@ export const CLOTHING_WAVE266_CATALOG: Sku[] = [
       "알칸타라", "alcantara",
       "다비드tc", "david tc", "david-tc", "davidtc",
       "프로스트", "frost vest", "프로스트 베스트",
+      "오버셔츠", "오버 셔츠", "overshirt", "올드이펙트", "올드 이펙트", "올드이팩트", "올드 이팩트", "스트레치 코튼 트윌",
       "나일론 메탈 한정", "nylon metal", "메탈 한정판",
+      "나일론메탈",
       "25ss 알칸타라", "25 ss 알칸타라",
       "17fw", "18fw", "19fw", "20fw", "21fw", "22fw", "23fw", "24fw",  // 빈티지 시즌 (broad 시세군 다름)
       "17ss", "18ss", "19ss", "20ss", "21ss", "22ss", "23ss", "24ss", "25ss",

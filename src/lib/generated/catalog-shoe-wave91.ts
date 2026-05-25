@@ -762,6 +762,8 @@ export const SHOE_CATALOG: Sku[] = [
       "삽니다", "매입", "구합니다", "구해요", "구함",
       "td", "키즈", "유아", "샘플", "사이즈 미상", "한짝", "파손", "복각", "이미테이션", "레플리카", "짝퉁",
       "트랙팬츠", "티셔츠", "맨투맨", "후드", "자켓",
+      // Wave 824: multi-size order / dropship style rows are not trustworthy market comps.
+      "주문방법", "요청사항", "주문가능사이즈", "색상/사이즈", "해외발송", "배송완료 5-7",
     ],
     msrpKrw: 290000,
     released: 2016,

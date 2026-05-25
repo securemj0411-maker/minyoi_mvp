@@ -71,6 +71,9 @@ export const WAVE_729_CARHARTT_BROAD: Sku[] = [
       "active jacket", "액티브 자켓", "j130",
       "santa fe", "산타페",
       "님부스", "nimbus", "아노락", "anorak",  // overall_anorak SKU
+      // Wave 848: outer jackets were leaking into hoodie/sweat via "후드"/"집업".
+      "자켓", "재킷", "jacket", "봄버", "bomber", "바람막이", "윈드브레이커", "워크자켓", "워크 자켓",
+      "후드자켓", "후드 자켓", "후드재킷", "후드 재킷",
     ],
     msrpKrw: 99000, released: 1989,
   },
@@ -79,12 +82,13 @@ export const WAVE_729_CARHARTT_BROAD: Sku[] = [
   {
     id: "clothing-carhartt-denim-pants",
     brand: "Carhartt", category: "clothing", laneKey: "carhartt_denim_pants",
-    modelName: "Carhartt Denim / Landon / Newel / Simple Pants",
-    aliases: ["Carhartt Denim", "칼하트 데님", "Carhartt Landon", "칼하트 랜든"],
+    modelName: "Carhartt Denim / Newel / Simple Pants",
+    aliases: ["Carhartt Denim", "칼하트 데님"],
     mustContain: [
       ["carhartt", "칼하트"],
-      ["데님", "denim", "청바지", "진", "jean",
-       "랜든", "landon", "newel", "뉴얼",
+      ["데님", "denim", "청바지", "jean",
+       "newel", "뉴얼",
+       "marlow", "말로우", "진청",
        "simple pant", "심플 팬츠", "심플팬츠",
        "프리미엄 데님", "premium denim",
        "생지 데님", "생지데님", "raw denim"],
@@ -95,6 +99,8 @@ export const WAVE_729_CARHARTT_BROAD: Sku[] = [
       "double knee", "doubleknee", "더블니", "더블 니", "b01",  // double_knee_pants
       "cargo", "카고",  // cargo_pants
       "쇼츠", "shorts", "반바지", "숏팬츠",  // 쇼츠 별 시세
+      // Wave 848: "진" token matched normal Korean words in descriptions (e.g. 사진/실사진).
+      "푸퍼", "puffer", "패딩", "다운", "down", "베스트", "vest", "조끼", "자켓", "재킷", "jacket",
     ],
     msrpKrw: 119000, released: 2014,
   },
@@ -137,6 +143,8 @@ export const WAVE_729_CARHARTT_BROAD: Sku[] = [
       "santa fe", "산타페",
       // 자켓류 (별 시세) — 셔츠는 light layer, 자켓은 outer
       "자켓", "jacket", "코트", "coat",
+      // Wave 848: 티셔츠의 "셔츠" syllable leaked into shirt/flannel.
+      "티셔츠", "반팔티", "긴팔티", "tee", "t-shirt", "t shirt",
     ],
     msrpKrw: 99000, released: 1947,
   },

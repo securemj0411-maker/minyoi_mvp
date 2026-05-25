@@ -25,6 +25,7 @@ type RawRow = {
   name: string | null;
   price: number | null;
   description_preview: string | null;
+  bunjang_condition_label: string | null;
 };
 
 type CleanupCandidate = {
@@ -138,7 +139,7 @@ async function main() {
   const rawRows: RawRow[] = [];
   for (const part of chunk(pids, 200)) {
     rawRows.push(...await fetchJson<RawRow>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,name,price,description_preview&pid=in.${inList(part)}&limit=${part.length}`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,name,price,description_preview,bunjang_condition_label&pid=in.${inList(part)}&limit=${part.length}`,
     ));
   }
 
@@ -155,6 +156,7 @@ async function main() {
           skuId: currentSku.id,
           skuName: currentSku.modelName,
           category: currentSku.category,
+          bunjangConditionLabel: raw.bunjang_condition_label,
           defaultProductType: currentSku.defaultProductType ?? null,
         })
       : null;

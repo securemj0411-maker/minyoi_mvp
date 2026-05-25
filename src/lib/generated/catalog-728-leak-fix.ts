@@ -66,9 +66,9 @@ export const WAVE_728_LEAK_FIX: Sku[] = [
     aliases: ["Supreme Collab"],
     mustContain: [
       ["supreme", "슈프림"],
-      // 광범위 collab 시그널
+      // 광범위 collab 시그널. 일반 product type(후드/맨투맨/크루넥)은 plain Supreme을 오염시켜 제외.
       ["velvet underground", "벨벳 언더그라운드", "junya", "준야", "comme des garcons", "꼼데가르송",
-       "cdg", "코스", "cos ", "후드", "hoodie", "후디", "맨투맨", "크루넥", "스웻", "sweat"],
+       "cdg", "코스", "cos "],
     ],
     mustNotContain: [
       ...COMMON_NOISE,
@@ -81,7 +81,9 @@ export const WAVE_728_LEAK_FIX: Sku[] = [
       "dickies", "디키즈",  // supreme_dickies_collab (위)
       "mm6", "마르지엘라",  // supreme_mm6_collab (위)
       "stussy", "스투시",
-      "nike x supreme", "supreme x nike",
+      "nike", "나이키", "nike x supreme", "supreme x nike",
+      "jordan", "조던", "air force", "에어포스", "dunk", "덩크",
+      "small box", "스몰 박스", "스몰박스",
       // shoe/bag/accessory
       "신발", "shoe", "스니커즈", "운동화", "샥스", "에어포스", "샥",
       "가방", "bag", "백팩", "코듀라",
@@ -104,6 +106,11 @@ export const WAVE_728_LEAK_FIX: Sku[] = [
       ...COMMON_NOISE,
       "veilance", "베일런스",
       "leaf", "리프",
+      // Wave 805: LT/FL/SV/AR split into explicit price lanes.
+      "프로톤 lt", "프로톤lt", "proton lt", "protonlt",
+      "프로톤 fl", "프로톤fl", "proton fl", "protonfl",
+      "프로톤 sv", "프로톤sv", "proton sv", "protonsv",
+      "프로톤 ar", "프로톤ar", "proton ar", "protonar",
     ],
     msrpKrw: 470000, released: 2014,
   },

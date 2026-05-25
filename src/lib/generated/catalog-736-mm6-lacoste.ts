@@ -105,7 +105,7 @@ export const WAVE_736_MM6_LACOSTE: Sku[] = [
       // 골프 별 cycle
       "golf", "골프",
       // Collab
-      "supreme",
+      "supreme", "꼼데", "꼼데가르송", "cdg", "comme des", "comme des garcons",
     ],
     msrpKrw: 79000, released: 1933,
   },

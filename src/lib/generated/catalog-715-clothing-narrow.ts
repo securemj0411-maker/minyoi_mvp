@@ -274,12 +274,14 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
     aliases: ["Carhartt USA", "칼하트 USA", "칼하트 미국산", "Carhartt Heritage"],
     mustContain: [
       ["carhartt", "칼하트"],
-      ["usa", "미국", "미국산", "heritage", "헤리티지", "made in usa", "made in u.s.a"],
+      ["usa", "미국", "미국산", "made in usa", "made in u.s.a"],
     ],
     mustNotContain: [
       ...COMMON_NOISE,
       // WIP 라인 차단 (WIP는 별도 시세)
       "carhartt wip", "칼하트 wip", "칼하트wip",
+      // Wave 848: seller wording can include USA/heritage in descriptions; tees are not the Heritage outer/workwear lane.
+      "티셔츠", "반팔티", "긴팔티", "tee", "t-shirt", "t shirt",
       // 콜라보
       "supreme", "슈프림", "junya watanabe", "준야와타나베",
       "wacko maria", "와코마리아", "neighborhood", "네이버후드",
@@ -329,6 +331,8 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
     mustNotContain: [
       ...COMMON_NOISE, "RRL", "purple label", "polo bear", "베어",
       "키즈", "kids",
+      // Wave 803: non-Ralph Lauren Nike polo shirts use "폴로티" as garment wording.
+      "나이키", "nike",
       "빅포니 성조기", "성조기 빅포니",
       "rlx",
     ],
@@ -395,6 +399,12 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
       ...COMMON_NOISE,
       // nike collab은 별도
       "nike", "나이키", "stussy nike", "스투시 나이키",
+      // Other outdoor vintage/archive rows can contain the same era words.
+      "마운틴하드웨어", "마운틴 하드웨어", "mountain hardwear", "mountain hardware",
+      // Wave 845: modern Our Legacy / Workshop / pigment axes are not the
+      // Bape/Hysteric/Vans vintage-collab lane even when descriptions say archive.
+      "아워레가시", "아워 레가시", "our legacy", "ourlegacy", "워크샵", "workshop",
+      "피그먼트", "pigment", "썬피그먼트", "sun pigment",
       // shoe
       "운동화", "스니커즈", "sneaker",
     ],
@@ -507,7 +517,7 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
       ["acne", "아크네"],
       ["데님", "denim", "청바지", "진", "jean"],
       // Wave 726 (2026-05-24): "페니실린" 모델명 추가 (sample 검증 — 2021m 페니실린 데님 351k unmatched).
-      ["2021m", "petit", "petit 기장", "플레어진", "flare jean", "리버진", "river jean", "페니실린", "penicillin"],
+      ["2021m", "1992m", "2003", "petit", "petit 기장", "플레어진", "flare jean", "리버진", "river jean", "페니실린", "penicillin"],
     ],
     mustNotContain: [
       ...COMMON_NOISE,
