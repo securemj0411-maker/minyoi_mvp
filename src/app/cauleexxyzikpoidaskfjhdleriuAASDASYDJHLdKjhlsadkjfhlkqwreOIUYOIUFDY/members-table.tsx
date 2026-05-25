@@ -5,9 +5,13 @@
 //   페이지네이션 (50/페이지 기본). 검색 + plan filter 그대로 keep.
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+
+import { OPS_ADMIN_REVEAL_ANALYTICS_PATH } from "@/lib/admin-routes";
 
 export type MemberRow = {
   authUserId: string;
+  userRef: string;
   email: string | null;
   nickname: string;
   profileImageUrl: string | null;
@@ -500,6 +504,17 @@ function MemberDrawer({
 
         {/* actions */}
         <div className="mt-6 space-y-3">
+          <div>
+            <div className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-emerald-400">▌REVEAL HISTORY</div>
+            <Link
+              href={`${OPS_ADMIN_REVEAL_ANALYTICS_PATH}?userRef=${encodeURIComponent(row.userRef)}`}
+              className="flex w-full items-center justify-between rounded-sm border border-emerald-800 bg-emerald-950/30 px-3 py-2 text-[10px] font-black uppercase tracking-wide text-emerald-300 transition hover:border-emerald-600 hover:bg-emerald-950/50"
+            >
+              <span>OPEN USER REVEALS</span>
+              <span className="text-emerald-500">↗</span>
+            </Link>
+          </div>
+
           {/* grant */}
           <div>
             <div className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-blue-400">▌GRANT CREDIT</div>

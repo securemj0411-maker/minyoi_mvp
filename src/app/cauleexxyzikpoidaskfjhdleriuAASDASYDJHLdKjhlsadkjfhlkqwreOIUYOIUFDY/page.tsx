@@ -7,6 +7,7 @@ import { serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import MembersTable, { type MemberRow } from "./members-table";
 import ManualDepositPanel from "./manual-deposit-panel";
 import FeedbackPanel from "./feedback-panel";
+import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -172,6 +173,7 @@ export default async function MembersPage() {
       const plan = planMap.get(u.id) ?? null;
       return {
         authUserId: u.id,
+        userRef: credit?.user_ref ?? userRefForAuthUser(u.id),
         email: u.email ?? null,
         nickname: nicknameOf(u),
         profileImageUrl: profileImageUrlOf(u),
