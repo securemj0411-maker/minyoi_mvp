@@ -26,7 +26,10 @@ import { acquireCronGuardWithSourceHealth, cronGuardSkipBody } from "@/lib/cron-
 import { runDaangnIngest } from "@/lib/daangn-ingest";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 
-export const maxDuration = 80;
+// Phase 6i+ budget fix: 80s → 300s (Vercel Pro 한도).
+//   1 region 247 매물 upsert 가 60s 소모 (Supabase REST throughput).
+//   maxCombos 1→5 가능하려면 maxDuration up 필요.
+export const maxDuration = 300;
 
 function envInt(name: string, fallback: number, min: number, max: number): number {
   const parsed = Number.parseInt(process.env[name] ?? "", 10);

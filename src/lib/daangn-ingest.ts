@@ -525,12 +525,12 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   //   3 region 으로 안전 마진 — 19:35/19:40/19:45/19:50 cron 다 timeout 났음.
   //   24h 누적: 3 × 288 tick = 864 region-hit / day → 111 region pool 8 cycle / day.
   //   대형 batch upsert path 최적화 후 다시 증가 (별도 wave).
-  // Phase 6i+ debug v4: 극단 cap 으로 fundamental issue 인지 확인.
-  //   maxCombos=1 (1 region fetch), maxDetailSamples=0 (no detail loop)
-  //   이래도 timeout 나면 cold start / supabase REST / 다른 infra 이슈.
-  //   성공하면 budget 조금씩 다시 올림.
-  const maxCombos = boundedInt(options.maxCombos, 1, 1, 200);
-  const maxDetailSamples = boundedInt(options.maxDetailSamples, 0, 0, 100);
+  // Phase 6i+ budget fix v5: maxDuration 80→300s 박았으니 다시 증가.
+  //   1 region 247 매물 = 73s. 5 region = ~250s 예상 (5x).
+  //   24h × 5 region/tick × 288 tick = 1440 region-hits → 111 구 풀 13 cycle / day.
+  //   detail 도 다시 활성화 (5 sample × 5s = 25s, budget 안에 들어옴).
+  const maxCombos = boundedInt(options.maxCombos, 5, 1, 200);
+  const maxDetailSamples = boundedInt(options.maxDetailSamples, 5, 0, 100);
   const delayMs = boundedInt(options.delayMs, 400, 200, 5000);
   const activeWindowHours = boundedInt(options.activeWindowHours, 72, 1, 720);
   const freshWindowHours = boundedInt(options.freshWindowHours, 24, 1, 168);
