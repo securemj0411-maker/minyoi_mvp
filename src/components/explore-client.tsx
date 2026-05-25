@@ -90,6 +90,7 @@ type PoolResponse = {
     creditBalance: number | null;
     freeUsed: number;
     freeLimit: number;
+    unlimited?: boolean;
   };
   total: number;
   pageSize: number;
@@ -101,6 +102,7 @@ type DetailAccessSnapshot = {
   creditBalance: number | null;
   freeUsed: number;
   freeLimit: number;
+  unlimited?: boolean;
 };
 
 type StatsResponse = {
@@ -143,6 +145,7 @@ type DetailAccessResponse = {
   creditBalance?: number | null;
   freeUsed?: number;
   freeLimit?: number;
+  unlimited?: boolean;
   item?: PoolItem | null;
 };
 
@@ -235,6 +238,7 @@ function isDirectOnlyItem(item: Pick<PoolItem, "transactionMode" | "shippingAssu
 }
 
 function directTradeCostLabel(snapshot: DetailAccessSnapshot) {
+  if (snapshot.unlimited) return "상세 무제한";
   const freeRemaining = Math.max(0, Number(snapshot.freeLimit) - Number(snapshot.freeUsed));
   if (freeRemaining > 0) return "무료 상세보기 1회";
   return "1크레딧";
@@ -434,7 +438,7 @@ function isFeedTeaserLocked(item: PoolItem) {
 }
 
 function hasPaidOrFreeDetailAccess(snapshot: DetailAccessSnapshot, freeDetailRemaining: number) {
-  return freeDetailRemaining > 0 || Number(snapshot.creditBalance ?? 0) > 0;
+  return Boolean(snapshot.unlimited) || freeDetailRemaining > 0 || Number(snapshot.creditBalance ?? 0) > 0;
 }
 
 type SortOption = "profit_desc" | "latest" | "price_asc";
@@ -494,7 +498,7 @@ function writeBudgetFilterOption(storageScope: string, value: BudgetFilterOption
 }
 
 function defaultDetailAccessSnapshot(): DetailAccessSnapshot {
-  return { creditBalance: null, freeUsed: 0, freeLimit: DEFAULT_FREE_DETAIL_ACCESS_LIMIT };
+  return { creditBalance: null, freeUsed: 0, freeLimit: DEFAULT_FREE_DETAIL_ACCESS_LIMIT, unlimited: false };
 }
 
 function normalizeDetailAccessSnapshot(value: unknown): DetailAccessSnapshot | null {
@@ -503,11 +507,13 @@ function normalizeDetailAccessSnapshot(value: unknown): DetailAccessSnapshot | n
   const freeLimit = Number(record.freeLimit ?? DEFAULT_FREE_DETAIL_ACCESS_LIMIT);
   const freeUsed = Number(record.freeUsed ?? 0);
   const creditBalance = record.creditBalance == null ? null : Number(record.creditBalance);
+  const unlimited = record.unlimited === true;
   if (!Number.isFinite(freeLimit) || freeLimit <= 0 || !Number.isFinite(freeUsed)) return null;
   return {
     creditBalance: creditBalance != null && Number.isFinite(creditBalance) ? creditBalance : null,
-    freeUsed: Math.min(Math.max(0, freeUsed), freeLimit),
+    freeUsed: unlimited ? freeLimit : Math.min(Math.max(0, freeUsed), freeLimit),
     freeLimit,
+    unlimited,
   };
 }
 
@@ -1931,7 +1937,7 @@ export default function ExploreClient({
 
   const freeDetailRemaining = Math.max(
     0,
-    Number(detailAccessSnapshot.freeLimit) - Number(detailAccessSnapshot.freeUsed),
+    detailAccessSnapshot.unlimited ? 0 : Number(detailAccessSnapshot.freeLimit) - Number(detailAccessSnapshot.freeUsed),
   );
 
   const openItemDetail = useCallback(async (item: PoolItem, options?: { directTradeConfirmed?: boolean }) => {
@@ -2028,6 +2034,7 @@ export default function ExploreClient({
           creditBalance: data.creditBalance ?? null,
           freeUsed: data.freeUsed,
           freeLimit: data.freeLimit,
+          unlimited: data.unlimited,
         }) ?? defaultDetailAccessSnapshot();
         setDetailAccessSnapshot(nextDetailAccess);
         writeDetailAccessSnapshot(storageScope, nextDetailAccess);
@@ -2496,6 +2503,7 @@ export default function ExploreClient({
             const exactUnlocked = !teaserLocked || scrapOnly || savedPidSet.has(item.pid) || openedDetailPids.has(item.pid);
             const lockedPreview = !exactUnlocked;
             const freeDetailAvailable = lockedPreview && freeDetailRemaining > 0;
+            const unlimitedDetailAvailable = lockedPreview && detailAccessSnapshot.unlimited === true;
             const detailCreditAvailable = lockedPreview && Number(detailAccessSnapshot.creditBalance ?? 0) > 0;
             const tierBadgeCategory = tierBadgeCategoryForItem(item);
             const legacyBadgeCondition = tierBadgeCategory ? null : item.conditionClass;
@@ -2593,6 +2601,11 @@ export default function ExploreClient({
                   {lockedPreview && freeDetailAvailable ? (
                     <div className="mt-1 text-[11px] font-bold text-blue-600 dark:text-blue-400">
                       첫 상세 무료 {freeDetailRemaining.toLocaleString("ko-KR")}회 남음
+                    </div>
+                  ) : null}
+                  {unlimitedDetailAvailable ? (
+                    <div className="mt-1 text-[11px] font-bold text-blue-600 dark:text-blue-400">
+                      상세 무제한
                     </div>
                   ) : null}
                   {lockedPreview && !freeDetailAvailable && detailCreditAvailable ? (

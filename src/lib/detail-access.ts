@@ -26,6 +26,7 @@ export type DetailAccessResult =
       creditBalance: number | null;
       freeUsed: number;
       freeLimit: number;
+      unlimited?: boolean;
     }
   | {
       ok: false;
@@ -125,19 +126,22 @@ export async function getDetailAccessSnapshot(input: {
   creditBalance: number | null;
   freeUsed: number;
   freeLimit: number;
+  unlimited: boolean;
 }> {
   const freeUsed = await loadRateLimitCount(freeDetailAccessBucket(input.userRef));
   if (input.unlimited || isAdminUser(input.user)) {
     return {
       creditBalance: null,
-      freeUsed,
+      freeUsed: FREE_DETAIL_ACCESS_LIMIT,
       freeLimit: FREE_DETAIL_ACCESS_LIMIT,
+      unlimited: true,
     };
   }
   return {
     creditBalance: await readCreditBalance(input.user, input.userRef),
     freeUsed,
     freeLimit: FREE_DETAIL_ACCESS_LIMIT,
+    unlimited: false,
   };
 }
 
@@ -156,8 +160,9 @@ export async function consumeDetailAccess(input: {
       alreadyOpened: false,
       creditSpent: 0,
       creditBalance: null,
-      freeUsed: freeUsedBefore,
+      freeUsed: FREE_DETAIL_ACCESS_LIMIT,
       freeLimit: FREE_DETAIL_ACCESS_LIMIT,
+      unlimited: true,
     };
   }
 

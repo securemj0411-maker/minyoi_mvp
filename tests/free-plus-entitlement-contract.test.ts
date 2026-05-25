@@ -38,6 +38,8 @@ test("pool detail access gives first three unique pids free, then spends one cre
   assert.match(route, /status=eq\.ready/);
   assert.match(route, /creditSpent/);
   assert.match(route, /freeUsed/);
+  assert.match(helper, /unlimited: true/);
+  assert.match(helper, /freeUsed: FREE_DETAIL_ACCESS_LIMIT/);
 });
 
 test("pool feed is a free teaser and exact purchase info opens only through detail access", () => {
@@ -94,12 +96,15 @@ test("pool feed is a free teaser and exact purchase info opens only through deta
   assert.match(explore, /writeDetailAccessSnapshot\(storageScope, nextDetailAccess\)/);
   assert.match(explore, /detailAccessSnapshot/);
   assert.match(explore, /freeDetailRemaining/);
-  assert.match(explore, /Number\(detailAccessSnapshot\.freeLimit\) - Number\(detailAccessSnapshot\.freeUsed\)/);
+  assert.match(explore, /detailAccessSnapshot\.unlimited \? 0 : Number\(detailAccessSnapshot\.freeLimit\) - Number\(detailAccessSnapshot\.freeUsed\)/);
+  assert.match(explore, /const unlimitedDetailAvailable = lockedPreview && detailAccessSnapshot\.unlimited === true/);
+  assert.match(explore, /상세 무제한/);
   assert.match(explore, /function isFeedTeaserLocked/);
   assert.match(explore, /hasPaidOrFreeDetailAccess/);
   assert.match(explore, /const teaserLocked = isFeedTeaserLocked\(item\)/);
   assert.match(explore, /상세에서 원문 공개/);
   assert.match(explore, /첫 상세 무료/);
+  assert.match(detailAccessRoute, /unlimited: access\.unlimited \?\? false/);
   assert.match(explore, /정확가 잠김/);
   assert.match(explore, /필요 예산/);
   assert.match(explore, /정확 시세 잠김/);

@@ -466,6 +466,7 @@ export async function POST(req: Request) {
     creditBalance: access.creditBalance,
     freeUsed: access.freeUsed,
     freeLimit: access.freeLimit,
+    unlimited: access.unlimited ?? false,
     item: liveVerify.item,
   });
 }
