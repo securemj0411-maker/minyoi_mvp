@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { createPortal } from "react-dom";
-import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import MarketHistoryChart, { type ChartState as MarketChartState } from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
 import { ConditionChip, ConditionPhotoBadge, ConditionTierChip, ConditionChipsList } from "@/components/condition-chip";
@@ -3131,7 +3131,15 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
 //   첫 mount default = "loading" — fetch 동안엔 wrapper + skeleton 표시. 빈 상태 확인되면 wrapper 사라짐.
 // Wave launch-103 (사용자 결정 — 매물 신고/피드백): 매물 잘못됐을 때 사용자가 신고 → 운영자 검토 → +20 크레딧.
 //   인라인 카드 (수익 계산 근거 / 채널 비교 / 추천 이유 다음). 보상 명시 → conversion ↑.
-function FeedbackReportPanel({ card }: { card: RevealCard }) {
+function FeedbackReportPanel({
+  card,
+  openSignal = 0,
+  panelRef,
+}: {
+  card: RevealCard;
+  openSignal?: number;
+  panelRef?: RefObject<HTMLDivElement | null>;
+}) {
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<string>("fake");
   const [message, setMessage] = useState("");
@@ -3145,6 +3153,10 @@ function FeedbackReportPanel({ card }: { card: RevealCard }) {
     { value: "category_wrong", label: "카테고리 / 모델 오분류" },
     { value: "other", label: "기타" },
   ];
+
+  useEffect(() => {
+    if (openSignal > 0) setOpen(true);
+  }, [openSignal]);
 
   async function submit() {
     setErrorMessage(null);
@@ -3187,7 +3199,7 @@ function FeedbackReportPanel({ card }: { card: RevealCard }) {
 
   if (stage === "done") {
     return (
-      <section className="mt-3 rounded-2xl border border-blue-200 bg-blue-50/60 px-4 py-4 dark:border-blue-900/60 dark:bg-blue-950/30">
+      <section ref={panelRef} className="mt-3 scroll-mt-16 rounded-2xl border border-blue-200 bg-blue-50/60 px-4 py-4 dark:border-blue-900/60 dark:bg-blue-950/30">
         <div className="flex items-center gap-2 text-[13px] font-black text-blue-800 dark:text-blue-200">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
           신고 접수됐어요
@@ -3200,7 +3212,7 @@ function FeedbackReportPanel({ card }: { card: RevealCard }) {
   }
 
   return (
-    <section className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/60 px-4 py-3.5 dark:border-amber-900/50 dark:bg-amber-950/20">
+    <section ref={panelRef} className="mt-3 scroll-mt-16 rounded-2xl border border-amber-200 bg-amber-50/60 px-4 py-3.5 dark:border-amber-900/50 dark:bg-amber-950/20">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -4431,6 +4443,38 @@ function RevealSaveButton({
       style={floating ? { filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.55))" } : undefined}
     >
       <BookmarkGlyph saved={saved} className={floating ? "h-6 w-6" : "h-5 w-5"} />
+    </button>
+  );
+}
+
+function RevealReportShortcutButton({
+  visible,
+  variant,
+  onClick,
+}: {
+  visible: boolean;
+  variant: "floating" | "sticky";
+  onClick: () => void;
+}) {
+  const floating = variant === "floating";
+  const label = "매물 정보 신고";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      tabIndex={visible ? 0 : -1}
+      data-report-shortcut-button
+      className={
+        floating
+          ? "pointer-events-auto inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90"
+          : "pointer-events-auto inline-flex h-9 items-center justify-center gap-1 rounded-full px-2.5 text-[11px] font-black text-rose-600 transition hover:bg-rose-50 active:scale-90 dark:text-rose-300 dark:hover:bg-rose-950/30"
+      }
+      style={floating ? { filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.55))" } : undefined}
+    >
+      <AlertTriangleIcon className={floating ? "h-5 w-5" : "h-4 w-4"} />
+      {!floating ? <span>신고</span> : null}
     </button>
   );
 }
@@ -5734,12 +5778,16 @@ function RevealCardItem({
   currentFeedbackType,
   photoRef,
   onBeginnerGuideClick,
+  reportPanelRef,
+  reportShortcutSignal,
 }: {
   card: RevealCard;
   delay: number;
   currentFeedbackType?: string | null;
   photoRef?: React.RefObject<HTMLDivElement | null>;
   onBeginnerGuideClick?: () => void;
+  reportPanelRef?: RefObject<HTMLDivElement | null>;
+  reportShortcutSignal?: number;
 }) {
   const [shown, setShown] = useState(false);
   // Wave 394.5.a (외부 review #23 — 사용자 명시 채택): 초보/상세 모드 토글.
@@ -5995,10 +6043,10 @@ function RevealCardItem({
                 card={card}
                 className="mt-2 border-t border-[#e1dacd] pt-2"
               />
-              {/* Wave launch-103 (사용자 결정): 매물 잘못 신고 → 운영자 검토 → +20 크레딧.
-                  스크랩 옆 X (자장 의미와 정반대 + 노출 ↓) → 모달 하단 prominent section.
+              {/* Wave launch-103+현재: 매물 잘못 신고 → 운영자 검토 → +20 크레딧.
+                  하단 prominent section 유지 + 상단 신고 shortcut 은 이 섹션을 자동으로 연다.
                   매물 ID 자동 부착 (운영자가 어떤 매물 issue 인지 즉시 확인). */}
-              <FeedbackReportPanel card={card} />
+              <FeedbackReportPanel card={card} openSignal={reportShortcutSignal} panelRef={reportPanelRef} />
             </div>
             {/* Wave 394.5.c: detailed 모드 시 신뢰도 분해 자동 펼침 (사용자 재닫음 가능). */}
             <details
@@ -6696,6 +6744,7 @@ export default function PackRevealModal({
   const consumedInitialPreviewSeedRef = useRef<string | number | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const photoRef = useRef<HTMLDivElement | null>(null);
+  const reportPanelRef = useRef<HTMLDivElement | null>(null);
   // Wave 364: 사진이 viewport에 보이면 floating nav (icon-only), 안 보이면 sticky nav bar.
   const [photoVisible, setPhotoVisible] = useState(true);
   const activeRevealCard = result?.result === "success" ? result.reveals[0] ?? null : null;
@@ -6704,6 +6753,7 @@ export default function PackRevealModal({
   const activeRevealSaved = activeRevealPid != null && savedPids.has(activeRevealPid);
   const [beginnerGuideVisible, setBeginnerGuideVisible] = useState(false);
   const [beginnerGuideStep, setBeginnerGuideStep] = useState(0);
+  const [reportShortcutSignal, setReportShortcutSignal] = useState(0);
   const [detailModeChoice, setDetailModeChoice] = useState<{
     source: DetailReportModeChoiceSource;
     stepIndex: number;
@@ -6749,6 +6799,13 @@ export default function PackRevealModal({
       saveToastTimerRef.current = null;
     }, 1600);
   }, [activeRevealCard, activeRevealSaved, currentSaved, onSaveToggle]);
+
+  const handleOpenReportShortcut = useCallback(() => {
+    setReportShortcutSignal((value) => value + 1);
+    window.setTimeout(() => {
+      reportPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 80);
+  }, []);
 
   useEffect(() => {
     if (open) return;
@@ -7148,6 +7205,11 @@ export default function PackRevealModal({
                   photoVisible ? "opacity-100" : "opacity-0"
                 }`}
               >
+                <RevealReportShortcutButton
+                  visible={photoVisible}
+                  variant="floating"
+                  onClick={handleOpenReportShortcut}
+                />
                 <RevealSaveButton
                   saved={activeRevealSaved}
                   visible={photoVisible}
@@ -7205,12 +7267,19 @@ export default function PackRevealModal({
                   </div>
                 ) : null}
                 {activeRevealCard ? (
-                  <RevealSaveButton
-                    saved={activeRevealSaved}
-                    visible={!photoVisible}
-                    variant="sticky"
-                    onToggle={handleToggleSave}
-                  />
+                  <div className="flex shrink-0 items-center gap-0.5">
+                    <RevealReportShortcutButton
+                      visible={!photoVisible}
+                      variant="sticky"
+                      onClick={handleOpenReportShortcut}
+                    />
+                    <RevealSaveButton
+                      saved={activeRevealSaved}
+                      visible={!photoVisible}
+                      variant="sticky"
+                      onToggle={handleToggleSave}
+                    />
+                  </div>
                 ) : null}
               </div>
             </div>
@@ -7263,6 +7332,8 @@ export default function PackRevealModal({
                         currentFeedbackType={currentFeedbackType}
                         photoRef={idx === 0 ? photoRef : undefined}
                         onBeginnerGuideClick={idx === 0 ? openBeginnerGuide : undefined}
+                        reportPanelRef={idx === 0 ? reportPanelRef : undefined}
+                        reportShortcutSignal={idx === 0 ? reportShortcutSignal : 0}
                       />
                     ))}
                   </div>

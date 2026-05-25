@@ -248,9 +248,9 @@ export default function SiteHelpFaq() {
                 <div className="flex items-start gap-2.5">
                   <AlertTriangleIcon className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
                   <div>
-                    <div className="text-sm font-black text-zinc-950 dark:text-zinc-100">매물 하나가 틀렸다면</div>
+                    <div className="text-sm font-black text-zinc-950 dark:text-zinc-100">특정 매물이 이상하다면</div>
                     <p className="mt-1 text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
-                      상세 분석 화면의 정보 오류 신고가 가장 정확해요. 매물 ID가 같이 들어와서 더 빨리 고칠 수 있습니다.
+                      시세, 상태, 가품 의심처럼 상품 하나에 대한 제보는 상세 화면 신고가 가장 정확해요. 매물 정보가 같이 들어와서 검토가 빠르고, 승인되면 +20크레딧 보상도 바로 연결됩니다.
                     </p>
                   </div>
                 </div>
@@ -259,7 +259,7 @@ export default function SiteHelpFaq() {
                   onClick={() => setOpen(false)}
                   className="mt-3 flex h-10 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-3 text-xs font-black text-blue-700 transition hover:bg-blue-100 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-950/50"
                 >
-                  내 상세 분석에서 신고하기
+                  상세 화면에서 신고하기
                 </a>
               </div>
 
