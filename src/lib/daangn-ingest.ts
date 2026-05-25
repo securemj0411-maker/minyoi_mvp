@@ -1,0 +1,436 @@
+// Daangn source production ingest module.
+//
+// codex/daangn-probe branch 의 probe API (src/lib/daangn.ts) 를 활용해
+// 실제 cron 안에서 search → detail → raw upsert 까지 가는 ingest pipeline.
+//
+// Stage 1 (Shadow Mode):
+//   - mvp_raw_listings 에 source='daangn' 으로 write 만
+//   - candidate_pool 진입 차단 (poolEligible=false hard-coded)
+//   - 검증 + parser 정확도 audit 용
+//
+// Stage 2+ (다음 phase):
+//   - shipping_possible 매물만 pool_eligible=true
+//   - detail queue 분리
+//   - lifecycle/observation
+//
+// 환경 변수 (운영):
+//   DAANGN_SOURCE_MODE              "off" (default) / "probe" / "active"
+//   DAANGN_INGEST_MAX_COMBOS        12  (cron 당 search combo 수)
+//   DAANGN_INGEST_MAX_DETAIL_SAMPLES 8   (cron 당 detail fetch 한도)
+//   DAANGN_INGEST_DELAY_MS          600 (request 사이 delay)
+//   DAANGN_INGEST_ACTIVE_HOURS      72  (boostedAt 활성 윈도)
+//   DAANGN_INGEST_FRESH_HOURS       24  (detail fetch 우선순위 fresh 기준)
+//
+// 안전:
+//   - mode=off 면 skip
+//   - blockedSignals 발견 시 즉시 중단 + source_health 갱신
+//   - robots.txt 우회 X (/kr/buy-sell/?in=... 만 사용)
+
+import {
+  DAANGN_FASHION_CATEGORIES,
+  DAANGN_SOURCE_ID,
+  DEFAULT_DAANGN_FASHION_QUERY_SEEDS,
+  DEFAULT_DAANGN_REGION_SEEDS,
+  buildDaangnSearchUrl,
+  detectDaangnBlockSignal,
+  fetchDaangnText,
+  getDaangnSourceMode,
+  parseDaangnDetailHtml,
+  parseDaangnSearchHtml,
+  shouldFetchDaangnDetailCandidate,
+  summarizeDaangnArticles,
+  type DaangnBlockSignal,
+  type DaangnCategorySeed,
+  type DaangnDetailArticle,
+  type DaangnQuerySeed,
+  type DaangnRegionSeed,
+  type DaangnSearchArticle,
+  type DaangnSourceMode,
+} from "@/lib/daangn";
+
+// ───────────────────────────────────────────────────────────────────────────
+// Types
+// ───────────────────────────────────────────────────────────────────────────
+
+export type DaangnShippingInference = "shipping_possible" | "direct_only" | "unknown";
+
+export type DaangnIngestCombo = {
+  region: DaangnRegionSeed;
+  query: DaangnQuerySeed;
+  category: DaangnCategorySeed;
+};
+
+export type DaangnIngestArticleRecord = {
+  article: DaangnSearchArticle;
+  combo: DaangnIngestCombo;
+  ageHours: number | null;
+  bucket: "fresh_24h" | "active_72h" | "stale" | "unknown";
+};
+
+export type DaangnIngestDetailRecord = {
+  article: DaangnDetailArticle;
+  combo: DaangnIngestCombo;
+  shipping: DaangnShippingInference;
+};
+
+export type DaangnIngestResult = {
+  source: typeof DAANGN_SOURCE_ID;
+  mode: DaangnSourceMode;
+  skipped: boolean;
+  skipReason?: string;
+  startedAt: string;
+  finishedAt: string;
+  durationMs: number;
+
+  // combo 진행
+  combos: number;
+  executedCombos: number;
+  blockedCombos: number;
+  failedCombos: number;
+
+  // 매물 통계 (probe 와 동일 키)
+  articles: number;
+  ongoing: number;
+  crawlAllowedOngoing: number;
+  freshBoosted24h: number;
+  activeBoosted72h: number;
+  uniqueOngoingUrls: number;
+
+  // detail 처리
+  detailCandidates: number;
+  detailFetched: number;
+  detailParsed: number;
+  detailFailed: number;
+
+  // shipping 분포
+  shipping: { shipping_possible: number; direct_only: number; unknown: number };
+
+  // DB write (Stage 1: 모두 0 — schema 적용 후 활성)
+  rawUpserted: number;
+  rawSkippedExisting: number;
+
+  // 안전 신호
+  blockedSignals: DaangnBlockSignal[];
+  sourceHealthStatus: "healthy" | "degraded" | "unhealthy";
+  sourceHealthReason: string;
+};
+
+export type DaangnIngestOptions = {
+  maxCombos?: number;
+  maxDetailSamples?: number;
+  delayMs?: number;
+  activeWindowHours?: number;
+  freshWindowHours?: number;
+  timeoutMs?: number;
+  // test override
+  regions?: DaangnRegionSeed[];
+  queries?: DaangnQuerySeed[];
+  categories?: DaangnCategorySeed[];
+  // dry-run: DB write 안 함 (Stage 1 default)
+  dryRun?: boolean;
+};
+
+// ───────────────────────────────────────────────────────────────────────────
+// Helpers
+// ───────────────────────────────────────────────────────────────────────────
+
+function boundedInt(raw: string | number | undefined | null, fallback: number, min: number, max: number) {
+  const parsed = typeof raw === "number" ? raw : Number.parseInt(String(raw ?? ""), 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
+function ageHours(timestamp: string | null, nowMs: number): number | null {
+  if (!timestamp) return null;
+  const t = Date.parse(timestamp);
+  if (!Number.isFinite(t)) return null;
+  return (nowMs - t) / 3_600_000;
+}
+
+function articleBucket(hours: number | null, freshH: number, activeH: number) {
+  if (hours == null) return "unknown" as const;
+  if (hours <= freshH) return "fresh_24h" as const;
+  if (hours <= activeH) return "active_72h" as const;
+  return "stale" as const;
+}
+
+// shipping 추론 — 보수적 (direct_only default).
+// Codex hypothesis: "shipping은 구조화 신호가 약해서 설명문에 택배 가능 근거가 없으면 direct_only 로 보수 처리".
+export function inferDaangnShipping(article: DaangnSearchArticle | DaangnDetailArticle): DaangnShippingInference {
+  const title = (article.title ?? "").toLowerCase();
+  const content = ((article as DaangnDetailArticle).content ?? article.content ?? "").toLowerCase();
+  const blob = `${title}\n${content}`;
+
+  // 명시적 직거래 only — direct_only 확정
+  if (/직거래\s*만|직거래only|택배\s*안돼|택배\s*불가|직거래\s*위주/i.test(blob)) {
+    return "direct_only";
+  }
+  // 명시적 택배 가능 — shipping_possible
+  if (/택배\s*가능|택배\s*ok|전국택배|편의점\s*택배|반택|준등기|등기|cu\s*택배|gs\s*택배|우체국\s*택배|cj대한통운|cj\s*택배|롯데\s*택배|한진\s*택배|로젠\s*택배|당근페이|안전결제/i.test(blob)) {
+    return "shipping_possible";
+  }
+  return "unknown";
+}
+
+function buildEmptyResult(mode: DaangnSourceMode, skipReason: string | undefined, startedAt: Date): DaangnIngestResult {
+  return {
+    source: DAANGN_SOURCE_ID,
+    mode,
+    skipped: true,
+    skipReason,
+    startedAt: startedAt.toISOString(),
+    finishedAt: new Date().toISOString(),
+    durationMs: Date.now() - startedAt.getTime(),
+    combos: 0,
+    executedCombos: 0,
+    blockedCombos: 0,
+    failedCombos: 0,
+    articles: 0,
+    ongoing: 0,
+    crawlAllowedOngoing: 0,
+    freshBoosted24h: 0,
+    activeBoosted72h: 0,
+    uniqueOngoingUrls: 0,
+    detailCandidates: 0,
+    detailFetched: 0,
+    detailParsed: 0,
+    detailFailed: 0,
+    shipping: { shipping_possible: 0, direct_only: 0, unknown: 0 },
+    rawUpserted: 0,
+    rawSkippedExisting: 0,
+    blockedSignals: [],
+    sourceHealthStatus: "healthy",
+    sourceHealthReason: skipReason ?? "no-op",
+  };
+}
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, Math.max(0, ms)));
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Combo selection (rotation strategy)
+// ───────────────────────────────────────────────────────────────────────────
+
+export type DaangnComboSelection = {
+  combos: DaangnIngestCombo[];
+  totalSpace: number;
+};
+
+export function selectDaangnCombos(input: {
+  regions: DaangnRegionSeed[];
+  queries: DaangnQuerySeed[];
+  categories: DaangnCategorySeed[];
+  maxCombos: number;
+}): DaangnComboSelection {
+  const { regions, queries, categories, maxCombos } = input;
+  const out: DaangnIngestCombo[] = [];
+  let space = 0;
+  // round-robin: region × query × category
+  // 우선 region rotation 이 가장 우선 (지역 부담 분산)
+  outer: for (const region of regions) {
+    for (const query of queries) {
+      for (const cat of categories) {
+        space += 1;
+        if (out.length >= maxCombos) continue;
+        // query 의 categoryIds 가 있으면 그 category 만
+        if (query.categoryIds.length > 0 && !query.categoryIds.includes(cat.id)) continue;
+        out.push({ region, query, category: cat });
+      }
+    }
+  }
+  return { combos: out, totalSpace: space };
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Main ingest
+// ───────────────────────────────────────────────────────────────────────────
+
+export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promise<DaangnIngestResult> {
+  const startedAt = new Date();
+  const mode = getDaangnSourceMode();
+
+  if (mode === "off") {
+    return buildEmptyResult(mode, "mode_off", startedAt);
+  }
+
+  const maxCombos = boundedInt(options.maxCombos ?? process.env.DAANGN_INGEST_MAX_COMBOS, 12, 1, 200);
+  const maxDetailSamples = boundedInt(options.maxDetailSamples ?? process.env.DAANGN_INGEST_MAX_DETAIL_SAMPLES, 8, 0, 100);
+  const delayMs = boundedInt(options.delayMs ?? process.env.DAANGN_INGEST_DELAY_MS, 600, 200, 5000);
+  const activeWindowHours = boundedInt(options.activeWindowHours ?? process.env.DAANGN_INGEST_ACTIVE_HOURS, 72, 1, 720);
+  const freshWindowHours = boundedInt(options.freshWindowHours ?? process.env.DAANGN_INGEST_FRESH_HOURS, 24, 1, 168);
+  const timeoutMs = boundedInt(options.timeoutMs, 10_000, 1_000, 30_000);
+  const dryRun = options.dryRun ?? mode !== "active"; // probe 모드 = dry-run
+
+  const regions = options.regions ?? DEFAULT_DAANGN_REGION_SEEDS;
+  const queries = options.queries ?? DEFAULT_DAANGN_FASHION_QUERY_SEEDS;
+  const categories = options.categories ?? DAANGN_FASHION_CATEGORIES;
+
+  const { combos } = selectDaangnCombos({ regions, queries, categories, maxCombos });
+
+  // 진행 통계
+  let executedCombos = 0;
+  let blockedCombos = 0;
+  let failedCombos = 0;
+  const blockedSignals: DaangnBlockSignal[] = [];
+
+  const allArticles: DaangnSearchArticle[] = [];
+  const ongoingSeenUrls = new Set<string>();
+
+  for (let i = 0; i < combos.length; i += 1) {
+    const combo = combos[i];
+    const url = buildDaangnSearchUrl({
+      regionDbId: combo.region.id,
+      categoryDbId: combo.category.id,
+      search: combo.query.search,
+    });
+
+    let resp;
+    try {
+      resp = await fetchDaangnText(url, timeoutMs);
+    } catch (err) {
+      failedCombos += 1;
+      if (delayMs > 0) await sleep(delayMs);
+      continue;
+    }
+
+    if (resp.blockSignal.blocked) {
+      blockedCombos += 1;
+      blockedSignals.push(resp.blockSignal);
+      // 차단 감지 즉시 중단 (안전)
+      break;
+    }
+
+    if (!resp.ok) {
+      failedCombos += 1;
+      if (delayMs > 0) await sleep(delayMs);
+      continue;
+    }
+
+    try {
+      const parsed = parseDaangnSearchHtml(resp.body);
+      for (const a of parsed.articles) {
+        allArticles.push(a);
+        if (a.status === "Ongoing" && a.href) ongoingSeenUrls.add(a.href);
+      }
+      executedCombos += 1;
+    } catch (err) {
+      failedCombos += 1;
+    }
+
+    if (delayMs > 0) await sleep(delayMs);
+  }
+
+  // Summarize
+  const summary = summarizeDaangnArticles(allArticles, { activeWindowHours });
+  const nowMs = Date.now();
+
+  // Detail fetch candidates — fresh 우선 (boostedAt 기준)
+  const detailCandidates = allArticles
+    .filter((a) => shouldFetchDaangnDetailCandidate(a, { activeWindowHours, nowMs }))
+    .map((a) => ({ article: a, hours: ageHours(a.boostedAt ?? a.createdAt, nowMs) }))
+    .sort((a, b) => (a.hours ?? Infinity) - (b.hours ?? Infinity))
+    .slice(0, maxDetailSamples);
+
+  let detailFetched = 0;
+  let detailParsed = 0;
+  let detailFailed = 0;
+  const shipping = { shipping_possible: 0, direct_only: 0, unknown: 0 };
+  const detailRecords: DaangnIngestDetailRecord[] = [];
+
+  for (const cand of detailCandidates) {
+    const url = cand.article.href.startsWith("http") ? cand.article.href : `https://www.daangn.com${cand.article.href}`;
+    let resp;
+    try {
+      resp = await fetchDaangnText(url, timeoutMs);
+      detailFetched += 1;
+    } catch (err) {
+      detailFailed += 1;
+      if (delayMs > 0) await sleep(delayMs);
+      continue;
+    }
+
+    if (resp.blockSignal.blocked) {
+      blockedSignals.push(resp.blockSignal);
+      break;
+    }
+
+    if (!resp.ok) {
+      detailFailed += 1;
+      if (delayMs > 0) await sleep(delayMs);
+      continue;
+    }
+
+    const parsed = parseDaangnDetailHtml(resp.body);
+    if (!parsed) {
+      detailFailed += 1;
+      if (delayMs > 0) await sleep(delayMs);
+      continue;
+    }
+    detailParsed += 1;
+
+    const ship = inferDaangnShipping(parsed);
+    shipping[ship] += 1;
+    detailRecords.push({
+      article: parsed,
+      combo: combos[0], // best-effort — TODO: combo trace 유지
+      shipping: ship,
+    });
+
+    if (delayMs > 0) await sleep(delayMs);
+  }
+
+  // Source health 평가
+  let sourceHealthStatus: DaangnIngestResult["sourceHealthStatus"] = "healthy";
+  let sourceHealthReason = "ok";
+  if (blockedSignals.length > 0) {
+    sourceHealthStatus = "unhealthy";
+    sourceHealthReason = `blocked:${blockedSignals[0].reason ?? "unknown"}`;
+  } else if (failedCombos / Math.max(1, combos.length) > 0.5) {
+    sourceHealthStatus = "degraded";
+    sourceHealthReason = `failed_rate_${Math.round((failedCombos / combos.length) * 100)}pct`;
+  }
+
+  // DB write (Stage 1 = dry-run skip)
+  let rawUpserted = 0;
+  let rawSkippedExisting = 0;
+  if (!dryRun) {
+    // TODO Phase 1: schema migration 후 활성화
+    // rawUpserted = await upsertDaangnRawListings(allArticles, detailRecords);
+  }
+
+  const finishedAt = new Date();
+  return {
+    source: DAANGN_SOURCE_ID,
+    mode,
+    skipped: false,
+    startedAt: startedAt.toISOString(),
+    finishedAt: finishedAt.toISOString(),
+    durationMs: finishedAt.getTime() - startedAt.getTime(),
+
+    combos: combos.length,
+    executedCombos,
+    blockedCombos,
+    failedCombos,
+
+    articles: summary.articles,
+    ongoing: summary.ongoing,
+    crawlAllowedOngoing: summary.crawlAllowedOngoing,
+    freshBoosted24h: summary.freshBoosted24h,
+    activeBoosted72h: summary.activeBoosted72h,
+    uniqueOngoingUrls: ongoingSeenUrls.size,
+
+    detailCandidates: detailCandidates.length,
+    detailFetched,
+    detailParsed,
+    detailFailed,
+
+    shipping,
+    rawUpserted,
+    rawSkippedExisting,
+
+    blockedSignals,
+    sourceHealthStatus,
+    sourceHealthReason,
+  };
+}
