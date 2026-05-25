@@ -526,11 +526,14 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   //   24h 누적: 3 × 288 tick = 864 region-hit / day → 111 region pool 8 cycle / day.
   //   대형 batch upsert path 최적화 후 다시 증가 (별도 wave).
   const maxCombos = boundedInt(options.maxCombos, 3, 1, 200);
-  const maxDetailSamples = boundedInt(options.maxDetailSamples, 15, 0, 100);
+  // Phase 6i+ budget fix v3: detail fetch loop 가 진짜 병목.
+  //   15 detail × max 10s = 150s 가능 → 80s timeout.
+  //   5 detail × 5s = 25s 로 cap (전체 budget 안에 들어옴).
+  const maxDetailSamples = boundedInt(options.maxDetailSamples, 5, 0, 100);
   const delayMs = boundedInt(options.delayMs, 400, 200, 5000);
   const activeWindowHours = boundedInt(options.activeWindowHours, 72, 1, 720);
   const freshWindowHours = boundedInt(options.freshWindowHours, 24, 1, 168);
-  const timeoutMs = boundedInt(options.timeoutMs, 10_000, 1_000, 30_000);
+  const timeoutMs = boundedInt(options.timeoutMs, 5_000, 1_000, 30_000);
   const dryRun = options.dryRun ?? mode !== "active";
 
   // Region 기반 ingest (Phase 6g — 6e 전국 검색 가설 폐기).
