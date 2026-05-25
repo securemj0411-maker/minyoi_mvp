@@ -64,9 +64,20 @@ export function JoongnaSourceBadge({ label = "중고나라" }: { label?: string 
   );
 }
 
+// 당근 brand color: 주황 (당근색)
+export function DaangnSourceBadge({ label = "당근" }: { label?: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-1.5 py-0.5 text-[9px] font-black text-orange-700 ring-1 ring-orange-100 dark:bg-orange-950/40 dark:text-orange-200 dark:ring-orange-900/60">
+      <span className="inline-block h-3.5 w-3.5 rounded-[3px] bg-orange-500" aria-hidden="true" />
+      {label}
+    </span>
+  );
+}
+
 export function MarketplaceSourceBadge({ source, label }: { source?: string | null; label?: string | null }) {
   const normalized = normalizeMarketplaceSource(source);
   const displayLabel = label ?? marketplaceSourceLabel(normalized);
   if (normalized === "joongna") return <JoongnaSourceBadge label={displayLabel} />;
+  if (normalized === "daangn") return <DaangnSourceBadge label={displayLabel} />;
   return <BunjangSourceBadge label={displayLabel} />;
 }

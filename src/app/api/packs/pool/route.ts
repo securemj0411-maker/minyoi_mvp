@@ -331,7 +331,7 @@ async function loadPool(
   headers: Record<string, string>,
   options: {
     sort?: "profit_desc" | "latest" | "price_asc";
-    source?: "bunjang" | "joongna" | null;
+    source?: "bunjang" | "joongna" | "daangn" | null;
     priceMax?: number | null;
     excludePids?: number[];
     readyCandidateLimit?: number;
@@ -753,8 +753,8 @@ export async function GET(req: Request) {
       preferenceParam === "aggressive" ? "aggressive" :
       "balanced";
     const sourceParam = url.searchParams.get("source")?.trim().toLowerCase();
-    const source: "bunjang" | "joongna" | null =
-      sourceParam === "bunjang" || sourceParam === "joongna"
+    const source: "bunjang" | "joongna" | "daangn" | null =
+      sourceParam === "bunjang" || sourceParam === "joongna" || sourceParam === "daangn"
         ? normalizeMarketplaceSource(sourceParam)
         : null;
 
