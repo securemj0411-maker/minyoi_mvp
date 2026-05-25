@@ -7,7 +7,7 @@ import { serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type RevealRow = {
+type PackRevealRow = {
   id: number;
   pid: number;
   user_ref: string;
@@ -57,12 +57,17 @@ type PoolRow = {
   pid: number;
   category: string | null;
   comparable_key: string | null;
+  expected_profit_min: number | null;
+  expected_profit_max: number | null;
 };
 
 type DetailEventRow = {
+  id: number;
   pid: number;
   user_ref: string;
   event_type: string;
+  session_id: string | null;
+  metadata: Record<string, unknown> | null;
   created_at: string;
 };
 
@@ -178,6 +183,17 @@ function sourceLabel(value: string | null | undefined) {
   return value || "unknown";
 }
 
+function metadataNumber(metadata: Record<string, unknown> | null | undefined, key: string): number | null {
+  const value = metadata?.[key];
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function metadataString(metadata: Record<string, unknown> | null | undefined, key: string): string | null {
+  const value = metadata?.[key];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
 export async function GET(req: NextRequest) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -189,19 +205,20 @@ export async function GET(req: NextRequest) {
   const userRef = cleanUserRef(url.searchParams.get("userRef"));
   const from = sinceIso(days);
   const userFilter = userRef ? `&user_ref=eq.${encodeURIComponent(userRef)}` : "";
-  const revealRows = await fetchJson<RevealRow[]>(
-    `${tableUrl("mvp_pack_reveals")}?select=id,pid,user_ref,expected_profit_min,expected_profit_max,current_profit_min,current_profit_max,confidence,link_clicked_at,revealed_at,hidden_at&revealed_at=gte.${encodeURIComponent(from)}${userFilter}&order=revealed_at.desc&limit=${limit}`,
+  const detailOpenRows = await fetchJson<DetailEventRow[]>(
+    `${tableUrl("mvp_detail_events")}?select=id,pid,user_ref,event_type,session_id,metadata,created_at&event_type=eq.detail_opened&created_at=gte.${encodeURIComponent(from)}${userFilter}&order=created_at.desc&limit=${limit}`,
   );
 
-  const pids = revealRows.map((row) => Number(row.pid)).filter(Number.isFinite);
-  const [rawRows, listingRows, parsedRows, poolRows, eventRows, authMap] = await Promise.all([
+  const pids = detailOpenRows.map((row) => Number(row.pid)).filter(Number.isFinite);
+  const [rawRows, listingRows, parsedRows, poolRows, packRevealRows, eventRows, authMap] = await Promise.all([
     fetchByPid<RawRow>("mvp_raw_listings", "pid,source,seller_source,name,url,price,thumbnail_url,sku_id,sku_name,listing_state,sale_status", pids),
     fetchByPid<ListingRow>("mvp_listings", "pid,price,name,sku_name,thumbnail_url,url", pids),
     fetchByPid<ParsedRow>("mvp_listing_parsed", "pid,category,comparable_key,condition_class,model,family", pids),
-    fetchByPid<PoolRow>("mvp_candidate_pool", "pid,category,comparable_key", pids),
+    fetchByPid<PoolRow>("mvp_candidate_pool", "pid,category,comparable_key,expected_profit_min,expected_profit_max", pids),
+    fetchByPid<PackRevealRow>("mvp_pack_reveals", "id,pid,user_ref,expected_profit_min,expected_profit_max,current_profit_min,current_profit_max,confidence,link_clicked_at,revealed_at,hidden_at", pids),
     pids.length > 0
       ? fetchJson<DetailEventRow[]>(
-          `${tableUrl("mvp_detail_events")}?select=pid,user_ref,event_type,created_at&created_at=gte.${encodeURIComponent(from)}${userFilter}&order=created_at.desc&limit=${MAX_EVENTS}`,
+          `${tableUrl("mvp_detail_events")}?select=id,pid,user_ref,event_type,session_id,metadata,created_at&created_at=gte.${encodeURIComponent(from)}${userFilter}&order=created_at.desc&limit=${MAX_EVENTS}`,
         ).catch(() => [] as DetailEventRow[])
       : Promise.resolve([] as DetailEventRow[]),
     fetchAuthUsersMap(),
@@ -211,8 +228,10 @@ export async function GET(req: NextRequest) {
   const listingByPid = new Map(listingRows.map((row) => [Number(row.pid), row]));
   const parsedByPid = new Map(parsedRows.map((row) => [Number(row.pid), row]));
   const poolByPid = new Map(poolRows.map((row) => [Number(row.pid), row]));
+  const packRevealByKey = new Map(packRevealRows.map((row) => [`${row.user_ref}:${Number(row.pid)}`, row]));
   const revealedPidSet = new Set(pids);
   const eventCountByRevealKey = new Map<string, Map<string, number>>();
+  const originalClickAtByKey = new Map<string, string>();
   for (const event of eventRows) {
     const pid = Number(event.pid);
     if (!revealedPidSet.has(pid)) continue;
@@ -220,6 +239,9 @@ export async function GET(req: NextRequest) {
     const byType = eventCountByRevealKey.get(key) ?? new Map<string, number>();
     byType.set(event.event_type, (byType.get(event.event_type) ?? 0) + 1);
     eventCountByRevealKey.set(key, byType);
+    if (event.event_type === "original_clicked" && !originalClickAtByKey.has(key)) {
+      originalClickAtByKey.set(key, event.created_at);
+    }
   }
 
   const priceBuckets = new Map<string, BucketRow>();
@@ -232,37 +254,46 @@ export async function GET(req: NextRequest) {
   let linkClicks = 0;
   let hidden = 0;
 
-  const rows = revealRows.map((reveal) => {
-    const pid = Number(reveal.pid);
+  const rows = detailOpenRows.map((open) => {
+    const pid = Number(open.pid);
     const raw = rawByPid.get(pid);
     const listing = listingByPid.get(pid);
     const parsed = parsedByPid.get(pid);
     const pool = poolByPid.get(pid);
-    const price = Number(raw?.price ?? listing?.price ?? 0) || null;
-    const source = raw?.seller_source ?? raw?.source ?? "unknown";
-    const category = parsed?.category ?? pool?.category ?? "unknown";
+    const packReveal = packRevealByKey.get(`${open.user_ref}:${pid}`);
+    const priceValue = metadataNumber(open.metadata, "price") ?? Number(raw?.price ?? listing?.price ?? 0);
+    const price = Number.isFinite(priceValue) && priceValue > 0 ? priceValue : null;
+    const source = metadataString(open.metadata, "source") ?? raw?.seller_source ?? raw?.source ?? "unknown";
+    const category = metadataString(open.metadata, "category") ?? parsed?.category ?? pool?.category ?? "unknown";
     const sku = parsed?.comparable_key ?? pool?.comparable_key ?? raw?.sku_id ?? raw?.sku_name ?? listing?.sku_name ?? "unknown";
-    const expectedProfit = Math.round((Number(reveal.expected_profit_min) + Number(reveal.expected_profit_max)) / 2);
-    const currentProfit = reveal.current_profit_min == null || reveal.current_profit_max == null
-      ? null
-      : Math.round((Number(reveal.current_profit_min) + Number(reveal.current_profit_max)) / 2);
-    const user = authMap.get(reveal.user_ref);
-    const events = eventCountByRevealKey.get(`${reveal.user_ref}:${pid}`) ?? new Map<string, number>();
+    const expectedProfit = metadataNumber(open.metadata, "expectedProfit")
+      ?? (pool?.expected_profit_min != null && pool?.expected_profit_max != null
+        ? Math.round((Number(pool.expected_profit_min) + Number(pool.expected_profit_max)) / 2)
+        : packReveal
+          ? Math.round((Number(packReveal.expected_profit_min) + Number(packReveal.expected_profit_max)) / 2)
+          : 0);
+    const currentProfit = packReveal?.current_profit_min == null || packReveal?.current_profit_max == null
+      ? expectedProfit
+      : Math.round((Number(packReveal.current_profit_min) + Number(packReveal.current_profit_max)) / 2);
+    const user = authMap.get(open.user_ref);
+    const events = eventCountByRevealKey.get(`${open.user_ref}:${pid}`) ?? new Map<string, number>();
+    const linkClickedAt = originalClickAtByKey.get(`${open.user_ref}:${pid}`) ?? packReveal?.link_clicked_at ?? null;
 
     inc(priceBuckets, priceBucket(price));
-    inc(profitBuckets, profitBucket(currentProfit ?? expectedProfit));
+    inc(profitBuckets, profitBucket(currentProfit));
     categoryCounts.set(category, (categoryCounts.get(category) ?? 0) + 1);
     sourceCounts.set(sourceLabel(source), (sourceCounts.get(sourceLabel(source)) ?? 0) + 1);
     skuCounts.set(sku, (skuCounts.get(sku) ?? 0) + 1);
-    conditionCounts.set(parsed?.condition_class ?? "unknown", (conditionCounts.get(parsed?.condition_class ?? "unknown") ?? 0) + 1);
-    userCounts.set(reveal.user_ref, (userCounts.get(reveal.user_ref) ?? 0) + 1);
-    if (reveal.link_clicked_at) linkClicks += 1;
-    if (reveal.hidden_at) hidden += 1;
+    const condition = metadataString(open.metadata, "conditionClass") ?? parsed?.condition_class ?? "unknown";
+    conditionCounts.set(condition, (conditionCounts.get(condition) ?? 0) + 1);
+    userCounts.set(open.user_ref, (userCounts.get(open.user_ref) ?? 0) + 1);
+    if (linkClickedAt) linkClicks += 1;
+    if (packReveal?.hidden_at) hidden += 1;
 
     return {
-      id: reveal.id,
+      id: open.id,
       pid,
-      userRef: reveal.user_ref,
+      userRef: open.user_ref,
       userEmail: user?.email ?? null,
       userNickname: user?.nickname ?? null,
       title: raw?.name ?? listing?.name ?? `PID ${pid}`,
@@ -273,13 +304,13 @@ export async function GET(req: NextRequest) {
       sourceLabel: sourceLabel(source),
       category,
       sku,
-      condition: parsed?.condition_class ?? null,
+      condition,
       expectedProfit,
       currentProfit,
-      confidence: reveal.confidence,
-      revealedAt: reveal.revealed_at,
-      linkClickedAt: reveal.link_clicked_at,
-      hiddenAt: reveal.hidden_at,
+      confidence: packReveal?.confidence ?? null,
+      revealedAt: open.created_at,
+      linkClickedAt,
+      hiddenAt: packReveal?.hidden_at ?? null,
       listingState: raw?.listing_state ?? null,
       saleStatus: raw?.sale_status ?? null,
       eventCounts: Object.fromEntries(events.entries()),
@@ -294,11 +325,11 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     params: { days, limit, userRef: userRef || null },
     summary: {
-      reveals: revealRows.length,
-      uniqueUsers: new Set(revealRows.map((row) => row.user_ref)).size,
-      uniqueProducts: new Set(revealRows.map((row) => row.pid)).size,
+      reveals: detailOpenRows.length,
+      uniqueUsers: new Set(detailOpenRows.map((row) => row.user_ref)).size,
+      uniqueProducts: new Set(detailOpenRows.map((row) => row.pid)).size,
       linkClicks,
-      linkClickRate: revealRows.length > 0 ? linkClicks / revealRows.length : 0,
+      linkClickRate: detailOpenRows.length > 0 ? linkClicks / detailOpenRows.length : 0,
       hidden,
       originalClickedEvents,
       reportOpenedEvents,

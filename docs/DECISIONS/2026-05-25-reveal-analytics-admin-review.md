@@ -40,9 +40,15 @@
 
 - 운영자 상단 nav에 `REVEALS` 탭을 추가했다.
 - 회원 drawer에 해당 회원의 reveal 내역으로 바로 들어가는 링크를 추가했다.
-- `/api/admin/reveal-analytics`를 추가해 `mvp_pack_reveals` 기반으로 가격대/수익구간/category/SKU/source/user/funnel 집계를 반환한다.
+- `/api/admin/reveal-analytics`를 추가해 현재 서비스의 상세보기 열람 이벤트인 `mvp_detail_events.detail_opened` 기반으로 가격대/수익구간/category/SKU/source/user/funnel 집계를 반환한다.
 - 운영자 하위 React 페이지 `/caule.../reveal-analytics`를 추가했다.
 - detail event는 reveal row의 `user_ref + pid` 기준으로 묶어 다른 사용자의 동일 상품 이벤트가 섞이지 않게 했다.
+
+## Correction
+
+- 최초 구현은 구 pack/open 모델의 `mvp_pack_reveals`를 최신 reveal 원장처럼 사용했다.
+- 현재 UX에서 운영자가 말하는 reveal은 피드 카드 상세보기 진입이므로 `detail_opened` 이벤트가 기준이다.
+- `mvp_pack_reveals`는 보조 데이터(과거 unlock/current profit/hidden/link clicked fallback)로만 사용한다.
 
 ## Hold
 
