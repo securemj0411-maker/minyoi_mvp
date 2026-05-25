@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import sharp from "sharp";
+import { teaserBudgetRangeLabel, teaserProfitLabel } from "@/lib/feed-price-display";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 // 2026-05-17: 비로그인 사용자용 마스킹 매물 preview API.
@@ -7,8 +8,8 @@ import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 //
 // 정책:
 // - 카테고리 다양화 5개 (애플 편향 차단 — smartphone/watch/airpods/laptop/etc 1개씩)
-// - 마스킹 정보만 반환 (pid X, 매물명 부분 mask, image URL X)
-// - 가격 / 차익 / 카테고리 / 등급은 정확히 반환 (hook)
+// - teaser 정보만 반환 (pid X, 원본명 X, 원본 image URL X, 정확 가격 X)
+// - 수익/예산/할인율은 범위형 label 로만 반환 (guest feed 와 /me locked feed parity)
 // - 번개 API 검증 skip (비로그인 = 식별 X, 검증 비용 0)
 // - 캐시 60초 (재방문 시 다양성 + 부담 ↓)
 
@@ -112,6 +113,17 @@ function categoryFriendlyLabel(category: string | null): string {
   return CATEGORY_FRIENDLY_LABEL[category] ?? "중고 상품";
 }
 
+function relativeDiscountLabel(price: number | null | undefined, marketPrice: number | null | undefined) {
+  const buy = Number(price ?? 0);
+  const market = Number(marketPrice ?? 0);
+  if (!Number.isFinite(buy) || buy <= 0 || !Number.isFinite(market) || market <= 0 || buy >= market) {
+    return "시세 비교 완료";
+  }
+  const discount = Math.max(1, Math.round(((market - buy) / market) * 100));
+  const rounded = discount >= 10 ? Math.round(discount / 5) * 5 : discount;
+  return `시세보다 약 ${rounded}% 낮음`;
+}
+
 type PoolRow = {
   pid: number;
   expected_profit_min: number;
@@ -172,10 +184,10 @@ export async function GET() {
   try {
     const headers = serviceHeaders();
 
-    // Wave launch-113 (2026-05-24): 비로그인 hook 강화 — 이미 팔린 실제 매물 노출.
+    // Wave launch-113 (2026-05-24): 비로그인 hook 강화 — sold 표본을 내부 소스로 사용.
     // Wave launch-115 (2026-05-24): 7일 → 14일 + scan limit 500 (3개만 보이는 frustration fix).
     //   배경: 7일 sold + tier dedup 5겹 거치면 5개 못 채우는 케이스 발생.
-    //   카탈로그 leak 우려 없음 (이미 거래된 매물 = 사용자가 잡을 수 없음).
+    // Wave 2026-05-25: public 응답은 active/sold 식별키를 모두 숨긴 teaser label 만 내려준다.
     const sinceIso = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
     const soldPidsRes = await restFetch(
       `${tableUrl("mvp_raw_listings")}?select=pid,sold_detected_at&listing_state=in.(sold_confirmed,disappeared)&sold_detected_at=gte.${encodeURIComponent(sinceIso)}&order=sold_detected_at.desc&limit=500`,
@@ -366,27 +378,26 @@ export async function GET() {
       } catch {}
     }
 
-    // Wave launch-113: sold_detected_at lookup (카드에 "N일 전 거래" 표시용).
-    const soldAtByPid = new Map<number, string>(soldPidRows.map((r) => [r.pid, r.sold_detected_at]));
-
     const items = selected.map((row, idx) => {
       const raw = rawByPid.get(row.pid);
       const meta = metaByPid.get(row.pid);
+      const avgProfit = (Number(row.expected_profit_min ?? 0) + Number(row.expected_profit_max ?? 0)) / 2;
       return {
         slot: idx + 1,
-        // Wave launch-113: sold 매물이라 실제 노출. fallback 으로 카테고리 라벨 유지.
-        name: raw?.name ?? categoryFriendlyLabel(row.category),
-        thumbnailUrl: raw?.thumbnail_url ?? null,
-        soldAt: soldAtByPid.get(row.pid) ?? null,
+        // Public preview는 exact 식별키를 내리지 않는다. 내부 표본이어도 feed teaser 정책과 통일.
+        previewTitle: `${categoryFriendlyLabel(row.category)} 후보`,
+        profitLabel: teaserProfitLabel(avgProfit),
+        budgetLabel: teaserBudgetRangeLabel(raw?.price ?? null),
+        priceSignalLabel: relativeDiscountLabel(raw?.price ?? null, raw?.sku_median ?? null),
         // (deprecated) launch-111 호환성 — 클라이언트 fallback.
         maskedName: categoryFriendlyLabel(row.category),
         blurredImage: blurredImages[idx],
         category: row.category ?? "other",
         conditionClass: row.condition_class,
-        price: raw?.price ?? 0,
-        skuMedian: raw?.sku_median ?? null,
-        expectedProfitMin: row.expected_profit_min,
-        expectedProfitMax: row.expected_profit_max,
+        price: 0,
+        skuMedian: null,
+        expectedProfitMin: 0,
+        expectedProfitMax: 0,
         profitBand: row.profit_band,
         // 2026-05-17: 신뢰 시그널 chips (dashboard 패턴).
         confidence: confLabel(row.confidence),

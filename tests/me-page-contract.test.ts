@@ -365,36 +365,48 @@ test("/me keeps dashboard summary compact on mobile", () => {
   assert.match(dashboard, /hidden gap-2 sm:grid/);
 });
 
-test("guest main page makes masked listing titles strongly blurred", () => {
-  const preview = source("src/components/preview-masked-dashboard.tsx");
-
-  assert.match(preview, /maskedName/);
-  assert.match(preview, /select-none truncate text-sm font-bold text-\[#223127\] blur-\[3px\]/);
-  assert.doesNotMatch(preview, /text-\[#223127\] blur-\[1px\]/);
-});
-
-test("guest main page hides category clues and shows polished proof and budget chips", () => {
-  const preview = source("src/components/preview-masked-dashboard.tsx");
+test("guest preview API returns teaser labels instead of exact listing identifiers", () => {
   const api = source("src/app/api/preview-pool/route.ts");
 
-  assert.doesNotMatch(preview, /CATEGORY_LABEL/);
-  assert.doesNotMatch(preview, /CATEGORY_SVG/);
-  assert.doesNotMatch(preview, /CATEGORY_GRADIENT/);
-  assert.doesNotMatch(preview, /CategoryIcon/);
-  assert.doesNotMatch(preview, /\{item\.category\}/);
-  assert.match(preview, /alt="마스킹된 추천 매물"/);
-  assert.match(preview, /<PackageIcon width=\{36\} height=\{36\} \/>/);
-  assert.match(preview, /<ConditionPhotoBadge conditionClass=\{item\.conditionClass\} compact \/>/);
-  assert.match(preview, /function priceBandLabel\(price: number\): string/);
-  assert.match(preview, /if \(price <= 100_000\) return "10만원 이하"/);
-  assert.match(preview, /if \(price <= 300_000\) return "10~30만원"/);
-  assert.match(preview, /const budgetLabel = priceBandLabel\(item\.price\)/);
-  assert.match(preview, /매입가 \{budgetLabel\}/);
-  assert.match(preview, /function previewSignal\(item: PreviewItem\): PreviewSignal/);
-  assert.match(preview, /후기 \$\{compactCount\(reviews\)\} 셀러/);
-  assert.match(preview, /평균 \$\{daysLabel\(item\.medianHoursToSold\)\} 회전/);
-  assert.match(preview, /시장 표본 \$\{compactCount\(item\.soldSampleCount\)\}건/);
-  assert.match(preview, /SIGNAL_TONE_CLASS\[signal\.tone\]/);
+  assert.match(api, /previewTitle/);
+  assert.match(api, /profitLabel/);
+  assert.match(api, /budgetLabel/);
+  assert.match(api, /priceSignalLabel/);
+  assert.match(api, /teaserBudgetRangeLabel/);
+  assert.match(api, /teaserProfitLabel/);
+  assert.match(api, /blurredImage: blurredImages\[idx\]/);
+  assert.doesNotMatch(api, /thumbnailUrl:/);
+  assert.doesNotMatch(api, /name:\s*raw/);
+  assert.doesNotMatch(api, /soldAt:/);
+  assert.doesNotMatch(api, /price:\s*raw/);
+  assert.doesNotMatch(api, /skuMedian:\s*raw/);
+});
+
+test("guest main preview uses /me teaser copy and avoids sold/exact-price language", () => {
+  const clientPreview = source("src/components/preview-masked-dashboard.tsx");
+  const serverPreview = source("src/components/preview-masked-dashboard-server.tsx");
+  const api = source("src/app/api/preview-pool/route.ts");
+
+  for (const preview of [clientPreview, serverPreview]) {
+    assert.match(preview, /previewTitle/);
+    assert.match(preview, /profitLabel/);
+    assert.match(preview, /budgetLabel/);
+    assert.match(preview, /priceSignalLabel/);
+    assert.match(preview, /alt="마스킹된 추천 매물"/);
+    assert.match(preview, /상세에서 원문 공개/);
+    assert.match(preview, /필요 예산/);
+    assert.match(preview, /정확 시세 잠김/);
+    assert.match(preview, /로그인하면 지금 진행 중인 추천 매물/);
+    assert.doesNotMatch(preview, /최근 거래된 실제 매물/);
+    assert.doesNotMatch(preview, /거래 완료/);
+    assert.doesNotMatch(preview, /이미 거래/);
+    assert.doesNotMatch(preview, /soldAgoLabel/);
+    assert.doesNotMatch(preview, /item\.name/);
+    assert.doesNotMatch(preview, /item\.thumbnailUrl/);
+    assert.doesNotMatch(preview, /krw\(item\.price\)/);
+    assert.doesNotMatch(preview, /krw\(item\.skuMedian\)/);
+  }
+
   assert.match(api, /shop_review_rating,shop_review_count/);
   assert.match(api, /sellerReviewRating/);
   assert.match(api, /sellerReviewCount/);

@@ -14,10 +14,10 @@ import {
 
 type PreviewItem = {
   slot: number;
-  // Wave launch-113 (2026-05-24): sold 매물 실제 노출 — name/thumbnailUrl/soldAt.
-  name?: string;
-  thumbnailUrl?: string | null;
-  soldAt?: string | null;
+  previewTitle?: string;
+  profitLabel?: string;
+  budgetLabel?: string;
+  priceSignalLabel?: string;
   // (legacy) launch-111 호환 fallback.
   maskedName: string;
   blurredImage: string | null;
@@ -41,49 +41,6 @@ type PreviewItem = {
 
 type PreviewSignalTone = "seller" | "speed" | "market" | "verified";
 type PreviewSignal = { label: string; tone: PreviewSignalTone };
-
-function krw(value: number) {
-  return `${Math.round(value).toLocaleString("ko-KR")}원`;
-}
-
-// Wave launch-111b (2026-05-24): 비로그인 매물 가격은 정확값 X — "만원대" band 로 노출.
-//   사용자 정정: "매입이랑 시세를 몇만원대 이런 식으로 하자고 했는데 정확값 박혀 있음 = 구라".
-//   원 단위 정확값 노출 시 비로그인이 sku/가격 매핑 가능 → 카탈로그 leak 위험.
-function krwTenThousandBand(value: number): string {
-  const v = Math.round(value);
-  if (v <= 0) return "0원";
-  if (v < 10_000) return `${(Math.floor(v / 1_000) || 1) * 1_000}원대`;
-  const tenK = Math.floor(v / 10_000);
-  return `${tenK}만원대`;
-}
-
-// 2026-05-17: 시세 차이 표시 — min === max 면 단일 (구간 표시 어색 fix).
-// Wave launch-113 (2026-05-24): 정확값 다시 (sold 매물이라 leak 없음).
-function marketGapLabel(min: number, max: number): string {
-  if (Math.round(min) === Math.round(max)) return `${Math.round(min).toLocaleString("ko-KR")}원 낮음`;
-  return `${Math.round(min).toLocaleString("ko-KR")}~${Math.round(max).toLocaleString("ko-KR")}원 낮음`;
-}
-
-// Wave launch-113: "N일 전 거래" / "N시간 전 거래" 표시.
-function soldAgoLabel(soldAt: string | null | undefined): string {
-  if (!soldAt) return "최근 거래";
-  const ms = Date.now() - new Date(soldAt).getTime();
-  if (!Number.isFinite(ms) || ms < 0) return "최근 거래";
-  const hours = Math.floor(ms / (1000 * 60 * 60));
-  if (hours < 1) return "방금 거래";
-  if (hours < 24) return `${hours}시간 전 거래`;
-  const days = Math.floor(hours / 24);
-  return `${days}일 전 거래`;
-}
-
-// 시세 차이 % — 매입가 대비 차이 비율 (대시보드 통일 패턴).
-function marketGapPctLabel(price: number, gapMin: number, gapMax: number): string | null {
-  if (!Number.isFinite(price) || price <= 0) return null;
-  const avg = (gapMin + gapMax) / 2;
-  const pct = Math.round((avg / price) * 100);
-  if (!Number.isFinite(pct)) return null;
-  return `${pct}% 낮음`;
-}
 
 function priceBandLabel(price: number): string {
   if (!Number.isFinite(price) || price <= 0) return "예산 확인 중";
@@ -176,8 +133,8 @@ export default function PreviewMaskedDashboard() {
 
       <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-4 px-4 py-3 sm:gap-6 sm:px-6 sm:py-8 lg:grid lg:grid-cols-[minmax(0,0.88fr)_minmax(420px,1fr)] lg:items-start lg:gap-8">
         <section className="pt-0 lg:sticky lg:top-24 lg:pt-8">
-          <div className="hidden items-center gap-2 rounded-full border border-rose-300 bg-rose-50 px-3 py-1.5 text-[11px] font-black text-rose-700 shadow-sm dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300 sm:inline-flex">
-            최근 거래된 실제 매물
+          <div className="hidden items-center gap-2 rounded-full border border-[#d9d1c4] bg-white/70 px-3 py-1.5 text-[11px] font-black text-[#526055] shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-300 sm:inline-flex">
+            오늘의 추천 매물
           </div>
           <h1 className="mt-1 break-keep text-[28px] font-black leading-[1.05] tracking-tight text-[var(--rd-ink)] dark:text-zinc-50 sm:mt-5 sm:text-[44px] lg:text-[52px]">
             볼 만한 중고만
@@ -187,9 +144,8 @@ export default function PreviewMaskedDashboard() {
           <p className="mt-2 max-w-[460px] break-keep text-[13px] font-semibold leading-5 text-[#5f6a60] dark:text-zinc-300 sm:mt-4 sm:text-[15px] sm:leading-7">
             같은 상태끼리 가격을 맞춰보고, 배송비와 수수료까지 계산한 추천 매물만 보여줘요.
           </p>
-          {/* Wave launch-113 (2026-05-24): 정직 fine print — 우측 카드가 이미 거래된 매물임. */}
-          <p className="mt-1.5 max-w-[460px] break-keep text-[11px] font-bold leading-4 text-rose-600 dark:text-rose-400 sm:text-[12px]">
-            ※ 우측 카드는 <strong>이미 거래 완료된 매물</strong>입니다. 로그인하면 지금 진행 중인 매물을 볼 수 있어요.
+          <p className="mt-1.5 max-w-[460px] break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400 sm:text-[12px]">
+            로그인하면 지금 진행 중인 추천 매물의 이름과 원본 링크를 볼 수 있어요.
           </p>
 
           <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:flex sm:flex-row sm:gap-2.5">
@@ -207,24 +163,12 @@ export default function PreviewMaskedDashboard() {
             </Link>
           </div>
 
-          <div className="mt-7 hidden max-w-[520px] grid-cols-3 gap-2.5 sm:grid">
-            {[
-              ["무료", "첫 3개 상세"],
-              ["1년", "충전 크레딧"],
-              ["0원", "피드 차감"],
-            ].map(([value, label]) => (
-              <div key={label} className="rounded-2xl border border-zinc-200 bg-white/65 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-900/70">
-                <div className="text-[18px] font-black leading-none text-[var(--rd-ink)] dark:text-zinc-50">{value}</div>
-                <div className="mt-1.5 break-keep text-[11px] font-bold text-zinc-500 dark:text-zinc-400">{label}</div>
-              </div>
-            ))}
-          </div>
         </section>
 
         <section className="overflow-hidden rounded-[30px] border border-zinc-200 bg-white shadow-[0_22px_60px_rgba(15,23,42,0.12)] dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800 sm:px-5">
             <div>
-              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-zinc-400 dark:text-zinc-500">Preview feed</div>
+              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-zinc-400 dark:text-zinc-500">Teaser feed</div>
               <div className="mt-0.5 text-[16px] font-black text-[var(--rd-ink)] dark:text-zinc-50">오늘의 추천 매물</div>
             </div>
             <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black text-[#3182f6] dark:bg-blue-950/40 dark:text-blue-200">
@@ -247,7 +191,9 @@ export default function PreviewMaskedDashboard() {
             <div className="space-y-2">
             {items.map((item) => {
               const signal = previewSignal(item);
-              const budgetLabel = priceBandLabel(item.price);
+              const budgetLabel = item.budgetLabel ?? priceBandLabel(item.price);
+              const profitLabel = item.profitLabel ?? "수익 후보";
+              const priceSignalLabel = item.priceSignalLabel ?? "시세 비교 완료";
               return (
                 <Link
                   href="/login"
@@ -255,27 +201,18 @@ export default function PreviewMaskedDashboard() {
                   className="group block rounded-2xl border border-zinc-200 bg-white px-3.5 py-3 transition hover:border-blue-200 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-blue-900"
                 >
                   <div className="flex items-center gap-3">
-                    {/* Wave launch-113 (2026-05-24): sold 매물 실제 사진 노출 (이미 거래된 매물이라 leak 없음).
-                        thumbnailUrl 우선, 없으면 blurredImage fallback, 그것도 없으면 PackageIcon. */}
                     <div className="relative flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 sm:h-[104px] sm:w-[104px]">
-                      {item.thumbnailUrl ? (
-                        <img
-                          src={item.thumbnailUrl}
-                          alt={item.name ?? "거래 완료 매물"}
-                          className="h-full w-full object-cover grayscale opacity-90"
-                        />
-                      ) : item.blurredImage ? (
+                      {item.blurredImage ? (
                         <img
                           src={item.blurredImage}
-                          alt={item.name ?? "거래 완료 매물"}
+                          alt="마스킹된 추천 매물"
                           className="h-full w-full scale-105 object-cover blur-[7px]"
                         />
                       ) : (
                         <PackageIcon width={36} height={36} />
                       )}
-                      {/* 거래 완료 overlay 배지 */}
-                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-zinc-900/40">
-                        <span className="rounded-full bg-rose-600/95 px-2 py-0.5 text-[9px] font-black text-white shadow">거래 완료</span>
+                      <div className="pointer-events-none absolute inset-x-2 bottom-2 rounded-full bg-zinc-950/70 px-2 py-1 text-center text-[10px] font-black text-white shadow">
+                        상세에서 원문 공개
                       </div>
                     </div>
 
@@ -284,38 +221,26 @@ export default function PreviewMaskedDashboard() {
                         <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-black text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                           {conditionLabel(item.conditionClass)}
                         </span>
-                        <span className="truncate text-[11px] font-bold text-rose-600 dark:text-rose-400">{soldAgoLabel(item.soldAt)}</span>
+                        <span className="truncate text-[11px] font-bold text-zinc-400 dark:text-zinc-500">{signal.label}</span>
                       </div>
 
-                      {/* Wave launch-113 (2026-05-24): 실제 매물명 그대로 노출 (sold 매물 = 카탈로그 leak X). */}
                       <div className="mt-2 line-clamp-2 text-[14px] font-black tracking-tight text-zinc-950 dark:text-zinc-100 sm:text-[16px]">
-                        {item.name ?? item.maskedName}
+                        {item.previewTitle ?? item.maskedName}
                       </div>
 
-                      {/* Wave launch-113 (2026-05-24): 매입/시세 정확값 (sold 매물). */}
                       <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
-                        <span>매입 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krw(item.price)}</span></span>
-                        {item.skuMedian && item.skuMedian > 0 ? (
-                          <>
-                            <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                            <span>시세 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krw(item.skuMedian)}</span></span>
-                          </>
-                        ) : null}
+                        <span>필요 예산 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{budgetLabel}</span></span>
+                        <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                        <span>정확 시세 잠김</span>
                       </div>
 
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                        {/* Wave launch-117b (2026-05-24): 수익 = emerald (light+dark). */}
                         <span className="text-[18px] font-black leading-none tabular-nums text-[#059669] dark:text-emerald-300">
-                          {marketGapLabel(item.expectedProfitMin, item.expectedProfitMax)}
+                          {profitLabel}
                         </span>
-                        {(() => {
-                          const pct = marketGapPctLabel(item.price, item.expectedProfitMin, item.expectedProfitMax);
-                          return pct ? (
-                            <span className="text-[11px] font-black text-zinc-500 dark:text-zinc-400">
-                              {pct}
-                            </span>
-                          ) : null;
-                        })()}
+                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-200">
+                          {priceSignalLabel}
+                        </span>
                       </div>
 
                       <div className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-black text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 sm:hidden">
@@ -345,7 +270,7 @@ export default function PreviewMaskedDashboard() {
                 <SearchIcon width={18} height={18} className="text-[#3182f6]" />
                 <div>
                   <div className="text-[14px] font-black text-[var(--rd-ink)] dark:text-zinc-50">이름과 원본 링크까지 열어볼까요?</div>
-                  <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-500">첫 3개 상세 리포트는 무료로 확인할 수 있어요.</div>
+                  <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-500">로그인하면 진행 중인 매물의 상세 분석을 볼 수 있어요.</div>
                 </div>
               </div>
             <Link
