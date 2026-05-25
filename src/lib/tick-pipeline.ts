@@ -2222,12 +2222,26 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
       return [];
     }
   })();
-  const remainingLimit = Math.max(0, limit - poolRows.length - fashionRows.length - joongnaRows.length);
-  if (remainingLimit === 0) return [...poolRows, ...fashionRows, ...joongnaRows].slice(0, limit);
+  const remainingAfterJoongna = Math.max(0, limit - poolRows.length - fashionRows.length - joongnaRows.length);
+  if (remainingAfterJoongna === 0) return [...poolRows, ...fashionRows, ...joongnaRows].slice(0, limit);
+
+  // Daangn (Phase 6 active): joongna 와 동일 패턴 — proportional lane.
+  // 신규 source 라 score queue 작음 → reserve quota 작게 (15% or 50 min).
+  const daangnReserveLimit = Math.min(remainingAfterJoongna, Math.max(50, Math.floor(limit * 0.15)));
+  const daangnRows = await (async () => {
+    try {
+      return fetchScorableRows("&source=eq.daangn", daangnReserveLimit, seenPids);
+    } catch (err) {
+      console.warn("loadScorableRows daangn fetch failed (non-fatal)", err);
+      return [];
+    }
+  })();
+  const remainingLimit = Math.max(0, limit - poolRows.length - fashionRows.length - joongnaRows.length - daangnRows.length);
+  if (remainingLimit === 0) return [...poolRows, ...fashionRows, ...joongnaRows, ...daangnRows].slice(0, limit);
 
   const generalRows: ScorableRawRow[] = [];
   for (const source of GENERAL_SCORE_SOURCES) {
-    const sourceRemaining = Math.max(0, limit - poolRows.length - fashionRows.length - joongnaRows.length - generalRows.length);
+    const sourceRemaining = Math.max(0, limit - poolRows.length - fashionRows.length - joongnaRows.length - daangnRows.length - generalRows.length);
     if (sourceRemaining === 0) break;
     try {
       generalRows.push(...await fetchScorableRows(`&source=eq.${source}`, sourceRemaining, seenPids));
@@ -2235,7 +2249,7 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
       console.warn(`loadScorableRows ${source} fetch failed (non-fatal)`, err);
     }
   }
-  return [...poolRows, ...fashionRows, ...joongnaRows, ...generalRows].slice(0, limit);
+  return [...poolRows, ...fashionRows, ...joongnaRows, ...daangnRows, ...generalRows].slice(0, limit);
 }
 
 async function loadDirtyPoolScorableRows(
