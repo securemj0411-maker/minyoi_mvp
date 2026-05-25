@@ -13,7 +13,7 @@ export type CategoryReadinessDecision = {
   laneKey?: string;
 };
 
-export type LaneReadinessStatus = "ready" | "blocked";
+export type LaneReadinessStatus = "ready" | "internal_only" | "blocked";
 
 export type LaneReadinessConfig = {
   status: LaneReadinessStatus;
