@@ -316,17 +316,13 @@ function buildRawListingRow(
     updated_at: nowIso,
     pool_eligible: poolEligible,
     score_dirty: poolEligible,  // sku 매칭 + normal → score-worker 가 다음 cycle 에 처리
+    // Phase 6i+++ raw_json 슬림화: region/category/createdAt/boostedAt/user 는 별도 컬럼에 박혔으니 중복 제거.
+    //   viewCount/chatCount/favoriteCount 도 num_faved/num_comment 컬럼에 있음 → backup 용도면 충분.
+    //   payload size ~50% 줄임 → Supabase REST upsert 시간 절반 기대.
     raw_json: {
       source: DAANGN_SOURCE_ID,
       externalId,
-      region: article.region,
-      category: article.category,
-      createdAt: article.createdAt,
-      boostedAt: article.boostedAt,
       viewCount: article.viewCount,
-      chatCount: article.chatCount,
-      favoriteCount: article.favoriteCount,
-      user: article.user,
     },
     // Daangn 전용 컬럼 (Phase 3 schema migration)
     daangn_region_id: article.region.dbId,
@@ -678,38 +674,14 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   //         freshest 15 = 거의 noise → detail 낭비.
   //   대응: top 200 freshest 만 pre-classify (200ms cost), sku 매칭된 매물 우선
   //         enrich → shipping_possible/direct_only 정확도 ↑ → pool entry 정확도 ↑.
+  // Phase 6i+++ rollback: pre-classify 200 articles 가 32s 소모 (production 측정).
+  //   buildRawListingRow 가 어차피 매물별 classify 함 (중복) — 여기 30s 낭비.
+  //   단순 freshness-only sort 로 복귀.
   const tDetailClassifyStart = Date.now();
-  const eligibleForDetail = allArticles
+  const detailCandidates = allArticles
     .filter((a) => shouldFetchDaangnDetailCandidate(a, { activeWindowHours, nowMs }))
     .map((a) => ({ article: a, hours: ageHours(a.boostedAt ?? a.createdAt, nowMs) }))
     .sort((a, b) => (a.hours ?? Infinity) - (b.hours ?? Infinity))
-    .slice(0, 200);  // top 200 freshest pre-filter
-
-  const withSkuHint = eligibleForDetail.map((entry) => {
-    const a = entry.article;
-    const title = a.title ?? "";
-    const desc = (a.content ?? "") as string;
-    const price = Number(a.price ?? 0);
-    let skuId: string | null = null;
-    try {
-      const cls = classifyListing(title, desc, price);
-      if (cls.listingType === "normal") {
-        const match = ruleMatch(title, desc);
-        skuId = match?.id ?? null;
-      }
-    } catch {
-      // classify 실패 시 sku null 로 fallback
-    }
-    return { ...entry, skuId };
-  });
-
-  const detailCandidates = withSkuHint
-    .sort((a, b) => {
-      const aHas = !!a.skuId;
-      const bHas = !!b.skuId;
-      if (aHas !== bHas) return aHas ? -1 : 1;  // sku 매칭 우선
-      return (a.hours ?? Infinity) - (b.hours ?? Infinity);  // 그 다음 fresh 우선
-    })
     .slice(0, maxDetailSamples);
   timings.detailClassify = Date.now() - tDetailClassifyStart;
 
