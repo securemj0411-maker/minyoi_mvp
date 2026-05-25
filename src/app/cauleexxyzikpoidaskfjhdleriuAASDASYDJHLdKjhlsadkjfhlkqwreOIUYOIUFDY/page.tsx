@@ -3,11 +3,14 @@
 // Wave launch-108 (2026-05-24): layout.tsx 가 admin auth + AdminTopBar (sticky nav + KPI ticker) 공유.
 //   이 페이지는 본문만 (헤더 / nav / KPI 다 layout 으로 위임). 페이지 전환 시 sticky bar 유지.
 
+import Link from "next/link";
+
+import { OPS_ADMIN_REVEAL_ANALYTICS_PATH } from "@/lib/admin-routes";
 import { serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { userRefForAuthUser } from "@/lib/user-ref";
 import MembersTable, { type MemberRow } from "./members-table";
 import ManualDepositPanel from "./manual-deposit-panel";
 import FeedbackPanel from "./feedback-panel";
-import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -203,9 +206,18 @@ export default async function MembersPage() {
     <main className="mx-auto w-full max-w-[1600px] px-4 pb-10 pt-4 sm:px-6">
       <header className="mb-4 border-b border-zinc-800 pb-3">
         <div className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-400">▌MEMBERS / OPERATORS</div>
-        <div className="mt-1 flex items-baseline gap-3">
-          <span className="text-3xl font-black tabular-nums text-zinc-50">{rows.length}</span>
-          <span className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">accounts</span>
+        <div className="mt-1 flex flex-wrap items-center gap-3">
+          <div className="flex items-baseline gap-3">
+            <span className="text-3xl font-black tabular-nums text-zinc-50">{rows.length}</span>
+            <span className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">accounts</span>
+          </div>
+          <Link
+            href={OPS_ADMIN_REVEAL_ANALYTICS_PATH}
+            className="ml-auto inline-flex items-center gap-2 rounded-sm border border-emerald-700 bg-emerald-950/40 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-300 transition hover:border-emerald-500 hover:bg-emerald-950/70"
+          >
+            <span>REVEAL ANALYTICS</span>
+            <span className="text-emerald-500">↗</span>
+          </Link>
         </div>
       </header>
 

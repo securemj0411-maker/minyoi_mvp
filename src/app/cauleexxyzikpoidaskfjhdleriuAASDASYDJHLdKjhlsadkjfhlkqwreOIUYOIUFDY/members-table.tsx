@@ -252,7 +252,16 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                 </div>
               </div>
               <div className="mt-1 truncate font-mono text-[11px] text-zinc-400">{row.email ?? "—"}</div>
-              <div className="mt-0.5 text-[10px] uppercase text-zinc-600">{row.provider ?? "—"} · 탭하여 상세</div>
+              <div className="mt-0.5 flex items-center justify-between gap-2 text-[10px] uppercase text-zinc-600">
+                <span>{row.provider ?? "—"} · 탭하여 상세</span>
+                <Link
+                  href={`${OPS_ADMIN_REVEAL_ANALYTICS_PATH}?userRef=${encodeURIComponent(row.userRef)}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="rounded-sm border border-emerald-800 bg-emerald-950/35 px-2 py-1 font-black tracking-wide text-emerald-300"
+                >
+                  REVEALS
+                </Link>
+              </div>
             </div>
           );
         })}
@@ -282,11 +291,12 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
               <th className="px-3 py-2 text-right">CREDIT</th>
               <th className="px-3 py-2">STATUS</th>
               <th className="px-3 py-2">PROV</th>
+              <th className="px-3 py-2 text-right">REVEALS</th>
             </tr>
           </thead>
           <tbody>
             {pageRows.length === 0 ? (
-              <tr><td colSpan={6} className="px-3 py-6 text-center text-[10px] uppercase tracking-wide text-zinc-600">no results</td></tr>
+              <tr><td colSpan={7} className="px-3 py-6 text-center text-[10px] uppercase tracking-wide text-zinc-600">no results</td></tr>
             ) : pageRows.map((row) => {
               const isBlocked = Boolean(row.blockedAt);
               const isSelected = selectedIds.has(row.authUserId);
@@ -322,6 +332,14 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                     )}
                   </td>
                   <td className="px-3 py-2 text-[10px] uppercase text-zinc-500">{row.provider ?? "—"}</td>
+                  <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>
+                    <Link
+                      href={`${OPS_ADMIN_REVEAL_ANALYTICS_PATH}?userRef=${encodeURIComponent(row.userRef)}`}
+                      className="inline-flex rounded-sm border border-emerald-800 bg-emerald-950/35 px-2 py-1 text-[9px] font-black uppercase tracking-wide text-emerald-300 transition hover:border-emerald-600 hover:bg-emerald-950/60"
+                    >
+                      OPEN
+                    </Link>
+                  </td>
                 </tr>
               );
             })}
