@@ -450,10 +450,11 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const timeoutMs = boundedInt(options.timeoutMs, 10_000, 1_000, 30_000);
   const dryRun = options.dryRun ?? mode !== "active";
 
-  // 전국 검색 mode (region 매핑 불필요).
-  //   당근 web 의 ?search= form 은 region 없이도 전국 매물 cover (블로그 + moajung 검증).
-  //   options.regions 명시 시만 동네 매칭 (사용자별 future).
-  const regions = options.regions ?? [];
+  // Region 기반 ingest (Phase 6g — 6e 전국 검색 가설 폐기).
+  //   로컬 dry-run 결과: region 없는 ?search= 는 158KB body 응답하지만 articles 0.
+  //   당근 web 은 region 필수 — region 매핑 풀 확장이 sustainable 한 방향.
+  //   options.regions 으로 override 가능 (테스트/실험용).
+  const regions = options.regions ?? DEFAULT_DAANGN_REGION_SEEDS;
   // Catalog 기반 query 자동 생성 (Phase 6 B):
   //   ready category/lane 통과한 SKU 의 alias → 50+ query 자동.
   //   options.queries override 가능 (테스트/실험용).
