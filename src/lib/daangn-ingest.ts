@@ -51,6 +51,7 @@ import {
   type DaangnSourceMode,
 } from "@/lib/daangn";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { buildDaangnQueryPool } from "@/lib/daangn-query-pool";
 
 // ───────────────────────────────────────────────────────────────────────────
 // Types
@@ -363,7 +364,20 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const dryRun = options.dryRun ?? mode !== "active"; // probe 모드 = dry-run
 
   const regions = options.regions ?? DEFAULT_DAANGN_REGION_SEEDS;
-  const queries = options.queries ?? DEFAULT_DAANGN_FASHION_QUERY_SEEDS;
+  // Catalog 기반 query 자동 생성 (Phase 6 B):
+  //   ready category/lane 통과한 SKU 의 alias → 50+ query 자동.
+  //   options.queries override 가능 (테스트/실험용).
+  //   build 실패 시 fallback to static DEFAULT.
+  let queries = options.queries;
+  if (!queries || queries.length === 0) {
+    try {
+      const built = buildDaangnQueryPool({ maxQueries: 50, includeBroad: true });
+      queries = built.length > 0 ? built : DEFAULT_DAANGN_FASHION_QUERY_SEEDS;
+    } catch (err) {
+      console.warn("buildDaangnQueryPool failed (non-fatal)", err);
+      queries = DEFAULT_DAANGN_FASHION_QUERY_SEEDS;
+    }
+  }
   const categories = options.categories ?? DAANGN_FASHION_CATEGORIES;
 
   const { combos } = selectDaangnCombos({ regions, queries, categories, maxCombos });

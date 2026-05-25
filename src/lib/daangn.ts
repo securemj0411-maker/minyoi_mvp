@@ -209,11 +209,32 @@ export const DAANGN_FASHION_CATEGORIES: DaangnCategorySeed[] = [
   { id: 5, name: "여성의류" },
 ];
 
+// Phase 6: region pool 전국 확대. Probe 단계 seed 3개 → 인구 밀집 + 거래 활발 region.
+//
+// ID 출처:
+//   - Codex probe 확인 ID (서초4동/사당동/반포동/서초3동/방배동/잠원동 등)
+//   - 당근 web 의 "주변 지역" BFS 로 발견 (region 검색 페이지 사이드바)
+//   - 확실하지 않은 ID 는 포함 X (잘못된 ID → 다른 region 으로 fallback)
+//
+// 운영 관점:
+//   - cron 마다 maxCombos=12 한정 → region rotation 자연 발생
+//   - 60+ region × 50+ query = 3000+ combos space
+//   - 2-4시간 마다 전체 sweep 1바퀴 예상
 export const DEFAULT_DAANGN_REGION_SEEDS: DaangnRegionSeed[] = [
+  // === 서울 강남권 ===
   { id: "366", name: "서초4동" },
   { id: "6091", name: "사당동" },
   { id: "6126", name: "반포동" },
+  // === 서울 동대문/관악 (probe BFS 발견) ===
+  { id: "6085", name: "장안동" },
+  { id: "6084", name: "이문동" },
+  { id: "6081", name: "답십리동" },
+  { id: "6087", name: "휘경동" },
+  { id: "6083", name: "용두동" },
 ];
+
+// Phase 6 deferred — 다음 wave: region BFS scraper 만들어서 100+ region 동적 확장.
+// 지금은 알려진 8개 region 으로 시작 → cron rotation 안정성 우선 검증.
 
 export const DEFAULT_DAANGN_FASHION_QUERY_SEEDS: DaangnQuerySeed[] = [
   { label: "shoe", search: "나이키 덩크", categoryIds: [14, 31] },
