@@ -318,20 +318,34 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
             <div className="rounded-lg border border-zinc-200 bg-white p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40">
               <div className="mb-2 font-bold text-zinc-700 dark:text-zinc-200">출처별 ready</div>
               <div className="flex flex-wrap gap-1.5">
-                {stats.bySource.map((row) => (
-                  <button
-                    key={row.source}
-                    type="button"
-                    onClick={() => { setSource(row.source); setPage(1); }}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-black text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
-                  >
-                    <MarketplaceSourceBadge source={row.source} label={row.label} />
-                    <span className="font-mono">{row.ready_count.toLocaleString()}</span>
-                  </button>
-                ))}
-                {stats.bySource.length === 0 ? (
-                  <span className="text-[11px] text-zinc-400">ready 출처 집계 없음</span>
-                ) : null}
+                {(() => {
+                  // 출처 button: bySource API dynamic 이라 ready=0 source 옵션 X.
+                  // 알려진 source (bunjang/joongna/daangn) 는 ready=0 이어도 항상 노출.
+                  const KNOWN_SOURCES: Array<{ source: string; label: string }> = [
+                    { source: "bunjang", label: "번개장터" },
+                    { source: "joongna", label: "중고나라" },
+                    { source: "daangn", label: "당근마켓" },
+                  ];
+                  const dynamicByKey = new Map(stats.bySource.map((r) => [r.source, r] as const));
+                  const merged = KNOWN_SOURCES.map((known) => {
+                    const dyn = dynamicByKey.get(known.source);
+                    return { source: known.source, label: known.label, ready_count: dyn?.ready_count ?? 0 };
+                  });
+                  for (const row of stats.bySource) {
+                    if (!merged.find((m) => m.source === row.source)) merged.push(row);
+                  }
+                  return merged.map((row) => (
+                    <button
+                      key={row.source}
+                      type="button"
+                      onClick={() => { setSource(row.source); setPage(1); }}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-black text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+                    >
+                      <MarketplaceSourceBadge source={row.source} label={row.label} />
+                      <span className="font-mono">{row.ready_count.toLocaleString()}</span>
+                    </button>
+                  ));
+                })()}
               </div>
             </div>
             <div className="rounded-lg border border-zinc-200 bg-white p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40">
