@@ -50,7 +50,7 @@ import {
   type DaangnSearchArticle,
   type DaangnSourceMode,
 } from "@/lib/daangn";
-import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { buildDaangnQueryPool } from "@/lib/daangn-query-pool";
 import { classifyListing } from "@/lib/pipeline";
 import { ruleMatch } from "@/lib/catalog";
@@ -363,46 +363,28 @@ async function upsertDaangnRawListings(
   const parsedRows = [...byPid.values()].map((b) => b.parsed).filter((p): p is Record<string, unknown> => Boolean(p));
   if (rawRows.length === 0) return 0;
 
-  // Phase 6i+++ chunked upsert + parallel:
-  //   - chunked alone: 27 chunks × 8s sequential = 220s (production 측정)
-  //   - parallel 5 concurrent: 27/5 = 6 batches × 8s = ~48s (5x 단축)
-  //   - trade-off: Supabase 5 동시 connection 사용, 다른 worker 영향 거의 X.
-  const CHUNK_SIZE = 50;
-  const CONCURRENCY = 5;
-
-  // 헬퍼: parallel chunked upsert with concurrency limit
-  async function chunkedUpsert(rows: Record<string, unknown>[], url: string, label: string, fatal: boolean) {
-    const chunks: Record<string, unknown>[][] = [];
-    for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
-      chunks.push(rows.slice(i, i + CHUNK_SIZE));
-    }
-    // CONCURRENCY 씩 batch 단위로 parallel
-    for (let i = 0; i < chunks.length; i += CONCURRENCY) {
-      const batch = chunks.slice(i, i + CONCURRENCY);
-      const results = await Promise.all(batch.map(async (chunk) => {
-        const res = await restFetch(url, {
-          method: "POST",
-          headers: serviceHeaders("resolution=merge-duplicates,return=minimal"),
-          body: jsonBody(chunk),
-        });
-        return { ok: res.ok, status: res.status, text: res.ok ? "" : await res.text() };
-      }));
-      for (const r of results) {
-        if (!r.ok) {
-          const msg = `${label} upsert failed: ${r.status} ${r.text}`;
-          if (fatal) throw new Error(msg);
-          console.warn(msg);
-          return;  // non-fatal — 한 번 fail 하면 후속 중단
-        }
-      }
-    }
+  // Phase 6i++++ RPC bulk upsert: PostgREST ON CONFLICT 처리 serialize 한계 우회.
+  //   parallel chunked 도 효과 X 확인 (213s) — Supabase 가 row 별 락 leitung.
+  //   Postgres 안에서 single SQL transaction 으로 처리 → 5-10x 단축 기대.
+  const rawRes = await restFetch(rpcUrl("daangn_bulk_upsert_raw_listings"), {
+    method: "POST",
+    headers: serviceHeaders(),
+    body: jsonBody({ rows: rawRows }),
+  });
+  if (!rawRes.ok) {
+    throw new Error(`daangn_bulk_upsert_raw_listings RPC failed: ${rawRes.status} ${await rawRes.text()}`);
   }
 
-  await chunkedUpsert(rawRows, `${tableUrl("mvp_raw_listings")}?on_conflict=pid`, "mvp_raw_listings", true);
-
-  // upsert parsed parallel chunked (score-worker 가 sku 매칭 매물 처리하려면 필수, but non-fatal)
   if (parsedRows.length > 0) {
-    await chunkedUpsert(parsedRows, `${tableUrl("mvp_listing_parsed")}?on_conflict=pid`, "mvp_listing_parsed", false);
+    const parsedRes = await restFetch(rpcUrl("daangn_bulk_upsert_listing_parsed"), {
+      method: "POST",
+      headers: serviceHeaders(),
+      body: jsonBody({ rows: parsedRows }),
+    });
+    if (!parsedRes.ok) {
+      // parsed upsert 실패는 fatal X — raw 는 박혔으니 다음 cron 재시도
+      console.warn(`daangn_bulk_upsert_listing_parsed RPC failed: ${parsedRes.status} ${await parsedRes.text()}`);
+    }
   }
 
   return rawRows.length;
