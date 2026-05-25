@@ -55,3 +55,32 @@ Daangn should not be crawled as a slow daily catalog. It should be treated as a 
 - Cold seeds: 2-4 hour polling.
 - Detail fetch: only for fresh `Ongoing` hits that survive parser/category gates.
 - User-facing reveal: direct-trade region must be visible before credit consumption.
+
+## Verification
+
+- Unit probe contract:
+  - `npx tsx --test tests/daangn-source-probe.test.ts`
+  - 6 pass, 0 fail.
+- Production build:
+  - `npm run build`
+  - Passed after replacing the regex `s` flag with a target-compatible pattern.
+- Live no-write probe:
+  - `DAANGN_PROBE_MAX_COMBOS=12 DAANGN_PROBE_MAX_DETAIL_SAMPLES=3 DAANGN_PROBE_DELAY_MS=450 npm run report:daangn-source-probe`
+  - Decision: `source_safe_to_continue_probe_only`
+  - Blocked combos: 0
+  - Failed combos: 0
+  - Executed combos: 12 / 36 requested
+  - Articles: 94
+  - Ongoing: 30
+  - Crawl-allowed ongoing: 30
+  - Fresh bumped within 24h: 0
+  - Active bumped within 72h: 1
+  - Unique ongoing URLs: 30
+  - Detail samples fetched: 1
+
+## Verification interpretation
+
+- Search/detail payload viability is confirmed for the first fashion/shoe probe.
+- The sample set shows many old `Ongoing` rows, so raw `Ongoing` count is not enough.
+- `boostedAt` must drive cadence and detail fetch gating.
+- The next implementation should start with a low-rate soak and avoid candidate-pool writes until freshness, dedupe, and direct-trade UX are all agreed.
