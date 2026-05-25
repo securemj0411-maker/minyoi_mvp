@@ -627,11 +627,42 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   });
   const nowMs = Date.now();
 
-  // Detail fetch candidates — fresh 우선 (boostedAt 기준)
-  const detailCandidates = allArticles
+  // Phase 6i+: Detail fetch 선별 priority — [sku_id 매칭 우선, then 신선도]
+  //   배경: firehose 8K 매물 중 ~99% noise (catalog SKU 외). FIFO 신선도-only 정렬 시
+  //         freshest 15 = 거의 noise → detail 낭비.
+  //   대응: top 200 freshest 만 pre-classify (200ms cost), sku 매칭된 매물 우선
+  //         enrich → shipping_possible/direct_only 정확도 ↑ → pool entry 정확도 ↑.
+  const eligibleForDetail = allArticles
     .filter((a) => shouldFetchDaangnDetailCandidate(a, { activeWindowHours, nowMs }))
     .map((a) => ({ article: a, hours: ageHours(a.boostedAt ?? a.createdAt, nowMs) }))
     .sort((a, b) => (a.hours ?? Infinity) - (b.hours ?? Infinity))
+    .slice(0, 200);  // top 200 freshest pre-filter
+
+  const withSkuHint = eligibleForDetail.map((entry) => {
+    const a = entry.article;
+    const title = a.title ?? "";
+    const desc = (a.content ?? "") as string;
+    const price = Number(a.price ?? 0);
+    let skuId: string | null = null;
+    try {
+      const cls = classifyListing(title, desc, price);
+      if (cls.listingType === "normal") {
+        const match = ruleMatch(title, desc);
+        skuId = match?.id ?? null;
+      }
+    } catch {
+      // classify 실패 시 sku null 로 fallback
+    }
+    return { ...entry, skuId };
+  });
+
+  const detailCandidates = withSkuHint
+    .sort((a, b) => {
+      const aHas = !!a.skuId;
+      const bHas = !!b.skuId;
+      if (aHas !== bHas) return aHas ? -1 : 1;  // sku 매칭 우선
+      return (a.hours ?? Infinity) - (b.hours ?? Infinity);  // 그 다음 fresh 우선
+    })
     .slice(0, maxDetailSamples);
 
   let detailFetched = 0;
