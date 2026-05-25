@@ -106,6 +106,7 @@ async function handleDaangnWorker(req: NextRequest) {
       sourceHealthStatus: result.sourceHealthStatus,
       sourceHealthReason: result.sourceHealthReason,
       durationMs: result.durationMs,
+      timingsMs: result.timingsMs,  // Phase 6i+++ — 병목 식별용
     });
 
     return NextResponse.json({
