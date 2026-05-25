@@ -109,6 +109,9 @@ test("pool feed is a free teaser and exact purchase info opens only through deta
   assert.match(explore, /function tierBadgeCategoryForItem/);
   assert.match(explore, /if \(usesLatestTierPreviewCategory\(item\.category\)\) return `\$\{lockedPreviewCategoryLabel\(item\)\} 후보`;/);
   assert.match(explore, /category=\{tierBadgeCategory\}/);
+  assert.match(explore, /const legacyBadgeCondition = tierBadgeCategory \? null : item\.conditionClass/);
+  assert.match(explore, /<ConditionPhotoBadge conditionClass=\{legacyBadgeCondition\} compact \/>/);
+  assert.doesNotMatch(explore, /ConditionChip/);
   assert.match(explore, /openedDetailPids/);
   assert.doesNotMatch(explore, /data-credit-infinite-feed-sentinel/);
   assert.match(explore, /accessToken/);

@@ -8,7 +8,7 @@ import CreditIcon from "@/components/credit-icon";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, HourglassIcon, BookmarkIcon } from "@/components/icons";
 import { BrandLogo } from "@/components/brand-logo";
-import { ConditionChip, ConditionPhotoBadge, ConditionTierPhotoBadge } from "@/components/condition-chip";
+import { ConditionPhotoBadge, ConditionTierPhotoBadge } from "@/components/condition-chip";
 import KakaoLogo from "@/components/kakao-logo";
 import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
@@ -2498,6 +2498,7 @@ export default function ExploreClient({
             const freeDetailAvailable = lockedPreview && freeDetailRemaining > 0;
             const detailCreditAvailable = lockedPreview && Number(detailAccessSnapshot.creditBalance ?? 0) > 0;
             const tierBadgeCategory = tierBadgeCategoryForItem(item);
+            const legacyBadgeCondition = tierBadgeCategory ? null : item.conditionClass;
             const fullLocked = false;
             return (
               <button
@@ -2560,7 +2561,7 @@ export default function ExploreClient({
                       </span>
                     </div>
                   ) : null}
-                  {/* Wave 355: unopened/mint만 사진 위 럭셔리 배지 ("전설템" 느낌).
+                  {/* Wave 355 → launch: 구형 condition_class 도 사진 위 배지로 통일.
                       Wave 714p/760d: 최신 5-tier 카테고리는 옛 conditionClass 뱃지 hide.
                       신발/의류/게임기/골프는 새 S/A/B/C/D 뱃지가 단일 표시 기준. */}
                   {!isSoldOut && tierBadgeCategory ? (
@@ -2569,8 +2570,8 @@ export default function ExploreClient({
                       compact
                       category={tierBadgeCategory}
                     />
-                  ) : !isSoldOut && (item.conditionClass === "unopened" || item.conditionClass === "mint") ? (
-                    <ConditionPhotoBadge conditionClass={item.conditionClass} compact />
+                  ) : !isSoldOut && legacyBadgeCondition ? (
+                    <ConditionPhotoBadge conditionClass={legacyBadgeCondition} compact />
                   ) : null}
                   {isSoldOut ? (
                     // Wave 357 → launch-5 (사용자 짚음): "다른 분이 잡았어요" = 우리 사이트 사용자가
@@ -2645,15 +2646,7 @@ export default function ExploreClient({
                       </span>
                     ) : (
                       <>
-                        {/* Wave 354+355: 매물 등급 — 친화 풀어쓴 라벨 ("상태 보통"/"하자 있음"/...).
-                            unopened/mint는 사진 위 럭셔리 배지로 따로 표시되므로 여기선 제외.
-                            Wave 714d/760d: 최신 5-tier 카테고리는 옛 chip 숨김 (axis가 다름). */}
-                        {item.conditionClass
-                          && item.conditionClass !== "unopened"
-                          && item.conditionClass !== "mint"
-                          && !tierBadgeCategory ? (
-                          <ConditionChip conditionClass={item.conditionClass} variant="friendly" />
-                        ) : null}
+                        {/* 상태 등급은 사진 위 배지로 단일화. 하단에는 시간/출처/배송 같은 거래 신호만 남김. */}
                         <span className="flex items-center gap-0.5 text-zinc-500">
                           <ClockIcon className="h-3 w-3" />
                           {/* 2026-05-20 P0-Upload: 셀러 업로드 시점 우선. 없으면 검증 시점. */}
