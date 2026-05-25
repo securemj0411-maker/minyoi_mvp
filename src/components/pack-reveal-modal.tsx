@@ -4468,13 +4468,13 @@ function RevealReportShortcutButton({
       data-report-shortcut-button
       className={
         floating
-          ? "pointer-events-auto inline-flex h-9 w-9 items-center justify-center text-white transition active:scale-90"
+          ? "pointer-events-auto inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-rose-600/95 px-3 text-[12px] font-black text-white shadow-[0_8px_22px_rgba(190,18,60,0.34)] ring-1 ring-white/45 backdrop-blur transition hover:bg-rose-500 active:scale-90"
           : "pointer-events-auto inline-flex h-9 items-center justify-center gap-1 rounded-full px-2.5 text-[11px] font-black text-rose-600 transition hover:bg-rose-50 active:scale-90 dark:text-rose-300 dark:hover:bg-rose-950/30"
       }
       style={floating ? { filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.55))" } : undefined}
     >
-      <AlertTriangleIcon className={floating ? "h-5 w-5" : "h-4 w-4"} />
-      {!floating ? <span>신고</span> : null}
+      <AlertTriangleIcon className="h-4 w-4" />
+      <span>신고</span>
     </button>
   );
 }
