@@ -71,6 +71,8 @@ test("pool feed is a free teaser and exact purchase info opens only through deta
   assert.match(poolRoute, /import \{ localizeProductLineLabel \} from "@\/lib\/product-line-display"/);
   assert.match(poolRoute, /const localized = localizeProductLineLabel\(cleaned\)/);
   assert.match(poolRoute, /if \(usesLatestTierPreviewCategory\(category\)\) return `\$\{localized\}\$\{suffix\}`;/);
+  assert.match(poolRoute, /import \{ teaserBudgetRangeLabel \} from "@\/lib\/feed-price-display"/);
+  assert.match(poolRoute, /return teaserBudgetRangeLabel\(value\)/);
   assert.match(poolRoute, /feedMode: "free"/);
   assert.match(poolRoute, /creditFeed: false/);
   assert.match(poolRoute, /getDetailAccessSnapshot/);
@@ -99,6 +101,8 @@ test("pool feed is a free teaser and exact purchase info opens only through deta
   assert.match(explore, /상세에서 원문 공개/);
   assert.match(explore, /첫 상세 무료/);
   assert.match(explore, /정확가 잠김/);
+  assert.match(explore, /필요 예산/);
+  assert.match(explore, /정확 시세 잠김/);
   assert.match(explore, /출처 잠금/);
   assert.match(explore, /상세에서 제목·가격 공개/);
   assert.match(explore, /type TierBadgeCategory = "shoe" \| "clothing" \| "game_console" \| "sport_golf"/);

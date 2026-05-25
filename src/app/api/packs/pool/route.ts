@@ -12,6 +12,7 @@ import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 import { getDetailAccessSnapshot } from "@/lib/detail-access";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
+import { teaserBudgetRangeLabel } from "@/lib/feed-price-display";
 
 // Wave 338 (Phase 1a — Freemium /explore):
 // 무료 사용자 매물 풀 browsing. 6h 이상 지난 매물만 노출 (유료는 즉시 — Phase 2).
@@ -156,13 +157,7 @@ function compactProductLineLabel(value: string | null | undefined, category: str
 }
 
 function priceBandLabel(value: number | null | undefined) {
-  const n = Number(value);
-  if (!Number.isFinite(n) || n <= 0) return "가격대 확인";
-  const manwon = Math.floor(n / 10000);
-  if (manwon <= 0) return "1만원 미만";
-  if (manwon < 10) return `${manwon}만원대`;
-  const ten = Math.floor(manwon / 10) * 10;
-  return `${ten}만원대`;
+  return teaserBudgetRangeLabel(value);
 }
 
 function relativeDiscountLabel(price: number, marketPrice: number | null | undefined) {

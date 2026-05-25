@@ -14,6 +14,7 @@ import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { detectBrandDepth } from "@/lib/category-brand-depth";
 import type { DetailEventType } from "@/lib/detail-analytics";
+import { teaserBudgetRangeLabel, teaserProfitLabel } from "@/lib/feed-price-display";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -182,15 +183,12 @@ function krw(value: number) {
 }
 
 function krwTenThousandBand(value: number) {
-  const rounded = Math.max(0, Math.floor(value / 10000));
-  if (rounded <= 0) return "1만원 미만";
-  return `${rounded.toLocaleString("ko-KR")}만원대`;
+  return teaserBudgetRangeLabel(value);
 }
 
 function lockedProfitLabel(item: PoolItem) {
   const avg = profitAvg(item);
-  if (avg <= 0) return "수익 후보";
-  return `+${krwTenThousandBand(avg)}`;
+  return teaserProfitLabel(avg);
 }
 
 // Wave 383+385: cooldown 표시 — 초까지 보여서 카운트다운 실시간 가시.
@@ -2618,12 +2616,17 @@ export default function ExploreClient({
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
                     <span>
-                      매입{" "}
+                      {lockedPreview ? "필요 예산" : "매입"}{" "}
                       <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
                         {lockedPreview ? (item.priceBandLabel ?? krwTenThousandBand(item.price)) : krw(item.price)}
                       </span>
                     </span>
-                    {item.skuMedian ? (
+                    {lockedPreview ? (
+                      <>
+                        <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                        <span className="font-bold text-zinc-500 dark:text-zinc-400">정확 시세 잠김</span>
+                      </>
+                    ) : item.skuMedian ? (
                       <>
                         <span className="text-zinc-300 dark:text-zinc-700">·</span>
                         <span>
