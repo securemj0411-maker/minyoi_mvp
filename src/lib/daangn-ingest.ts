@@ -393,13 +393,18 @@ export function selectDaangnCombos(input: {
   queries: DaangnQuerySeed[];
   categories: DaangnCategorySeed[];
   maxCombos: number;
+  // Phase 6h: production 은 shuffleRegions=true 로 111 region 골고루 hit.
+  //   tests/순수함수 검증 시 false 로 결과 deterministic 유지.
+  shuffleRegions?: boolean;
 }): DaangnComboSelection {
   const { regions, queries, categories, maxCombos } = input;
+  const shuffleRegions = input.shuffleRegions ?? false;
   const out: DaangnIngestCombo[] = [];
   let space = 0;
 
-  // Phase 6e: regions 가 빈 배열이면 region 없이 전국 검색 (당근 web 기본 동작).
-  //   query 별로 1 combo (region 무관) — 매물 양 폭증, region mapping 불필요.
+  // Phase 6e fallback: regions 가 빈 배열일 때 placeholder 1개로 동작.
+  //   사용자별 동네 검색 등 future use case 대비.
+  //   현실: nationwide 검색 안 됨 (ElasticSearch region sharding) — 운영 코드는 항상 regions 전달.
   if (regions.length === 0) {
     const placeholderRegion: DaangnRegionSeed = { id: "", name: "전국" };
     for (const query of queries) {
@@ -413,18 +418,54 @@ export function selectDaangnCombos(input: {
     return { combos: out, totalSpace: space };
   }
 
-  // region 있을 때: 기존 round-robin (region × query × category)
-  for (const region of regions) {
+  // Phase 6h: region-round-robin + optional shuffle.
+  //   - 기존 linear iteration: 111 region × 6 query × 3 cat = 1998 combo space,
+  //     maxCombos=30 cap 으로 첫 1-2 region 만 hit → region 30+은 영영 cover 안 됨.
+  //   - 새 방식: depth-first round-robin (1번째 query/cat 를 모든 region 에서 한 번씩,
+  //     그 다음 2번째 query/cat 를 다시 모든 region) → maxCombos 안에서도 region 다양성 max.
+  //   - shuffleRegions=true 시 매 tick 마다 region order 무작위화 → 운영에서 24h 누적 시
+  //     모든 region 골고루 cover.
+
+  // 1) per-region combo list 미리 build (category filter 통과한 것만)
+  const regionOrder = shuffleRegions ? shuffleArray(regions) : regions;
+  const perRegion: DaangnIngestCombo[][] = regionOrder.map((region) => {
+    const list: DaangnIngestCombo[] = [];
     for (const query of queries) {
       for (const cat of categories) {
         space += 1;
-        if (out.length >= maxCombos) continue;
         if (query.categoryIds.length > 0 && !query.categoryIds.includes(cat.id)) continue;
-        out.push({ region, query, category: cat });
+        list.push({ region, query, category: cat });
       }
     }
+    return list;
+  });
+
+  // 2) depth-first round-robin: depth 0 ⇒ 각 region 의 0번째 combo, depth 1 ⇒ 1번째, ...
+  let depth = 0;
+  while (out.length < maxCombos) {
+    let appended = false;
+    for (const list of perRegion) {
+      if (depth < list.length) {
+        out.push(list[depth]);
+        appended = true;
+        if (out.length >= maxCombos) break;
+      }
+    }
+    if (!appended) break;
+    depth += 1;
   }
+
   return { combos: out, totalSpace: space };
+}
+
+// 순수 함수: Fisher-Yates shuffle (Math.random 사용, test 시 비결정적).
+function shuffleArray<T>(arr: readonly T[]): T[] {
+  const out = [...arr];
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -471,7 +512,8 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   }
   const categories = options.categories ?? DAANGN_FASHION_CATEGORIES;
 
-  const { combos } = selectDaangnCombos({ regions, queries, categories, maxCombos });
+  // shuffleRegions=true: 매 tick 마다 region order 무작위 → 24h 누적 시 111 region 골고루.
+  const { combos } = selectDaangnCombos({ regions, queries, categories, maxCombos, shuffleRegions: true });
 
   // 진행 통계
   let executedCombos = 0;
