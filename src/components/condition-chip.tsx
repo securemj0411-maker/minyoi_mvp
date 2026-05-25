@@ -319,8 +319,8 @@ export function ConditionTierPhotoBadge({
   tier: string | null | undefined;
   compact?: boolean;
   className?: string;
-  // Wave 714r: 신발/의류 desc 분리.
-  category?: "shoe" | "clothing" | null;
+  // Wave 714r/760d: 의류만 desc 분리. 신발/게임기/골프는 공통 tier desc 사용.
+  category?: "shoe" | "clothing" | "game_console" | "sport_golf" | null;
 }) {
   if (!tier || tier === "UNKNOWN") return null;
   const style = TIER_PHOTO_BADGE_STYLES[tier];

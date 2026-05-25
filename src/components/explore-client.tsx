@@ -381,7 +381,19 @@ const LOCKED_CATEGORY_LABELS: Record<string, string> = {
   shoe: "신발",
   bag: "가방",
   clothing: "의류",
+  drone: "드론",
+  speaker: "스피커",
+  appliance: "가전",
+  game_console: "게임기",
+  sport_golf: "골프",
+  desktop: "데스크탑",
+  lego: "레고",
+  camera: "카메라",
 };
+
+type TierBadgeCategory = "shoe" | "clothing" | "game_console" | "sport_golf";
+
+const LATEST_TIER_PREVIEW_CATEGORIES = new Set<string>(["shoe", "clothing", "game_console", "sport_golf"]);
 
 const CONDITION_PREVIEW_LABELS: Record<string, string> = {
   unopened: "미개봉",
@@ -402,7 +414,20 @@ function lockedPreviewCategoryLabel(item: PoolItem) {
   return LOCKED_CATEGORY_LABELS[item.category ?? ""] ?? "추천 매물";
 }
 
+function usesLatestTierPreviewCategory(category: string | null | undefined) {
+  return LATEST_TIER_PREVIEW_CATEGORIES.has(category ?? "");
+}
+
+function tierBadgeCategoryForItem(item: PoolItem): TierBadgeCategory | null {
+  if (item.category === "clothing" || item.comparableKey?.startsWith("clothing|")) return "clothing";
+  if (item.category === "shoe" || item.comparableKey?.startsWith("shoe|")) return "shoe";
+  if (item.category === "game_console" || item.comparableKey?.startsWith("game_console|")) return "game_console";
+  if (item.category === "sport_golf" || item.comparableKey?.startsWith("sport_golf|")) return "sport_golf";
+  return null;
+}
+
 function lockedPreviewTitle(item: PoolItem) {
+  if (usesLatestTierPreviewCategory(item.category)) return `${lockedPreviewCategoryLabel(item)} 후보`;
   return `${lockedPreviewCategoryLabel(item)} · ${conditionPreviewLabel(item.conditionClass)} 후보`;
 }
 
@@ -2474,6 +2499,7 @@ export default function ExploreClient({
             const lockedPreview = !exactUnlocked;
             const freeDetailAvailable = lockedPreview && freeDetailRemaining > 0;
             const detailCreditAvailable = lockedPreview && Number(detailAccessSnapshot.creditBalance ?? 0) > 0;
+            const tierBadgeCategory = tierBadgeCategoryForItem(item);
             const fullLocked = false;
             return (
               <button
@@ -2537,13 +2563,13 @@ export default function ExploreClient({
                     </div>
                   ) : null}
                   {/* Wave 355: unopened/mint만 사진 위 럭셔리 배지 ("전설템" 느낌).
-                      Wave 714p (2026-05-23): 신발/의류는 옛 conditionClass 뱃지 hide (전자기기용 라벨 정확도 낮음).
-                      Wave 714q (2026-05-23): 신발/의류는 새 5-tier (S/A/B/C/D) 뱃지로 대체. UNKNOWN 은 표시 X. */}
-                  {!isSoldOut && (item.category === "shoe" || item.category === "clothing" || item.comparableKey?.startsWith("shoe|") || item.comparableKey?.startsWith("clothing|")) ? (
+                      Wave 714p/760d: 최신 5-tier 카테고리는 옛 conditionClass 뱃지 hide.
+                      신발/의류/게임기/골프는 새 S/A/B/C/D 뱃지가 단일 표시 기준. */}
+                  {!isSoldOut && tierBadgeCategory ? (
                     <ConditionTierPhotoBadge
                       tier={item.conditionTier}
                       compact
-                      category={item.category === "clothing" || item.comparableKey?.startsWith("clothing|") ? "clothing" : "shoe"}
+                      category={tierBadgeCategory}
                     />
                   ) : !isSoldOut && (item.conditionClass === "unopened" || item.conditionClass === "mint") ? (
                     <ConditionPhotoBadge conditionClass={item.conditionClass} compact />
@@ -2618,14 +2644,11 @@ export default function ExploreClient({
                       <>
                         {/* Wave 354+355: 매물 등급 — 친화 풀어쓴 라벨 ("상태 보통"/"하자 있음"/...).
                             unopened/mint는 사진 위 럭셔리 배지로 따로 표시되므로 여기선 제외.
-                            Wave 714d (2026-05-23): 신발/의류는 옛 chip 숨김 (전자기기용이라 정확도 낮음). */}
+                            Wave 714d/760d: 최신 5-tier 카테고리는 옛 chip 숨김 (axis가 다름). */}
                         {item.conditionClass
                           && item.conditionClass !== "unopened"
                           && item.conditionClass !== "mint"
-                          && item.category !== "shoe"
-                          && item.category !== "clothing"
-                          && !item.comparableKey?.startsWith("shoe|")
-                          && !item.comparableKey?.startsWith("clothing|") ? (
+                          && !tierBadgeCategory ? (
                           <ConditionChip conditionClass={item.conditionClass} variant="friendly" />
                         ) : null}
                         <span className="flex items-center gap-0.5 text-zinc-500">

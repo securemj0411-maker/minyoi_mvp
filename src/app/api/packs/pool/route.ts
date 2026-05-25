@@ -105,10 +105,13 @@ const LOCKED_CATEGORY_LABELS: Record<string, string> = {
   speaker: "스피커",
   appliance: "가전",
   game_console: "게임기",
+  sport_golf: "골프",
   desktop: "데스크탑",
   lego: "레고",
   camera: "카메라",
 };
+
+const LATEST_TIER_PREVIEW_CATEGORIES = new Set(["shoe", "clothing", "game_console", "sport_golf"]);
 
 const LOCKED_CONDITION_LABELS: Record<string, string> = {
   unopened: "미개봉",
@@ -125,15 +128,19 @@ function roundDownTenThousand(value: number | null) {
   return Math.max(0, Math.floor(Number(value) / 10000) * 10000);
 }
 
+function usesLatestTierPreviewCategory(category: string | null | undefined) {
+  return LATEST_TIER_PREVIEW_CATEGORIES.has(category ?? "");
+}
+
 function lockedPreviewTitle(category: string | null, conditionClass: string | null) {
   const categoryLabel = LOCKED_CATEGORY_LABELS[category ?? ""] ?? "추천 매물";
+  if (usesLatestTierPreviewCategory(category)) return `${categoryLabel} 후보`;
   const conditionLabel = conditionClass ? (LOCKED_CONDITION_LABELS[conditionClass] ?? "상태 확인") : "상태 확인";
   return `${categoryLabel} · ${conditionLabel} 후보`;
 }
 
 function compactProductLineLabel(value: string | null | undefined, category: string | null, conditionClass: string | null) {
   const raw = String(value ?? "").trim();
-  const categoryLabel = LOCKED_CATEGORY_LABELS[category ?? ""] ?? "추천 매물";
   const conditionLabel = conditionClass ? (LOCKED_CONDITION_LABELS[conditionClass] ?? "상태 확인") : "상태 확인";
   if (!raw) return lockedPreviewTitle(category, conditionClass);
   const cleaned = raw
@@ -142,6 +149,7 @@ function compactProductLineLabel(value: string | null | undefined, category: str
     .trim();
   if (!cleaned) return lockedPreviewTitle(category, conditionClass);
   const suffix = /계열|후보|매물$/.test(cleaned) ? "" : " 계열";
+  if (usesLatestTierPreviewCategory(category)) return `${cleaned}${suffix}`;
   return `${cleaned}${suffix} · ${conditionLabel}`;
 }
 

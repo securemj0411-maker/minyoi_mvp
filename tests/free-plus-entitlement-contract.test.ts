@@ -66,6 +66,9 @@ test("pool feed is a free teaser and exact purchase info opens only through deta
   assert.match(poolRoute, /sellerSignalLabel/);
   assert.match(poolRoute, /priceSignalLabel/);
   assert.match(poolRoute, /marketSignalLabel/);
+  assert.match(poolRoute, /LATEST_TIER_PREVIEW_CATEGORIES = new Set\(\["shoe", "clothing", "game_console", "sport_golf"\]\)/);
+  assert.match(poolRoute, /if \(usesLatestTierPreviewCategory\(category\)\) return `\$\{categoryLabel\} 후보`;/);
+  assert.match(poolRoute, /if \(usesLatestTierPreviewCategory\(category\)\) return `\$\{cleaned\}\$\{suffix\}`;/);
   assert.match(poolRoute, /feedMode: "free"/);
   assert.match(poolRoute, /creditFeed: false/);
   assert.match(poolRoute, /getDetailAccessSnapshot/);
@@ -96,6 +99,10 @@ test("pool feed is a free teaser and exact purchase info opens only through deta
   assert.match(explore, /정확가 잠김/);
   assert.match(explore, /출처 잠금/);
   assert.match(explore, /상세에서 제목·가격 공개/);
+  assert.match(explore, /type TierBadgeCategory = "shoe" \| "clothing" \| "game_console" \| "sport_golf"/);
+  assert.match(explore, /function tierBadgeCategoryForItem/);
+  assert.match(explore, /if \(usesLatestTierPreviewCategory\(item\.category\)\) return `\$\{lockedPreviewCategoryLabel\(item\)\} 후보`;/);
+  assert.match(explore, /category=\{tierBadgeCategory\}/);
   assert.match(explore, /openedDetailPids/);
   assert.doesNotMatch(explore, /data-credit-infinite-feed-sentinel/);
   assert.match(explore, /accessToken/);
