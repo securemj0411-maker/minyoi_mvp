@@ -448,16 +448,40 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
             <option value="2">band 2</option>
             <option value="3">band 3</option>
           </select>
-          {stats && stats.bySource.length > 0 && (
-            <select value={source} onChange={(e) => { setSource(e.target.value); setPage(1); }} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">
-              <option value="">출처 전체</option>
-              {stats.bySource.map((row) => (
-                <option key={row.source} value={row.source}>
-                  {row.label} — {row.ready_count}건
-                </option>
-              ))}
-            </select>
-          )}
+          {/* 출처 필터: bySource API 가 dynamic 이라 raw 0 source 는 옵션 X.
+              알려진 source ('bunjang','joongna','daangn') 는 static fallback 으로 항상 노출. */}
+          {stats && (() => {
+            const KNOWN_SOURCES: Array<{ source: string; label: string }> = [
+              { source: "bunjang", label: "번개장터" },
+              { source: "joongna", label: "중고나라" },
+              { source: "daangn", label: "당근마켓" },
+            ];
+            const dynamicByKey = new Map(stats.bySource.map((r) => [r.source, r] as const));
+            const merged = KNOWN_SOURCES.map((known) => {
+              const dyn = dynamicByKey.get(known.source);
+              return {
+                source: known.source,
+                label: known.label,
+                ready_count: dyn?.ready_count ?? 0,
+              };
+            });
+            // dynamic 에만 있는 source (예상 외) 도 합쳐서 노출
+            for (const row of stats.bySource) {
+              if (!merged.find((m) => m.source === row.source)) {
+                merged.push(row);
+              }
+            }
+            return (
+              <select value={source} onChange={(e) => { setSource(e.target.value); setPage(1); }} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">
+                <option value="">출처 전체</option>
+                {merged.map((row) => (
+                  <option key={row.source} value={row.source}>
+                    {row.label} — {row.ready_count}건
+                  </option>
+                ))}
+              </select>
+            );
+          })()}
           {stats && stats.byPriceBucket.length > 0 && (
             <select value={priceBucket} onChange={(e) => { setPriceBucket(e.target.value); setPage(1); }} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">
               <option value="">가격대 전체</option>
