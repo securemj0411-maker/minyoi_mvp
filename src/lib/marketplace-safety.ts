@@ -33,6 +33,7 @@ export type MarketplaceSafetyDisplay = {
   source: string;
   marketplaceLabel: string;
   isJoongna: boolean;
+  isDaangn: boolean;
   paymentLabel: string;
   sellerTrust: {
     kind: "joongna_trust_score" | "bunjang_rating";
@@ -394,9 +395,10 @@ export function buildMarketplaceSafetyDisplay(facts: MarketplaceSafetyFacts): Ma
   })();
 
   return {
-    source: isJoongna ? "joongna" : "bunjang",
+    source: isJoongna ? "joongna" : isDaangn ? "daangn" : "bunjang",
     marketplaceLabel,
     isJoongna,
+    isDaangn,
     paymentLabel,
     sellerTrust,
     shipping,
