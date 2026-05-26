@@ -1246,7 +1246,7 @@ function FirstFeedOnboardingCard({
               이 매물만 유독 싸요.
             </h2>
 
-            {/* 본 매물 (1페이지 에어팟 5만원) 다시 강조. */}
+            {/* 본 매물 (1페이지 에어팟 5만원) 다시 강조. Wave launch-126b: 노캔 고장 chip 가독성 ↑. */}
             <div className="mt-4 rounded-[18px] border-2 border-[#3182f6] bg-blue-50/40 px-3.5 py-3 dark:border-blue-400 dark:bg-blue-950/20">
               <div className="flex items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1256,8 +1256,14 @@ function FirstFeedOnboardingCard({
                   className="h-[64px] w-[64px] shrink-0 rounded-[14px] bg-zinc-100 object-cover dark:bg-zinc-800"
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[10px] font-black uppercase tracking-[0.12em] text-[#3182f6] dark:text-blue-300">이 매물 · 노캔 고장</div>
-                  <div className="mt-0.5 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">에어팟 프로 2세대</div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="inline-flex items-center gap-0.5 rounded-md bg-red-50 px-1.5 py-0.5 text-[10px] font-black text-red-600 dark:bg-red-950/40 dark:text-red-400">
+                      <span aria-hidden>⚠</span>
+                      노캔 고장
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.1em] text-[#3182f6] dark:text-blue-300">이 매물</span>
+                  </div>
+                  <div className="mt-1 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">에어팟 프로 2세대</div>
                   <div className="mt-1 flex items-baseline gap-1.5">
                     <span className="text-[16px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">5만원</span>
                     <span className="text-[10px] font-bold text-zinc-500">매입가 5만 · 시세 11만</span>
@@ -1267,24 +1273,30 @@ function FirstFeedOnboardingCard({
             </div>
 
             <div className="mt-3 text-[11px] font-black uppercase tracking-[0.12em] text-zinc-500">같은 상태 비교 매물 4개</div>
-            {/* 비교 매물 4개 — 2열 grid, 다 같은 에어팟 사진, 같은 노캔 고장 상태, 가격 8-12만. */}
+            {/* Wave launch-126b (2026-05-26 사용자 정정):
+                 - 사진 가로 너무 김 → aspect-square 정사각형 비율
+                 - "노캔 고장" 라벨 가독성 ↑ — 빨간 chip + 아이콘
+                 - public/노캔고장/ 폴더에 실제 비교 매물 사진 4개 박힘 (mock 통일성 ↑) */}
             <div className="mt-2 grid grid-cols-2 gap-2">
               {[
-                { price: "8만원", note: "매입가 8만 · 시세 11만" },
-                { price: "9만원", note: "매입가 9만 · 시세 11만" },
-                { price: "11만원", note: "매입가 11만 · 시세 11만" },
-                { price: "12만원", note: "매입가 12만 · 시세 11만" },
+                { price: "8만원", note: "매입가 8만 · 시세 11만", img: "/%EB%85%B8%EC%BA%94%EA%B3%A0%EC%9E%A5/293736980_1_1728653235_w360.webp" },
+                { price: "9만원", note: "매입가 9만 · 시세 11만", img: "/%EB%85%B8%EC%BA%94%EA%B3%A0%EC%9E%A5/338081393_1_1749305909_w360.webp" },
+                { price: "11만원", note: "매입가 11만 · 시세 11만", img: "/%EB%85%B8%EC%BA%94%EA%B3%A0%EC%9E%A5/408223471_1_1778837408_w360.webp" },
+                { price: "12만원", note: "매입가 12만 · 시세 11만", img: "/%EB%85%B8%EC%BA%94%EA%B3%A0%EC%9E%A5/art_1667266173.jpg" },
               ].map((item, idx) => (
-                <div key={idx} className="rounded-[14px] border border-zinc-200 bg-white px-2.5 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/60">
+                <div key={idx} className="rounded-[14px] border border-zinc-200 bg-white p-2 dark:border-zinc-800 dark:bg-zinc-900/60">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/%EC%97%90%EC%96%B4%ED%8C%9F%EC%A4%91%EA%B3%A0.jpg"
-                    alt="에어팟 프로 2세대 비교 매물"
-                    className="h-[56px] w-full rounded-[10px] bg-zinc-100 object-cover dark:bg-zinc-800"
+                    src={item.img}
+                    alt="에어팟 프로 2세대 노캔 고장 비교 매물"
+                    className="aspect-square w-full rounded-[10px] bg-zinc-100 object-cover dark:bg-zinc-800"
                   />
-                  <div className="mt-1.5 text-[9px] font-black uppercase tracking-[0.1em] text-zinc-500">노캔 고장</div>
-                  <div className="mt-0.5 text-[13px] font-black tabular-nums text-zinc-700 dark:text-zinc-300">{item.price}</div>
-                  <div className="mt-0.5 text-[9px] font-bold leading-tight text-zinc-500">{item.note}</div>
+                  <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-red-50 px-1.5 py-0.5 text-[10px] font-black text-red-600 dark:bg-red-950/40 dark:text-red-400">
+                    <span aria-hidden>⚠</span>
+                    노캔 고장
+                  </div>
+                  <div className="mt-1 text-[14px] font-black tabular-nums text-zinc-900 dark:text-zinc-100">{item.price}</div>
+                  <div className="mt-0.5 text-[10px] font-bold leading-tight text-zinc-500">{item.note}</div>
                 </div>
               ))}
             </div>
