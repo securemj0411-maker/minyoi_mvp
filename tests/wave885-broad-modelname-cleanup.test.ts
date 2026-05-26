@@ -67,3 +67,26 @@ test("Wave 885: Dyson Airwrap broad does not leak HS08/Co-anda 2x parenthetical"
   assert.ok(result.comparableKey, "comparable_key must exist");
   assert.ok(!result.comparableKey!.includes("hs08_co_anda_2x"), `comparable_key must not contain HS08/Co-anda: ${result.comparableKey}`);
 });
+
+// Wave 885 part 2: AirPods Max — USB-C 1세대/2세대 ↔ Lightning 1세대 routing 정정.
+//   기존 mustNotContain ["usb-c", "usbc", "c타입", "타입c"] 만 있어서 색상/세대/연도 시그널 없는 매물이
+//   잘못 Lightning 으로 routed → comparable_key `airpods|airpods_max|usbc` 에서 1세대/2세대 mixing.
+import { ruleMatch } from "@/lib/catalog";
+
+test("Wave 885 Part 2: AirPods Max Lightning (1세대 8핀) routes to airpods-max", () => {
+  assert.equal(ruleMatch("에어팟 맥스 스페이스 그레이 8핀", "")?.id, "airpods-max");
+  assert.equal(ruleMatch("SS급) 에어팟맥스 8핀", "")?.id, "airpods-max");
+  assert.equal(ruleMatch("에어팟 맥스 (1세대) 실버", "")?.id, "airpods-max");
+});
+
+test("Wave 885 Part 2: AirPods Max 2024+ USB-C 신컬러 routes to airpods-max-usbc", () => {
+  assert.equal(ruleMatch("에어팟 맥스 스타라이트", "")?.id, "airpods-max-usbc");
+  assert.equal(ruleMatch("에어팟맥스 미드나이트 새상품", "")?.id, "airpods-max-usbc");
+  assert.equal(ruleMatch("에어팟 맥스 퍼플 USB-C", "")?.id, "airpods-max-usbc");
+});
+
+test("Wave 885 Part 2: AirPods Max 2/2026/2세대 routes to airpods-max-usbc", () => {
+  assert.equal(ruleMatch("에어팟 맥스2 미드나이트 2026", "")?.id, "airpods-max-usbc");
+  assert.equal(ruleMatch("애플 에어팟맥스 2세대 c핀", "")?.id, "airpods-max-usbc");
+  assert.equal(ruleMatch("애플 에어팟 맥스 1 2024년형 블랙", "")?.id, "airpods-max-usbc");
+});

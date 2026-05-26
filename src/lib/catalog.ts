@@ -5953,7 +5953,18 @@ export const CATALOG: Sku[] = [
     modelName: "AirPods Max (Lightning)",
     aliases: ["에어팟 맥스", "AirPods Max", "에어팟맥스"],
     mustContain: [["에어팟", "airpods"], ["맥스", "max"]],
-    mustNotContain: ["usb-c", "usbc", "c타입", "타입c"],
+    // Wave 885: USB-C 1세대 (2024) + 2세대 (2026) 매물이 connector axis "usbc" 로 잘못 떨어지면서
+    //   같은 comparable_key (airpods|airpods_max|usbc) 로 묶여 1세대 Lightning ↔ 2세대 가격 mixing.
+    //   2024+ 신규 컬러 (스타라이트/미드나이트/퍼플/오렌지/블루) 와 "맥스 2"/"2세대"/"2024+" 키워드 자동 차단.
+    mustNotContain: [
+      "usb-c", "usbc", "c타입", "타입c", "씨타입", "c핀", "c 핀",
+      // 2024+ USB-C 시그니처 컬러 (Lightning 1세대엔 없음)
+      "스타라이트", "starlight", "미드나이트", "midnight", "퍼플", "purple", "오렌지", "orange",
+      // 2세대 / Max 2 패턴
+      "맥스 2", "맥스2", "max 2", "max2", "2세대", "2 세대",
+      // 출시연도 (2024+)
+      "2024", "2025", "2026",
+    ],
     msrpKrw: 769000,
     released: 2020,
     confusionNote: "Lightning 1세대 (2020-12). 매물 \"맥스 1세대\" 또는 단순 \"맥스\" = 이 모델. USB-C/Max 2는 별도 SKU.",
@@ -5969,9 +5980,16 @@ export const CATALOG: Sku[] = [
     mustContain: [
       ["에어팟", "airpods"],
       ["맥스", "max"],
-      ["usb-c", "usbc", "c타입", "타입c", "씨타입"],
+      // Wave 885: explicit "usb-c" 외에 색상/세대/연도 시그널로도 매칭.
+      //   2024+ 신규 컬러 (Lightning 1세대엔 없는 색)와 "맥스 2"/"2세대"/"2024+" 키워드.
+      [
+        "usb-c", "usbc", "c타입", "타입c", "씨타입", "c핀", "c 핀",
+        "스타라이트", "starlight", "미드나이트", "midnight", "퍼플", "purple", "오렌지", "orange",
+        "맥스 2", "맥스2", "max 2", "max2", "2세대", "2 세대",
+        "2024", "2025", "2026",
+      ],
     ],
-    mustNotContain: ["라이트닝", "lightning", ...HEADPHONE_NOISE],
+    mustNotContain: ["라이트닝", "lightning", "8핀", "8 핀", "팔핀", ...HEADPHONE_NOISE],
     msrpKrw: 769000,
     released: 2024,
   },
