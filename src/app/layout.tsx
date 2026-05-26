@@ -46,6 +46,14 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image", title: `${SITE_NAME} — ${TAGLINE}`, description: DESCRIPTION, images: ["/opengraph-image"] },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  // Wave 753 (2026-05-25): 네이버 서치어드바이저 사이트 소유 확인 메타.
+  //   https://searchadvisor.naver.com/ → 사이트 등록 후 verification → "확인" 클릭하면 활성.
+  //   확인 완료 후 sitemap.xml 제출 + URL 직접 수집 요청 필요.
+  verification: {
+    other: {
+      "naver-site-verification": "211bd1e7421b7bd4930d132d2d88c80c4b73481b",
+    },
+  },
 };
 
 export default function RootLayout({
