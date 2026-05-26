@@ -4,10 +4,12 @@
 
 import { fetchDaangnText, type DaangnRegionSeed } from "../src/lib/daangn";
 
-const RANGE_START = 1;
-const RANGE_END = 9999;
-const BATCH_SIZE = 30;     // parallel batch
-const DELAY_MS = 50;       // batch 사이 delay
+// Wave 760 (2026-05-26): 비수도권 region 발견용. 기존 seed 1829 (경기 여주) → 4203 (부천) 사이 gap.
+//   강원/충북/충남/전북/전남/경북/경남/제주/세종 ID 추정 범위.
+const RANGE_START = 1830;
+const RANGE_END = 4500;
+const BATCH_SIZE = 25;     // parallel batch (당근 부담 ↓)
+const DELAY_MS = 100;      // batch 사이 delay
 const STEP = 1;            // every ID
 
 function extractMatchingRegion(html: string, expectId: string): DaangnRegionSeed | null {
