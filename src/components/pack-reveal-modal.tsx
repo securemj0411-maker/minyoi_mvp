@@ -1433,7 +1433,8 @@ function groupListingsByTierDistance<T extends { conditionTier?: string | null; 
   return orderedDistances.map((d) => ({
     distance: d,
     heading: tierGroupHeading(ourTier, d),
-    items: (buckets.get(d) ?? []).sort((a, b) => a.price - b.price),
+    // 사용자 요청: 비교 매물 가격 정렬 일관성 — 모든 카테고리 DESC (높은 가격 먼저).
+    items: (buckets.get(d) ?? []).sort((a, b) => (b.price ?? 0) - (a.price ?? 0)),
   }));
 }
 
