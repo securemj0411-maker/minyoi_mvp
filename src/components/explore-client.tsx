@@ -1234,61 +1234,66 @@ function FirstFeedOnboardingCard({
             </div>
           </div>
         ) : step === 1 ? (
-          /* Wave launch-125 step 1: 우리 답 + 예시 매물 카드 2개. */
+          /* Wave launch-126 (2026-05-26 사용자 정정 — 맥락 끊김 fix):
+               기존 step 1 = 뉴발란스 + 닥마 (다른 SKU) → 1페이지 에어팟 의심과 맥락 단절.
+               신규 step 1 = 1페이지 에어팟 5만원 본 매물 + 같은 노캔 고장 상태 비교군 4개 (2열 grid).
+               "다 같이 노캔 고장났는데도 다른 매물은 8-12만. 이 매물만 5만 = 진짜 싼 거다" 정면 반박. */
           <div className="flex flex-1 flex-col justify-center pb-24">
-            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">근데 진짜 돈 되는 매물은 다릅니다</div>
-            <h2 className="mt-3 break-keep text-[24px] font-black leading-[1.22] tracking-tight sm:text-[28px]">
-              득템잡이는
+            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">근데 좀 이상한 거 잡았어요</div>
+            <h2 className="mt-3 break-keep text-[22px] font-black leading-[1.28] tracking-tight">
+              <span className="text-[#3182f6] dark:text-blue-300">같은 노캔 고장</span> 매물들인데
               <br />
-              <span className="text-[#3182f6] dark:text-blue-300">같은 상태·같은 구성</span> 기준에서도
-              <br />
-              유난히 싼 매물만 골라드려요.
+              이 매물만 유독 싸요.
             </h2>
 
-            {/* Wave launch-125c: 에어팟 (1페이지 재등장 어색) → 뉴발란스 + 닥마. "매입" → "매입가". */}
-            <div className="mt-5 space-y-2.5">
-              <div className="flex items-center gap-3 rounded-[18px] border border-zinc-200 bg-white px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
+            {/* 본 매물 (1페이지 에어팟 5만원) 다시 강조. */}
+            <div className="mt-4 rounded-[18px] border-2 border-[#3182f6] bg-blue-50/40 px-3.5 py-3 dark:border-blue-400 dark:bg-blue-950/20">
+              <div className="flex items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/%EB%89%B4%EB%B0%9C%EB%9E%80%EC%8A%A4%EC%A4%91%EA%B3%A0.jpeg"
-                  alt="뉴발란스 993"
+                  src="/%EC%97%90%EC%96%B4%ED%8C%9F%EC%A4%91%EA%B3%A0.jpg"
+                  alt="에어팟 프로 2세대"
                   className="h-[64px] w-[64px] shrink-0 rounded-[14px] bg-zinc-100 object-cover dark:bg-zinc-800"
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">A급 · 무료배송</div>
-                  <div className="mt-0.5 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">뉴발란스 993 그레이</div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.12em] text-[#3182f6] dark:text-blue-300">이 매물 · 노캔 고장</div>
+                  <div className="mt-0.5 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">에어팟 프로 2세대</div>
                   <div className="mt-1 flex items-baseline gap-1.5">
-                    <span className="text-[15px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">+5만원</span>
-                    <span className="text-[10px] font-bold text-zinc-500">매입가 9만 · A급 시세 15만</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 rounded-[18px] border border-zinc-200 bg-white px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/%EB%8B%A5%ED%84%B0%EB%A7%88%ED%8B%B4%20%EC%A4%91%EA%B3%A0.webp"
-                  alt="닥터마틴 1461 스무스"
-                  className="h-[64px] w-[64px] shrink-0 rounded-[14px] bg-zinc-100 object-cover dark:bg-zinc-800"
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">A급 · 우수 셀러</div>
-                  <div className="mt-0.5 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">닥터마틴 1461 스무스</div>
-                  <div className="mt-1 flex items-baseline gap-1.5">
-                    <span className="text-[15px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">+6만원</span>
-                    <span className="text-[10px] font-bold text-zinc-500">매입가 8만 · A급 시세 14만</span>
+                    <span className="text-[16px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">5만원</span>
+                    <span className="text-[10px] font-bold text-zinc-500">매입가 5만 · 시세 11만</span>
                   </div>
                 </div>
               </div>
             </div>
-            {/* Wave launch-125c: 회전률 정보 — "팔면 보통 얼마만에 팔림?" 답. */}
-            <div className="mt-4 flex items-center gap-2 rounded-[14px] bg-blue-50 px-3.5 py-2.5 dark:bg-blue-950/30">
-              <span className="text-[14px]">⏱️</span>
-              <p className="break-keep text-[12.5px] font-bold leading-5 text-blue-700 dark:text-blue-300">
-                이런 매물은 보통 <span className="font-black">1~2주</span> 안에 다시 거래돼요.
-              </p>
+
+            <div className="mt-3 text-[11px] font-black uppercase tracking-[0.12em] text-zinc-500">같은 상태 비교 매물 4개</div>
+            {/* 비교 매물 4개 — 2열 grid, 다 같은 에어팟 사진, 같은 노캔 고장 상태, 가격 8-12만. */}
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {[
+                { price: "8만원", note: "매입가 8만 · 시세 11만" },
+                { price: "9만원", note: "매입가 9만 · 시세 11만" },
+                { price: "11만원", note: "매입가 11만 · 시세 11만" },
+                { price: "12만원", note: "매입가 12만 · 시세 11만" },
+              ].map((item, idx) => (
+                <div key={idx} className="rounded-[14px] border border-zinc-200 bg-white px-2.5 py-2.5 dark:border-zinc-800 dark:bg-zinc-900/60">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/%EC%97%90%EC%96%B4%ED%8C%9F%EC%A4%91%EA%B3%A0.jpg"
+                    alt="에어팟 프로 2세대 비교 매물"
+                    className="h-[56px] w-full rounded-[10px] bg-zinc-100 object-cover dark:bg-zinc-800"
+                  />
+                  <div className="mt-1.5 text-[9px] font-black uppercase tracking-[0.1em] text-zinc-500">노캔 고장</div>
+                  <div className="mt-0.5 text-[13px] font-black tabular-nums text-zinc-700 dark:text-zinc-300">{item.price}</div>
+                  <div className="mt-0.5 text-[9px] font-bold leading-tight text-zinc-500">{item.note}</div>
+                </div>
+              ))}
             </div>
-            <p className="mt-3 text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-              ※ 예시 매물. 실제 추천은 다음 화면부터 시작.
+
+            <p className="mt-4 break-keep text-[13px] font-bold leading-5 text-zinc-600 dark:text-zinc-400">
+              <span className="font-black text-[#3182f6] dark:text-blue-300">결함은 다 같음</span> — 그런데 이 매물만 절반 가격. <span className="font-black">진짜 싼 매물이라는 뜻</span>이에요.
+            </p>
+            <p className="mt-2 text-[11px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+              ※ 예시 매물. 실제 추천은 다음 화면부터.
             </p>
           </div>
         ) : step === 2 ? (
