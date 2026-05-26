@@ -3,11 +3,17 @@
 // Wave launch-95 (사용자 결정 — 토스페이먼츠 가맹심사 중 임시 흐름):
 //   카드결제 불가 → 계좌이체 안내 + 입금자명 input + 즉시 grant.
 //   가맹 승인 후엔 /billing/checkout (PortOne) 흐름 복원.
+// Wave 775 (2026-05-27): 입금자명 input 제거 + 카톡 닉네임 자동.
+//   사용자 결정 — "입금자 성명 쓰는게 이상함. 카톡 닉네임 자동으로".
+//   90% 사용자가 카톡 OAuth (nickname/name 박힘) → displayNameForUser 자동 추출.
+//   토스 송금 시 사용자가 "받는 분에게 표시"를 카톡 닉네임으로 박으면 매칭 자동.
 
+import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { displayNameForUser } from "@/lib/auth-users";
 import { formatKrw, planForKey, type PlanKey } from "@/lib/plan-config";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
@@ -15,37 +21,7 @@ const BANK_NAME = "우리은행";
 const ACCOUNT_NUMBER = "1002-367-160511";
 const ACCOUNT_RAW = "1002367160511";
 const ACCOUNT_HOLDER = "이민제";
-
-// Wave 774 (2026-05-27): 토스 송금 deep link — manual deposit friction 8 step → 3 step.
-//   supertoss://send 가 토스 앱의 송금 화면을 prefill (bank + accountNo + amount).
-//   비공식 reverse-engineered scheme — 토스 앱 업데이트로 깨질 risk 있음 (카나리아 모니터링 별도).
-//   미설치 fallback: iOS App Store / Android Play Store via intent:// + setTimeout 휴리스틱.
-// Wave 774b (2026-05-27): 짧은 "우리" 박았더니 토스 앱에서 은행 선택 단계 떴음 (사용자 발견).
-//   원본 share 받은 작동 사례는 "토스뱅크" (풀네임) 였음. 풀네임 "우리은행" 으로 변경.
-const TOSS_BANK_PARAM = "우리은행";
-const TOSS_APP_STORE_URL = "https://apps.apple.com/kr/app/id839333328";
-const TOSS_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=viva.republica.toss";
-
-function buildTossDeepLink(amount: number): string {
-  const params = new URLSearchParams({
-    bank: TOSS_BANK_PARAM,
-    accountNo: ACCOUNT_RAW,
-    amount: String(amount),
-    origin: "qr",
-  });
-  return `supertoss://send?${params.toString()}`;
-}
-
-function buildAndroidTossIntent(amount: number): string {
-  const params = new URLSearchParams({
-    bank: TOSS_BANK_PARAM,
-    accountNo: ACCOUNT_RAW,
-    amount: String(amount),
-    origin: "qr",
-  });
-  const fallback = encodeURIComponent(TOSS_PLAY_STORE_URL);
-  return `intent://send?${params.toString()}#Intent;scheme=supertoss;package=viva.republica.toss;S.browser_fallback_url=${fallback};end`;
-}
+// Wave 775 (2026-05-27): toss-deeplink helper 는 src/lib/toss-deeplink.ts 로 이동.
 
 const CREDIT_PACKAGE_TO_PLAN: Record<string, Exclude<PlanKey, "free">> = {
   "1": "single",
@@ -80,12 +56,13 @@ export default function ManualDepositClient() {
         : "starter";
   const plan = planForKey(planKey);
 
-  const [depositorName, setDepositorName] = useState("");
   const [stage, setStage] = useState<Stage>("ready");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copyOk, setCopyOk] = useState(false);
-  const [tossOpened, setTossOpened] = useState(false);
   const [authReady, setAuthReady] = useState<"loading" | "authed" | "guest">("loading");
+  // Wave 775 (2026-05-27): user state 추가 — displayNameForUser 로 카톡 닉네임 자동 추출.
+  const [user, setUser] = useState<User | null>(null);
+  const autoDepositorName = displayNameForUser(user);
   // Wave launch-97: 신청 → 카운트다운 + polling.
   const [requestId, setRequestId] = useState<number | null>(null);
   const [secondsLeft, setSecondsLeft] = useState<number>(180);
@@ -100,6 +77,7 @@ export default function ManualDepositClient() {
     }
     void supabase.auth.getUser().then(({ data }) => {
       if (cancelled) return;
+      setUser(data.user ?? null);
       setAuthReady(data.user ? "authed" : "guest");
     });
     return () => {
@@ -201,9 +179,11 @@ export default function ManualDepositClient() {
 
   async function handleConfirm() {
     setErrorMessage(null);
-    const cleanName = depositorName.trim();
+    // Wave 775 (2026-05-27): depositorName 자동 — 카톡 닉네임 (displayNameForUser).
+    //   user_metadata.nickname → name → full_name → email split 순.
+    const cleanName = autoDepositorName.trim().slice(0, 40);
     if (cleanName.length < 1) {
-      setErrorMessage("입금자 성명을 입력해주세요.");
+      setErrorMessage("로그인이 필요해요. 다시 로그인 후 시도해주세요.");
       return;
     }
     setStage("submitting");
@@ -317,64 +297,34 @@ export default function ManualDepositClient() {
             ) : null}
           </div>
 
-          {/* Wave 774 (2026-05-27): 토스 송금 deep link CTA — fast path.
-              사용자 클릭 → 토스 앱 송금화면 자동 prefill (우리은행 + 계좌 + 금액).
-              토스 미설치 시 fallback (iOS App Store / Android Play Store).
-              다른 은행 사용자는 위 "계좌번호 복사" 후 본인 은행 앱에서 송금. */}
-          <a
-            href={buildTossDeepLink(plan.priceKrw)}
-            onClick={(e) => {
-              if (typeof window === "undefined") return;
-              const ua = navigator.userAgent || "";
-              const isAndroid = /Android/i.test(ua);
-              const isIOS = /iPad|iPhone|iPod/i.test(ua);
-              setTossOpened(true);
-              if (isAndroid) {
-                e.preventDefault();
-                window.location.href = buildAndroidTossIntent(plan.priceKrw);
-                return;
-              }
-              if (isIOS) {
-                const startedAt = Date.now();
-                setTimeout(() => {
-                  if (Date.now() - startedAt < 2000 && document.visibilityState === "visible") {
-                    window.location.href = TOSS_APP_STORE_URL;
-                  }
-                }, 1500);
-              }
+          {/* Wave 774 (2026-05-27) → Wave 775: 토스 송금하기 클릭 → /billing/processing 으로 redirect.
+              processing 페이지가 자동으로 토스 deep link 호출 + 결제 처리 중 UI + 입금 확인 버튼.
+              mock PG 페이지 흐름 — 사용자한테 정식 PG 통과한 듯한 느낌. */}
+          <button
+            type="button"
+            onClick={() => {
+              router.push(`/billing/processing?credits=${plan.monthlyCredits}&plan=${planKey}`);
             }}
             className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#3182f6] text-[14.5px] font-black text-white shadow-[0_10px_22px_rgba(49,130,246,0.28)] transition hover:bg-[#1c6fe8] active:scale-[0.99]"
           >
             토스 앱으로 송금하기
-          </a>
-          <p className="mt-2 text-[11px] font-medium leading-4 text-zinc-500 dark:text-zinc-400">
-            토스 앱이 송금 화면을 자동으로 채워줘요. 다른 은행을 쓰시면 위 계좌번호 복사 후 본인 은행 앱에서 송금해주세요.
+          </button>
+          <p className="mt-2 break-keep text-[11px] font-medium leading-4 text-zinc-500 dark:text-zinc-400">
+            토스 앱이 송금 화면을 자동으로 채워줘요. 다른 은행을 쓰시면 위 계좌번호 복사 후 본인 은행 앱에서 송금하고 아래 "입금 완료" 를 눌러주세요.
           </p>
-          {tossOpened ? (
-            <p className="mt-1 text-[11px] font-bold text-[#3182f6] dark:text-blue-300">
-              송금 완료 후 아래 입금자 성명을 입력하고 "입금 완료" 를 눌러주세요.
-            </p>
-          ) : null}
 
-          {/* 입금자명 */}
-          <div className="mt-4">
-            <label htmlFor="depositor-name" className="text-[12px] font-bold text-zinc-700 dark:text-zinc-300">
-              입금자 성명
-            </label>
-            <input
-              id="depositor-name"
-              type="text"
-              value={depositorName}
-              onChange={(e) => setDepositorName(e.target.value)}
-              placeholder="입금하신 분의 성함"
-              maxLength={40}
-              disabled={stage === "submitting" || stage === "waiting" || stage === "approved"}
-              className="mt-1.5 flex h-11 w-full items-center rounded-xl border border-zinc-200 bg-white px-3 text-[14px] font-bold text-zinc-950 placeholder:text-zinc-400 focus:border-[#3182f6] focus:outline-none focus:ring-2 focus:ring-[#3182f6]/25 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500"
-            />
-            <p className="mt-1.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
-              입금자 성명과 입력하신 이름이 같아야 빠르게 확인이 돼요.
-            </p>
-          </div>
+          {/* Wave 775 (2026-05-27): 입금자명 input 제거 + 카톡 닉네임 자동 안내.
+              displayNameForUser 가 user_metadata.nickname / name / full_name 에서 추출.
+              90% 카톡 OAuth 사용자는 본명/별명으로 등록 — 자동 매칭 충분. */}
+          {authReady === "authed" && autoDepositorName ? (
+            <div className="mt-4 rounded-[14px] bg-[#f5f9ff] px-3.5 py-2.5 dark:bg-blue-950/24">
+              <div className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">입금자명 (자동)</div>
+              <div className="mt-0.5 text-[14px] font-black text-zinc-950 dark:text-zinc-50">{autoDepositorName}</div>
+              <p className="mt-1.5 break-keep text-[10.5px] font-medium leading-4 text-zinc-500 dark:text-zinc-400">
+                송금하실 때 은행 앱의 <b>"받는 분에게 표시"</b> 항목에 같은 이름을 적어주시면 빠르게 매칭돼요.
+              </p>
+            </div>
+          ) : null}
 
           {/* 입금 완료 button */}
           <button
