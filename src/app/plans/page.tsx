@@ -5,12 +5,13 @@ import { PLANS, formatKrw, type PlanDefinition, type PlanKey } from "@/lib/plan-
 
 const ORDER: PlanKey[] = ["single", "trial", "starter", "plus", "pro"];
 
+// Wave launch-128b: 패키지 카피 가치 언어로 업데이트.
 const PACKAGE_VALUE_COPY: Record<Exclude<PlanKey, "free">, string> = {
-  single: "이번 매물 하나만 바로 확인",
-  trial: "처음 결제 부담을 낮춘 체험팩",
-  starter: "가장 많이 쓰는 기본 충전권",
-  plus: "여러 모델을 비교하며 살 만한 후보 추리기",
-  pro: "대량 탐색과 반복 시세 확인이 많은 날에",
+  single: "지금 이 매물 하나, 바로 확인",
+  trial: "부담 없이 시작 · 5번 써보고 판단",
+  starter: "여러 매물 비교하며 진짜 득템 찾을 때",
+  plus: "카테고리 전체 훑고 후보 좁힐 때",
+  pro: "매일 새 매물 체크하는 분께",
 };
 
 const INFO_ROWS = [
@@ -113,6 +114,24 @@ export default function PlansPage() {
             같은 상태 매물끼리 시세 비교하고, 배송비·수수료까지 계산한 분석 1건 = 1크레딧.
             커피 한 잔 아끼면 매물 분석 14번 돌아요.
           </p>
+        </section>
+
+        {/* Wave launch-128b: 패키지 위 가치 설득 섹션 — "1크레딧으로 뭘 하는가". */}
+        <section className="mt-3 rounded-[16px] border border-zinc-200 bg-white px-4 py-3.5 dark:border-zinc-800 dark:bg-zinc-900">
+          <p className="text-[12.5px] font-black text-zinc-800 dark:text-zinc-100">1크레딧으로 확인하는 것</p>
+          <ul className="mt-2.5 space-y-2">
+            {[
+              "같은 상태 매물끼리 시세 비교 (A급은 A급끼리)",
+              "배송비·수수료 포함 예상 수익 자동 계산",
+              "원본 매물 링크 + 셀러 신뢰도 확인",
+              "비교 매물 N건 기준 시세 근거",
+            ].map((item) => (
+              <li key={item} className="flex items-start gap-2 text-[12px] font-semibold leading-5 text-zinc-600 dark:text-zinc-300">
+                <span className="mt-px shrink-0 text-[#3182f6]">✓</span>
+                {item}
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="mt-3 grid gap-2.5">
