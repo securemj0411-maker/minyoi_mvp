@@ -1,30 +1,44 @@
 "use client";
 
 // Wave 773 (2026-05-27): 사용자 거주 동네 설정 onboarding UI.
-//   GPS 버튼 (Kakao reverse geocode) + 수동 dropdown 둘 다 제공.
+//   GPS 버튼 (Kakao reverse geocode) + 수동 검색 (Kakao address API) 둘 다 제공.
 //   skip 불가 — 당근 매물 거리 제약 때문에 필수.
+// Wave 886.4 (2026-05-27): 218-entry 로컬 리스트 → 카카오 주소 검색 API로 교체.
+//   "상도동" 같은 동 검색 가능 (전국 동 커버).
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
-type RegionOption = {
-  daangn_region_id: string;
-  daangn_region_name: string;
-  daangn_full_path: string;
+type AddressOption = {
+  fullPath: string;
+  region1: string;
+  region2: string;
+  region3: string;
+  lat: number;
+  lng: number;
 };
 
 export function HomeRegionOnboarding() {
   const router = useRouter();
-  const [regions, setRegions] = useState<RegionOption[]>([]);
   const [search, setSearch] = useState("");
+  const [results, setResults] = useState<AddressOption[]>([]);
+  const [searching, setSearching] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [gpsStatus, setGpsStatus] = useState<"idle" | "requesting" | "resolving" | "success" | "error">("idle");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastQueryRef = useRef<string>("");
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
+  const runSearch = useCallback(async (q: string) => {
+    if (q.trim().length < 2) {
+      setResults([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    setError(null);
+    try {
       const supabase = getSupabaseBrowserClient();
       if (!supabase) { setError("로그인 정보가 없어요"); return; }
       const { data: { session } } = await supabase.auth.getSession();
@@ -33,30 +47,33 @@ export function HomeRegionOnboarding() {
         router.push("/login?next=/onboarding/home-region");
         return;
       }
-      const res = await fetch("/api/user/home-region?list=1", {
+      const res = await fetch(`/api/user/home-region/search?q=${encodeURIComponent(q.trim())}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) {
-        setError("동네 목록을 불러오지 못했어요");
+      if (q !== lastQueryRef.current) return; // stale response
+      const json = (await res.json()) as { ok: boolean; results?: AddressOption[]; error?: string };
+      if (!json.ok) {
+        setError(json.error === "KAKAO_REST_API_KEY missing" ? "주소 검색 키가 설정되지 않았어요" : "검색 실패");
+        setResults([]);
         return;
       }
-      const json = await res.json() as { ok: boolean; regions: RegionOption[] };
-      if (cancelled) return;
-      setRegions(json.regions ?? []);
-    })();
-    return () => { cancelled = true; };
+      setResults(json.results ?? []);
+    } catch {
+      setError("검색 중 오류");
+      setResults([]);
+    } finally {
+      setSearching(false);
+    }
   }, [router]);
 
-  const filtered = useMemo(() => {
-    if (!search.trim()) return regions.slice(0, 50);
-    const q = search.trim().toLowerCase();
-    return regions
-      .filter((r) =>
-        r.daangn_region_name.toLowerCase().includes(q) ||
-        r.daangn_full_path.toLowerCase().includes(q),
-      )
-      .slice(0, 50);
-  }, [regions, search]);
+  useEffect(() => {
+    lastQueryRef.current = search;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => runSearch(search), 250);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [search, runSearch]);
 
   async function submitWithToken(payload: object) {
     setBusy(true);
@@ -102,18 +119,24 @@ export function HomeRegionOnboarding() {
       (err) => {
         setGpsStatus("error");
         if (err.code === err.PERMISSION_DENIED) {
-          setError("위치 권한이 거부됐어요. 동네를 직접 선택해주세요.");
+          setError("위치 권한이 거부됐어요. 동네를 직접 입력해주세요.");
         } else {
-          setError("위치를 가져오지 못했어요. 동네를 직접 선택해주세요.");
+          setError("위치를 가져오지 못했어요. 동네를 직접 입력해주세요.");
         }
       },
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 60_000 },
     );
   }
 
-  function handleManualSelect(region: RegionOption) {
-    void submitWithToken({ daangn_region_id: region.daangn_region_id });
+  function handleAddressPick(addr: AddressOption) {
+    // Wave 886.4: 카카오 주소 검색 결과의 lat/lng를 기존 GPS 경로로 전달.
+    //   서버에서 reverseGeocode + matchDaangnRegionByPath 재사용.
+    void submitWithToken({ lat: addr.lat, lng: addr.lng });
   }
+
+  const trimmed = search.trim();
+  const showEmptyHint = trimmed.length > 0 && trimmed.length < 2;
+  const showNoResults = trimmed.length >= 2 && !searching && results.length === 0;
 
   return (
     <div className="mx-auto max-w-md px-5 pt-12 pb-20">
@@ -157,14 +180,27 @@ export function HomeRegionOnboarding() {
           <div className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300">
             또는 동네를 직접 입력하세요
           </div>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="예) 서초동, 한남동, 다사읍…"
-            className="mt-3 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-[15px] text-zinc-900 placeholder-zinc-400 focus:border-blue-500 focus:bg-white focus:outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder-zinc-500"
-            disabled={busy}
-          />
+          <div className="relative mt-3">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="예) 상도동, 서초동, 동작구…"
+              className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 pr-10 text-[15px] text-zinc-900 placeholder-zinc-400 focus:border-blue-500 focus:bg-white focus:outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder-zinc-500"
+              disabled={busy}
+              autoComplete="off"
+            />
+            {searching && (
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+                <svg className="h-4 w-4 animate-spin text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                  <path d="M21 12a9 9 0 1 1-6.2-8.55" />
+                </svg>
+              </div>
+            )}
+          </div>
+          {showEmptyHint && (
+            <div className="mt-2 text-[11px] text-zinc-500">2글자 이상 입력해주세요</div>
+          )}
         </div>
 
         {error && (
@@ -173,35 +209,34 @@ export function HomeRegionOnboarding() {
           </div>
         )}
 
-        {regions.length > 0 && (
+        {results.length > 0 && (
           <div className="mt-4 max-h-80 overflow-y-auto rounded-xl border border-zinc-100 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950">
-            {filtered.length === 0 ? (
-              <div className="px-4 py-6 text-center text-[13px] text-zinc-500">
-                매칭되는 동네가 없어요
-              </div>
-            ) : (
-              filtered.map((r) => (
-                <button
-                  key={r.daangn_region_id}
-                  type="button"
-                  onClick={() => handleManualSelect(r)}
-                  disabled={busy}
-                  className="flex w-full items-center justify-between gap-3 border-b border-zinc-100 px-4 py-3 text-left transition hover:bg-blue-50 active:bg-blue-100 disabled:opacity-50 last:border-b-0 dark:border-zinc-800 dark:hover:bg-blue-950/30 dark:active:bg-blue-950/50"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-[15px] font-black text-zinc-950 dark:text-zinc-50">
-                      {r.daangn_region_name}
-                    </div>
-                    <div className="truncate text-[12px] text-zinc-500 dark:text-zinc-400">
-                      {r.daangn_full_path}
-                    </div>
+            {results.map((r, idx) => (
+              <button
+                key={`${r.fullPath}-${idx}`}
+                type="button"
+                onClick={() => handleAddressPick(r)}
+                disabled={busy}
+                className="flex w-full items-center justify-between gap-3 border-b border-zinc-100 px-4 py-3 text-left transition hover:bg-blue-50 active:bg-blue-100 disabled:opacity-50 last:border-b-0 dark:border-zinc-800 dark:hover:bg-blue-950/30 dark:active:bg-blue-950/50"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[15px] font-black text-zinc-950 dark:text-zinc-50">
+                    {r.region3 || r.region2 || r.fullPath}
                   </div>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5 shrink-0 text-zinc-400">
-                    <path d="m9 18 6-6-6-6" />
-                  </svg>
-                </button>
-              ))
-            )}
+                  <div className="truncate text-[12px] text-zinc-500 dark:text-zinc-400">
+                    {r.fullPath}
+                  </div>
+                </div>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5 shrink-0 text-zinc-400">
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </button>
+            ))}
+          </div>
+        )}
+        {showNoResults && (
+          <div className="mt-4 rounded-xl bg-zinc-50 px-4 py-6 text-center text-[13px] text-zinc-500 dark:bg-zinc-950">
+            매칭되는 동네가 없어요. 다른 키워드로 검색해보세요.
           </div>
         )}
       </div>

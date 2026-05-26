@@ -43,3 +43,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Wave 886: SKU pilot images (already in Supabase storage)
+scripts/sku-image-pilot/out/
+scripts/sku-image-pilot/*.log
+scripts/sku-image-pilot/__pycache__/
+scripts/sku-image-pilot/bape_test.html

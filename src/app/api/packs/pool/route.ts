@@ -5,6 +5,7 @@ import { pickByConditionFallback } from "@/lib/condition-fallback";
 import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
 import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
 import { loadUserHomeRegion, isDaangnRegionNearby } from "@/lib/user-home-region-loader";
+import { loadSkuImageMap, resolveGenericImage } from "@/lib/sku-images";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { createPoolAccessToken, decodePoolAccessToken, syntheticPidForPoolToken } from "@/lib/pool-access-token";
@@ -407,9 +408,10 @@ async function loadPool(
   }
 
   // Wave launch-40: source 별도 mapping. allCandidatePids (≈335) 의 source 만 fetch.
-  // URL 크기 ≈ 335 × 14 = 4.7KB 안전. options.source 있을 때만 fetch.
+  // URL 크기 ≈ 335 × 14 = 4.7KB 안전.
+  // Wave 886.3 (2026-05-27): source filter 안 켜져 있어도 다양화에 필요 — 항상 fetch.
   const sourceByPid = new Map<number, string | null>();
-  if (options.source && allCandidatePids.length > 0) {
+  if (allCandidatePids.length > 0) {
     const sourceRes = await restFetch(
       `${tableUrl("mvp_raw_listings")}?select=pid,source&pid=in.(${allCandidatePids.join(",")})&limit=${allCandidatePids.length + 100}`,
       { headers },
@@ -433,22 +435,54 @@ async function loadPool(
   const soldOutFiltered = soldOutRowsRaw.filter((r) => sourcePass(r) && budgetPass(r));
 
   // Wave 346: 카테고리 다양화 — budget filter 통과 매물 안에서만.
+  // Wave 886.3 (2026-05-27): source 다양화 추가. 번개 770 vs 당근 106 vs 중나 86 풀 차이로
+  //   profit_desc 단순 정렬 시 25슬롯에 번개 20+ / 당근 1 → 사용자 "당근 안 나옴" frustrate.
+  //   protected source (daangn, joongna) 별 min quota 보장 후 나머지 차익순 채움.
+  const SOURCE_QUOTA: Record<string, number> = { daangn: 5, joongna: 5 };
   function diversifyByCategory(rows: (PoolRow & { soldOut: boolean })[], maxRows: number) {
     const perCategory = new Map<string, number>();
+    const perSource = new Map<string, number>();
+    const picked = new Set<number>();
     const out: (PoolRow & { soldOut: boolean })[] = [];
-    for (const row of rows) {
+
+    const tryAdd = (row: PoolRow & { soldOut: boolean }): boolean => {
+      if (picked.has(row.pid)) return false;
       const cat = row.category ?? "unknown";
-      const count = perCategory.get(cat) ?? 0;
-      if (count >= MAX_PER_CATEGORY) continue;
-      perCategory.set(cat, count + 1);
+      if ((perCategory.get(cat) ?? 0) >= MAX_PER_CATEGORY) return false;
       out.push(row);
-      if (out.length >= maxRows) break;
+      picked.add(row.pid);
+      perCategory.set(cat, (perCategory.get(cat) ?? 0) + 1);
+      const src = sourceByPid.get(row.pid) ?? "unknown";
+      perSource.set(src, (perSource.get(src) ?? 0) + 1);
+      return true;
+    };
+
+    // Phase 1: protected source quota (당근/중나 최소 슬롯 보장)
+    // options.source 가 지정돼 있으면 quota skip — 사용자가 단일 source 선택했을 때 무관한 source 강제 X.
+    if (!options.source) {
+      for (const [src, quota] of Object.entries(SOURCE_QUOTA)) {
+        for (const row of rows) {
+          if (out.length >= maxRows) break;
+          if ((perSource.get(src) ?? 0) >= quota) break;
+          if ((sourceByPid.get(row.pid) ?? null) !== src) continue;
+          tryAdd(row);
+        }
+      }
     }
+
+    // Phase 2: 나머지를 차익순으로 채움 (이미 picked + 카테고리 cap 존중)
+    for (const row of rows) {
+      if (out.length >= maxRows) break;
+      tryAdd(row);
+    }
+
+    // Phase 3: 슬롯 부족 시 카테고리 cap 무시하고 추가 (기존 fallback 유지)
     if (out.length < maxRows) {
       for (const row of rows) {
         if (out.length >= maxRows) break;
-        if (out.some((r) => r.pid === row.pid)) continue;
+        if (picked.has(row.pid)) continue;
         out.push(row);
+        picked.add(row.pid);
       }
     }
     return out;
@@ -540,6 +574,7 @@ function buildItems(
     condition_flags: Record<string, unknown> | null;
     parsed_json: Record<string, unknown> | null;
   }> = [],
+  skuImageMap: Map<string, string> = new Map(),
 ) {
   const rawByPid = new Map(raws.map((r) => [r.pid, r]));
   const metaByPid = new Map(metas.map((m) => [m.pid, m]));
@@ -649,6 +684,7 @@ function buildItems(
         skuMedian: skuMedianFinal,
         // Wave 759 (2026-05-26): video URL (.mp4 등) 차단 — broken image 방지, CategoryWatermark fallback 으로.
         thumbnailUrl: safeThumbnailUrl(raw.thumbnail_url),
+        genericImageUrl: resolveGenericImage(skuImageMap, meta?.sku_name ?? null),
         skuId: meta?.sku_id ?? null,
         skuName: meta?.sku_name ?? null,
         expectedProfitMin: recomputedProfitMin,
@@ -715,16 +751,17 @@ function buildTeaserFeedItems<T extends ReturnType<typeof buildItems>[number]>(i
       feedPreviewLocked: true,
       name: item.productLineLabel ?? lockedPreviewTitle(item.category, item.conditionClass),
       listingUrl: null,
-      marketplaceSource: null,
-      marketplaceLabel: null,
+      // Wave 886.2 (2026-05-27): 잠금 카드 source 로고 노출 — 일반 이미지로 leak 차단된 후라 마켓플레이스 식별 공개 OK.
+      // 매입가/시세 range는 그대로 fuzzy 유지 → 정확 listing 역산 어려움.
       price: roundedPrice,
       skuMedian: roundedMarketPrice,
       thumbnailUrl: item.thumbnailUrl,
       skuId: null,
       skuName: null,
       comparableKey: null,
-      expectedProfitMin: roundDownTenThousand(item.expectedProfitMin) ?? 0,
-      expectedProfitMax: roundDownTenThousand(item.expectedProfitMax) ?? 0,
+      // Wave 886.2: 차익은 exact 노출 (시세 + 매입가 둘 다 fuzzy 유지 → 역산 어려움).
+      expectedProfitMin: item.expectedProfitMin,
+      expectedProfitMax: item.expectedProfitMax,
       sellerReviewRating: null,
       sellerReviewCount: 0,
       joongnaTrustScore: null,
@@ -816,7 +853,8 @@ export async function GET(req: Request) {
       excludePids: excludeAllPids,
       readyCandidateLimit,
     });
-    items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence, velocitySignals, userHomeRegion, parsedGradingRows);
+    const skuImageMap = await loadSkuImageMap();
+    items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence, velocitySignals, userHomeRegion, parsedGradingRows, skuImageMap);
 
     // Wave 373: 성향 정렬 — preference 따라 우선순위 재정렬.
     //   safe: 우수 셀러 (평점 4.5+ & 후기 10+) 우선

@@ -5,6 +5,7 @@ import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
 import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
+import { loadSkuImageMap, resolveGenericImage } from "@/lib/sku-images";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import {
   fetchReferencePrices,
@@ -226,6 +227,7 @@ type RevealItem = {
   directTradeLocation: string | null;
   skuId: string | null;
   thumbnailUrl: string | null;
+  genericImageUrl: string | null;
   skuName: string | null;
   comparableKey: string | null;
   listingState: string;
@@ -771,6 +773,8 @@ export async function GET(req: Request) {
     fetchV7SiblingPresence(comparableKeys),
   ]);
 
+  const skuImageMap = await loadSkuImageMap();
+
   const allItems = reveals
     .map((reveal): RevealItem => {
       const raw = rawByPid.get(Number(reveal.pid));
@@ -841,6 +845,7 @@ export async function GET(req: Request) {
         directTradeLocation: marketplaceLocationCombinedWithRegion(raw?.raw_json, raw?.description_preview ?? null, resolveDaangnFullRegion(raw?.daangn_region_id ?? null, raw?.daangn_region_name ?? null)),
         skuId,
         thumbnailUrl: safeThumbnailUrl(raw?.thumbnail_url),
+        genericImageUrl: resolveGenericImage(skuImageMap, skuName),
         skuName,
         comparableKey,
         listingState: raw?.listing_state ?? "unknown",

@@ -8,6 +8,7 @@ import { ConditionPhotoBadge, ConditionTierChip, ConditionChipsList } from "@/co
 import { CategoryWatermark } from "@/components/category-watermark";
 import { BookmarkIcon } from "@/components/icons";
 import { BunjangSourceBadge, DanawaSourceBadge, MarketplaceSourceBadge } from "@/components/market-brand-logo";
+import { SkuImageLockBadge } from "@/components/sku-image-lock-badge";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
@@ -41,6 +42,7 @@ type RevealItem = {
   shippingAssumption?: string | null;
   skuId: string | null;
   thumbnailUrl: string | null;
+  genericImageUrl: string | null;
   skuName: string | null;
   comparableKey: string | null;
   listingState: string;
@@ -431,6 +433,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         shippingAssumption: card.savedDetail?.shippingAssumption ?? "unknown",
         skuId: card.skuId ?? null,
         thumbnailUrl: card.thumbnailUrl,
+        genericImageUrl: card.genericImageUrl ?? null,
         skuName: card.skuName,
         // Wave 254.7 (2026-05-20): P0-Upload feature — firstSeenAt 필수 type 누락.
         //   reveal 이벤트 detail 에는 firstSeenAt 정보 없음 (시점 미상) → null fallback.
@@ -525,6 +528,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       skuId: selectedItem.skuId,
       skuName: selectedItem.skuName ?? selectedItem.name,
       thumbnailUrl: selectedItem.thumbnailUrl,
+      genericImageUrl: selectedItem.genericImageUrl,
       expectedProfitMin: currentProfitMinOrSnapshot(selectedItem),
       expectedProfitMax: currentProfitMaxOrSnapshot(selectedItem),
       confidence: selectedItem.confidence,
@@ -936,6 +940,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         name: item.name,
         price: item.price,
         thumbnailUrl: item.thumbnailUrl,
+        genericImageUrl: item.genericImageUrl,
         expectedProfitMin: currentProfitMinOrSnapshot(item),
         expectedProfitMax: currentProfitMaxOrSnapshot(item),
         marketBasis: item.marketBasis,
@@ -1512,9 +1517,9 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
               {!(item.comparableKey?.startsWith("shoe|") || item.comparableKey?.startsWith("clothing|")) && (
                 <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
               )}
-              {item.thumbnailUrl ? (
+              {(item.genericImageUrl ?? item.thumbnailUrl) ? (
                 <Image
-                  src={item.thumbnailUrl}
+                  src={item.genericImageUrl ?? item.thumbnailUrl ?? ""}
                   alt={item.name}
                   fill
                   sizes="(max-width: 639px) 118px, 76px"
@@ -1528,8 +1533,10 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   size={56}
                 />
               )}
+              {/* Wave 886 (2026-05-27): 일반 제품 사진 사용 중 표시 (실매물 잠금). */}
+              {item.genericImageUrl ? <SkuImageLockBadge /> : null}
               {/* Wave 751 (2026-05-25): 사진 위 우하단 카테고리 워터마크 배지. */}
-              {item.thumbnailUrl ? (
+              {(item.genericImageUrl ?? item.thumbnailUrl) ? (
                 <CategoryWatermark
                   comparableKey={item.comparableKey ?? null}
                   size={22}

@@ -1,0 +1,67 @@
+[
+  {
+    "sku_name": "BAPE Shark Hoodie (시그니처 한정)",
+    "slug": "bape-shark-hoodie",
+    "query": "BAPE Shark Hoodie",
+    "title": "A BATHING APE®︎ × Stray Kids SHARK HOODIEが新登場！ | bape.com",
+    "image_url": "https://i.shgcdn.com/77c9ffcf-81ff-49d9-aeb3-a0befbe54acc/-/format/auto/-/quality/normal/",
+    "source_url": "https://en.jp.bape.com/blogs/news/straykids",
+    "pick_reason": "brand_match:bape",
+    "file_path": "out/bape-shark-hoodie.jpg",
+    "bytes": 605763,
+    "content_type": "image/jpeg",
+    "status": "ok"
+  },
+  {
+    "sku_name": "Wales Bonner × Adidas Samba (collab)",
+    "slug": "wales-bonner-adidas-samba-collab",
+    "query": "Wales Bonner × Adidas Samba",
+    "title": "Adidas × Wales Bonner ADIDAS SAMBA NAVY CROC SNEAKERS | Grailed",
+    "image_url": "https://media-assets.grailed.com/prd/listing/temp/e6daee602c8b42159491ba3f4951f7de?auto=format",
+    "source_url": "https://www.grailed.com/listings/69857054-adidas-x-wales-bonner-adidas-samba-navy-croc-sneakers",
+    "pick_reason": "first_result",
+    "file_path": "out/wales-bonner-adidas-samba-collab.jpg",
+    "bytes": 174551,
+    "content_type": "image/jpeg",
+    "status": "ok"
+  },
+  {
+    "sku_name": "AirPods Max (Lightning)",
+    "slug": "airpods-max-lightning",
+    "query": "AirPods Max",
+    "title": "AirPods Max - Apple",
+    "image_url": "https://www.apple.com/v/airpods-max/b/images/overview/hero__gnfk5g59t0qe_xlarge.png",
+    "source_url": "https://www.apple.com/airpods-max/",
+    "pick_reason": "brand_match:airpods",
+    "file_path": "out/airpods-max-lightning.png",
+    "bytes": 575422,
+    "content_type": "image/png",
+    "status": "ok"
+  },
+  {
+    "sku_name": "Barbour Quilted Jacket (리데스데일/베델/와스드)",
+    "slug": "barbour-quilted-jacket",
+    "query": "Barbour Quilted Jacket",
+    "title": "Men's Barbour Sander Quilted Jacket",
+    "image_url": "https://outdoor-and-country-res.cloudinary.com/image/upload/e_trim:2/bo_8px_solid_white/c_pad,b_white,w_1000,h_1200,f_auto,q_auto/v1608227592/product/54953.jpg",
+    "source_url": "https://www.outdoorandcountry.co.uk/mens-barbour-quilted-sander-jacket.html",
+    "pick_reason": "first_result",
+    "file_path": "out/barbour-quilted-jacket.jpg",
+    "bytes": 109110,
+    "content_type": "image/jpeg",
+    "status": "ok"
+  },
+  {
+    "sku_name": "Marshall Emberton II",
+    "slug": "marshall-emberton-ii",
+    "query": "Marshall Emberton II",
+    "title": "Emberton II outdoor speaker offers powerful sound for adventures ...",
+    "image_url": "https://images.ctfassets.net/javen7msabdh/2YrPMEgtHqOEd3nfwBfn9c/a30a0c8274b340d6433ed923d47b377a/emberton-ii-front_side-desktop-1.jpeg",
+    "source_url": "https://www.marshall.com/ph/en/product/emberton-ii?pid=1006787",
+    "pick_reason": "brand_match:marshall",
+    "file_path": "out/marshall-emberton-ii.jpg",
+    "bytes": 445332,
+    "content_type": "image/jpeg",
+    "status": "ok"
+  }
+]

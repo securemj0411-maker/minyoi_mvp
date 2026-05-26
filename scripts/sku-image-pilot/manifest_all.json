@@ -1,0 +1,4743 @@
+[
+  {
+    "sku_name": "Acne Studios Denim (Jean / Shorts)",
+    "slug": "acne-studios-denim-jean-shorts",
+    "query": "Acne Studios Denim",
+    "title": "Acne Studios - Seasonal Denim",
+    "image_url": "https://www.acnestudios.com/dw/image/v2/AAXV_PRD/on/demandware.static/-/Sites-acne-product-catalog/default/dw6ac675cf/images/B0/B00382-/2000x/B00382-863_PLP_man-seasonal-denim_HOVER.jpg?sw=1500&sh=2250",
+    "source_url": "https://www.acnestudios.com/us/en/man/seasonal-denim/",
+    "pick_reason": "brand:acne",
+    "file_path": "out/acne-studios-denim-jean-shorts.jpg",
+    "bytes": 32076,
+    "final_dims": [
+      426,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Acne Studios Jacket / Coat",
+    "slug": "acne-studios-jacket-coat",
+    "query": "Acne Studios Jacket Coat",
+    "title": "Acne Studios – Men’s Coats",
+    "image_url": "https://www.acnestudios.com/on/demandware.static/-/Sites-acne-product-catalog/default/dw564c5a6f/images/C9/C90102-/1120x/C90102-900_A.jpg",
+    "source_url": "https://www.acnestudios.com/us/en/man/coats/",
+    "pick_reason": "brand:acne",
+    "file_path": "out/acne-studios-jacket-coat.jpg",
+    "bytes": 38890,
+    "final_dims": [
+      426,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Acne Studios Knit / Cardigan",
+    "slug": "acne-studios-knit-cardigan",
+    "query": "Acne Studios Knit Cardigan",
+    "title": "Acne Studios Knit Cardigan in Brown & Blue Melange | FWRD",
+    "image_url": "https://is4.fwrdassets.com/images/p/fw/z/ACNE-WK522_V1.jpg",
+    "source_url": "https://www.fwrd.com/product-acne-studios-knit-cardigan-in-brown-blue-melange/ACNE-WK522/",
+    "pick_reason": "first_result",
+    "file_path": "out/acne-studios-knit-cardigan.jpg",
+    "bytes": 45132,
+    "final_dims": [
+      423,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Acne Studios Sweat / Hoodie (Fairview / 페어뷰)",
+    "slug": "acne-studios-sweat-hoodie-fairview",
+    "query": "Acne Studios Sweat Hoodie",
+    "title": "Acne Studios – Women’s Sweatshirts",
+    "image_url": "https://www.acnestudios.com/on/demandware.static/-/Sites-acne-product-catalog/default/dwb6784ee9/images/AI/AI0083-/1500x/AI0083-++1_A.jpg",
+    "source_url": "https://www.acnestudios.com/uk/en/woman/sweatshirts/",
+    "pick_reason": "brand:acne",
+    "file_path": "out/acne-studios-sweat-hoodie-fairview.jpg",
+    "bytes": 20961,
+    "final_dims": [
+      426,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Acne Studios Tee / Long-Sleeve",
+    "slug": "acne-studios-tee-long-sleeve",
+    "query": "Acne Studios Tee Long-Sleeve",
+    "title": "Acne Studios - Long sleeve t-shirt - regular fit - Black",
+    "image_url": "https://www.acnestudios.com/dw/image/v2/AAXV_PRD/on/demandware.static/-/Sites-acne-product-catalog/default/dw1689cd17/images/CL/CL0311-/2000x/CL0311-900_C.jpg?sw=2000&sh=3000",
+    "source_url": "https://www.acnestudios.com/us/en/long-sleeve-t-shirt---regular-fit-black/CL0311-900.html",
+    "pick_reason": "brand:acne",
+    "file_path": "out/acne-studios-tee-long-sleeve.jpg",
+    "bytes": 24703,
+    "final_dims": [
+      426,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Adidas × Fear of God Athletics (86 / 바스켓볼)",
+    "slug": "adidas-fear-of-god-athletics-86",
+    "query": "Adidas × Fear of God Athletics",
+    "title": "adidas Fear of God Athletics II Basketball Shoes - Grey | adidas Australia",
+    "image_url": "https://assets.adidas.com/images/w_600,f_auto,q_auto/ae33c80e55f1488fa3ce694bc950eece_9366/Fear_of_God_Athletics_II_Basketball_Shoes_Grey_HQ9426_HM1.jpg",
+    "source_url": "https://www.adidas.com.au/fear-of-god-athletics-ii-basketball-shoes/HQ9426.html",
+    "pick_reason": "brand:adidas",
+    "file_path": "out/adidas-fear-of-god-athletics-86.jpg",
+    "bytes": 15720,
+    "final_dims": [
+      600,
+      600
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Adidas × Raf Simons (Matrix Spirit 등)",
+    "slug": "adidas-raf-simons-matrix-spirit",
+    "query": "Adidas × Raf Simons",
+    "title": "Adidas × Raf Simons Raf Simons x Adidas Stan Smith Cream | Grailed",
+    "image_url": "https://media-assets.grailed.com/prd/listing/temp/cd8e000420514aab9f276e34fcb86938?",
+    "source_url": "https://www.grailed.com/listings/92640010-adidas-x-raf-simons-raf-simons-x-adidas-stan-smith-cream",
+    "pick_reason": "first_result",
+    "file_path": "out/adidas-raf-simons-matrix-spirit.jpg",
+    "bytes": 40245,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Adidas Copa Football/Futsal",
+    "slug": "adidas-copa-football-futsal",
+    "query": "Adidas Copa Football Futsal",
+    "title": "Chuteira Copa Pure 3 Club Futsal - Branco adidas | adidas Brasil",
+    "image_url": "https://assets.adidas.com/images/w_600,f_auto,q_auto/f7a27c9b37e14c98996e8040aa96a3f4_9366/Chuteira_Copa_Pure_3_Club_Futsal_Branco_JI4138_22_model.jpg",
+    "source_url": "https://www.adidas.com.br/chuteira-copa-pure-3-club-futsal/JI4138.html",
+    "pick_reason": "brand:adidas",
+    "file_path": "out/adidas-copa-football-futsal.jpg",
+    "bytes": 38616,
+    "final_dims": [
+      600,
+      600
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Adidas F50 Football/Futsal",
+    "slug": "adidas-f50-football-futsal",
+    "query": "Adidas F50 Football Futsal",
+    "title": "Chuteira F50 League Futsal - Preto adidas | adidas Brasil",
+    "image_url": "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/764bc0c6d76240b797b398084c1f2b10_9366/Chuteira_F50_League_Futsal_Preto_IF1332_22_model.jpg",
+    "source_url": "https://www.adidas.com.br/chuteira-f50-league-futsal/IF1332.html",
+    "pick_reason": "brand:adidas",
+    "file_path": "out/adidas-f50-football-futsal.jpg",
+    "bytes": 42067,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Adidas Forum (Low / Mid / 84)",
+    "slug": "adidas-forum-low-mid-84",
+    "query": "Adidas Forum",
+    "title": "adidas Chaussure Forum Low CL - Blanc",
+    "image_url": "https://assets.adidas.com/images/w_1880,f_auto,q_auto/67a5245996f44aa39e00f77af3548817_9366/IH7829_01_standard.jpg",
+    "source_url": "https://www.adidas.co.ma/fr/chaussure-forum-low-cl/IH7829.html",
+    "pick_reason": "brand:adidas",
+    "file_path": "out/adidas-forum-low-mid-84.jpg",
+    "bytes": 23110,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Adidas Predator Football/Futsal",
+    "slug": "adidas-predator-football-futsal",
+    "query": "Adidas Predator Football Futsal",
+    "title": "Chuteira Predator League Futsal - Preto adidas | adidas Brasil",
+    "image_url": "https://assets.adidas.com/images/w_600,f_auto,q_auto/9a7862a22c32410f9d3242ae642c7e23_9366/Chuteira_Predator_League_Futsal_Preto_IG5456_22_model.jpg",
+    "source_url": "https://www.adidas.com.br/chuteira-predator-league-futsal/IG5456.html",
+    "pick_reason": "brand:adidas",
+    "file_path": "out/adidas-predator-football-futsal.jpg",
+    "bytes": 32261,
+    "final_dims": [
+      600,
+      600
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Adidas Spezial (clear pink/black 등)",
+    "slug": "adidas-spezial-clear-pink-black",
+    "query": "Adidas Spezial",
+    "title": "Shoes - Handball Spezial Shoes - Blue | adidas Oman",
+    "image_url": "https://assets.adidas.com/images/w_1880,f_auto,q_auto/b1ce66dca4c947538c6da9760113f537_9366/BD7632_09_standard.jpg",
+    "source_url": "https://www.adidas.com/om/en/handball-spezial-shoes/BD7632.html",
+    "pick_reason": "brand:adidas",
+    "file_path": "out/adidas-spezial-clear-pink-black.jpg",
+    "bytes": 46985,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Adidas Trefoil / 3-Stripe (Track Suit / Hoodie / Tee)",
+    "slug": "adidas-trefoil-3-stripe-track-suit-hoodie-tee",
+    "query": "Adidas Trefoil 3-Stripe",
+    "title": "adidas Adicolor 3D Trefoil 3-Stripes Track Pants - Black | adidas Belgium",
+    "image_url": "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/855a33ffc0ff42deaed8ac3800fa9cda_9366/Adicolor_3D_Trefoil_3-Stripes_Track_Pants_Black_GN3543_01_laydown.jpg",
+    "source_url": "https://www.adidas.be/en/adicolor-3d-trefoil-3-stripes-track-pants/GN3543.html?forceSelSize=M",
+    "pick_reason": "brand:adidas",
+    "file_path": "out/adidas-trefoil-3-stripe-track-suit-hoodie-tee.jpg",
+    "bytes": 16347,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Adidas Ultra Boost (21/24/5.0)",
+    "slug": "adidas-ultra-boost-21-24-5-0",
+    "query": "Adidas Ultra Boost",
+    "title": "Shoes - Ultraboost Shoes - Black | adidas Qatar",
+    "image_url": "https://assets.adidas.com/images/w_1880,f_auto,q_auto/954dc0273ebc437ea3b7920c1bbed469_9366/B27171_01_00_standard.jpg",
+    "source_url": "https://www.adidas.com/qa/en/ultraboost-shoes/B27171.html",
+    "pick_reason": "brand:adidas",
+    "file_path": "out/adidas-ultra-boost-21-24-5-0.jpg",
+    "bytes": 25853,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Adidas Yeezy Boost 500 (Blush/Utility Black/Bone)",
+    "slug": "adidas-yeezy-boost-500-blush-utility-black-bone",
+    "query": "Adidas Yeezy Boost 500",
+    "title": "Yeezy 500 Boost Ceeze Unveil A Scorching Adidas Yeezy 500 Releases",
+    "image_url": "https://i.ebayimg.com/images/g/M88AAOSwrsdjcQKK/s-l1200.jpg",
+    "source_url": "https://fity.club/lists/y/yeezy-500-boost/",
+    "pick_reason": "first_result",
+    "file_path": "out/adidas-yeezy-boost-500-blush-utility-black-bone.jpg",
+    "bytes": 60949,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Adidas Yeezy Boost 700 (V2/MNVN/Inertia 등 — Wave Runner OG 외)",
+    "slug": "adidas-yeezy-boost-700-v2-mnvn-inertia-wave-runner-og",
+    "query": "Adidas Yeezy Boost 700",
+    "title": "adidas Yeezy Boost 700 Inertia Photos + Release Info | SneakerNews.com",
+    "image_url": "https://sneakernews.com/wp-content/uploads/2019/01/adidas-yeezy-boost-700-inertia-photos-2.jpg",
+    "source_url": "https://sneakernews.com/2019/01/18/best-look-yet-adidas-yeezy-boost-700-inertia/",
+    "pick_reason": "first_result",
+    "file_path": "out/adidas-yeezy-boost-700-v2-mnvn-inertia-wave-runner-og.jpg",
+    "bytes": 123606,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Adidas Yeezy Quantum (BSKTBL 농구화)",
+    "slug": "adidas-yeezy-quantum-bsktbl",
+    "query": "Adidas Yeezy Quantum",
+    "title": "adidas Yeezy Quantum September 2020 Release Info | SneakerNews.com",
+    "image_url": "https://sneakernews.com/wp-content/uploads/2020/08/adidas-yeezy-quantum-2.jpg?w=1140",
+    "source_url": "https://sneakernews.com/2020/08/28/adidas-yeezy-quantum-restock/",
+    "pick_reason": "first_result",
+    "file_path": "out/adidas-yeezy-quantum-bsktbl.jpg",
+    "bytes": 40972,
+    "final_dims": [
+      640,
+      449
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Force 1 AMBUSH Collab",
+    "slug": "air-force-1-ambush-collab",
+    "query": "Air Force 1 AMBUSH Collab",
+    "title": "These Ambush x Nike Air Force 1 Lows Are Releasing Early | Complex",
+    "image_url": "https://img.buzzfeed.com/buzzfeed-static/images/ZmxfbG9zc3kscV9hdXRvL2NfY3JvcCxoXzEwMTQsd18xODg2LHhfNDkseV82Njk=/jl8l684acxvhtuc1skmt/ambush-nike-air-force-1-low-dv3464-001-pair.jpeg.jpeg",
+    "source_url": "https://www.complex.com/sneakers/a/cmplxvictor-deng/ambush-nike-air-force-1-low-collab-release-date",
+    "pick_reason": "first_result",
+    "file_path": "out/air-force-1-ambush-collab.jpg",
+    "bytes": 22067,
+    "final_dims": [
+      640,
+      344
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Force 1 Low Gore-Tex",
+    "slug": "air-force-1-low-gore-tex",
+    "query": "Air Force 1 Low Gore-Tex",
+    "title": "Nike Air Force 1 Low Gore-Tex Black Light Carbon Men's - CK2630-001 - US",
+    "image_url": "https://images.stockx.com/images/Nike-Air-Force-One-Low-Gore-Tex-Black-Light-Carbon-Product.jpg?fit=fill&bg=FFFFFF&w=700&h=500&fm=webp&auto=compress&q=90&dpr=2&trim=color&updated_at=1738193358",
+    "source_url": "https://stockx.com/nike-air-force-one-low-gore-tex-black-light-carbon",
+    "pick_reason": "first_result",
+    "file_path": "out/air-force-1-low-gore-tex.jpg",
+    "bytes": 31222,
+    "final_dims": [
+      640,
+      457
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Force 1 Low Shadow (WMNS)",
+    "slug": "air-force-1-low-shadow-wmns",
+    "query": "Nike Air Force 1 Shadow womens",
+    "title": "Nike Air Force 1 Shadow Women's Shoes. Nike.com",
+    "image_url": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/0a588d2e-8d93-4937-8091-ec1270a953cf/air-force-1-shadow-womens-shoes-kTgn9J.png",
+    "source_url": "https://www.nike.com/t/air-force-1-shadow-womens-shoes-kTgn9J/DV7449-101?nikemt=true",
+    "pick_reason": "retry_first3",
+    "file_path": "out/air-force-1-low-shadow-wmns.jpg",
+    "bytes": 22537,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Force 1 Off-White (Brooklyn/MoMA/Lemonade)",
+    "slug": "air-force-1-off-white-brooklyn-moma-lemonade",
+    "query": "Air Force 1 Off-White",
+    "title": "Off‑White x Nike Air Force 1 Low 'The Ten' - AO4606-100 - Novelship",
+    "image_url": "https://ns.imgix.net/product/1614345312730_Off-Whitex0.jpeg?fit=fill&bg=FFFFFF&trim=color&auto=format,compress&q=90",
+    "source_url": "http://novelship.com/air-force-1-low-off-white",
+    "pick_reason": "first_result",
+    "file_path": "out/air-force-1-off-white-brooklyn-moma-lemonade.jpg",
+    "bytes": 25556,
+    "final_dims": [
+      640,
+      327
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Force 1 Paranoise (지디 콜라보 — 한국 핵심)",
+    "slug": "air-force-1-paranoise",
+    "query": "Air Force 1 Paranoise",
+    "title": "Nike Air Force 1 Low x Peaceminusone “Para-Noise” (G-Dragon) | LINE ...",
+    "image_url": "https://obs-ect.line-scdn.net/r/ect/ect/image_1680168433146177904b57a1366t11617ce1",
+    "source_url": "https://shop.line.me/@sneakerpreshop/product/1004249030",
+    "pick_reason": "first_result",
+    "file_path": "out/air-force-1-paranoise.jpg",
+    "bytes": 91141,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Jordan 1 High (broad)",
+    "slug": "air-jordan-1-high-broad",
+    "query": "Air Jordan 1 High",
+    "title": "Air Jordan 1 Retro High OG 'Midnight Navy' Men's Shoes. Nike MY",
+    "image_url": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco,u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4e47bc40-32fe-4bb6-b44f-bc73439e5924/AIR+JORDAN+1+RETRO+HIGH+OG.png",
+    "source_url": "https://www.nike.com/my/t/air-jordan-1-retro-high-og-midnight-navy-shoes-Pz6fZ9/DZ5485-401",
+    "pick_reason": "brand:jordan",
+    "file_path": "out/air-jordan-1-high-broad.jpg",
+    "bytes": 73059,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Jordan 1 Low (broad)",
+    "slug": "air-jordan-1-low-broad",
+    "query": "Air Jordan 1 Low",
+    "title": "Air Jordan 1 Low Men's Shoes. Nike IN",
+    "image_url": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco,u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/7fe8360b-e8db-4034-b457-8a26a65341d3/AIR+JORDAN+1+LOW.png",
+    "source_url": "https://www.nike.com/in/t/air-jordan-1-low-shoes-6Q1tFM",
+    "pick_reason": "brand:jordan",
+    "file_path": "out/air-jordan-1-low-broad.jpg",
+    "bytes": 64818,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Jordan 1 Mid (broad)",
+    "slug": "air-jordan-1-mid-broad",
+    "query": "Air Jordan 1 Mid",
+    "title": "Air Jordan 1 Mid Shoes. Nike FI",
+    "image_url": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco,u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/151671f3-74e9-409e-86f0-d5a62055996c/AIR+JORDAN+1+MID.png",
+    "source_url": "https://www.nike.com/fi/t/air-jordan-1-mid-shoes-QJTvQh",
+    "pick_reason": "brand:jordan",
+    "file_path": "out/air-jordan-1-mid-broad.jpg",
+    "bytes": 24548,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Jordan 11 (broad)",
+    "slug": "air-jordan-11-broad",
+    "query": "Air Jordan 11",
+    "title": "Air Jordan 11 'Legend Blue' (CT8012-104) release date. Nike SNKRS",
+    "image_url": "https://static.nike.com/a/images/w_1280,q_auto,f_auto/0c0b5982-fcbf-4195-9c84-a05ccb22f1be/air-jordan-11-legend-blue-ct8012-104-release-date.jpg",
+    "source_url": "https://www.nike.com/sg/launch/t/air-jordan-11-legend-blue",
+    "pick_reason": "brand:jordan",
+    "file_path": "out/air-jordan-11-broad.jpg",
+    "bytes": 18248,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Jordan 11 High",
+    "slug": "air-jordan-11-high",
+    "query": "Air Jordan 11 retro high",
+    "title": "Air Jordan 11 Retro HIGH \"BRED\" Black/True Red/White Patent Leather ...",
+    "image_url": "https://i.pinimg.com/originals/e9/8e/3d/e98e3d687553be329e1d9020efe05151.jpg",
+    "source_url": "https://fr.pinterest.com/pin/720224165378279458/",
+    "pick_reason": "retry_first3",
+    "file_path": "out/air-jordan-11-high.jpg",
+    "bytes": 50766,
+    "final_dims": [
+      640,
+      420
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Jordan 11 Low",
+    "slug": "air-jordan-11-low",
+    "query": "Air Jordan 11 Low",
+    "title": "Air Jordan 11 Low 'Cement Grey' (AV2187-140) Release Date. Nike SNKRS",
+    "image_url": "https://static.nike.com/a/images/w_1280,q_auto,f_auto/501eb9e9-7983-4a9b-904b-a604d3847a89/air-jordan-11-low-cement-grey-av2187-140-release-date.jpg",
+    "source_url": "https://www.nike.com/lu/en/launch/t/air-jordan-11-low-cement-grey-adult-emea",
+    "pick_reason": "brand:jordan",
+    "file_path": "out/air-jordan-11-low.jpg",
+    "bytes": 25649,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Jordan 3 (broad)",
+    "slug": "air-jordan-3-broad",
+    "query": "Air Jordan 3",
+    "title": "Air Jordan 3 Retro 'Black Cat' Men's Shoes. Nike ID",
+    "image_url": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco,u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/fde499fa-6949-454d-8c74-6f590116f071/AIR+JORDAN+3+RETRO.png",
+    "source_url": "https://www.nike.com/id/t/air-jordan-3-retro-black-cat-shoes-TJf2lm/CT8532-001",
+    "pick_reason": "brand:jordan",
+    "file_path": "out/air-jordan-3-broad.jpg",
+    "bytes": 21786,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Jordan 4 (broad)",
+    "slug": "air-jordan-4-broad",
+    "query": "Air Jordan 4",
+    "title": "Air Jordan 4 Retro \"Industrial Blue\" Men's Shoes. Nike JP",
+    "image_url": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco,u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/316de1b6-f526-4f5c-8683-af5420a20680/AIR+JORDAN+4+RETRO.png",
+    "source_url": "https://www.nike.com/jp/en/t/air-jordan-4-retro-bred-reimagined-mens-shoes-Ts469G",
+    "pick_reason": "brand:jordan",
+    "file_path": "out/air-jordan-4-broad.jpg",
+    "bytes": 25520,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Max 1 Travis Scott (Cactus Jack/Wheat)",
+    "slug": "air-max-1-travis-scott-cactus-jack-wheat",
+    "query": "Air Max 1 Travis Scott",
+    "title": "Travis Scott x Nike Air Max 1 Baroque Brown & DO9392-200",
+    "image_url": "https://www.crepslocker.com/cdn/shop/files/travis-scott-x-nike-air-max-1-baroque-brown-do9392-200-side.jpg?v=1695661786",
+    "source_url": "https://www.crepslocker.com/products/nike-x-travis-scott-air-max-1-baroque-brown",
+    "pick_reason": "first_result",
+    "file_path": "out/air-max-1-travis-scott-cactus-jack-wheat.jpg",
+    "bytes": 46371,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Air Max Off-White (90 The Ten / 97)",
+    "slug": "air-max-off-white-90-the-ten-97",
+    "query": "Air Max Off-White",
+    "title": "OFF-WHITE Nike Air Max 90 Release Date | SneakerFiles",
+    "image_url": "https://www.sneakerfiles.com/wp-content/uploads/2017/07/off-white-nike-air-max-90-AA7293-100.jpg",
+    "source_url": "https://www.sneakerfiles.com/off-white-nike-air-max-90-release-date/",
+    "pick_reason": "first_result",
+    "file_path": "out/air-max-off-white-90-the-ten-97.jpg",
+    "bytes": 51237,
+    "final_dims": [
+      640,
+      462
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "AirPods 3rd gen",
+    "slug": "airpods-3rd-gen",
+    "query": "AirPods 3rd gen",
+    "title": "AirPods (3rd generation) - Apple (EG)",
+    "image_url": "https://www.apple.com/v/airpods-3rd-generation/f/images/meta/airpods-3rd-generation__gfzix8dj5auu_og.png",
+    "source_url": "https://www.apple.com/eg/airpods-3rd-generation/",
+    "pick_reason": "brand:airpods",
+    "file_path": "out/airpods-3rd-gen.jpg",
+    "bytes": 6997,
+    "final_dims": [
+      640,
+      336
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "AirPods 4 (ANC)",
+    "slug": "airpods-4-anc",
+    "query": "AirPods 4",
+    "title": "AirPods 4 - Apple (UA)",
+    "image_url": "https://www.apple.com/v/airpods-4/a/images/meta/airpods-4__gnjh1t3yjxm6_og.png",
+    "source_url": "https://www.apple.com/ua/airpods-4/",
+    "pick_reason": "brand:airpods",
+    "file_path": "out/airpods-4-anc.jpg",
+    "bytes": 10395,
+    "final_dims": [
+      640,
+      336
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "AirPods 4th gen",
+    "slug": "airpods-4th-gen",
+    "query": "AirPods 4th gen",
+    "title": "AirPods 4 review: The best update yet",
+    "image_url": "https://static1.pocketlintimages.com/wordpress/wp-content/uploads/2024/09/airpods-4th-gen-thumbnail.jpg",
+    "source_url": "https://www.pocket-lint.com/airpods-4-review/",
+    "pick_reason": "first_result",
+    "file_path": "out/airpods-4th-gen.jpg",
+    "bytes": 9313,
+    "final_dims": [
+      640,
+      360
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "AirPods Max (Lightning)",
+    "slug": "airpods-max-lightning",
+    "status": "skipped_exists",
+    "file_path": "out/airpods-max-lightning.png",
+    "bytes": 575422
+  },
+  {
+    "sku_name": "AirPods Max (USB-C, 2024)",
+    "slug": "airpods-max-usb-c-2024",
+    "query": "AirPods Max",
+    "title": "AirPods Max - Apple",
+    "image_url": "https://www.apple.com/v/airpods-max/b/images/overview/hero__gnfk5g59t0qe_xlarge.png",
+    "source_url": "https://www.apple.com/airpods-max/",
+    "pick_reason": "brand:airpods",
+    "file_path": "out/airpods-max-usb-c-2024.jpg",
+    "bytes": 28722,
+    "final_dims": [
+      576,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "AirPods Pro 2nd gen (Lightning + USB-C 통합)",
+    "slug": "airpods-pro-2nd-gen-lightning-usb-c",
+    "query": "AirPods Pro 2nd gen",
+    "title": "AirPods Pro (2nd generation) with MagSafe Case (USB‑C) - Business ...",
+    "image_url": "https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/MTJV3?wid=1200&hei=630&fmt=jpeg&qlt=95&.v=1694014871985",
+    "source_url": "https://www.apple.com/uk-business/shop/product/MTJV3ZM/A/airpods-pro?fnode=803bc7eed1205e29f38f086dcedd50b76a039e273d03a44e5f6974c9766a2d5561100e37645a336631e53c200d647b4b949be722e168200e78b118ed2edca75c17c9dd45a103504db15e3491c4d972571291037f20fbe21a37749f0e2a29b6fa29850caa52b8383039522ef9fb72e9e7",
+    "pick_reason": "brand:airpods",
+    "file_path": "out/airpods-pro-2nd-gen-lightning-usb-c.jpg",
+    "bytes": 7557,
+    "final_dims": [
+      640,
+      336
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "AirPods Pro 3rd gen",
+    "slug": "airpods-pro-3rd-gen",
+    "query": "AirPods Pro 3rd gen",
+    "title": "AirPods Pro 3 登場：帶來極致音訊體驗 - Apple (香港)",
+    "image_url": "https://www.apple.com/newsroom/images/2025/09/introducing-airpods-pro-3-the-ultimate-audio-experience/article/Apple-AirPods-Pro-3-hero-250909_inline.jpg.large_2x.jpg",
+    "source_url": "https://www.apple.com/hk/newsroom/2025/09/introducing-airpods-pro-3-the-ultimate-audio-experience/",
+    "pick_reason": "brand:airpods",
+    "file_path": "out/airpods-pro-3rd-gen.jpg",
+    "bytes": 14332,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "AJ1 Zoom Comfort CMFT (silhouette variant)",
+    "slug": "aj1-zoom-comfort-cmft-silhouette-variant",
+    "query": "AJ1 Zoom Comfort CMFT",
+    "title": "Que vaut la AJ1 Zoom Air CMFT Comfort Pumpkin Spice CT0978-200",
+    "image_url": "https://www.sneakers-actus.fr/wp-content/uploads/2022/01/AJ1-Zoom-Air-CMFT-Comfort-Pumpkin-Spice-CT0978-200.jpeg",
+    "source_url": "https://www.sneakers-actus.fr/aj1-zoom-air-cmft-pumpkin-spice/219123.html",
+    "pick_reason": "first_result",
+    "file_path": "out/aj1-zoom-comfort-cmft-silhouette-variant.jpg",
+    "bytes": 46802,
+    "final_dims": [
+      640,
+      458
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Apple iMac M3 24\"",
+    "slug": "apple-imac-m3-24",
+    "query": "Apple iMac M3 24\"",
+    "title": "Refurbished 24-inch iMac Apple M3 Chip with 8-Core CPU and 10-Core GPU ...",
+    "image_url": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/refurb-imac-24-touch-id-green-202402?wid=1200&hei=630&fmt=jpeg&qlt=95&.v=1709178835126",
+    "source_url": "https://www.apple.com/ca/shop/product/G19J1LL/A/Refurbished-24-inch-iMac-Apple-M3-Chip-with-8-Core-CPU-and-10-Core-GPU-Green",
+    "pick_reason": "brand:imac",
+    "file_path": "out/apple-imac-m3-24.jpg",
+    "bytes": 18477,
+    "final_dims": [
+      640,
+      336
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Apple Watch SE 2nd gen",
+    "slug": "apple-watch-se-2nd-gen",
+    "query": "Apple Watch SE 2nd gen",
+    "title": "Apple Watch SE (2nd generation) - Technical Specifications",
+    "image_url": "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP877/apple-watch-se-2nd-gen.png",
+    "source_url": "https://support.apple.com/kb/SP877",
+    "pick_reason": "brand:apple watch",
+    "file_path": "out/apple-watch-se-2nd-gen.jpg",
+    "bytes": 48337,
+    "final_dims": [
+      640,
+      492
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Apple Watch Series 10",
+    "slug": "apple-watch-series-10",
+    "query": "Apple Watch Series 10",
+    "title": "Apple Watch Series 10 공개 - Apple (KR)",
+    "image_url": "https://www.apple.com/newsroom/images/2024/09/introducing-apple-watch-series-10/article/Apple-Watch-Series-10-lineup-240909_big.jpg.large_2x.jpg",
+    "source_url": "https://www.apple.com/kr/newsroom/2024/09/introducing-apple-watch-series-10/",
+    "pick_reason": "brand:apple watch",
+    "file_path": "out/apple-watch-series-10.jpg",
+    "bytes": 31806,
+    "final_dims": [
+      640,
+      359
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Apple Watch Series 7",
+    "slug": "apple-watch-series-7",
+    "query": "Apple Watch Series 7",
+    "title": "Apple reveals Apple Watch Series 7, featuring the largest, most ...",
+    "image_url": "https://www.apple.com/newsroom/images/product/watch/standard/Apple_watch-series7_hero_09142021_big.jpg.large_2x.jpg",
+    "source_url": "https://www.apple.com/ca/newsroom/2021/09/apple-reveals-apple-watch-series-7-featuring-the-largest-most-advanced-display/",
+    "pick_reason": "brand:apple watch",
+    "file_path": "out/apple-watch-series-7.jpg",
+    "bytes": 27342,
+    "final_dims": [
+      640,
+      457
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Apple Watch Series 8",
+    "slug": "apple-watch-series-8",
+    "query": "Apple Watch Series 8",
+    "title": "Apple Watch Series 8 - Technical Specifications - Apple Support (SG)",
+    "image_url": "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111848_apple-watch-series8.png",
+    "source_url": "https://support.apple.com/en-sg/111848",
+    "pick_reason": "brand:apple watch",
+    "file_path": "out/apple-watch-series-8.jpg",
+    "bytes": 52326,
+    "final_dims": [
+      640,
+      490
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Apple Watch Series 9",
+    "slug": "apple-watch-series-9",
+    "query": "Apple Watch Series 9",
+    "title": "Apple Watch Series 9 - 제품사양 - Apple 지원 (KR)",
+    "image_url": "https://cdsassets.apple.com/live/7WUAS350/images/tech-specs/apple-watch-series-9.png",
+    "source_url": "https://support.apple.com/ko-kr/111833",
+    "pick_reason": "brand:apple watch",
+    "file_path": "out/apple-watch-series-9.jpg",
+    "bytes": 30308,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Apple Watch Ultra 2",
+    "slug": "apple-watch-ultra-2",
+    "query": "Apple Watch Ultra 2",
+    "title": "Apple Watch Ultra 2 - Tech Specs – Apple Support (AU)",
+    "image_url": "https://cdsassets.apple.com/live/7WUAS350/images/tech-specs/111832-watch-ultra-2.png",
+    "source_url": "https://support.apple.com/en-au/111832",
+    "pick_reason": "brand:apple watch",
+    "file_path": "out/apple-watch-ultra-2.jpg",
+    "bytes": 79411,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Alpha (SV / AR / FL) 등반/expedition",
+    "slug": "arc-teryx-alpha-sv-ar-fl-expedition",
+    "query": "Arc'teryx Alpha 등반 expedition",
+    "title": "Arc'teryx Alpha FL 30 Xistrail Mountain",
+    "image_url": "https://images.arcteryx.com/details/1350x1710/Alpha-FL-30-Backpack-Black-Front-View.jpg",
+    "source_url": "https://www.ppgbbe.intranet.biologia.ufrj.br/a-cuantos-dias-de-la-fecundacion-se-puede-saber/a-cuantos-dias-de-la-fecundacion-se-puede-saber/arc-teryx-alpha-fl-30-xistrail-mountain-uu-DObBv3UY",
+    "pick_reason": "brand:arc'teryx",
+    "file_path": "out/arc-teryx-alpha-sv-ar-fl-expedition.jpg",
+    "bytes": 28205,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Atom AR / Heavyweight",
+    "slug": "arc-teryx-atom-ar-heavyweight",
+    "query": "Arc'teryx Atom AR Heavyweight",
+    "title": "Arc'teryx Atom Heavyweight Jacket Men's at Coquitlam Centre in ...",
+    "image_url": "https://images.arcteryx.com/details/1350x1710/F24-X000007515-Atom-Heavyweight-Jacket-Black-Front-View.jpg",
+    "source_url": "https://coquitlamcentre.com/theshoplist/product/atom-heavyweight-jacket-mens-arcteryx-b8faa6",
+    "pick_reason": "brand:arc'teryx",
+    "file_path": "out/arc-teryx-atom-ar-heavyweight.jpg",
+    "bytes": 25146,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Atom LT Hoody",
+    "slug": "arc-teryx-atom-lt-hoody",
+    "query": "Arc'teryx Atom LT Hoody",
+    "title": "Atom LT Hoody / Womens / Arc'teryx",
+    "image_url": "https://images-dynamic-arcteryx.imgix.net/F18/1350x1710/Atom-LT-Hoody-W-Crimson.jpg?auto=format&w=1350",
+    "source_url": "https://www.arcteryx.com/us/en/shop/womens/atom-lt-hoody",
+    "pick_reason": "brand:arc'teryx",
+    "file_path": "out/arc-teryx-atom-lt-hoody.jpg",
+    "bytes": 31159,
+    "final_dims": [
+      505,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Atom SL",
+    "slug": "arc-teryx-atom-sl",
+    "query": "Arc'teryx Atom SL",
+    "title": "Atom SL Hoody Men's | Arc'teryx",
+    "image_url": "https://images-dynamic-arcteryx.imgix.net/details/1350x1710/S25-X000009560-Atom-SL-Hoody-Electra-Detail-1.jpg?auto=format%2Ccompress&fit=crop&fill=white&ixlib=react-9.8.1&q=70&w=400&dpr=3",
+    "source_url": "https://arcteryx.com/us/en/shop/mens/atom-sl-hoody-9560",
+    "pick_reason": "brand:arc'teryx",
+    "file_path": "out/arc-teryx-atom-sl.jpg",
+    "bytes": 41044,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Beta (SL / AR / LT) Gore-Tex 자켓",
+    "slug": "arc-teryx-beta-sl-ar-lt-gore-tex",
+    "query": "Arc'teryx Beta Gore-Tex 자켓",
+    "title": "Arc'teryx Arc'teryx Beta Gore-Tex Jacket | REVERSIBLE",
+    "image_url": "https://image-raw.reversible.com/raw_images/f1d3f064d042e8d7d216200400fcf7ff1e7b9a312ad8fd4102d4b5e34e31b7e8",
+    "source_url": "https://www.reversible.com/kr/shopping/men/item/arcteryx-arcteryx-beta-gore-tex-jacket-522985678",
+    "pick_reason": "first_result",
+    "file_path": "out/arc-teryx-beta-sl-ar-lt-gore-tex.jpg",
+    "bytes": 30394,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Beta AR Gore-Tex Jacket",
+    "slug": "arc-teryx-beta-ar-gore-tex-jacket",
+    "query": "Arc'teryx Beta AR Gore-Tex Jacket",
+    "title": "Arc'teryx Men's Beta AR StormHood GORE-TEX Pro Jacket | Ellis Brigham ...",
+    "image_url": "https://cdn.pimber.ly/public/asset/raw/58f77f70bde29903e7904263/4179416e/64b8f65cf26d2a61fc0000ab/233067901.jpg",
+    "source_url": "https://www.ellis-brigham.com/arc-teryx-men-s-beta-ar-stormhood-gore-tex-pro-jacket-233067",
+    "pick_reason": "first_result",
+    "file_path": "out/arc-teryx-beta-ar-gore-tex-jacket.jpg",
+    "bytes": 32819,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Beta LT Gore-Tex Jacket",
+    "slug": "arc-teryx-beta-lt-gore-tex-jacket",
+    "query": "Arc'teryx Beta LT Gore-Tex Jacket",
+    "title": "Arcteryx - Men's Jackets, Coats, Cold Weather Parkas. Sustainable ...",
+    "image_url": "https://images.arcteryx.com/details/1350x1710/Beta-LT-Jacket-Black-Front-View.jpg",
+    "source_url": "https://www.coolantarctica.com/fezk/Arcteryx-Men.php",
+    "pick_reason": "brand:arc'teryx",
+    "file_path": "out/arc-teryx-beta-lt-gore-tex-jacket.jpg",
+    "bytes": 23212,
+    "final_dims": [
+      505,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Beta SL Gore-Tex Jacket",
+    "slug": "arc-teryx-beta-sl-gore-tex-jacket",
+    "query": "Arc'teryx Beta SL Gore-Tex Jacket",
+    "title": "Beta SL Jacke Herren | Arc'teryx Deutschland",
+    "image_url": "https://images-dynamic-arcteryx.imgix.net/details/1350x1710/F25-X000010552-Beta-SL-Jacket-Carob-Canvas-Detail-1.jpg?auto=format%2Ccompress&q=70&fit=crop&fill=white&dpr=2&ixlib=react-9.10.0&w=8192",
+    "source_url": "https://arcteryx.com/de/de/shop/mens/beta-sl-jacket-0552",
+    "pick_reason": "brand:arc'teryx",
+    "file_path": "out/arc-teryx-beta-sl-gore-tex-jacket.jpg",
+    "bytes": 34672,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Down 자켓 (Cerium / Thorium / Nuclei / Therma SV)",
+    "slug": "arc-teryx-down-cerium-thorium-nuclei-therma-sv",
+    "query": "Arc'teryx Down 자켓",
+    "title": "Arc'teryx Beta Down Insulated Jacket | REVERSIBLE",
+    "image_url": "https://image-raw.reversible.com/raw_images/3fffc2e2ad469dd4518003d6751a9b21a7efdc85c6908e5ff3394e7a23073ccf.webp",
+    "source_url": "https://www.reversible.com/kr/shopping/men/item/arcteryx-beta-down-insulated-jacket-141352749",
+    "pick_reason": "first_result",
+    "file_path": "out/arc-teryx-down-cerium-thorium-nuclei-therma-sv.jpg",
+    "bytes": 35936,
+    "final_dims": [
+      505,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Gamma (broad — sub-line 미명시)",
+    "slug": "arc-teryx-gamma-broad-sub-line",
+    "query": "Arc'teryx Gamma",
+    "title": "Gamma Hoody Men's | Arc'teryx",
+    "image_url": "https://images-dynamic-arcteryx.imgix.net/details/1350x1710/F23-X000007465-Gamma-Hoody-Black-Front-View.jpg",
+    "source_url": "https://arcteryx.com/se/en/shop/mens/gamma-hoody",
+    "pick_reason": "brand:arc'teryx",
+    "file_path": "out/arc-teryx-gamma-broad-sub-line.jpg",
+    "bytes": 21582,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Gamma (MX / SL / LT / Lightweight) softshell",
+    "slug": "arc-teryx-gamma-mx-sl-lt-lightweight-softshell",
+    "query": "Arc'teryx Gamma softshell",
+    "title": "Arc'teryx Gamma Jacket - Softshell Jacket Men's | Buy online ...",
+    "image_url": "https://www.bfgcdn.com/1500_1500_90/003-2655/arcteryx-gamma-jacket-softshell-jacket.jpg",
+    "source_url": "https://www.alpinetrek.co.uk/arcteryx-gamma-jacket-softshell-jacket/",
+    "pick_reason": "first_result",
+    "file_path": "out/arc-teryx-gamma-mx-sl-lt-lightweight-softshell.jpg",
+    "bytes": 26115,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx LEAF (Law Enforcement And Forces — 군용/방산 premium)",
+    "slug": "arc-teryx-leaf-law-enforcement-and-forces-premium",
+    "query": "Arc'teryx LEAF",
+    "title": "Law Enforcement & Armed Forces / Arc'teryx LEAF | Arc'teryx LEAF",
+    "image_url": "https://arc-cms-prod.imgix.net/content/images/simple_page/block/Homepage-Secondary_Assault-Shirt-Pant.jpg?auto=format&fit=crop&ixlib=react-8.6.4&w=3524",
+    "source_url": "https://leaf.arcteryx.com/ca/en/",
+    "pick_reason": "brand:arc'teryx",
+    "file_path": "out/arc-teryx-leaf-law-enforcement-and-forces-premium.jpg",
+    "bytes": 111001,
+    "final_dims": [
+      640,
+      460
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Proton Hoody (Insulated mid-layer)",
+    "slug": "arc-teryx-proton-hoody-insulated-mid-layer",
+    "query": "Arc'teryx Proton Hoody",
+    "title": "Proton SL Hoody Men's | Arc'teryx",
+    "image_url": "https://images-dynamic-arcteryx.imgix.net/details/1350x1710/S25-X000009557-Proton-SL-Hoody-Black-Front-View.jpg?auto=format%2Ccompress&q=70&fit=crop&fill=white&ixlib=react-9.8.1&w=1946",
+    "source_url": "https://arcteryx.com/us/en/shop/mens/proton-sl-hoody-9557",
+    "pick_reason": "brand:arc'teryx",
+    "file_path": "out/arc-teryx-proton-hoody-insulated-mid-layer.jpg",
+    "bytes": 26135,
+    "final_dims": [
+      479,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Solano (light jacket)",
+    "slug": "arc-teryx-solano-light-jacket",
+    "query": "Arc'teryx Solano",
+    "title": "Solano Hoody Men's | Arc'teryx",
+    "image_url": "https://images-dynamic-arcteryx.imgix.net/details/1350x1710/S25-X000009568-Solano-Hoody-Stratus-Front-View.jpg?auto=format%2Ccompress&fit=crop&fill=white&ixlib=react-9.8.1&q=70&w=700&dpr=4",
+    "source_url": "https://arcteryx.com/gb/en/shop/mens/solano-hoody-9568",
+    "pick_reason": "brand:arc'teryx",
+    "file_path": "out/arc-teryx-solano-light-jacket.jpg",
+    "bytes": 29799,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Veilance (도시 premium minimalist)",
+    "slug": "arc-teryx-veilance-premium-minimalist",
+    "query": "Arc'teryx Veilance",
+    "title": "Technical Apparel | Veilance | Arc'teryx",
+    "image_url": "https://images-dynamic-arcteryx.imgix.net/veilance/f22/VEILANCE_scans_006.jpg?auto=format&width=790",
+    "source_url": "https://arcteryx.com/us/en/veilance/",
+    "pick_reason": "brand:arc'teryx",
+    "file_path": "out/arc-teryx-veilance-premium-minimalist.jpg",
+    "bytes": 38100,
+    "final_dims": [
+      492,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Arc'teryx Vertex Alpine / Squamish",
+    "slug": "arc-teryx-vertex-alpine-squamish",
+    "query": "Arc'teryx Vertex Alpine Squamish",
+    "title": "Vertex Alpine GTX Shoe Men's | Arc'teryx United States",
+    "image_url": "https://images-dynamic-arcteryx.imgix.net/details/1350x1710/F24-X000009602-Vertex-Alpine-GTX-Shoe-Black-Black-Profile.jpg",
+    "source_url": "https://arcteryx.com/us/en/shop/mens/vertex-alpine-gtx-shoe-9602",
+    "pick_reason": "brand:arc'teryx",
+    "file_path": "out/arc-teryx-vertex-alpine-squamish.jpg",
+    "bytes": 17349,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics × Cecilie Bahnsen (한정 collab)",
+    "slug": "asics-cecilie-bahnsen-collab",
+    "query": "Asics × Cecilie Bahnsen",
+    "title": "Cecilie Bahnsen x ASICS II",
+    "image_url": "https://ceciliebahnsen.com/cdn/shop/files/CecilieBahnsen_Asics_Pink_Pack_3_2048x2048.jpg?v=1699368912",
+    "source_url": "https://ceciliebahnsen.com/pages/cecilie-bahnsen-x-asics-drop2",
+    "pick_reason": "first_result",
+    "file_path": "out/asics-cecilie-bahnsen-collab.jpg",
+    "bytes": 34899,
+    "final_dims": [
+      426,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics × JJJJound (자운드 콜라보)",
+    "slug": "asics-jjjjound",
+    "query": "Asics × JJJJound",
+    "title": "ASICS Australia | JJJJOUND X GEL-QUANTUM 360™ I AMP",
+    "image_url": "https://cdn.eql.media/draw-api/25c440f0-cef0-4443-80f3-9c953074823a/4a2ab2c4-6cf6-4440-b319-4ab86f9d7d63.jpg?auto=format&ar=1:0.6665&fit=crop&ixlib=react-9.7.0&w=580&dpr=4&q=23",
+    "source_url": "https://releases.asics.com/en-GB/au/jjjjound-gel-quantum-360-white",
+    "pick_reason": "brand:asics",
+    "file_path": "out/asics-jjjjound.jpg",
+    "bytes": 51879,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics Gel Nimbus (9 / 10.1 / 다수)",
+    "slug": "asics-gel-nimbus-9-10-1",
+    "query": "Asics Gel Nimbus",
+    "title": "ASICS | GEL-NIMBUS™ 25",
+    "image_url": "https://cms-static.asics.com/system/qor_micro_sites/346/20230301021301831416/templates/img/upper-shoe.png?123",
+    "source_url": "https://www.asics.com/gb/en-gb/mk/gel-nimbus-25",
+    "pick_reason": "brand:asics",
+    "file_path": "out/asics-gel-nimbus-9-10-1.jpg",
+    "bytes": 47280,
+    "final_dims": [
+      640,
+      354
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics Gel-1090 V1/V2 (러닝 retro)",
+    "slug": "asics-gel-1090-v1-v2-retro",
+    "query": "Asics Gel-1090 V1 V2",
+    "title": "GEL-1090™ v2 | Unisex | Cream/Clay Grey | Zapatillas SportStyle unisex ...",
+    "image_url": "https://images.asics.com/is/image/asics/1203A224_102_SR_RT_GLB?$zoom$",
+    "source_url": "https://www.asics.com/es/es-es/gel-1090™-v2/p/1203A224-102.html",
+    "pick_reason": "brand:asics",
+    "file_path": "out/asics-gel-1090-v1-v2-retro.jpg",
+    "bytes": 48347,
+    "final_dims": [
+      640,
+      480
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics Gel-Kayano 14 (plain/general release)",
+    "slug": "asics-gel-kayano-14-plain-general-release",
+    "query": "Asics Gel-Kayano 14",
+    "title": "GEL-KAYANO 14 | Unisex | WHITE/FJORD GREY | Men's Shoes | ASICS Malaysia",
+    "image_url": "https://images.asics.com/is/image/asics/1203A537_106_SR_RT_GLB?$zoom$",
+    "source_url": "https://www.asics.com/my/en-my/gel-kayano-14/p/1203A537-106.html",
+    "pick_reason": "brand:asics",
+    "file_path": "out/asics-gel-kayano-14-plain-general-release.jpg",
+    "bytes": 51133,
+    "final_dims": [
+      640,
+      480
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics Gel-Nimbus 10.1",
+    "slug": "asics-gel-nimbus-10-1",
+    "query": "Asics Gel-Nimbus 10.1",
+    "title": "GEL-NIMBUS 10.1 | Unisex | WHITE/PURE SILVER | Unisex Sneakers | ASICS ...",
+    "image_url": "https://images.asics.com/is/image/asics/1203A761_100_SR_RT_GLB?$sfcc-product$",
+    "source_url": "https://www.asics.com/ph/en-ph/gel-nimbus-10.1/p/1203A761-100.html?size=8&width=STANDARDD",
+    "pick_reason": "brand:asics",
+    "file_path": "out/asics-gel-nimbus-10-1.jpg",
+    "bytes": 45322,
+    "final_dims": [
+      640,
+      479
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics Gel-Nimbus 9 / UB3-S Gel-Nimbus 9",
+    "slug": "asics-gel-nimbus-9-ub3-s-gel-nimbus-9",
+    "query": "Asics Gel-Nimbus 9 UB3-S Gel-Nimbus 9",
+    "title": "Asics UB3 S Gel Nimbus 9 Blue Kiko Kostadinov bunt 1201A442-020",
+    "image_url": "https://cdn.evrysz.net/1000x1000/34/asics-ub3-s-gel-nimbus-9-1201a442020.png",
+    "source_url": "https://www.everysize.com/p/asics-ub3-s-gel-nimbus-9-1201a442-020.html",
+    "pick_reason": "first_result",
+    "file_path": "out/asics-gel-nimbus-9-ub3-s-gel-nimbus-9.jpg",
+    "bytes": 41713,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics Gel-Sonoma 15-50 / TR62 (트레일)",
+    "slug": "asics-gel-sonoma-15-50-tr62",
+    "query": "Asics Gel-Sonoma 15-50 TR62",
+    "title": "GEL-SONOMA TR62 | Unisex | BLACK/CEMENT GREY | Unisex Sportstyle Shoes ...",
+    "image_url": "https://images.asics.com/is/image/asics/1203A734_003_SR_RT_GLB?$sfcc-product$&fmt=jpg&wid=683&hei=512",
+    "source_url": "https://www.asics.com/my/en-my/gel-sonoma-tr62/p/1203A734-003.html",
+    "pick_reason": "brand:asics",
+    "file_path": "out/asics-gel-sonoma-15-50-tr62.jpg",
+    "bytes": 47896,
+    "final_dims": [
+      640,
+      479
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics GT-2160 (러닝/스트릿)",
+    "slug": "asics-gt-2160",
+    "query": "Asics GT-2160",
+    "title": "ASICS Vietnam | Official Running Shoes & Clothing",
+    "image_url": "https://images.asics.com/is/image/asics/1203A275_102_SR_RT_GLB?$zoom$",
+    "source_url": "https://www.asics.com/vn/vi-vn/mk/gt-2160",
+    "pick_reason": "brand:asics",
+    "file_path": "out/asics-gt-2160.jpg",
+    "bytes": 53629,
+    "final_dims": [
+      640,
+      480
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics Metaspeed Sky/Edge/Tokyo/Ray (마라톤 카본)",
+    "slug": "asics-metaspeed-sky-edge-tokyo-ray",
+    "query": "Asics Metaspeed Sky Edge Tokyo Ray",
+    "title": "METASPEED™ Tokyo | ASICS Singapore Official",
+    "image_url": "https://cms-static.asics.com/media-libraries/112636/file.jpg?20250531145724",
+    "source_url": "https://www.asics.com/sg/en-sg/mk/running/metaspeed",
+    "pick_reason": "brand:asics",
+    "file_path": "out/asics-metaspeed-sky-edge-tokyo-ray.jpg",
+    "bytes": 66065,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics Novablast / Superblast (러닝)",
+    "slug": "asics-novablast-superblast",
+    "query": "Asics Novablast Superblast",
+    "title": "Asics Novablast & Superblast 2 – The Running Company",
+    "image_url": "https://shop.therunningcompany.com.au/cdn/shop/files/1013A142_400_SB_FR_GLB.jpg?v=1733874414",
+    "source_url": "https://shop.therunningcompany.com.au/collections/asics-novablast-superblast-2",
+    "pick_reason": "first_result",
+    "file_path": "out/asics-novablast-superblast.jpg",
+    "bytes": 63870,
+    "final_dims": [
+      640,
+      480
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics Novalis Gel-Teremoa",
+    "slug": "asics-novalis-gel-teremoa",
+    "query": "Asics Novalis Gel-Teremoa",
+    "title": "NOVALIS x GEL-TEREMOA | OBSIDIAN BLACK/DAHLIA | Unisex Sportstyle Shoes ...",
+    "image_url": "https://images.asics.com/is/image/asics/1203A501_001_SR_RT_GLB?$sfcc-product$",
+    "source_url": "https://www.asics.com/th/en-th/novalis-x-gel-teremoa/p/1203A501-001.html",
+    "pick_reason": "brand:asics",
+    "file_path": "out/asics-novalis-gel-teremoa.jpg",
+    "bytes": 50681,
+    "final_dims": [
+      640,
+      479
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics Superblast (2/3 통합)",
+    "slug": "asics-superblast-2-3",
+    "query": "Asics Superblast",
+    "title": "SUPERBLAST | ASICS",
+    "image_url": "https://images.asics.com/is/image/asics/1013A142_401_SR_RT_GLB?$sfcc-product$",
+    "source_url": "https://www.asics.com/ph/en-ph/superblast/",
+    "pick_reason": "brand:asics",
+    "file_path": "out/asics-superblast-2-3.jpg",
+    "bytes": 45661,
+    "final_dims": [
+      640,
+      479
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics x Above The Clouds GT-2160",
+    "slug": "asics-x-above-the-clouds-gt-2160",
+    "query": "Asics x Above The Clouds GT-2160",
+    "title": "ASICS Australia | ABOVE THE CLOUDS GT-2160™",
+    "image_url": "https://cdn.eql.media/draw-api/25c440f0-cef0-4443-80f3-9c953074823a/f2a6840c-a324-4657-8984-ac42cfdf5672.jpg",
+    "source_url": "https://releases.asics.com/en-GB/au/above-the-clouds-x-gt-2160",
+    "pick_reason": "brand:asics",
+    "file_path": "out/asics-x-above-the-clouds-gt-2160.jpg",
+    "bytes": 39366,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Asics x Kiko Gel-Sokat",
+    "slug": "asics-x-kiko-gel-sokat",
+    "query": "Asics x Kiko Gel-Sokat",
+    "title": "Kiko Kostadinov x ASICS GEL-Sokat Infinity: Where to Buy Today",
+    "image_url": "https://www.highsnobiety.com/static-assets/dato/1632641952-kiko-kostadinov-asics-gel-sokat-infinity-release-date-price-product-00.jpg",
+    "source_url": "https://www.highsnobiety.com/p/kiko-kostadinov-asics-gel-sokat-infinity-release-date-price/",
+    "pick_reason": "first_result",
+    "file_path": "out/asics-x-kiko-gel-sokat.jpg",
+    "bytes": 41112,
+    "final_dims": [
+      640,
+      384
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Balenciaga 3XL Sneaker",
+    "slug": "balenciaga-3xl-sneaker",
+    "query": "Balenciaga 3XL Sneaker",
+    "title": "Women's 3xl | Balenciaga US",
+    "image_url": "https://balenciaga.dam.kering.com/m/7f1cc22826316234/Large-734731W3XL51269_X.jpg?v=1",
+    "source_url": "https://www.balenciaga.com/en-us/women/shoes/3xl",
+    "pick_reason": "brand:balenciaga",
+    "file_path": "out/balenciaga-3xl-sneaker.jpg",
+    "bytes": 25928,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "BAPE × Vans (Old Skool TB LX / Sk8-Hi)",
+    "slug": "bape-vans-old-skool-tb-lx-sk8-hi",
+    "query": "BAPE × Vans",
+    "title": "Vans X Bape | Vans PT",
+    "image_url": "https://assets.vans.eu/image/upload/c_limit,w_1080/q_auto:best,f_auto:image/v1729801961/240725_vans_NS_Bape_hero-mob",
+    "source_url": "https://www.vans.com/pt-pt/news/vans-bape",
+    "pick_reason": "brand:bape",
+    "file_path": "out/bape-vans-old-skool-tb-lx-sk8-hi.jpg",
+    "bytes": 78852,
+    "final_dims": [
+      640,
+      540
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "BAPE Coach Jacket (코치 자켓)",
+    "slug": "bape-coach-jacket",
+    "query": "BAPE Coach Jacket",
+    "title": "A BATHING APE® Abc Camo Coach Jacket | Bape official website – INT.BAPE.COM",
+    "image_url": "http://int.bape.com/cdn/shop/files/0ZXLJM010401OPKX-pdp-1.jpg?v=1743414994",
+    "source_url": "https://int.bape.com/products/bape-men-jackets-abc-camo-coach-jacket-0zxljm010401o?variant=44303288959149",
+    "pick_reason": "brand:bape",
+    "file_path": "out/bape-coach-jacket.jpg",
+    "bytes": 59592,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "BAPE Crewneck / Sweatshirt",
+    "slug": "bape-crewneck-sweatshirt",
+    "query": "BAPE Crewneck Sweatshirt",
+    "title": "BAPE MENS 1ST CAMO SHARK CREWNECK SWEATSHIRT – us.bape.com",
+    "image_url": "https://us.bape.com/cdn/shop/files/001SWK801010_GRN_A.jpg?v=1729685870&width=2400",
+    "source_url": "https://us.bape.com/products/1k80-113-010?variant=44721816699058",
+    "pick_reason": "brand:bape",
+    "file_path": "out/bape-crewneck-sweatshirt.jpg",
+    "bytes": 66746,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "BAPE Hoodie (basic/camo, non-Shark)",
+    "slug": "bape-hoodie-basic-camo-non-shark",
+    "query": "BAPE Hoodie",
+    "title": "A BATHING APE®︎ × Stray Kids SHARK HOODIEが新登場！ | bape.com",
+    "image_url": "https://i.shgcdn.com/77c9ffcf-81ff-49d9-aeb3-a0befbe54acc/-/format/auto/-/quality/normal/",
+    "source_url": "https://en.jp.bape.com/blogs/news/straykids",
+    "pick_reason": "brand:bape",
+    "file_path": "out/bape-hoodie-basic-camo-non-shark.jpg",
+    "bytes": 20320,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "BAPE Hoodie Zip (basic/camo, non-Shark)",
+    "slug": "bape-hoodie-zip-basic-camo-non-shark",
+    "query": "BAPE Hoodie Zip",
+    "title": "A BATHING APE® Abc Camo Separate Shark Full Zip Hoodie | Bape official ...",
+    "image_url": "http://int.bape.com/cdn/shop/files/0ZXSWM001151PBLT-pdp-1.jpg?v=1757673194",
+    "source_url": "https://int.bape.com/zh/products/bape-men-zip-throughs-abc-camo-separate-shark-full-zip-hoodie-0zxswm001151p?variant=44904478933165",
+    "pick_reason": "brand:bape",
+    "file_path": "out/bape-hoodie-zip-basic-camo-non-shark.jpg",
+    "bytes": 65358,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "BAPE Shark Hoodie (시그니처 한정)",
+    "slug": "bape-shark-hoodie",
+    "status": "skipped_exists",
+    "file_path": "out/bape-shark-hoodie.jpg",
+    "bytes": 605763
+  },
+  {
+    "sku_name": "BAPE 롱슬리브 (FW 시즌)",
+    "slug": "bape-fw",
+    "query": "BAPE long sleeve t-shirt",
+    "title": "BAPE STOREÂ® LONDON CAMO LONG SLEEVE TEE – uk.bape.com",
+    "image_url": "https://uk.bape.com/cdn/shop/products/001LTG721004_BLK_A.jpg?v=1651364868&width=1200",
+    "source_url": "https://uk.bape.com/products/0zxltm11100xg",
+    "pick_reason": "retry_first3",
+    "file_path": "out/bape-fw.jpg",
+    "bytes": 36198,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Barbour Quilted Jacket (리데스데일/베델/와스드)",
+    "slug": "barbour-quilted-jacket",
+    "status": "skipped_exists",
+    "file_path": "out/barbour-quilted-jacket.jpg",
+    "bytes": 109110
+  },
+  {
+    "sku_name": "Beats Solo 4",
+    "slug": "beats-solo-4",
+    "query": "Beats Solo 4",
+    "title": "Solo Beats",
+    "image_url": "https://www.beatsbydre.com/content/dam/beats/web/product/headphones/solo4-wireless/pdp/product-carousel/matte-black/black-05-solo4.jpg",
+    "source_url": "https://fity.club/lists/suggestions/solo-beats/",
+    "pick_reason": "brand:beats",
+    "file_path": "out/beats-solo-4.jpg",
+    "bytes": 55644,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Beats Studio Pro",
+    "slug": "beats-studio-pro",
+    "query": "Beats Studio Pro",
+    "title": "Beats Studio Pro - Premium Wireless Noise Cancelling Headphones (CA)",
+    "image_url": "https://www.beatsbydre.com/content/dam/beats/web/product/headphones/studiopro-wireless/pdp/studiopro-pdp-p08.png.large.2x.png",
+    "source_url": "https://www.beatsbydre.com/ca/headphones/studio-pro-wireless",
+    "pick_reason": "brand:beats",
+    "file_path": "out/beats-studio-pro.jpg",
+    "bytes": 20235,
+    "final_dims": [
+      640,
+      360
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Birkenstock Arizona (시그니처)",
+    "slug": "birkenstock-arizona",
+    "query": "Birkenstock Arizona",
+    "title": "Arizona Collection | BIRKENSTOCK United Kingdom",
+    "image_url": "https://www.birkenstock.com/dw/image/v2/BLFX_PRD/on/demandware.static/-/Sites-master-catalog-emea/default/dw9f885b97/951303/951303.jpg",
+    "source_url": "https://www.birkenstock.com/gb/models/arizona/",
+    "pick_reason": "brand:birkenstock",
+    "file_path": "out/birkenstock-arizona.jpg",
+    "bytes": 42572,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Birkenstock Boston (시그니처)",
+    "slug": "birkenstock-boston",
+    "query": "Birkenstock Boston",
+    "title": "Boston Suede Leather Taupe | shop online at BIRKENSTOCK",
+    "image_url": "https://www.birkenstock.com/dw/image/v2/BBBF_PRD/on/demandware.static/-/Sites-master-catalog/default/dw386cc28a/560771/560771_pair.jpg?sw=1500&sh=1500",
+    "source_url": "https://www.birkenstock.com/us/boston-suede-leather/boston-suede-suedeleather-softfootbed-eva-u_46.html",
+    "pick_reason": "brand:birkenstock",
+    "file_path": "out/birkenstock-boston.jpg",
+    "bytes": 54637,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Birkenstock Zürich",
+    "slug": "birkenstock-z-rich",
+    "query": "Birkenstock Zürich",
+    "title": "Zürich Suede Leather Taupe | shop online at BIRKENSTOCK",
+    "image_url": "https://www.birkenstock.com/on/demandware.static/-/Sites-master-catalog/default/dw04ed0ac7/50463/50463.jpg",
+    "source_url": "https://www.birkenstock.com/us/z%C3%BCrich-suede-leather/zurich-core-suedeleather-0-eva-u_46.html",
+    "pick_reason": "brand:birkenstock",
+    "file_path": "out/birkenstock-z-rich.jpg",
+    "bytes": 47714,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Bose QuietComfort 45",
+    "slug": "bose-quietcomfort-45",
+    "query": "Bose QC45 headphones",
+    "title": "Bose Quietcomfort 45 (QC45) Headphones White Smoke - circesoftware.net",
+    "image_url": "https://m.media-amazon.com/images/I/51CHPyFpnoL.jpg",
+    "source_url": "http://circesoftware.net/bose-quietcomfort-45-qc45-headphones-white-smoke-2077289.html",
+    "pick_reason": "retry_first3",
+    "file_path": "out/bose-quietcomfort-45.jpg",
+    "bytes": 16695,
+    "final_dims": [
+      640,
+      480
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Bose QuietComfort Ultra Headphones",
+    "slug": "bose-quietcomfort-ultra-headphones",
+    "query": "Bose QuietComfort Ultra Headphones",
+    "title": "Read Bose Press Release: QuietComfort Ultra Headphones (2nd Gen) Launch ...",
+    "image_url": "https://assets.bosecreative.com/transform/Web-Large-JPG/07c76361-a9b9-4c8a-97a0-5c815234a716/Bose_QuietComfort_Ultra_Headphones_2nd_Gen_Black_02",
+    "source_url": "https://www.bose.com/pressroom/bose-unveils-the-next-generation-of-the-quietcomfort-ultra-headphones",
+    "pick_reason": "brand:bose",
+    "file_path": "out/bose-quietcomfort-ultra-headphones.jpg",
+    "bytes": 18172,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Carhartt Denim / Newel / Simple Pants",
+    "slug": "carhartt-denim-newel-simple-pants",
+    "query": "Carhartt Denim Newel Simple Pants",
+    "title": "Carhartt WIP Newel Pant, Blue | Official Online Store",
+    "image_url": "https://cdn.media.amplience.net/i/carhartt_wip/I029208_01_06-OF-02?%24OF%24=&fmt=auto&w=3840&qlt=default",
+    "source_url": "https://www.carhartt-wip.com/en-dk/p/newel-pant-blue-stone-washed-114",
+    "pick_reason": "brand:carhartt",
+    "file_path": "out/carhartt-denim-newel-simple-pants.jpg",
+    "bytes": 27789,
+    "final_dims": [
+      426,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Carhartt Flannel / Workshirt / L-S Shirt",
+    "slug": "carhartt-flannel-workshirt-l-s-shirt",
+    "query": "Carhartt Flannel Workshirt L-S Shirt",
+    "title": "Rugged Flex™ Relaxed Fit Midweight Flannel Long-Sleeve Plaid Shirt ...",
+    "image_url": "https://imgcdn.carhartt.com/is/image/Carhartt/107010_GVL?fit=constrain,1&wid=798&hei=800&fmt=jpg",
+    "source_url": "https://www.carhartt.com/product/107010/rugged-flex-relaxed-fit-midweight-flannel-long-sleeve-plaid-shirt",
+    "pick_reason": "brand:carhartt",
+    "file_path": "out/carhartt-flannel-workshirt-l-s-shirt.jpg",
+    "bytes": 45835,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Carhartt Hoodie / Sweatshirt / Crewneck (Broad)",
+    "slug": "carhartt-hoodie-sweatshirt-crewneck-broad",
+    "query": "Carhartt Hoodie Sweatshirt Crewneck",
+    "title": "Men's Crewneck Sweatshirts | Carhartt",
+    "image_url": "https://imgcdn.carhartt.com/is/image/Carhartt/105941_HGY?$pdp-primary-image-static$",
+    "source_url": "https://www.carhartt.com/c/men-hoodies-sweatshirts-crewneck",
+    "pick_reason": "brand:carhartt",
+    "file_path": "out/carhartt-hoodie-sweatshirt-crewneck-broad.jpg",
+    "bytes": 44990,
+    "final_dims": [
+      640,
+      639
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "CDG Homme Plus (premium mainline 자켓/셔츠)",
+    "slug": "cdg-homme-plus-premium-mainline",
+    "query": "CDG Homme Plus",
+    "title": "Comme Des Garcons",
+    "image_url": "https://assets.vogue.com/photos/63cad55f1944dc168acdfe70/master/w_1280,c_limit/00001-comme-des-garcons-homme-plus-fall-2023-menswear-credit-gorunway.jpg",
+    "source_url": "https://ar.inspiredpencil.com/pictures-2023/comme-des-garcons",
+    "pick_reason": "first_result",
+    "file_path": "out/cdg-homme-plus-premium-mainline.jpg",
+    "bytes": 50307,
+    "final_dims": [
+      426,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Converse × ADER ERROR (collab)",
+    "slug": "converse-ader-error-collab",
+    "query": "Converse ADER ERROR collaboration sneaker",
+    "title": "ADER ERROR Converse Chuck 70 A05351C A05352C Release Date | SneakerNews.com",
+    "image_url": "https://sneakernews.com/wp-content/uploads/2023/07/ader-error-converse-chuck-70-ox-A05352C-7.jpg",
+    "source_url": "https://sneakernews.com/2023/07/25/ader-error-converse-chuck-70-a05351c-a05352c-release-date/",
+    "pick_reason": "retry_first3",
+    "file_path": "out/converse-ader-error-collab.jpg",
+    "bytes": 81258,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Converse × Stüssy (척테일러 70 collab)",
+    "slug": "converse-st-ssy-70-collab",
+    "query": "Converse Stussy Chuck Taylor 70 collab",
+    "title": "Stussy Converse Chuck 70 Release Info | SneakerNews.com",
+    "image_url": "https://sneakernews.com/wp-content/uploads/2022/04/Stussy-Converse-Chuck-70-First-Look-9.jpg?w=1140",
+    "source_url": "https://sneakernews.com/2022/04/01/stussy-converse-chuck-70-release-info/",
+    "pick_reason": "retry_first3",
+    "file_path": "out/converse-st-ssy-70-collab.jpg",
+    "bytes": 83258,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Converse Chuck 70 (high/low unspecified internal learning lane)",
+    "slug": "converse-chuck-70-high-low-unspecified-internal-learning-lane",
+    "query": "Converse Chuck 70",
+    "title": "Converse Chuck 70 Unisex Siyah Sneaker - G30104",
+    "image_url": "https://akn-converse.a-cdn.akinoncloud.com/products/2023/03/28/15159/13fec5f1-0cec-4b02-b488-360f003cb31c_size1340x1000_cropBottom.jpg",
+    "source_url": "https://www.converse.com.tr/urun/converse-chuck-70-unisex-siyah-sneaker/162050c-001/",
+    "pick_reason": "brand:converse",
+    "file_path": "out/converse-chuck-70-high-low-unspecified-internal-learning-lane.jpg",
+    "bytes": 34100,
+    "final_dims": [
+      640,
+      477
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Converse Chuck Taylor All Star 70 Hi Comme des Garcons PLAY White",
+    "slug": "converse-chuck-taylor-all-star-70-hi-comme-des-garcons-play-white",
+    "query": "Converse Chuck Taylor All Star 70 Hi Comme des Garcons PLAY White",
+    "title": "White Converse x PLAY Comme des Garcons All Star Chuck '70 – Feature",
+    "image_url": "https://cdn.shopify.com/s/files/1/0408/9909/products/converse-x-comme-des-garcons-play-all-star-chuck-70-hi-white-3.jpg?v=1596148188",
+    "source_url": "https://feature.com/products/converse-x-comme-des-garcons-play-all-star-chuck-70-hi-white-2020",
+    "pick_reason": "first_result",
+    "file_path": "out/converse-chuck-taylor-all-star-70-hi-comme-des-garcons-play-white.jpg",
+    "bytes": 35135,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Converse Run Star Hike (플랫폼 하이)",
+    "slug": "converse-run-star-hike",
+    "query": "Converse Run Star Hike",
+    "title": "Run Star Hike | TÜM AYAKKABILAR | Converse Türkiye",
+    "image_url": "https://akn-converse.a-cdn.akinoncloud.com/products/2022/06/07/11599/edfbac24-d64b-4e4d-a5fb-cb94af7f556f.jpg",
+    "source_url": "https://www.converse.com.tr/urun/run-star-hike-3651542/",
+    "pick_reason": "brand:converse",
+    "file_path": "out/converse-run-star-hike.jpg",
+    "bytes": 39854,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Crocs All-Terrain Clog",
+    "slug": "crocs-all-terrain-clog",
+    "query": "Crocs All-Terrain Clog",
+    "title": "All-Terrain Atlas Clog - Crocs",
+    "image_url": "https://media.crocs.com/images/t_B2B/f_auto%2Cq_auto/products/208391_060_ALT100/crocs-all-terrain-atlas-clog-black-black-charm-view",
+    "source_url": "https://www.crocs.com/p/all-terrain-atlas-clog/208391.html",
+    "pick_reason": "brand:crocs",
+    "file_path": "out/crocs-all-terrain-clog.jpg",
+    "bytes": 18567,
+    "final_dims": [
+      500,
+      192
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Crocs Classic Clog (시그니처)",
+    "slug": "crocs-classic-clog",
+    "query": "Crocs Classic Clog",
+    "title": "Buy Crocs™ Classic Clog | Classic Comfortable Clog | Crocs UK",
+    "image_url": "https://media.crocs.com/images/f_auto%2Cq_auto%2Cw_900%2Ch_900%2Cc_pad%2Cb_transparent/products/10001_3YO_ALT110/crocs",
+    "source_url": "https://www.crocs.co.uk/p/classic-clog/10001.html?cgid=sale&cid=3YO",
+    "pick_reason": "brand:crocs",
+    "file_path": "out/crocs-classic-clog.jpg",
+    "bytes": 47135,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Crocs x Balenciaga (러버부츠/플랫폼 luxury)",
+    "slug": "crocs-x-balenciaga-luxury",
+    "query": "Crocs x Balenciaga",
+    "title": "Balenciaga - x Crocs Madame 80 pumps Balenciaga",
+    "image_url": "https://clothbase.s3.amazonaws.com/uploads/bbd60c40-ac33-4a50-8695-b8fe69226a3d/P00635854_d1.jpg",
+    "source_url": "https://clothbase.com/items/8a4ab37d_balenciaga-x-crocs-madame-80-pumps_balenciaga",
+    "pick_reason": "first_result",
+    "file_path": "out/crocs-x-balenciaga-luxury.jpg",
+    "bytes": 33487,
+    "final_dims": [
+      566,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Crocs x Salehe Bembury (얼친/팜 한정)",
+    "slug": "crocs-x-salehe-bembury",
+    "query": "Crocs x Salehe Bembury",
+    "title": "Salehe Bembury X Crocs | Crocs Singapore",
+    "image_url": "https://media.crocs.com/images/t_ok_card/f_auto%2Cq_auto/products/208694_85J_ALT110/crocs-salehe-bembury-x-juniper-sneaker-apricot-pair",
+    "source_url": "https://www.crocs.com.sg/c/salehe-bembury",
+    "pick_reason": "brand:crocs",
+    "file_path": "out/crocs-x-salehe-bembury.jpg",
+    "bytes": 42552,
+    "final_dims": [
+      640,
+      498
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Dior B23 Sneaker",
+    "slug": "dior-b23-sneaker",
+    "query": "Dior B23 Sneaker",
+    "title": "B23 League High-Top Sneaker White and Black Dior Oblique Canvas | DIOR",
+    "image_url": "https://assets.christiandior.com/is/image/diorprod/3SH118YJPH069_E02?$default_GHC$&crop=282,605,1441,904&wid=1850&hei=2000&scale=0.875&bfc=on&qlt=85",
+    "source_url": "https://www.dior.com/en_fi/fashion/products/3SH118YJP_H069",
+    "pick_reason": "brand:dior",
+    "file_path": "out/dior-b23-sneaker.jpg",
+    "bytes": 20027,
+    "final_dims": [
+      592,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Dior B27 Sneaker",
+    "slug": "dior-b27-sneaker",
+    "query": "Dior B27 Sneaker",
+    "title": "B27 Uptown Low-Top Sneaker Gray and White Smooth Calfskin with Beige ...",
+    "image_url": "https://assets.christiandior.com/is/image/diorprod/3SN272ZIRH165_E03-2?$default_GHC$&crop=270,725,1453,820&wid=1850&hei=2000&scale=0.875&bfc=on&qlt=85",
+    "source_url": "https://www.dior.com/en_gr/fashion/products/3SN272ZIR_H165",
+    "pick_reason": "brand:dior",
+    "file_path": "out/dior-b27-sneaker.jpg",
+    "bytes": 22302,
+    "final_dims": [
+      592,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "DJI Osmo Pocket 3",
+    "slug": "dji-osmo-pocket-3",
+    "query": "DJI Osmo Pocket 3",
+    "title": "Buy Osmo Pocket 3 - DJI Store",
+    "image_url": "https://stormsend1.djicdn.com/tpc/uploads/spu/cover/35d158a1f3d1a3a48ec4cf2220cfc426@ultra.png",
+    "source_url": "https://store.dji.com/pl/product/osmo-pocket-3",
+    "pick_reason": "brand:dji",
+    "file_path": "out/dji-osmo-pocket-3.jpg",
+    "bytes": 19740,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "DJI Osmo Pocket 4",
+    "slug": "dji-osmo-pocket-4",
+    "query": "DJI Osmo Pocket 4",
+    "title": "DJI OSMO Pocket 4 - Confirmed Specs Price & Release Date! - YouTube",
+    "image_url": "https://i.ytimg.com/vi/4pOHYC8ev6o/maxresdefault.jpg",
+    "source_url": "https://www.youtube.com/watch?v=4pOHYC8ev6o",
+    "pick_reason": "first_result",
+    "file_path": "out/dji-osmo-pocket-4.jpg",
+    "bytes": 27019,
+    "final_dims": [
+      640,
+      360
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Dr. Martens 1461 Cherry/Oxblood",
+    "slug": "dr-martens-1461-cherry-oxblood",
+    "query": "Dr. Martens 1461 Cherry Oxblood",
+    "title": "1461 HARDLIFE in Oxblood | Dr. Martens",
+    "image_url": "https://cdn.media.amplience.net/i/drmartens/24402601.85?$smart576$&fmt=auto",
+    "source_url": "https://www.drmartens.com/uk/en_gb/1461-hardlife-oxblood/p/24402601",
+    "pick_reason": "brand:dr. martens",
+    "file_path": "out/dr-martens-1461-cherry-oxblood.jpg",
+    "bytes": 36266,
+    "final_dims": [
+      511,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Dr. Martens 1461 Quad (플랫폼)",
+    "slug": "dr-martens-1461-quad",
+    "query": "Dr. Martens 1461 Quad",
+    "title": "1461 Quad Smooth Leather Platform Shoes in Black | Dr. Martens",
+    "image_url": "https://cdn.media.amplience.net/i/drmartens/25567001.87.jpg?$mediummobile$",
+    "source_url": "https://www.drmartens.com/uk/en_gb/1461-quad-smooth-leather-platform-shoes-black/p/25567001",
+    "pick_reason": "brand:dr. martens",
+    "file_path": "out/dr-martens-1461-quad.jpg",
+    "bytes": 17395,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Dr. Martens 1461 Smooth Black (3-hole derby)",
+    "slug": "dr-martens-1461-smooth-black-3-hole-derby",
+    "query": "Dr. Martens 1461 Smooth Black",
+    "title": "1461 Mono Smooth Leather Oxford Shoes in Black | Dr. Martens",
+    "image_url": "https://cdn.media.amplience.net/i/drmartens/14345001.89.jpg?$mediummobile$",
+    "source_url": "https://www.drmartens.com/eu/en_eu/1461-mono-smooth-leather-oxford-shoes-black/p/14345001",
+    "pick_reason": "brand:dr. martens",
+    "file_path": "out/dr-martens-1461-smooth-black-3-hole-derby.jpg",
+    "bytes": 35445,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Dr. Martens Adrian Tassel Loafer",
+    "slug": "dr-martens-adrian-tassel-loafer",
+    "query": "Dr. Martens Adrian Tassel Loafer",
+    "title": "Adrian Virginia Leather Tassel Loafers in Savannah Tan | Dr. Martens",
+    "image_url": "https://cdn.media.amplience.net/i/drmartens/31245439.88.jpg?$mediummobile$",
+    "source_url": "https://www.drmartens.com/uk/en_gb/adrian-virginia-tassel-loafers/p/31245439",
+    "pick_reason": "brand:dr. martens",
+    "file_path": "out/dr-martens-adrian-tassel-loafer.jpg",
+    "bytes": 40888,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Dr. Martens Jadon (플랫폼 8홀)",
+    "slug": "dr-martens-jadon-8",
+    "query": "Dr. Martens Jadon",
+    "title": "Jadon Wednesday Platform Boots in Black | Dr. Martens",
+    "image_url": "https://cdn.media.amplience.net/i/drmartens/32224001.85.jpg?$mediummobile$&fmt=auto",
+    "source_url": "https://www.drmartens.com/us/en/jadon-wednesday-platform-boots-black/p/32224001",
+    "pick_reason": "brand:dr. martens",
+    "file_path": "out/dr-martens-jadon-8.jpg",
+    "bytes": 31529,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Dr. Martens Wingtip Brogue 3989 (윙팁/브로그)",
+    "slug": "dr-martens-wingtip-brogue-3989",
+    "query": "Dr. Martens Wingtip Brogue 3989",
+    "title": "3989 Smooth Leather Brogue Shoes in Black | Dr. Martens",
+    "image_url": "https://cdn.media.amplience.net/i/drmartens/22210001.80?$smart576$&fmt=auto",
+    "source_url": "https://www.drmartens.com/uk/en_gb/3989-smooth-leather-brogue-shoes-black/p/22210001",
+    "pick_reason": "brand:dr. martens",
+    "file_path": "out/dr-martens-wingtip-brogue-3989.jpg",
+    "bytes": 19949,
+    "final_dims": [
+      511,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Dyson Airwrap Origin",
+    "slug": "dyson-airwrap-origin",
+    "query": "Dyson Airwrap Origin",
+    "title": "Dyson Refurbished Dyson Airwrap™ Origin multi-styler and dryer (Bright ...",
+    "image_url": "https://dyson-h.assetsadobe2.com/is/image/content/dam/dyson/leap-petite-global/markets/australia/personal-care/airwrap-lite/Airwrap_Lite_PDP_Transparent_PBackground_800x864.png",
+    "source_url": "https://www.dyson.com.au/dyson-refurbished-airwrap-lite-453842-02-nickel-copper",
+    "pick_reason": "brand:dyson",
+    "file_path": "out/dyson-airwrap-origin.jpg",
+    "bytes": 16154,
+    "final_dims": [
+      592,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Dyson Corrale (HS07, 무선 고데기)",
+    "slug": "dyson-corrale-hs07",
+    "query": "Dyson Corrale",
+    "title": "Dyson Corrale™ Hair Straightener (Purple/Black) | Dyson Australia",
+    "image_url": "https://dyson-h.assetsadobe2.com/is/image/content/dam/dyson/leap-petite-global/products/personal-care/556/variant/ppp/corrale-gallery-image-2-pu.jpg?&cropPathE=desktop&fit=stretch,1&fmt=pjpeg&wid=1920",
+    "source_url": "https://www.dyson.com.au/dyson-corrale-straightener-purple-black",
+    "pick_reason": "brand:dyson",
+    "file_path": "out/dyson-corrale-hs07.jpg",
+    "bytes": 20795,
+    "final_dims": [
+      640,
+      360
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Feng Chen Wang × Converse Chuck 70 (2-in-1 신상 SS25)",
+    "slug": "feng-chen-wang-converse-chuck-70-2-in-1-ss25",
+    "query": "Feng Chen Wang × Converse Chuck 70",
+    "title": "Converse X Feng Chen Wang Chuck 70 Unisex Yeşil Sneaker - A07636C",
+    "image_url": "https://akn-converse.a-cdn.akinoncloud.com/products/2024/02/14/45963/dcc579d1-7cd0-4c10-ad3e-10673164221a.jpg",
+    "source_url": "https://www.converse.com.tr/urun/converse-x-feng-chen-wang-chuck-70-unisex-yesil-sneaker/a07636c-101/",
+    "pick_reason": "brand:converse",
+    "file_path": "out/feng-chen-wang-converse-chuck-70-2-in-1-ss25.jpg",
+    "bytes": 98724,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "FOG Essentials Hoodie",
+    "slug": "fog-essentials-hoodie",
+    "query": "FOG Essentials Hoodie",
+    "title": "Fear of God (FOG) Essentials Hoodie Black from ReleaseSneakers",
+    "image_url": "http://images.mrshopplus.com/426119432936976/DTB_proProduct/2024-12-18/fear_of_god__fog__essentials_hoodie_black_1B8BBC002FB18.jpg",
+    "source_url": "https://www.releasesneakers.net/Fear-of-God-FOG-Essentials-Hoodie-Black",
+    "pick_reason": "first_result",
+    "file_path": "out/fog-essentials-hoodie.jpg",
+    "bytes": 15649,
+    "final_dims": [
+      629,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy Buds 3 Pro",
+    "slug": "galaxy-buds-3-pro",
+    "query": "Galaxy Buds 3 Pro",
+    "title": "Buy Galaxy Buds3 Pro Earbuds | Samsung Business UK",
+    "image_url": "https://images.samsung.com/uk/galaxy-buds3-pro/feature/galaxy-buds3-pro-highlight-slide01-startframe-pc.jpg",
+    "source_url": "https://www.samsung.com/uk/business/audio-sound/galaxy-buds/galaxy-buds3-pro-silver-sm-r630nzaaeua/",
+    "pick_reason": "brand:galaxy",
+    "file_path": "out/galaxy-buds-3-pro.jpg",
+    "bytes": 11598,
+    "final_dims": [
+      640,
+      375
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy Note 20",
+    "slug": "galaxy-note-20",
+    "query": "Galaxy Note 20",
+    "title": "Samsung Galaxy Note20 5G - Full phone specifications",
+    "image_url": "https://images.samsung.com/us/smartphones/galaxy-note20/pdp/gallery/canvas1/Gray/Gallery-01-C1-Lockup-MysticGray-1600x1200.jpg?$product-details-zoomed-png$",
+    "source_url": "https://www.gsmarena.com/samsung_galaxy_note20_5g-10325.php",
+    "pick_reason": "brand:galaxy",
+    "file_path": "out/galaxy-note-20.jpg",
+    "bytes": 27054,
+    "final_dims": [
+      640,
+      480
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy S22 Plus",
+    "slug": "galaxy-s22-plus",
+    "query": "Galaxy S22 Plus",
+    "title": "Samsung Galaxy S22 Plus Review",
+    "image_url": "https://mobilemall.pk/blog/wp-content/uploads/2022/02/Samsung-Galaxy-S22-Plus-Review.jpg",
+    "source_url": "https://mobilemall.pk/blog/samsung-galaxy-s22-plus-review/",
+    "pick_reason": "first_result",
+    "file_path": "out/galaxy-s22-plus.jpg",
+    "bytes": 37047,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy S24",
+    "slug": "galaxy-s24",
+    "query": "Galaxy S24",
+    "title": "Osta Galaxy S24, S24+ 5G | Hinnat ja tarjoukset | Samsung FI",
+    "image_url": "https://images.samsung.com/is/image/samsung/assets/global/mkt/smartphones/galaxy-s24/kv/04_S24Series-GalaxyAI-KV_PC.jpg?imbypass=true",
+    "source_url": "https://www.samsung.com/fi/smartphones/galaxy-s24/buy/",
+    "pick_reason": "brand:galaxy",
+    "file_path": "out/galaxy-s24.jpg",
+    "bytes": 20970,
+    "final_dims": [
+      640,
+      345
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy S24 Plus",
+    "slug": "galaxy-s24-plus",
+    "query": "Galaxy S24 Plus",
+    "title": "Pirkti dabar Galaxy S24 & S24 Plus | Kaina | Samsung LT",
+    "image_url": "https://images.samsung.com/is/image/samsung/assets/global/mkt/smartphones/galaxy-s24/kv/04_S24Series-GalaxyAI-KV_PC.jpg?imbypass=true",
+    "source_url": "https://www.samsung.com/lt/smartphones/galaxy-s24/buy/",
+    "pick_reason": "brand:galaxy",
+    "file_path": "out/galaxy-s24-plus.jpg",
+    "bytes": 20970,
+    "final_dims": [
+      640,
+      345
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy S25 Edge",
+    "slug": "galaxy-s25-edge",
+    "query": "Galaxy S25 Edge",
+    "title": "Specs | Samsung Galaxy S25 Edge | Samsung Australia",
+    "image_url": "https://images.samsung.com/is/image/samsung/assets/au/2504/specs/galaxy-s25-edge-share-image.jpg?$ORIGIN_JPG$",
+    "source_url": "https://www.samsung.com/au/smartphones/galaxy-s25-edge/specs/",
+    "pick_reason": "brand:galaxy",
+    "file_path": "out/galaxy-s25-edge.jpg",
+    "bytes": 8682,
+    "final_dims": [
+      640,
+      336
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy Tab S7 FE",
+    "slug": "galaxy-tab-s7-fe",
+    "query": "Samsung Galaxy Tab S7 FE",
+    "title": "Samsung Galaxy Tab S7 FE - Review 2021 - PCMag UK",
+    "image_url": "https://sm.pcmag.com/t/pcmag_uk/review/s/samsung-ga/samsung-galaxy-tab-s7-fe_h2x2.1920.jpg",
+    "source_url": "https://uk.pcmag.com/samsung-galaxy-tab-s7-fe/135999/samsung-galaxy-tab-s7-fe",
+    "pick_reason": "retry_first3",
+    "file_path": "out/galaxy-tab-s7-fe.jpg",
+    "bytes": 46534,
+    "final_dims": [
+      640,
+      360
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy Tab S8 Ultra",
+    "slug": "galaxy-tab-s8-ultra",
+    "query": "Galaxy Tab S8 Ultra",
+    "title": "Buy New Galaxy Tab S8, S8+ & S8 Ultra - Price & Offers | Samsung India",
+    "image_url": "https://images.samsung.com/in/galaxy-tab-s8/feature/buy/GalaxyTab_S8Ultra_AllColorKV_WithSPen_MO.jpg",
+    "source_url": "https://www.samsung.com/in/tablets/galaxy-tab-s8/buy/",
+    "pick_reason": "brand:galaxy",
+    "file_path": "out/galaxy-tab-s8-ultra.jpg",
+    "bytes": 33687,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy Tab S9 FE Plus",
+    "slug": "galaxy-tab-s9-fe-plus",
+    "query": "Galaxy Tab S9 FE Plus",
+    "title": "Buy Galaxy Tab S9 FE & S9 FE Plus | Price & Deals | Samsung UK",
+    "image_url": "https://images.samsung.com/is/image/samsung/assets/uk/tablets/galaxy-tab-s9-fe/buy/TabS9FE-FEplus_KV_Cover_Back_MO_720x720.jpg",
+    "source_url": "https://www.samsung.com/uk/tablets/galaxy-tab-s9-fe/buy/",
+    "pick_reason": "brand:galaxy",
+    "file_path": "out/galaxy-tab-s9-fe-plus.jpg",
+    "bytes": 17742,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy Watch 7",
+    "slug": "galaxy-watch-7",
+    "query": "Galaxy Watch 7",
+    "title": "Galaxy Watch Ultra 47mm, Titanium White | Samsung US",
+    "image_url": "https://image-us.samsung.com/us/galaxy-watch7/gallery/SCOMB6Q6-59-SM-L310_002_Front2_Green-1600x1200.jpg?$product-details-jpg$?$product-details-thumbnail-jpg$",
+    "source_url": "https://www.samsung.com/us/watches/galaxy-watch7/buy/galaxy-watch-ultra-47mm-titanium-white-sm-l705uzwvxaa/",
+    "pick_reason": "brand:galaxy",
+    "file_path": "out/galaxy-watch-7.jpg",
+    "bytes": 20453,
+    "final_dims": [
+      640,
+      480
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy Watch Ultra",
+    "slug": "galaxy-watch-ultra",
+    "query": "Galaxy Watch Ultra",
+    "title": "Galaxy Watch Ultra Smartwatch 47mm | Specs & Features | Samsung UK",
+    "image_url": "https://images.samsung.com/uk/galaxy-watch-ultra/feature/galaxy-watch-ultra-kv-pc.jpg",
+    "source_url": "https://www.samsung.com/uk/watches/galaxy-watch/galaxy-watch-ultra-titanium-white-lte-sm-l705fzwaeua/",
+    "pick_reason": "brand:galaxy",
+    "file_path": "out/galaxy-watch-ultra.jpg",
+    "bytes": 49073,
+    "final_dims": [
+      640,
+      266
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy Z Flip 3",
+    "slug": "galaxy-z-flip-3",
+    "query": "Galaxy Z Flip 3",
+    "title": "Buy Samsung Galaxy Z Flip 3 5G | Price & Deals | Samsung UK",
+    "image_url": "https://images.samsung.com/uk/smartphones/galaxy-z-flip3-5g/buy/02_Carousel/02-ColorCombo/zflip3_carousel_colorcombokv_mo.jpg",
+    "source_url": "https://www.samsung.com/uk/smartphones/galaxy-z-flip3-5g/buy/",
+    "pick_reason": "brand:galaxy",
+    "file_path": "out/galaxy-z-flip-3.jpg",
+    "bytes": 39655,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy Z Flip 4",
+    "slug": "galaxy-z-flip-4",
+    "query": "Samsung Galaxy Z Flip4",
+    "title": "Samsung Galaxy Z Flip4 Graphite 128GB | Telekom",
+    "image_url": "https://www.telekom.de/resources/images/900516/samsung-galaxy-z-flip4-graphite-vorne-hinten.png",
+    "source_url": "https://www.telekom.de/unterwegs/samsung/samsung-galaxy-z-flip4/graphite-128gb?tariffId=15499&cc=18",
+    "pick_reason": "retry_first3",
+    "file_path": "out/galaxy-z-flip-4.jpg",
+    "bytes": 54814,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy Z Flip 5",
+    "slug": "galaxy-z-flip-5",
+    "query": "Galaxy Z Flip 5",
+    "title": "Buy new Galaxy Z Flip5 5G | Price & Offers | Samsung India",
+    "image_url": "https://images.samsung.com/in/smartphones/galaxy-z-flip5/buy/kv_animated_MO.jpg?imbypass=true",
+    "source_url": "https://www.samsung.com/in/smartphones/galaxy-z-flip5/buy/",
+    "pick_reason": "brand:galaxy",
+    "file_path": "out/galaxy-z-flip-5.jpg",
+    "bytes": 25067,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy Z Flip 6",
+    "slug": "galaxy-z-flip-6",
+    "query": "Galaxy Z Flip 6",
+    "title": "Galaxy Z Flip 6 | Battery, Camera & Specs | Samsung UK",
+    "image_url": "https://images.samsung.com/uk/smartphones/galaxy-z-flip6/images/galaxy-z-flip6-share-image.jpg",
+    "source_url": "https://www.samsung.com/uk/smartphones/galaxy-z-flip6/?utmsource=GadgetFlow&utmmedium=GadgetFlow&ut mcampaign=GadgetFlow&utmcontent=GadgetFlow",
+    "pick_reason": "brand:galaxy",
+    "file_path": "out/galaxy-z-flip-6.jpg",
+    "bytes": 14991,
+    "final_dims": [
+      640,
+      336
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Galaxy Z Flip 7",
+    "slug": "galaxy-z-flip-7",
+    "query": "Galaxy Z Flip 7",
+    "title": "[Unboxing] Galaxy Z Flip7: inteligencia artificial y diseño compacto en ...",
+    "image_url": "https://img.global.news.samsung.com/mx/wp-content/uploads/2025/07/Samsung-Mobile-Galaxy-Z-Flip-series-Galaxy-Z-Flip7-Unboxing_main7.jpg",
+    "source_url": "https://news.samsung.com/mx/unboxing-galaxy-z-flip7-inteligencia-artificial-y-diseno-compacto-en-la-palma-de-tu-mano",
+    "pick_reason": "brand:galaxy",
+    "file_path": "out/galaxy-z-flip-7.jpg",
+    "bytes": 24756,
+    "final_dims": [
+      640,
+      360
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "GoPro Hero 10 Black",
+    "slug": "gopro-hero-10-black",
+    "query": "GoPro Hero 10 Black",
+    "title": "HERO10 Black 5.3K Video 23MP Action Camera & Bundle | GoPro",
+    "image_url": "https://static.gopro.com/assets/blta2b8522e5372af40/bltc68204416cc43e6d/6124e3119db95e7ff74b2989/pdp-h10b-standalone-gallery-3.png?width=2048&quality=80&auto=webp&disable=upscale",
+    "source_url": "https://gopro.com/en/us/shop/cameras/hero10-black/CHDHX-101-master.html",
+    "pick_reason": "brand:gopro",
+    "file_path": "out/gopro-hero-10-black.jpg",
+    "bytes": 45087,
+    "final_dims": [
+      640,
+      582
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "GoPro Hero 11 Black",
+    "slug": "gopro-hero-11-black",
+    "query": "GoPro Hero 11 Black",
+    "title": "The Ultimate Guide to HERO11 Black | GoPro",
+    "image_url": "https://static.gopro.com/assets/blta2b8522e5372af40/blt5d0ef06491d17e9e/633b7bf76c4f644bc2fe7bf0/GoPro_News_HERO11-Black_dirtbike.jpg",
+    "source_url": "https://gopro.com/en/gb/news/ultimate-guide-to-hero11-black",
+    "pick_reason": "brand:gopro",
+    "file_path": "out/gopro-hero-11-black.jpg",
+    "bytes": 27577,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "GoPro Hero 12 Black",
+    "slug": "gopro-hero-12-black",
+    "query": "GoPro Hero 12 Black",
+    "title": "GoPro Hero 12 Black Action Camera",
+    "image_url": "https://scr.wfcdn.de/26896/GoPro-Hero-12-BLack-1692443481-0-0.jpg",
+    "source_url": "https://www.pchouse.com.bd/gopro-hero-12-black-action-camera",
+    "pick_reason": "first_result",
+    "file_path": "out/gopro-hero-12-black.jpg",
+    "bytes": 29653,
+    "final_dims": [
+      640,
+      541
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "GoPro Hero 9 Black",
+    "slug": "gopro-hero-9-black",
+    "query": "GoPro Hero 9 Black",
+    "title": "The new GoPro 9 Hero Black... | SnoWest Forums",
+    "image_url": "https://static.gopro.com/assets/blta2b8522e5372af40/blta8018d1b1b6f5151/6116fb14461c9f13b0a15f2b/pdp-h9b-gallery-front-1920-2x.png",
+    "source_url": "https://www.snowest.com/forum/threads/the-new-gopro-9-hero-black.455834/",
+    "pick_reason": "brand:gopro",
+    "file_path": "out/gopro-hero-9-black.jpg",
+    "bytes": 35316,
+    "final_dims": [
+      640,
+      452
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Gucci Rhyton Sneaker",
+    "slug": "gucci-rhyton-sneaker",
+    "query": "Gucci Rhyton chunky sneaker white",
+    "title": "Gucci Rhyton Chunky Sneakers - White Sneakers, Shoes - GUC1879654 | The ...",
+    "image_url": "https://product-images.therealreal.com/GUC1879654_4_enlarged.jpg?width=1500",
+    "source_url": "https://www.therealreal.com/products/men/shoes/sneakers/gucci-rhyton-chunky-sneakers-rm1vx",
+    "pick_reason": "retry_first3",
+    "file_path": "out/gucci-rhyton-sneaker.jpg",
+    "bytes": 19632,
+    "final_dims": [
+      485,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Hermes Oran Sandal (internal learning lane)",
+    "slug": "hermes-oran-sandal-internal-learning-lane",
+    "query": "Hermes Oran sandal",
+    "title": "Oran sandal - Blue | Hermès UK",
+    "image_url": "https://assets.hermes.com/is/image/hermesproduct/oran-sandal--202272Z BU-front-wm-1-0-0-1000-1000_g.jpg",
+    "source_url": "https://www.hermes.com/uk/en/product/oran-sandal-H202272ZvBU410/",
+    "pick_reason": "retry_first3",
+    "file_path": "out/hermes-oran-sandal-internal-learning-lane.jpg",
+    "bytes": 23154,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Hoka × Engineered Garments Bondi B/L",
+    "slug": "hoka-engineered-garments-bondi-b-l",
+    "query": "Hoka × Engineered Garments Bondi B L",
+    "title": "HOKA Hoka X Engineered Garments Bondi L | HOKA® MC",
+    "image_url": "https://dms.deckers.com/hoka/image/upload/f_auto,q_auto,dpr_auto/v1648150375/catalog/images/transparent/1127737-BCLT_3.png?_s=RAABAB0",
+    "source_url": "https://www.hoka.com/en/mc/all-gender/hoka-x-engineered-garments-bondi-l/1127737.html",
+    "pick_reason": "brand:hoka",
+    "file_path": "out/hoka-engineered-garments-bondi-b-l.jpg",
+    "bytes": 34937,
+    "final_dims": [
+      640,
+      519
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Hoka × Satisfy Mafate Speed 4 (premium collab)",
+    "slug": "hoka-satisfy-mafate-speed-4-premium-collab",
+    "query": "Hoka × Satisfy Mafate Speed 4",
+    "title": "HOKA Mafate Speed 4 for Men | HOKA® UK",
+    "image_url": "https://dms.deckers.com/hoka/image/upload/f_auto,q_auto,dpr_auto/b_rgb:f7f7f9/w_1110/v1674299918/catalog/images/transparent/1129930-SBDCT_6.png?_s=RAABAB0",
+    "source_url": "https://www.hoka.com/en/gb/men-trail/mafate-speed-4/196565181589.html",
+    "pick_reason": "brand:hoka",
+    "file_path": "out/hoka-satisfy-mafate-speed-4-premium-collab.jpg",
+    "bytes": 35911,
+    "final_dims": [
+      640,
+      518
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Hoka × Xlim Mafate Speed 2 (premium collab)",
+    "slug": "hoka-xlim-mafate-speed-2-premium-collab",
+    "query": "Hoka × Xlim Mafate Speed 2",
+    "title": "HOKA Mafate Speed 2 | HOKA® IE",
+    "image_url": "https://dms.deckers.com/hoka/image/upload/t_pdp-slider-large-wp/v1739984111/1126851-BCKLC_1.png?_s=RAABAB0",
+    "source_url": "https://www.hoka.com/en/ie/outlet/mafate-speed-2/197634698410.html",
+    "pick_reason": "brand:hoka",
+    "file_path": "out/hoka-xlim-mafate-speed-2-premium-collab.jpg",
+    "bytes": 44692,
+    "final_dims": [
+      640,
+      519
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Hoka Anacapa Breeze Low",
+    "slug": "hoka-anacapa-breeze-low",
+    "query": "Hoka Anacapa Breeze Low",
+    "title": "Anacapa Breeze Low Commuter Shoe | HOKA®",
+    "image_url": "https://dms.deckers.com/hoka/image/upload/f_auto,q_auto,dpr_auto/b_rgb:f7f7f9/w_1110/v1683847358/1127920-DOTN_1.png?_s=RAABAB0",
+    "source_url": "https://www.hoka.com/en/us/men-hiking/anacapa-breeze-low/1127920.html",
+    "pick_reason": "brand:hoka",
+    "file_path": "out/hoka-anacapa-breeze-low.jpg",
+    "bytes": 42392,
+    "final_dims": [
+      640,
+      518
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Hoka Hopara / Hopara 2 (워터 슬립온)",
+    "slug": "hoka-hopara-hopara-2",
+    "query": "Hoka Hopara Hopara 2",
+    "title": "HOKA Hopara 2 for Women | HOKA® MT",
+    "image_url": "https://dms.deckers.com/hoka/image/upload/f_auto,q_auto,dpr_auto/b_rgb:f7f7f9/w_1110/v1706726325/1147670-CMCD_1.png?_s=RAABAB0",
+    "source_url": "https://www.hoka.com/en/mt/women-mountain/hopara-2/1147670.html",
+    "pick_reason": "brand:hoka",
+    "file_path": "out/hoka-hopara-hopara-2.jpg",
+    "bytes": 37327,
+    "final_dims": [
+      640,
+      518
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Hoka Kaha 2 GTX (등산화)",
+    "slug": "hoka-kaha-2-gtx",
+    "query": "Hoka Kaha 2 GTX",
+    "title": "Women's Kaha 2 GTX Waterproof Leather Hiker | HOKA®",
+    "image_url": "https://dms.deckers.com/hoka/image/upload/f_auto,q_auto,dpr_auto/b_rgb:f7f7f9/w_1110/v1683847433/1123156-MCSK_1.png?_s=RAABAB0",
+    "source_url": "https://www.hoka.com/en/us/women-hiking/kaha-2-gtx/1123156.html",
+    "pick_reason": "brand:hoka",
+    "file_path": "out/hoka-kaha-2-gtx.jpg",
+    "bytes": 45340,
+    "final_dims": [
+      640,
+      518
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Hoka Mach (5 / 6)",
+    "slug": "hoka-mach-5-6",
+    "query": "Hoka Mach",
+    "title": "HOKA Mach 6 Running Shoes | HOKA®",
+    "image_url": "https://dms.deckers.com/hoka/image/upload/f_auto,q_40,dpr_2/w_414/v1718141189/1147790-ECC_1.png?_s=RAABAB0",
+    "source_url": "https://www.hoka.com/en/mc/mach-6/",
+    "pick_reason": "brand:hoka",
+    "file_path": "out/hoka-mach-5-6.jpg",
+    "bytes": 35690,
+    "final_dims": [
+      640,
+      519
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Hoka Mafate Speed 4 (트레일 러닝화)",
+    "slug": "hoka-mafate-speed-4",
+    "query": "Hoka Mafate Speed 4",
+    "title": "Mafate Speed 4 Trail Running Shoe | HOKA®",
+    "image_url": "https://dms.deckers.com/hoka/image/upload/f_auto,q_auto,dpr_auto/b_rgb:f7f7f9/w_1110/v1723179495/1129930-CTRM_1.png?_s=RAABAB0",
+    "source_url": "https://www.hoka.com/en/us/mens-trail/mafate-speed-4/1129930.html",
+    "pick_reason": "brand:hoka",
+    "file_path": "out/hoka-mafate-speed-4.jpg",
+    "bytes": 45215,
+    "final_dims": [
+      640,
+      518
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "iPad 10th gen",
+    "slug": "ipad-10th-gen",
+    "query": "iPad 10th gen",
+    "title": "iPad (10th generation) - Tech Specs - Apple Support",
+    "image_url": "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111840_sp884-ipad-10gen-960.png",
+    "source_url": "https://support.apple.com/en-euro/111840",
+    "pick_reason": "brand:ipad",
+    "file_path": "out/ipad-10th-gen.jpg",
+    "bytes": 33481,
+    "final_dims": [
+      640,
+      527
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "iPad 8th gen",
+    "slug": "ipad-8th-gen",
+    "query": "iPad 8th gen",
+    "title": "iPad (8th generation) - Technical specifications - Apple Support",
+    "image_url": "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111906_sp822-ipad-8gen.png",
+    "source_url": "https://support.apple.com/en-us/118451",
+    "pick_reason": "brand:ipad",
+    "file_path": "out/ipad-8th-gen.jpg",
+    "bytes": 17675,
+    "final_dims": [
+      640,
+      215
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "iPad 9th gen",
+    "slug": "ipad-9th-gen",
+    "query": "iPad 9th gen",
+    "title": "Apple iPad (9th Generation): with Bionic chip, 10.2-inch Retina Display ...",
+    "image_url": "https://m.media-amazon.com/images/I/61PnHlc0HCL.jpg",
+    "source_url": "https://www.amazon.eg/-/en/Apple-iPad-9th-Generation-10-2-inch/dp/B09G9CJM1Z",
+    "pick_reason": "first_result",
+    "file_path": "out/ipad-9th-gen.jpg",
+    "bytes": 19866,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "iPad Air",
+    "slug": "ipad-air",
+    "query": "iPad Air",
+    "title": "iPad Air 11 (M3) - 기술 사양 - Apple 지원 (KR)",
+    "image_url": "https://cdsassets.apple.com/live/7WUAS350/images/tech-specs/122241-122242-ipad-air-11inch-13inch-m3.png",
+    "source_url": "https://support.apple.com/ko-kr/122241",
+    "pick_reason": "brand:ipad",
+    "file_path": "out/ipad-air.jpg",
+    "bytes": 52228,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "iPad Air 4 (A14) 64GB Wi-Fi",
+    "slug": "ipad-air-4-a14-64gb-wi-fi",
+    "query": "iPad Air 4 64GB Wi-Fi",
+    "title": "iPad Air 4 Wifi 64GB (2020) Mới 100%",
+    "image_url": "https://product.hstatic.net/200000525189/product/ipad_air_4_d3ad11a41f854a1ebbf345d9b51f6f57_1024x1024.png",
+    "source_url": "https://www.tinhtemobile88.com/products/ipad-air-4-wifi-64gb-2020-moi-100",
+    "pick_reason": "first_result",
+    "file_path": "out/ipad-air-4-a14-64gb-wi-fi.jpg",
+    "bytes": 37688,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "iPad mini",
+    "slug": "ipad-mini",
+    "query": "iPad mini",
+    "title": "Apple introduces powerful new iPad mini with A17 Pro - Apple (MY)",
+    "image_url": "https://www.apple.com/newsroom/images/2024/10/apple-introduces-powerful-new-ipad-mini-built-for-apple-intelligence/article/Apple-iPad-mini-hero-241015_big.jpg.large_2x.jpg",
+    "source_url": "https://www.apple.com/my/newsroom/2024/10/apple-introduces-powerful-new-ipad-mini-with-a17-pro-and-support-for-apple-pencil-pro/",
+    "pick_reason": "brand:ipad",
+    "file_path": "out/ipad-mini.jpg",
+    "bytes": 20228,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "iPad Pro",
+    "slug": "ipad-pro",
+    "query": "iPad Pro",
+    "title": "Apple unveils new iPad Pro with M1 chip and stunning Liquid Retina XDR ...",
+    "image_url": "https://www.apple.com/newsroom/images/product/ipad/standard/apple_ipad-pro-spring21_hero_04202021_big.jpg.large.jpg",
+    "source_url": "https://www.apple.com/newsroom/2021/04/apple-unveils-new-ipad-pro-with-m1-chip-and-stunning-liquid-retina-xdr-display/",
+    "pick_reason": "brand:ipad",
+    "file_path": "out/ipad-pro.jpg",
+    "bytes": 37132,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "iPad Pro 11\" M4 256GB Wi-Fi",
+    "slug": "ipad-pro-11-m4-256gb-wi-fi",
+    "query": "iPad Pro 11\" M4 256GB Wi-Fi",
+    "title": "Refurbished 11-inch iPad Pro Wi-Fi 256GB - Silver (3rd Generation ...",
+    "image_url": "https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/refurb-ipad-pro-11-wifi-silver-2021?wid=1150&hei=1150&fmt=jpeg&qlt=95&.v=1674663704665",
+    "source_url": "https://www.apple.com/au/shop/product/FHQV3X/A/refurbished-11-inch-ipad-pro-wi-fi-256gb-silver-3rd-generation",
+    "pick_reason": "brand:ipad",
+    "file_path": "out/ipad-pro-11-m4-256gb-wi-fi.jpg",
+    "bytes": 64027,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "iPhone 12 Pro",
+    "slug": "iphone-12-pro",
+    "query": "iPhone 12 Pro",
+    "title": "iPhone 12 Pro - 제품사양 - Apple 지원 (KR)",
+    "image_url": "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111875_iphone12pro-ios14.png",
+    "source_url": "https://support.apple.com/ko-kr/111875",
+    "pick_reason": "brand:iphone",
+    "file_path": "out/iphone-12-pro.jpg",
+    "bytes": 11793,
+    "final_dims": [
+      419,
+      175
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "iPhone 16 Pro",
+    "slug": "iphone-16-pro",
+    "query": "iPhone 16 Pro",
+    "title": "Apple debuts iPhone 16 Pro and iPhone 16 Pro Max - Apple (HR)",
+    "image_url": "https://www.apple.com/newsroom/images/2024/09/apple-debuts-iphone-16-pro-and-iphone-16-pro-max/article/Apple-iPhone-16-Pro-hero-geo-240909_inline.jpg.large_2x.jpg",
+    "source_url": "https://www.apple.com/hr/newsroom/2024/09/apple-debuts-iphone-16-pro-iphone-16-pro-max/",
+    "pick_reason": "brand:iphone",
+    "file_path": "out/iphone-16-pro.jpg",
+    "bytes": 25644,
+    "final_dims": [
+      457,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "iPhone 16 Pro 256GB (자급제)",
+    "slug": "iphone-16-pro-256gb",
+    "query": "iPhone 16 Pro 256GB",
+    "title": "Buy iPhone 16 Pro 256GB Natural Titanium - Apple (UK)",
+    "image_url": "https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/iphone-16-pro-finish-select-202409-6-3inch-naturaltitanium?wid=2560&hei=1440&fmt=jpeg&qlt=95&.v=1723816932287",
+    "source_url": "https://www.apple.com/uk/shop/buy-iphone/iphone-16-pro/6.3-inch-display-256gb-natural-titanium",
+    "pick_reason": "brand:iphone",
+    "file_path": "out/iphone-16-pro-256gb.jpg",
+    "bytes": 8092,
+    "final_dims": [
+      640,
+      360
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "iPhone 16 Pro Max",
+    "slug": "iphone-16-pro-max",
+    "query": "iPhone 16 Pro Max",
+    "title": "iPhone 16 Pro Max - Tech Specs - Apple Support (AE)",
+    "image_url": "https://cdsassets.apple.com/live/7WUAS350/images/tech-specs/121032-iphone-16-pro-max.png",
+    "source_url": "https://support.apple.com/en-ae/121032",
+    "pick_reason": "brand:iphone",
+    "file_path": "out/iphone-16-pro-max.jpg",
+    "bytes": 42120,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "iPhone 16e",
+    "slug": "iphone-16e",
+    "query": "iPhone 16e",
+    "title": "iPhone 16e - Spesifikasi Teknis - Apple Support (ID)",
+    "image_url": "https://cdsassets.apple.com/live/7WUAS350/images/tech-specs/122208-iphone-16e.png",
+    "source_url": "https://support.apple.com/id-id/122208",
+    "pick_reason": "brand:iphone",
+    "file_path": "out/iphone-16e.jpg",
+    "bytes": 36223,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "iPhone SE (3rd gen, 2022)",
+    "slug": "iphone-se-3rd-gen-2022",
+    "query": "iPhone SE",
+    "title": "iPhone SE 用",
+    "image_url": "https://www.apple.com/newsroom/images/product/iphone/standard/Apple-iPhoneSE-color-lineup-4up-220308_big.jpg.slideshow-xlarge_2x.jpg",
+    "source_url": "https://www.intandemly.com/1262858296",
+    "pick_reason": "brand:iphone",
+    "file_path": "out/iphone-se-3rd-gen-2022.jpg",
+    "bytes": 20027,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Junya Watanabe × Carhartt (워크자켓/카고팬츠 콜라보)",
+    "slug": "junya-watanabe-carhartt",
+    "query": "Junya Watanabe × Carhartt",
+    "title": "Carhartt × Junya Watanabe Junya Watanabe x Carhartt Jacket (Rare 1 of ...",
+    "image_url": "https://media-assets.grailed.com/prd/listing/5028800/b511db69cf8b4770be229a5f89291ba2?auto=format",
+    "source_url": "https://www.grailed.com/listings/5028800-carhartt-x-junya-watanabe-junya-watanabe-x-carhartt-jacket-rare-1-of-100",
+    "pick_reason": "first_result",
+    "file_path": "out/junya-watanabe-carhartt.jpg",
+    "bytes": 26064,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Lacoste Pique Polo Shirt (시그니처)",
+    "slug": "lacoste-pique-polo-shirt",
+    "query": "Lacoste pique polo shirt classic",
+    "title": "Lacoste Classic Pique Polo Shirt L1212 Cobalt JQ0 | Function18",
+    "image_url": "https://cdn.shopify.com/s/files/1/0264/8060/7341/products/Lacoste-Classic-Pique-Polo-Shirt-L1212-JQ0-3_2048x2048.jpg?v=1672935221",
+    "source_url": "https://www.function18.com/products/copy-of-lacoste-classic-pique-polo-shirt-l1212-cobalt-jq0-function18",
+    "pick_reason": "retry_first3",
+    "file_path": "out/lacoste-pique-polo-shirt.jpg",
+    "bytes": 69885,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Lacoste Sneakers (운동화)",
+    "slug": "lacoste-sneakers",
+    "query": "Lacoste mens sneakers",
+    "title": "Men's Lacoste Court-Master Pro Leather Sneakers, White & Red | LACOSTE KSA",
+    "image_url": "https://www.lacoste.sa/dw/image/v2/BDCL_PRD/on/demandware.static/-/Sites-lacoste-master-catalog/default/dw76e02858/images/44SMA0037_286_06.jpg?sw=1100&sh=1100",
+    "source_url": "https://www.lacoste.sa/en/lacoste/men/shoes/sneakers/mens-lacoste-court-master-pro-leather-sneakers/018825994389.html",
+    "pick_reason": "retry_first3",
+    "file_path": "out/lacoste-sneakers.jpg",
+    "bytes": 65024,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Louis Vuitton LV Trainer",
+    "slug": "louis-vuitton-lv-trainer",
+    "query": "Louis Vuitton LV Trainer",
+    "title": "LV Trainer Black Sneaker for Men | LOUIS VUITTON",
+    "image_url": "https://us.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-lv-trainer-sneaker--BM9U5PMI20_PM1_Side view.png?wid=1090&hei=1090",
+    "source_url": "https://us.louisvuitton.com/eng-us/products/lv-trainer-sneaker-nvprod3150035v/1A9JGT",
+    "pick_reason": "brand:louis vuitton",
+    "status": "error",
+    "error": "InvalidURL(\"URL can't contain control characters. '/images/is/image/lv/1/PP_VP_L/louis-vuitton-lv-trainer-sneaker--BM9U5PMI20_PM1_Side view.png?wid=1090&hei=1090' (found at least ' ')\")"
+  },
+  {
+    "sku_name": "Louis Vuitton Run Away Sneaker",
+    "slug": "louis-vuitton-run-away-sneaker",
+    "query": "Louis Vuitton Run Away mens sneaker",
+    "title": "Louis Vuitton Run Away Black Silver Iridecscent Sneaker",
+    "image_url": "https://cdn.shopify.com/s/files/1/1626/5391/products/Louis-Vuitton-Run-Away-Black-Silver-Iridecscent-Sneaker-Back.jpg?v=1657542775",
+    "source_url": "https://www.crepslocker.com/products/louis-vuitton-run-away-black-silver-iridecscent-sneaker",
+    "pick_reason": "retry_first3",
+    "file_path": "out/louis-vuitton-run-away-sneaker.jpg",
+    "bytes": 32551,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "MacBook Air",
+    "slug": "macbook-air",
+    "query": "MacBook Air",
+    "title": "Apple introduces the new MacBook Air with the M4 chip and a sky blue ...",
+    "image_url": "https://www.apple.com/newsroom/images/2025/03/apple-introduces-the-new-macbook-air-with-the-m4-chip-and-a-sky-blue-color/article/Apple-MacBook-Air-lineup-250305_big.jpg.large_2x.jpg",
+    "source_url": "https://www.apple.com/ca/newsroom/2025/03/apple-introduces-the-new-macbook-air-with-the-m4-chip-and-a-sky-blue-color/",
+    "pick_reason": "brand:macbook",
+    "file_path": "out/macbook-air.jpg",
+    "bytes": 49666,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "MacBook Air M2 15\" 256GB",
+    "slug": "macbook-air-m2-15-256gb",
+    "query": "MacBook Air M2 15\" 256GB",
+    "title": "MacBook Air de 13\" y 15\" con chip M2 - Apple (CO)",
+    "image_url": "https://www.apple.com/v/macbook-air-13-and-15-m2/a/images/overview/design/design-hero_endframe__olurqzgtbh6e_large.jpg",
+    "source_url": "https://www.apple.com/co/macbook-air-13-and-15-m2/",
+    "pick_reason": "brand:macbook",
+    "file_path": "out/macbook-air-m2-15-256gb.jpg",
+    "bytes": 43928,
+    "final_dims": [
+      640,
+      329
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "MacBook Pro 16\" 2019 (Intel)",
+    "slug": "macbook-pro-16-2019-intel",
+    "query": "MacBook Pro 16\" 2019",
+    "title": "MacBook Pro (16-inch, 2019) - Technical Specifications",
+    "image_url": "https://support.apple.com/library/APPLE/APPLECARE_ALLGEOS/SP809/sp809-mbp16touch-silver-2019.jpeg",
+    "source_url": "https://support.apple.com/kb/SP809?viewlocale=en_US&locale=sk_SK",
+    "pick_reason": "brand:macbook",
+    "file_path": "out/macbook-pro-16-2019-intel.jpg",
+    "bytes": 54709,
+    "final_dims": [
+      640,
+      594
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Margiela Tabi Boot (앵클/롱)",
+    "slug": "margiela-tabi-boot",
+    "query": "Margiela Tabi Boot",
+    "title": "Ankle Boots Tabi 60 aus Leder in Schwarz - Maison Margiela | Mytheresa",
+    "image_url": "https://img.mytheresa.com/1094/1238/100/jpeg/catalog/product/8c/P01011356.jpg",
+    "source_url": "https://www.mytheresa.com/de/de/damen/maison-margiela-ankle-boots-tabi-60-aus-leder-schwarz-p01011356",
+    "pick_reason": "first_result",
+    "file_path": "out/margiela-tabi-boot.jpg",
+    "bytes": 40094,
+    "final_dims": [
+      566,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Margiela Tabi Sneaker (Lowtop / Hightop)",
+    "slug": "margiela-tabi-sneaker-lowtop-hightop",
+    "query": "Margiela Tabi Sneaker",
+    "title": "Tabi Sneakers Black with White Sole | Maison Margiela",
+    "image_url": "https://www.maisonmargiela.com/on/demandware.static/-/Sites-margiela-master-catalog/default/dw06dff41e/images/large/S37WS0578_P4291_H0958_F.jpg",
+    "source_url": "https://www.maisonmargiela.com/en-fi/tabi-sneakers-S37WS0578P4291H0958.html",
+    "pick_reason": "brand:margiela",
+    "file_path": "out/margiela-tabi-sneaker-lowtop-hightop.jpg",
+    "bytes": 22101,
+    "final_dims": [
+      426,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Marshall Emberton II",
+    "slug": "marshall-emberton-ii",
+    "status": "skipped_exists",
+    "file_path": "out/marshall-emberton-ii.jpg",
+    "bytes": 445332
+  },
+  {
+    "sku_name": "Matin Kim Apparel (티/후드/맨투맨/니트/코트/다운/팬츠)",
+    "slug": "matin-kim-apparel",
+    "query": "Matin Kim Apparel",
+    "title": "MATIN HERITAGE TOP IN BLACK - MATINKIM",
+    "image_url": "https://matinkim.com/web/product/small/202401/e5c741f004ba1d4a50b511dc1d22caf2.jpg",
+    "source_url": "https://matinkim.com/product/detail.html?product_no=5088&cate_no=27",
+    "pick_reason": "brand:matin kim",
+    "file_path": "out/matin-kim-apparel.jpg",
+    "bytes": 23638,
+    "final_dims": [
+      426,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Mizuno Alpha (1 / 2 / 3 / 엘리트)",
+    "slug": "mizuno-alpha-1-2-3",
+    "query": "Mizuno Alpha",
+    "title": "MIZUNO α（ミズノアルファ）｜サッカー/フットボール｜ミズノ公式オンライン",
+    "image_url": "https://jpn.mizuno.com/sites/default/files/2022-10/cs_fb_mizuno_alpha_221103_img_17_P1GA2364_0.png",
+    "source_url": "https://jpn.mizuno.com/football/mizuno_alpha",
+    "pick_reason": "brand:mizuno",
+    "file_path": "out/mizuno-alpha-1-2-3.jpg",
+    "bytes": 31597,
+    "final_dims": [
+      640,
+      346
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Mizuno Morelia Neo (III / IV / 베타 / 재팬)",
+    "slug": "mizuno-morelia-neo-iii-iv",
+    "query": "Mizuno Morelia Neo",
+    "title": "MORELIA NEO IV BETA ELITE - White | Football Boots | Mizuno UK",
+    "image_url": "https://emea.mizuno.com/dw/image/v2/BDBS_PRD/on/demandware.static/-/Sites-masterCatalog_Mizuno/default/dw2b5ec08c/AW25/Footwear/SH_P1GA254225_00.png?sw=900&sh=900",
+    "source_url": "https://emea.mizuno.com/eu/en-gb/morelia-neo-iv-beta-elite/P1GA254225.html",
+    "pick_reason": "brand:mizuno",
+    "file_path": "out/mizuno-morelia-neo-iii-iv.jpg",
+    "bytes": 30218,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Mizuno Morelia Sala (풋살화)",
+    "slug": "mizuno-morelia-sala",
+    "query": "Mizuno Morelia Sala",
+    "title": "MORELIA SALA ELITE IN - White | Futsal shoes | Mizuno Europe",
+    "image_url": "https://emea.mizuno.com/dw/image/v2/BDBS_PRD/on/demandware.static/-/Sites-masterCatalog_Mizuno/default/dw14f7628d/AW24/Football/SH_Q1GA241225_00.png?sw=900&sh=900",
+    "source_url": "https://emea.mizuno.com/eu/en/morelia-sala-elite-in/Q1GA241225.html",
+    "pick_reason": "brand:mizuno",
+    "file_path": "out/mizuno-morelia-sala.jpg",
+    "bytes": 28917,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Mizuno Wave Prophecy Beta",
+    "slug": "mizuno-wave-prophecy-beta",
+    "query": "Mizuno Wave Prophecy Beta",
+    "title": "WAVE PROPHECY BETA 2 - Harmaa | Casual premium | Mizuno Europe",
+    "image_url": "https://emea.mizuno.com/dw/image/v2/BDBS_PRD/on/demandware.static/-/Sites-masterCatalog_Mizuno/default/dwe012a181/SS24/Sportstyle/SH_D1GA235009_00.png?sw=900&sh=900",
+    "source_url": "https://emea.mizuno.com/eu/fi-fi/wave-prophecy-beta-2/D1GA235009.html",
+    "pick_reason": "brand:mizuno",
+    "file_path": "out/mizuno-wave-prophecy-beta.jpg",
+    "bytes": 37033,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Mizuno Wave Prophecy MOC",
+    "slug": "mizuno-wave-prophecy-moc",
+    "query": "Mizuno Wave Prophecy MOC",
+    "title": "WAVE PROPHECY MOC|D1GD243601|MIZUNO1906| ライフスタイル|ミズノ公式オンライン",
+    "image_url": "https://jpn.mizuno.com/static/mallDefault/images/goods/zoom1000/SH_D1GD24360101_130_XL.jpg",
+    "source_url": "https://jpn.mizuno.com/ec/disp/attgrp/D1GD243601/?slide=modal",
+    "pick_reason": "brand:mizuno",
+    "file_path": "out/mizuno-wave-prophecy-moc.jpg",
+    "bytes": 36405,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Mizuno x Graphpaper Wave Prophecy",
+    "slug": "mizuno-x-graphpaper-wave-prophecy",
+    "query": "Mizuno x Graphpaper Wave Prophecy",
+    "title": "tenis-mizuno-wave-prophecy-beta-2-x-graphpaper-102170170-3-050",
+    "image_url": "https://mizunobr.vtexassets.com/arquivos/ids/237093-800-800?v=638344400078470000&width=800&height=800&aspect=true",
+    "source_url": "https://www.mizuno.com.br/tenis-mizuno-wave-prophecy-beta-2-x-graphpaper-102170170-3-050/p",
+    "pick_reason": "brand:mizuno",
+    "file_path": "out/mizuno-x-graphpaper-wave-prophecy.jpg",
+    "bytes": 45777,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "MLB Cap (broad)",
+    "slug": "mlb-cap-broad",
+    "query": "MLB Cap",
+    "title": "High School Baseball Team Hats at Jessica Zelman blog",
+    "image_url": "https://cdn11.bigcommerce.com/s-v99b1mh/images/stencil/1280x1280/products/3132/9195/mlb350h_p2305_m_p2305_z360__38437.1698688079.jpg?c=2",
+    "source_url": "https://storage.googleapis.com/dadzfzeymqbile/high-school-baseball-team-hats.html",
+    "pick_reason": "first_result",
+    "file_path": "out/mlb-cap-broad.jpg",
+    "bytes": 41426,
+    "final_dims": [
+      360,
+      300
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Moncler Maya (시그니처 라이트 다운 자켓)",
+    "slug": "moncler-maya",
+    "query": "Moncler Maya",
+    "title": "Black Moncler Maya Hooded Short Down Jacket - Short Down Jackets for ...",
+    "image_url": "https://moncler-cdn.thron.com/api/v1/content-delivery/shares/dpx6uv/contents/K20911A5360068950U99_5/image/moncler-maya-hooded-short-down-jacket-men-black-moncler-5.jpg?q_auto=high",
+    "source_url": "https://www.moncler.com/en-us/men/outerwear/short-down-jackets/moncler-maya-hooded-short-down-jacket-black-K20911A5360068950U99.html",
+    "pick_reason": "brand:moncler",
+    "file_path": "out/moncler-maya.jpg",
+    "bytes": 30518,
+    "final_dims": [
+      426,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Moncler Tricot/Cardigan (니트 sub-line)",
+    "slug": "moncler-tricot-cardigan-sub-line",
+    "query": "Moncler Tricot Cardigan",
+    "title": "Moncler Maglione Tricot Cardigan in Black | FWRD",
+    "image_url": "https://is4.fwrdassets.com/images/p/fw/z/MONC-WO140_V4.jpg",
+    "source_url": "https://www.fwrd.com/product-product_name/MONC-WO140/",
+    "pick_reason": "first_result",
+    "file_path": "out/moncler-tricot-cardigan-sub-line.jpg",
+    "bytes": 32022,
+    "final_dims": [
+      423,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "NB × Salehe Bembury (2002R/992 한정)",
+    "slug": "nb-salehe-bembury-2002r-992",
+    "query": "NB × Salehe Bembury",
+    "title": "Salehe Bembury New Balance 1000 Fog Be the Cloud Release Date",
+    "image_url": "https://wwd.com/wp-content/uploads/2025/08/salehe-bembury-new-balance-1000-fog-be-cloud-001.jpg?resize=300",
+    "source_url": "https://wwd.com/footwear-news/sneaker-news/salehe-bembury-new-balance-1000-fog-be-cloud-release-date-1238037725/",
+    "pick_reason": "first_result",
+    "file_path": "out/nb-salehe-bembury-2002r-992.jpg",
+    "bytes": 44121,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "NB × This Is Never That (디스이즈네버댓)",
+    "slug": "nb-this-is-never-that",
+    "query": "NB × This Is Never That",
+    "title": "thisisneverthat x New Balance 1000 M1000TI",
+    "image_url": "https://sneakerbardetroit.com/wp-content/uploads/2024/10/thisisneverthat-New-Balance-1000-2.jpg",
+    "source_url": "https://sneakerbardetroit.com/thisisneverthat-new-balance-1000/",
+    "pick_reason": "first_result",
+    "file_path": "out/nb-this-is-never-that.jpg",
+    "bytes": 78759,
+    "final_dims": [
+      640,
+      448
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "NB x ALD Collab (1300/990/993/550/860v2/475)",
+    "slug": "nb-x-ald-collab-1300-990-993-550-860v2-475",
+    "query": "NB x ALD Collab",
+    "title": "Todas las Colaboraciones de Aimé Leon Dore X New Balance 🔞 Backseries",
+    "image_url": "https://www.backseries.com/wp-content/uploads/2023/11/fgfhfghffh.png",
+    "source_url": "https://www.backseries.com/colaboraciones-de-aime-leon-dore-x-new-balance",
+    "pick_reason": "first_result",
+    "file_path": "out/nb-x-ald-collab-1300-990-993-550-860v2-475.jpg",
+    "bytes": 29773,
+    "final_dims": [
+      640,
+      372
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "NB x Auralee Collab (990v4/1906R/475/XC-72/WRPD)",
+    "slug": "nb-x-auralee-collab-990v4-1906r-475-xc-72-wrpd",
+    "query": "New Balance Auralee 990v4 collab",
+    "title": "PROJECTS | New Balance - AURALEE Official Website",
+    "image_url": "https://auralee.jp/assets/front/img/projects/17/1.jpg",
+    "source_url": "https://auralee.jp/projects/17",
+    "pick_reason": "retry_first3",
+    "file_path": "out/nb-x-auralee-collab-990v4-1906r-475-xc-72-wrpd.jpg",
+    "bytes": 50034,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "NB x JJJJound Collab (990v3/v4/991/2002R Gore-Tex)",
+    "slug": "nb-x-jjjjound-collab-990v3-v4-991-2002r-gore-tex",
+    "query": "NB x JJJJound Collab",
+    "title": "JJJJound & New Balance Finally Drop 991 Sneaker Collab",
+    "image_url": "https://www.highsnobiety.com/static-assets/dato/1724854137-jjjjound-new-balance-993.jpg",
+    "source_url": "https://www.highsnobiety.com/p/jjjjound-new-balance-991/",
+    "pick_reason": "first_result",
+    "file_path": "out/nb-x-jjjjound-collab-990v3-v4-991-2002r-gore-tex.jpg",
+    "bytes": 57966,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "NB x Kith Collab (990v4/991v2/992/993/1300/2010)",
+    "slug": "nb-x-kith-collab-990v4-991v2-992-993-1300-2010",
+    "query": "NB x Kith Collab",
+    "title": "Kith x New Balance 992 Spring 2025",
+    "image_url": "https://sneakerbardetroit.com/wp-content/uploads/2025/02/Kith-New-Balance-992-Spring-2025-1.jpg",
+    "source_url": "https://sneakerbardetroit.com/kith-new-balance-992-spring-2025/",
+    "pick_reason": "first_result",
+    "file_path": "out/nb-x-kith-collab-990v4-991v2-992-993-1300-2010.jpg",
+    "bytes": 69427,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "NB x Stone Island Collab (991v2/574)",
+    "slug": "nb-x-stone-island-collab-991v2-574",
+    "query": "New Balance Stone Island 991v2 collab",
+    "title": "Stone Island x New Balance 991v2 Ghost Pack | SneakerFiles",
+    "image_url": "https://www.sneakerfiles.com/wp-content/uploads/2024/09/stone-island-new-balance-991v2-ghost-pack-2024.jpg",
+    "source_url": "https://www.sneakerfiles.com/stone-island-new-balance-991v2-ghost-pack/",
+    "pick_reason": "retry_first3",
+    "file_path": "out/nb-x-stone-island-collab-991v2-574.jpg",
+    "bytes": 60007,
+    "final_dims": [
+      640,
+      453
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "New Balance 2002R (Protection Pack 등)",
+    "slug": "new-balance-2002r-protection-pack",
+    "query": "New Balance 2002R",
+    "title": "New Balance 2002R Protection Pack Grey Men's - M2002RDM - US",
+    "image_url": "https://images.stockx.com/images/New-Balance-2002R-Protection-Pack-Grey-Product.jpg?fit=fill&bg=FFFFFF&w=700&h=500&fm=webp&auto=compress&q=90&dpr=2&trim=color&updated_at=1738193358",
+    "source_url": "https://stockx.com/new-balance-2002r-protection-pack-grey",
+    "pick_reason": "first_result",
+    "file_path": "out/new-balance-2002r-protection-pack.jpg",
+    "bytes": 50528,
+    "final_dims": [
+      640,
+      457
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "New Balance 990v4 (Made in USA)",
+    "slug": "new-balance-990v4-made-in-usa",
+    "query": "New Balance 990v4",
+    "title": "990v4 New Balance Mens Sale | bellvalefarms.com",
+    "image_url": "https://www.mrporter.com/variants/images/1647597287455794/ou/w2000_q60.jpg",
+    "source_url": "http://bellvalefarms.com/bellvale-merch/?b=bel261c10385-990v4-new-balance-mens",
+    "pick_reason": "first_result",
+    "file_path": "out/new-balance-990v4-made-in-usa.jpg",
+    "bytes": 43423,
+    "final_dims": [
+      479,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "New Balance 992",
+    "slug": "new-balance-992",
+    "query": "New Balance 992",
+    "title": "New Balance 992 MiUSA Grey Silver Metallic Men's - U992GY - US",
+    "image_url": "https://images.stockx.com/images/New-Balance-992-MiUSA-Grey-Silver-Metallic.jpg?fit=fill&bg=FFFFFF&w=576&h=384&q=41&dpr=3&trim=color&updated_at=1741380058",
+    "source_url": "https://stockx.com/new-balance-992-miusa-grey-silver-metallic",
+    "pick_reason": "first_result",
+    "file_path": "out/new-balance-992.jpg",
+    "bytes": 42841,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike × Fear of God 의류 콜라보 (Warm Up Jacket / Hoodie / Pants)",
+    "slug": "nike-fear-of-god-warm-up-jacket-hoodie-pants",
+    "query": "Nike × Fear of God 의류 콜라보",
+    "title": "Nike x Fear of God 'Apparel Collection' Release Date. Nike SNKRS",
+    "image_url": "https://static.nike.com/a/images/w_1280,q_auto,f_auto/6bf7ec4a-18a3-4470-8e89-76f789f66b6e/nike-x-fear-of-god-apparel-collection-release-date.jpg",
+    "source_url": "https://www.nike.com/ro/launch/t/fear-of-god-apparel-collection-ho201",
+    "pick_reason": "brand:nike",
+    "file_path": "out/nike-fear-of-god-warm-up-jacket-hoodie-pants.jpg",
+    "bytes": 20741,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike × Sacai (Blazer / Vaporwaffle / LDV / Cortez)",
+    "slug": "nike-sacai-blazer-vaporwaffle-ldv-cortez",
+    "query": "Nike × Sacai",
+    "title": "NIKE × SACAI Nike x sacai VaporWaffle 'Sesame and Blue Void' Release ...",
+    "image_url": "https://static.nike.com/a/images/w_1280,q_auto,f_auto/c7d7f7fe-1e9e-4eac-b592-b66e1abc87da/nike-x-sacai-vaporwaffle-sesame-and-blue-void-release-date.jpg",
+    "source_url": "https://hannasbread.main.jp/k100q3rq",
+    "pick_reason": "brand:nike",
+    "file_path": "out/nike-sacai-blazer-vaporwaffle-ldv-cortez.jpg",
+    "bytes": 33235,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike × Stüssy Apparel (collab)",
+    "slug": "nike-st-ssy-apparel-collab",
+    "query": "Nike Stussy hoodie collab",
+    "title": "Nike Stussy x Nike Collab Hoodie | Grailed",
+    "image_url": "https://media-assets.grailed.com/prd/listing/5830170/9da78d5e513241b89e5e8828d4222259?auto=format",
+    "source_url": "https://www.grailed.com/listings/5830170-nike-x-stussy-stussy-x-nike-collab-hoodie",
+    "pick_reason": "retry_first3",
+    "file_path": "out/nike-st-ssy-apparel-collab.jpg",
+    "bytes": 40337,
+    "final_dims": [
+      479,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike × Stüssy Footwear (collab)",
+    "slug": "nike-st-ssy-footwear-collab",
+    "query": "Nike Stussy sneaker collab",
+    "title": "How does a Nike x Stussy sneaker come about",
+    "image_url": "https://data.nssmag.com/images/galleries/22804/NIKE-STUSSY-16.jpg",
+    "source_url": "https://www.nssmag.com/en/fashion/21304/nike-stussy-collabo-travis-scott-instagram",
+    "pick_reason": "retry_first3",
+    "file_path": "out/nike-st-ssy-footwear-collab.jpg",
+    "bytes": 90539,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike × Union LA Cortez (세서미/라이트 스모그/레몬 프로스트)",
+    "slug": "nike-union-la-cortez",
+    "query": "Nike × Union LA Cortez",
+    "title": "UNION x Nike Cortez | Shelflife",
+    "image_url": "https://res.cloudinary.com/shelflife-online/image/upload/c_fill,f_auto,q_auto:best,w_1392/v1575961299/uploads/assets/3ed-Union-Nike-Cortez-DR1413-002-3-5c0.jpg",
+    "source_url": "https://www.shelflife.co.za/magazine/union-x-nike-cortez",
+    "pick_reason": "first_result",
+    "file_path": "out/nike-union-la-cortez.jpg",
+    "bytes": 39433,
+    "final_dims": [
+      640,
+      360
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike AF1 × UNDEFEATED (언디핏/우방)",
+    "slug": "nike-af1-undefeated",
+    "query": "Nike AF1 × UNDEFEATED",
+    "title": "Air Force 1 x UNDEFEATED 'Multicolour' (DV5255-400) Release Date. Nike ...",
+    "image_url": "https://static.nike.com/a/images/w_1280,q_auto,f_auto/96aae44a-e77e-4baf-9475-57be04dd32a1/air-force-1-x-undefeated-multicolour-dv5255-400-release-date.jpg",
+    "source_url": "https://www.nike.com/sg/launch/t/air-force-1-undefeated-multicolour",
+    "pick_reason": "brand:nike",
+    "file_path": "out/nike-af1-undefeated.jpg",
+    "bytes": 57941,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike Air Max 1 (broad)",
+    "slug": "nike-air-max-1-broad",
+    "query": "Nike Air Max 1",
+    "title": "Nike Air Max 1 Essential Men's Shoes. Nike HR",
+    "image_url": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/8de88af5-db0c-403b-b01c-6b8b1d06d157/NIKE+AIR+MAX+1+ESS.png",
+    "source_url": "https://www.nike.com/hr/t/air-max-1-essential-shoes-SJlmnD",
+    "pick_reason": "brand:nike",
+    "file_path": "out/nike-air-max-1-broad.jpg",
+    "bytes": 20202,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike Air Max 95 (broad)",
+    "slug": "nike-air-max-95-broad",
+    "query": "Nike Air Max 95",
+    "title": "Nike Air Max 95 Women's Shoes. Nike BG",
+    "image_url": "https://static.nike.com/a/images/t_web_pdp_936_v2/f_auto,u_9ddf04c7-2a9a-4d76-add1-d15af8f0263d,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/e357d174-0e66-43e5-be77-3d5f6290a757/W+NIKE+AIR+MAX+95+BIG+BUBBLE.png",
+    "source_url": "https://www.nike.com/bg/t/air-max-95-shoes-hjamtMtp",
+    "pick_reason": "brand:nike",
+    "file_path": "out/nike-air-max-95-broad.jpg",
+    "bytes": 21368,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike Air Max 97 Silver Bullet (1997 OG)",
+    "slug": "nike-air-max-97-silver-bullet-1997-og",
+    "query": "Nike Air Max 97 Silver Bullet",
+    "title": "Air Max 97 'Silver Bullet' (DM0028-002) Release Date. Nike SNKRS MY",
+    "image_url": "https://static.nike.com/a/images/t_prod_ss/w_960,c_limit,f_auto/00acd409-bcd1-44b3-9499-5cb1ef369f23/air-max-97-silver-bullet-dm0028-002-release-date.jpg",
+    "source_url": "https://www.nike.com/my/launch/t/air-max-97-og-shoes",
+    "pick_reason": "brand:nike",
+    "file_path": "out/nike-air-max-97-silver-bullet-1997-og.jpg",
+    "bytes": 25334,
+    "final_dims": [
+      568,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike Dunk Low Halloween (시즌 한정)",
+    "slug": "nike-dunk-low-halloween",
+    "query": "Nike Dunk Low Halloween",
+    "title": "Nike Dunk Low Halloween DD3357-100 Release Date - SBD",
+    "image_url": "https://sneakerbardetroit.com/wp-content/uploads/2021/06/Nike-Dunk-Low-Halloween-DD0357-100-Release-Date-Pricing.png",
+    "source_url": "https://sneakerbardetroit.com/nike-dunk-low-halloween-dd3357-100-release-date/",
+    "pick_reason": "first_result",
+    "file_path": "out/nike-dunk-low-halloween.jpg",
+    "bytes": 56181,
+    "final_dims": [
+      640,
+      447
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike Dunk Low Midnight Navy (미네)",
+    "slug": "nike-dunk-low-midnight-navy",
+    "query": "Nike Dunk Low Midnight Navy",
+    "title": "Nike Dunk Low Midnight Navy FD9749-400 Release Date | SBD",
+    "image_url": "https://sneakerbardetroit.com/wp-content/uploads/2022/11/Nike-Dunk-Low-Midnight-Navy-FD9749-400-Release-Date-4-1068x762.jpg",
+    "source_url": "https://sneakerbardetroit.com/nike-dunk-low-midnight-navy-release-date/",
+    "pick_reason": "first_result",
+    "file_path": "out/nike-dunk-low-midnight-navy.jpg",
+    "bytes": 35115,
+    "final_dims": [
+      640,
+      456
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike Dunk Low Smoke Grey",
+    "slug": "nike-dunk-low-smoke-grey",
+    "query": "Nike Dunk Low Smoke Grey",
+    "title": "Nike SB Dunk Low Pro 'Black and Smoke Grey' (HF3063-001) release date ...",
+    "image_url": "https://static.nike.com/a/images/w_1280,q_auto,f_auto/1f6419a7-087e-40e0-89cf-86a7f3dbef06/nike-sb-dunk-low-pro-black-and-smoke-grey-hf3063-001-release-date.jpg",
+    "source_url": "https://www.nike.com/in/launch/t/sb-dunk-low-pro-skate-shoes-Z8bZrR",
+    "pick_reason": "brand:nike",
+    "file_path": "out/nike-dunk-low-smoke-grey.jpg",
+    "bytes": 39670,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike Dunk Low Wolf Grey",
+    "slug": "nike-dunk-low-wolf-grey",
+    "query": "Nike Dunk Low Wolf Grey",
+    "title": "SB Dunk Low 'Wolf Grey' (DV5464-001) Release Date. Nike SNKRS",
+    "image_url": "https://static.nike.com/a/images/t_prod_ps/w_1536,c_limit,f_auto/824b5c0b-f98e-4cef-bd9e-d5e4f22944b1/sb-dunk-low-wolf-grey-dv5464-001-release-date.jpg",
+    "source_url": "https://www.nike.com/sg/launch/t/sb-dunk-low-wolf-grey",
+    "pick_reason": "brand:nike",
+    "file_path": "out/nike-dunk-low-wolf-grey.jpg",
+    "bytes": 12223,
+    "final_dims": [
+      426,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike Mercurial Vapor 14 Elite AG",
+    "slug": "nike-mercurial-vapor-14-elite-ag",
+    "query": "Nike Mercurial Vapor 14 Elite AG",
+    "title": "Nike Mercurial Vapor 14 Elite AG | R-GOL.com - Football boots & equipment",
+    "image_url": "https://gfx.r-gol.com/media/res/products/19/144019/nike-mercurial-vapor-14-elite-ag_1.png",
+    "source_url": "https://www.r-gol.com/en/nike-mercurial-vapor-14-elite-ag,p-144019",
+    "pick_reason": "first_result",
+    "file_path": "out/nike-mercurial-vapor-14-elite-ag.jpg",
+    "bytes": 32871,
+    "final_dims": [
+      431,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike Mercurial Vapor 15 Pro TF",
+    "slug": "nike-mercurial-vapor-15-pro-tf",
+    "query": "Nike Mercurial Vapor 15 Pro TF",
+    "title": "Nike Zoom Mercurial Vapor 15 Pro TF Turf Football Shoes. Nike SA",
+    "image_url": "https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/6a542f02-d052-4f6b-9a6d-ec7785adbca0/zoom-mercurial-vapor-15-pro-tf-football-shoes-MPC5Vm.png",
+    "source_url": "https://www.nike.com/sa/en/t/zoom-mercurial-vapor-15-pro-tf-football-shoes-MPC5Vm/DJ5605-146",
+    "pick_reason": "brand:nike",
+    "file_path": "out/nike-mercurial-vapor-15-pro-tf.jpg",
+    "bytes": 61549,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike Mercurial Vapor 16 Elite AG",
+    "slug": "nike-mercurial-vapor-16-elite-ag",
+    "query": "Nike Mercurial Vapor 16 Elite AG",
+    "title": "Nike Mercurial Vapor 16 Elite AG-Pro Düşük Bilekli Krampon. Nike TR",
+    "image_url": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/19cf5924-3620-471f-90c6-284fc82b85c7/ZM+VAPOR+16+ELITE+AG-PRO.png",
+    "source_url": "https://www.nike.com/tr/t/mercurial-vapor-16-elite-ag-pro-düşük-bilekli-krampon-9l6j6F",
+    "pick_reason": "brand:nike",
+    "file_path": "out/nike-mercurial-vapor-16-elite-ag.jpg",
+    "bytes": 23377,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike Mercurial Vapor 16 Elite FG",
+    "slug": "nike-mercurial-vapor-16-elite-fg",
+    "query": "Nike Mercurial Vapor 16 Elite FG",
+    "title": "Nike Mercurial Vapor 16 Elite Blueprint FG 低筒足球釘鞋。Nike TW",
+    "image_url": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b2b4e322-4552-4e97-8740-aee256964d45/ZM+VAPOR+16+ELITE+F+FG.png",
+    "source_url": "https://www.nike.com/tw/t/mercurial-vapor-16-elite-blueprint-fg-低筒足球釘-STcMzc",
+    "pick_reason": "brand:nike",
+    "file_path": "out/nike-mercurial-vapor-16-elite-fg.jpg",
+    "bytes": 64604,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike Pegasus 41",
+    "slug": "nike-pegasus-41",
+    "query": "Nike Pegasus 41",
+    "title": "Nike Pegasus 41 Men's Road Running Shoes. Nike RO",
+    "image_url": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/d01d07e2-3013-4921-bc9b-8387cf12d748/pegasus-41-road-running-shoes-hXbqMV.png",
+    "source_url": "https://www.nike.com/ro/t/pegasus-41-road-running-shoes-hXbqMV",
+    "pick_reason": "brand:nike",
+    "file_path": "out/nike-pegasus-41.jpg",
+    "bytes": 75867,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike Pegasus Turbo (Broad)",
+    "slug": "nike-pegasus-turbo-broad",
+    "query": "Nike Pegasus Turbo",
+    "title": "Nike Pegasus Turbo Next Nature Road-Running Shoes - Men's at Iva ...",
+    "image_url": "https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/678e6146-23c0-4790-bb9a-f473b6728573/pegasus-turbo-next-nature-road-running-shoes-NHl6WW.png",
+    "source_url": "https://storage.googleapis.com/dtssfravtyiyhe/nike-pegasus-turbo-next-nature-road-running-shoes-men-s.html",
+    "pick_reason": "brand:nike",
+    "file_path": "out/nike-pegasus-turbo-broad.jpg",
+    "bytes": 34443,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike SB Dunk Low Travis Scott",
+    "slug": "nike-sb-dunk-low-travis-scott",
+    "query": "Nike SB Dunk Low Travis Scott",
+    "title": "Travis Scott Nike SB Dunk Low CT5053-001 | SneakerNews.com",
+    "image_url": "https://sneakernews.com/wp-content/uploads/2020/02/travis-scott-nike-sb-dunk-low-CT5053-001-1.jpg?w=1140",
+    "source_url": "https://sneakernews.com/2020/02/11/travis-scott-nike-sb-dunk-low-ct5053-001/",
+    "pick_reason": "first_result",
+    "file_path": "out/nike-sb-dunk-low-travis-scott.jpg",
+    "bytes": 45811,
+    "final_dims": [
+      640,
+      449
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike Tailwind 79 (Vintage Runner)",
+    "slug": "nike-tailwind-79-vintage-runner",
+    "query": "Nike Tailwind 79",
+    "title": "Nike Air Tailwind 79 Vast Grey Light Photo Blue - BQ5878-001",
+    "image_url": "https://images.stockx.com/images/Nike-Air-Tailwind-79-Vast-Grey-Light-Photo-Blue-Product.jpg?fit=fill&bg=FFFFFF&w=700&h=500&auto=format,compress&q=90&dpr=2&trim=color&updated_at=1607056791",
+    "source_url": "https://stockx.com/nike-air-tailwind-79-vast-grey-light-photo-blue",
+    "pick_reason": "first_result",
+    "file_path": "out/nike-tailwind-79-vintage-runner.jpg",
+    "bytes": 35930,
+    "final_dims": [
+      640,
+      457
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike x Off-White Dunk Low (The 50)",
+    "slug": "nike-x-off-white-dunk-low-the-50",
+    "query": "Nike x Off-White Dunk Low",
+    "title": "Dunk Low 'Nike x Off-White' Release Date. Nike SNKRS",
+    "image_url": "https://static.nike.com/a/images/t_prod_ss/w_960,c_limit,f_auto/80ab4568-e982-4da1-bdf2-b28cb1e45268/dunk-low-nike-x-off-white-release-date.jpg",
+    "source_url": "https://www.nike.com/launch/t/dunk-low-off-white-university-red/",
+    "pick_reason": "brand:nike",
+    "file_path": "out/nike-x-off-white-dunk-low-the-50.jpg",
+    "bytes": 24321,
+    "final_dims": [
+      568,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nike x Stussy Air Penny 2",
+    "slug": "nike-x-stussy-air-penny-2",
+    "query": "Nike x Stussy Air Penny 2",
+    "title": "Stüssy x Nike Air Penny 2 'Black' - DQ5674-001 - Novelship",
+    "image_url": "https://images.novelship.com/product/1672231556446_StussyxNik0.jpeg?fit=fill&bg=FFFFFF&trim=color&auto=format,compress&q=75",
+    "source_url": "https://novelship.com/stussy-x-nike-air-penny-2-black",
+    "pick_reason": "first_result",
+    "file_path": "out/nike-x-stussy-air-penny-2.jpg",
+    "bytes": 32746,
+    "final_dims": [
+      640,
+      366
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Nintendo Switch OLED",
+    "slug": "nintendo-switch-oled",
+    "query": "Nintendo Switch OLED",
+    "title": "Nintendo Switch – OLED Model - Nintendo - Official Site",
+    "image_url": "https://assets.nintendo.com/image/upload/f_auto/q_auto/dpr_1.5/ncom/en_US/switch/videos/heg001-07060600/posters/oled-model",
+    "source_url": "https://www.nintendo.com/us/gaming-systems/switch/oled-model/",
+    "pick_reason": "brand:nintendo",
+    "file_path": "out/nintendo-switch-oled.jpg",
+    "bytes": 27803,
+    "final_dims": [
+      640,
+      360
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Off-White × Nike Blazer Mid (Lugano/Serena/Hallows Eve/Wood)",
+    "slug": "off-white-nike-blazer-mid-lugano-serena-hallows-eve-wood",
+    "query": "Off-White × Nike Blazer Mid",
+    "title": "Off-White x Nike Blazer Mid 'The Ten' AA3832-100 - AA3832-100 - Novelship",
+    "image_url": "https://images.novelship.com/product/off_white_x_nike_blazer_mid__the_ten__aa3832_100_0_38495.jpeg?fit=fill&bg=FFFFFF&trim=color&auto=format,compress&q=75",
+    "source_url": "http://novelship.com/nike-blazer-mid-off-white",
+    "pick_reason": "first_result",
+    "file_path": "out/off-white-nike-blazer-mid-lugano-serena-hallows-eve-wood.jpg",
+    "bytes": 17616,
+    "final_dims": [
+      640,
+      323
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "On Cloudaway 1/2 (트래블)",
+    "slug": "on-cloudaway-1-2",
+    "query": "On Cloudaway 1 2",
+    "title": "On Cloudaway Review 2023, Facts, Deals | RunRepeat",
+    "image_url": "https://cdn.runrepeat.com/i/on/38620/on-cloudaway-white-f221-main.jpg",
+    "source_url": "https://runrepeat.com/on-cloudaway",
+    "pick_reason": "first_result",
+    "file_path": "out/on-cloudaway-1-2.jpg",
+    "bytes": 29309,
+    "final_dims": [
+      640,
+      343
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "On Cloudboom Strike / LS / Eco / Max (premium racing)",
+    "slug": "on-cloudboom-strike-ls-eco-max-premium-racing",
+    "query": "On Cloudboom Strike LS Eco Max",
+    "title": "Cloudboom Strike LS: Ultralight Road Racing Shoe | On | On United States",
+    "image_url": "https://images.ctfassets.net/hnk2vsx53n6l/5AtvXMbtS8kjmNqwmJzCBc/968a9dc0eef438e3fe0814520a95b390/image-3.jpg?w=1500&h=2000&fm=jpg&fl=progressive&f=center&q=80",
+    "source_url": "https://www.on.com/en-us/products/cloudboom-strike-ls-u-3ue3001",
+    "pick_reason": "first_result",
+    "file_path": "out/on-cloudboom-strike-ls-eco-max-premium-racing.jpg",
+    "bytes": 52183,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "On Running Cloud Monster (시그니처)",
+    "slug": "on-running-cloud-monster",
+    "query": "On Running Cloud Monster",
+    "title": "The Cloudmonster: A men's running shoe with big energy return | On | On ...",
+    "image_url": "https://images.ctfassets.net/hnk2vsx53n6l/6YosCfaHxXK65BlpvjkxqW/96ef6d7389e86828c014baa06dfdbed3/17d2828c3c6c1578ac2b3140e01f4bd2f0a13aaf.png?w=1500&h=1500&fm=jpg&fl=progressive&f=center&fit=fill&q=80",
+    "source_url": "https://www.on.com/en-gb/shop/mens/shoes/cloudmonster",
+    "pick_reason": "brand:on running",
+    "file_path": "out/on-running-cloud-monster.jpg",
+    "bytes": 26482,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "On Running x Kith (K-Tech 1 + Cloudzone)",
+    "slug": "on-running-x-kith-k-tech-1-cloudzone",
+    "query": "On Running x Kith",
+    "title": "On Running x Kith Cloudzone White Ice First Copy Shoes",
+    "image_url": "https://sparkkart.in/wp-content/uploads/2025/10/First-Copy-Shoes-On-Running-x-Kith-Cloudzone-White-Ice-1.jpg",
+    "source_url": "https://sparkkart.in/first-copy-on-running-x-kith-cloudzone-white-ice/",
+    "pick_reason": "first_result",
+    "file_path": "out/on-running-x-kith-k-tech-1-cloudzone.jpg",
+    "bytes": 71251,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Onitsuka Tiger Mexico 66 (Slip-on/SD/VIN/Sabot/Mary Jane)",
+    "slug": "onitsuka-tiger-mexico-66-slip-on-sd-vin-sabot-mary-jane",
+    "query": "Onitsuka Tiger Mexico 66",
+    "title": "Mexico 66 | Official online store | Onitsuka Tiger ES",
+    "image_url": "https://images.asics.com/is/image/asics/1183C102_250_SR_RT_GLB?qlt=80&wid=1024&hei=768&bgc=255,255,255&resMode=bisharp",
+    "source_url": "https://www.onitsukatiger.com/es/es-es/mexico-66/p/1183c102-250.html",
+    "pick_reason": "brand:onitsuka tiger",
+    "file_path": "out/onitsuka-tiger-mexico-66-slip-on-sd-vin-sabot-mary-jane.jpg",
+    "bytes": 36373,
+    "final_dims": [
+      640,
+      480
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "PAF × On Running (한정 collab)",
+    "slug": "paf-on-running-collab",
+    "query": "PAF × On Running",
+    "title": "On x PAF | CURRENT FORM 3.0 | On United States",
+    "image_url": "https://images.ctfassets.net/hnk2vsx53n6l/11U84mLCY6MgEtQl1fUnQr/48592624218d941b9a6c6b269f75f86b/cdac54801d533ff2ae8ef04be84f1f4a09682cc4.png?w=1500&h=1500&fm=jpg&fl=progressive&f=center&fit=fill&q=80",
+    "source_url": "https://www.on.com/en-us/collection/on-x-post-archive-faction",
+    "pick_reason": "brand:on running",
+    "file_path": "out/paf-on-running-collab.jpg",
+    "bytes": 31645,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Patagonia Deep Pile (90s 빈티지 콜렉터 / Mesclun 40주년)",
+    "slug": "patagonia-deep-pile-90s-mesclun-40",
+    "query": "Patagonia Deep Pile",
+    "title": "Patagonia Patagonia Deep Pile Fleece Jacket | Grailed",
+    "image_url": "https://media-assets.grailed.com/prd/listing/temp/a5799f2ce9e34bfd9cd75007225971a1?auto=format",
+    "source_url": "https://www.grailed.com/listings/52699770-patagonia-patagonia-deep-pile-fleece-jacket",
+    "pick_reason": "first_result",
+    "file_path": "out/patagonia-deep-pile-90s-mesclun-40.jpg",
+    "bytes": 77759,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Patagonia Down (Nano Puff / Down Sweater / 경량 다운)",
+    "slug": "patagonia-down-nano-puff-down-sweater",
+    "query": "Patagonia Down",
+    "title": "Patagonia Down Sweater Jacket in Blue | SVD USA",
+    "image_url": "https://media.sivasdescalzo.com/media/catalog/product/8/4/84675-NENA_sivasdescalzo-Patagonia-M_S_DOWN_SWEATER-1725532820-1.jpg",
+    "source_url": "https://www.sivasdescalzo.com/us/p/m-s-down-sweater-84675-nena",
+    "pick_reason": "first_result",
+    "file_path": "out/patagonia-down-nano-puff-down-sweater.jpg",
+    "bytes": 44320,
+    "final_dims": [
+      538,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Patagonia Retro X / Classic Retro",
+    "slug": "patagonia-retro-x-classic-retro",
+    "query": "Patagonia Retro X Classic Retro",
+    "title": "Women's Classic Retro-X® Jacket – Patagonia Worn Wear®",
+    "image_url": "http://wornwear.patagonia.com/cdn/shop/files/afb6peeeavjumlr2qkj0.jpg?v=1724163411",
+    "source_url": "https://wornwear.patagonia.com/products/womens-classic-retro-x-jacket_23074_dnla",
+    "pick_reason": "brand:patagonia",
+    "file_path": "out/patagonia-retro-x-classic-retro.jpg",
+    "bytes": 77420,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Patagonia Shell (Torrentshell / 바람막이 / H2No)",
+    "slug": "patagonia-shell-torrentshell-h2no",
+    "query": "Patagonia Shell",
+    "title": "M10® Alpine Shells by Patagonia - Patagonia Australia",
+    "image_url": "https://www.patagonia.com.au/cdn/shop/files/85420_ABNB_SR1_960x.png?v=1740017010",
+    "source_url": "https://www.patagonia.com.au/pages/m10",
+    "pick_reason": "brand:patagonia",
+    "file_path": "out/patagonia-shell-torrentshell-h2no.jpg",
+    "bytes": 27532,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Patagonia Synchilla / Snap-T Fleece Pullover",
+    "slug": "patagonia-synchilla-snap-t-fleece-pullover",
+    "query": "Patagonia Snap-T Synchilla fleece pullover",
+    "title": "Lyst - Patagonia Lightweight Synchilla® Snap-t® Fleece Pullover for Men",
+    "image_url": "https://cdnd.lystit.com/photos/totembrandco/96d7ea52/patagonia--Lightweight-Synchilla-Snap-t-Fleece-Pullover.jpeg",
+    "source_url": "https://www.lyst.com/clothing/patagonia-lightweight-synchillar-snap-tr-fleece-pullover-1/",
+    "pick_reason": "retry_first3",
+    "file_path": "out/patagonia-synchilla-snap-t-fleece-pullover.jpg",
+    "bytes": 60291,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Polo Chief Keef Big Pony (modern graphic PK 카라티)",
+    "slug": "polo-chief-keef-big-pony-modern-graphic-pk",
+    "query": "Polo Chief Keef Big Pony",
+    "title": "- Polo Ralph Lauren Chief Keef Big Pony London Grail... | Depop",
+    "image_url": "https://media-photos.depop.com/b1/40116768/2327852900_b5478861f1784e8ab677041d8e6a4bb1/P0.jpg",
+    "source_url": "https://www.depop.com/products/truesnpolos-polo-ralph-lauren-chief-95c0/",
+    "pick_reason": "first_result",
+    "file_path": "out/polo-chief-keef-big-pony-modern-graphic-pk.jpg",
+    "bytes": 43205,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Polo Leather Loafer / Moccasin / Derby",
+    "slug": "polo-leather-loafer-moccasin-derby",
+    "query": "Polo Leather Loafer Moccasin Derby",
+    "title": "Polo Ralph Lauren | Shoes | Polo Ralph Lauren Roland Distressed Brown ...",
+    "image_url": "https://di2ponv0v5otw.cloudfront.net/posts/2025/12/04/69314c632c9e446e07f62088/m_69314c632c9e446e07f62089.jpg",
+    "source_url": "https://poshmark.com/listing/Polo-Ralph-Lauren-Roland-Distressed-Brown-Driver-Moccasin-Loafer-Mens-9-69314c632c9e446e07f62088",
+    "pick_reason": "first_result",
+    "file_path": "out/polo-leather-loafer-moccasin-derby.jpg",
+    "bytes": 45649,
+    "final_dims": [
+      580,
+      580
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Polo Oxford Shirt (Standard)",
+    "slug": "polo-oxford-shirt-standard",
+    "query": "Polo Oxford Shirt",
+    "title": "Polo Ralph Lauren Mens Blue/White Slim Fit Striped Oxford Shirt",
+    "image_url": "https://www.repertoirefashion.co.uk/images/polo-ralph-lauren-mens-blue-white-slim-fit-striped-oxford-shirt-p40667-234525_zoom.jpg",
+    "source_url": "https://www.repertoirefashion.co.uk/polo-ralph-lauren-mens-blue-white-slim-fit-striped-oxford-shirt-p40667",
+    "pick_reason": "first_result",
+    "file_path": "out/polo-oxford-shirt-standard.jpg",
+    "bytes": 44354,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Polo Pique Classic Fit",
+    "slug": "polo-pique-classic-fit",
+    "query": "Polo Pique Classic Fit",
+    "title": "Classic Fit Pique Polo | Old Navy",
+    "image_url": "https://oldnavy.gapcanada.ca/webcontent/0057/327/147/cn57327147.jpg",
+    "source_url": "https://oldnavy.gapcanada.ca/browse/product.do?pid=563685303",
+    "pick_reason": "first_result",
+    "file_path": "out/polo-pique-classic-fit.jpg",
+    "bytes": 33108,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Polo Pony Logo T-Shirt",
+    "slug": "polo-pony-logo-t-shirt",
+    "query": "Polo Pony Logo T-Shirt",
+    "title": "Polo Ralph Lauren Custom Slim Fit Big Pony Logo T-shirt | David Jones",
+    "image_url": "https://www.davidjones.com/productimages/magnify/1/2484028_22028835_9394947.jpg",
+    "source_url": "https://www.davidjones.com/product/polo-ralph-lauren-custom-slim-fit-big-pony-logo-t-shirt-25596949",
+    "pick_reason": "first_result",
+    "file_path": "out/polo-pony-logo-t-shirt.jpg",
+    "bytes": 52852,
+    "final_dims": [
+      496,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Polo Purple Label (top tier — cashmere/wool/silk)",
+    "slug": "polo-purple-label-top-tier-cashmere-wool-silk",
+    "query": "Polo Purple Label",
+    "title": "Ralph Lauren Purple Label Men's Slim-Fit Pique Polo Shirt | Neiman Marcus",
+    "image_url": "https://media.neimanmarcus.com/f_auto,q_auto:low,ar_4:5,c_fill,dpr_2.0,w_790/01/nm_4594390_100436_m",
+    "source_url": "https://www.neimanmarcus.com/p/ralph-lauren-purple-label-mens-slim-fit-pique-polo-shirt-prod262990248",
+    "pick_reason": "first_result",
+    "file_path": "out/polo-purple-label-top-tier-cashmere-wool-silk.jpg",
+    "bytes": 31239,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Polo Ralph Lauren Vintage (90s/00s archive 의류)",
+    "slug": "polo-ralph-lauren-vintage-90s-00s-archive",
+    "query": "Polo Ralph Lauren Vintage",
+    "title": "Buy Vintage Polo Ralph Lauren Paris Polo Shirt 'Blue' - 779911219001 ...",
+    "image_url": "https://image.goat.com/transform/v1/attachments/product_template_additional_pictures/images/074/479/616/original/992676_01.jpg.jpeg?action=crop&width=1500",
+    "source_url": "https://www.goat.com/apparel/vintage-polo-ralph-lauren-paris-polo-shirt-blue-779911219001-blue",
+    "pick_reason": "first_result",
+    "file_path": "out/polo-ralph-lauren-vintage-90s-00s-archive.jpg",
+    "bytes": 39527,
+    "final_dims": [
+      640,
+      605
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Polo RRL Denim (jeans / shirt)",
+    "slug": "polo-rrl-denim-jeans-shirt",
+    "query": "Polo RRL Denim",
+    "title": "Polo Ralph Lauren RRL Denim Jacket | Grailed | Denim inspiration ...",
+    "image_url": "https://i.pinimg.com/originals/f9/d9/fa/f9d9fa6f50a54506e43f17879943b483.jpg",
+    "source_url": "https://www.pinterest.com/pin/rrl-denim-jacket--525232375310795467/",
+    "pick_reason": "first_result",
+    "file_path": "out/polo-rrl-denim-jeans-shirt.jpg",
+    "bytes": 159351,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Polo RRL Pants (치노/슬랙스/오피서/카키/조드퍼)",
+    "slug": "polo-rrl-pants",
+    "query": "Polo RRL Pants",
+    "title": "RRL - Polo Ralph Lauren - Khaki Pants, Men's Fashion, Activewear on ...",
+    "image_url": "https://media.karousell.com/media/photos/products/2023/11/25/rrl__polo_ralph_lauren__khaki__1700922807_7aba12f4.jpg",
+    "source_url": "https://www.carousell.ph/p/rrl-polo-ralph-lauren-khaki-pants-1267695716/",
+    "pick_reason": "first_result",
+    "file_path": "out/polo-rrl-pants.jpg",
+    "bytes": 74247,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Polo RRL Shirt (옥스포드/버튼다운/플란넬/샴브레이)",
+    "slug": "polo-rrl-shirt",
+    "query": "Polo RRL Shirt",
+    "title": "RRL By Ralph Lauren | Shop Clothing Online | SVD USA",
+    "image_url": "https://media.sivasdescalzo.com/media/catalog/product/7/8/782813037003_sivasdescalzo-Polo_Ralph_Lauren-SS_LOGO_TEE-SHORT_SLEEVE-T-SHIRT-1640780826-1.jpg?quality=70&auto=webp&fit=bounds&width=600&dpr=2",
+    "source_url": "https://www.sivasdescalzo.com/us/brands/polo-ralph-lauren/rrl-by-ralph-lauren",
+    "pick_reason": "first_result",
+    "file_path": "out/polo-rrl-shirt.jpg",
+    "bytes": 22453,
+    "final_dims": [
+      538,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Polo 니트/케이블/꽈배기/V넥/롤넥/페어아일",
+    "slug": "polo-v",
+    "query": "Polo 니트 케이블 꽈배기 V넥 롤넥 페어아일",
+    "title": "!폴로핫딜! 폴로 우먼 브이넥 케이블 꽈배기 니트 7컬러 V넥 니트 | Croket",
+    "image_url": "https://before-images-item.croketglobal.net/item/thumbnail/7255875e9ace75b83c0640a085e79e14.webp",
+    "source_url": "https://web.croket.co.kr/en/seller/product/5fa77a0feb2b802d2c67bd3d",
+    "pick_reason": "first_result",
+    "file_path": "out/polo-v.jpg",
+    "bytes": 75108,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Polo 패턴 셔츠 (체크/스트라이프/깅엄/플란넬/페이즐리/하와이안)",
+    "slug": "polo",
+    "status": "skipped_exists",
+    "file_path": "out/polo.jpg",
+    "bytes": 60155
+  },
+  {
+    "sku_name": "Prada America's Cup Sneaker",
+    "slug": "prada-america-s-cup-sneaker",
+    "query": "Prada America's Cup Sneaker",
+    "title": "Royal Blue/silver Prada America's Cup Sneakers | PRADA",
+    "image_url": "https://www.prada.com/content/dam/pradabkg_products/4/4E3/4E3400/ASZF0FJT/4E3400_ASZ_F0FJT_SLD.jpg/_jcr_content/renditions/cq5dam.web.hebebed.2400.2400.jpg",
+    "source_url": "https://www.prada.com/ca/en/p/prada-americas-cup-sneakers/4E3400_ASZ_F0FJT",
+    "pick_reason": "brand:prada",
+    "file_path": "out/prada-america-s-cup-sneaker.jpg",
+    "bytes": 54720,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Puma × Open YY (한국 한정 collab)",
+    "slug": "puma-open-yy-collab",
+    "query": "Puma × Open YY",
+    "title": "PUMA 携手 OPEN YY 打造第二回联名系列登场 | Hypebeast",
+    "image_url": "https://image-cdn.hypb.st/https%3A%2F%2Fhypebeast.com%2Fimage%2F2025%2F06%2F05%2Fpuma-open-yy-second-collaboration-collection-022.jpg?q=75&w=800&cbr=1&fit=max",
+    "source_url": "https://hypebeast.cn/2025/6/puma-open-yy-second-collaboration-collection",
+    "pick_reason": "first_result",
+    "file_path": "out/puma-open-yy-collab.jpg",
+    "bytes": 30827,
+    "final_dims": [
+      640,
+      426
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Puma Deviate Nitro",
+    "slug": "puma-deviate-nitro",
+    "query": "Puma Deviate Nitro running shoe",
+    "title": "Deviate NITRO™ 3 FADE Men's Running Shoes | PUMA Canada",
+    "image_url": "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/310474/01/sv01/fnd/PNA/fmt/png/Deviate-NITRO™-3-FADE-Men's-Running-Shoes",
+    "source_url": "https://ca.puma.com/ca/en/pd/deviate-nitro-3-fade-mens-running-shoes/310474",
+    "pick_reason": "retry_first3",
+    "file_path": "out/puma-deviate-nitro.jpg",
+    "bytes": 31057,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Puma Future Football/Futsal",
+    "slug": "puma-future-football-futsal",
+    "query": "Puma Future Football Futsal",
+    "title": "FUTURE 8 MATCH Futsal Boots Unisex | PUMA White-PUMA Black-Glowing Red ...",
+    "image_url": "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_500,h_500/global/108598/01/sv01/fnd/SEA/fmt/png/FUTURE-8-MATCH-Futsal-Boots-Unisex",
+    "source_url": "https://my.puma.com/my/en/pd/future-8-match-futsal-boots-unisex/108598.html",
+    "pick_reason": "brand:puma",
+    "file_path": "out/puma-future-football-futsal.jpg",
+    "bytes": 12635,
+    "final_dims": [
+      500,
+      500
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Puma King Football/Futsal",
+    "slug": "puma-king-football-futsal",
+    "query": "Puma King Football Futsal",
+    "title": "KING ULTIMATE FG/AG unisex | PUMA",
+    "image_url": "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/108821/01/sv01/fnd/PNA/fmt/png/KING-ULTIMATE-FG/AG-Unisex",
+    "source_url": "https://us.puma.com/us/es/pd/king-ultimate-fg-ag-unisex/108821",
+    "pick_reason": "brand:puma",
+    "file_path": "out/puma-king-football-futsal.jpg",
+    "bytes": 26754,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Puma Nitro 러닝 패밀리 (Deviate/Velocity/ForeverRun/MagMax/Magnify/Liberate)",
+    "slug": "puma-nitro-deviate-velocity-foreverrun-magmax-magnify-liberate",
+    "query": "Puma Nitro 러닝 패밀리",
+    "title": "나이트로 | 푸마",
+    "image_url": "https://images.puma.net/images/fn/~regional~KOR~others~2026KR~260212_nitro~image01_pc.jpg/fmt/jpg",
+    "source_url": "https://kr.puma.com/kr/ko/스포츠/러닝/나이트로",
+    "pick_reason": "brand:puma",
+    "file_path": "out/puma-nitro-deviate-velocity-foreverrun-magmax-magnify-liberate.jpg",
+    "bytes": 53177,
+    "final_dims": [
+      640,
+      290
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Puma Palermo",
+    "slug": "puma-palermo",
+    "query": "Puma Palermo",
+    "title": "PUMA x PALERMO F.C. Palermo Sneakers | PUMA Palermo | PUMA",
+    "image_url": "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/397245/01/sv01/fnd/PHL/fmt/png/PUMA-x-PALERMO-F.C.-Palermo-Sneakers",
+    "source_url": "https://ph.puma.com/ph/en/pd/puma-x-palermo-f.c.-palermo-sneakers/397245.html",
+    "pick_reason": "brand:puma",
+    "file_path": "out/puma-palermo.jpg",
+    "bytes": 25487,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Puma Suede / Clyde / GV Special",
+    "slug": "puma-suede-clyde-gv-special",
+    "query": "Puma Suede Clyde GV Special",
+    "title": "Clyde OG Sneakers | PUMA",
+    "image_url": "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_300,h_300/global/398508/02/sv01/fnd/PNA/fmt/png/GV-Special-Suede-Sneakers",
+    "source_url": "https://us.puma.com/us/en/pd/clyde-og-sneakers/391962",
+    "pick_reason": "brand:puma",
+    "file_path": "out/puma-suede-clyde-gv-special.jpg",
+    "bytes": 5316,
+    "final_dims": [
+      300,
+      300
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Puma Ultra Football/Futsal",
+    "slug": "puma-ultra-football-futsal",
+    "query": "Puma Ultra Football Futsal",
+    "title": "ULTRA 5 MATCH IT Futsal Boots | PUMA White-PUMA Black-Glowing Red ...",
+    "image_url": "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_500,h_500/global/108346/01/sv01/fnd/SEA/fmt/png/ULTRA-5-MATCH-IT-Futsal-Boots",
+    "source_url": "https://my.puma.com/my/en/pd/ultra-5-match-it-futsal-boots/108346.html",
+    "pick_reason": "brand:puma",
+    "file_path": "out/puma-ultra-football-futsal.jpg",
+    "bytes": 13781,
+    "final_dims": [
+      500,
+      500
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Puma Velocity Nitro",
+    "slug": "puma-velocity-nitro",
+    "query": "Puma Velocity Nitro running",
+    "title": "Velocity NITRO™ 3 FADE Men's Running Shoes | PUMA",
+    "image_url": "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/310483/01/sv01/fnd/PNA/fmt/png/Velocity-NITRO™-3-FADE-Men's-Running-Shoes",
+    "source_url": "https://us.puma.com/us/en/pd/velocity-nitro�FFFFE2�FFFF84�FFFFA2-3-fade-mens-running-shoes/310483",
+    "pick_reason": "retry_first3",
+    "file_path": "out/puma-velocity-nitro.jpg",
+    "bytes": 32621,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Salomon × CDG (collab)",
+    "slug": "salomon-cdg-collab",
+    "query": "Salomon × CDG",
+    "title": "Comme Des Garcons × Salomon XA-Alpine 2 \"Black\" SL-CDG-XAA2-BK | SNKRDUNK",
+    "image_url": "https://cdn.snkrdunk.com/uploads/media/20230307021511-0.jpeg?size=l",
+    "source_url": "https://snkrdunk.com/en/sneakers/SL-CDG-XAA2-BK",
+    "pick_reason": "first_result",
+    "file_path": "out/salomon-cdg-collab.jpg",
+    "bytes": 22910,
+    "final_dims": [
+      640,
+      467
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Salomon × MM6 (X-ALP / ACS / Cross)",
+    "slug": "salomon-mm6-x-alp-acs-cross",
+    "query": "Salomon × MM6",
+    "title": "Buy XT-MM6 by Salomon Australia online - Salomon Australia",
+    "image_url": "http://salomon.com.au/cdn/shop/files/L49107000_11_GHO_XT-MM6_Black_FootwearSilver_Phantom_1024x1024.png?v=1760408466",
+    "source_url": "https://salomon.com.au/products/xt-mm6-copy?variant=42507636277314",
+    "pick_reason": "brand:salomon",
+    "file_path": "out/salomon-mm6-x-alp-acs-cross.jpg",
+    "bytes": 33885,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Salomon ACS Pro / ACS+OG (Advanced)",
+    "slug": "salomon-acs-pro-acs-og-advanced",
+    "query": "Salomon ACS Pro ACS+OG",
+    "title": "Buy ACS + OG by Salomon Australia online - Salomon Australia",
+    "image_url": "https://salomon.com.au/cdn/shop/files/L47134400_11_GHO_ACSPLUSOGVanilla_Ebony_Silver_1024x1024.png?v=1736293010",
+    "source_url": "https://salomon.com.au/products/acs-og-13?variant=41916709470274",
+    "pick_reason": "brand:salomon",
+    "file_path": "out/salomon-acs-pro-acs-og-advanced.jpg",
+    "bytes": 41823,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Salomon RX Mary Jane / Marie-Jeanne",
+    "slug": "salomon-rx-mary-jane-marie-jeanne",
+    "query": "Salomon RX Mary Jane Marie-Jeanne",
+    "title": "Buy RX MARIE-JEANNE by Salomon Australia online - Salomon Australia",
+    "image_url": "https://salomon.com.au/cdn/shop/files/L47750300_11_GHO_RXMARIE-JEANNERusset_Black_RoastedClay.png?v=1741219158&width=1445",
+    "source_url": "https://salomon.com.au/products/rx-marie-jeanne-4?variant=42028954583106",
+    "pick_reason": "brand:salomon",
+    "file_path": "out/salomon-rx-mary-jane-marie-jeanne.jpg",
+    "bytes": 32158,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Salomon RX Slide 3.0 (시그니처 슬리퍼)",
+    "slug": "salomon-rx-slide-3-0",
+    "query": "Salomon RX Slide 3.0",
+    "title": "Buy RX SLIDE 3.0 by Salomon Australia online - Salomon Australia",
+    "image_url": "http://salomon.com.au/cdn/shop/files/L47431600_0_GHO_RXSLIDE3.0SUEDETea_Alfalfa_GoldenFleece_1024x1024.png?v=1747274288",
+    "source_url": "https://salomon.com.au/products/rx-slide-3-5?variant=42151336345666",
+    "pick_reason": "brand:salomon",
+    "file_path": "out/salomon-rx-slide-3-0.jpg",
+    "bytes": 30024,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Salomon XA Pro / XA-Comp / XA 로그",
+    "slug": "salomon-xa-pro-xa-comp-xa",
+    "query": "Salomon XA Pro XA-Comp XA 로그",
+    "title": "Buy XA PRO 3D by Salomon Australia online - Salomon Australia",
+    "image_url": "http://salomon.com.au/cdn/shop/files/L41617400_3_GHO_XAPRO3DBk_Bk_Magne_1024x1024.png?v=1733791042",
+    "source_url": "https://salomon.com.au/products/xa-pro-3d-1?variant=41850310033474",
+    "pick_reason": "brand:salomon",
+    "file_path": "out/salomon-xa-pro-xa-comp-xa.jpg",
+    "bytes": 71541,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Sean Wotherspoon × Adidas Superstar",
+    "slug": "sean-wotherspoon-adidas-superstar",
+    "query": "Sean Wotherspoon × Adidas Superstar",
+    "title": "adidas Originals x Sean Wotherspoon SUPEREARTH Superstar - HIP Blog",
+    "image_url": "https://thehipstore.s3.amazonaws.com/wp-content/uploads/2020/08/blog.jpg",
+    "source_url": "https://blog.thehipstore.co.uk/adidas-originals-x-sean-wotherspoon-superearth-superstar/",
+    "pick_reason": "first_result",
+    "file_path": "out/sean-wotherspoon-adidas-superstar.jpg",
+    "bytes": 80590,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Seiko (broad — narrow 미박힘 catch-all)",
+    "slug": "seiko-broad-narrow-catch-all",
+    "query": "Seiko",
+    "title": "Presage explores fine Japanese craftsmanship and introduces a new ...",
+    "image_url": "https://www.seikowatches.com/my-en/-/media/Images/GlobalEn/Seiko/Home/news/20180322_8/SPB073ajpg.jpg",
+    "source_url": "https://www.seikowatches.com/my-en/news/20180322_8",
+    "pick_reason": "brand:seiko",
+    "file_path": "out/seiko-broad-narrow-catch-all.jpg",
+    "bytes": 62006,
+    "final_dims": [
+      640,
+      454
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Sony WH-1000XM4",
+    "slug": "sony-wh-1000xm4",
+    "query": "Sony WH-1000XM4",
+    "title": "Sony WH-1000XM4 Premium Wireless Noise Canceling Headphones | Midnight Blue",
+    "image_url": "https://d1ncau8tqf99kp.cloudfront.net/converted/106682_original_local_1200x1050_v3_converted.webp",
+    "source_url": "https://electronics.sony.com/audio/headphones/headband/p/wh1000xm4-l",
+    "pick_reason": "brand:sony",
+    "file_path": "out/sony-wh-1000xm4.jpg",
+    "bytes": 22946,
+    "final_dims": [
+      640,
+      560
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Sony WH-1000XM5",
+    "slug": "sony-wh-1000xm5",
+    "query": "Sony WH-1000XM5",
+    "title": "Sony WH-1000XM5 Noise-Canceling Wireless Over-Ear WH1000XM5/S",
+    "image_url": "https://www.bhphotovideo.com/images/images2000x2000/sony_wh1000xm5_s_wh_1000xm5_noise_canceling_wireless_over_ear_1706394.jpg",
+    "source_url": "https://www.bhphotovideo.com/c/product/1706394-REG/sony_wh1000xm5_s_wh_1000xm5_noise_canceling_wireless_over_ear.html",
+    "pick_reason": "first_result",
+    "file_path": "out/sony-wh-1000xm5.jpg",
+    "bytes": 20350,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Sony WH-1000XM6",
+    "slug": "sony-wh-1000xm6",
+    "query": "Sony WH-1000XM6",
+    "title": "WH-1000XM6 | Wireless Noise Cancelling | Headphones | Sony Taiwan",
+    "image_url": "https://sony.scene7.com/is/image/sonyglobalsolutions/WH1000XM6_Primary_image_Black?$categorypdpnav$&fmt=png-alpha",
+    "source_url": "https://www.sony.com.tw/en/headphones/products/wh-1000xm6",
+    "pick_reason": "brand:sony",
+    "file_path": "out/sony-wh-1000xm6.jpg",
+    "bytes": 18959,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Sony WH-CH520",
+    "slug": "sony-wh-ch520",
+    "query": "Sony WH-CH520",
+    "title": "WH-CH520 Wireless | Headphones | Sony Malaysia",
+    "image_url": "https://sony.scene7.com/is/image/sonyglobalsolutions/22-10?$large360ViewerImage$",
+    "source_url": "https://www.sony.com.my/headphones/products/wh-ch520",
+    "pick_reason": "brand:sony",
+    "file_path": "out/sony-wh-ch520.jpg",
+    "bytes": 5319,
+    "final_dims": [
+      640,
+      388
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Sporty & Rich × Adidas Samba (collab)",
+    "slug": "sporty-rich-adidas-samba-collab",
+    "query": "Sporty & Rich × Adidas Samba",
+    "title": "Sporty & Rich x adidas Samba OG Olympic IH8338",
+    "image_url": "https://sneakerbardetroit.com/wp-content/uploads/2024/07/Sporty-Rich-adidas-Samba-OG-Olympic-IH8338-1068x768.jpg",
+    "source_url": "https://sneakerbardetroit.com/sporty-rich-adidas-samba-og-olympic-2024/",
+    "pick_reason": "first_result",
+    "file_path": "out/sporty-rich-adidas-samba-collab.jpg",
+    "bytes": 28171,
+    "final_dims": [
+      640,
+      460
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Stone Island Crinkle Reps (패딩/자켓 시그니처 패브릭)",
+    "slug": "stone-island-crinkle-reps",
+    "query": "Stone Island Crinkle Reps",
+    "title": "Stone Island Men's Crinkle Reps Hooded Down Jacket in Sky Blue Stone Island",
+    "image_url": "https://cdn.clothbase.com/uploads/5803a7c9-bb68-4fe6-9a39-d270e7192306/19-09-2023-LB_7915407-V0041_1_1.jpg",
+    "source_url": "https://clothbase.com/items/7ec55c9b_stone-island-men-s-crinkle-reps-hooded-down-jacket-in-sky-blue_stone-island",
+    "pick_reason": "first_result",
+    "file_path": "out/stone-island-crinkle-reps.jpg",
+    "bytes": 44927,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Stone Island Shadow Project (premium DPM/Marina)",
+    "slug": "stone-island-shadow-project-premium-dpm-marina",
+    "query": "Stone Island Shadow Project",
+    "title": "Stone Island Shadow Project Men's Cotton Fleeve Crew Neck Sweat in ...",
+    "image_url": "https://cdn.clothbase.com/uploads/658d0c05-7149-4598-910f-8fc86b44bfee/26-05-23-LS_781960619-V0071_1_1.jpg",
+    "source_url": "https://clothbase.com/items/b7b4dee1_stone-island-shadow-project-men-s-cotton-fleeve-crew-neck-sweat-in-tabacco_stone-island-shadow-project",
+    "pick_reason": "first_result",
+    "file_path": "out/stone-island-shadow-project-premium-dpm-marina.jpg",
+    "bytes": 54767,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Stüssy Basic Tee (8 Ball / World Tour / Stock)",
+    "slug": "st-ssy-basic-tee-8-ball-world-tour-stock",
+    "query": "Stüssy Basic Tee",
+    "title": "Basic Stüssy Tee in black – Stüssy",
+    "image_url": "http://www.stussy.com/cdn/shop/files/1905000_BLAC_1.jpg?v=1728313808",
+    "source_url": "https://www.stussy.com/products/1905000-basic-stussy-tee-black",
+    "pick_reason": "brand:stüssy",
+    "file_path": "out/st-ssy-basic-tee-8-ball-world-tour-stock.jpg",
+    "bytes": 15339,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Stussy Crewneck / Sweatshirt",
+    "slug": "stussy-crewneck-sweatshirt",
+    "query": "Stussy Crewneck Sweatshirt",
+    "title": "Stussy Stock Crewneck Sweatshirt - Black | Flatspot",
+    "image_url": "https://www.flatspot.com/cdn/shop/products/stussy-stock-crewneck-sweatshirt-black-1_1300x1500_crop_center.progressive.jpg?v=1671641928",
+    "source_url": "https://www.flatspot.com/products/stussy-stock-crewneck-sweatshirt-black",
+    "pick_reason": "first_result",
+    "file_path": "out/stussy-crewneck-sweatshirt.jpg",
+    "bytes": 33438,
+    "final_dims": [
+      554,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Stüssy Hoodie (pullover)",
+    "slug": "st-ssy-hoodie-pullover",
+    "query": "Stussy basic pullover hoodie",
+    "title": "Áo Basic Hoodie Stussy 'Grey' 1924762-ASH - Jordan 1",
+    "image_url": "https://www.jordan1.vn/wp-content/uploads/2023/09/stussy-basic-stussy-pullover-hoo_f8edabc147944f4796b58917b2d74edc.png",
+    "source_url": "https://www.jordan1.vn/products/ao-basic-hoodie-stussy-grey-1924762/",
+    "pick_reason": "retry_first3",
+    "file_path": "out/st-ssy-hoodie-pullover.jpg",
+    "bytes": 39181,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Stüssy Hoodie / Crewneck",
+    "slug": "st-ssy-hoodie-crewneck",
+    "query": "Stussy crewneck hoodie",
+    "title": "Stussy Toronto Light Grey Crewneck Hoodie - Depop",
+    "image_url": "https://media-photos.depop.com/b1/23783838/1865990302_83d1ff96bd7d47f9a4c14e5c05e4cefa/P0.jpg",
+    "source_url": "https://www.depop.com/products/veronicaatu-stussy-toronto-light-grey-crewneck/",
+    "pick_reason": "retry_first3",
+    "file_path": "out/st-ssy-hoodie-crewneck.jpg",
+    "bytes": 113148,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Stussy Zip Hoodie",
+    "slug": "stussy-zip-hoodie",
+    "query": "Stussy Zip Hoodie",
+    "title": "Basic Stüssy Zip Hoodie in ash heather – Stüssy",
+    "image_url": "https://www.stussy.com/cdn/shop/files/1975000_ASHH_1.jpg?v=1728313889&width=1920",
+    "source_url": "https://www.stussy.com/products/1975000-basic-stussy-zip-hoodie-ash-heather",
+    "pick_reason": "brand:stussy",
+    "file_path": "out/stussy-zip-hoodie.jpg",
+    "bytes": 27726,
+    "final_dims": [
+      511,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Supreme × Dr.Martens (1461 / 2046 / 램지 / 펜톤)",
+    "slug": "supreme-dr-martens-1461-2046",
+    "query": "Supreme × Dr.Martens",
+    "title": "Supreme Dr. Martens 1461 3-Eye Skull Oxford Release Date",
+    "image_url": "https://wwd.com/wp-content/uploads/2025/11/dr-martens-supreme-1461-3-eye-skull-oxford-007.jpg",
+    "source_url": "https://wwd.com/footwear-news/sneaker-news/supreme-dr-martens-1461-3-eye-skull-oxford-release-date-1238361711/",
+    "pick_reason": "first_result",
+    "file_path": "out/supreme-dr-martens-1461-2046.jpg",
+    "bytes": 46851,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Supreme × Nike Air Max (collab)",
+    "slug": "supreme-nike-air-max-collab",
+    "query": "Supreme × Nike Air Max",
+    "title": "Air Max Plus x Supreme 'Mean Green' Release Date. Nike SNKRS",
+    "image_url": "https://static.nike.com/a/images/w_1280,q_auto,f_auto/c37475c7-3bef-4f69-b078-58c8a8d40904/air-max-plus-x-supreme-mean-green-release-date.jpg",
+    "source_url": "https://www.nike.com/launch/t/air-max-plus-supreme-mean-green",
+    "pick_reason": "brand:nike",
+    "file_path": "out/supreme-nike-air-max-collab.jpg",
+    "bytes": 57657,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Supreme × Nike SB (덩크 / 블레이저 / 에어포스2)",
+    "slug": "supreme-nike-sb-2",
+    "query": "Supreme × Nike SB",
+    "title": "Supreme × NIKE SB DUNK LOW & HIGH RAMMELLZEE 23FW 23AWが9/2 Week2に国内発売予定 ...",
+    "image_url": "https://godmeetsfashion.com/wp-content/uploads/2022/11/supreme-nike-sb-dunk-low-high-fd8778-001-100-release-2023.jpg",
+    "source_url": "https://godmeetsfashion.com/2022/11/16/supreme-nike-sb-dunk-low-release-2023/",
+    "pick_reason": "first_result",
+    "file_path": "out/supreme-nike-sb-2.jpg",
+    "bytes": 87781,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Supreme × TNF 1996 Nuptse",
+    "slug": "supreme-tnf-1996-nuptse",
+    "query": "Supreme × TNF 1996 Nuptse",
+    "title": "Men’s 1996 Retro Nuptse Jacket | The North Face UK",
+    "image_url": "https://assets.thenorthface.eu/images/t_img/f_auto,h_1300,e_sharpen:60,w_1300/dpr_2.0/v1720721294/NF0A3C8D7GO-ALT5/Mens-1996-Retro-Nuptse-Jacket-TNF-ALT5.png",
+    "source_url": "https://www.thenorthface.com/en-gb/p/men-211701/men-s-1996-retro-nuptse-jacket-NF0A3C8D?CJEVENT=e4086dfd0c9811f181b1001f0a18b8fa",
+    "pick_reason": "brand:tnf",
+    "file_path": "out/supreme-tnf-1996-nuptse.jpg",
+    "bytes": 46213,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Supreme Box Logo (Hoodie/Tee/Crewneck — 시즌별 가격 상이)",
+    "slug": "supreme-box-logo-hoodie-tee-crewneck",
+    "query": "Supreme Box Logo",
+    "title": "Supreme Box Logo Hooded Sweatshirt",
+    "image_url": "https://cdn.myikas.com/images/04e24f84-a5b9-420f-9cf9-115d5970e109/2e3d2292-5e76-46f6-9c44-3c6a1cb763e6/3840/fall-winter2023-box-logo-hooded-sweatshirt-7.webp",
+    "source_url": "https://ohmsole.com/supreme-box-logo-hooded-sweatshirt-2",
+    "pick_reason": "first_result",
+    "file_path": "out/supreme-box-logo-hoodie-tee-crewneck.jpg",
+    "bytes": 34975,
+    "final_dims": [
+      584,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Thom Browne Cardigan (시그니처 V넥/포멀 가디건)",
+    "slug": "thom-browne-cardigan-v",
+    "query": "Thom Browne Cardigan",
+    "title": "THOM BROWNE: cardigan for man - Grey | Thom Browne cardigan ...",
+    "image_url": "https://img.giglio.com/images/prodZoom/D86384.020_4.jpg",
+    "source_url": "https://www.giglio.com/eng/clothing-men_sweater-thom-browne-mkc310ay3007-120.html",
+    "pick_reason": "first_result",
+    "file_path": "out/thom-browne-cardigan-v.jpg",
+    "bytes": 40139,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Thom Browne Knit Sweater (케이블/긴팔 니트)",
+    "slug": "thom-browne-knit-sweater",
+    "query": "Thom Browne Knit Sweater",
+    "title": "Thom Browne Blue Cable-Knit Sweater Thom Browne",
+    "image_url": "https://cdn.clothbase.com/uploads/cee20c94-5666-4753-8d45-95fc462d3fbc/23885310_53997975_1000.jpg",
+    "source_url": "https://clothbase.com/items/169e97b3_thom-browne-blue-cable-knit-sweater_thom-browne",
+    "pick_reason": "first_result",
+    "file_path": "out/thom-browne-knit-sweater.jpg",
+    "bytes": 62459,
+    "final_dims": [
+      479,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Thom Browne Shirt (옥스포드/드레스/럭비)",
+    "slug": "thom-browne-shirt",
+    "query": "Thom Browne Shirt",
+    "title": "THOM BROWNE - Cotton Shirt Thom Browne",
+    "image_url": "https://cdn.clothbase.com/uploads/bf7a6865-1a45-4818-9a0c-22539cc9914b/840324601---32s---thombrownepre---mwl319a06177100_1.jpg",
+    "source_url": "https://clothbase.com/items/333e22ef_thom-browne-cotton-shirt_thom-browne",
+    "pick_reason": "first_result",
+    "file_path": "out/thom-browne-shirt.jpg",
+    "bytes": 18042,
+    "final_dims": [
+      479,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Thom Browne Suit/Blazer/Coat (premium tier 200~400만)",
+    "slug": "thom-browne-suit-blazer-coat-premium-tier-200-400",
+    "query": "Thom Browne Suit Blazer Coat",
+    "title": "THOM BROWNE Slim-Fit Striped Wool Blazer for Men | MR PORTER",
+    "image_url": "https://www.mrporter.com/variants/images/46376663163010636/in/w2000_q60.jpg",
+    "source_url": "https://www.mrporter.com/en-gb/mens/product/thom-browne/clothing/single-breasted-blazers/slim-fit-striped-wool-blazer/46376663163010636",
+    "pick_reason": "first_result",
+    "file_path": "out/thom-browne-suit-blazer-coat-premium-tier-200-400.jpg",
+    "bytes": 27243,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Thom Browne Sweat/Hoodie (스웻셔츠/맨투맨/후디)",
+    "slug": "thom-browne-sweat-hoodie",
+    "query": "Thom Browne Sweat Hoodie",
+    "title": "THOM BROWNE 4 Bars Zip Hoodie Sweatshirt Thom Browne",
+    "image_url": "https://cdn.clothbase.com/uploads/c2e14303-451b-40cb-96be-d1bf32e277aa/313efdde-f91d-425a-8c43-bd9ff7dc9f5f20240503085440.jpg",
+    "source_url": "https://clothbase.com/items/9671d33b_thom-browne-4-bars-zip-hoodie-sweatshirt_thom-browne",
+    "pick_reason": "first_result",
+    "file_path": "out/thom-browne-sweat-hoodie.jpg",
+    "bytes": 29463,
+    "final_dims": [
+      480,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "TNF 1996 Retro Nuptse",
+    "slug": "tnf-1996-retro-nuptse",
+    "query": "TNF 1996 Retro Nuptse",
+    "title": "Men’s 1996 Retro Nuptse Jacket | The North Face UK",
+    "image_url": "https://assets.thenorthface.eu/images/t_img/f_auto,h_1300,e_sharpen:60,w_1300/dpr_2.0/v1720721294/NF0A3C8D7GO-ALT5/Mens-1996-Retro-Nuptse-Jacket-TNF-ALT5.png",
+    "source_url": "https://www.thenorthface.com/en-gb/p/men-211701/men-s-1996-retro-nuptse-jacket-NF0A3C8D?CJEVENT=e4086dfd0c9811f181b1001f0a18b8fa",
+    "pick_reason": "brand:tnf",
+    "file_path": "out/tnf-1996-retro-nuptse.jpg",
+    "bytes": 46213,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "TNF Denali Fleece",
+    "slug": "tnf-denali-fleece",
+    "query": "TNF Denali Fleece",
+    "title": "Men's Retro Denali Fleece Jacket TNF BLACK | Fleece | The North Face ...",
+    "image_url": "https://thenorthface.com.au/dw/image/v2/BDFS_PRD/on/demandware.static/-/Sites-northface-master-catalog/default/dw1c79b156/images/NF0A88XH/NF0A88XHJK3_8.jpg?sw=1000&sh=1000",
+    "source_url": "https://thenorthface.com.au/product/mens-retro-denali-fleece-jacket/NF0A88XHJK3.html",
+    "pick_reason": "brand:tnf",
+    "file_path": "out/tnf-denali-fleece.jpg",
+    "bytes": 24792,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "TNF Hiking Boots (등산화)",
+    "slug": "tnf-hiking-boots",
+    "query": "TNF Hiking Boots",
+    "title": "Men's Hedgehog Mid GORE-TEX® Boots TNF BLACK-ASPHALT GREY | Hiking ...",
+    "image_url": "https://thenorthface.com.au/dw/image/v2/BDFS_PRD/on/demandware.static/-/Sites-northface-master-catalog/default/dw51e632b9/images/NF0A8AAA/NF0A8AAAKT0_1.jpg?sw=1000&sh=1000",
+    "source_url": "https://thenorthface.com.au/product/mens-hedgehog-mid-gore-tex-boots/NF0A8AAAKT0.html",
+    "pick_reason": "brand:tnf",
+    "file_path": "out/tnf-hiking-boots.jpg",
+    "bytes": 38228,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "TNF Mountain Jacket (Gore-Tex)",
+    "slug": "tnf-mountain-jacket-gore-tex",
+    "query": "TNF Mountain Jacket",
+    "title": "Men’s Summit Series Mountain GORE-TEX® Pro Jacket | The North Face",
+    "image_url": "https://assets.thenorthface.com/images/t_img/f_auto,h_400,w_344,e_unsharp_mask:100/dpr_2.0/v1754066904/NF0A8C9MZU3-HERO/Mens-Summit-Series-Mountain-GORETEX-Pro-Jacket.png",
+    "source_url": "https://www.thenorthface.com/en-us/p/mens/collections/summit-series-324273/mens-summit-series-mountain-gore-tex-pro-jacket-NF0A8C9M",
+    "pick_reason": "brand:tnf",
+    "file_path": "out/tnf-mountain-jacket-gore-tex.jpg",
+    "bytes": 34198,
+    "final_dims": [
+      550,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "TNF Nuptse Mule (슬리퍼)",
+    "slug": "tnf-nuptse-mule",
+    "query": "TNF Nuptse Mule",
+    "title": "The North Face Nuptse Mule Bootie - Women's - Footwear",
+    "image_url": "https://content.backcountry.com/images/items/1200/TNF/TNFZB8H/TNBLTNWH.jpg",
+    "source_url": "https://www.backcountry.com/the-north-face-nuptse-mule-bootie-womens",
+    "pick_reason": "retry_first3",
+    "file_path": "out/tnf-nuptse-mule.jpg",
+    "bytes": 32574,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "TNF Purple Label (Nanamica 일본)",
+    "slug": "tnf-purple-label-nanamica",
+    "query": "TNF Purple Label",
+    "title": "THE NORTH FACE PURPLE LABEL High Bulky Pocket Tee Sax（ザ・ノース・フェイス パープル ...",
+    "image_url": "https://assets.atmos-tokyo.com/items/2/nt3422n-sx-3.jpg",
+    "source_url": "https://www.atmos-tokyo.com/item/thenorthfacepurplelabel/nt3422n-sx",
+    "pick_reason": "first_result",
+    "file_path": "out/tnf-purple-label-nanamica.jpg",
+    "bytes": 70932,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "TNF White Label / Novelty (한국 단독 라인 다운)",
+    "slug": "tnf-white-label-novelty",
+    "query": "TNF White Label Novelty",
+    "title": "The North Face White Label Novelty Nuptse Down Jacket Black Men's - US",
+    "image_url": "https://images.stockx.com/images/The-North-Face-White-Label-Novelty-Nuptse-Down-Jacket-Black.jpg?fit=fill&bg=FFFFFF&w=700&h=500&fm=webp&auto=compress&q=90&dpr=2&trim=color&updated_at=1666334444?height=78&width=78",
+    "source_url": "https://stockx.com/the-north-face-white-label-novelty-nuptse-down-jacket-black",
+    "pick_reason": "first_result",
+    "file_path": "out/tnf-white-label-novelty.jpg",
+    "bytes": 33925,
+    "final_dims": [
+      640,
+      457
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Tom Ford Oud Wood 50ml",
+    "slug": "tom-ford-oud-wood-50ml",
+    "query": "Tom Ford Oud Wood 50ml",
+    "title": "Oud Wood by Tom Ford 50ml EDP | Perfume NZ",
+    "image_url": "https://cdn.shopify.com/s/files/1/0259/7733/products/tom-ford-oud-wood-50ml_1024x1024.png?v=1557299470",
+    "source_url": "https://www.perfumenz.co.nz/products/oud-wood-by-tom-ford-50ml-edp",
+    "pick_reason": "first_result",
+    "file_path": "out/tom-ford-oud-wood-50ml.jpg",
+    "bytes": 73356,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "UGG Classic Ultra Mini Platform",
+    "slug": "ugg-classic-ultra-mini-platform",
+    "query": "UGG Classic Ultra Mini Platform",
+    "title": "Kids' Classic Ultra Mini Platform Classic Boot | UGG®",
+    "image_url": "https://dms.deckers.com/ugg/image/upload/f_auto,q_40,dpr_2/b_rgb:f4f2ee/w_1200/v1729721790/1157791K-CHE_2.png?_s=RAABAB0",
+    "source_url": "https://www.ugg.com/kids-big-kids-classic-boots/classic-ultra-mini-platform/1157791K.html",
+    "pick_reason": "brand:ugg",
+    "file_path": "out/ugg-classic-ultra-mini-platform.jpg",
+    "bytes": 19486,
+    "final_dims": [
+      640,
+      369
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "UGG Tasman",
+    "slug": "ugg-tasman",
+    "query": "UGG Tasman",
+    "title": "Women's UGG Tasman Slippers | UGG® UK",
+    "image_url": "https://dms.deckers.com/ugg/image/upload/f_auto,q_auto,dpr_auto/v1730914911/5955-CHE_1.png?_s=RAABAB0",
+    "source_url": "https://www.ugg.com/uk/tasman-slippers/",
+    "pick_reason": "brand:ugg",
+    "file_path": "out/ugg-tasman.jpg",
+    "bytes": 21050,
+    "final_dims": [
+      640,
+      292
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Vans × CDG (collab)",
+    "slug": "vans-cdg-collab",
+    "query": "Vans × CDG",
+    "title": "Vans CDG OG Authentic CDG Print Vans | Grailed",
+    "image_url": "https://media-assets.grailed.com/prd/listing/temp/4f118c55bb96460682fa31b5b5e29daa?h=700&fit=clip&auto=format",
+    "source_url": "https://www.grailed.com/listings/57666415-comme-des-garcons-x-vans-cdg-og-authentic-cdg-print-vans",
+    "pick_reason": "first_result",
+    "file_path": "out/vans-cdg-collab.jpg",
+    "bytes": 103312,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Vans SK8-Hi (Classic / Reissue)",
+    "slug": "vans-sk8-hi-classic-reissue",
+    "query": "Vans SK8-Hi",
+    "title": "Shop Sk8-Hi - Signature High-Top Since 1978 | Vans",
+    "image_url": "https://assets.vans.com/images/t_img/c_fill,g_center,f_auto,h_550,w_440,e_unsharp_mask:100/dpr_2.0/v1734656306/VN000D5IB8C-ALT1/Sk8Hi-Shoe.png",
+    "source_url": "https://www.vans.com/en-us/c/shoes/icons/sk8-hi-5325",
+    "pick_reason": "brand:vans",
+    "file_path": "out/vans-sk8-hi-classic-reissue.jpg",
+    "bytes": 35806,
+    "final_dims": [
+      512,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Wales Bonner × Adidas Samba (collab)",
+    "slug": "wales-bonner-adidas-samba-collab",
+    "status": "skipped_exists",
+    "file_path": "out/wales-bonner-adidas-samba-collab.jpg",
+    "bytes": 174551
+  },
+  {
+    "sku_name": "Yeezy Boost 500 / 700",
+    "slug": "yeezy-boost-500-700",
+    "query": "Yeezy Boost 500 700",
+    "title": "Yeezy Boost 500 vs 700 (Material, Comfort, Sizing, Price)",
+    "image_url": "https://wearenthusiast.com/wp-content/uploads/2022/09/Yeezy-Boost-500-vs-700.webp",
+    "source_url": "https://wearenthusiast.com/yeezy-boost-500-vs-700/",
+    "pick_reason": "first_result",
+    "file_path": "out/yeezy-boost-500-700.jpg",
+    "bytes": 40912,
+    "final_dims": [
+      640,
+      322
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Yeezy Foam Runner",
+    "slug": "yeezy-foam-runner",
+    "query": "Yeezy Foam Runner",
+    "title": "adidas Yeezy Foam Runner MXT Moon Grey GV7904 | SneakerNews.com",
+    "image_url": "https://sneakernews.com/wp-content/uploads/2021/03/adidas-Yeezy-Foam-Runner-MXT-GV7904-2.jpeg?w=1140",
+    "source_url": "https://sneakernews.com/2021/03/01/adidas-yeezy-foam-runner-mxt-moon-grey-release-date/",
+    "pick_reason": "first_result",
+    "file_path": "out/yeezy-foam-runner.jpg",
+    "bytes": 78461,
+    "final_dims": [
+      640,
+      640
+    ],
+    "status": "ok"
+  },
+  {
+    "sku_name": "Yeezy Slide",
+    "slug": "yeezy-slide",
+    "query": "Yeezy Slide",
+    "title": "Yeezy Slide - Sandalias Exclusivas en TheGarden – The Garden",
+    "image_url": "https://gardentm.com/cdn/shop/products/adidas-yeezy-yeezy-slide-onyx_18132062_43086639_2048.jpg?v=1717252996&width=2048",
+    "source_url": "https://gardentm.com/collections/yeezy-slide",
+    "pick_reason": "first_result",
+    "file_path": "out/yeezy-slide.jpg",
+    "bytes": 18877,
+    "final_dims": [
+      640,
+      384
+    ],
+    "status": "ok"
+  }
+]

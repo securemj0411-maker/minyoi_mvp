@@ -47,6 +47,8 @@ export type RevealCard = {
   // catalog Sku.confusionNote 그대로. UI 에서 카드 하단 expandable 표시.
   confusionNote?: string | null;
   thumbnailUrl: string | null;
+  // Wave 886 (2026-05-27): SKU 일반 이미지 (anti-leak). 있으면 카드 노출 시 우선 사용, 없으면 thumbnailUrl 폴백.
+  genericImageUrl?: string | null;
   expectedProfitMin: number;
   expectedProfitMax: number;
   confidence: number;

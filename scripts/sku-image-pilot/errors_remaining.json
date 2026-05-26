@@ -1,0 +1,9 @@
+[
+  {
+    "sku_name": "Louis Vuitton LV Trainer",
+    "slug": "louis-vuitton-lv-trainer",
+    "query": "Louis Vuitton LV Trainer sneaker",
+    "status": "error",
+    "error": "<HTTPError 403: 'Forbidden'>"
+  }
+]

@@ -9,6 +9,7 @@ import { ConditionChip, ConditionPhotoBadge, ConditionTierChip, ConditionChipsLi
 import { CategoryWatermark } from "@/components/category-watermark";
 import { RiskScoreBar } from "@/components/risk-score-bar";
 import { BunjangLogo, DanawaLogo, JoongnaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
+import { SkuImageLockBadge } from "@/components/sku-image-lock-badge";
 import {
   ActivityIcon,
   AlertTriangleIcon,
@@ -116,6 +117,7 @@ type RelatedRevealItem = {
   name: string;
   price: number;
   thumbnailUrl: string | null;
+  genericImageUrl?: string | null;
   expectedProfitMin: number;
   expectedProfitMax: number;
   marketBasis: RevealCard["marketBasis"] | null;
@@ -2190,7 +2192,10 @@ function PurchaseDecisionHeader({ card }: { card: RevealCard }) {
 
 function RevealProductImage({ card }: { card: RevealCard }) {
   const [previewOpen, setPreviewOpen] = useState(false);
-  const largePreview = previewOpen && card.thumbnailUrl ? (
+  // Wave 886 (2026-05-27): 카드 뷰엔 SKU 일반 이미지 우선 (anti-leak),
+  // 크게보기 모달은 사용자가 액션해서 연 거니까 원본도 같이 허용 — 일단 displayUrl 일관 사용.
+  const displayUrl = card.genericImageUrl ?? card.thumbnailUrl;
+  const largePreview = previewOpen && displayUrl ? (
     <>
       <div
         className="fixed inset-0 z-[220] bg-zinc-950/86 backdrop-blur-sm"
@@ -2211,7 +2216,7 @@ function RevealProductImage({ card }: { card: RevealCard }) {
       >
         <div className="relative h-full max-h-[88dvh] w-full max-w-3xl">
           <Image
-            src={card.thumbnailUrl}
+            src={displayUrl ?? ""}
             alt={card.name}
             fill
             sizes="100vw"
@@ -2244,16 +2249,17 @@ function RevealProductImage({ card }: { card: RevealCard }) {
          style={{ minHeight: 280, maxHeight: "60dvh" }}>
       {/* Wave 393.3: ConditionPhotoBadge 모달에선 nav (좌상 ← 🏠 floating)에 가려서 제거.
           텍스트 영역 LastVerifiedAtBadge 옆에 ConditionChip으로 대체 노출. */}
-      {card.thumbnailUrl ? (
+      {displayUrl ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={card.thumbnailUrl}
+            src={displayUrl}
             alt={card.name}
             className="h-auto w-auto max-h-[60dvh] max-w-full object-contain"
             loading="eager"
             decoding="async"
           />
+          {card.genericImageUrl ? <SkuImageLockBadge /> : null}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/12 to-transparent" />
           {/* Wave 751 (2026-05-25): 사진 위 우하단 카테고리 워터마크 배지. */}
           <CategoryWatermark
@@ -2689,9 +2695,9 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
           {card.price > 0 ? (
             <li className="flex items-center gap-2.5 bg-[#fffbef] px-2.5 py-3 dark:bg-amber-950/20 sm:gap-3 sm:px-3">
               <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[9px] bg-zinc-100 ring-2 ring-amber-300 dark:bg-zinc-800 dark:ring-amber-700 sm:h-[52px] sm:w-[52px]">
-                {card.thumbnailUrl ? (
+                {(card.genericImageUrl ?? card.thumbnailUrl) ? (
                   <>
-                    <Image src={card.thumbnailUrl} alt="" fill sizes="(max-width: 640px) 44px, 52px" unoptimized className="object-cover" />
+                    <Image src={card.genericImageUrl ?? card.thumbnailUrl ?? ""} alt="" fill sizes="(max-width: 640px) 44px, 52px" unoptimized className="object-cover" />
                     {/* Wave 751 (2026-05-25): 카테고리 워터마크 배지 (corner). */}
                     <CategoryWatermark
                       comparableKey={card.marketBasis?.comparableKey ?? null}

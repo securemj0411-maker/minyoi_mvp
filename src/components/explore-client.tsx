@@ -12,6 +12,7 @@ import { ConditionPhotoBadge, ConditionTierPhotoBadge } from "@/components/condi
 import { CategoryWatermark } from "@/components/category-watermark";
 import KakaoLogo from "@/components/kakao-logo";
 import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
+import { SkuImageLockBadge } from "@/components/sku-image-lock-badge";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { detectBrandDepth } from "@/lib/category-brand-depth";
 import type { DetailEventType } from "@/lib/detail-analytics";
@@ -36,6 +37,7 @@ type PoolItem = {
   marketplaceSource?: string | null;
   marketplaceLabel?: string | null;
   thumbnailUrl: string | null;
+  genericImageUrl?: string | null;
   skuId: string | null;
   skuName: string | null;
   expectedProfitMin: number;
@@ -305,6 +307,7 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
     skuId: item.skuId,
     skuName: item.skuName ?? item.name,
     thumbnailUrl: item.thumbnailUrl,
+    genericImageUrl: item.genericImageUrl ?? null,
     expectedProfitMin: item.expectedProfitMin,
     expectedProfitMax: item.expectedProfitMax,
     confidence: item.confidence ?? 0,
@@ -440,13 +443,14 @@ function hasPaidOrFreeDetailAccess(snapshot: DetailAccessSnapshot, freeDetailRem
 }
 
 type SortOption = "profit_desc" | "latest" | "price_asc";
-type SourceOption = "all" | "bunjang" | "joongna";
+type SourceOption = "all" | "bunjang" | "joongna" | "daangn";
 type BudgetFilterOption = "all" | "150000" | "300000" | "500000";
 
 const SOURCE_OPTIONS: Array<{ value: SourceOption; label: string }> = [
   { value: "all", label: "출처 전체" },
   { value: "bunjang", label: "번개장터" },
   { value: "joongna", label: "중고나라" },
+  { value: "daangn", label: "당근" },
 ];
 
 const BUDGET_FILTER_OPTIONS: Array<{ value: BudgetFilterOption; label: string; shortLabel: string; max: number | null }> = [
@@ -740,6 +744,7 @@ function revealCardToPoolItem(card: RevealCard): PoolItem {
     marketplaceSource: card.marketplaceSource ?? "bunjang",
     marketplaceLabel: card.marketplaceLabel ?? "번개장터",
     thumbnailUrl: card.thumbnailUrl,
+    genericImageUrl: card.genericImageUrl ?? null,
     skuId: card.skuId ?? null,
     skuName: card.skuName,
     expectedProfitMin: card.expectedProfitMin,
@@ -1675,7 +1680,7 @@ export default function ExploreClient({
   });
   const [source, setSource] = useState<SourceOption>(() => {
     const raw = searchParams.get("source");
-    return raw === "bunjang" || raw === "joongna" ? raw : "all";
+    return raw === "bunjang" || raw === "joongna" || raw === "daangn" ? raw : "all";
   });
   const [budgetFilter, setBudgetFilter] = useState<BudgetFilterOption>(() => readBudgetFilterOption(storageScope));
   const budgetOption = budgetFilterOption(budgetFilter);
@@ -2071,6 +2076,7 @@ export default function ExploreClient({
         name: it.name,
         price: it.price,
         thumbnailUrl: it.thumbnailUrl,
+        genericImageUrl: it.genericImageUrl ?? null,
         expectedProfitMin: it.expectedProfitMin,
         expectedProfitMax: it.expectedProfitMax,
         marketBasis: it.skuMedian
@@ -2717,14 +2723,14 @@ export default function ExploreClient({
                 }`}
               >
                 <div className={`relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 ${isSoldOut ? "grayscale" : ""}`}>
-                  {item.thumbnailUrl ? (
+                  {(item.genericImageUrl ?? item.thumbnailUrl) ? (
                     <Image
-                      src={item.thumbnailUrl}
+                      src={item.genericImageUrl ?? item.thumbnailUrl ?? ""}
                       alt={item.name}
                       fill
                       sizes="120px"
                       unoptimized
-                      className={`object-cover ${isSoldOut ? "opacity-60" : ""} ${lockedPreview ? "scale-105 blur-[1.5px]" : ""}`}
+                      className={`object-cover ${isSoldOut ? "opacity-60" : ""} ${lockedPreview && !item.genericImageUrl ? "scale-105 blur-[1.5px]" : ""}`}
                     />
                   ) : (
                     // Wave 749 (2026-05-25): 썸네일 없을 때 카테고리 워터마크 placeholder.
@@ -2734,7 +2740,10 @@ export default function ExploreClient({
                       size={60}
                     />
                   )}
-                  {lockedPreview && !isSoldOut ? (
+                  {/* Wave 886 (2026-05-27): generic 이미지 있으면 잠금 CTA 배지 1개만 (위장 이미지 그대로 보이게).
+                      generic 없는 잠긴 카드는 기존 CategoryIcon center + "상세에서 원문 공개" overlay 유지. */}
+                  {item.genericImageUrl && !isSoldOut ? <SkuImageLockBadge variant="compact" /> : null}
+                  {lockedPreview && !isSoldOut && !item.genericImageUrl ? (
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-br from-black/10 via-transparent to-black/20">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/88 shadow-[0_4px_14px_rgba(15,23,42,0.16)] ring-1 ring-white/70 backdrop-blur dark:bg-zinc-950/82 dark:ring-zinc-700/60">
                         <CategoryIcon
@@ -2744,7 +2753,7 @@ export default function ExploreClient({
                         />
                       </div>
                       <span className="absolute bottom-2 left-2 rounded-full bg-black/58 px-2 py-0.5 text-[9px] font-black text-white backdrop-blur">
-                        상세에서 원문 공개
+                        탭해서 실제 매물 사진 보기
                       </span>
                     </div>
                   ) : null}
@@ -2771,7 +2780,7 @@ export default function ExploreClient({
                     </div>
                   ) : null}
                   {/* Wave 751 (2026-05-25): 사진 위 우하단 카테고리 워터마크 배지 (HTML 레퍼런스). */}
-                  {item.thumbnailUrl ? (
+                  {(item.genericImageUrl ?? item.thumbnailUrl) ? (
                     <CategoryWatermark
                       category={item.category}
                       comparableKey={item.comparableKey ?? null}
@@ -2804,11 +2813,12 @@ export default function ExploreClient({
                   <div className="mt-1.5 flex items-baseline gap-1.5">
                     {/* Wave launch-117b (2026-05-24): 수익 = emerald (사용자 정정, light+dark 둘 다). */}
                     <span className={`text-lg font-bold tabular-nums ${isSoldOut ? "text-zinc-500 line-through dark:text-zinc-500" : "text-emerald-600 dark:text-emerald-400"}`}>
-                      {lockedPreview ? lockedProfitLabel(item) : `+${krw(profitAvg(item))}`}
+                      {/* Wave 886.2 (2026-05-27): 잠금 카드도 차익 exact 노출. 시세/매입가는 fuzzy 유지 → 역산 어려움. */}
+                      +{krw(profitAvg(item))}
                     </span>
                     {lockedPreview ? (
                       <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                        {freeDetailAvailable ? "첫 상세 무료" : "정확가 잠김"}
+                        {freeDetailAvailable ? "첫 상세 무료" : "시세 잠김"}
                       </span>
                     ) : pct != null ? (
                       <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${isSoldOut ? "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500" : "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-200"}`}>
@@ -2855,13 +2865,8 @@ export default function ExploreClient({
                             ? `${hoursAgoLabel(item.firstSeenAt)} 등록`
                             : hoursAgoLabel(item.lastVerifiedAt)}
                         </span>
-                        {lockedPreview ? (
-                          <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                            출처 잠금
-                          </span>
-                        ) : (
-                          <MarketplaceSourceBadge source={item.marketplaceSource} label={item.marketplaceLabel} />
-                        )}
+                        {/* Wave 886.2 (2026-05-27): 잠금 카드도 source 로고 노출 (일반 이미지로 leak 차단된 후). */}
+                        <MarketplaceSourceBadge source={item.marketplaceSource} label={item.marketplaceLabel} />
                         {lockedPreview && item.priceSignalLabel ? (
                           <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
                             {item.priceSignalLabel}

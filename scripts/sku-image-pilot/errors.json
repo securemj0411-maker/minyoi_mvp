@@ -1,0 +1,251 @@
+[
+  {
+    "sku_name": "Air Force 1 Low Shadow (WMNS)",
+    "slug": "air-force-1-low-shadow-wmns",
+    "query": "Air Force 1 Low Shadow",
+    "title": "Nike Air Force 1 Low Shadow Sail Light Silver Citron Tint (Women's ...",
+    "image_url": "https://images.stockx.com/images/Nike-Air-Force-1-Low-Shadow-Sail-Light-Silver-Citron-Tint-W.jpg?fit=fill&bg=FFFFFF&w=700&h=500&fm=webp&auto=compress&q=90&dpr=2&trim=color&updated_at=1674051357",
+    "source_url": "https://stockx.com/nike-air-force-1-low-shadow-sail-light-silver-citron-tint-w",
+    "pick_reason": "first_result",
+    "status": "error",
+    "error": "<HTTPError 404: 'Not Found'>"
+  },
+  {
+    "sku_name": "Air Jordan 11 High",
+    "slug": "air-jordan-11-high",
+    "query": "Air Jordan 11 High",
+    "title": "Jordan Air Jordan 11 Retro high-top Sneakers | Grey | FARFETCH UK",
+    "image_url": "https://cdn-images.farfetch-contents.com/17/56/54/19/17565419_36502129_1000.jpg",
+    "source_url": "https://www.farfetch.com/uk/shopping/men/jordan-air-jordan-11-retro-high-top-sneakers-item-17565419.aspx",
+    "pick_reason": "first_result",
+    "status": "error",
+    "error": "<HTTPError 429: 'Too Many Requests'>"
+  },
+  {
+    "sku_name": "BAPE 롱슬리브 (FW 시즌)",
+    "slug": "bape-fw",
+    "query": "BAPE 롱슬리브",
+    "status": "no_results"
+  },
+  {
+    "sku_name": "Bose QuietComfort 45",
+    "slug": "bose-quietcomfort-45",
+    "query": "Bose QuietComfort 45",
+    "status": "no_results"
+  },
+  {
+    "sku_name": "Converse × ADER ERROR (collab)",
+    "slug": "converse-ader-error-collab",
+    "query": "Converse × ADER ERROR",
+    "title": "ADER ERROR X Converse Collection Launch - Converse Australia",
+    "image_url": "https://www.converse.com.au/media/ewave_blog/post/314/image/52a5fbacaeb4c4d5c2932b9108d5b6a3.png",
+    "source_url": "https://www.converse.com.au/stories/converse-and-ader-error-launch-second-footwear-and-apparel-collection",
+    "pick_reason": "brand:converse",
+    "status": "error",
+    "error": "<HTTPError 403: 'Forbidden'>"
+  },
+  {
+    "sku_name": "Converse × Stüssy (척테일러 70 collab)",
+    "slug": "converse-st-ssy-70-collab",
+    "query": "Converse × Stüssy",
+    "title": "Converse x Stüssy. Converse.com",
+    "image_url": "https://www.converse.com/on/demandware.static/-/Library-Sites-SharedLibrary/default/dwb8a8db0d/firstspirit/media/19_landing_pages/2024_3/D_Converse_10-17-24_GBL_Stussy_LP-LEFT.jpg",
+    "source_url": "https://www.converse.com/c/stussy",
+    "pick_reason": "brand:converse",
+    "status": "error",
+    "error": "<HTTPError 403: 'Forbidden'>"
+  },
+  {
+    "sku_name": "Galaxy Tab S7 FE",
+    "slug": "galaxy-tab-s7-fe",
+    "query": "Galaxy Tab S7 FE",
+    "title": "[Update] Samsung Galaxy Tab S7 FE Delivers a Big Experience on a Big Screen",
+    "image_url": "https://img.us.news.samsung.com/us/wp-content/uploads/2021/08/03131003/Galaxy-Tab-S7-FE_Mystic-Black_Standing-scaled.jpg",
+    "source_url": "https://news.samsung.com/us/samsung-galaxy-tab-s7-fe-big-experience-big-screen-tablet/",
+    "pick_reason": "brand:galaxy",
+    "status": "error",
+    "error": "URLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1016)'))"
+  },
+  {
+    "sku_name": "Galaxy Z Flip 4",
+    "slug": "galaxy-z-flip-4",
+    "query": "Galaxy Z Flip 4",
+    "status": "no_results"
+  },
+  {
+    "sku_name": "Gucci Rhyton Sneaker",
+    "slug": "gucci-rhyton-sneaker",
+    "query": "Gucci Rhyton Sneaker",
+    "title": "Men's GG Rhyton sneaker in beige and blue Supreme | GUCCI® US",
+    "image_url": "https://media.gucci.com/style/DarkGray_Center_0_0_980x980/1645726590/692909_UIQ20_1060_012_100_0000_Light-Mens-GG-Rhyton-sneaker.jpg",
+    "source_url": "https://www.gucci.com/us/en/pr/men/shoes-for-men/sneakers-for-men/low-top-sneakers-for-men/mens-gg-rhyton-sneaker-p-692909UIQ201060",
+    "pick_reason": "brand:gucci",
+    "status": "error",
+    "error": "TimeoutError('The read operation timed out')"
+  },
+  {
+    "sku_name": "Hermes Oran Sandal (internal learning lane)",
+    "slug": "hermes-oran-sandal-internal-learning-lane",
+    "query": "Hermes Oran Sandal",
+    "title": "Oran sandal - Blue | Hermès UK",
+    "image_url": "https://assets.hermes.com/is/image/hermesproduct/oran-sandal--202272Z BU-front-wm-1-0-0-1000-1000_g.jpg",
+    "source_url": "https://www.hermes.com/uk/en/product/oran-sandal-H202272ZvBU410/",
+    "pick_reason": "brand:hermes",
+    "status": "error",
+    "error": "InvalidURL(\"URL can't contain control characters. '/is/image/hermesproduct/oran-sandal--202272Z BU-front-wm-1-0-0-1000-1000_g.jpg' (found at least ' ')\")"
+  },
+  {
+    "sku_name": "Lacoste Pique Polo Shirt (시그니처)",
+    "slug": "lacoste-pique-polo-shirt",
+    "query": "Lacoste Pique Polo Shirt",
+    "title": "Lacoste Classic Pique Polo Shirt - Flame - L1212-SJ1",
+    "image_url": "https://us.stuartslondon.com/images/lacoste-classic-pique-polo-shirt-flame-p59508-877561_medium.jpg",
+    "source_url": "https://us.stuartslondon.com/lacoste-classic-pique-polo-shirt-flame-p59508",
+    "pick_reason": "first_result",
+    "status": "error",
+    "error": "<HTTPError 404: 'Not Found'>"
+  },
+  {
+    "sku_name": "Lacoste Sneakers (운동화)",
+    "slug": "lacoste-sneakers",
+    "query": "Lacoste Sneakers",
+    "title": "Juniors' Lacoste Gripshot Winter Mid Textile Outdoor Shoes - Sneakers ...",
+    "image_url": "https://imagena1.lacoste.com/dw/image/v2/AAUP_PRD/on/demandware.static/-/Sites-master/default/dwa8fbe587/44CUJ0005_HT3_06.jpg?imwidth=1920&impolicy=zoom",
+    "source_url": "https://www.lacoste.com/ca/en/lacoste/men/shoes/sneakers/44CUJ0005.html",
+    "pick_reason": "brand:lacoste",
+    "status": "error",
+    "error": "<HTTPError 403: 'Forbidden'>"
+  },
+  {
+    "sku_name": "Louis Vuitton LV Trainer",
+    "slug": "louis-vuitton-lv-trainer",
+    "query": "Louis Vuitton LV Trainer",
+    "title": "LV Trainer Black Sneaker for Men | LOUIS VUITTON",
+    "image_url": "https://us.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-lv-trainer-sneaker--BM9U5PMI20_PM1_Side view.png?wid=1090&hei=1090",
+    "source_url": "https://us.louisvuitton.com/eng-us/products/lv-trainer-sneaker-nvprod3150035v/1A9JGT",
+    "pick_reason": "brand:louis vuitton",
+    "status": "error",
+    "error": "InvalidURL(\"URL can't contain control characters. '/images/is/image/lv/1/PP_VP_L/louis-vuitton-lv-trainer-sneaker--BM9U5PMI20_PM1_Side view.png?wid=1090&hei=1090' (found at least ' ')\")"
+  },
+  {
+    "sku_name": "Louis Vuitton Run Away Sneaker",
+    "slug": "louis-vuitton-run-away-sneaker",
+    "query": "Louis Vuitton Run Away Sneaker",
+    "title": "Run Away Sneaker - Men - Shoes | LOUIS VUITTON",
+    "image_url": "https://ca.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-run-away-sneaker--BVU00BPC22_PM1_Interior view.jpg",
+    "source_url": "https://ca.louisvuitton.com/eng-ca/products/run-away-sneaker-nvprod6920221v/1AJ000",
+    "pick_reason": "brand:louis vuitton",
+    "status": "error",
+    "error": "InvalidURL(\"URL can't contain control characters. '/images/is/image/lv/1/PP_VP_L/louis-vuitton-run-away-sneaker--BVU00BPC22_PM1_Interior view.jpg' (found at least ' ')\")"
+  },
+  {
+    "sku_name": "NB x Auralee Collab (990v4/1906R/475/XC-72/WRPD)",
+    "slug": "nb-x-auralee-collab-990v4-1906r-475-xc-72-wrpd",
+    "query": "NB x Auralee Collab",
+    "title": "The Most Exciting Fashion Collabs You’ll Want on Your Radar",
+    "image_url": "https://www.internetvibes.net/wp-content/uploads/2025/05/AURALEE-x-New-Balance-475-New-Balance-.jpg",
+    "source_url": "https://www.internetvibes.net/2025/05/27/the-most-exciting-fashion-collabs-youll-want-on-your-radar/",
+    "pick_reason": "first_result",
+    "status": "error",
+    "error": "<HTTPError 403: 'Forbidden'>"
+  },
+  {
+    "sku_name": "NB x Stone Island Collab (991v2/574)",
+    "slug": "nb-x-stone-island-collab-991v2-574",
+    "query": "NB x Stone Island Collab",
+    "title": "Stone Island | New Balance: New 998 Sneakers Collaboration",
+    "image_url": "https://www.stoneisland.com/on/demandware.static/-/Library-Sites-library-stone-global/default/dwed2b423d/flp-2025/flp-NB-170325/FLP-NB-UNVEIL_R329_RME_StoneIslandXNewBalance_015_06_3x41-170325.jpg",
+    "source_url": "https://www.stoneisland.com/en-gb/stone-island-new-balance-collaboration.html",
+    "pick_reason": "brand:stone island",
+    "status": "error",
+    "error": "<HTTPError 403: 'Forbidden'>"
+  },
+  {
+    "sku_name": "Nike × Stüssy Apparel (collab)",
+    "slug": "nike-st-ssy-apparel-collab",
+    "query": "Nike × Stüssy Apparel",
+    "title": "Nike x Stüssy Apparel & Accessories Collection Release Date. Nike SNKRS",
+    "image_url": "https://static.nike.com/a/images/w_1280,q_auto,f_auto/3cbe2d86-07c5-4932-80ca-8fb61424a48f/nike-x-stüssy-apparel-accessories-collection-release-date.jpg",
+    "source_url": "https://www.nike.com/in/launch/t/nike-stussy-apparel-accessories-collection-static",
+    "pick_reason": "brand:nike",
+    "status": "error",
+    "error": "UnicodeEncodeError('ascii', 'GET /a/images/w_1280,q_auto,f_auto/3cbe2d86-07c5-4932-80ca-8fb61424a48f/nike-x-stüssy-apparel-accessories-collection-release-date.jpg HTTP/1.1', 81, 82, 'ordinal not in range(128)')"
+  },
+  {
+    "sku_name": "Nike × Stüssy Footwear (collab)",
+    "slug": "nike-st-ssy-footwear-collab",
+    "query": "Nike × Stüssy Footwear",
+    "title": "Nike x Stüssy Apparel Collection Release Date. Nike SNKRS",
+    "image_url": "https://static.nike.com/a/images/w_1280,q_auto,f_auto/3d7a7be8-5bd6-4499-9084-5ea9abb83a39/nike-x-stüssy-apparel-collection-release-date.jpg",
+    "source_url": "https://www.nike.com/my/launch/t/nike-stussy-apparel-collection-fa22",
+    "pick_reason": "brand:nike",
+    "status": "error",
+    "error": "UnicodeEncodeError('ascii', 'GET /a/images/w_1280,q_auto,f_auto/3d7a7be8-5bd6-4499-9084-5ea9abb83a39/nike-x-stüssy-apparel-collection-release-date.jpg HTTP/1.1', 81, 82, 'ordinal not in range(128)')"
+  },
+  {
+    "sku_name": "Patagonia Synchilla / Snap-T Fleece Pullover",
+    "slug": "patagonia-synchilla-snap-t-fleece-pullover",
+    "query": "Patagonia Synchilla Snap-T Fleece Pullover",
+    "title": "Patagonia Men's Lightweight Synchilla® Snap-T® Fleece Pullover",
+    "image_url": "https://www.patagonia.com/dw/image/v2/BDJB_PRD/on/demandware.static/-/Sites-patagonia-master/default/dw1a00394a/images/hi-res/25580_OAT.jpg?sw=1600&sh=1600&sfrm=png&q=80&bgcolor=f6f6f6",
+    "source_url": "https://www.patagonia.com/product/mens-lightweight-synchilla-snap-t-fleece-pullover/25580.html",
+    "pick_reason": "brand:patagonia",
+    "status": "error",
+    "error": "UnidentifiedImageError('cannot identify image file <_io.BytesIO object at 0x10ecbf150>')"
+  },
+  {
+    "sku_name": "Puma Deviate Nitro",
+    "slug": "puma-deviate-nitro",
+    "query": "Puma Deviate Nitro",
+    "title": "Deviate NITRO™ 2 Men's Running Shoes | PUMA Black-Lime Pow-PUMA White ...",
+    "image_url": "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/380076/01/sv01/fnd/THA/fmt/png/Deviate-NITRO™-2-Men's-Running-Shoes",
+    "source_url": "https://th.puma.com/th/en/pd/deviate-nitro™-2-mens-running-shoes/380076.html",
+    "pick_reason": "brand:puma",
+    "status": "error",
+    "error": "UnicodeEncodeError('ascii', \"GET /image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/380076/01/sv01/fnd/THA/fmt/png/Deviate-NITRO™-2-Men's-Running-Shoes HTTP/1.1\", 110, 111, 'ordinal not in range(128)')"
+  },
+  {
+    "sku_name": "Puma Velocity Nitro",
+    "slug": "puma-velocity-nitro",
+    "query": "Puma Velocity Nitro",
+    "title": "Velocity NITRO™ 3 Psychedelic Rush Men's Running Shoes | PUMA Canada",
+    "image_url": "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/380080/01/sv01/fnd/PNA/fmt/png/Velocity-NITRO™-3-Psychedelic-Rush-Men's-Running-Shoes",
+    "source_url": "https://ca.puma.com/ca/en/pd/velocity-nitro-3-psychedelic-rush-mens-running-shoes/380080",
+    "pick_reason": "brand:puma",
+    "status": "error",
+    "error": "UnicodeEncodeError('ascii', \"GET /image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/380080/01/sv01/fnd/PNA/fmt/png/Velocity-NITRO™-3-Psychedelic-Rush-Men's-Running-Shoes HTTP/1.1\", 111, 112, 'ordinal not in range(128)')"
+  },
+  {
+    "sku_name": "Stüssy Hoodie (pullover)",
+    "slug": "st-ssy-hoodie-pullover",
+    "query": "Stüssy Hoodie",
+    "title": "Stussy Hoodie | Shop Authentic Stussy Hoodies Online",
+    "image_url": "https://online-stussy.com/wp-content/uploads/2024/04/Basic-Black-Stussy-Hoodie-1.jpg",
+    "source_url": "https://online-stussy.com/stussy-hoodie/",
+    "pick_reason": "brand:stüssy",
+    "status": "error",
+    "error": "<HTTPError 403: 'Forbidden'>"
+  },
+  {
+    "sku_name": "Stüssy Hoodie / Crewneck",
+    "slug": "st-ssy-hoodie-crewneck",
+    "query": "Stüssy Hoodie Crewneck",
+    "title": "Hoodies and sweatshirts Stüssy Basic Stussy Crewneck UNISEX Black ...",
+    "image_url": "https://static.ftshp.digital/img/p/8/7/0/5/1/7/870517.jpg",
+    "source_url": "https://www.footshop.com/en/hoodies-and-sweatshirts/266716-stuessy-basic-stussy-crewneck-unisex-black.html",
+    "pick_reason": "first_result",
+    "status": "error",
+    "error": "<HTTPError 403: 'Forbidden'>"
+  },
+  {
+    "sku_name": "TNF Nuptse Mule (슬리퍼)",
+    "slug": "tnf-nuptse-mule",
+    "query": "TNF Nuptse Mule",
+    "title": "The North Face Pantoffels TNF M NUPTSE MULE TNF BLACK/TNF WHITE ...",
+    "image_url": "https://go-britain.nl/wp-content/uploads/2023/01/3364909599-TNF-1-2.jpg",
+    "source_url": "https://go-britain.nl/product/the-north-face-pantoffels-tnf-m-nuptse-mule-tnf-black-tnf-white-nf0a5g2fky4/",
+    "pick_reason": "first_result",
+    "status": "error",
+    "error": "<HTTPError 404: 'Not Found'>"
+  }
+]
