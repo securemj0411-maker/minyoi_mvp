@@ -25,7 +25,9 @@ export const viewport: Viewport = {
 // "시세 비교 정보 제공" 톤. 면책은 /terms 제6·11조에 박혀 있음.
 const SITE_NAME = "득템잡이";
 const TAGLINE = "중고 매물 시세 비교 — AI가 알려주는 알뜰 득템 정보";
-const DESCRIPTION = "공개된 중고 매물의 시세를 AI가 비교해서, 시세보다 저렴한 매물 정보를 알려드립니다. 옵션 같은 본품끼리만 비교하고, 공개 직전 판매 상태를 다시 확인합니다. 매물 진위·거래 결과는 보장하지 않으며, 최종 판단은 이용자가 합니다.";
+// Wave 754 (2026-05-25): 검색엔진/SNS 미리보기용 짧은 description (80자 이내 — 네이버 서치어드바이저 권장).
+//   면책 ("매물 진위·거래 결과 보장 X, 최종 판단 이용자") 는 /terms 와 footer 에 박혀 있음.
+const DESCRIPTION = "AI가 매일 분석한 중고 매물 시세 비교. 시세보다 저렴한 알뜰 득템 정보를 알려드려요.";
 
 export const metadata: Metadata = {
   title: { default: SITE_NAME, template: `%s — ${SITE_NAME}` },
