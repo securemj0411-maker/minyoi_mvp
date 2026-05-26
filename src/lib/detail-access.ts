@@ -3,9 +3,12 @@ import { isAdminUser } from "@/lib/auth-users";
 import { getUserCreditsReadOnly, spendUserCredits } from "@/lib/user-credits";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
-// Wave 762 (2026-05-26): 1 → 2 변경. 1회는 trust build 부족 (첫 매물 quality 변동성 + 일반인 친화 X).
-//   2회 = sweet spot — 1번째 hook, 2번째 validate, 3번째 paywall motivation peak.
-export const FREE_DETAIL_ACCESS_LIMIT = 2;
+// Wave 766 (2026-05-26 사용자 결정): free rate-limit 폐기 → 가입 시 +2 크레딧 grant (FREE_CREDIT_GRANT=2) 로 통일.
+//   기존: FREE_DETAIL_ACCESS_LIMIT=2 (rate-limit bucket) + FREE_CREDIT_GRANT=0
+//   변경: FREE_CREDIT_GRANT=2 (가입 시 grant) + FREE_DETAIL_ACCESS_LIMIT=0 (free quota disabled)
+//   효과: 모든 reveal = 크레딧 차감 1 path. UI 일관. paywall 첫 도달 시 valueSummary 박스는 누적 reveal ≤ 2 조건으로 보존.
+//   호환: 기존 freeUsed/freeLimit 인터페이스 유지 (callsite 영향 0) — 0/0 박힘.
+export const FREE_DETAIL_ACCESS_LIMIT = 0;
 const DETAIL_ACCESS_UNLOCK_WINDOW_SECONDS = 10 * 365 * 24 * 60 * 60;
 
 type RateLimitRow = {

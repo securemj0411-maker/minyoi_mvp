@@ -236,7 +236,7 @@ export default async function PreviewMaskedDashboardServer() {
                 <SearchIcon width={18} height={18} className="text-[#3182f6]" />
                 <div>
                   <div className="text-[14px] font-black text-[var(--rd-ink)] dark:text-zinc-50">진행 중인 매물까지 열어볼까요?</div>
-                  <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-500">첫 상세 1개는 무료로 확인할 수 있어요.</div>
+                  <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-500">가입하면 매물 2개를 무료로 자세히 볼 수 있어요.</div>
                 </div>
               </div>
               <Link

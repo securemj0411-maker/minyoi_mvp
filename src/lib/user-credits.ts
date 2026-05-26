@@ -2,7 +2,14 @@ import type { User } from "@supabase/supabase-js";
 import { isAdminUser } from "@/lib/auth-users";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
-export const FREE_CREDIT_GRANT = 0;
+// Wave 766 (2026-05-26 사용자 결정): 가입 시 2 크레딧 grant — "무료 2회 access" rate-limit bucket 폐기.
+//   기존: FREE_CREDIT_GRANT=0 + FREE_DETAIL_ACCESS_LIMIT=2 (rate-limit 별도 시스템)
+//   변경: FREE_CREDIT_GRANT=2 + free rate-limit 폐기 → 모든 reveal = 크레딧 차감 1 path.
+//   효과:
+//     - UI 일관 ("1개 무료" stale 카피 자동 해소)
+//     - 단순화 (free/credit 분기 사라짐)
+//     - paywall 첫 도달 시 valueSummary 박스 (스크린샷 #1 design) 는 누적 reveal ≤ 2 조건으로 보존.
+export const FREE_CREDIT_GRANT = 2;
 export const ADMIN_CREDIT_LABEL = "∞";
 
 export type UserCreditState = {
