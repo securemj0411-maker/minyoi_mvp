@@ -33,6 +33,12 @@ export default function BalanceToast() {
     let toastTimer: number | null = null;
     let channelRef: ReturnType<typeof supabase.channel> | null = null;
 
+    // Wave 765b (2026-05-26 사용자 정정 — 토스트 중복 버그):
+    //   사용자: "3크레딧 받았어요 토스트 뜬 후, 다른 매물 보면 2크레딧 받았어요 라고 또 띄움".
+    //   원인: Realtime UPDATE event 가 reconnect 시 replay 되거나 multiple trigger.
+    //   해결: 마지막 toast 의 (oldBalance, newBalance) transition 30초 내 중복 차단 (dedup).
+    let lastShownTransition: { from: number; to: number; ts: number } | null = null;
+
     (async () => {
       const { data } = await supabase.auth.getUser();
       if (!data?.user || cancelled) return;
@@ -57,6 +63,15 @@ export default function BalanceToast() {
             if (newBalance <= oldBalance) return;
 
             const gained = newBalance - oldBalance;
+
+            // Wave 765b dedup — 같은 transition 30초 내 두 번째 트리거 차단.
+            const now = Date.now();
+            if (lastShownTransition) {
+              const sameTransition = lastShownTransition.from === oldBalance && lastShownTransition.to === newBalance;
+              const ageMs = now - lastShownTransition.ts;
+              if (sameTransition && ageMs < 30_000) return;
+            }
+            lastShownTransition = { from: oldBalance, to: newBalance, ts: now };
 
             // 카톡 공유 보너스인지 (last_share_bonus_at 변경) — explore-client cooldown UI 갱신용 event
             const shareBonus =
