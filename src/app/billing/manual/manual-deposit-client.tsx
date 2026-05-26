@@ -20,7 +20,9 @@ const ACCOUNT_HOLDER = "이민제";
 //   supertoss://send 가 토스 앱의 송금 화면을 prefill (bank + accountNo + amount).
 //   비공식 reverse-engineered scheme — 토스 앱 업데이트로 깨질 risk 있음 (카나리아 모니터링 별도).
 //   미설치 fallback: iOS App Store / Android Play Store via intent:// + setTimeout 휴리스틱.
-const TOSS_BANK_PARAM = "우리"; // 토스 deep link 한글 은행명 (우리은행)
+// Wave 774b (2026-05-27): 짧은 "우리" 박았더니 토스 앱에서 은행 선택 단계 떴음 (사용자 발견).
+//   원본 share 받은 작동 사례는 "토스뱅크" (풀네임) 였음. 풀네임 "우리은행" 으로 변경.
+const TOSS_BANK_PARAM = "우리은행";
 const TOSS_APP_STORE_URL = "https://apps.apple.com/kr/app/id839333328";
 const TOSS_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=viva.republica.toss";
 
