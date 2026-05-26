@@ -1005,7 +1005,10 @@ function DirectTradeConfirmModal({
 
   useEffect(() => {
     setResolvedLocation(null);
-    if (!activePid || initialLocation) {
+    // 2026-05-26: initialLocation 있어도 fetch 호출 — stale state cache 무시.
+    //   frontend state 가 PR #14 이전 시점 데이터면 directTradeLocation null.
+    //   endpoint 의 최신 응답 우선 (resolvedLocation > initialLocation).
+    if (!activePid) {
       setIsLocationLoading(false);
       return;
     }
@@ -1035,7 +1038,8 @@ function DirectTradeConfirmModal({
   }, [activePid, initialLocation]);
 
   if (!state) return null;
-  const location = initialLocation || resolvedLocation?.trim() || "";
+  // endpoint 응답 (resolvedLocation) 우선 — stale state cache override.
+  const location = resolvedLocation?.trim() || initialLocation || "";
   const hasLocation = Boolean(location);
   const locationParts = hasLocation
     ? location.split(/\s*[·,]\s*/).map((part) => part.trim()).filter(Boolean).slice(0, 3)
