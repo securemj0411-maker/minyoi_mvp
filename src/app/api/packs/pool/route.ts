@@ -4,6 +4,7 @@ import { loadV7SiblingPresence, type V7SiblingPresenceMap } from "@/lib/band-awa
 import { pickByConditionFallback } from "@/lib/condition-fallback";
 import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
 import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
+import { loadUserHomeRegion, isDaangnRegionNearby } from "@/lib/user-home-region-loader";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { createPoolAccessToken, decodePoolAccessToken, syntheticPidForPoolToken } from "@/lib/pool-access-token";
@@ -530,6 +531,7 @@ function buildItems(
   marketBands: Map<string, Map<string, MarketBandRow>>,
   v7SiblingPresence: V7SiblingPresenceMap,
   velocitySignals: Map<string, string>,
+  userHomeRegion: { daangn_full_path: string | null } | null,
   parsedGradingRows: Array<{
     pid: number;
     condition_tier: string | null;
@@ -567,6 +569,14 @@ function buildItems(
       const meta = metaByPid.get(row.pid);
       if (!raw) return null;
       const marketplaceSource = normalizeMarketplaceSource(meta?.source ?? meta?.seller_source);
+      // Wave 773 (2026-05-27): Daangn 거리 필터 — 사용자 거주 시/도 다른 매물 hide.
+      //   당근 채팅 거리 제약 (자기 인증 동네 인근만 채팅 가능) 대응. 다른 시/도면 user가 채팅 못 함 → 추천 무의미.
+      if (marketplaceSource === "daangn" && userHomeRegion?.daangn_full_path) {
+        const itemFullPath = resolveDaangnFullRegion(meta?.daangn_region_id ?? null, meta?.daangn_region_name ?? null);
+        if (!isDaangnRegionNearby(userHomeRegion.daangn_full_path, itemFullPath)) {
+          return null;
+        }
+      }
       const facts = marketplaceFactsFromRawJson({
         marketplaceSource,
         marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
@@ -739,6 +749,9 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
     const userRef = userRefForAuthUser(auth.user.id);
+    // Wave 773 (2026-05-27): 사용자 거주 동네 로드 — Daangn 매물 거리 필터링용.
+    //   set X → redirect to /onboarding/home-region (강제). API는 데이터 그대로 반환하되 클라이언트 측에서 redirect.
+    const userHomeRegion = await loadUserHomeRegion(auth.user.id);
     const url = new URL(req.url);
     const refresh = url.searchParams.get("refresh") === "1";
     // Wave 340: 정렬 옵션. Wave 353: 카테고리 필터는 클라이언트로 이동 (전체 vs 카테고리 일관성).
@@ -803,7 +816,7 @@ export async function GET(req: Request) {
       excludePids: excludeAllPids,
       readyCandidateLimit,
     });
-    items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence, velocitySignals, parsedGradingRows);
+    items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence, velocitySignals, userHomeRegion, parsedGradingRows);
 
     // Wave 373: 성향 정렬 — preference 따라 우선순위 재정렬.
     //   safe: 우수 셀러 (평점 4.5+ & 후기 10+) 우선

@@ -9,7 +9,9 @@
 //   화면엔 sr-only (시각적 hidden, screen reader / crawler 만 읽음) — visual duplication 없음.
 //   PreviewMaskedDashboard 의 client-side intro 는 그대로 유지.
 
+import { redirect } from "next/navigation";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
+import { loadUserHomeRegion } from "@/lib/user-home-region-loader";
 import MeDashboardClient from "@/components/me-dashboard-client";
 import PreviewMaskedDashboardServer from "@/components/preview-masked-dashboard-server";
 
@@ -49,6 +51,13 @@ export default async function Home() {
         <PreviewMaskedDashboardServer />
       </>
     );
+  }
+
+  // Wave 773 (2026-05-27): 로그인 후 첫 진입 — 거주 동네 미설정이면 onboarding 페이지로 redirect.
+  //   당근 매물 거리 제약 (자기 인증 동네 인근만 채팅 가능) 대응. skip 불가 — 거주지 필수.
+  const homeRegion = await loadUserHomeRegion(auth.user.id);
+  if (!homeRegion) {
+    redirect("/onboarding/home-region");
   }
 
   return <MeDashboardClient initialInventory={[]} />;
