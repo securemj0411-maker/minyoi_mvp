@@ -5040,8 +5040,10 @@ async function syncPoolAiAuditStatusesFromCurrentCache(
 }
 
 async function invalidatePoolAiAuditResidues(limit: number): Promise<number> {
+  // Wave 769 (2026-05-27): category filter 제거. 기존엔 clothing/shoe/bag만 cleanup → smartphone/earphone/tablet/laptop 등의 AI reject 매물이 ready로 잔존 (Wave 768 audit 발견 — 갤럭시 노트20 액정깨짐, Z플립6 디스플레이 흑변, "갤럭시 버즈 3 Pro" SKU지만 실제는 화웨이 프리버즈).
+  //   reject/hold residue 검사는 카테고리 무관하게 전 풀에 적용 — `isAiAuditDefiniteNonPass`가 verdict 종류만 보고 결정.
   const res = await restFetch(
-    `${tableUrl("mvp_candidate_pool")}?select=pid,ai_audit_status&status=in.(ready,reserved)&category=in.(clothing,shoe,bag)&limit=${limit}`,
+    `${tableUrl("mvp_candidate_pool")}?select=pid,ai_audit_status&status=in.(ready,reserved)&limit=${limit}`,
     { headers: serviceHeaders() },
   );
   if (!res.ok) {
