@@ -1,5 +1,6 @@
 import Link from "next/link";
 import CreditIcon from "@/components/credit-icon";
+import ManualDepositHistory from "@/components/manual-deposit-history";
 import { PLANS, formatKrw, type PlanDefinition, type PlanKey } from "@/lib/plan-config";
 
 const ORDER: PlanKey[] = ["single", "trial", "starter", "plus", "pro"];
@@ -14,7 +15,7 @@ const PACKAGE_VALUE_COPY: Record<Exclude<PlanKey, "free">, string> = {
 
 const INFO_ROWS = [
   { label: "차감 기준", value: "상세보기 또는 원본 확인 1회마다 1크레딧을 사용합니다." },
-  { label: "반영 시점", value: "결제 완료 후 보유 크레딧에 바로 더해집니다." },
+  { label: "반영 시점", value: "입금 신청이 승인되면 보유 크레딧에 더해집니다." },
   { label: "유효기간", value: "충전된 크레딧은 지급일로부터 1년 동안 사용할 수 있습니다." },
   { label: "이용 제한", value: "크레딧은 타인 양도, 재판매, 현금화가 불가합니다." },
   { label: "결제 방식", value: "자동 갱신 없이 필요한 만큼만 충전합니다." },
@@ -98,18 +99,19 @@ export default function PlansPage() {
     <main className="min-h-screen bg-[#f5f7fb] px-3 py-3 dark:bg-zinc-950 sm:px-5 sm:py-7">
       <div className="mx-auto w-full max-w-[560px]">
         <section className="rounded-[18px] border border-zinc-200 bg-white p-3.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-4">
+          {/* Wave launch-128 (2026-05-25): 가치 포지셔닝 카피 강화 — "690원" 비교 근거. */}
           <div>
             <h1 className="text-[20px] font-black leading-tight tracking-tight text-zinc-950 sm:text-[22px] dark:text-zinc-50">
-              크레딧 충전
+              매물 분석 1건, 최저 495원
             </h1>
             <p className="mt-0.5 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
-              필요한 만큼 충전
+              자동 갱신 없음 · 구독 아님 · 필요할 때만
             </p>
           </div>
 
           <p className="mt-3 break-keep text-[13px] leading-5 text-zinc-600 dark:text-zinc-300">
-            상세보기 1회 = 1크레딧. 자동 갱신 없이 한 번만 결제하고 바로 충전됩니다.
-            충전 크레딧은 1년 동안 사용할 수 있어요.
+            같은 상태 매물끼리 시세 비교하고, 배송비·수수료까지 계산한 분석 1건 = 1크레딧.
+            커피 한 잔 아끼면 매물 분석 14번 돌아요.
           </p>
         </section>
 
@@ -127,6 +129,8 @@ export default function PlansPage() {
             </Link>
           </div>
         </section>
+
+        <ManualDepositHistory />
 
         <section className="mt-3 rounded-[16px] border border-zinc-200 bg-white px-4 py-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <div className="mb-4 rounded-[14px] border border-[#e2d7c8] bg-white/70 px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">

@@ -2147,8 +2147,9 @@ export default function ExploreClient({
           variant === "sold"        ? "방금 거래된 상품이에요" :
           variant === "profit_lost" ? "시세가 떨어져서 차익이 사라졌어요" :
                                       "잠시 통신이 불안정해요";
+        // Wave launch-128 (2026-05-25): paywall 메시지 가치 포지셔닝 강화.
         const defaultMessageByVariant =
-          variant === "paywall"     ? "크레딧을 충전하면 이 매물과 다른 매물 더 볼 수 있어요." :
+          variant === "paywall"     ? "1크레딧으로 시세 비교, 비용 계산, 원본 링크까지. 최저 495원부터." :
           variant === "sold"        ? "이 매물은 방금 다른 곳에서 거래되었거나 셀러가 내린 것 같아요. 새로고침하면 다른 매물을 보여드릴게요." :
           variant === "profit_lost" ? "지금 사면 손해예요. 새로고침하면 다른 매물 보여드릴게요." :
                                       "원본 매물 확인이 잠시 실패했어요. 크레딧은 사용하지 않았어요. 잠시 후 다시 시도해주세요.";
@@ -2670,7 +2671,7 @@ export default function ExploreClient({
                     setDetailAccessLimit({
                       variant: "paywall",
                       title: "크레딧이 부족해요",
-                      message: "크레딧을 충전하면 이 매물과 다른 매물 더 볼 수 있어요.",
+                      message: "1크레딧으로 시세 비교, 비용 계산, 원본 링크까지. 최저 495원부터.",
                       creditBalance: detailAccessSnapshot.creditBalance ?? 0,
                       freeUsed: detailAccessSnapshot.freeUsed ?? 0,
                       freeLimit: detailAccessSnapshot.freeLimit ?? 0,
