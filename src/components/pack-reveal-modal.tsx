@@ -4707,8 +4707,11 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
   }
 
   // Wave 758 (2026-05-26): 당근 매너온도 metric — 후기/평점 대신 큰 °C 숫자로 표시.
+  // Wave 759 (2026-05-26): 0.0°C 는 당근에서 실질적으로 안 나오는 값 (가입 즉시 36.5°C 시작).
+  //   0 으로 박힌 건 스크래핑 실패 default → "정보 없음" 으로 fallback.
   if (safety.isDaangn) {
-    const mannerTemp = safety.sellerTrust.mannerTemperature ?? null;
+    const rawMannerTemp = safety.sellerTrust.mannerTemperature ?? null;
+    const mannerTemp = rawMannerTemp != null && rawMannerTemp > 0 ? rawMannerTemp : null;
     if (mannerTemp != null) {
       const tier = mannerTemp >= 40 ? "high" : mannerTemp >= 36.5 ? "neutral" : mannerTemp >= 30 ? "low_avg" : "below_avg";
       const tierLabel = tier === "high" ? "신뢰 강함" : tier === "neutral" ? "평균 이상" : tier === "low_avg" ? "평균 미만" : "거래 보수적";
