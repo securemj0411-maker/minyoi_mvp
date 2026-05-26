@@ -53,17 +53,16 @@ export async function POST(req: Request) {
   const row = rows[0];
   if (!row) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
 
-  // daangn 매물 fast-path: pool ready 무관 region 반환.
-  const normalizedSourceForFast = normalizeMarketplaceSource(row.source ?? row.seller_source);
-  if (isDaangnMarketplaceSource(normalizedSourceForFast) && row.daangn_region_name) {
+  // 2026-05-26 v2: ready 검사 완전 제거.
+  //   원인: 피드 노출 시점엔 ready 였던 매물이 cron tick 사이 invalidated/spent 되면
+  //         endpoint 호출 시 ready 검사 fail → 404. 사용자가 본 매물 표시 못 함.
+  //   auth user 통과한 다음이라 보안 영향 X. row 존재만 검증.
+  const marketplaceSource = normalizeMarketplaceSource(row.source ?? row.seller_source);
+
+  // daangn 매물 fast-path: daangn_region_name 즉시 반환.
+  if (isDaangnMarketplaceSource(marketplaceSource) && row.daangn_region_name) {
     return NextResponse.json({ ok: true, location: row.daangn_region_name.trim(), source: "stored" });
   }
-
-  if (!(await isReadyPoolPid(pid))) {
-    return NextResponse.json({ ok: false, error: "not_ready" }, { status: 404 });
-  }
-
-  const marketplaceSource = normalizeMarketplaceSource(row.source ?? row.seller_source);
   const storedLocation = marketplaceLocationCombinedWithRegion(row.raw_json, row.description_preview, row.daangn_region_name);
   if (storedLocation) {
     return NextResponse.json({ ok: true, location: storedLocation, source: "stored" });
