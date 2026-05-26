@@ -53,12 +53,11 @@ export async function POST(req: Request) {
   const row = rows[0];
   if (!row) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
 
+  const marketplaceSource = normalizeMarketplaceSource(row.source ?? row.seller_source);
   const storedLocation = marketplaceLocationCombinedWithRegion(row.raw_json, row.description_preview, row.daangn_region_name);
   if (storedLocation) {
     return NextResponse.json({ ok: true, location: storedLocation, source: "stored" });
   }
-
-  const marketplaceSource = normalizeMarketplaceSource(row.source ?? row.seller_source);
   const facts = marketplaceFactsFromRawJson({
     marketplaceSource,
     marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
