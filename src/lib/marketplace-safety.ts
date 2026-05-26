@@ -27,6 +27,9 @@ export type MarketplaceSafetyFacts = {
   productTradeType?: number | null;
   parcelFeeYn?: number | null;
   tradeLabels?: readonly string[] | null;
+  // Wave 758 (2026-05-26): 당근 매너온도 (0~99.9°C). NULL = backfill 미완료.
+  daangnMannerTemperature?: number | null;
+  daangnReviewCount?: number | null;
 };
 
 export type MarketplaceSafetyDisplay = {
@@ -36,7 +39,7 @@ export type MarketplaceSafetyDisplay = {
   isDaangn: boolean;
   paymentLabel: string;
   sellerTrust: {
-    kind: "joongna_trust_score" | "bunjang_rating";
+    kind: "joongna_trust_score" | "bunjang_rating" | "daangn_manner_temperature";
     metric: string;
     metricLabel: string;
     headline: string;
@@ -50,6 +53,8 @@ export type MarketplaceSafetyDisplay = {
     assessmentLabel: string;
     trustScore: number | null;
     reviewCount: number;
+    // Wave 758 (2026-05-26): 당근 매너온도 (0~99.9°C). daangn_manner_temperature 일 때만 set.
+    mannerTemperature?: number | null;
   };
   shipping: {
     transactionMode: MarketplaceTransactionMode;
@@ -270,7 +275,64 @@ export function buildMarketplaceSafetyDisplay(facts: MarketplaceSafetyFacts): Ma
   const buyerShippingLow = 0;
   const buyerShippingHigh = isDirectOnly || isIncluded || isFreeShipping ? 0 : DEFAULT_BUYER_SHIPPING_FEE_MAX;
 
-  const sellerTrust = isJoongna
+  // Wave 758 (2026-05-26): 당근 매너온도 branch — manner temp 있을 때 별도 처리.
+  //   당근은 후기/평점 대신 매너온도 (0~99.9°C, 36.5 = 평균) 가 신뢰 신호.
+  //   manner temp 없으면 (backfill 미완 등) fallback 메시지.
+  const mannerTemp = isDaangn ? cleanNumber(facts.daangnMannerTemperature) : null;
+  const daangnReviews = isDaangn ? cleanNumber(facts.daangnReviewCount) ?? 0 : 0;
+
+  const sellerTrust = (isDaangn)
+    ? (() => {
+        if (mannerTemp == null) {
+          // 매너온도 아직 없음 (backfill 미완) — fallback
+          return {
+            kind: "daangn_manner_temperature" as const,
+            metric: "매너온도 정보 없음",
+            metricLabel: "당근 앱에서 확인",
+            headline: "당근마켓 셀러 매너온도를 직접 확인하세요",
+            body: "이 매물의 매너온도를 아직 가져오지 못했어요. 당근 앱에서 셀러 프로필을 누르면 매너온도(0~99.9°C)를 볼 수 있어요. 36.5°C 가 평균이고, 높을수록 거래 만족도가 높은 셀러예요.",
+            note: "당근 직거래는 안전결제가 없어서 매너온도가 가장 강한 신뢰 신호예요. 매물 클릭 → 셀러 프로필에서 확인하세요.",
+            valueNote: "당근 매너온도는 위조 어려운 누적 평가라 단일 신호로도 신뢰도 가능합니다.",
+            tileValue: "당근 앱 확인",
+            tileSub: "매너온도 직접 확인",
+            badgeLabel: null,
+            assessment: "당근 매너온도는 셀러 프로필에서 직접 확인하세요. 36.5°C 미만은 거래 보수적, 40°C 이상은 신뢰 강함.",
+            assessmentLabel: "당근 앱 확인",
+            trustScore: null,
+            reviewCount: daangnReviews,
+            mannerTemperature: null,
+          };
+        }
+        const temp = mannerTemp;
+        const tempLabel = `${temp.toFixed(1)}°C`;
+        const tier = temp >= 40 ? "high" : temp >= 36.5 ? "neutral" : temp >= 30 ? "low_avg" : "below_avg";
+        const tierLabel = tier === "high" ? "신뢰 강함" : tier === "neutral" ? "평균 이상" : tier === "low_avg" ? "평균 미만" : "거래 보수적";
+        const tierBody = tier === "high"
+          ? `매너온도가 ${tempLabel} 로 평균(36.5°C) 보다 높아요. 거래 만족도가 누적된 셀러예요.`
+          : tier === "neutral"
+            ? `매너온도가 ${tempLabel} 로 평균(36.5°C) 수준이에요. 큰 위험은 없지만 사진/구성품 확인은 같이 해주세요.`
+            : tier === "low_avg"
+              ? `매너온도가 ${tempLabel} 로 평균(36.5°C) 보다 낮아요. 거래 보수적으로 진행하세요.`
+              : `매너온도가 ${tempLabel} 로 평균(36.5°C) 보다 많이 낮아요. 사진·구성품·만남 장소를 더 신중히 확인하세요.`;
+        return {
+          kind: "daangn_manner_temperature" as const,
+          metric: `매너온도 ${tempLabel}`,
+          metricLabel: daangnReviews > 0 ? `후기 ${daangnReviews.toLocaleString("ko-KR")}건` : "후기 정보 없음",
+          headline: `당근 매너온도 ${tempLabel} · ${tierLabel}`,
+          body: tierBody,
+          note: "당근은 안전결제가 없는 직거래 플랫폼이에요. 매너온도가 가장 강한 신뢰 신호이고, 만남 장소와 시간을 채팅으로 확정하세요.",
+          valueNote: "당근 매너온도는 누적 평가라 위조가 어려워요. 단일 신호로도 신뢰도 평가 가능합니다.",
+          tileValue: tempLabel,
+          tileSub: tierLabel,
+          badgeLabel: tier === "high" ? "매너온도 높음" : null,
+          assessment: tierBody,
+          assessmentLabel: tierLabel,
+          trustScore: null,
+          reviewCount: daangnReviews,
+          mannerTemperature: temp,
+        };
+      })()
+    : isJoongna
     ? {
         kind: "joongna_trust_score" as const,
         metric: trustBand ? `신뢰지수 ${trustBand}` : reviewCount > 0 ? `거래후기 ${reviewLabel}건` : "신뢰 정보 확인 필요",
@@ -515,6 +577,9 @@ export function marketplaceFactsFromRawJson(input: {
   sellerReviewRating?: number | null;
   sellerReviewCount?: number | null;
   rawJson?: unknown;
+  // Wave 758 (2026-05-26): 당근 매너온도 — DB column 에서 직접 박음 (raw_json 외부).
+  daangnMannerTemperature?: number | null;
+  daangnReviewCount?: number | null;
 }): MarketplaceSafetyFacts {
   const raw = asRecord(input.rawJson);
   const seller = asRecord(raw.seller);
@@ -535,6 +600,8 @@ export function marketplaceFactsFromRawJson(input: {
     productTradeType: cleanNumber(raw.productTradeType),
     parcelFeeYn: cleanNumber(raw.parcelFeeYn),
     tradeLabels: Array.isArray(raw.labels) ? raw.labels.map((label) => String(label)) : [],
+    daangnMannerTemperature: input.daangnMannerTemperature ?? null,
+    daangnReviewCount: input.daangnReviewCount ?? null,
   };
 }
 

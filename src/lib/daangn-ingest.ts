@@ -331,6 +331,11 @@ function buildRawListingRow(
     daangn_boosted_at: article.boostedAt,
     daangn_web_crawl_allowed: !article.user.webCrawlNotAllowed,
     daangn_shipping_inferred: shipping ?? "unknown",
+    // Wave 758 (2026-05-26): 매너온도 + 리뷰 수 — detail article 일 때만 user.score/reviewCount 추출.
+    //   search-only article 은 NULL (RPC 에서 COALESCE 로 옛 값 유지).
+    //   당근 신뢰 신호는 manner temperature (0~99.9°C) 주축. reviewCount 는 참고.
+    daangn_manner_temperature: ((article as DaangnDetailArticle).user as { score?: number | null } | null)?.score ?? null,
+    daangn_review_count: ((article as DaangnDetailArticle).user as { reviewCount?: number | null } | null)?.reviewCount ?? null,
   };
   return { raw, parsed: parsedRow, sku_id: skuId };
 }
@@ -344,9 +349,15 @@ async function upsertDaangnRawListings(
 
   // detail enriched 매물 (shipping 추론됨) 은 우선 사용
   const detailShippingByExternal = new Map<string, DaangnShippingInference>();
+  // Wave 758 (2026-05-26): detail article (user.score 포함) 도 매핑 — 같은 ext 면 search 대신 detail 사용.
+  //   buildRawListingRow 는 DaangnDetailArticle 일 때 manner_temperature 추출.
+  const detailArticleByExternal = new Map<string, DaangnDetailArticle>();
   for (const r of detailRecords) {
     const ext = parseDaangnExternalId(r.article.href);
-    if (ext) detailShippingByExternal.set(ext, r.shipping);
+    if (ext) {
+      detailShippingByExternal.set(ext, r.shipping);
+      detailArticleByExternal.set(ext, r.article);
+    }
   }
 
   // dedupe by pid (같은 매물 여러 combo 중복 검색됨)
@@ -355,7 +366,10 @@ async function upsertDaangnRawListings(
     const ext = parseDaangnExternalId(article.href);
     if (!ext) continue;
     const shipping = detailShippingByExternal.get(ext) ?? null;
-    const built = buildRawListingRow(article, shipping, nowIso);
+    // detail article 있으면 그걸로 — user.score 포함되어 manner_temperature 추출 가능.
+    const detailArticle = detailArticleByExternal.get(ext);
+    const articleToUse: DaangnSearchArticle | DaangnDetailArticle = detailArticle ?? article;
+    const built = buildRawListingRow(articleToUse, shipping, nowIso);
     if (!built) continue;
     byPid.set(built.raw.pid as number, { raw: built.raw, parsed: built.parsed });
   }

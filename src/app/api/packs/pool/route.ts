@@ -469,7 +469,7 @@ async function loadPool(
   const [metaRes, marketBands, v7SiblingPresence, velocitySignals, parsedGradingRes] = await Promise.all([
     restFetch(
       // Wave launch-4: listing_state 컬럼 추가 select. 응답 후 ready 였지만 active 아닌 row 차단.
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,raw_json,daangn_region_name,listing_state&pid=in.(${pids.join(",")})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,raw_json,daangn_region_name,daangn_manner_temperature,daangn_review_count,listing_state&pid=in.(${pids.join(",")})`,
       { headers },
     ),
     loadMarketBandsForPool(headers, comparableKeys),
@@ -571,6 +571,9 @@ function buildItems(
         sellerReviewRating: meta?.shop_review_rating ?? null,
         sellerReviewCount: meta?.shop_review_count ?? 0,
         rawJson: meta?.raw_json,
+        // Wave 758 (2026-05-26): 당근 매너온도 — DB column 박힌 값 전달.
+        daangnMannerTemperature: (meta as { daangn_manner_temperature?: number | null } | undefined)?.daangn_manner_temperature ?? null,
+        daangnReviewCount: (meta as { daangn_review_count?: number | null } | undefined)?.daangn_review_count ?? null,
       });
       const tx = inferMarketplaceTransaction(facts);
       // Wave 247.2 (2026-05-19): band-aware sku_median.

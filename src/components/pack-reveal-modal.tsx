@@ -477,6 +477,9 @@ function marketplaceSafetyFactsForCard(card: RevealCard): MarketplaceSafetyFacts
     productTradeType: detail?.productTradeType ?? null,
     parcelFeeYn: detail?.parcelFeeYn ?? null,
     tradeLabels: detail?.tradeLabels ?? [],
+    // Wave 758 (2026-05-26): 당근 매너온도 — savedDetail 에 박힌 값 전달.
+    daangnMannerTemperature: detail?.daangnMannerTemperature ?? null,
+    daangnReviewCount: detail?.daangnReviewCount ?? null,
   };
 }
 
@@ -489,6 +492,21 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
   const rating = card.savedDetail?.sellerReviewRating ?? null;
   const reviewCount = card.savedDetail?.sellerReviewCount ?? 0;
   const payment = safety.paymentLabel;
+
+  // Wave 758 (2026-05-26): 당근 매너온도 우선 — 후기/평점 대신 매너온도 (0~99.9°C) 가 신뢰 신호.
+  //   당근은 안전결제 없는 직거래 플랫폼. 후기 수가 의미 없음. 매너온도가 셀러 누적 평가.
+  if (safety.isDaangn) {
+    return {
+      eyebrow: "4. 판매자 신뢰",
+      title: "당근 매너온도로 셀러를 봐요",
+      metric: safety.sellerTrust.metric,
+      metricLabel: safety.sellerTrust.metricLabel,
+      body: safety.sellerTrust.body,
+      note: safety.sellerTrust.note,
+      valueNote: safety.sellerTrust.valueNote,
+      tone: "trust",
+    };
+  }
 
   if (safety.isJoongna) {
     return {
@@ -4683,6 +4701,59 @@ function BeginnerGuideTrustMetric({ card }: { card: RevealCard }) {
               {safety.sellerTrust.badgeLabel}
             </div>
           ) : null}
+        </div>
+      </div>
+    );
+  }
+
+  // Wave 758 (2026-05-26): 당근 매너온도 metric — 후기/평점 대신 큰 °C 숫자로 표시.
+  if (safety.isDaangn) {
+    const mannerTemp = safety.sellerTrust.mannerTemperature ?? null;
+    if (mannerTemp != null) {
+      const tier = mannerTemp >= 40 ? "high" : mannerTemp >= 36.5 ? "neutral" : mannerTemp >= 30 ? "low_avg" : "below_avg";
+      const tierLabel = tier === "high" ? "신뢰 강함" : tier === "neutral" ? "평균 이상" : tier === "low_avg" ? "평균 미만" : "거래 보수적";
+      const tierBg = tier === "high"
+        ? "bg-[#eefbf3] text-blue-700 dark:bg-blue-950/45 dark:text-blue-200"
+        : tier === "neutral"
+          ? "bg-[#eefbf3] text-blue-700 dark:bg-blue-950/45 dark:text-blue-200"
+          : tier === "low_avg"
+            ? "bg-[#fff7e6] text-[#b7791f] dark:bg-amber-950/45 dark:text-amber-200"
+            : "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300";
+      return (
+        <div data-beginner-guide-trust-metric className="my-5 border-y border-zinc-200 py-4 dark:border-zinc-800">
+          <div className="flex items-center gap-3">
+            <span className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full ring-1 ${tierBg}`}>
+              <ShieldIcon className="h-6 w-6" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="text-[12px] font-black text-zinc-500 dark:text-zinc-400">당근 매너온도</div>
+              <div className="mt-0.5 flex items-baseline gap-2">
+                <span className="text-[28px] font-black leading-none tabular-nums text-[#172019] dark:text-zinc-50">
+                  {mannerTemp.toFixed(1)}°C
+                </span>
+                <span className="text-[12px] font-black text-zinc-600 dark:text-zinc-400">{tierLabel}</span>
+              </div>
+              <div className="mt-1.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+                36.5°C 평균 · 위조 어려운 누적 평가
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    // 매너온도 backfill 미완 — 안내 메시지
+    return (
+      <div data-beginner-guide-trust-metric className="my-5 border-y border-zinc-200 py-4 dark:border-zinc-800">
+        <div className="flex items-center gap-3">
+          <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#fff7e6] text-[#b7791f] ring-1 ring-[#f2dfbd] dark:bg-amber-950/35 dark:text-amber-200 dark:ring-amber-900/50">
+            <AlertTriangleIcon className="h-6 w-6" />
+          </span>
+          <div>
+            <div className="text-[15px] font-black text-[#172019] dark:text-zinc-50">당근 매너온도 정보 없음</div>
+            <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-[#7b8378] dark:text-zinc-400">
+              당근 앱에서 셀러 프로필을 누르면 매너온도(0~99.9°C, 36.5°C 평균)를 직접 확인할 수 있어요.
+            </div>
+          </div>
         </div>
       </div>
     );

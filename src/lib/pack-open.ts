@@ -84,6 +84,9 @@ export type RevealCard = {
     transactionMode?: MarketplaceTransactionMode;
     shippingAssumption?: MarketplaceShippingAssumption;
     directTradeLocation?: string | null;
+    // Wave 758 (2026-05-26): 당근 매너온도 (0~99.9°C) + 리뷰 수. NULL = backfill 미완.
+    daangnMannerTemperature?: number | null;
+    daangnReviewCount?: number | null;
   };
   // Wave 182 Phase 3 (2026-05-17): base option fallback metadata.
   // null/[] 이면 옵션 명시 매물. 값 있으면 "기본 옵션 가정" UI badge 표시.
@@ -292,6 +295,8 @@ type RawSkuMeta = {
   detail_enriched_at: string | null;
   raw_json: Record<string, unknown> | null;
   daangn_region_name: string | null;
+  daangn_manner_temperature: number | null;
+  daangn_review_count: number | null;
 };
 
 type UserRevealDedupe = {
@@ -592,7 +597,7 @@ async function fetchListings(pids: number[]): Promise<Map<number, ListingMeta>> 
   if (pids.length === 0) return new Map();
   const pidFilter = pids.join(",");
   const listingCols = "pid,name,url,price,sku_name,thumbnail_url";
-  const rawCols = "pid,source,seller_source,url,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,image_count,num_comment,detail_enriched_at,raw_json,daangn_region_name";
+  const rawCols = "pid,source,seller_source,url,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,image_count,num_comment,detail_enriched_at,raw_json,daangn_region_name,daangn_manner_temperature,daangn_review_count";
   const [listingRes, rawRes] = await Promise.all([
     callSupabase(`/mvp_listings?select=${listingCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
     callSupabase(`/mvp_raw_listings?select=${rawCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
@@ -1361,11 +1366,13 @@ type RevealDetailSourceMeta = {
   shop_review_count: number | null;
   raw_json: Record<string, unknown> | null;
   daangn_region_name: string | null;
+  daangn_manner_temperature: number | null;
+  daangn_review_count: number | null;
 };
 
 async function loadRevealDetailSourceMeta(pid: number): Promise<RevealDetailSourceMeta | null> {
   const res = await callSupabase(
-    `/mvp_raw_listings?select=pid,source,seller_source,url,free_shipping,shop_review_rating,shop_review_count,raw_json,daangn_region_name&pid=eq.${pid}&limit=1`,
+    `/mvp_raw_listings?select=pid,source,seller_source,url,free_shipping,shop_review_rating,shop_review_count,raw_json,daangn_region_name,daangn_manner_temperature,daangn_review_count&pid=eq.${pid}&limit=1`,
     { headers: authHeaders() },
   );
   const rows = (await res.json()) as RevealDetailSourceMeta[];
@@ -1632,6 +1639,9 @@ export async function loadRevealListingDetail(input: {
       sellerReviewRating: meta?.shop_review_rating ?? null,
       sellerReviewCount: meta?.shop_review_count ?? 0,
       rawJson: meta?.raw_json,
+      // Wave 758 (2026-05-26): 매너온도 + 리뷰 수 — daangn-only 분기에서 사용.
+      daangnMannerTemperature: meta?.daangn_manner_temperature ?? null,
+      daangnReviewCount: meta?.daangn_review_count ?? null,
     });
     const safety = buildMarketplaceSafetyDisplay(facts);
     return {
@@ -1924,6 +1934,9 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
             sellerReviewRating: rawMeta.shop_review_rating,
             sellerReviewCount: rawMeta.shop_review_count ?? 0,
             rawJson: rawMeta.raw_json,
+            // Wave 758 (2026-05-26): 매너온도 + 리뷰 수 — daangn savedDetail 의 sellerTrust 에 사용.
+            daangnMannerTemperature: rawMeta.daangn_manner_temperature ?? null,
+            daangnReviewCount: rawMeta.daangn_review_count ?? null,
           });
           const tx = inferMarketplaceTransaction(facts);
           return {
@@ -1947,6 +1960,9 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
               rawMeta.description_preview,
               rawMeta.daangn_region_name,
             ),
+            // Wave 758 (2026-05-26): RevealCard.savedDetail 에 박음 — UI 가 sellerTrust display 재계산 시 사용.
+            daangnMannerTemperature: rawMeta.daangn_manner_temperature ?? null,
+            daangnReviewCount: rawMeta.daangn_review_count ?? null,
           };
         })()
         : undefined;
