@@ -5340,40 +5340,53 @@ export const CATALOG: Sku[] = [
     released: 2019,
     confusionNote: "Lite (2019) = 휴대용 전용 (TV 연결 X, 조이콘 분리 X). 일반 Switch와 시세 다름 (₩90K↓).",
   },
-  // Wave 111i (2026-05-15): Nintendo Switch 2 (2025-06-05 신상) broad + narrow.
-  {
-    id: "switch-2",
-    brand: "Nintendo",
-    category: "game_console",
-    modelName: "Nintendo Switch 2",
-    aliases: ["Nintendo Switch 2", "닌텐도 스위치 2", "스위치 2"],
-    mustContain: [
-      ["닌텐도", "nintendo", "스위치", "switch"],
-      ["스위치 2", "스위치2", "switch 2", "switch2"],
-    ],
-    mustNotContain: [
-      "oled", "올레드", "라이트", "lite",
-      "ps5", "ps4",
-      "컨트롤러만", "조이콘만", "게임만", "게임 팩", "게임 카드",
-      "충전기만", "케이스만",
-      "부품", "고장",
-      "매입", "삽니다",
-    ],
-    msrpKrw: 599000,
-    released: 2025,
-    confusionNote: "2025-06 신상. 7.9인치 LCD HDR, NVIDIA T239 chip, 256GB 기본. 1세대/Lite/OLED와 완전 별도 (호환성 일부만).",
-  },
+  // Wave 771 (2026-05-27): Wave 111i broad switch-2 entry 삭제 — Wave 758 narrow (laneKey=switch_2, msrp 480k) 와 중복 (id 동일). dedupe.
   // narrow lane: switch_oled (Switch 2/Lite/일반 스위치/PS5/액세서리 차단)
   {
     id: "switch-oled",
     brand: "Nintendo",
     category: "game_console",
     laneKey: "switch_oled",
-    modelName: "Nintendo Switch OLED",
+    modelName: "Nintendo Switch OLED Full Set (박스/독/조이콘 포함)",
     aliases: ["Nintendo Switch OLED", "닌텐도 스위치 OLED", "스위치 올레드", "스위치 OLED"],
     mustContain: [
       ["닌텐도", "nintendo", "스위치", "switch"],
       ["oled", "올레드"],
+    ],
+    // Wave 771 (2026-05-27): bodyonly indicators 차단. owner decision A — fullset vs bodyonly 별도 SKU 분리.
+    //   매물 sample 분석: "풀박스/풀세트/풀박" = fullset (default 시장, 245-420k) / "박스 없음/본체만/본체 제외" = bodyonly (별도 SKU).
+    mustNotContain: [
+      "스위치 2", "switch 2", "스위치2", "switch2",
+      "라이트", "lite",
+      "일반 스위치", "스위치 1",
+      "ps5", "ps4",
+      "컨트롤러만", "조이콘만", "게임만", "게임 팩", "게임 카드",
+      "기프트", "gift",
+      "충전기만", "케이스만",
+      "부품", "고장",
+      "매입", "삽니다",
+      // Wave 771: bodyonly indicators → switch-oled-bodyonly narrow에 양보
+      "박스 없음", "박스없음", "박스 X", "박스미포함", "박스 미포함",
+      "본체만", "본체 단품", "본체단품", "본체 제외", "본체제외",
+    ],
+    msrpKrw: 414000,
+    released: 2021,
+    confusionNote: "OLED (2021-10) Full Set. 박스/독/조이콘/스트랩/충전기 포함 매물. 본체만 매물은 switch-oled-bodyonly SKU.",
+  },
+  // Wave 771 (2026-05-27): owner decision A — Switch OLED body-only 별도 SKU.
+  //   bodyonly 매물 시세 ~250k (fullset 대비 30-40% 낮음). 별도 SKU로 정확한 시세 비교.
+  {
+    id: "switch-oled-bodyonly",
+    brand: "Nintendo",
+    category: "game_console",
+    laneKey: "switch_oled_bodyonly",
+    modelName: "Nintendo Switch OLED Body Only (본체만, 박스/구성품 없음)",
+    aliases: ["Nintendo Switch OLED 본체만", "닌텐도 스위치 OLED 본체만", "스위치 OLED 박스 없음"],
+    mustContain: [
+      ["닌텐도", "nintendo", "스위치", "switch"],
+      ["oled", "올레드"],
+      // bodyonly 명시 indicator 중 하나는 필수
+      ["박스 없음", "박스없음", "박스 X", "박스미포함", "박스 미포함", "본체만", "본체 단품", "본체단품"],
     ],
     mustNotContain: [
       "스위치 2", "switch 2", "스위치2", "switch2",
@@ -5385,10 +5398,14 @@ export const CATALOG: Sku[] = [
       "충전기만", "케이스만",
       "부품", "고장",
       "매입", "삽니다",
+      // 본체 없는 액세서리 매물 차단 (예: "본체 제외 박스만")
+      "본체 제외", "본체제외", "본체 분실", "본체분실",
+      // 풀박스 매물 차단 (switch-oled SKU 양보)
+      "풀박스", "풀박", "풀세트", "박스 포함", "박스포함", "박스 있음",
     ],
-    msrpKrw: 414000,
+    msrpKrw: 250000,  // 시장 시세 fullset 대비 -40%
     released: 2021,
-    confusionNote: "OLED (2021-10). 7인치 OLED 화면, 본체 white/red. 일반 Switch(2017)와 가격 ~₩100K 차이. Switch 2/Lite와 별도.",
+    confusionNote: "OLED bodyonly. 본체만 매물 (박스/구성품 없음). fullset 대비 시세 ~30-40% 낮음.",
   },
   // Wave 758 (2026-05-24) 게임 deep sweep: Switch 2 (2025-06) 신설.
   //   audit: 335 unmatched 매물 (catalog 없음). 신상 인기 모델.
