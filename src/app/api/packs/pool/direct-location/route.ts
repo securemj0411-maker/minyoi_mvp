@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchJoongnaDetail } from "@/lib/joongna";
-import { isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { marketplaceFactsFromRawJson, marketplaceLocationCombined } from "@/lib/marketplace-safety";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   }
 
   const rows = await restFetch(
-    `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,description_preview,raw_json&pid=eq.${pid}&limit=1`,
+    `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,description_preview,raw_json,daangn_region_name&pid=eq.${pid}&limit=1`,
     { headers: serviceHeaders() },
   ).then((res) => res.json() as Promise<Array<{
     pid: number;
@@ -48,16 +48,23 @@ export async function POST(req: Request) {
     url: string | null;
     description_preview: string | null;
     raw_json: Record<string, unknown> | null;
+    daangn_region_name: string | null;
   }>>);
   const row = rows[0];
   if (!row) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
+
+  const marketplaceSource = normalizeMarketplaceSource(row.source ?? row.seller_source);
+
+  // Phase 6j: 당근 매물은 daangn_region_name 컬럼에 동네 정보 박혀있음 (raw_listings).
+  //   marketplaceLocationCombined 가 raw_json 만 보므로 그것보다 우선 직접 column 사용.
+  if (isDaangnMarketplaceSource(marketplaceSource) && row.daangn_region_name) {
+    return NextResponse.json({ ok: true, location: row.daangn_region_name.trim(), source: "stored" });
+  }
 
   const storedLocation = marketplaceLocationCombined(row.raw_json, row.description_preview);
   if (storedLocation) {
     return NextResponse.json({ ok: true, location: storedLocation, source: "stored" });
   }
-
-  const marketplaceSource = normalizeMarketplaceSource(row.source ?? row.seller_source);
   const facts = marketplaceFactsFromRawJson({
     marketplaceSource,
     marketplaceLabel: marketplaceSourceLabel(marketplaceSource),

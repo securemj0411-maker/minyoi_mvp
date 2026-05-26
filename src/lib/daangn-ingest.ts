@@ -316,13 +316,14 @@ function buildRawListingRow(
     updated_at: nowIso,
     pool_eligible: poolEligible,
     score_dirty: poolEligible,  // sku 매칭 + normal → score-worker 가 다음 cycle 에 처리
-    // Phase 6i+++ raw_json 슬림화: region/category/createdAt/boostedAt/user 는 별도 컬럼에 박혔으니 중복 제거.
-    //   viewCount/chatCount/favoriteCount 도 num_faved/num_comment 컬럼에 있음 → backup 용도면 충분.
-    //   payload size ~50% 줄임 → Supabase REST upsert 시간 절반 기대.
+    // Phase 6i+++ → 6j rollback: region 정보 raw_json 에 다시 박기 (UI direct-location endpoint 필요).
+    //   marketplaceLocationCombined() 가 raw_json 안 region 정보 lookup.
+    //   payload size 증가 약간 있지만 UI 필수 정보.
     raw_json: {
       source: DAANGN_SOURCE_ID,
       externalId,
       viewCount: article.viewCount,
+      region: article.region,  // { dbId, name } — direct-location 표시용
     },
     // Daangn 전용 컬럼 (Phase 3 schema migration)
     daangn_region_id: article.region.dbId,
