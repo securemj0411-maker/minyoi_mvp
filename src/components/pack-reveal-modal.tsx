@@ -841,16 +841,15 @@ function finalMoneyGuideStep(card: RevealCard): BeginnerGuideStep {
   const snapshot = costAssuranceSnapshot(card);
   const feeRateLabel = `${Math.round(SELLING_FEE_RATE * 1000) / 10}%`;
   const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} (${krw(snapshot.sellingFee)})`;
-  const marketPriceLabel = card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0
-    ? krw(card.marketBasis.medianPrice)
-    : snapshot.salePriceLabel;
-
+  // 2026-05-26 (사용자 짚음 "한 줄 문장 가시성 0"):
+  //   body 한 줄 문장 → "" (renderer 가 BeginnerGuideBuyMetricGrid grid 카드 박음).
+  //   note 만 유지 (수수료/안전버퍼 설명 보조).
   return {
     eyebrow: "1. 숫자 요약",
     title: "정확한 숫자부터 볼게요",
     metric: displayProfitRange(card),
     metricLabel: "배송비·수수료·안전버퍼 반영",
-    body: `매입가 ${krw(card.price)}, 시세 ${marketPriceLabel}, 예상 순익 ${displayProfitRange(card)}를 먼저 봐요.`,
+    body: "",
     note: `순익은 구매 배송비와 되팔 때 안전결제 수수료 ${sellingFeeLabel}, 재배송비 ${krw(RESELL_SHIPPING_FEE)}, 안전버퍼 ${krw(SAFETY_BUFFER)}까지 감안한 값이에요.`,
     tone: "buy",
   };
@@ -4502,50 +4501,83 @@ function BeginnerGuideProductVisual({ card }: { card: RevealCard }) {
     ? conditionFriendlyText(card.marketBasis.conditionClass)
     : marketConditionLabel(card);
 
+  // 2026-05-26 (사용자 짚음 "사진 카드 두 겹 + 사진 작음"):
+  //   기존: 외부 베이지 wrapper(#f3ede3) + 내부 흰 카드(rounded shadow) 두 겹.
+  //   수정: 단일 사진 영역 (wrapper 통합) + 사이즈 키움 (h-166 → h-240).
+  //   padding p-2.5 → p-1 로 사진 letterbox 줄임.
   return (
     <div
       data-beginner-guide-product-image
-      className="relative -mx-5 overflow-visible bg-[#f3ede3] px-4 pb-4 pt-[calc(env(safe-area-inset-top)+14px)] dark:bg-zinc-950 sm:mx-0 sm:rounded-[26px] sm:px-4 sm:pt-4 sm:ring-1 sm:ring-zinc-200 sm:dark:ring-zinc-800"
+      className="relative -mx-5 mb-2 mt-[calc(env(safe-area-inset-top)+14px)] h-[240px] overflow-hidden bg-white shadow-[0_18px_36px_rgba(15,23,42,0.10)] ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800 sm:mx-0 sm:h-[280px] sm:rounded-[26px]"
     >
-      <div className="relative h-[166px] w-full overflow-hidden rounded-[28px] bg-white shadow-[0_18px_36px_rgba(15,23,42,0.14)] ring-1 ring-white/80 dark:bg-zinc-900 dark:ring-zinc-800 sm:h-[212px]">
-        {card.thumbnailUrl ? (
-          <>
-            <Image
-              src={card.thumbnailUrl}
-              alt={card.name}
-              fill
-              sizes="(max-width: 639px) 100vw, 640px"
-              unoptimized
-              className="rounded-[28px] object-contain object-center p-2.5"
-              priority={false}
-            />
-            {/* Wave 751 (2026-05-25): 사진 위 우하단 카테고리 워터마크 배지. */}
-            <CategoryWatermark
-              comparableKey={card.marketBasis?.comparableKey ?? null}
-              size={40}
-              variant="corner"
-            />
-          </>
-        ) : (
-          // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder.
-          <div className="relative flex h-full w-full items-center justify-center">
-            <CategoryWatermark
-              comparableKey={card.marketBasis?.comparableKey ?? null}
-              size={110}
-            />
-            <span className="pointer-events-none absolute bottom-5 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
-              사진 준비 중
-            </span>
-          </div>
-        )}
-      </div>
-      <div className="absolute bottom-7 left-7 flex max-w-[calc(100%-56px)] flex-wrap items-center gap-1.5">
-        <span className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-black tabular-nums text-zinc-950 shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:text-zinc-100">
+      {card.thumbnailUrl ? (
+        <>
+          <Image
+            src={card.thumbnailUrl}
+            alt={card.name}
+            fill
+            sizes="(max-width: 639px) 100vw, 640px"
+            unoptimized
+            className="object-contain object-center p-1"
+            priority={false}
+          />
+          {/* Wave 751 (2026-05-25): 사진 위 우하단 카테고리 워터마크 배지. */}
+          <CategoryWatermark
+            comparableKey={card.marketBasis?.comparableKey ?? null}
+            size={40}
+            variant="corner"
+          />
+        </>
+      ) : (
+        // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder.
+        <div className="relative flex h-full w-full items-center justify-center">
+          <CategoryWatermark
+            comparableKey={card.marketBasis?.comparableKey ?? null}
+            size={110}
+          />
+          <span className="pointer-events-none absolute bottom-5 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
+            사진 준비 중
+          </span>
+        </div>
+      )}
+      <div className="absolute bottom-3 left-3 flex max-w-[calc(100%-24px)] flex-wrap items-center gap-1.5">
+        <span className="rounded-full bg-white/96 px-3 py-1 text-[11px] font-black tabular-nums text-zinc-950 shadow-sm backdrop-blur dark:bg-zinc-900/95 dark:text-zinc-100">
           매입 {krw(card.price)}
         </span>
-        <span className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-black text-[#4d6654] shadow-sm backdrop-blur dark:bg-zinc-900/90 dark:text-zinc-300">
+        <span className="rounded-full bg-white/96 px-3 py-1 text-[11px] font-black text-[#4d6654] shadow-sm backdrop-blur dark:bg-zinc-900/95 dark:text-zinc-300">
           {condition}
         </span>
+      </div>
+    </div>
+  );
+}
+
+// 2026-05-26 (사용자 짚음 "수익/매입가 가시성 0 — 한 줄 문장"):
+//   tone="buy" step body 를 plain `<p>` 대신 3-grid 큰 숫자 카드로.
+//   매입가 / 시세 / 예상순익 — 토스 스타일 굵은 숫자.
+function BeginnerGuideBuyMetricGrid({ card }: { card: RevealCard }) {
+  const marketPrice = card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0
+    ? krw(card.marketBasis.medianPrice)
+    : "—";
+  return (
+    <div className="mt-5 grid grid-cols-3 gap-2 rounded-[18px] bg-zinc-50 p-3 ring-1 ring-zinc-100 dark:bg-zinc-900/70 dark:ring-zinc-800">
+      <div className="text-center">
+        <div className="text-[10px] font-black uppercase tracking-[0.10em] text-zinc-400">매입가</div>
+        <div className="mt-1 break-keep text-[15px] font-black leading-[1.15] tabular-nums text-zinc-950 dark:text-zinc-50 sm:text-[17px]">
+          {krw(card.price)}
+        </div>
+      </div>
+      <div className="text-center border-x border-zinc-200 dark:border-zinc-800">
+        <div className="text-[10px] font-black uppercase tracking-[0.10em] text-zinc-400">시세</div>
+        <div className="mt-1 break-keep text-[15px] font-black leading-[1.15] tabular-nums text-zinc-700 dark:text-zinc-200 sm:text-[17px]">
+          {marketPrice}
+        </div>
+      </div>
+      <div className="text-center">
+        <div className="text-[10px] font-black uppercase tracking-[0.10em] text-[#3182f6]">예상 순익</div>
+        <div className="mt-1 break-keep text-[15px] font-black leading-[1.15] tabular-nums text-[#3182f6] dark:text-blue-300 sm:text-[17px]">
+          {displayProfitRange(card)}
+        </div>
       </div>
     </div>
   );
@@ -5762,6 +5794,9 @@ function BeginnerGuideWalkthrough({
               <BeginnerGuideTrustBody card={card} fallback={step.body} />
             ) : step.tone === "market" ? (
               <BeginnerGuideMarketBody card={card} fallback={step.body} />
+            ) : step.tone === "buy" ? (
+              // 2026-05-26: tone="buy" 1페이지 — 매입가/시세/순익 grid 카드 (한 줄 문장 대체).
+              <BeginnerGuideBuyMetricGrid card={card} />
             ) : step.body ? (
               <p className="mt-3 break-keep text-[15px] font-semibold leading-6 text-zinc-600 dark:text-zinc-300">
                 {step.body}
