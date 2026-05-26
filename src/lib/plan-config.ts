@@ -23,9 +23,9 @@ export const PLANS: Record<PlanKey, PlanDefinition> = {
     priceKrw: 0,
     monthlyCredits: 0,
     dailyOpenLimit: 1,
-    cadence: "첫 상세 1회 무료",
+    cadence: "첫 상세 2회 무료",
     tagline: "무료 탐색",
-    features: ["추천 피드 무료 탐색", "첫 상세보기 1회 무료", "이후 새 상품 1개당 1크레딧"],
+    features: ["추천 피드 무료 탐색", "첫 상세보기 2회 무료", "이후 새 상품 1개당 1크레딧"],
   },
   single: {
     key: "single",

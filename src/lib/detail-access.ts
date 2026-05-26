@@ -3,7 +3,9 @@ import { isAdminUser } from "@/lib/auth-users";
 import { getUserCreditsReadOnly, spendUserCredits } from "@/lib/user-credits";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
-export const FREE_DETAIL_ACCESS_LIMIT = 1;
+// Wave 762 (2026-05-26): 1 → 2 변경. 1회는 trust build 부족 (첫 매물 quality 변동성 + 일반인 친화 X).
+//   2회 = sweet spot — 1번째 hook, 2번째 validate, 3번째 paywall motivation peak.
+export const FREE_DETAIL_ACCESS_LIMIT = 2;
 const DETAIL_ACCESS_UNLOCK_WINDOW_SECONDS = 10 * 365 * 24 * 60 * 60;
 
 type RateLimitRow = {

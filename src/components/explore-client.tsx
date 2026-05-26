@@ -23,7 +23,8 @@ import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 // Wave 338+339 (Phase 1a + 1b — Freemium /explore):
 // 매물 풀 browsing. 피드는 무료 teaser, 크레딧은 상세 분석/원문 공개 때만 차감.
 // + 통계 배너 + paywall 예고 + sold out 오버레이 + PackRevealModal 통합.
-const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 1;
+// Wave 762 (2026-05-26): 1 → 2 변경. detail-access.ts FREE_DETAIL_ACCESS_LIMIT 와 동기화.
+const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 2;
 
 type PoolItem = {
   pid: number;
@@ -240,7 +241,8 @@ function isDirectOnlyItem(item: Pick<PoolItem, "transactionMode" | "shippingAssu
 function directTradeCostLabel(snapshot: DetailAccessSnapshot) {
   if (snapshot.unlimited) return "상세 무제한";
   const freeRemaining = Math.max(0, Number(snapshot.freeLimit) - Number(snapshot.freeUsed));
-  if (freeRemaining > 0) return "무료 상세보기 1회";
+  // Wave 762 (2026-05-26): hardcoded "1회" → 동적 (free limit 2 로 늘면서 정확한 잔여 노출).
+  if (freeRemaining > 0) return `무료 상세보기 ${freeRemaining}회`;
   return "1크레딧";
 }
 

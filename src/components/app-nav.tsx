@@ -633,7 +633,7 @@ export default function AppNav() {
                     로그인하고 시작하기
                   </div>
                   <div className="mt-0.5 truncate text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                    첫 상세 리포트 1회 무료
+                    첫 상세 리포트 2회 무료
                   </div>
                 </div>
               )}
