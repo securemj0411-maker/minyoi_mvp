@@ -1284,19 +1284,21 @@ function FirstFeedOnboardingCard({
                 { price: "11만원", note: "매입가 11만 · 시세 11만", img: "/%EB%85%B8%EC%BA%94%EA%B3%A0%EC%9E%A5/408223471_1_1778837408_w360.webp" },
                 { price: "12만원", note: "매입가 12만 · 시세 11만", img: "/%EB%85%B8%EC%BA%94%EA%B3%A0%EC%9E%A5/art_1667266173.jpg" },
               ].map((item, idx) => (
-                <div key={idx} className="rounded-[14px] border border-zinc-200 bg-white p-2 dark:border-zinc-800 dark:bg-zinc-900/60">
+                <div key={idx} className="flex gap-2 rounded-[14px] border border-zinc-200 bg-white p-2 dark:border-zinc-800 dark:bg-zinc-900/60">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={item.img}
-                    alt="에어팟 프로 2세대 노캔 고장 비교 매물"
-                    className="aspect-square w-full rounded-[10px] bg-zinc-100 object-cover dark:bg-zinc-800"
+                    alt=""
+                    className="h-[64px] w-[64px] shrink-0 rounded-[10px] bg-zinc-100 object-cover dark:bg-zinc-800"
                   />
-                  <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-red-50 px-1.5 py-0.5 text-[10px] font-black text-red-600 dark:bg-red-950/40 dark:text-red-400">
-                    <span aria-hidden>⚠</span>
-                    노캔 고장
+                  <div className="min-w-0 flex-1">
+                    <div className="inline-flex items-center gap-0.5 rounded-md bg-red-50 px-1.5 py-0.5 text-[10px] font-black text-red-600 dark:bg-red-950/40 dark:text-red-400">
+                      <span aria-hidden>⚠</span>
+                      노캔 고장
+                    </div>
+                    <div className="mt-1 text-[14px] font-black tabular-nums text-zinc-900 dark:text-zinc-100">{item.price}</div>
+                    <div className="mt-0.5 text-[10px] font-bold leading-tight text-zinc-500">{item.note}</div>
                   </div>
-                  <div className="mt-1 text-[14px] font-black tabular-nums text-zinc-900 dark:text-zinc-100">{item.price}</div>
-                  <div className="mt-0.5 text-[10px] font-bold leading-tight text-zinc-500">{item.note}</div>
                 </div>
               ))}
             </div>
