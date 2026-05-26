@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/score-worker",
-      "schedule": "*/2 * * * *"
+      "schedule": "1-59/2 * * * *"
     },
     {
       "path": "/api/cron/recovery-worker",
@@ -26,7 +26,7 @@
     },
     {
       "path": "/api/cron/lifecycle-worker",
-      "schedule": "*/5 * * * *"
+      "schedule": "1,6,11,16,21,26,31,36,41,46,51,56 * * * *"
     },
     {
       "path": "/api/cron/pool-warmer",
@@ -46,11 +46,11 @@
     },
     {
       "path": "/api/cron/joongna-worker",
-      "schedule": "*/3 * * * *"
+      "schedule": "2,5,8,11,14,17,20,23,26,29,32,35,38,41,44,47,50,53,56,59 * * * *"
     },
     {
       "path": "/api/cron/daangn-worker",
-      "schedule": "*/5 * * * *"
+      "schedule": "3,8,13,18,23,28,33,38,43,48,53,58 * * * *"
     },
     {
       "path": "/api/cron/daily-backup",
