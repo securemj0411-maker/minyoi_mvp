@@ -34,10 +34,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "invalid_pid" }, { status: 400 });
   }
 
-  if (!(await isReadyPoolPid(pid))) {
-    return NextResponse.json({ ok: false, error: "not_ready" }, { status: 404 });
-  }
-
+  // 2026-05-26: ready 검사 + daangn 매물 분기 순서 조정.
+  //   기존: ready 검사 fail 시 즉시 404 → daangn 매물 (pool 0건) 다 차단 → UI "동네 정보 없음".
+  //   변경: raw_listings 먼저 조회. daangn 매물이면 ready 무관 region 반환 (auth user 이므로 안전).
+  //         다른 source 는 ready 검사 통과해야 다음 단계.
   const rows = await restFetch(
     `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,description_preview,raw_json,daangn_region_name&pid=eq.${pid}&limit=1`,
     { headers: serviceHeaders() },
@@ -52,6 +52,16 @@ export async function POST(req: Request) {
   }>>);
   const row = rows[0];
   if (!row) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
+
+  // daangn 매물 fast-path: pool ready 무관 region 반환.
+  const normalizedSourceForFast = normalizeMarketplaceSource(row.source ?? row.seller_source);
+  if (isDaangnMarketplaceSource(normalizedSourceForFast) && row.daangn_region_name) {
+    return NextResponse.json({ ok: true, location: row.daangn_region_name.trim(), source: "stored" });
+  }
+
+  if (!(await isReadyPoolPid(pid))) {
+    return NextResponse.json({ ok: false, error: "not_ready" }, { status: 404 });
+  }
 
   const marketplaceSource = normalizeMarketplaceSource(row.source ?? row.seller_source);
   const storedLocation = marketplaceLocationCombinedWithRegion(row.raw_json, row.description_preview, row.daangn_region_name);
