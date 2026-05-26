@@ -3996,6 +3996,100 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
   //   condition_tier 컬럼은 유지 (data 손실 X). 다음 cycle에서 더 안전한 방식으로 재migration.
   //   Plan: code deploy 완료 확인 후 schema migration → 시간차 원인 차단.
   await upsertRows("mvp_market_price_daily", marketRows, "date,comparable_key,condition_class");
+
+  // Wave 886 (2026-05-26 사용자 결정): per-source 시세 통계 — 당근 전용 시세 박기.
+  //   배경: 동일 SKU/condition 매물도 source 별 가격 35-44% 차이 (당근이 번장의 56-67%).
+  //     fee 보정만으론 부족 (fee 차이 5-10% 수준).
+  //   기존 marketRows (mixed) 는 그대로 박음. 추가 per-source row 도 박음.
+  //   비파괴: 새 테이블 mvp_market_price_daily_per_source 신설 (Migration wave886).
+  //   사용 (candidate-pool-builder, 별도 PR): 매물 source 일치 sample ≥ 3 → per-source median, 부족 → mixed fallback.
+  const perSourceMarketRows: Array<Record<string, unknown>> = [];
+  for (const group of byKey.values()) {
+    const comparableKey = group.comparableKey;
+    type SrcBucket = { active: typeof group.activeRows; sold: typeof group.soldRows; disappeared: typeof group.disappearedRows };
+    const sourceGroups = new Map<string, SrcBucket>();
+    const ensureBucket = (src: string): SrcBucket => {
+      let bucket = sourceGroups.get(src);
+      if (!bucket) {
+        bucket = { active: [], sold: [], disappeared: [] };
+        sourceGroups.set(src, bucket);
+      }
+      return bucket;
+    };
+    for (const row of group.activeRows) {
+      const src = (row.source ?? "").trim();
+      if (!src) continue;
+      ensureBucket(src).active.push(row);
+    }
+    for (const row of group.soldRows) {
+      const src = (row.source ?? "").trim();
+      if (!src) continue;
+      ensureBucket(src).sold.push(row);
+    }
+    for (const row of group.disappearedRows) {
+      const src = (row.source ?? "").trim();
+      if (!src) continue;
+      ensureBucket(src).disappeared.push(row);
+    }
+    for (const [src, srcRows] of sourceGroups) {
+      const srcActive = decayTrimmedSellerMarket(srcRows.active.map((r) => toSellerPriced(r, comparableKey)));
+      const srcSold = decayTrimmedSellerMarket(srcRows.sold.map((r) => toSellerPriced(r, comparableKey)));
+      const srcDisappeared = decayTrimmedSellerMarket(srcRows.disappeared.map((r) => toSellerPriced(r, comparableKey)));
+      if (srcActive.count === 0 && srcSold.count === 0 && srcDisappeared.count === 0) continue;
+      const srcActiveMedian = srcActive.median;
+      const srcSoldMedian = srcSold.median;
+      const srcDisappearedMedian = srcDisappeared.median;
+      // blended logic — 기존 marketRows 와 동일 (Wave 130/221 정책).
+      const srcBlendedMedian = (() => {
+        if (srcSoldMedian != null && srcActiveMedian != null) {
+          if (srcSold.count >= 8 && srcActive.count >= 5) return Math.round((srcSoldMedian * 0.7) + (srcActiveMedian * 0.3));
+          if (srcSold.count >= 5) return Math.round((srcSoldMedian * 0.6) + (srcActiveMedian * 0.4));
+          if (srcSold.count >= 3) return Math.round((srcSoldMedian * 0.45) + (srcActiveMedian * 0.55));
+          if (srcSold.count >= 1 && srcActive.count >= 5) return Math.round((srcSoldMedian * 0.3) + (srcActiveMedian * 0.7));
+          if (srcSold.count >= 1 && srcActive.count >= 3) return Math.round((srcSoldMedian * 0.25) + (srcActiveMedian * 0.75));
+          if (srcSold.count >= 1) return Math.round((srcSoldMedian * 0.4) + (srcActiveMedian * 0.6));
+        }
+        if (srcSoldMedian != null && srcSold.count >= 1) return srcSoldMedian;
+        if (srcActiveMedian != null) return Math.round(srcActiveMedian * 0.92);
+        return srcDisappearedMedian != null && srcDisappeared.count >= 8
+          ? Math.round(srcDisappearedMedian * 0.9)
+          : srcDisappearedMedian;
+      })();
+      const srcConfidenceBasis = srcSold.count >= 8 ? srcSold.count : srcActive.count;
+      const srcConfidence = srcConfidenceBasis >= 20 ? "high" : srcConfidenceBasis >= 8 ? "medium" : "low";
+      perSourceMarketRows.push({
+        date: today,
+        comparable_key: comparableKey,
+        condition_class: group.conditionClass,
+        condition_tier: group.conditionTier,
+        source: src,
+        ...marketKeyMeta(comparableKey, group.skuId),
+        active_median_price: srcActiveMedian,
+        sold_median_price: srcSoldMedian,
+        blended_median_price: srcBlendedMedian,
+        p25_price: srcActive.p25,
+        p75_price: srcActive.p75,
+        active_sample_count: srcActive.count,
+        sold_sample_count: srcSold.count,
+        disappeared_sample_count: srcDisappeared.count,
+        confidence: srcConfidence,
+        computed_at: new Date().toISOString(),
+      });
+    }
+  }
+  if (perSourceMarketRows.length > 0) {
+    // 비파괴 — fire-and-catch. 실패해도 기존 mvp_market_price_daily 영향 X.
+    try {
+      await upsertRows(
+        "mvp_market_price_daily_per_source",
+        perSourceMarketRows,
+        "date,comparable_key,condition_class,condition_tier,source",
+      );
+    } catch (err) {
+      console.warn("[wave886] per-source upsert failed (non-fatal)", err instanceof Error ? err.message : String(err));
+    }
+  }
+
   return {
     keyCount: marketRows.length,
     sampleCount: marketRows.reduce((sum, row) => sum + row.active_sample_count + row.sold_sample_count + row.disappeared_sample_count, 0),
