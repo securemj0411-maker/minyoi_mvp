@@ -3,11 +3,12 @@ import { CATALOG } from "@/lib/catalog";
 import { categoryFromComparableKey, loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
 import { fetchJoongnaDetail } from "@/lib/joongna";
-import { isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import {
   buildMarketplaceSafetyDisplay,
   inferMarketplaceTransaction,
   marketplaceFactsFromRawJson,
+  marketplaceLocationCombinedWithRegion,
   type MarketplaceShippingAssumption,
   type MarketplaceTransactionMode,
 } from "@/lib/marketplace-safety";
@@ -290,6 +291,7 @@ type RawSkuMeta = {
   num_comment: number | null;
   detail_enriched_at: string | null;
   raw_json: Record<string, unknown> | null;
+  daangn_region_name: string | null;
 };
 
 type UserRevealDedupe = {
@@ -590,7 +592,7 @@ async function fetchListings(pids: number[]): Promise<Map<number, ListingMeta>> 
   if (pids.length === 0) return new Map();
   const pidFilter = pids.join(",");
   const listingCols = "pid,name,url,price,sku_name,thumbnail_url";
-  const rawCols = "pid,source,seller_source,url,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,image_count,num_comment,detail_enriched_at,raw_json";
+  const rawCols = "pid,source,seller_source,url,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,image_count,num_comment,detail_enriched_at,raw_json,daangn_region_name";
   const [listingRes, rawRes] = await Promise.all([
     callSupabase(`/mvp_listings?select=${listingCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
     callSupabase(`/mvp_raw_listings?select=${rawCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
@@ -1358,11 +1360,12 @@ type RevealDetailSourceMeta = {
   shop_review_rating: number | null;
   shop_review_count: number | null;
   raw_json: Record<string, unknown> | null;
+  daangn_region_name: string | null;
 };
 
 async function loadRevealDetailSourceMeta(pid: number): Promise<RevealDetailSourceMeta | null> {
   const res = await callSupabase(
-    `/mvp_raw_listings?select=pid,source,seller_source,url,free_shipping,shop_review_rating,shop_review_count,raw_json&pid=eq.${pid}&limit=1`,
+    `/mvp_raw_listings?select=pid,source,seller_source,url,free_shipping,shop_review_rating,shop_review_count,raw_json,daangn_region_name&pid=eq.${pid}&limit=1`,
     { headers: authHeaders() },
   );
   const rows = (await res.json()) as RevealDetailSourceMeta[];
@@ -1621,6 +1624,46 @@ export async function loadRevealListingDetail(input: {
     };
   }
 
+  if (isDaangnMarketplaceSource(marketplaceSource)) {
+    const facts = marketplaceFactsFromRawJson({
+      marketplaceSource,
+      marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
+      freeShipping: meta?.free_shipping ?? false,
+      sellerReviewRating: meta?.shop_review_rating ?? null,
+      sellerReviewCount: meta?.shop_review_count ?? 0,
+      rawJson: meta?.raw_json,
+    });
+    const safety = buildMarketplaceSafetyDisplay(facts);
+    return {
+      pid: input.pid,
+      description: "",
+      saleStatus: "selling",
+      conditionLabel: null,
+      thumbnailUrl: null,
+      imageUrls: [],
+      metrics: {
+        viewCount: 0,
+        favoriteCount: null,
+        commentCount: null,
+      },
+      seller: {
+        uid: null,
+        name: null,
+        reviewRating: meta?.shop_review_rating ?? null,
+        reviewCount: safety.sellerTrust.reviewCount,
+        followerCount: 0,
+        salesCount: 0,
+        proshop: false,
+        officialSeller: false,
+        joinDate: null,
+      },
+      shippingOptions: shippingOptionsFromSafety(safety),
+      shippingSummary: safety.shipping.label,
+      transactionMode: safety.shipping.transactionMode,
+      shippingAssumption: safety.shipping.assumption,
+    };
+  }
+
   const detail = await fetchDetail(String(input.pid));
   if (!detail) {
     await patchRevealDetailTerminalState(input.pid, "disappeared", "SOLD_OUT", "detail_fetch_missing");
@@ -1835,6 +1878,9 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
           }
           await patchPoolVerified(candidate.pid);
           liveVerifiedAt = new Date().toISOString();
+        } else if (isDaangnMarketplaceSource(meta.marketplaceSource)) {
+          await patchPoolVerified(candidate.pid);
+          liveVerifiedAt = new Date().toISOString();
         } else {
           const { detail, signals } = await verifyAndCheckSold(candidate.pid, meta.price, meta.name);
           if (isSoldOut(signals)) {
@@ -1896,6 +1942,11 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
             tradeLabels: [...(facts.tradeLabels ?? [])],
             transactionMode: tx.transactionMode,
             shippingAssumption: tx.assumption,
+            directTradeLocation: marketplaceLocationCombinedWithRegion(
+              rawMeta.raw_json,
+              rawMeta.description_preview,
+              rawMeta.daangn_region_name,
+            ),
           };
         })()
         : undefined;

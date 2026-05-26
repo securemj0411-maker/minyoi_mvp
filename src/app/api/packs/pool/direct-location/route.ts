@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchJoongnaDetail } from "@/lib/joongna";
-import { isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
-import { marketplaceFactsFromRawJson, marketplaceLocationCombined } from "@/lib/marketplace-safety";
+import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   }
 
   const rows = await restFetch(
-    `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,description_preview,raw_json&pid=eq.${pid}&limit=1`,
+    `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,description_preview,raw_json,daangn_region_name&pid=eq.${pid}&limit=1`,
     { headers: serviceHeaders() },
   ).then((res) => res.json() as Promise<Array<{
     pid: number;
@@ -48,11 +48,12 @@ export async function POST(req: Request) {
     url: string | null;
     description_preview: string | null;
     raw_json: Record<string, unknown> | null;
+    daangn_region_name: string | null;
   }>>);
   const row = rows[0];
   if (!row) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
 
-  const storedLocation = marketplaceLocationCombined(row.raw_json, row.description_preview);
+  const storedLocation = marketplaceLocationCombinedWithRegion(row.raw_json, row.description_preview, row.daangn_region_name);
   if (storedLocation) {
     return NextResponse.json({ ok: true, location: storedLocation, source: "stored" });
   }
@@ -63,6 +64,9 @@ export async function POST(req: Request) {
     marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
     rawJson: row.raw_json,
   });
+  if (isDaangnMarketplaceSource(marketplaceSource)) {
+    return NextResponse.json({ ok: true, location: null, source: "unavailable" });
+  }
   const labels = new Set((facts.tradeLabels ?? []).map((label) => label.trim()));
   if (!isJoongnaMarketplaceSource(marketplaceSource) || (!labels.has("직거래") && facts.productTradeType !== 4 && facts.productTradeType !== 5)) {
     return NextResponse.json({ ok: true, location: null, source: "unavailable" });

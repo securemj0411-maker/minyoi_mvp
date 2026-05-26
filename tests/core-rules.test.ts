@@ -5,6 +5,7 @@ import { buildCandidatePoolRows, evaluatePoolGate } from "@/lib/candidate-pool-b
 import { CATALOG, ruleMatch } from "@/lib/catalog";
 import { CATEGORY_READINESS, LANE_READINESS } from "@/lib/category-readiness";
 import { parseGameConsoleListing } from "@/lib/game-console-parser";
+import { inferMarketplaceTransaction, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
 import { parseListingOptions } from "@/lib/option-parser";
 import { classifyListing } from "@/lib/pipeline";
 import {
@@ -61,6 +62,21 @@ test("pool policy treats legacy Daangn saling typo as active", () => {
   };
   assert.equal(poolSkipReason({ ...base, saleStatus: "selling" }), null);
   assert.equal(poolSkipReason({ ...base, saleStatus: "saling" }), null);
+});
+
+test("Daangn marketplace defaults to direct trade and exposes region metadata", () => {
+  const tx = inferMarketplaceTransaction({
+    marketplaceSource: "daangn",
+    tradeLabels: [],
+  });
+
+  assert.equal(tx.transactionMode, "direct_only");
+  assert.equal(tx.assumption, "direct_only");
+  assert.ok(tx.labels.includes("직거래"));
+  assert.equal(
+    marketplaceLocationCombinedWithRegion({ source: "daangn" }, null, "성남시 분당구"),
+    "성남시 분당구",
+  );
 });
 
 test("search seller cache skips unchanged recent sellers", () => {
