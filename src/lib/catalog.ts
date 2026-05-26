@@ -5953,18 +5953,20 @@ export const CATALOG: Sku[] = [
     modelName: "AirPods Max (Lightning)",
     aliases: ["에어팟 맥스", "AirPods Max", "에어팟맥스"],
     mustContain: [["에어팟", "airpods"], ["맥스", "max"]],
-    // Wave 885 (재검토 — 사용자 우려 반영):
-    //   기본 "에어팟 맥스" alone = Lightning default (의도된 행동, 변경 X).
-    //   USB-C 1세대 (2024) + 2세대 (2026) 매물이 connector axis "usbc" 로 잘못 떨어지던 문제는
-    //   "확실한 USB-C 시그널" (1세대엔 절대 없는 컬러 + 명시적 세대 라벨)로만 차단. year-only 토큰은 제거.
-    //   year 단독은 구매 시점 vs 모델 연식 모호 (Apple 이 2024년 9월까지 Lightning 판매 → "2024년 구매 Lightning" 가능).
+    // Wave 765 + Wave 885 (통합):
+    //   Wave 765 (2026-05-27): 2세대 (USB-C, 2024) 매물 차단 강화 — "에어팟 맥스2 미드나이트 2026" 흡수 차단.
+    //   Wave 885 (재검토 — 사용자 우려 반영): year-only 토큰 (2024/2025/2026) 제거.
+    //     기본 "에어팟 맥스" alone = Lightning default (의도된 행동, 변경 X).
+    //     year 단독은 구매 시점 vs 모델 연식 모호 (Apple 이 2024년 9월까지 Lightning 판매 → "2024년 구매 Lightning" 가능).
     mustNotContain: [
       "usb-c", "usbc", "c타입", "타입c", "씨타입", "c핀", "c 핀",
-      // 2024+ USB-C 신컬러 (Lightning 1세대엔 절대 없는 색)
+      // 2024+ USB-C 신컬러 (Lightning 1세대엔 절대 없는 색) — Wave 765 + Wave 885
       "스타라이트", "starlight", "미드나이트", "midnight", "퍼플", "purple", "오렌지", "orange",
-      // 2세대 / Max 2 명시적 라벨
+      // 2세대 / Max 2 명시적 라벨 — Wave 765
       "맥스 2", "맥스2", "max 2", "max2", "2세대", "2 세대",
-      // model year 명시 (year-only 는 의도적으로 제외 — 구매연도 vs 모델연식 모호)
+      // 2세대 model 번호 — Wave 765
+      "a3184",
+      // model year 명시 (year-only 는 의도적으로 제외 — 구매연도 vs 모델연식 모호) — Wave 885
       "2024년형", "2025년형", "2024 모델", "2025 모델", "2024 신모델", "2025 신모델",
     ],
     msrpKrw: 769000,
@@ -10557,9 +10559,27 @@ export const CATALOG: Sku[] = [
       "맥퀸", "alexander mcqueen", "mcqueen",
       "스투시 크록스", "stussy crocs", "kith crocs", "키스 크록스",
       "한정판", "리미티드", "limited",
+      // Wave 765 (2026-05-27): All-Terrain variant 차단 — 별도 SKU (정가 40%+ 비쌈).
+      "all terrain", "all-terrain", "올터레인", "올 터레인", "올터레인 클로그",
     ],
     msrpKrw: 49000, released: 2002,
     defaultProductType: "slipper", // Wave 236e — Classic Clog = slipper.
+  },
+  // Wave 765 (2026-05-27): Crocs All-Terrain — Classic Clog 의 outdoor/grip variant. 정가 ~7-8만 (Classic 4-5만 보다 비쌈).
+  //   audit pid 9002813599589 "크록스 클래식 올터레인 클로그 290" 발견 — Classic 시세로 잘못 비교됨.
+  {
+    id: "shoe-crocs-all-terrain",
+    brand: "Crocs", category: "shoe", laneKey: "crocs_all_terrain",
+    modelName: "Crocs All-Terrain Clog",
+    aliases: ["Crocs All Terrain", "크록스 올터레인", "All Terrain Clog"],
+    mustContain: [["crocs", "크록스"], ["all terrain", "all-terrain", "올터레인", "올 터레인"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
+      "퍼", "fur", "한정판", "리미티드", "limited",
+      "bape", "베이프", "balenciaga", "발렌시아가",
+    ],
+    msrpKrw: 79000, released: 2018,
+    defaultProductType: "slipper",
+    confusionNote: "Crocs Classic Clog 와 다른 outdoor 모델 (정가 ~7-8만 vs Classic ~4-5만). \"올터레인\" / \"All-Terrain\" 명시된 매물만.",
   },
   {
     id: "shoe-crocs-bayaband",
@@ -12069,30 +12089,109 @@ export const CATALOG: Sku[] = [
   {
     id: "clothing-arcteryx-gamma",
     brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_gamma",
-    modelName: "Arc'teryx Gamma (MX / SL / LT / Lightweight) softshell",
-    aliases: ["Gamma Jacket", "감마 자켓", "Gamma MX", "Gamma SL", "Gamma LT", "Gamma Hoody"],
+    modelName: "Arc'teryx Gamma (broad — sub-line 미명시)",
+    aliases: ["Gamma Jacket", "감마 자켓", "Gamma Hoody"],
     mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["gamma", "감마"]],
-    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance"],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance",
+      // Wave 765 (2026-05-27): MX/SL/LT/Lightweight sub-line 별도 SKU 로 분리.
+      "감마 mx", "감마mx", "gamma mx", "gammamx",
+      "감마 sl", "감마sl", "gamma sl", "gammasl",
+      "감마 lt", "감마lt", "gamma lt", "gammalt",
+      "lightweight", "라이트웨이트",
+    ],
     msrpKrw: 350000, released: 1998,
-    defaultProductType: "jacket", // Wave 236d — Gamma = softshell 자켓 확정.
+    defaultProductType: "jacket",
+  },
+  // Wave 765 (2026-05-27): Gamma MX (Mid-weight, $350+) — Gamma 의 가장 일반적 variant.
+  {
+    id: "clothing-arcteryx-gamma-mx",
+    brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_gamma_mx",
+    modelName: "Arc'teryx Gamma MX",
+    aliases: ["Gamma MX", "감마 MX"],
+    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["gamma mx", "gammamx", "감마 mx", "감마mx"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance",
+      "감마 sl", "감마sl", "감마 lt", "감마lt"],
+    msrpKrw: 450000, released: 2007,
+    defaultProductType: "jacket",
+  },
+  // Wave 765: Gamma SL (Super Light, 가벼움 — Gamma 라인 중 가장 가벼움).
+  {
+    id: "clothing-arcteryx-gamma-sl",
+    brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_gamma_sl",
+    modelName: "Arc'teryx Gamma SL",
+    aliases: ["Gamma SL", "감마 SL"],
+    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["gamma sl", "gammasl", "감마 sl", "감마sl"]],
+    mustNotContain: ["키즈", "kids", "복각", "replica", "fake", "veilance",
+      "감마 mx", "감마mx", "감마 lt", "감마lt"],
+    msrpKrw: 280000, released: 2020,
+    defaultProductType: "jacket",
   },
   {
     id: "clothing-arcteryx-alpha",
     brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_alpha",
-    modelName: "Arc'teryx Alpha (SV / AR / FL) 등반/expedition",
-    aliases: ["Alpha Jacket", "알파 자켓", "Alpha SV", "Alpha AR", "Alpha FL"],
+    modelName: "Arc'teryx Alpha (broad — sub-line 미명시)",
+    aliases: ["Alpha Jacket", "알파 자켓"],
     mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["alpha", "알파"]],
-    // Wave 229 (2026-05-19) Iter10: 다른 brand 매물 차단 ("몽벨 ... 아크테릭스 포지션" 같은 비교 매물).
+    // Wave 229 (2026-05-19) Iter10: 다른 brand 매물 차단.
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "veilance",
       "몽벨", "montbell", "콜롬비아", "columbia", "마운틴 하드웨어", "mountain hardware",
       "포지션", "포지셔닝", "비교", "vs",
-      // Wave 572 (2026-05-22): production audit — "아크테릭스 LEAF Alpha G2 멀티캠" 345만 catch (LEAF = 군용 라인).
-      //   일반 Alpha SV 80~130만 vs LEAF 345만 = +3배. 별도 시세군.
+      // Wave 572 (2026-05-22): LEAF Alpha G2 멀티캠 (군용, 345만)
       "leaf", "리프", "리프 알파", "leaf alpha", "alpha g2", "alpha g 2", "멀티캠", "multicam", "law enforcement",
       "law enforcement and armed forces",
+      // Wave 765 (2026-05-27): SV/AR/LT/FL/SL sub-line 별도 SKU.
+      "알파 sv", "알파sv", "alpha sv", "alphasv",
+      "알파 ar", "알파ar", "alpha ar", "alphaar",
+      "알파 lt", "알파lt", "alpha lt", "alphalt",
+      "알파 fl", "알파fl", "alpha fl", "alphafl",
+      "알파 sl", "알파sl", "alpha sl", "alphasl",
     ],
     msrpKrw: 850000, released: 1998,
-    defaultProductType: "jacket", // Wave 236d — Alpha = expedition 자켓 확정.
+    defaultProductType: "jacket",
+  },
+  // Wave 765 (2026-05-27): Alpha SV (Severe weather, flagship — 정가 ~110-130만).
+  {
+    id: "clothing-arcteryx-alpha-sv",
+    brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_alpha_sv",
+    modelName: "Arc'teryx Alpha SV (Severe Weather)",
+    aliases: ["Alpha SV", "알파 SV"],
+    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["alpha sv", "alphasv", "알파 sv", "알파sv"]],
+    mustNotContain: ["키즈", "kids", "복각", "replica", "fake", "veilance",
+      "leaf", "리프", "alpha g2", "멀티캠",
+      "알파 ar", "알파ar", "alpha ar", "alphaar",
+      "알파 lt", "알파lt", "alpha lt", "alphalt",
+      "알파 fl", "알파fl", "알파 sl", "알파sl"],
+    msrpKrw: 1100000, released: 1998,
+    defaultProductType: "jacket",
+    confusionNote: "Alpha SV (Severe Weather) — Alpha 라인 플래그십. AR/LT/FL/SL 보다 비싸.",
+  },
+  // Wave 765: Alpha AR (All-Round, ~80-100만).
+  {
+    id: "clothing-arcteryx-alpha-ar",
+    brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_alpha_ar",
+    modelName: "Arc'teryx Alpha AR (All-Round)",
+    aliases: ["Alpha AR", "알파 AR"],
+    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["alpha ar", "alphaar", "알파 ar", "알파ar"]],
+    mustNotContain: ["키즈", "kids", "복각", "replica", "fake", "veilance",
+      "leaf", "리프", "alpha g2",
+      "알파 sv", "알파sv", "alpha sv", "alphasv",
+      "알파 lt", "알파lt", "알파 fl", "알파 sl"],
+    msrpKrw: 900000, released: 2000,
+    defaultProductType: "jacket",
+  },
+  // Wave 765: Alpha LT (LightweighT, ~55-75만).
+  {
+    id: "clothing-arcteryx-alpha-lt",
+    brand: "Arc'teryx", category: "clothing", laneKey: "arcteryx_alpha_lt",
+    modelName: "Arc'teryx Alpha LT (LightweighT)",
+    aliases: ["Alpha LT", "알파 LT"],
+    mustContain: [["arcteryx", "arc'teryx", "아크테릭스"], ["alpha lt", "alphalt", "알파 lt", "알파lt"]],
+    mustNotContain: ["키즈", "kids", "복각", "replica", "fake", "veilance",
+      "leaf", "리프",
+      "알파 sv", "알파sv", "alpha sv", "alphasv",
+      "알파 ar", "알파ar", "알파 fl", "알파 sl"],
+    msrpKrw: 700000, released: 2005,
+    defaultProductType: "jacket",
   },
   {
     id: "clothing-arcteryx-atom",

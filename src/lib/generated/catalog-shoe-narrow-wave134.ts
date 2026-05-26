@@ -1468,7 +1468,7 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     id: "shoe-nike-airjordan-11",
     brand: "Nike",
     category: "shoe",
-    modelName: "Air Jordan 11 (broad)",
+    modelName: "Air Jordan 11 (broad — Mid/일반)",
     aliases: ["Air Jordan 11", "조던 11", "AJ11"],
     mustContain: [
       ["조던", "jordan", "에어조던"],
@@ -1488,10 +1488,64 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
       "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake", "11급", "ss급정품", "1:1", "미러",
       "한짝", "한쪽만", "박스만",
       "삽니다", "구합니다", "구해요", "매입",
+      // Wave 765 (2026-05-27): Low/High sub-line 별도 SKU 로 분리.
+      "로우", " low", "low cut", "low top",
+      "하이", " high", "high cut", "high top",
     ],
     msrpKrw: 269000,
     released: 1995,
     defaultProductType: "sneaker",
+  },
+  // Wave 765 (2026-05-27): Air Jordan 11 Low (별도 silhouette, ~30-40% 가격 차이).
+  //   audit pid 330723956 "조던 11 레트로 로우 체리" High 시세로 비교됐던 버그 대응.
+  {
+    id: "shoe-nike-airjordan-11-low",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Jordan 11 Low",
+    aliases: ["Air Jordan 11 Low", "조던 11 로우", "AJ11 Low"],
+    mustContain: [
+      ["조던", "jordan", "에어조던"],
+      ["aj11", " 11 ", "11세대", "11 retro", "조던11"],
+      ["로우", " low", "low cut", "low top"],
+    ],
+    mustNotContain: [
+      "aj1", "aj3", "aj4", "aj5", "aj13", "조던 1", "조던 3", "조던 4", "조던 13",
+      "travis", "트래비스", "오프화이트", "off-white", "off white",
+      "fragment", "프래그먼트", "dior", "디올",
+      "한정판", "limited edition",
+      "키즈", "kids", "유아", "아동", "여아", "남아", "infant", "td", "gs",
+      "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "구해요", "매입",
+      "하이", " high",
+    ],
+    msrpKrw: 199000, released: 2001,
+    defaultProductType: "sneaker",
+    confusionNote: "AJ11 Low — High 보다 30-40% 저렴. \"로우/Low\" 명시된 매물만.",
+  },
+  // Wave 765 (2026-05-27): Air Jordan 11 High (flagship, 정가 ~27만).
+  {
+    id: "shoe-nike-airjordan-11-high",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Jordan 11 High",
+    aliases: ["Air Jordan 11 High", "조던 11 하이", "AJ11 High"],
+    mustContain: [
+      ["조던", "jordan", "에어조던"],
+      ["aj11", " 11 ", "11세대", "11 retro", "조던11"],
+      ["하이", " high", "high cut", "high top"],
+    ],
+    mustNotContain: [
+      "aj1", "aj3", "aj4", "aj5", "aj13", "조던 1", "조던 3", "조던 4", "조던 13",
+      "travis", "트래비스", "오프화이트", "off-white", "off white",
+      "fragment", "프래그먼트", "dior", "디올",
+      "한정판", "limited edition",
+      "키즈", "kids", "유아", "아동", "여아", "남아", "infant", "td", "gs",
+      "짝퉁", "카피", "이미테이션", "rep ", "replica", "fake", "1:1", "미러",
+      "한짝", "한쪽만", "박스만", "삽니다", "구합니다", "구해요", "매입",
+      "로우", " low",
+    ],
+    msrpKrw: 269000, released: 1995,
+    defaultProductType: "sneaker",
+    confusionNote: "AJ11 High — 플래그십. \"하이/High\" 명시된 매물만.",
   },
 
   // ═══════════════════════════════════════════════════════════

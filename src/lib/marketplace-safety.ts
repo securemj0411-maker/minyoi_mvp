@@ -87,6 +87,10 @@ export type MarketplacePurchaseCheck = {
 const DEFAULT_BUYER_SHIPPING_FEE_MAX = 3_500;
 
 function cleanNumber(value: unknown): number | null {
+  // Wave 759 (2026-05-26): Number(null) === 0 / Number("") === 0 인 JS quirk 차단.
+  //   null/undefined/빈 문자열은 "값 없음" 이지 "0" 이 아님.
+  //   이전 버전은 NULL row 들이 0 으로 변환되어 매너온도 0.0°C "거래 보수적" 으로 오표시됨.
+  if (value == null || value === "") return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
@@ -278,7 +282,10 @@ export function buildMarketplaceSafetyDisplay(facts: MarketplaceSafetyFacts): Ma
   // Wave 758 (2026-05-26): 당근 매너온도 branch — manner temp 있을 때 별도 처리.
   //   당근은 후기/평점 대신 매너온도 (0~99.9°C, 36.5 = 평균) 가 신뢰 신호.
   //   manner temp 없으면 (backfill 미완 등) fallback 메시지.
-  const mannerTemp = isDaangn ? cleanNumber(facts.daangnMannerTemperature) : null;
+  // Wave 759 (2026-05-26): 0.0°C 는 당근에서 실질적으로 나올 수 없는 값 (가입 즉시 36.5°C 시작).
+  //   스크래핑 실패시 default 0 으로 박힌 케이스 → null 로 간주해서 "정보 없음" fallback.
+  const rawMannerTemp = isDaangn ? cleanNumber(facts.daangnMannerTemperature) : null;
+  const mannerTemp = rawMannerTemp != null && rawMannerTemp > 0 ? rawMannerTemp : null;
   const daangnReviews = isDaangn ? cleanNumber(facts.daangnReviewCount) ?? 0 : 0;
 
   const sellerTrust = (isDaangn)
