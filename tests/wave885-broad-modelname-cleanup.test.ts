@@ -88,5 +88,29 @@ test("Wave 885 Part 2: AirPods Max 2024+ USB-C 신컬러 routes to airpods-max-u
 test("Wave 885 Part 2: AirPods Max 2/2026/2세대 routes to airpods-max-usbc", () => {
   assert.equal(ruleMatch("에어팟 맥스2 미드나이트 2026", "")?.id, "airpods-max-usbc");
   assert.equal(ruleMatch("애플 에어팟맥스 2세대 c핀", "")?.id, "airpods-max-usbc");
-  assert.equal(ruleMatch("애플 에어팟 맥스 1 2024년형 블랙", "")?.id, "airpods-max-usbc");
+  assert.equal(ruleMatch("애플 에어팟 맥스 USB-C 2024년형", "")?.id, "airpods-max-usbc");
+});
+
+// Wave 885 Part 2 safety re-check (사용자 우려 반영):
+//   "에어팟 맥스" alone = Lightning default (의도된 기본값) — 변경 X 검증.
+//   Apple 이 2024년 9월까지 Lightning 판매 — "2024년 구매" 만으론 model year 판단 불가 →
+//   year-only 토큰 (2024/2025/2026) USB-C signal 박지 않음.
+test("Wave 885 Part 2 safety: 기본 'AirPods Max' default routes to Lightning (1세대)", () => {
+  assert.equal(ruleMatch("에어팟 맥스", "")?.id, "airpods-max");
+  assert.equal(ruleMatch("에어팟맥스 새것", "")?.id, "airpods-max");
+  assert.equal(ruleMatch("에어팟 맥스 (1세대)", "")?.id, "airpods-max");
+});
+
+test("Wave 885 Part 2 safety: 1세대 Lightning 전용 컬러 → Lightning lane (mis-routing 차단)", () => {
+  assert.equal(ruleMatch("에어팟 맥스 스카이블루", "")?.id, "airpods-max");
+  assert.equal(ruleMatch("에어팟 맥스 핑크", "")?.id, "airpods-max");
+  assert.equal(ruleMatch("에어팟 맥스 그린", "")?.id, "airpods-max");
+  // 스페이스 그레이는 Lightning 1세대 전용. mis-route 차단.
+  assert.equal(ruleMatch("에어팟 맥스 스페이스 그레이 2024년에 구매", "")?.id, "airpods-max");
+});
+
+test("Wave 885 Part 2 safety: year-only ('2024년 구매') 는 USB-C signal 안 됨 → Lightning default", () => {
+  // Apple 이 2024년 9월까지 Lightning 판매. "2024년 1월 구매" Lightning 매물이 USB-C lane 으로 mis-route 안 되도록.
+  assert.equal(ruleMatch("에어팟 맥스 2024년 1월 구매", "")?.id, "airpods-max");
+  assert.equal(ruleMatch("에어팟 맥스 실버 2024 새상품", "")?.id, "airpods-max");
 });

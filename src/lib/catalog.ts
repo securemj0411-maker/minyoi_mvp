@@ -5953,17 +5953,19 @@ export const CATALOG: Sku[] = [
     modelName: "AirPods Max (Lightning)",
     aliases: ["에어팟 맥스", "AirPods Max", "에어팟맥스"],
     mustContain: [["에어팟", "airpods"], ["맥스", "max"]],
-    // Wave 885: USB-C 1세대 (2024) + 2세대 (2026) 매물이 connector axis "usbc" 로 잘못 떨어지면서
-    //   같은 comparable_key (airpods|airpods_max|usbc) 로 묶여 1세대 Lightning ↔ 2세대 가격 mixing.
-    //   2024+ 신규 컬러 (스타라이트/미드나이트/퍼플/오렌지/블루) 와 "맥스 2"/"2세대"/"2024+" 키워드 자동 차단.
+    // Wave 885 (재검토 — 사용자 우려 반영):
+    //   기본 "에어팟 맥스" alone = Lightning default (의도된 행동, 변경 X).
+    //   USB-C 1세대 (2024) + 2세대 (2026) 매물이 connector axis "usbc" 로 잘못 떨어지던 문제는
+    //   "확실한 USB-C 시그널" (1세대엔 절대 없는 컬러 + 명시적 세대 라벨)로만 차단. year-only 토큰은 제거.
+    //   year 단독은 구매 시점 vs 모델 연식 모호 (Apple 이 2024년 9월까지 Lightning 판매 → "2024년 구매 Lightning" 가능).
     mustNotContain: [
       "usb-c", "usbc", "c타입", "타입c", "씨타입", "c핀", "c 핀",
-      // 2024+ USB-C 시그니처 컬러 (Lightning 1세대엔 없음)
+      // 2024+ USB-C 신컬러 (Lightning 1세대엔 절대 없는 색)
       "스타라이트", "starlight", "미드나이트", "midnight", "퍼플", "purple", "오렌지", "orange",
-      // 2세대 / Max 2 패턴
+      // 2세대 / Max 2 명시적 라벨
       "맥스 2", "맥스2", "max 2", "max2", "2세대", "2 세대",
-      // 출시연도 (2024+)
-      "2024", "2025", "2026",
+      // model year 명시 (year-only 는 의도적으로 제외 — 구매연도 vs 모델연식 모호)
+      "2024년형", "2025년형", "2024 모델", "2025 모델", "2024 신모델", "2025 신모델",
     ],
     msrpKrw: 769000,
     released: 2020,
@@ -5980,16 +5982,24 @@ export const CATALOG: Sku[] = [
     mustContain: [
       ["에어팟", "airpods"],
       ["맥스", "max"],
-      // Wave 885: explicit "usb-c" 외에 색상/세대/연도 시그널로도 매칭.
-      //   2024+ 신규 컬러 (Lightning 1세대엔 없는 색)와 "맥스 2"/"2세대"/"2024+" 키워드.
+      // Wave 885 (재검토): explicit "USB-C" 또는 1세대엔 없는 신컬러 또는 명시적 세대 라벨.
+      //   year-only 는 의도적으로 제외 (구매연도 vs 모델연식 모호).
       [
         "usb-c", "usbc", "c타입", "타입c", "씨타입", "c핀", "c 핀",
         "스타라이트", "starlight", "미드나이트", "midnight", "퍼플", "purple", "오렌지", "orange",
         "맥스 2", "맥스2", "max 2", "max2", "2세대", "2 세대",
-        "2024", "2025", "2026",
+        "2024년형", "2025년형", "2024 모델", "2025 모델", "2024 신모델", "2025 신모델",
       ],
     ],
-    mustNotContain: ["라이트닝", "lightning", "8핀", "8 핀", "팔핀", ...HEADPHONE_NOISE],
+    // 1세대 Lightning 전용 컬러 (Apple 공식: Space Gray, Silver, Sky Blue, Pink, Green) +
+    // 1세대 명시 라벨 -> Lightning 우선. Wave 885 재검토 — 사용자 우려 반영 (1세대 default 보존).
+    mustNotContain: [
+      "라이트닝", "lightning", "8핀", "8 핀", "팔핀",
+      "스페이스그레이", "스페이스 그레이", "space gray", "space grey",
+      "스카이블루", "스카이 블루", "sky blue",
+      "1세대", "1 세대", "1st gen", "1st generation",
+      ...HEADPHONE_NOISE,
+    ],
     msrpKrw: 769000,
     released: 2024,
   },
