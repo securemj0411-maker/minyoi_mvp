@@ -898,31 +898,13 @@ function DetailAccessPaywallModal({
             </button>
           ) : null}
 
+          {/* Wave launch-129 (2026-05-25): summary 3-col 카드 → 1줄 압축 (모달 세로 길이 줄이기). */}
           {isPaywall && summary && summary.openedCount > 0 ? (
-            <div className="mt-3 rounded-[22px] bg-[#f5f9ff] p-4 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
-              <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">
-                무료 상세에서 확인한 것
-              </div>
-              <div className="mt-3 grid grid-cols-3 gap-2">
-                <div className="rounded-[16px] bg-white px-3 py-2.5 ring-1 ring-blue-50 dark:bg-zinc-950/65 dark:ring-blue-900/40">
-                  <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">열어본 상세</div>
-                  <div className="mt-1 text-[15px] font-black text-[#3182f6] dark:text-blue-300">
-                    {summary.openedCount.toLocaleString("ko-KR")}건
-                  </div>
-                </div>
-                <div className="rounded-[16px] bg-white px-3 py-2.5 ring-1 ring-blue-50 dark:bg-zinc-950/65 dark:ring-blue-900/40">
-                  <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">확인한 수익</div>
-                  <div className="mt-1 text-[15px] font-black text-blue-700 dark:text-blue-300">
-                    +{krw(summary.expectedProfitTotal)}
-                  </div>
-                </div>
-                <div className="rounded-[16px] bg-white px-3 py-2.5 ring-1 ring-blue-50 dark:bg-zinc-950/65 dark:ring-blue-900/40">
-                  <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">주의 신호</div>
-                  <div className="mt-1 text-[15px] font-black text-amber-700 dark:text-amber-300">
-                    {summary.cautionCount.toLocaleString("ko-KR")}개
-                  </div>
-                </div>
-              </div>
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[14px] bg-[#f5f9ff] px-3.5 py-2.5 dark:bg-blue-950/24">
+              <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">방금 확인한 것</span>
+              <span className="text-[12px] font-black text-[#3182f6] dark:text-blue-300">{summary.openedCount.toLocaleString("ko-KR")}건 분석</span>
+              <span className="text-zinc-300 dark:text-zinc-700">·</span>
+              <span className="text-[12px] font-black text-emerald-600 dark:text-emerald-400">예상수익 +{krw(summary.expectedProfitTotal)}</span>
             </div>
           ) : null}
 
@@ -968,14 +950,15 @@ function DetailAccessPaywallModal({
                 클릭 수 줄이기 — paywall 뜨자마자 가격 보이고 바로 결제 이동. */}
             {isPaywall ? (
               <div className="space-y-1.5">
-                {/* starter — 강조 (1회당 495원, 가장 인기) */}
+                {/* Wave launch-129: 크레딧 = 열람 횟수 명시 + 690원 단건 복구. */}
+                {/* starter — 강조 */}
                 <Link
                   href="/billing/manual?credits=20"
                   className="flex items-center justify-between rounded-2xl bg-[#3182f6] px-4 py-3 transition hover:bg-[#1c6fe8] active:scale-[0.99] shadow-[0_12px_26px_rgba(49,130,246,0.28)]"
                 >
                   <div>
-                    <div className="text-[13px] font-black text-white">20크레딧 · 9,900원</div>
-                    <div className="mt-0.5 text-[11px] font-bold text-white/70">1회당 495원 · 가장 인기</div>
+                    <div className="text-[13px] font-black text-white">9,900원 — 매물 20번 열람</div>
+                    <div className="mt-0.5 text-[11px] font-bold text-white/70">1번당 495원 · 가장 인기</div>
                   </div>
                   <span className="shrink-0 rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-black text-white">추천</span>
                 </Link>
@@ -985,18 +968,25 @@ function DetailAccessPaywallModal({
                     href="/billing/manual?credits=5"
                     className="flex flex-col rounded-2xl bg-zinc-100 px-3 py-2.5 transition hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800"
                   >
-                    <span className="text-[12px] font-black text-zinc-800 dark:text-zinc-100">5크레딧 · 2,900원</span>
-                    <span className="mt-0.5 text-[10.5px] font-bold text-zinc-500">1회당 580원</span>
+                    <span className="text-[12px] font-black text-zinc-800 dark:text-zinc-100">2,900원 — 5번 열람</span>
+                    <span className="mt-0.5 text-[10.5px] font-bold text-zinc-500">1번당 580원</span>
                   </Link>
                   <Link
                     href="/billing/manual?credits=45"
                     className="flex flex-col rounded-2xl bg-zinc-100 px-3 py-2.5 transition hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800"
                   >
-                    <span className="text-[12px] font-black text-zinc-800 dark:text-zinc-100">45크레딧 · 19,900원</span>
-                    <span className="mt-0.5 text-[10.5px] font-bold text-zinc-500">1회당 442원</span>
+                    <span className="text-[12px] font-black text-zinc-800 dark:text-zinc-100">19,900원 — 45번 열람</span>
+                    <span className="mt-0.5 text-[10.5px] font-bold text-zinc-500">1번당 442원</span>
                   </Link>
                 </div>
-                <Link href="/plans" className="block text-center text-[11px] font-bold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 py-1">
+                {/* 690원 단건 — 진입장벽 낮추기 */}
+                <Link
+                  href="/billing/manual?credits=1"
+                  className="block rounded-2xl border border-zinc-200 bg-white py-2.5 text-center text-[12.5px] font-black text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+                >
+                  이 매물 하나만 690원에 열기
+                </Link>
+                <Link href="/plans" className="block text-center text-[11px] font-bold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 py-0.5">
                   더 많은 패키지 보기 →
                 </Link>
               </div>
