@@ -106,11 +106,28 @@ export async function GET(req: NextRequest) {
 
   if (sourceFilter) {
     const normalizedSource = normalizeMarketplaceSource(sourceFilter);
-    const sourceRes = await restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid&source=eq.${encodeURIComponent(normalizedSource)}&limit=5000`,
+    // Wave 757 (2026-05-26): 풀은 작은데 (~700 ready) raw 는 클 수 있음 (daangn 43k+).
+    //   기존: raw_listings where source=daangn LIMIT 5000 → 풀 pids 못 잡으면 결과 0.
+    //   변경: 풀 ready pids 먼저 가져와서 그걸로 raw 좁힘 (pid=in.(...) + source=eq.X).
+    const poolPidRes = await restFetch(
+      `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.${encodeURIComponent(statusFilter)}&limit=5000`,
       { headers: serviceHeaders() },
     );
-    const sourcePids = ((await sourceRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+    const poolPids = ((await poolPidRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+    if (poolPids.length === 0) {
+      return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
+    }
+    // chunk by 500 (URL length 안전) — 풀 ~700 이라 보통 2 chunk
+    const sourcePids: number[] = [];
+    for (let i = 0; i < poolPids.length; i += 500) {
+      const chunk = poolPids.slice(i, i + 500);
+      const sourceRes = await restFetch(
+        `${tableUrl("mvp_raw_listings")}?select=pid&source=eq.${encodeURIComponent(normalizedSource)}&pid=in.(${chunk.join(",")})&limit=5000`,
+        { headers: serviceHeaders() },
+      );
+      const chunkPids = ((await sourceRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+      sourcePids.push(...chunkPids);
+    }
     if (sourcePids.length === 0) {
       return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
     }
