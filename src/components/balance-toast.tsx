@@ -39,6 +39,22 @@ export default function BalanceToast() {
     //   해결: 마지막 toast 의 (oldBalance, newBalance) transition 30초 내 중복 차단 (dedup).
     let lastShownTransition: { from: number; to: number; ts: number } | null = null;
 
+    // Wave 767 (2026-05-26 사용자 보고 — 매 상세보기마다 토스트 박힘):
+    //   원인: Supabase Realtime payload.old 가 default REPLICA IDENTITY 일 때 balance column 안 박힘.
+    //   → oldBalance = Number(undefined ?? 0) = 0 → 매 차감 후 newBalance > 0 = "받았어요" 토스트.
+    //   해결 A (DB): REPLICA IDENTITY FULL 박음 (Migration wave767).
+    //   해결 B (client safety net — 이 변수): localStorage 의 last seen balance 와 비교.
+    //     payload.old 신뢰 안 되더라도 lastSeenBalance < newBalance 일 때만 토스트 박힘.
+    const LAST_SEEN_STORAGE_KEY = "minyoi:balance:last-seen";
+    let lastSeenBalance: number | null = null;
+    try {
+      const raw = window.localStorage.getItem(LAST_SEEN_STORAGE_KEY);
+      if (raw != null) {
+        const parsed = Number(raw);
+        if (Number.isFinite(parsed)) lastSeenBalance = parsed;
+      }
+    } catch { /* localStorage 사용 불가 — null 유지 */ }
+
     (async () => {
       const { data } = await supabase.auth.getUser();
       if (!data?.user || cancelled) return;
@@ -59,8 +75,19 @@ export default function BalanceToast() {
             old?: { balance?: number; last_share_bonus_at?: string | null };
           }) => {
             const newBalance = Number(payload.new?.balance ?? 0);
-            const oldBalance = Number(payload.old?.balance ?? 0);
+            // Wave 767 — payload.old.balance 가 undefined (default replica identity) 이면 lastSeenBalance 사용.
+            const oldBalanceFromPayload = payload.old?.balance;
+            const oldBalance = oldBalanceFromPayload != null
+              ? Number(oldBalanceFromPayload)
+              : (lastSeenBalance ?? newBalance); // lastSeenBalance 없으면 newBalance (= gained 0 → toast skip)
+            const previousLastSeen = lastSeenBalance;
+            // lastSeenBalance 갱신 — 다음 event 의 비교 기준
+            lastSeenBalance = newBalance;
+            try { window.localStorage.setItem(LAST_SEEN_STORAGE_KEY, String(newBalance)); } catch { /* ignore */ }
+
             if (newBalance <= oldBalance) return;
+            // Wave 767 추가 safety — lastSeenBalance 있었으면 그것 기준으로 한 번 더 검증 (증가 시만 토스트).
+            if (previousLastSeen != null && newBalance <= previousLastSeen) return;
 
             const gained = newBalance - oldBalance;
 
