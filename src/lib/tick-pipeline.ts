@@ -3077,7 +3077,11 @@ function trustedMarketMedian(stat: MarketPriceRow | undefined, category?: Sku["c
     if (total < 2) return null;
   } else {
     if (total < 3) return null;
-    if (stat.confidence === "low" && total < 5) return null;
+    // Wave 885 (2026-05-26 사용자 결정): low confidence 시 sample 5 → 3 완화.
+    //   배경: wave99_thin_market_n_lt_5 reason 으로 76 매물 차단 중. 사용자 "3 sample ㄱㄱ".
+    //   trade-off: outlier 1건이 median 끌어올릴 위험 늘어남. 그러나 safety nets (msrp×5 ceiling /
+    //   4 tier fake floor / Wave 171/152/72/138) 작동 중이라 보호됨. 사용자 합의 후 박음.
+    if (stat.confidence === "low" && total < 3) return null;
   }
   // Wave 196 (2026-05-18) Option γ: 신발/가방 — p75/p25 spread > 2x + confidence=low 시 시세 차단.
   //   사용자 발견: 신발 sample에 가품/특가 매물 끼어들어 p25~p75 spread 2~3배. median 비현실적 낮음 →

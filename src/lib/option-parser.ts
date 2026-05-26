@@ -222,7 +222,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v61";  // Wave 777: sport_golf generation 추출 (Beres NX/BB/B+/S, Ping G410/425/430, PXG GEN, TM SIM/Stealth/Qi10, Titleist TS/TSi/TSR/GT, XXIO 9-13)
+export const PARSER_VERSION = "option-parser-v62";  // Wave 885: broad SKU modelName parenthetical/em-dash 토큰 폭주 차단 (Seiko/Dyson/Golf comparable_key 정리)
 
 // Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
 //   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
@@ -926,9 +926,24 @@ function parseCarrier(text: string) {
   return null;
 }
 
+// Wave 885 (2026-05-26): catalog modelName 의 부속 설명 (paren / em-dash / slash 모델 나열) 떼어내기.
+//   기존 fallback `return name || id` 는 "Seiko (broad — narrow 미박힘 catch-all)" 같은 modelName 을
+//   `seiko_broad_narrow_미박힘_catch_all` 로 슬러그화해 comparable_key 에 그대로 박았음 → 사용자 노출 + sample 폭주.
+//   본 함수는 paren/em-dash/slash-나열 토큰을 떼어내 깨끗한 model 토큰만 남긴다.
+function cleanCatalogName(value: string | null | undefined): string {
+  if (!value) return "";
+  return value
+    .replace(/\([^)]*\)/g, " ")                  // (foo) — 부속 설명 제거
+    .replace(/—.*$/, " ")                          // em-dash 뒤 전체 제거
+    .replace(/–.*$/, " ")                          // en-dash 뒤 전체 제거
+    .replace(/\/\s*[A-Za-z0-9가-힣\-+_.]+/g, " ") // "/V10" 같은 slash-모델 나열 제거
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function modelFromSku(skuId?: string | null, skuName?: string | null) {
   const id = slug(skuId);
-  const name = slug(skuName);
+  const name = slug(cleanCatalogName(skuName));
   if (id.startsWith("iphone_")) return id.replace(/^iphone_/, "iphone_");
   if (id.startsWith("galaxy_s")) return id;
   if (id.startsWith("ipad_")) return id;

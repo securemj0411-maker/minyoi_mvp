@@ -5953,13 +5953,21 @@ export const CATALOG: Sku[] = [
     modelName: "AirPods Max (Lightning)",
     aliases: ["에어팟 맥스", "AirPods Max", "에어팟맥스"],
     mustContain: [["에어팟", "airpods"], ["맥스", "max"]],
-    // Wave 765 (2026-05-27): 2세대 (USB-C, 2024) 매물 차단 강화.
-    //   기존: usbc 키워드만 차단 → "에어팟 맥스2 미드나이트 2026" 같은 매물이 1세대로 흡수.
-    //   audit pid 7003881424606 발견. 시세 1세대 vs 2세대 차이 큼 (다른 모델).
-    mustNotContain: ["usb-c", "usbc", "c타입", "타입c", "씨타입",
-      "맥스2", "맥스 2", "max2", "max 2", "2세대", "2 세대",
-      "미드나이트", "스타라이트", "퍼플", "오렌지",  // 2세대 전용 컬러
-      "a3184",  // 2세대 model 번호
+    // Wave 765 + Wave 885 (통합):
+    //   Wave 765 (2026-05-27): 2세대 (USB-C, 2024) 매물 차단 강화 — "에어팟 맥스2 미드나이트 2026" 흡수 차단.
+    //   Wave 885 (재검토 — 사용자 우려 반영): year-only 토큰 (2024/2025/2026) 제거.
+    //     기본 "에어팟 맥스" alone = Lightning default (의도된 행동, 변경 X).
+    //     year 단독은 구매 시점 vs 모델 연식 모호 (Apple 이 2024년 9월까지 Lightning 판매 → "2024년 구매 Lightning" 가능).
+    mustNotContain: [
+      "usb-c", "usbc", "c타입", "타입c", "씨타입", "c핀", "c 핀",
+      // 2024+ USB-C 신컬러 (Lightning 1세대엔 절대 없는 색) — Wave 765 + Wave 885
+      "스타라이트", "starlight", "미드나이트", "midnight", "퍼플", "purple", "오렌지", "orange",
+      // 2세대 / Max 2 명시적 라벨 — Wave 765
+      "맥스 2", "맥스2", "max 2", "max2", "2세대", "2 세대",
+      // 2세대 model 번호 — Wave 765
+      "a3184",
+      // model year 명시 (year-only 는 의도적으로 제외 — 구매연도 vs 모델연식 모호) — Wave 885
+      "2024년형", "2025년형", "2024 모델", "2025 모델", "2024 신모델", "2025 신모델",
     ],
     msrpKrw: 769000,
     released: 2020,
@@ -5976,9 +5984,24 @@ export const CATALOG: Sku[] = [
     mustContain: [
       ["에어팟", "airpods"],
       ["맥스", "max"],
-      ["usb-c", "usbc", "c타입", "타입c", "씨타입"],
+      // Wave 885 (재검토): explicit "USB-C" 또는 1세대엔 없는 신컬러 또는 명시적 세대 라벨.
+      //   year-only 는 의도적으로 제외 (구매연도 vs 모델연식 모호).
+      [
+        "usb-c", "usbc", "c타입", "타입c", "씨타입", "c핀", "c 핀",
+        "스타라이트", "starlight", "미드나이트", "midnight", "퍼플", "purple", "오렌지", "orange",
+        "맥스 2", "맥스2", "max 2", "max2", "2세대", "2 세대",
+        "2024년형", "2025년형", "2024 모델", "2025 모델", "2024 신모델", "2025 신모델",
+      ],
     ],
-    mustNotContain: ["라이트닝", "lightning", ...HEADPHONE_NOISE],
+    // 1세대 Lightning 전용 컬러 (Apple 공식: Space Gray, Silver, Sky Blue, Pink, Green) +
+    // 1세대 명시 라벨 -> Lightning 우선. Wave 885 재검토 — 사용자 우려 반영 (1세대 default 보존).
+    mustNotContain: [
+      "라이트닝", "lightning", "8핀", "8 핀", "팔핀",
+      "스페이스그레이", "스페이스 그레이", "space gray", "space grey",
+      "스카이블루", "스카이 블루", "sky blue",
+      "1세대", "1 세대", "1st gen", "1st generation",
+      ...HEADPHONE_NOISE,
+    ],
     msrpKrw: 769000,
     released: 2024,
   },
@@ -7946,6 +7969,33 @@ export const CATALOG: Sku[] = [
     aliases: ["DJI Osmo Pocket 3", "DJI 오즈모 포켓 3"],
     mustContain: [["dji", "디제이아이"], ["osmo pocket 3", "osmopocket3", "오즈모 포켓 3", "포켓 3", "포켓3"]],
     // Wave 188 internal test (2026-05-18): 액세서리 (마운트 홀더 / 케이지 / brdrc) false positive 차단.
+    // Wave 885 Part 3 (2026-05-26): Creator Combo (콤보 = 광각렌즈/배터리/ND필터 번들) 차단 → 별도 SKU.
+    //   ready pool audit 발견: 9 ready 중 4 콤보 (490-610K) ↔ 5 standard (440-505K). MSRP 차이로 CV 66%.
+    mustNotContain: [
+      "pocket 2", "포켓 2", "포켓2", "pocket 4", "포켓 4", "포켓4",
+      "action", "액션", "nano", "나노",
+      "마운트만", "마운트 홀더", "홀더만", "brdrc", "케이지", "케이지 킷",
+      "필름만", "보호 필름",
+      "배터리만", "충전기만", "케이스만",
+      "고장", "파손", "수리", "매입", "삽니다",
+      // Wave 885 Part 3 — Creator Combo 별도 SKU
+      "크리에이터 콤보", "크리에이터콤보", "creator combo", "creatorcombo",
+      ...WAVE188_NEW_CATEGORY_NOISE,
+    ],
+    msrpKrw: 769000, released: 2023,
+  },
+  // Wave 885 Part 3 (2026-05-26): Osmo Pocket 3 Creator Combo (광각렌즈 + 추가 배터리 + ND 필터 + 마이크) 별도 SKU.
+  //   Standard 콤보 가격차 ~150K (Standard 769K / Creator Combo 949K MSRP). 시세 별도 lane 으로 분리.
+  {
+    id: "dji-osmo-pocket-3-creator-combo",
+    brand: "DJI", category: "drone", laneKey: "dji_osmo_pocket_3_creator_combo",
+    modelName: "DJI Osmo Pocket 3 Creator Combo",
+    aliases: ["DJI Osmo Pocket 3 Creator Combo", "DJI 오즈모 포켓 3 크리에이터 콤보"],
+    mustContain: [
+      ["dji", "디제이아이"],
+      ["osmo pocket 3", "osmopocket3", "오즈모 포켓 3", "포켓 3", "포켓3"],
+      ["크리에이터 콤보", "크리에이터콤보", "creator combo", "creatorcombo"],
+    ],
     mustNotContain: [
       "pocket 2", "포켓 2", "포켓2", "pocket 4", "포켓 4", "포켓4",
       "action", "액션", "nano", "나노",
@@ -7955,7 +8005,7 @@ export const CATALOG: Sku[] = [
       "고장", "파손", "수리", "매입", "삽니다",
       ...WAVE188_NEW_CATEGORY_NOISE,
     ],
-    msrpKrw: 769000, released: 2023,
+    msrpKrw: 949000, released: 2023,
   },
   // Wave 185 internal test (2026-05-18): DJI 신모델 3개 — 매물 sweep 에서 발견.
   {

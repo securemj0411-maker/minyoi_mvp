@@ -656,6 +656,7 @@ export const LANE_READINESS: LaneReadinessMap = {
   dji_osmo_action_5_pro: { status: "ready", label: "DJI Osmo Action 5 Pro", note: "Wave 184: 단일 옵션. 2024 신모델." },
   dji_osmo_pocket_2: { status: "ready", label: "DJI Osmo Pocket 2", note: "Wave 184: 단일 옵션." },
   dji_osmo_pocket_3: { status: "ready", label: "DJI Osmo Pocket 3", note: "Wave 184: 단일 옵션. 2023 인기." },
+  dji_osmo_pocket_3_creator_combo: { status: "ready", label: "DJI Osmo Pocket 3 Creator Combo", note: "Wave 885: Standard ↔ Combo split (MSRP 769K vs 949K)." },
   gopro_hero_9: { status: "ready", label: "GoPro Hero 9 Black", note: "Wave 184: 단일 옵션." },
   gopro_hero_10: { status: "ready", label: "GoPro Hero 10 Black", note: "Wave 184: 단일 옵션." },
   gopro_hero_11: { status: "ready", label: "GoPro Hero 11 Black", note: "Wave 184: 단일 옵션." },

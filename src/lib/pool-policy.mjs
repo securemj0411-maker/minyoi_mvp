@@ -25,15 +25,17 @@ export const POOL_BLOCK_FLAGS = [
 ];
 
 export function bandFromProfit(profitMin, profitMax, _category) {
-  // Wave 755 (2026-05-24): _category 인자 추가 (현재 미사용, signature consistency).
-  //   profit.ts와 .d.ts 일관성. 향후 카테고리별 차등 threshold 도입 위한 placeholder.
-  // 현재 threshold: 모든 카테고리 1만/4만/7만 (Wave 90).
+  // Wave 885 (2026-05-26 사용자 결정): band 시스템 폐기 완성 — pool 진입 gate threshold 1원.
+  //   배경: 사용자 코멘트 "band 개념 없앤 지 오래됐는데? 15만/30만/50만 이하 필터링 피드에서 직접 함".
+  //         Wave 179 (2026-05-17) 노출 정책 폐기 (poolMaxExposure → 5 일률) 했지만 진입 gate threshold 는 stale.
+  //         Wave 90 의 10K threshold 가 당근 헐값 매물 (시세의 56-67%) 차익 1천-9천원 매물 1,261건 차단.
+  //         사용자 friendly + 일반인 가치 (패키지 690/990원 보다 차익 큼) → 폐기.
+  //   유지: avg = profit 음수/0 = null → negative_resell_gap 별도 차단 (candidate-pool-builder line 642).
+  //   profit_band 컬럼 = admin/explore-monitor 시각화용만 (사용자 노출 X). 1 일률 박혀도 무해.
   const avg = Math.round((profitMin + profitMax) / 2);
   if (avg >= 70_000) return 3;
   if (avg >= 40_000) return 2;
-  // Wave 90 (2026-05-15): 1만 게이트로 lower. 배송비/수수료 net 1만 차익이면 사용자 가치.
-  // 풀 산출량 측면 일반인 친화 (저자본 진입자) + outlier 매물 더 많이 흡수.
-  if (avg >= 10_000) return 1;
+  if (avg >= 1) return 1;  // Wave 885: 10_000 → 1 (band 폐기 결정).
   return null;
 }
 
