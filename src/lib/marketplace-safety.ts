@@ -251,6 +251,7 @@ export function inferMarketplaceTransaction(facts: MarketplaceSafetyFacts): {
 
 export function buildMarketplaceSafetyDisplay(facts: MarketplaceSafetyFacts): MarketplaceSafetyDisplay {
   const isJoongna = isJoongnaMarketplaceSource(facts.marketplaceSource);
+  const isDaangn = isDaangnMarketplaceSource(facts.marketplaceSource);
   const marketplaceLabel = facts.marketplaceLabel || marketplaceSourceLabel(facts.marketplaceSource);
   const paymentLabel = isJoongna ? "안심결제" : "안전결제";
   const reviewCount = Math.max(0, Math.round(cleanNumber(facts.sellerReviewCount) ?? 0));
