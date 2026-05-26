@@ -1,6 +1,85 @@
 import { randomUUID } from "node:crypto";
 import { restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
+// Wave 885 Part 5 (2026-05-26): cron 영구 통계 hook (best-effort).
+//   기존: skipCounters / recentSkips = lambda in-memory only → 휘발.
+//   본 hook = mvp_cron_executions 테이블에 row 1개 박음. INSERT (start) + PATCH (finish).
+//   모든 호출 fire-and-forget — DB write 실패해도 cron 자체 실행 영향 X.
+//   별도 wave 에서 stale running row cleanup (housekeeper 통해).
+async function logCronStart(mode: CronWorkerMode, owner: string): Promise<number | null> {
+  try {
+    const res = await restFetch(`${tableUrl("mvp_cron_executions")}?select=id`, {
+      method: "POST",
+      headers: { ...serviceHeaders(), Prefer: "return=representation" },
+      body: JSON.stringify({ mode, owner, status: "running" }),
+    });
+    if (!res.ok) return null;
+    const rows = (await res.json()) as Array<{ id: number }>;
+    return rows[0]?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function logCronFinish(
+  execId: number,
+  status: "success" | "failed" | "released",
+  durationMs: number,
+  detail?: Record<string, unknown>,
+): Promise<void> {
+  try {
+    const body: Record<string, unknown> = {
+      status,
+      finished_at: new Date().toISOString(),
+      duration_ms: durationMs,
+    };
+    if (detail !== undefined) body.detail = detail;
+    await restFetch(`${tableUrl("mvp_cron_executions")}?id=eq.${execId}`, {
+      method: "PATCH",
+      headers: { ...serviceHeaders(), Prefer: "return=minimal" },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    /* fire-and-forget */
+  }
+}
+
+function skipStatusOf(reason: CronGuardSkipReason): string {
+  switch (reason) {
+    case "cooldown":
+      return "skipped_cooldown";
+    case "same_worker_running":
+      return "skipped_running";
+    case "source_health_unhealthy":
+      return "skipped_unhealthy";
+  }
+}
+
+async function logCronSkip(
+  mode: CronWorkerMode,
+  owner: string,
+  reason: CronGuardSkipReason,
+  detail?: Record<string, string | number | null>,
+): Promise<void> {
+  try {
+    const body: Record<string, unknown> = {
+      mode,
+      owner,
+      status: skipStatusOf(reason),
+      skip_reason: reason,
+      finished_at: new Date().toISOString(),
+    };
+    if (detail !== undefined) body.detail = detail;
+    await restFetch(tableUrl("mvp_cron_executions"), {
+      method: "POST",
+      headers: { ...serviceHeaders(), Prefer: "return=minimal" },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    /* fire-and-forget */
+  }
+}
+
 export type CronWorkerMode =
   | "tick"
   | "detail_worker"
@@ -266,8 +345,12 @@ function acquireCronGuardInternal(
     : envMs(modeEnvKey("CRON_GUARD_COOLDOWN_MS", mode), DEFAULT_COOLDOWN_MS[mode], 0, 24 * 60 * 60_000);
   const leaseMs = envMs(modeEnvKey("CRON_GUARD_LEASE_MS", mode), DEFAULT_LEASE_MS[mode], 10_000, 30 * 60_000);
 
+  // Wave 885 Part 5: owner UUID 생성 (이 cron 실행 단위 추적용).
+  const owner = randomUUID();
+
   const running = state.running.get(mode);
   if (!force && running && running.leaseUntil > now) {
+    void logCronSkip(mode, owner, "same_worker_running", { retryAfterMs: running.leaseUntil - now });
     return skipped(state, mode, "same_worker_running", running.leaseUntil - now, now);
   }
   if (running && running.leaseUntil <= now) {
@@ -276,12 +359,14 @@ function acquireCronGuardInternal(
 
   const lastAcceptedAt = state.lastAcceptedAt.get(mode) ?? 0;
   if (!force && cooldownMs > 0 && now - lastAcceptedAt < cooldownMs) {
+    void logCronSkip(mode, owner, "cooldown", { retryAfterMs: cooldownMs - (now - lastAcceptedAt) });
     return skipped(state, mode, "cooldown", cooldownMs - (now - lastAcceptedAt), now);
   }
 
   if (!force && envBool("CRON_GUARD_SOURCE_HEALTH_ENABLED", true)) {
     const sourceHealthSkip = shouldSkipForSourceHealth(mode, sourceHealth ?? null, now);
     if (sourceHealthSkip) {
+      void logCronSkip(mode, owner, "source_health_unhealthy", sourceHealthSkip.detail);
       return skipped(state, mode, "source_health_unhealthy", sourceHealthSkip.retryAfterMs, now, sourceHealthSkip.detail);
     }
   }
@@ -289,6 +374,10 @@ function acquireCronGuardInternal(
   const leaseUntilMs = now + leaseMs;
   state.running.set(mode, { startedAt: now, leaseUntil: leaseUntilMs });
   state.lastAcceptedAt.set(mode, now);
+
+  // Wave 885 Part 5: cron 실행 시작 → mvp_cron_executions INSERT (running).
+  //   execIdPromise = best-effort. fire-and-forget. release 시 finish 박을 때 await.
+  const execIdPromise = logCronStart(mode, owner);
 
   let released = false;
   return {
@@ -302,6 +391,11 @@ function acquireCronGuardInternal(
       if (current?.startedAt === now) {
         state.running.delete(mode);
       }
+      // Wave 885 Part 5: cron 종료 → mvp_cron_executions PATCH (success / duration).
+      const durationMs = Date.now() - now;
+      void execIdPromise.then((execId) => {
+        if (execId) void logCronFinish(execId, "success", durationMs);
+      });
     },
   };
 }
