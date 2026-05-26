@@ -51,7 +51,9 @@ export async function POST(req: Request) {
     daangn_region_name: string | null;
   }>>);
   const row = rows[0];
-  if (!row) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
+  // 2026-05-26 v3: row 없을 때 404 대신 200 with null — frontend cache 의 stale pid 차단 시 console error red 방지.
+  //   UI 측 결과 동일 ("동네 정보 없음" fallback). 다만 error log noise 제거.
+  if (!row) return NextResponse.json({ ok: true, location: null, source: "not_found" });
 
   // 2026-05-26 v2: ready 검사 완전 제거.
   //   원인: 피드 노출 시점엔 ready 였던 매물이 cron tick 사이 invalidated/spent 되면
