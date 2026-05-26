@@ -2613,7 +2613,7 @@ export default function ExploreClient({
             const isJoongna = item.marketplaceSource === "joongna";
             const isPremiumSeller = !isJoongna && (item.sellerReviewRating ?? 0) >= 4.8 && item.sellerReviewCount >= 30;
             const shippingChip = item.transactionMode === "direct_only"
-              ? "직거래 전제"
+              ? "직거래만"
               : item.shippingAssumption === "included"
                 ? "배송비 포함"
                 : item.freeShipping ? "무료배송" : null;

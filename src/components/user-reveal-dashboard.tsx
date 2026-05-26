@@ -721,7 +721,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         },
         shippingOptions: fallbackItem.freeShipping || fallbackItem.shippingAssumption === "included" ? [{ kind: "free", amount: 0 }] : [],
         shippingSummary: fallbackItem.transactionMode === "direct_only"
-          ? "0원 · 직거래 전제"
+          ? "0원 · 직거래만"
           : fallbackItem.shippingAssumption === "included"
             ? "0원 · 배송비 포함"
             : fallbackItem.freeShipping ? "무료배송" : "-",

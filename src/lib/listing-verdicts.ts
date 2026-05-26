@@ -253,7 +253,7 @@ export function buildVerdicts(input: VerdictInput): Verdict[] {
 
   // 8. 무료배송
   if (shipping.assumption === "direct_only") {
-    out.push({ label: "직거래 전제", tone: "info" });
+    out.push({ label: "직거래만", tone: "info" });
   } else if (shipping.assumption === "included") {
     out.push({ label: "배송비 포함", tone: "info" });
   } else if (input.freeShipping && !isJoongna) {

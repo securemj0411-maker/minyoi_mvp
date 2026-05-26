@@ -3412,7 +3412,7 @@ function _SavedDetailMini({ card }: { card: RevealCard }) {
         ) : null}
         {safety.shipping.allowFreeShippingBadge || safety.shipping.assumption === "included" || safety.shipping.assumption === "direct_only" ? (
           <span className="rounded-full bg-blue-50 px-2 py-0.5 font-black text-zinc-900 dark:bg-zinc-900 dark:text-zinc-200">
-            {safety.shipping.assumption === "direct_only" ? "직거래 전제" : safety.shipping.assumption === "included" ? "배송비 포함" : "무료배송"}
+            {safety.shipping.assumption === "direct_only" ? "직거래만" : safety.shipping.assumption === "included" ? "배송비 포함" : "무료배송"}
           </span>
         ) : null}
       </div>
