@@ -7957,6 +7957,33 @@ export const CATALOG: Sku[] = [
     aliases: ["DJI Osmo Pocket 3", "DJI 오즈모 포켓 3"],
     mustContain: [["dji", "디제이아이"], ["osmo pocket 3", "osmopocket3", "오즈모 포켓 3", "포켓 3", "포켓3"]],
     // Wave 188 internal test (2026-05-18): 액세서리 (마운트 홀더 / 케이지 / brdrc) false positive 차단.
+    // Wave 885 Part 3 (2026-05-26): Creator Combo (콤보 = 광각렌즈/배터리/ND필터 번들) 차단 → 별도 SKU.
+    //   ready pool audit 발견: 9 ready 중 4 콤보 (490-610K) ↔ 5 standard (440-505K). MSRP 차이로 CV 66%.
+    mustNotContain: [
+      "pocket 2", "포켓 2", "포켓2", "pocket 4", "포켓 4", "포켓4",
+      "action", "액션", "nano", "나노",
+      "마운트만", "마운트 홀더", "홀더만", "brdrc", "케이지", "케이지 킷",
+      "필름만", "보호 필름",
+      "배터리만", "충전기만", "케이스만",
+      "고장", "파손", "수리", "매입", "삽니다",
+      // Wave 885 Part 3 — Creator Combo 별도 SKU
+      "크리에이터 콤보", "크리에이터콤보", "creator combo", "creatorcombo",
+      ...WAVE188_NEW_CATEGORY_NOISE,
+    ],
+    msrpKrw: 769000, released: 2023,
+  },
+  // Wave 885 Part 3 (2026-05-26): Osmo Pocket 3 Creator Combo (광각렌즈 + 추가 배터리 + ND 필터 + 마이크) 별도 SKU.
+  //   Standard 콤보 가격차 ~150K (Standard 769K / Creator Combo 949K MSRP). 시세 별도 lane 으로 분리.
+  {
+    id: "dji-osmo-pocket-3-creator-combo",
+    brand: "DJI", category: "drone", laneKey: "dji_osmo_pocket_3_creator_combo",
+    modelName: "DJI Osmo Pocket 3 Creator Combo",
+    aliases: ["DJI Osmo Pocket 3 Creator Combo", "DJI 오즈모 포켓 3 크리에이터 콤보"],
+    mustContain: [
+      ["dji", "디제이아이"],
+      ["osmo pocket 3", "osmopocket3", "오즈모 포켓 3", "포켓 3", "포켓3"],
+      ["크리에이터 콤보", "크리에이터콤보", "creator combo", "creatorcombo"],
+    ],
     mustNotContain: [
       "pocket 2", "포켓 2", "포켓2", "pocket 4", "포켓 4", "포켓4",
       "action", "액션", "nano", "나노",
@@ -7966,7 +7993,7 @@ export const CATALOG: Sku[] = [
       "고장", "파손", "수리", "매입", "삽니다",
       ...WAVE188_NEW_CATEGORY_NOISE,
     ],
-    msrpKrw: 769000, released: 2023,
+    msrpKrw: 949000, released: 2023,
   },
   // Wave 185 internal test (2026-05-18): DJI 신모델 3개 — 매물 sweep 에서 발견.
   {
