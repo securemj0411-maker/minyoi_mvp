@@ -1001,14 +1001,17 @@ function DirectTradeConfirmModal({
   const [resolvedLocation, setResolvedLocation] = useState<string | null>(null);
   const [isLocationLoading, setIsLocationLoading] = useState(false);
   const activePid = state?.item.pid ?? null;
+  // Wave 755 (2026-05-26): teaser locked 매물은 pid=synthetic. API 가 real pid 못 찾음 → location null.
+  //   accessToken 있으면 그걸 보내서 server-side decode. 없으면 fallback to pid (unlocked path).
+  const activeToken = state?.item.accessToken ?? null;
   const initialLocation = state?.item.directTradeLocation?.trim() ?? "";
 
   useEffect(() => {
     setResolvedLocation(null);
-    // 2026-05-26: initialLocation 있어도 fetch 호출 — stale state cache 무시.
-    //   frontend state 가 PR #14 이전 시점 데이터면 directTradeLocation null.
-    //   endpoint 의 최신 응답 우선 (resolvedLocation > initialLocation).
-    if (!activePid) {
+    // Wave 755 (2026-05-26): initialLocation 있어도 fetch 호출 — stale state cache 무시.
+    //   teaser locked 매물은 pid=synthetic 이라 accessToken 필수.
+    //   endpoint 최신 응답 우선 (resolvedLocation > initialLocation).
+    if (!activePid && !activeToken) {
       setIsLocationLoading(false);
       return;
     }
@@ -1017,7 +1020,7 @@ function DirectTradeConfirmModal({
     fetch("/api/packs/pool/direct-location", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pid: activePid }),
+      body: JSON.stringify(activeToken ? { accessToken: activeToken } : { pid: activePid }),
       cache: "no-store",
       signal: controller.signal,
     })
@@ -1035,7 +1038,7 @@ function DirectTradeConfirmModal({
         if (!controller.signal.aborted) setIsLocationLoading(false);
       });
     return () => controller.abort();
-  }, [activePid, initialLocation]);
+  }, [activePid, activeToken, initialLocation]);
 
   if (!state) return null;
   // endpoint 응답 (resolvedLocation) 우선 — stale state cache override.

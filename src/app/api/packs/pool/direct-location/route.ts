@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
+import { decodePoolAccessToken } from "@/lib/pool-access-token";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 
@@ -28,8 +29,13 @@ export async function POST(req: Request) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
 
-  const body = await req.json().catch(() => ({})) as { pid?: unknown };
-  const pid = Number(body.pid);
+  const body = await req.json().catch(() => ({})) as { pid?: unknown; accessToken?: unknown };
+  // Wave 755 (2026-05-26): teaser locked 매물은 synthetic pid 라 DB lookup fail.
+  //   feed teaser → accessToken 발급 → 여기서 decode → real pid 사용.
+  //   accessToken 우선, 없으면 pid (admin/내 매물 화면 같은 unlocked path 호환).
+  const accessToken = typeof body.accessToken === "string" ? body.accessToken : null;
+  const tokenPid = accessToken ? decodePoolAccessToken(accessToken) : null;
+  const pid = tokenPid ?? Number(body.pid);
   if (!Number.isSafeInteger(pid) || pid <= 0) {
     return NextResponse.json({ ok: false, error: "invalid_pid" }, { status: 400 });
   }
