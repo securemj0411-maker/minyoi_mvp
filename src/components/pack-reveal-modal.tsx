@@ -493,7 +493,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
   if (safety.isJoongna) {
     return {
       eyebrow: "4. 판매자 신뢰",
-      title: "먼저 상품과 판매자를 같이 봐요",
+      title: "상품과 판매자를 같이 봐요",
       metric: safety.sellerTrust.metric,
       metricLabel: safety.sellerTrust.metricLabel,
       body: safety.sellerTrust.body,
@@ -506,7 +506,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
   if (rating != null && rating >= 4.8 && reviewCount >= SELLER_TRUST_MIN_REVIEW_COUNT) {
     return {
       eyebrow: "4. 판매자 신뢰",
-      title: "먼저 상품과 판매자를 같이 봐요",
+      title: "상품과 판매자를 같이 봐요",
       metric: safety.sellerTrust.metric,
       metricLabel: `평점 ${rating.toFixed(1)}점`,
       body: safety.sellerTrust.body + " 신뢰 신호가 있는 편이에요.",
@@ -520,7 +520,7 @@ function sellerTrustGuideStep(card: RevealCard): BeginnerGuideStep {
   if (rating != null && reviewCount > 0) {
     return {
       eyebrow: "4. 판매자 신뢰",
-      title: "먼저 상품과 판매자를 같이 봐요",
+      title: "상품과 판매자를 같이 봐요",
       metric: safety.sellerTrust.metric,
       metricLabel: `평점 ${rating.toFixed(1)}점`,
       body: reviewCount < SELLER_TRUST_MIN_REVIEW_COUNT
@@ -6461,7 +6461,8 @@ function FixedBunjangFooter({
     if (skipNextTime) writeSkipSourceConfirm(true);
     setConfirmOpen(false);
   };
-  const SourceLogo = safety.isJoongna ? JoongnaLogo : BunjangLogo;
+  // 2026-05-26 (사용자 짚음 "당근 매물인데 로고가 번개장터"): daangn 분기 추가.
+  const SourceLogo = safety.isJoongna ? JoongnaLogo : safety.isDaangn ? DaangnLogo : BunjangLogo;
 
   // Wave 333 (사용자 피드백): 안전도("주의 1건") 버튼 제거 — 모달 안 셀러 카드/거래 안전 타일에 이미 있음.
   // 하단 fixed는 번개장터 이동 버튼만 풀 너비로.
