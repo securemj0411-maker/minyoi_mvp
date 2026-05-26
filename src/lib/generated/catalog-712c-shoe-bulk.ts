@@ -554,8 +554,27 @@ export const WAVE_712C_SHOE_BULK: Sku[] = [
     modelName: "Adidas Yeezy Boost 500 (Blush/Utility Black/Bone)",
     aliases: ["Yeezy 500", "이지 500"],
     mustContain: [["yeezy", "이지"], ["500"]],
-    mustNotContain: [...COMMON_NOISE, "베이지", "세이지", "케이지", "에이지", "크레이지", "루이지", "이지갭", "이지베이션"],
+    // Wave 767 (2026-05-27): "700" 차단 추가 — 500/700 hybrid 매물 명시 매칭 방지 (catalog.ts:13078 broad deprecate 와 연동).
+    mustNotContain: [...COMMON_NOISE, "베이지", "세이지", "케이지", "에이지", "크레이지", "루이지", "이지갭", "이지베이션", "700"],
     msrpKrw: 280000, released: 2018,
+    defaultProductType: "sneaker",
+  },
+  // Wave 767 (2026-05-27): Yeezy Boost 700 broad lane (V2/MNVN/Inertia 등 Wave Runner 외 700 매물).
+  //   기존 700-wave-runner narrow는 OG Solid Grey/Wave Runner 명시만 잡음. 일반 700 매물 (V2 등) catch-all 필요.
+  //   DB 228 raws "shoe-yeezy-boost-500-700" stale → Wave 767 SQL 재분배.
+  {
+    id: "shoe-yeezy-boost-700-broad",
+    brand: "Adidas Yeezy", category: "shoe", laneKey: "yeezy_700_broad",
+    modelName: "Adidas Yeezy Boost 700 (V2/MNVN/Inertia 등 — Wave Runner OG 외)",
+    aliases: ["Yeezy 700", "이지 700", "이지부스트 700"],
+    mustContain: [["yeezy", "이지"], ["700"]],
+    mustNotContain: [
+      ...COMMON_NOISE,
+      "베이지", "세이지", "케이지", "크레이지",
+      "wave runner", "웨이브 러너", "웨이브러너", "solid grey",  // OG narrow 격리
+      "500",  // 500/700 hybrid 매물 차단
+    ],
+    msrpKrw: 380000, released: 2017,
     defaultProductType: "sneaker",
   },
   {

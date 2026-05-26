@@ -13177,12 +13177,16 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 290000, released: 2015, defaultProductType: "sneaker",
   },
+  // Wave 767 (2026-05-27): broad "shoe-yeezy-boost-500-700" deprecate.
+  //   문제: 500 vs 700은 다른 silhouette/다른 모델인데 한 SKU에 합본 → narrow (`shoe-yeezy-boost-500-broad` + 신규 `shoe-yeezy-boost-700-broad`)와 collision으로 ruleMatch null 반환.
+  //   해결: mustContain "500 700" 명시 매물만 매칭 (현실에서 거의 없음) → 사실상 dead lane. 신규 매물은 narrow가 흡수.
+  //   DB의 228 stale raws는 Wave 767 SQL로 500-broad / 700-broad에 재분배.
   {
     id: "shoe-yeezy-boost-500-700",
     brand: "Yeezy x Adidas", category: "shoe", laneKey: "yeezy_boost_500_700",
-    modelName: "Yeezy Boost 500 / 700",
-    aliases: ["Yeezy Boost 500", "Yeezy Boost 700", "이지 부스트 500", "이지 부스트 700"],
-    mustContain: [["yeezy", "이지"], ["boost 500", "boost 700", "500", "700"]],
+    modelName: "Yeezy Boost 500 / 700 (deprecated — Wave 767, 분리 narrow 사용)",
+    aliases: [],
+    mustContain: [["yeezy", "이지"], ["500 700", "700 500", "500/700", "500-700"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "이지페이", "이지카", "boost 350", "350", "slide", "슬라이드", "foam", "폼"],
     msrpKrw: 320000, released: 2017,
   },
