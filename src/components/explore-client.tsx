@@ -964,16 +964,42 @@ function DetailAccessPaywallModal({
                 </span>
               </button>
             ) : null}
+            {/* Wave launch-127 (2026-05-25): /plans 이동 제거 → 모달 안 inline 패키지 선택.
+                클릭 수 줄이기 — paywall 뜨자마자 가격 보이고 바로 결제 이동. */}
             {isPaywall ? (
-              <Link
-                href="/plans"
-                className="flex min-h-12 items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-base font-black text-white shadow-[0_12px_26px_rgba(49,130,246,0.28)] transition hover:bg-[#1c6fe8]"
-              >
-                {/* Wave launch-30 (사용자 짚음): "계속 보기" = misleading.
-                 * 충전한다고 *이* 매물 계속 보는 게 아니라 *다른* 매물 더 보는 거.
-                 * 정직 카피로 변경 — "크레딧 충전하러 가기". */}
-                크레딧 충전하러 가기
-              </Link>
+              <div className="space-y-1.5">
+                {/* starter — 강조 (1회당 495원, 가장 인기) */}
+                <Link
+                  href="/billing/manual?credits=20"
+                  className="flex items-center justify-between rounded-2xl bg-[#3182f6] px-4 py-3 transition hover:bg-[#1c6fe8] active:scale-[0.99] shadow-[0_12px_26px_rgba(49,130,246,0.28)]"
+                >
+                  <div>
+                    <div className="text-[13px] font-black text-white">20크레딧 · 9,900원</div>
+                    <div className="mt-0.5 text-[11px] font-bold text-white/70">1회당 495원 · 가장 인기</div>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-black text-white">추천</span>
+                </Link>
+                {/* trial / plus — 작게 */}
+                <div className="grid grid-cols-2 gap-1.5">
+                  <Link
+                    href="/billing/manual?credits=5"
+                    className="flex flex-col rounded-2xl bg-zinc-100 px-3 py-2.5 transition hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                  >
+                    <span className="text-[12px] font-black text-zinc-800 dark:text-zinc-100">5크레딧 · 2,900원</span>
+                    <span className="mt-0.5 text-[10.5px] font-bold text-zinc-500">1회당 580원</span>
+                  </Link>
+                  <Link
+                    href="/billing/manual?credits=45"
+                    className="flex flex-col rounded-2xl bg-zinc-100 px-3 py-2.5 transition hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                  >
+                    <span className="text-[12px] font-black text-zinc-800 dark:text-zinc-100">45크레딧 · 19,900원</span>
+                    <span className="mt-0.5 text-[10.5px] font-bold text-zinc-500">1회당 442원</span>
+                  </Link>
+                </div>
+                <Link href="/plans" className="block text-center text-[11px] font-bold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 py-1">
+                  더 많은 패키지 보기 →
+                </Link>
+              </div>
             ) : null}
             <button
               type="button"
