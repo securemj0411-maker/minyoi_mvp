@@ -16,6 +16,35 @@ const ACCOUNT_NUMBER = "1002-367-160511";
 const ACCOUNT_RAW = "1002367160511";
 const ACCOUNT_HOLDER = "이민제";
 
+// Wave 774 (2026-05-27): 토스 송금 deep link — manual deposit friction 8 step → 3 step.
+//   supertoss://send 가 토스 앱의 송금 화면을 prefill (bank + accountNo + amount).
+//   비공식 reverse-engineered scheme — 토스 앱 업데이트로 깨질 risk 있음 (카나리아 모니터링 별도).
+//   미설치 fallback: iOS App Store / Android Play Store via intent:// + setTimeout 휴리스틱.
+const TOSS_BANK_PARAM = "우리"; // 토스 deep link 한글 은행명 (우리은행)
+const TOSS_APP_STORE_URL = "https://apps.apple.com/kr/app/id839333328";
+const TOSS_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=viva.republica.toss";
+
+function buildTossDeepLink(amount: number): string {
+  const params = new URLSearchParams({
+    bank: TOSS_BANK_PARAM,
+    accountNo: ACCOUNT_RAW,
+    amount: String(amount),
+    origin: "qr",
+  });
+  return `supertoss://send?${params.toString()}`;
+}
+
+function buildAndroidTossIntent(amount: number): string {
+  const params = new URLSearchParams({
+    bank: TOSS_BANK_PARAM,
+    accountNo: ACCOUNT_RAW,
+    amount: String(amount),
+    origin: "qr",
+  });
+  const fallback = encodeURIComponent(TOSS_PLAY_STORE_URL);
+  return `intent://send?${params.toString()}#Intent;scheme=supertoss;package=viva.republica.toss;S.browser_fallback_url=${fallback};end`;
+}
+
 const CREDIT_PACKAGE_TO_PLAN: Record<string, Exclude<PlanKey, "free">> = {
   "1": "single",
   "5": "trial",
@@ -53,6 +82,7 @@ export default function ManualDepositClient() {
   const [stage, setStage] = useState<Stage>("ready");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copyOk, setCopyOk] = useState(false);
+  const [tossOpened, setTossOpened] = useState(false);
   const [authReady, setAuthReady] = useState<"loading" | "authed" | "guest">("loading");
   // Wave launch-97: 신청 → 카운트다운 + polling.
   const [requestId, setRequestId] = useState<number | null>(null);
@@ -284,6 +314,45 @@ export default function ManualDepositClient() {
               <div className="mt-2 text-[11px] font-black text-[#3182f6] dark:text-blue-300">계좌번호가 복사됐어요</div>
             ) : null}
           </div>
+
+          {/* Wave 774 (2026-05-27): 토스 송금 deep link CTA — fast path.
+              사용자 클릭 → 토스 앱 송금화면 자동 prefill (우리은행 + 계좌 + 금액).
+              토스 미설치 시 fallback (iOS App Store / Android Play Store).
+              다른 은행 사용자는 위 "계좌번호 복사" 후 본인 은행 앱에서 송금. */}
+          <a
+            href={buildTossDeepLink(plan.priceKrw)}
+            onClick={(e) => {
+              if (typeof window === "undefined") return;
+              const ua = navigator.userAgent || "";
+              const isAndroid = /Android/i.test(ua);
+              const isIOS = /iPad|iPhone|iPod/i.test(ua);
+              setTossOpened(true);
+              if (isAndroid) {
+                e.preventDefault();
+                window.location.href = buildAndroidTossIntent(plan.priceKrw);
+                return;
+              }
+              if (isIOS) {
+                const startedAt = Date.now();
+                setTimeout(() => {
+                  if (Date.now() - startedAt < 2000 && document.visibilityState === "visible") {
+                    window.location.href = TOSS_APP_STORE_URL;
+                  }
+                }, 1500);
+              }
+            }}
+            className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#3182f6] text-[14.5px] font-black text-white shadow-[0_10px_22px_rgba(49,130,246,0.28)] transition hover:bg-[#1c6fe8] active:scale-[0.99]"
+          >
+            토스 앱으로 송금하기
+          </a>
+          <p className="mt-2 text-[11px] font-medium leading-4 text-zinc-500 dark:text-zinc-400">
+            토스 앱이 송금 화면을 자동으로 채워줘요. 다른 은행을 쓰시면 위 계좌번호 복사 후 본인 은행 앱에서 송금해주세요.
+          </p>
+          {tossOpened ? (
+            <p className="mt-1 text-[11px] font-bold text-[#3182f6] dark:text-blue-300">
+              송금 완료 후 아래 입금자 성명을 입력하고 "입금 완료" 를 눌러주세요.
+            </p>
+          ) : null}
 
           {/* 입금자명 */}
           <div className="mt-4">
