@@ -4,8 +4,8 @@ import { fetchDetail } from "@/lib/bunjang";
 import { consumeDetailAccess } from "@/lib/detail-access";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { fetchJoongnaDetail } from "@/lib/joongna";
-import { isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
-import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombined } from "@/lib/marketplace-safety";
+import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
 import { classifyListing } from "@/lib/pipeline";
 import { decodePoolAccessToken } from "@/lib/pool-access-token";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -55,7 +55,7 @@ async function loadExactPoolItem(pid: number) {
       url: string | null;
     }>>),
     restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,listing_state,sale_status,num_comment,raw_json&pid=eq.${pid}&limit=1`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,listing_state,sale_status,num_comment,raw_json,daangn_region_name&pid=eq.${pid}&limit=1`,
       { headers },
     ).then((res) => res.json() as Promise<Array<{
       pid: number;
@@ -75,6 +75,7 @@ async function loadExactPoolItem(pid: number) {
       sale_status: string | null;
       num_comment: number | null;
       raw_json: Record<string, unknown> | null;
+      daangn_region_name: string | null;
     }>>),
     // Wave 714n (2026-05-23): 신발/의류 5-tier grading + chips fetch — 매물 클릭 시 모달 path 의 진짜 source.
     restFetch(
@@ -150,7 +151,7 @@ async function loadExactPoolItem(pid: number) {
     transactionMode: tx.transactionMode,
     shippingAssumption: tx.assumption,
     // Wave launch-37: raw_json 없으면 description 에서 "직거래는 안동 송하동" 같은 패턴 추출.
-    directTradeLocation: marketplaceLocationCombined(meta?.raw_json, meta?.description_preview ?? null),
+    directTradeLocation: marketplaceLocationCombinedWithRegion(meta?.raw_json, meta?.description_preview ?? null, meta?.daangn_region_name ?? null),
     imageCount: meta?.image_count ?? null,
     descriptionPreview: meta?.description_preview ?? "",
     listingState: meta?.listing_state ?? "unknown",
@@ -328,6 +329,18 @@ async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAcce
         saleStatus,
         tradeLocation: detail.tradeLocation,
         directTradeLocation: detail.tradeLocation ?? item.directTradeLocation,
+      },
+    };
+  }
+
+  if (isDaangnMarketplaceSource(item.marketplaceSource)) {
+    await patchPoolVerified(item.pid);
+    return {
+      ok: true,
+      item: {
+        ...item,
+        listingState: "active",
+        saleStatus: item.saleStatus || "selling",
       },
     };
   }

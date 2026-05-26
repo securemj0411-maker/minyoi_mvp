@@ -1,4 +1,4 @@
-import { isJoongnaMarketplaceSource, marketplaceSourceLabel } from "@/lib/marketplace-source";
+import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, marketplaceSourceLabel } from "@/lib/marketplace-source";
 
 export type MarketplaceTransactionMode =
   | "direct_only"
@@ -216,6 +216,10 @@ export function inferMarketplaceTransaction(facts: MarketplaceSafetyFacts): {
   labels: string[];
 } {
   const labels = cleanLabels(facts.tradeLabels);
+  const isDaangn = isDaangnMarketplaceSource(facts.marketplaceSource);
+  if (isDaangn && !labels.some((label) => /직거래/.test(label))) {
+    labels.push("직거래");
+  }
   const joined = labels.join(" ");
   const hasDirect = /직거래/.test(joined);
   const hasShipping = /택배|배송/.test(joined);
@@ -225,12 +229,13 @@ export function inferMarketplaceTransaction(facts: MarketplaceSafetyFacts): {
   const isJoongna = isJoongnaMarketplaceSource(facts.marketplaceSource);
 
   let transactionMode: MarketplaceTransactionMode = "unknown";
-  if (hasDirect && hasShipping) transactionMode = "direct_and_shipping";
+  if (isDaangn) transactionMode = "direct_only";
+  else if (hasDirect && hasShipping) transactionMode = "direct_and_shipping";
   else if (hasDirect) transactionMode = "direct_only";
   else if (hasShipping || (isJoongna && parcelFee != null)) transactionMode = "shipping_only";
 
   let assumption: MarketplaceShippingAssumption = "unknown";
-  if (transactionMode === "direct_only") {
+  if (isDaangn || transactionMode === "direct_only") {
     assumption = "direct_only";
   } else if (isJoongna && (hasIncluded || parcelFee === 1 || facts.freeShipping === true)) {
     assumption = "included";
@@ -626,4 +631,16 @@ export function marketplaceLocationFromDescription(description: string | null | 
 // raw_json 우선, 없으면 description fallback.
 export function marketplaceLocationCombined(rawJson: unknown, description: string | null | undefined): string | null {
   return marketplaceLocationFromRawJson(rawJson) ?? marketplaceLocationFromDescription(description);
+}
+
+export function marketplaceLocationCombinedWithRegion(
+  rawJson: unknown,
+  description: string | null | undefined,
+  regionName: string | null | undefined,
+): string | null {
+  const cleanRegion = cleanText(regionName);
+  const enrichedRawJson = cleanRegion
+    ? { ...asRecord(rawJson), regionName: cleanRegion }
+    : rawJson;
+  return marketplaceLocationCombined(enrichedRawJson, description);
 }

@@ -70,7 +70,7 @@ export function poolSkipReason(input) {
   if (input.profitMin <= 0) return "profit_not_positive";
   if (input.price >= input.skuMedian) return "price_gte_market";
   const saleStatus = String(input.saleStatus ?? "").trim().toUpperCase();
-  if (saleStatus && !["SELLING", "AVAILABLE", "ON_SALE", "ACTIVE", "JOONGNA_STATUS_0"].includes(saleStatus)) return "sale_status_inactive";
+  if (saleStatus && !["SELLING", "SALING", "AVAILABLE", "ON_SALE", "ACTIVE", "JOONGNA_STATUS_0"].includes(saleStatus)) return "sale_status_inactive";
   if (input.skuMedian > 0 && input.price / input.skuMedian <= 0.25) return "blocked_extreme_discount_review";
   if (input.riskHits > 0) return "risk_keyword";
   if (!input.thumbnailUrl) return "missing_thumbnail";

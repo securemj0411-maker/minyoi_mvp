@@ -2506,6 +2506,7 @@ export function evaluateNarrowLane(
 }
 
 export function toParsedListingRow(pid: number | string, parsed: ParsedListingOptions) {
+  const nowIso = new Date().toISOString();
   // Wave 714 (2026-05-23): condition_grade — 신발/의류 5-tier S/A/B/C/D grading.
   //   parser (wave92-fashion-mobility) 가 parsedJson.condition_grade 에 박음.
   //   여기서 별도 column 4개로 분리 write — query 효율 (jsonb path 보다 column index 가 빠름).
@@ -2546,7 +2547,8 @@ export function toParsedListingRow(pid: number | string, parsed: ParsedListingOp
     parse_confidence: parsed.parseConfidence,
     needs_review: parsed.needsReview,
     parsed_json: parsed.parsedJson,
-    parsed_at: new Date().toISOString(),
+    parsed_at: nowIso,
+    updated_at: nowIso,
     // Wave 714 (2026-05-23): 5-tier grading column. 전자기기는 grade=null → 모두 null.
     // Wave 760d (2026-05-24): game_console / sport_golf 만 conditionClass → 5-tier 매핑 추가 (fashion 외 카테고리는 null 유지).
     condition_tier:

@@ -5183,73 +5183,41 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
     : snapshot.salePriceLabel;
 
   return (
-    <div data-beginner-guide-final-money data-beginner-guide-buy-cost className="mt-4 space-y-3">
-      <div data-beginner-guide-money-summary className="overflow-hidden rounded-[28px] bg-[#f5f9ff] p-4 ring-1 ring-blue-100 dark:bg-blue-950/18 dark:ring-blue-900/50">
-        <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">정확 숫자 요약</div>
-        <div className="mt-2 text-[34px] font-black leading-none tracking-tight text-emerald-700 dark:text-emerald-300">
+    /* Wave launch-126 (2026-05-25): 토스식 정정 — "수익 계산 흐름" 큰 섹션 제거 (피로도). 단순 큰 숫자 + 2-col grid. */
+    <div data-beginner-guide-final-money data-beginner-guide-buy-cost className="mt-5">
+      <div
+        data-beginner-guide-money-summary
+        className="overflow-hidden rounded-[24px] bg-[#f5f9ff] p-5 dark:bg-blue-950/18"
+      >
+        <div className="text-[11px] font-black tracking-[0.04em] text-[#3182f6] dark:text-blue-300">예상 순익</div>
+        {/* 큰 metric 숫자 — 토스 자산 표시 톤 */}
+        <div className="mt-1.5 text-[36px] font-black leading-[1.02] tracking-tight text-emerald-700 tabular-nums dark:text-emerald-300">
           {displayProfitRange(card)}
         </div>
-        <div className="mt-2 break-keep text-[12px] font-bold leading-5 text-[#667164] dark:text-zinc-400">
-          구매 배송비, 판매 수수료, 재배송비, 안전버퍼까지 감안한 예상 순익이에요.
+        <div className="mt-2 break-keep text-[12.5px] font-semibold leading-5 text-[#667164] dark:text-zinc-400">
+          구매 배송비, 판매 수수료, 재배송비, 안전버퍼 다 빼고 본 값이에요.
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-1.5">
-          <div className="rounded-[16px] bg-white/86 px-2.5 py-2.5 ring-1 ring-blue-100/70 dark:bg-zinc-950/50 dark:ring-blue-900/40">
-            <div className="text-[10px] font-black text-[#7b8378] dark:text-zinc-500">매입가</div>
-            <div className="mt-1 break-all text-[12px] font-black leading-tight tabular-nums text-[#172019] dark:text-zinc-50">{krw(card.price)}</div>
-          </div>
-          <div className="rounded-[16px] bg-white/86 px-2.5 py-2.5 ring-1 ring-blue-100/70 dark:bg-zinc-950/50 dark:ring-blue-900/40">
-            <div className="text-[10px] font-black text-[#7b8378] dark:text-zinc-500">시세</div>
-            <div className="mt-1 break-all text-[12px] font-black leading-tight tabular-nums text-[#172019] dark:text-zinc-50">{marketPriceLabel}</div>
-          </div>
-          <div className="rounded-[16px] bg-white/86 px-2.5 py-2.5 ring-1 ring-blue-100/70 dark:bg-zinc-950/50 dark:ring-blue-900/40">
-            <div className="text-[10px] font-black text-[#7b8378] dark:text-zinc-500">구매비용</div>
-            <div className="mt-1 break-all text-[12px] font-black leading-tight tabular-nums text-[#172019] dark:text-zinc-50">{snapshot.buyerCostLabel}</div>
-          </div>
-        </div>
-      </div>
 
-      <div className="overflow-hidden rounded-[22px] bg-white/84 ring-1 ring-zinc-200 dark:bg-zinc-950/60 dark:ring-zinc-800">
-        <div className="px-4 py-4">
-          <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">수익 계산 흐름</div>
-          <div className="mt-1 break-keep text-[17px] font-black leading-6 text-[#172019] dark:text-zinc-50">
-            매입가, 기준 시세, 되팔 때 비용을 뺀 뒤 마지막에 순익을 봐요
+        {/* 매입가 + 시세 2-col grid — 단순 */}
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <div className="rounded-[16px] bg-white px-3.5 py-3 dark:bg-zinc-950/60">
+            <div className="text-[10.5px] font-black text-[#7b8378] dark:text-zinc-500">매입가</div>
+            <div className="mt-1.5 break-all text-[16px] font-black leading-tight tabular-nums text-[#172019] dark:text-zinc-50">{krw(card.price)}</div>
+          </div>
+          <div className="rounded-[16px] bg-white px-3.5 py-3 dark:bg-zinc-950/60">
+            <div className="text-[10.5px] font-black text-[#7b8378] dark:text-zinc-500">시세</div>
+            <div className="mt-1.5 break-all text-[16px] font-black leading-tight tabular-nums text-[#172019] dark:text-zinc-50">{marketPriceLabel}</div>
           </div>
         </div>
-        <div className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
-        <div className="flex items-center justify-between gap-4 px-4 py-3">
-          <div>
-            <div className="text-[12.5px] font-black text-[#172019] dark:text-zinc-50">실제 매입가</div>
-            <div className="mt-0.5 text-[11px] font-semibold text-[#7b8378] dark:text-zinc-400">상품가 + 구매 배송비</div>
-          </div>
-          <div className="text-[15px] font-black tabular-nums text-[#172019] dark:text-zinc-50">{snapshot.buyerCostLabel}</div>
-        </div>
-        <div className="flex items-center justify-between gap-3 px-3.5 py-2.5">
-          <div>
-            <div className="text-[12.5px] font-black text-[#172019] dark:text-zinc-50">수익 기준 시세</div>
-            <div className="mt-0.5 text-[11px] font-semibold text-[#7b8378] dark:text-zinc-400">상세 근거 기준</div>
-          </div>
-          <div className="text-[15px] font-black tabular-nums text-[#172019] dark:text-zinc-50">{snapshot.salePriceLabel}</div>
-        </div>
-        <div className="flex items-center justify-between gap-3 px-3.5 py-2.5">
-          <div>
-            <div className="text-[12.5px] font-black text-[#172019] dark:text-zinc-50">되팔 때 비용</div>
-            <div className="mt-0.5 text-[11px] font-semibold text-[#7b8378] dark:text-zinc-400">수수료 + 재배송 + 안전버퍼</div>
-          </div>
-          <div className="text-right">
-            <div className="text-[14px] font-black tabular-nums text-amber-700 dark:text-amber-300">{sellingFeeLabel}</div>
-            <div className="mt-0.5 text-[11px] font-bold tabular-nums text-amber-700/80 dark:text-amber-300/80">+ {krw(RESELL_SHIPPING_FEE + SAFETY_BUFFER)}</div>
-          </div>
-        </div>
-        </div>
-        <div className="px-4 py-4">
-          <div className="text-[11px] font-black text-[#7b8378] dark:text-zinc-400">최종 예상 순익</div>
-          {/* Wave launch-117b (2026-05-24): 수익 = emerald (light+dark). */}
-          <div className="mt-1 text-[30px] font-black leading-tight text-emerald-700 dark:text-emerald-300">
-            {displayProfitRange(card)}
-          </div>
-          <div className={`mt-3 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-black ${snapshot.confidenceClass}`}>
+
+        {/* 신뢰도 + 수수료 정보 — 작은 footnote */}
+        <div className="mt-4 flex items-center justify-between gap-3 text-[11px] font-semibold text-[#7b8378] dark:text-zinc-500">
+          <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-black ${snapshot.confidenceClass}`}>
             {snapshot.confidenceLabel}
-          </div>
+          </span>
+          <span className="text-right tabular-nums">
+            안전결제 {sellingFeeLabel} · 재배송·버퍼 +{krw(RESELL_SHIPPING_FEE + SAFETY_BUFFER)}
+          </span>
         </div>
       </div>
     </div>
@@ -5770,11 +5738,13 @@ function BeginnerGuideWalkthrough({
         <div
           key={safeIndex}
           data-beginner-guide-step
-          className={`flex min-h-0 flex-1 flex-col overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+126px)] animate-[minyoiGuideStepIn_240ms_ease-out] ${step.tone === "trust" ? "pt-0" : "pt-[calc(env(safe-area-inset-top)+52px)] sm:pt-16"}`}
+          /* Wave launch-126 (2026-05-25): buy step 매물 사진 위로 (4페이지 trust 사진 이동). pt-0 적용. */
+          className={`flex min-h-0 flex-1 flex-col overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+126px)] animate-[minyoiGuideStepIn_240ms_ease-out] ${step.tone === "buy" ? "pt-0" : "pt-[calc(env(safe-area-inset-top)+52px)] sm:pt-16"}`}
         >
-          {step.tone === "trust" ? <BeginnerGuideStepVisual card={card} tone={step.tone} /> : null}
+          {/* Wave launch-126: buy step 위에 매물 사진 (구 trust 의 ProductVisual). trust 는 사진 제거. */}
+          {step.tone === "buy" ? <BeginnerGuideProductVisual card={card} /> : null}
 
-          <div className={step.tone === "trust" ? "mt-4" : isSummary ? "flex flex-1 flex-col items-center justify-center text-center" : ""}>
+          <div className={step.tone === "buy" ? "mt-4" : isSummary ? "flex flex-1 flex-col items-center justify-center text-center" : ""}>
             {isSummary ? <BeginnerGuideStepVisual card={card} tone={step.tone} /> : null}
             {!isSummary ? (
               <div className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ${toneClass.bg} ${toneClass.text} ring-1 ${toneClass.ring}`}>
@@ -5819,7 +5789,8 @@ function BeginnerGuideWalkthrough({
             ) : null}
           </div>
 
-          {step.tone !== "trust" && !isSummary ? <BeginnerGuideStepVisual card={card} tone={step.tone} /> : null}
+          {/* Wave launch-126: buy step 사진 이미 위에 박혔으니 아래 visual skip. trust 도 사진 제거 (위로 이동). */}
+          {step.tone !== "trust" && step.tone !== "buy" && !isSummary ? <BeginnerGuideStepVisual card={card} tone={step.tone} /> : null}
 
         </div>
       </div>

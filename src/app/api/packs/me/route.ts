@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { fetchDetail } from "@/lib/bunjang";
 import { fetchJoongnaDetail } from "@/lib/joongna";
-import { isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
-import { inferMarketplaceTransaction, marketplaceFactsFromRawJson } from "@/lib/marketplace-safety";
+import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
 import {
   fetchReferencePrices,
   fetchLatestMarketStats,
@@ -118,6 +118,7 @@ type RawRow = {
   // 2026-05-20: 셀러 업로드 시점 추정 (미뇨이가 처음 발견한 시점).
   first_seen_at: string | null;
   raw_json: Record<string, unknown> | null;
+  daangn_region_name: string | null;
 };
 
 type ListingCostRow = {
@@ -219,6 +220,7 @@ type RevealItem = {
   tradeLabels: string[];
   transactionMode: string;
   shippingAssumption: string;
+  directTradeLocation: string | null;
   skuId: string | null;
   thumbnailUrl: string | null;
   skuName: string | null;
@@ -502,6 +504,15 @@ async function liveVerifyVisibleItems(userRef: string, items: RevealItem[]): Pro
           continue;
         }
 
+        if (isDaangnMarketplaceSource(item.marketplaceSource)) {
+          verified[index] = {
+            ...item,
+            listingState: "active",
+            saleStatus: item.saleStatus || "selling",
+          };
+          continue;
+        }
+
         const detail = await fetchDetail(String(item.pid));
         if (!detail) {
           await patchLiveTerminalState(item, "disappeared", null, "detail_fetch_missing");
@@ -635,7 +646,7 @@ export async function GET(req: Request) {
   const packOpenList = packOpenIds.join(",");
   const [rawRows, listingCostRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
     loadJson<RawRow[]>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,name,url,price,num_faved,free_shipping,description_preview,image_count,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment,first_seen_at,raw_json&pid=in.(${pidList})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,name,url,price,num_faved,free_shipping,description_preview,image_count,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment,first_seen_at,raw_json,daangn_region_name&pid=in.(${pidList})`,
     ),
     loadJson<ListingCostRow[]>(
       `${tableUrl("mvp_listings")}?select=pid,price,shipping_fee,shipping_fee_general,estimated_buy_cost&pid=in.(${pidList})`,
@@ -824,6 +835,7 @@ export async function GET(req: Request) {
         tradeLabels: [...(facts.tradeLabels ?? [])],
         transactionMode: tx.transactionMode,
         shippingAssumption: tx.assumption,
+        directTradeLocation: marketplaceLocationCombinedWithRegion(raw?.raw_json, raw?.description_preview ?? null, raw?.daangn_region_name ?? null),
         skuId,
         thumbnailUrl: raw?.thumbnail_url ?? null,
         skuName,

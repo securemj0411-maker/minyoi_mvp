@@ -1158,8 +1158,9 @@ function FirstFeedOnboardingCard({
     >
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-[520px] flex-col px-6 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-[calc(env(safe-area-inset-top)+18px)]">
         <div className="flex items-center justify-between">
-          <div className="flex gap-1.5" aria-label={`${step + 1}/2`}>
-            {[0, 1].map((idx) => (
+          {/* Wave launch-125 (2026-05-25): onboarding 4 step (의심 mirror → 답 + 예시 → 풀 통계 → 예산). */}
+          <div className="flex gap-1.5" aria-label={`${step + 1}/4`}>
+            {[0, 1, 2, 3].map((idx) => (
               <span
                 key={idx}
                 className={`h-1.5 rounded-full transition-all ${idx === step ? "w-7 bg-[#3182f6]" : "w-1.5 bg-zinc-300 dark:bg-zinc-700"}`}
@@ -1176,6 +1177,99 @@ function FirstFeedOnboardingCard({
         </div>
 
         {step === 0 ? (
+          /* Wave launch-125b (2026-05-25): 의심 mirror — 카드 1개 + 사용자 머릿속 의심 그대로. */
+          <div className="flex flex-1 flex-col justify-center pb-24">
+            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">의심 한 번 짚고 갈게요</div>
+
+            {/* 예시 매물 카드 1개 (의심 trigger 용). 사진은 public/intro/airpods-pro-2.jpg 박혀야 path 동작. */}
+            <div className="mt-4 flex items-center gap-3 rounded-[18px] border border-zinc-200 bg-white px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/%EC%97%90%EC%96%B4%ED%8C%9F%EC%A4%91%EA%B3%A0.jpg"
+                alt="에어팟 프로 2세대"
+                className="h-[80px] w-[80px] shrink-0 rounded-[14px] bg-zinc-100 object-cover dark:bg-zinc-800"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">A급 · 무료배송</div>
+                <div className="mt-0.5 truncate text-[15px] font-black text-zinc-950 dark:text-zinc-50">에어팟 프로 2세대</div>
+                {/* Wave launch-125c: 중고 시세 폰트 11→13. */}
+                <div className="mt-1.5 flex items-baseline gap-1.5">
+                  <span className="text-[18px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">5만원</span>
+                  <span className="text-[13px] font-bold text-zinc-500">중고 시세 15만</span>
+                </div>
+              </div>
+            </div>
+
+            <h2 className="mt-6 break-keep text-[22px] font-black leading-[1.32] tracking-tight">
+              이 매물 중고 시세 15만원인데
+              <br />
+              <span className="text-[#3182f6] dark:text-blue-300">5만원</span>에 나왔다고…?
+            </h2>
+            {/* Wave launch-125c: "사람들은 보통 이렇게 생각" 줄 제거 (밑 인용박스로 의도 명확). 인용 폰트 16→22. */}
+            <div className="mt-5 rounded-[18px] border-l-4 border-zinc-300 bg-white/60 px-4 py-5 text-[22px] font-black italic leading-[1.4] text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
+              &ldquo;싼 데는 다 이유가 있겠지…&rdquo;
+            </div>
+          </div>
+        ) : step === 1 ? (
+          /* Wave launch-125 step 1: 우리 답 + 예시 매물 카드 2개. */
+          <div className="flex flex-1 flex-col justify-center pb-24">
+            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">근데 진짜 돈 되는 매물은 다릅니다</div>
+            <h2 className="mt-3 break-keep text-[24px] font-black leading-[1.22] tracking-tight sm:text-[28px]">
+              득템잡이는
+              <br />
+              <span className="text-[#3182f6] dark:text-blue-300">같은 상태·같은 구성</span> 기준에서도
+              <br />
+              유난히 싼 매물만 골라드려요.
+            </h2>
+
+            {/* Wave launch-125c: 에어팟 (1페이지 재등장 어색) → 뉴발란스 + 닥마. "매입" → "매입가". */}
+            <div className="mt-5 space-y-2.5">
+              <div className="flex items-center gap-3 rounded-[18px] border border-zinc-200 bg-white px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/%EB%89%B4%EB%B0%9C%EB%9E%80%EC%8A%A4%EC%A4%91%EA%B3%A0.jpeg"
+                  alt="뉴발란스 993"
+                  className="h-[64px] w-[64px] shrink-0 rounded-[14px] bg-zinc-100 object-cover dark:bg-zinc-800"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">A급 · 무료배송</div>
+                  <div className="mt-0.5 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">뉴발란스 993 그레이</div>
+                  <div className="mt-1 flex items-baseline gap-1.5">
+                    <span className="text-[15px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">+5만원</span>
+                    <span className="text-[10px] font-bold text-zinc-500">매입가 9만 · A급 시세 15만</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 rounded-[18px] border border-zinc-200 bg-white px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/%EB%8B%A5%ED%84%B0%EB%A7%88%ED%8B%B4%20%EC%A4%91%EA%B3%A0.webp"
+                  alt="닥터마틴 1461 스무스"
+                  className="h-[64px] w-[64px] shrink-0 rounded-[14px] bg-zinc-100 object-cover dark:bg-zinc-800"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">A급 · 우수 셀러</div>
+                  <div className="mt-0.5 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">닥터마틴 1461 스무스</div>
+                  <div className="mt-1 flex items-baseline gap-1.5">
+                    <span className="text-[15px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">+6만원</span>
+                    <span className="text-[10px] font-bold text-zinc-500">매입가 8만 · A급 시세 14만</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Wave launch-125c: 회전률 정보 — "팔면 보통 얼마만에 팔림?" 답. */}
+            <div className="mt-4 flex items-center gap-2 rounded-[14px] bg-blue-50 px-3.5 py-2.5 dark:bg-blue-950/30">
+              <span className="text-[14px]">⏱️</span>
+              <p className="break-keep text-[12.5px] font-bold leading-5 text-blue-700 dark:text-blue-300">
+                이런 매물은 보통 <span className="font-black">1~2주</span> 안에 다시 거래돼요.
+              </p>
+            </div>
+            <p className="mt-3 text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+              ※ 예시 매물. 실제 추천은 다음 화면부터 시작.
+            </p>
+          </div>
+        ) : step === 2 ? (
+          /* (기존 step 0) — 풀 통계. */
           <div className="flex flex-1 flex-col justify-center pb-24">
             <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">첫 피드 준비</div>
             {/* Wave launch-104 (사용자 정정 — 일반인 친화 카피):
@@ -1222,6 +1316,7 @@ function FirstFeedOnboardingCard({
             ) : null}
           </div>
         ) : (
+          /* step === 3 — 예산 (기존 step 1). */
           <div className="flex flex-1 flex-col justify-center pb-24">
             {/* Wave launch-104: "감당 가능한" + "후보" 어색 → "예산" + "상품" 친화 카피. */}
             <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">예산</div>
@@ -1260,10 +1355,27 @@ function FirstFeedOnboardingCard({
 
         <div className="fixed bottom-0 left-0 right-0 z-[91] bg-[linear-gradient(180deg,rgba(245,247,251,0)_0%,#f5f7fb_34%)] px-6 pb-[calc(env(safe-area-inset-bottom)+18px)] pt-8 dark:bg-[linear-gradient(180deg,rgba(9,9,11,0)_0%,#09090b_34%)]">
           <div className="mx-auto max-w-[520px]">
+            {/* Wave launch-125: 4 step CTA — 의심 → 답 → 풀 통계 → 예산. */}
             {step === 0 ? (
               <button
                 type="button"
                 onClick={() => setStep(1)}
+                className="flex min-h-[56px] w-full items-center justify-center rounded-[20px] bg-[#3182f6] text-[16px] font-black text-white shadow-[0_14px_34px_rgba(49,130,246,0.28)] active:scale-[0.99]"
+              >
+                근데, 진짜 다른가요? →
+              </button>
+            ) : step === 1 ? (
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className="flex min-h-[56px] w-full items-center justify-center rounded-[20px] bg-[#3182f6] text-[16px] font-black text-white shadow-[0_14px_34px_rgba(49,130,246,0.28)] active:scale-[0.99]"
+              >
+                지금 보러 가기 →
+              </button>
+            ) : step === 2 ? (
+              <button
+                type="button"
+                onClick={() => setStep(3)}
                 className="flex min-h-[56px] w-full items-center justify-center rounded-[20px] bg-[#3182f6] text-[16px] font-black text-white shadow-[0_14px_34px_rgba(49,130,246,0.28)] active:scale-[0.99]"
               >
                 내 예산 맞춰보기

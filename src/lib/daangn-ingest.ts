@@ -304,7 +304,7 @@ function buildRawListingRow(
     listing_type: storageListingType,
     sku_id: skuId,
     sku_name: skuName,
-    sale_status: article.status === "Ongoing" ? "saling" : (article.status?.toLowerCase() ?? ""),
+    sale_status: article.status === "Ongoing" ? "selling" : (article.status?.toLowerCase() ?? ""),
     shop_review_count: 0,
     image_count: 0,
     missing_count: 0,

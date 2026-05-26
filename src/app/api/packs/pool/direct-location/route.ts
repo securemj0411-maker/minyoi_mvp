@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
-import { marketplaceFactsFromRawJson, marketplaceLocationCombined } from "@/lib/marketplace-safety";
+import { marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 
@@ -54,14 +54,7 @@ export async function POST(req: Request) {
   if (!row) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
 
   const marketplaceSource = normalizeMarketplaceSource(row.source ?? row.seller_source);
-
-  // Phase 6j: 당근 매물은 daangn_region_name 컬럼에 동네 정보 박혀있음 (raw_listings).
-  //   marketplaceLocationCombined 가 raw_json 만 보므로 그것보다 우선 직접 column 사용.
-  if (isDaangnMarketplaceSource(marketplaceSource) && row.daangn_region_name) {
-    return NextResponse.json({ ok: true, location: row.daangn_region_name.trim(), source: "stored" });
-  }
-
-  const storedLocation = marketplaceLocationCombined(row.raw_json, row.description_preview);
+  const storedLocation = marketplaceLocationCombinedWithRegion(row.raw_json, row.description_preview, row.daangn_region_name);
   if (storedLocation) {
     return NextResponse.json({ ok: true, location: storedLocation, source: "stored" });
   }
@@ -70,6 +63,9 @@ export async function POST(req: Request) {
     marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
     rawJson: row.raw_json,
   });
+  if (isDaangnMarketplaceSource(marketplaceSource)) {
+    return NextResponse.json({ ok: true, location: null, source: "unavailable" });
+  }
   const labels = new Set((facts.tradeLabels ?? []).map((label) => label.trim()));
   if (!isJoongnaMarketplaceSource(marketplaceSource) || (!labels.has("직거래") && facts.productTradeType !== 4 && facts.productTradeType !== 5)) {
     return NextResponse.json({ ok: true, location: null, source: "unavailable" });
