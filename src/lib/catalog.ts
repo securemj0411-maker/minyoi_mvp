@@ -2664,6 +2664,63 @@ const CORE_TABLET_CATALOG: Sku[] = [
     msrpKrw: 2399000,
     released: 2024,
   },
+  // Wave 766 (2026-05-27): iPad Pro M5 (2025-10) narrow lane — ready pool 3건 broad으로 떨어짐 (M5 11"/13").
+  //   M5는 다른 칩/디스플레이 세대 → AJ11 Low/High 수준 명확한 분리. MSRP M4와 동일 (Apple 가격 정책).
+  {
+    id: "ipad-pro-11-m5-256-wifi",
+    brand: "Apple",
+    category: "tablet",
+    laneKey: "ipad_pro_11_m5_256_wifi",
+    modelName: "iPad Pro 11\" M5 256GB Wi-Fi",
+    aliases: ["아이패드 프로 11 M5 256", "iPad Pro 11 M5 256GB Wi-Fi"],
+    mustContain: [
+      ["아이패드", "ipad"],
+      ["프로", "pro"],
+      ["m5"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
+      ["11인치", "11 인치", "11형", "11\"", "11″"],
+    ],
+    mustNotContain: [
+      "에어", "air", "미니", "mini",
+      "13인치", "13 인치", "13형", "13\"", "12.9인치", "12.9 인치", "12.9\"",
+      "셀룰러", "cellular", " lte ", " 5g ", "유심", "esim",
+      "128gb", "128 gb", "128기가",
+      "512gb", "512 gb", "512기가",
+      "1tb", "1 tb", "1테라",
+      "2tb", "2 tb", "2테라",
+      "(m1)", "(m2)", "(m3)", "(m4)", " m1 ", " m2 ", " m3 ", " m4 ",
+      ...TABLET_NOISE,
+    ],
+    msrpKrw: 1899000,
+    released: 2025,
+  },
+  {
+    id: "ipad-pro-13-m5-256-wifi",
+    brand: "Apple",
+    category: "tablet",
+    laneKey: "ipad_pro_13_m5_256_wifi",
+    modelName: "iPad Pro 13\" M5 256GB Wi-Fi",
+    aliases: ["아이패드 프로 13 M5 256", "iPad Pro 13 M5 256GB Wi-Fi"],
+    mustContain: [
+      ["아이패드", "ipad"],
+      ["프로", "pro"],
+      ["m5"],
+      ["256gb", "256 gb", "256기가", "256g", "256"],
+      ["13인치", "13 인치", "13형", "13\"", "13″"],
+    ],
+    mustNotContain: [
+      "에어", "air", "미니", "mini",
+      "11인치", "11 인치", "11형", "11\"",
+      "셀룰러", "cellular", " lte ", " 5g ", "유심", "esim",
+      "128gb", "128 gb", "128기가",
+      "512gb", "512 gb",
+      "1tb", "2tb",
+      "(m1)", "(m2)", "(m3)", "(m4)", " m1 ", " m2 ", " m3 ", " m4 ",
+      ...TABLET_NOISE,
+    ],
+    msrpKrw: 2399000,
+    released: 2025,
+  },
   {
     id: "ipad-pro-13-m2-256-wifi",
     brand: "Apple",
@@ -2823,6 +2880,35 @@ const CORE_TABLET_CATALOG: Sku[] = [
     ],
     msrpKrw: 1099000,
     released: 2025,
+  },
+  // Wave 766 (2026-05-27): iPad Air M4 (2026 refresh) narrow lane — ready pool에서 broad으로 떨어진 매물 발견.
+  //   M4 칩 = 다른 세대 (M3 → M4). pool 매물 "아이패드 에어 11 M4 128GB" 명시 기준.
+  {
+    id: "ipad-air-m4-11-128-wifi",
+    brand: "Apple",
+    category: "tablet",
+    laneKey: "ipad_air_m4_11_128_wifi",
+    modelName: "iPad Air M4 11\" 128GB Wi-Fi",
+    aliases: ["아이패드 에어 11 M4 128", "iPad Air 11 M4 128GB Wi-Fi"],
+    mustContain: [
+      ["아이패드", "ipad"],
+      ["에어", "air"],
+      ["m4"],
+      ["128gb", "128 gb", "128기가", "128g"],
+      ["11인치", "11 인치", "11형", "11\""],
+    ],
+    mustNotContain: [
+      "아이패드 프로", "아이패드프로", "ipad pro", "미니", "mini",
+      "13인치", "13 인치", "13형", "13\"",
+      "셀룰러", "cellular", "유심", "esim",
+      "256gb", "256 gb", "256기가",
+      "512gb", "512 gb", "1tb", "2tb",
+      "(m1)", "(m2)", "(m3)", " m1 ", " m2 ", " m3 ",
+      "에어 4", "에어4", "에어 5", "에어5", "4세대", "5세대",
+      ...TABLET_NOISE,
+    ],
+    msrpKrw: 899000,
+    released: 2026,
   },
   // Wave 119 (2026-05-15): iPad Air 13" narrow lane (M2/M3) — 14일 매물 87건. 11인치만 있던 narrow에 13인치 sibling 추가.
   {
@@ -5996,18 +6082,22 @@ export const CATALOG: Sku[] = [
     category: "earphone",
     laneKey: "airpods_max_usbc",
     modelName: "AirPods Max (USB-C, 2024)",
-    aliases: ["에어팟 맥스 USB-C", "AirPods Max USB-C", "에어팟맥스 USB-C"],
+    aliases: ["에어팟 맥스 USB-C", "AirPods Max USB-C", "에어팟맥스 USB-C", "에어팟 맥스 2", "에어팟맥스2"],
     confusionNote: "매물 \"맥스 2\" / \"2세대\" 부르는 게 이 모델 (Apple 공식은 \"USB-C\"). Lightning 1세대 (2020-12)와 시세 다름.",
+    // Wave 766 (2026-05-27): 소비자 명칭 흡수 강화 — 1세대 broad에서 차단된 "맥스2"/2세대 컬러 매물이 USB-C narrow에 잡히도록.
+    //   audit: ready pool 5건이 airpods-max로 stale 박힘 (Wave 765 mustNotContain 이전 분류) → 이 narrow가 USB-C 키워드 없어도 흡수해야 함.
     mustContain: [
       ["에어팟", "airpods"],
       ["맥스", "max"],
       // Wave 885 (재검토): explicit "USB-C" 또는 1세대엔 없는 신컬러 또는 명시적 세대 라벨.
       //   year-only 는 의도적으로 제외 (구매연도 vs 모델연식 모호).
+      //   Wave 766: a3184 (2세대 model 번호) 추가.
       [
         "usb-c", "usbc", "c타입", "타입c", "씨타입", "c핀", "c 핀",
         "스타라이트", "starlight", "미드나이트", "midnight", "퍼플", "purple", "오렌지", "orange",
         "맥스 2", "맥스2", "max 2", "max2", "2세대", "2 세대",
         "2024년형", "2025년형", "2024 모델", "2025 모델", "2024 신모델", "2025 신모델",
+        "a3184",
       ],
     ],
     // 1세대 Lightning 전용 컬러 (Apple 공식: Space Gray, Silver, Sky Blue, Pink, Green) +

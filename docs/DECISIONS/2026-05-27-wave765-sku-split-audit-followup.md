@@ -42,4 +42,14 @@
 
 ## 다음
 - production replay 측정 (몇 시간 후 새 SKU 매물 inflow 확인).
-- 추가 sub-line split 후보 (audit 잔여): Hoka Bondi 5/6/7/X, Hoka Mach 5/6/X, Asics Gel Nimbus 시리즈, Mizuno Morelia Neo 2/3/4.
+
+## 잔여 후보 검토 후 의도적 skip
+
+| 시리즈 | ready pool | spread | 기존 narrow | 판단 |
+|---|---|---|---|---|
+| Hoka Bondi | 2건 (120-180k) | 좁음 | 7/8/9 이미 분리 | 버전 업데이트 (foam/upper 미세조정) → skip |
+| Hoka Mach | 2건 (130-150k) | 좁음 | 없음 | 버전 업데이트 → skip |
+| Asics Gel Nimbus | 2건 (100-230k) | 중간 | 9/10 이미 분리 | 버전 업데이트 → skip |
+| Mizuno Morelia Neo | 4건 (55-100k) | 좁음 | 없음 | 축구화 연간 업데이트 → skip |
+
+**기준**: "확실히 분리해야될거만, 사이즈가 다른거라더나 그러면 불필요" — 위 4개는 동일 모델 버전 업데이트 (incremental). Wave 765 분리한 것들 (Alpha SV vs LT, AJ11 Low vs High, Crocs Classic vs All-Terrain)은 **다른 제품 / 다른 실루엣 / 다른 용도** 였음. 잔여는 그 기준 미충족 → 분리 안 하는 게 정확.
