@@ -6,6 +6,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
@@ -107,7 +108,7 @@ export async function GET(req: NextRequest) {
         pid,
         name: (r.name as string) ?? "",
         price: Number(r.price ?? 0),
-        thumbnailUrl: (r.thumbnail_url as string | null) ?? null,
+        thumbnailUrl: safeThumbnailUrl(r.thumbnail_url as string | null),
         bunjangUrl: `https://m.bunjang.co.kr/products/${pid}`,
         skuId: (r.sku_id as string | null) ?? null,
         skuName: (r.sku_name as string | null) ?? null,

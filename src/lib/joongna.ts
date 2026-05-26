@@ -414,7 +414,11 @@ export function parseJoongnaDetailHtml(url: string, html: string, status = 200):
   const updateDate = escapedStringField(html, "updateDate");
   const images = extractJoongnaImageUrls(html);
   const ogImage = metaContent(html, 'property="og:image"');
-  const thumbnailUrl = images[0] ?? ogImage ?? null;
+  // Wave 759 (2026-05-26): video URL (.mp4 등) skip — joongna 일부 매물 첫 이미지가 영상.
+  //   Next.js <Image> 가 영상 못 렌더 → broken image. 영상 없는 첫 이미지 우선.
+  const VIDEO_PATTERN = /\.(mp4|mov|webm|m4v|avi|mkv)(\?|$|#)/i;
+  const nonVideoImage = images.find((url) => !VIDEO_PATTERN.test(url));
+  const thumbnailUrl = nonVideoImage ?? (ogImage && !VIDEO_PATTERN.test(ogImage) ? ogImage : null);
   const title =
     escapedStringField(html, "productTitle") ??
     metaContent(html, 'property="og:title"') ??

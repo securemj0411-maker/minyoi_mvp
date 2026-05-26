@@ -3,6 +3,7 @@ import { isAdminUser } from "@/lib/auth-users";
 import { loadV7SiblingPresence, type V7SiblingPresenceMap } from "@/lib/band-aware-median";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
 import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
+import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { createPoolAccessToken, decodePoolAccessToken, syntheticPidForPoolToken } from "@/lib/pool-access-token";
 import { localizeProductLineLabel } from "@/lib/product-line-display";
@@ -634,7 +635,8 @@ function buildItems(
         marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
         price: raw.price,
         skuMedian: skuMedianFinal,
-        thumbnailUrl: raw.thumbnail_url,
+        // Wave 759 (2026-05-26): video URL (.mp4 등) 차단 — broken image 방지, CategoryWatermark fallback 으로.
+        thumbnailUrl: safeThumbnailUrl(raw.thumbnail_url),
         skuId: meta?.sku_id ?? null,
         skuName: meta?.sku_name ?? null,
         expectedProfitMin: recomputedProfitMin,

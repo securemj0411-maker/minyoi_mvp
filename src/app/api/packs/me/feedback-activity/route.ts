@@ -13,6 +13,7 @@ import { NextResponse } from "next/server";
 import { logAndRespond } from "@/lib/error-response";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
@@ -116,7 +117,7 @@ export async function GET(req: Request) {
           ? {
               name: listing.name,
               price: listing.price,
-              thumbnailUrl: listing.thumbnail_url,
+              thumbnailUrl: safeThumbnailUrl(listing.thumbnail_url),
               bunjangUrl: `https://m.bunjang.co.kr/products/${r.pid}`,
             }
           : null,

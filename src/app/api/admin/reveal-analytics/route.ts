@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -299,7 +300,7 @@ export async function GET(req: NextRequest) {
       userNickname: user?.nickname ?? null,
       title: raw?.name ?? listing?.name ?? `PID ${pid}`,
       url: raw?.url ?? listing?.url ?? null,
-      thumbnailUrl: raw?.thumbnail_url ?? listing?.thumbnail_url ?? null,
+      thumbnailUrl: safeThumbnailUrl(raw?.thumbnail_url ?? listing?.thumbnail_url),
       price,
       source,
       sourceLabel: sourceLabel(source),

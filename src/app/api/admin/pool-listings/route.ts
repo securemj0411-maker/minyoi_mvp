@@ -9,6 +9,7 @@ import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
@@ -439,7 +440,7 @@ export async function GET(req: NextRequest) {
         skuId: (r.sku_id as string | null) ?? null,
         skuName: (l.sku_name as string | null) ?? null,
         skuMedian: skuMedianFinal,
-        thumbnailUrl: (l.thumbnail_url as string | null) ?? null,
+        thumbnailUrl: safeThumbnailUrl(l.thumbnail_url as string | null),
         bunjangUrl: `https://m.bunjang.co.kr/products/${pid}`,
         listingUrl,
         marketplaceSource,

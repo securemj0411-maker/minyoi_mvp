@@ -11,6 +11,7 @@ import { decodePoolAccessToken } from "@/lib/pool-access-token";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { detectSoldOut, describeSignals, isSoldOut, soldOutTextHits } from "@/lib/sold-out";
+import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
@@ -127,7 +128,7 @@ async function loadExactPoolItem(pid: number) {
     listingUrl: listingUrlForSource(pid, meta?.url ?? raw.url, marketplaceSource),
     marketplaceSource,
     marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
-    thumbnailUrl: raw.thumbnail_url,
+    thumbnailUrl: safeThumbnailUrl(raw.thumbnail_url),
     skuId: meta?.sku_id ?? null,
     skuName: meta?.sku_name ?? null,
     expectedProfitMin: pool.expected_profit_min,

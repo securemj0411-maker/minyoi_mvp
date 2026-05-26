@@ -4,6 +4,7 @@ import { fetchDetail } from "@/lib/bunjang";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
+import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import {
   fetchReferencePrices,
   fetchLatestMarketStats,
@@ -837,7 +838,7 @@ export async function GET(req: Request) {
         shippingAssumption: tx.assumption,
         directTradeLocation: marketplaceLocationCombinedWithRegion(raw?.raw_json, raw?.description_preview ?? null, raw?.daangn_region_name ?? null),
         skuId,
-        thumbnailUrl: raw?.thumbnail_url ?? null,
+        thumbnailUrl: safeThumbnailUrl(raw?.thumbnail_url),
         skuName,
         comparableKey,
         listingState: raw?.listing_state ?? "unknown",

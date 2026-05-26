@@ -6,6 +6,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { restFetch, rpcUrl, serviceHeaders, tableUrl, jsonBody } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -97,7 +98,7 @@ export async function GET(req: NextRequest) {
           ? {
               name: listing.name,
               price: listing.price,
-              thumbnailUrl: listing.thumbnail_url,
+              thumbnailUrl: safeThumbnailUrl(listing.thumbnail_url),
               bunjangUrl: `https://m.bunjang.co.kr/products/${r.pid}`,
             }
           : null,

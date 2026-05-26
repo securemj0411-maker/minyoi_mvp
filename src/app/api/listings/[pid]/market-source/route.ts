@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { fetchLatestMarketStats, fetchReferencePrices, fetchV7SiblingPresence, marketBasisForCandidate } from "@/lib/pack-open";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { checkRateLimit, clientIpKey } from "@/lib/rate-limit";
+import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
 import { madTrim } from "@/lib/market-math";
@@ -301,7 +302,7 @@ export async function GET(
             pid: rowPid,
             name: String(row.name ?? ""),
             price: Number(row.price ?? 0),
-            thumbnailUrl: (row.thumbnail_url as string | null) ?? null,
+            thumbnailUrl: safeThumbnailUrl(row.thumbnail_url as string | null),
             saleStatus: (row.sale_status as string | null) ?? null,
             listingState: (row.listing_state as string | null) ?? null,
             lastSeenAt: (row.last_seen_at as string | null) ?? null,
@@ -373,7 +374,7 @@ export async function GET(
         productType: targetProductType,
         parseConfidence: Number(parsed?.parse_confidence ?? 0) || null,
         needsReview: Boolean(parsed?.needs_review),
-        thumbnailUrl: (raw?.thumbnail_url as string | null) ?? null,
+        thumbnailUrl: safeThumbnailUrl(raw?.thumbnail_url as string | null),
         marketplaceSource: ourMarketplaceSource,
         marketplaceLabel: marketplaceSourceLabel(ourMarketplaceSource),
         listingUrl: ourListingUrl,
