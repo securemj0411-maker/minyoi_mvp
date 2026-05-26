@@ -623,7 +623,10 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     // Wave 159j (2026-05-17): 150 → 800. score_dirty backlog 119K건 처리 매우 느림 (13h 추정).
     // budget 10초 안에서 처리 가능 (단순 DB read + score + write, detail 호출 X).
     // 매물당 ~12ms 가정 → 800건/9.6초.
-    tickScoreLimit: envInt("PIPELINE_TICK_SCORE_LIMIT", 300, 10, 2000),
+    // Wave 885 (2026-05-26): 300 → 100. Wave 883 측정: 300 row 55s budget run scored=0 (timeout before scoring).
+    //   100 row 55s budget run scored=95 (95% drain rate). score worker route budget 55s 도달 가능 한도.
+    //   2분마다 fire → 95/2min ≈ 68K/day throughput vs 기존 300 timeout 0 throughput.
+    tickScoreLimit: envInt("PIPELINE_TICK_SCORE_LIMIT", 100, 10, 2000),
     // Wave 159k (2026-05-17): score-stage condition AI 호출 daily limit.
     // 0 = 비활성 (default). 측정 결과 11,243건 trigger 대상이지만 실제 호출 0건.
     // 운영자가 enable 시 PIPELINE_SCORE_AI_CONDITION_DAILY_LIMIT=500 같이 박음.
