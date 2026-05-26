@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
+import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
 import { decodePoolAccessToken } from "@/lib/pool-access-token";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
   //   변경: raw_listings 먼저 조회. daangn 매물이면 ready 무관 region 반환 (auth user 이므로 안전).
   //         다른 source 는 ready 검사 통과해야 다음 단계.
   const rows = await restFetch(
-    `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,description_preview,raw_json,daangn_region_name&pid=eq.${pid}&limit=1`,
+    `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,description_preview,raw_json,daangn_region_id,daangn_region_name&pid=eq.${pid}&limit=1`,
     { headers: serviceHeaders() },
   ).then((res) => res.json() as Promise<Array<{
     pid: number;
@@ -54,6 +55,7 @@ export async function POST(req: Request) {
     url: string | null;
     description_preview: string | null;
     raw_json: Record<string, unknown> | null;
+    daangn_region_id: string | null;
     daangn_region_name: string | null;
   }>>);
   const row = rows[0];
@@ -67,11 +69,14 @@ export async function POST(req: Request) {
   //   auth user 통과한 다음이라 보안 영향 X. row 존재만 검증.
   const marketplaceSource = normalizeMarketplaceSource(row.source ?? row.seller_source);
 
-  // daangn 매물 fast-path: daangn_region_name 즉시 반환.
-  if (isDaangnMarketplaceSource(marketplaceSource) && row.daangn_region_name) {
-    return NextResponse.json({ ok: true, location: row.daangn_region_name.trim(), source: "stored" });
+  // Wave 772 (2026-05-27): region_id → "{시도} {시군구} {동}" full path resolve.
+  const resolvedRegion = resolveDaangnFullRegion(row.daangn_region_id, row.daangn_region_name);
+
+  // daangn 매물 fast-path: full region 즉시 반환.
+  if (isDaangnMarketplaceSource(marketplaceSource) && resolvedRegion) {
+    return NextResponse.json({ ok: true, location: resolvedRegion, source: "stored" });
   }
-  const storedLocation = marketplaceLocationCombinedWithRegion(row.raw_json, row.description_preview, row.daangn_region_name);
+  const storedLocation = marketplaceLocationCombinedWithRegion(row.raw_json, row.description_preview, resolvedRegion);
   if (storedLocation) {
     return NextResponse.json({ ok: true, location: storedLocation, source: "stored" });
   }

@@ -4,6 +4,7 @@ import { fetchDetail } from "@/lib/bunjang";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
+import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import {
   fetchReferencePrices,
@@ -119,6 +120,7 @@ type RawRow = {
   // 2026-05-20: 셀러 업로드 시점 추정 (미뇨이가 처음 발견한 시점).
   first_seen_at: string | null;
   raw_json: Record<string, unknown> | null;
+  daangn_region_id: string | null;
   daangn_region_name: string | null;
 };
 
@@ -647,7 +649,7 @@ export async function GET(req: Request) {
   const packOpenList = packOpenIds.join(",");
   const [rawRows, listingCostRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
     loadJson<RawRow[]>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,name,url,price,num_faved,free_shipping,description_preview,image_count,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment,first_seen_at,raw_json,daangn_region_name&pid=in.(${pidList})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,name,url,price,num_faved,free_shipping,description_preview,image_count,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment,first_seen_at,raw_json,daangn_region_id,daangn_region_name&pid=in.(${pidList})`,
     ),
     loadJson<ListingCostRow[]>(
       `${tableUrl("mvp_listings")}?select=pid,price,shipping_fee,shipping_fee_general,estimated_buy_cost&pid=in.(${pidList})`,
@@ -836,7 +838,7 @@ export async function GET(req: Request) {
         tradeLabels: [...(facts.tradeLabels ?? [])],
         transactionMode: tx.transactionMode,
         shippingAssumption: tx.assumption,
-        directTradeLocation: marketplaceLocationCombinedWithRegion(raw?.raw_json, raw?.description_preview ?? null, raw?.daangn_region_name ?? null),
+        directTradeLocation: marketplaceLocationCombinedWithRegion(raw?.raw_json, raw?.description_preview ?? null, resolveDaangnFullRegion(raw?.daangn_region_id ?? null, raw?.daangn_region_name ?? null)),
         skuId,
         thumbnailUrl: safeThumbnailUrl(raw?.thumbnail_url),
         skuName,
