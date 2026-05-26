@@ -32,6 +32,13 @@ export function buildAndroidTossIntent(amount: number): string {
 /**
  * 토스 앱 송금 호출 + 미설치 fallback (iOS App Store / Android Play Store).
  * 호출자는 click handler 안에서 사용 (user gesture 필요 — iOS Safari).
+ *
+ * Wave 775b (2026-05-27): iOS fallback 휴리스틱 fix — 사용자 발견 버그
+ *   "토스 앱으로 갔다가 앱스토어로 갑자기 이동".
+ *   원인: setTimeout (1500ms) 후 visibility=visible 일 때 App Store redirect 했는데
+ *   iOS Safari 가 deep link 호출 후 background 안 보내는 case 가 있음
+ *   → 앱 깔려있어도 fallback 잘못 트리거.
+ *   Fix: visibilitychange 이벤트로 정확하게 — hidden 으로 바뀌면 앱 열린 것 확정.
  */
 export function openTossSend(amount: number): void {
   if (typeof window === "undefined") return;
@@ -40,18 +47,30 @@ export function openTossSend(amount: number): void {
   const isIOS = /iPad|iPhone|iPod/i.test(ua);
 
   if (isAndroid) {
+    // Android Chrome 의 intent:// 가 자동으로 Play Store fallback 처리
     window.location.href = buildAndroidTossIntent(amount);
     return;
   }
 
   if (isIOS) {
-    const startedAt = Date.now();
+    // visibility hidden 감지 → 토스 앱 열린 것 확정 → App Store redirect 차단
+    let appOpened = false;
+    const onVisChange = () => {
+      if (document.visibilityState === "hidden") {
+        appOpened = true;
+      }
+    };
+    document.addEventListener("visibilitychange", onVisChange);
+
     window.location.href = buildTossDeepLink(amount);
+
+    // 2.5s 후 visibility 변화 없었으면 → 앱 미설치 → App Store
     setTimeout(() => {
-      if (Date.now() - startedAt < 2000 && document.visibilityState === "visible") {
+      document.removeEventListener("visibilitychange", onVisChange);
+      if (!appOpened && document.visibilityState === "visible") {
         window.location.href = TOSS_APP_STORE_URL;
       }
-    }, 1500);
+    }, 2500);
     return;
   }
 
