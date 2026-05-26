@@ -114,3 +114,19 @@ test("Wave 885 Part 2 safety: year-only ('2024년 구매') 는 USB-C signal 안 
   assert.equal(ruleMatch("에어팟 맥스 2024년 1월 구매", "")?.id, "airpods-max");
   assert.equal(ruleMatch("에어팟 맥스 실버 2024 새상품", "")?.id, "airpods-max");
 });
+
+// Wave 885 Part 3 (사용자 결정): band 시스템 폐기 — pool 진입 gate threshold 1원.
+import { bandFromProfit } from "@/lib/profit";
+
+test("Wave 885 Part 3: bandFromProfit threshold 1만 → 1원 (band 폐기 결정)", () => {
+  // 차익 1원도 band 1 (양수 차익이면 통과)
+  assert.equal(bandFromProfit(1, 1), 1);
+  assert.equal(bandFromProfit(9_000, 9_000), 1);
+  assert.equal(bandFromProfit(10_000, 10_000), 1);
+  // band 2 (4만+) 와 band 3 (7만+) 유지
+  assert.equal(bandFromProfit(40_000, 40_000), 2);
+  assert.equal(bandFromProfit(70_000, 70_000), 3);
+  // 차익 0 / 음수 = null (negative_resell_gap 별도 차단 위해)
+  assert.equal(bandFromProfit(0, 0), null);
+  assert.equal(bandFromProfit(-100, -100), null);
+});

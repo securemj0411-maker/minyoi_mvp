@@ -107,14 +107,13 @@ export function expectedProfitAverage(item: ListingCandidate) {
 }
 
 export function bandFromProfit(profitMin: number, profitMax: number, _category?: string | null): 1 | 2 | 3 | null {
-  // Wave 755 (2026-05-24): profit.ts와 pool-policy.mjs sync — band 1 threshold 10K로 통일.
-  // Production pool-policy.mjs는 이미 10K (Wave 90 사용자 결정).
-  // profit.ts만 stale 20K였음 → UI badge / candidate.ts comparison logic 일관성 보강.
-  // category 인자는 향후 카테고리별 차등 위해 옵션 유지 (현재 미사용).
+  // Wave 885 (2026-05-26 사용자 결정): band 시스템 폐기 — pool 진입 gate threshold 1원.
+  //   사용자 코멘트: "band 개념 없앤 지 오래됐는데. 15만/30만/50만 이하 필터링 피드에서 직접 함."
+  //   pool-policy.mjs 와 sync (Wave 755 패턴). 자세한 사유는 pool-policy.mjs 의 comment 참조.
   const avg = Math.round((profitMin + profitMax) / 2);
   if (avg >= 70_000) return 3;
   if (avg >= 40_000) return 2;
-  if (avg >= 10_000) return 1;
+  if (avg >= 1) return 1;  // Wave 885: 10_000 → 1 (band 폐기 결정).
   return null;
 }
 
