@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { restFetch, serviceHeaders, tableUrl, jsonBody } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { notifyAdminTelegram } from "@/lib/telegram-notify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -59,6 +60,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, inserted: 0 });
   }
 
+  // 2026-05-26: 신규 가입 detect — insert 전 기존 consent row 조회.
+  //   count=0 이면 첫 가입 → telegram 알림 (non-fatal, async fire-and-forget 가능하지만 결과 보고 싶어 await).
+  //   재동의는 알림 X (약관 개정 시 noise 방지).
+  let isFirstSignup = false;
+  try {
+    const existRes = await restFetch(
+      `${tableUrl("mvp_user_consents")}?select=user_id&user_id=eq.${auth.user.id}&limit=1`,
+      { headers: serviceHeaders() },
+    );
+    if (existRes.ok) {
+      const existing = (await existRes.json()) as Array<{ user_id: string }>;
+      isFirstSignup = existing.length === 0;
+    }
+  } catch (err) {
+    console.warn("[consents] first-signup check failed (non-fatal)", err);
+  }
+
   try {
     const res = await restFetch(tableUrl("mvp_user_consents"), {
       method: "POST",
@@ -70,6 +88,19 @@ export async function POST(req: Request) {
       console.error("[consents] insert failed", { status: res.status, text });
       return NextResponse.json({ error: "consents_insert_failed" }, { status: 500 });
     }
+
+    // 가입 알림 — insert 성공 시에만 (실패 매물 알림 보내면 misleading)
+    if (isFirstSignup) {
+      const email = auth.user.email ?? "(email 없음)";
+      const createdAt = auth.user.created_at ?? new Date().toISOString();
+      const marketingNote = body.marketing ? " · 마케팅 OK" : "";
+      const message = `🎉 신규 가입\n\n*${email}*\n가입: ${createdAt.slice(0, 16).replace("T", " ")}${marketingNote}\nIP: ${ipAddress ?? "?"}`;
+      // fire-and-forget — 응답 지연 X
+      notifyAdminTelegram(message).catch((err) =>
+        console.warn("[consents] telegram notify failed (non-fatal)", err),
+      );
+    }
+
     return NextResponse.json({ ok: true, inserted: rows.length });
   } catch (err) {
     console.error("[consents] error", err);
