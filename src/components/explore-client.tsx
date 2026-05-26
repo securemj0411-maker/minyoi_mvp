@@ -872,20 +872,30 @@ function DetailAccessPaywallModal({
               4 row (header / progress / 설명 / 보유 크레딧) → 2 row 로 압축.
               설명 텍스트 ("첫 상품 1개는 무료로 열리고...") 제거 — 모달 body 와 의미 중복.
               "보유 크레딧" 정보는 헤더 row 에 inline. progress bar h-2.5 → h-1.5 (얇게). */}
+          {/* Wave 766 (2026-05-26 사용자 결정): FREE_DETAIL_ACCESS_LIMIT 폐기 후 progress bar 조건부 표시.
+                기존: 모든 paywall 모달에 "무료 N/N 사용" + progress bar 박힘.
+                신규: freeLimit > 0 일 때만 박힘 (현재 0 — 영구 hidden).
+                보유 크레딧만 우측에 박음 (간결). */}
           {isPaywall ? (
             <div className="mt-4 rounded-[18px] bg-zinc-50 p-3 dark:bg-zinc-900/70">
               <div className="flex items-center justify-between text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
-                <span>무료 {freeUsed.toLocaleString("ko-KR")}/{freeLimit.toLocaleString("ko-KR")} 사용</span>
+                {freeLimit > 0 ? (
+                  <span>무료 {freeUsed.toLocaleString("ko-KR")}/{freeLimit.toLocaleString("ko-KR")} 사용</span>
+                ) : (
+                  <span>지금까지 매물 <b className="text-zinc-700 dark:text-zinc-200">{summary?.openedCount ?? 0}개</b> 자세히 봄</span>
+                )}
                 <span>보유 <b className="text-zinc-700 dark:text-zinc-200">{creditBalance.toLocaleString("ko-KR")}크레딧</b></span>
               </div>
-              <div className="mt-2 grid gap-1" style={{ gridTemplateColumns: `repeat(${segments}, minmax(0, 1fr))` }}>
-                {Array.from({ length: segments }).map((_, idx) => (
-                  <div
-                    key={idx}
-                    className={`h-1.5 rounded-full ${idx < Math.min(freeUsed, segments) ? "bg-[#3182f6]" : "bg-zinc-200 dark:bg-zinc-700"}`}
-                  />
-                ))}
-              </div>
+              {freeLimit > 0 ? (
+                <div className="mt-2 grid gap-1" style={{ gridTemplateColumns: `repeat(${segments}, minmax(0, 1fr))` }}>
+                  {Array.from({ length: segments }).map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`h-1.5 rounded-full ${idx < Math.min(freeUsed, segments) ? "bg-[#3182f6]" : "bg-zinc-200 dark:bg-zinc-700"}`}
+                    />
+                  ))}
+                </div>
+              ) : null}
             </div>
           ) : null}
 
@@ -2200,7 +2210,12 @@ export default function ExploreClient({
       if (data.item) {
         setItems((prev) => prev.map((candidate) => (candidate.pid === item.pid ? data.item! : candidate)));
       }
-      if (!data.alreadyOpened && data.accessType === "free") {
+      // Wave 766 (2026-05-26 사용자 결정): FREE_CREDIT_GRANT=2 통일 후 accessType="free" 가 사라짐.
+      //   기존 분기: accessType === "free" → valueSummary 누적 (paywall 첫 도달 design "방금 확인한 것" 박스).
+      //   신규 분기: 누적 reveal ≤ 2 (첫 2개 reveal) → valueSummary 누적 (스크린샷 #1 design 보존).
+      const cumulativeReveals = openedDetailPidsRef.current.size;
+      const isInitialPhase = cumulativeReveals < 2;
+      if (!data.alreadyOpened && isInitialPhase) {
         detailAccessValueRef.current = mergeAccessValueSummary(
           detailAccessValueRef.current,
           accessValueForItem(exactItem),

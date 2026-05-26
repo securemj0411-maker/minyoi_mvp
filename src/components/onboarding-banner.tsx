@@ -53,15 +53,15 @@ export default function OnboardingBanner({ onStart }: { onStart?: () => void }) 
               가입 환영
             </span>
             <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-black text-blue-800 dark:bg-blue-900/60 dark:text-blue-200">
-              상세보기 1개 무료
+              매물 2개 무료
             </span>
           </div>
           <h3 className="mt-1 text-base font-black text-[#223127] dark:text-zinc-100">
-            첫 상품 1개는 무료로 볼 수 있어요
+            가입 환영! 매물 2개를 무료로 자세히 볼 수 있어요
           </h3>
           <p className="mt-1 text-xs font-semibold leading-6 text-[#5a6658] dark:text-zinc-300">
-            “추천 상품 받기”에서 <strong>안전</strong> 또는 <strong>균형</strong> 프로필로 시작해보세요.
-            이후에는 새 상품을 열 때마다 1크레딧이 줄고, 이미 본 상품은 다시 봐도 차감되지 않아요.
+            마음에 드는 매물을 골라 <strong>열기</strong> 눌러서 차익·시세·셀러 정보를 확인해보세요.
+            이미 본 매물은 다시 봐도 차감되지 않아요.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Link

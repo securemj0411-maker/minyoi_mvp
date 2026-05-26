@@ -234,7 +234,7 @@ export default function AuthForm({ mode }: Props) {
         </h1>
         <p className="mt-2 text-sm leading-6 text-[#5a6658] dark:text-zinc-400">
           {isSignup
-            ? "카카오 또는 이메일로 가입할 수 있어요. 첫 상품 1개는 무료로 상세보기를 열 수 있습니다."
+            ? "카카오 또는 이메일로 가입할 수 있어요. 가입하면 매물 2개를 무료로 자세히 볼 수 있어요."
             : "가입한 계정으로 추천 상품과 피드백 기록을 이어서 봅니다."}
         </p>
       </div>
