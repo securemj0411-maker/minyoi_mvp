@@ -81,8 +81,13 @@ export default function BalanceToast() {
               window.dispatchEvent(new CustomEvent("minyoi:share-bonus-received"));
             }
 
-            // 토스트 표시
-            setToast(`크레딧 ${gained}개 받았어요 🎁`);
+            // 토스트 표시 — Wave 765d (2026-05-26 사용자 정정): "크레딧" 추상 → "매물 N개 더 보기" 직관화.
+            //   카톡 공유 보너스 (shareBonus=true) 일 때 "공유 고마워요!" prefix.
+            //   가치 명시 — 매물 1개 ≈ 시세분석 + 셀러 + 원본 정보 (사용자 평균 ~3만원 차익 매물).
+            const toastMessage = shareBonus
+              ? `공유 고마워요! 매물 ${gained}개 더 자세히 볼 수 있어요`
+              : `매물 ${gained}개 더 자세히 볼 수 있어요 🎁`;
+            setToast(toastMessage);
             if (toastTimer != null) window.clearTimeout(toastTimer);
             toastTimer = window.setTimeout(() => setToast(null), TOAST_DURATION_MS);
 
