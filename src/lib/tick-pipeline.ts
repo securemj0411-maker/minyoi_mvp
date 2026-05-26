@@ -2827,6 +2827,78 @@ async function loadMarketPriceStats(comparableKeys: string[]): Promise<MarketPri
   return result;
 }
 
+// Wave 886 Phase 3 (2026-05-26 사용자 결정): per-source 시세 로딩 (당근 전용 시세).
+//   배경: 동일 SKU/condition 매물의 가격이 source 별 35-44% 차이. mixed median 사용 시 당근 매물 차익 부풀려짐.
+//   목적: 매물 source 일치 sample ≥ 3 면 per-source median 사용. 부족 → mixed fallback (기존 동작).
+//   비파괴: mixed median 결정 로직 그대로. per-source 는 매물 source 일치 시 우선 사용만.
+type MarketPriceRowWithSource = MarketPriceRow & { source: string };
+type MarketPriceStatsPerSourceMap = Map<string, Map<string, Map<string, MarketPriceRowWithSource>>>; // comparable_key → source → condition_class → row
+
+async function loadMarketPriceStatsPerSource(comparableKeys: string[]): Promise<MarketPriceStatsPerSourceMap> {
+  const unique = [...new Set(comparableKeys.filter(Boolean))];
+  if (unique.length === 0) return new Map();
+  const columns = [
+    "date",
+    "comparable_key",
+    "condition_class",
+    "source",
+    "active_median_price",
+    "sold_median_price",
+    "blended_median_price",
+    "active_sample_count",
+    "sold_sample_count",
+    "disappeared_sample_count",
+    "confidence",
+    "p25_price",
+    "p75_price",
+    "computed_at",
+  ].join(",");
+  const CHUNK_SIZE = 100;
+  const result: MarketPriceStatsPerSourceMap = new Map();
+  for (let i = 0; i < unique.length; i += CHUNK_SIZE) {
+    const chunk = unique.slice(i, i + CHUNK_SIZE);
+    const encoded = chunk.map((key) => encodeURIComponent(key)).join(",");
+    const url = `${tableUrl("mvp_market_price_daily_per_source")}?select=${columns}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(4000, chunk.length * 36)}`;
+    try {
+      const res = await restFetch(url, { headers: serviceHeaders() });
+      if (!res.ok) continue;
+      const rows = (await res.json()) as MarketPriceRowWithSource[];
+      for (const row of rows) {
+        if (!row.source) continue;
+        const bySource = result.get(row.comparable_key) ?? new Map<string, Map<string, MarketPriceRowWithSource>>();
+        const byCond = bySource.get(row.source) ?? new Map<string, MarketPriceRowWithSource>();
+        if (!byCond.has(row.condition_class)) byCond.set(row.condition_class, row);
+        bySource.set(row.source, byCond);
+        result.set(row.comparable_key, bySource);
+      }
+    } catch (err) {
+      // 비파괴 — per-source fetch 실패 시 mixed fallback (기존 동작) 유지.
+      console.warn("[wave886] per-source fetch failed (non-fatal)", err instanceof Error ? err.message : String(err));
+    }
+  }
+  return result;
+}
+
+// Wave 886 Phase 3: 매물 source 일치 per-source stat 시도 → 부족 시 null (caller 가 mixed fallback).
+function pickPerSourceStatForMatter(
+  perSourceMap: MarketPriceStatsPerSourceMap | null,
+  comparableKey: string | null,
+  conditionClass: string | null,
+  matterSource: string | null | undefined,
+): MarketPriceRowWithSource | null {
+  if (!perSourceMap || !comparableKey || !matterSource) return null;
+  const bySource = perSourceMap.get(comparableKey);
+  if (!bySource) return null;
+  const byCond = bySource.get(matterSource);
+  if (!byCond) return null;
+  const stat = pickMarketStatByCondition(byCond, conditionClass) as MarketPriceRowWithSource | undefined;
+  if (!stat) return null;
+  const total = (stat.active_sample_count ?? 0) + (stat.sold_sample_count ?? 0);
+  // sample ≥ 3 — Wave 885 의 thin_market 와 동일 threshold (사용자 결정).
+  if (total < 3) return null;
+  return stat;
+}
+
 // Wave 159h (2026-05-17): condition-fallback shared module 사용 (DRY).
 function pickMarketStatByCondition(
   byCondition: Map<string, MarketPriceRow> | undefined,
@@ -5997,6 +6069,17 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     ...preciseKeys.map(shoeSizeAgnosticComparableKey).filter((key): key is string => Boolean(key)),
   ]);
 
+  // Wave 886 Phase 3 (2026-05-26 사용자 결정): per-source 시세 같이 로딩 — 당근 매물 한정 우선 사용.
+  //   당근 매물 source = daangn → per-source map 의 daangn stat 시도 (sample ≥ 3 면) → 부족 시 mixed fallback.
+  //   비파괴: fetch 실패해도 mixed 만 사용 (try/catch).
+  const marketStatsPerSource = await loadMarketPriceStatsPerSource([
+    ...preciseKeys,
+    ...preciseKeys.map(shoeSizeAgnosticComparableKey).filter((key): key is string => Boolean(key)),
+  ]).catch((err) => {
+    console.warn("[wave886] per-source loader fall back to mixed only", err instanceof Error ? err.message : String(err));
+    return null as MarketPriceStatsPerSourceMap | null;
+  });
+
   // 2026-05-15: 미개봉/새상품 매물 시세 = 다나와 reference price (쿠팡/네이버 등 합산 최저가).
   // 중고 시세와 비교하면 호가 부풀려 풀에서 빠짐 → 진짜 꿀 매물 놓침.
   // reference price 있으면 미개봉 매물의 skuMedian = 그 가격, 없으면 기존 중고 시세 fallback.
@@ -6131,7 +6214,18 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     // Wave 130 (2026-05-16): 매물 condition_class에 매칭되는 시세 row 선택 (sample 부족 시 fallback).
     // 사업 보고서 L2: 같은 SKU+옵션도 condition별 시세 spread 15~40% — 정확성 ↑.
     const byCondition = comparableKey ? marketStatsByKey.get(comparableKey) : undefined;
-    const exactMarketStat = pickMarketStatByCondition(byCondition, parsed?.condition_class ?? null);
+    const exactMixedMarketStat = pickMarketStatByCondition(byCondition, parsed?.condition_class ?? null);
+    // Wave 886 Phase 3 (2026-05-26 사용자 결정): 매물 source 일치 per-source stat 시도.
+    //   당근 매물 (source=daangn): 같은 SKU/condition 의 당근 sample ≥ 3 → 당근 median 우선.
+    //   부족 → mixed median fallback (기존 동작 — exactMixedMarketStat).
+    //   번장/중나 매물: per-source 도 시도 (source 일치 sample ≥ 3 면 사용) — 정확성 ↑.
+    const perSourceMarketStat = pickPerSourceStatForMatter(
+      marketStatsPerSource,
+      comparableKey,
+      parsed?.condition_class ?? null,
+      row.source,
+    );
+    const exactMarketStat = perSourceMarketStat ?? exactMixedMarketStat;
     let marketStat = exactMarketStat;
     let trustedMedian = trustedMarketMedian(marketStat, parsed?.category);
     let usedShoeSizeAnyMarket = false;
