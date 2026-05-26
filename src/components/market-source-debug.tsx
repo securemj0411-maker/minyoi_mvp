@@ -286,7 +286,7 @@ export function MarketSourceDebug({
 
   // Wave 714e (2026-05-23): 신발/의류 — 같은 tier 우선 + 인접 tier (±1) + 그 외 순으로 정렬.
   //   ourTier 가 null (전자기기/backfill 안 됨) 이면 price 정렬 (기존 behavior).
-  //   같은 tier distance 내에서는 price 오름차순.
+  //   사용자 요청 (2026-05-26): 비교 매물 가격 정렬 — 모든 카테고리 DESC (높은 가격 먼저).
   const TIER_ORDER = ["S", "A", "B", "C", "D"] as const;
   const tierDistance = (tier: string | null | undefined): number => {
     const ourTier = data?.ourListing.conditionTier;
@@ -303,7 +303,8 @@ export function MarketSourceDebug({
       const db = tierDistance(b.conditionTier);
       if (da !== db) return da - db;
     }
-    return a.price - b.price;
+    // 사용자 요청 (2026-05-26): 모든 카테고리 DESC (높은 가격 먼저).
+    return b.price - a.price;
   }) : [];
   // Wave 714e: tier distance 별 grouping — UI section 헤더 분리.
   const groupLabel = (distance: number): string => {
