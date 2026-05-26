@@ -7275,6 +7275,11 @@ export const CATALOG: Sku[] = [
       "스트랩만", "밴드만", "케이스만", "베젤만",
       // 캡코 SBSA/SBDC/SBDX 같은 모델 코드 — narrow lane으로
       "sbdc", "sbdx",
+      // Wave 763 (2026-05-27): 사용자 audit 발견 — 음반/싱글이 시계로 매칭됨 (pid 9002926285481).
+      //   "시티팝 일본 가수 7" 싱글" 같은 음반 매물 차단.
+      "lp ", "vinyl", "바이닐", "음반", "싱글", "7인치", "12인치",
+      "ep ", "음악", "music", "앨범", "album",
+      "시티팝", "city pop", "재즈", "jazz", "락 ", "rock band",
     ],
     msrpKrw: 400000,
     released: 1881,
@@ -8615,6 +8620,19 @@ export const CATALOG: Sku[] = [
       // 미국/USA 한정 컬렉션 + 도시 한정 패턴
       "성조기 pk", "성조기pk", "성조기 카라", "성조기카라",
       "올림픽 한정", "team usa", "팀 usa",
+      // Wave 763 (2026-05-27): 사용자 발견 audit — 골프 brand + 한국 디자이너 false-positive 흡수.
+      //   pid 9000000112031 "ST. ANDREWS 카라티" / 9002662730817 "듀빅 골프 여성 폴로티"
+      //   9001826082393 "thisisneverthat 니트 폴로" / 9003810836611 "풋조이 골프 반팔"
+      "st andrews", "스트앤드류스", "스트 앤드류스", "세인트 앤드류스", "세인트앤드류스",
+      "duvic", "듀빅",
+      "thisisneverthat", "this is never that", "tnt",
+      "footjoy", "foot joy", "풋조이",
+      "j.lindeberg", "j lindeberg", "lindeberg", "제이린드버그", "린드버그",
+      "pottery", "포터리",
+      "blankroom", "blank room", "블랭크룸",
+      "lohnt",
+      "mont-bell", "mont bell", "montbell", "몽벨",
+      "pearly gates", "파리게이츠", "펄리게이츠",
       // Wave 671 (2026-05-22): RLX 골프 라인 차단 (별도 시세).
       // pid 408213485 "랄프로렌 RLX 반팔카라티" 28k score 56 — RLX는 골프 라인 (별도 SKU 필요).
       "rlx", "rlx 골프", "rlx golf", "rlx 카라", "rlx 반팔",
@@ -8654,6 +8672,17 @@ export const CATALOG: Sku[] = [
       "잭니클라우스", "jack nicklaus", "유타", "utar",
       "dancing skeletons", "dancing skeleton",
       "나이키", "nike",
+      // Wave 763 (2026-05-27): polo_pique_classic 동일 — false-positive brand 차단 (audit).
+      "st andrews", "스트앤드류스", "세인트 앤드류스", "세인트앤드류스",
+      "duvic", "듀빅",
+      "thisisneverthat", "this is never that", "tnt",
+      "footjoy", "foot joy", "풋조이",
+      "j.lindeberg", "j lindeberg", "lindeberg", "제이린드버그", "린드버그",
+      "pottery", "포터리",
+      "blankroom", "blank room", "블랭크룸",
+      "lohnt",
+      "mont-bell", "mont bell", "montbell", "몽벨",
+      "pearly gates", "파리게이츠", "펄리게이츠",
       // Wave 236f (2026-05-19): audit 발견 — polo 카라티 (polo_shirt) 매물 차단.
       //   Polo Pony Tee = 라운드넥 tee + 포니 로고. 카라티 별도 SKU (Polo Pique Classic).
       "카라티", "카라 티", "카라넥", "collar tee", "단추", "카라 셔츠",
@@ -12958,7 +12987,9 @@ export const CATALOG: Sku[] = [
   {
     id: "clothing-adidas-trefoil",
     brand: "Adidas", category: "clothing", laneKey: "adidas_trefoil",
-    modelName: "Adidas Trefoil / 3-Stripe (Track Suit / Hoodie / Tee)",
+    // Wave 763 (2026-05-27): modelName 정리 — "Track Suit" 빼기 (상하의 세트 별도 mustNotContain).
+    //   Track Jacket + Hoodie + Tee 만 keep. 슬랙스/조거 같은 바지류는 mustNotContain 추가로 차단.
+    modelName: "Adidas Trefoil Track Jacket / Hoodie / Tee",
     aliases: ["Adidas Trefoil", "아디다스 트레포일", "아디다스 트랙수트", "아디다스 3선"],
     mustContain: [["adidas", "아디다스"], ["trefoil", "트레포일", "3-stripe", "3선", "삼선", "track", "트랙", "트랙수트", "오리지널스", "originals"]],
     mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "짭", "가품",
@@ -13007,6 +13038,13 @@ export const CATALOG: Sku[] = [
       "빈티지 블루종", "빈티지블루종", "올드스쿨 블루종", "제펜 올드스쿨", "japan old school",
       // Wave 816: tee/tank rows were polluting the jacket comparable key.
       "티셔츠", "반팔티", "반팔 티", "반팔 카라", "tank top", "탱크탑", "민소매", "t-shirt", "tee",
+      // Wave 763 (2026-05-27): 사용자 발견 — pid 9003606834511 "아디다스 블랙 슬랙스 32칫수"가
+      //   adidas_trefoil|pants|b 로 박힘. 바지류 (슬랙스/조거/청바지/면바지) 차단.
+      "슬랙스", "slacks", "slack ",
+      "조거팬츠", "조거 팬츠", "조거", "jogger", "joggers",
+      "면바지", "청바지", "데님 바지", "데님바지",
+      "chino", "치노", "치노 바지", "치노바지",
+      "와이드 팬츠", "와이드팬츠", "스트레이트 팬츠",
       // 가방 차단
       "가방", "bag", "backpack", "백팩",
       // Wave 715 P2 (2026-05-23): adidas_trefoil_archive 신설 → vintage 명확 차단.
