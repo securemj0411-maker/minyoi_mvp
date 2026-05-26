@@ -29,9 +29,10 @@ export const revalidate = 0;
 export const maxDuration = 5;
 
 const COOLDOWN_HOURS = 24;
-// Wave 736 (2026-05-24 사용자 정정): 정책 = 카톡 공유 후 친구 도달 시 3 크레딧 (1 아님).
-//   기존 share-bonus 의 BONUS_AMOUNT=1 도 같이 정정.
-const BONUS_AMOUNT = 3;
+// Wave 736 (2026-05-24 사용자 정정): 정책 = 카톡 공유 후 친구 도달 시 보상.
+// Wave 765c (2026-05-26 사용자 BM 결정): 3 → 2 — 균형 (인센티브 + BM 안전).
+//   가격: 1크레딧 ≈ 495원 (popular 기준). 2크레딧 = 990원. 30일 max = 29,700원/유저.
+const BONUS_AMOUNT = 2;
 
 type CreditsRow = {
   user_ref: string;

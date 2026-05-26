@@ -14,9 +14,10 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const COOLDOWN_HOURS = 24;
-// Wave 736 (2026-05-24 사용자 정정): 정책 = 3 크레딧. share-webhook 과 일관성.
+// Wave 736 (2026-05-24): 카톡 공유 보너스. share-webhook 과 일관성.
+// Wave 765c (2026-05-26 사용자 BM 결정): 3 → 2 — 균형 (인센티브 + BM 안전).
 // Note: POST 호출은 Wave 734 에서 deprecate 됨 (즉시 지급 → webhook 의존). GET 은 cooldown 조회용 유지.
-const BONUS_AMOUNT = 3;
+const BONUS_AMOUNT = 2;
 
 type CreditsRow = {
   user_ref: string;
