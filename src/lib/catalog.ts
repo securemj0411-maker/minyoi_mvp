@@ -7292,6 +7292,10 @@ export const CATALOG: Sku[] = [
       "삽니다", "구합니다", "매입",
       // 호환 스트랩 (Watch 4/5/6 동시 표기)
       "갤럭시워치4 5 6", "워치4 5 6", "4 5 6 호환", "20mm 스트랩", "22mm 스트랩",
+      // Wave 778 (2026-05-27): 콜라보 에디션 차단 (owner 우려 — 톰브라운 등 시세 거품).
+      "톰브라운", "thom browne", "thombrowne", "tb edition",
+      "우영미", "wooyoungmi",
+      "메종키츠네", "maison kitsune", "kitsune",
     ],
     msrpKrw: 369000,
     released: 2023,
@@ -7316,6 +7320,10 @@ export const CATALOG: Sku[] = [
       "충전기만", "어댑터만",
       "고장", "부품", "수리용",
       "삽니다", "구합니다", "매입",
+      // Wave 778 (2026-05-27): 콜라보 에디션 차단 (시세 거품).
+      "톰브라운", "thom browne", "thombrowne", "tb edition",
+      "우영미", "wooyoungmi",
+      "메종키츠네", "maison kitsune", "kitsune",
     ],
     msrpKrw: 339000,
     released: 2024,
