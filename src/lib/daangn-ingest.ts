@@ -140,6 +140,8 @@ export type DaangnIngestResult = {
     detailClassify?: number; // pre-classify for detail priority sort
     detailFetch?: number;   // sequential 5 detail fetches
     rawUpsert?: number;     // upsertDaangnRawListings (raw + parsed)
+    preflight?: number;     // existing-row lookup before expensive classify
+    preflightSkipped?: number; // rows skipped before classifier/parser
     rawRpc?: number;        // daangn_bulk_upsert_raw_listings_v2
     parsedUpsert?: number;  // daangn_bulk_upsert_listing_parsed for changed pids only
     healthCheck?: number;   // source health 평가
@@ -322,6 +324,166 @@ function articleFreshnessMs(article: DaangnSearchArticle): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+type DaangnPreflightRow = {
+  article: DaangnSearchArticle | DaangnDetailArticle;
+  externalId: string;
+  pid: number;
+  title: string;
+  descriptionPreview: string;
+  price: number;
+  numFaved: number;
+  numComment: number;
+  thumbnailUrl: string | null;
+  listingState: "active" | "disappeared";
+  saleStatus: string;
+  sourceUpdatedAt: string;
+  rawJson: Record<string, unknown>;
+  daangnRegionId: string | null;
+  daangnRegionName: string | null;
+  daangnBoostedAt: string | null;
+  daangnWebCrawlAllowed: boolean;
+  daangnShippingInferred: DaangnShippingInference;
+};
+
+type ExistingDaangnRawRow = {
+  pid: number;
+  name: string | null;
+  price: number | null;
+  num_faved: number | null;
+  num_comment: number | null;
+  thumbnail_url: string | null;
+  description_preview: string | null;
+  listing_state: string | null;
+  sale_status: string | null;
+  source_updated_at: string | null;
+  last_seen_at: string | null;
+  raw_json: Record<string, unknown> | null;
+  sku_id: string | null;
+  daangn_region_id: string | null;
+  daangn_region_name: string | null;
+  daangn_boosted_at: string | null;
+  daangn_web_crawl_allowed: boolean | null;
+  daangn_shipping_inferred: string | null;
+};
+
+function sameInstant(a: string | null | undefined, b: string | null | undefined): boolean {
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+  const at = Date.parse(a);
+  const bt = Date.parse(b);
+  if (!Number.isFinite(at) || !Number.isFinite(bt)) return a === b;
+  return at === bt;
+}
+
+function sameDaangnRawJson(a: Record<string, unknown> | null | undefined, b: Record<string, unknown>): boolean {
+  if (!a) return false;
+  const aRegion = (a.region && typeof a.region === "object") ? a.region as Record<string, unknown> : null;
+  const bRegion = (b.region && typeof b.region === "object") ? b.region as Record<string, unknown> : null;
+  return (
+    a.source === b.source &&
+    a.externalId === b.externalId &&
+    a.viewCount === b.viewCount &&
+    (aRegion?.dbId ?? null) === (bRegion?.dbId ?? null) &&
+    (aRegion?.name ?? null) === (bRegion?.name ?? null)
+  );
+}
+
+function buildDaangnPreflightRow(
+  article: DaangnSearchArticle | DaangnDetailArticle,
+  shipping: DaangnShippingInference | null,
+): DaangnPreflightRow | null {
+  const externalId = parseDaangnExternalId(article.href);
+  if (!externalId) return null;
+  if (article.price == null || !Number.isFinite(Number(article.price))) return null;
+  const title = article.title || "(no title)";
+  const description = ((article as DaangnDetailArticle).content ?? article.content ?? "") as string;
+  return {
+    article,
+    externalId,
+    pid: daangnInternalPid(externalId),
+    title,
+    descriptionPreview: (description ?? "").slice(0, 500),
+    price: Math.max(0, Math.round(Number(article.price))),
+    numFaved: article.favoriteCount ?? 0,
+    numComment: article.chatCount ?? 0,
+    thumbnailUrl: article.thumbnail ?? null,
+    listingState: article.status === "Ongoing" ? "active" : "disappeared",
+    saleStatus: article.status === "Ongoing" ? "selling" : (article.status?.toLowerCase() ?? ""),
+    sourceUpdatedAt: article.boostedAt ?? article.createdAt ?? new Date(0).toISOString(),
+    rawJson: {
+      source: DAANGN_SOURCE_ID,
+      externalId,
+      viewCount: article.viewCount,
+      region: article.region,
+    },
+    daangnRegionId: article.region.dbId ?? null,
+    daangnRegionName: article.region.name ?? null,
+    daangnBoostedAt: article.boostedAt ?? null,
+    daangnWebCrawlAllowed: !article.user.webCrawlNotAllowed,
+    daangnShippingInferred: shipping ?? "unknown",
+  };
+}
+
+function canSkipDaangnClassify(existing: ExistingDaangnRawRow | undefined, row: DaangnPreflightRow, nowMs: number): boolean {
+  if (!existing) return false;
+  // sku_id 없는 과거 row 는 새 catalog/parser 개선으로 살아날 수 있어서 계속 재분류한다.
+  if (!existing.sku_id) return false;
+  const lastSeenMs = existing.last_seen_at ? Date.parse(existing.last_seen_at) : 0;
+  if (!Number.isFinite(lastSeenMs) || nowMs - lastSeenMs >= 2 * 60 * 60 * 1000) return false;
+  return (
+    existing.name === row.title &&
+    Number(existing.price ?? -1) === row.price &&
+    Number(existing.num_faved ?? 0) === row.numFaved &&
+    Number(existing.num_comment ?? 0) === row.numComment &&
+    (existing.thumbnail_url ?? null) === row.thumbnailUrl &&
+    (existing.description_preview ?? "") === row.descriptionPreview &&
+    existing.listing_state === row.listingState &&
+    existing.sale_status === row.saleStatus &&
+    sameInstant(existing.source_updated_at, row.sourceUpdatedAt) &&
+    sameDaangnRawJson(existing.raw_json, row.rawJson) &&
+    (existing.daangn_region_id ?? null) === row.daangnRegionId &&
+    (existing.daangn_region_name ?? null) === row.daangnRegionName &&
+    sameInstant(existing.daangn_boosted_at, row.daangnBoostedAt) &&
+    Boolean(existing.daangn_web_crawl_allowed) === row.daangnWebCrawlAllowed &&
+    (existing.daangn_shipping_inferred ?? "unknown") === row.daangnShippingInferred
+  );
+}
+
+async function loadExistingDaangnRawRows(pids: number[]): Promise<Map<number, ExistingDaangnRawRow>> {
+  if (pids.length === 0) return new Map();
+  const out = new Map<number, ExistingDaangnRawRow>();
+  const columns = [
+    "pid",
+    "name",
+    "price",
+    "num_faved",
+    "num_comment",
+    "thumbnail_url",
+    "description_preview",
+    "listing_state",
+    "sale_status",
+    "source_updated_at",
+    "last_seen_at",
+    "raw_json",
+    "sku_id",
+    "daangn_region_id",
+    "daangn_region_name",
+    "daangn_boosted_at",
+    "daangn_web_crawl_allowed",
+    "daangn_shipping_inferred",
+  ].join(",");
+  for (let i = 0; i < pids.length; i += 100) {
+    const chunk = pids.slice(i, i + 100);
+    const res = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=${columns}&source=eq.${DAANGN_SOURCE_ID}&pid=in.(${chunk.join(",")})`,
+      { headers: serviceHeaders() },
+    );
+    const rows = await res.json() as ExistingDaangnRawRow[];
+    for (const row of rows) out.set(Number(row.pid), row);
+  }
+  return out;
+}
+
 // ───────────────────────────────────────────────────────────────────────────
 // DB upsert
 // ───────────────────────────────────────────────────────────────────────────
@@ -437,9 +599,10 @@ function buildRawListingRow(
 async function upsertDaangnRawListings(
   articles: DaangnSearchArticle[],
   detailRecords: DaangnIngestDetailRecord[],
-): Promise<{ rawUpserted: number; rawSkippedExisting: number; rawRpcMs: number; parsedUpsertMs: number }> {
-  if (articles.length === 0) return { rawUpserted: 0, rawSkippedExisting: 0, rawRpcMs: 0, parsedUpsertMs: 0 };
+): Promise<{ rawUpserted: number; rawSkippedExisting: number; rawRpcMs: number; parsedUpsertMs: number; preflightMs: number; preflightSkipped: number }> {
+  if (articles.length === 0) return { rawUpserted: 0, rawSkippedExisting: 0, rawRpcMs: 0, parsedUpsertMs: 0, preflightMs: 0, preflightSkipped: 0 };
   const nowIso = new Date().toISOString();
+  const nowMs = Date.parse(nowIso);
 
   // detail enriched 매물 (shipping 추론됨) 은 우선 사용
   const detailShippingByExternal = new Map<string, DaangnShippingInference>();
@@ -462,23 +625,32 @@ async function upsertDaangnRawListings(
     if (ext && !uniqueArticles.has(ext)) uniqueArticles.set(ext, article);
   }
 
-  // dedupe by pid (같은 매물 여러 combo 중복 검색됨)
-  const byPid = new Map<number, { raw: Record<string, unknown>; parsed: Record<string, unknown> | null }>();
+  const preflightStart = Date.now();
+  const preflightRows: DaangnPreflightRow[] = [];
   for (const article of uniqueArticles.values()) {
     const ext = parseDaangnExternalId(article.href);
     if (!ext) continue;
-    const shipping = detailShippingByExternal.get(ext) ?? null;
-    // detail article 있으면 그걸로 — user.score 포함되어 manner_temperature 추출 가능.
     const detailArticle = detailArticleByExternal.get(ext);
     const articleToUse: DaangnSearchArticle | DaangnDetailArticle = detailArticle ?? article;
-    const built = buildRawListingRow(articleToUse, shipping, nowIso);
+    const row = buildDaangnPreflightRow(articleToUse, detailShippingByExternal.get(ext) ?? null);
+    if (row) preflightRows.push(row);
+  }
+  const existingRows = await loadExistingDaangnRawRows(preflightRows.map((row) => row.pid));
+  const rowsNeedingClassify = preflightRows.filter((row) => !canSkipDaangnClassify(existingRows.get(row.pid), row, nowMs));
+  const preflightSkipped = preflightRows.length - rowsNeedingClassify.length;
+  const preflightMs = Date.now() - preflightStart;
+
+  // dedupe by pid (같은 매물 여러 combo 중복 검색됨)
+  const byPid = new Map<number, { raw: Record<string, unknown>; parsed: Record<string, unknown> | null }>();
+  for (const row of rowsNeedingClassify) {
+    const built = buildRawListingRow(row.article, row.daangnShippingInferred, nowIso);
     if (!built) continue;
     byPid.set(built.raw.pid as number, { raw: built.raw, parsed: built.parsed });
   }
 
   const rawRows = [...byPid.values()].map((b) => b.raw);
   const parsedRows = [...byPid.values()].map((b) => b.parsed).filter((p): p is Record<string, unknown> => Boolean(p));
-  if (rawRows.length === 0) return { rawUpserted: 0, rawSkippedExisting: 0, rawRpcMs: 0, parsedUpsertMs: 0 };
+  if (rawRows.length === 0) return { rawUpserted: 0, rawSkippedExisting: preflightSkipped, rawRpcMs: 0, parsedUpsertMs: 0, preflightMs, preflightSkipped };
 
   // Phase 6i++++ RPC bulk upsert: PostgREST ON CONFLICT 처리 serialize 한계 우회.
   //   parallel chunked 도 효과 X 확인 (213s) — Supabase 가 row 별 락 leitung.
@@ -524,9 +696,11 @@ async function upsertDaangnRawListings(
 
   return {
     rawUpserted,
-    rawSkippedExisting: Math.max(0, rawRows.length - rawUpserted),
+    rawSkippedExisting: preflightSkipped + Math.max(0, rawRows.length - rawUpserted),
     rawRpcMs,
     parsedUpsertMs,
+    preflightMs,
+    preflightSkipped,
   };
 }
 
@@ -952,6 +1126,8 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
       rawSkippedExisting = upsertResult.rawSkippedExisting;
       timings.rawRpc = upsertResult.rawRpcMs;
       timings.parsedUpsert = upsertResult.parsedUpsertMs;
+      timings.preflight = upsertResult.preflightMs;
+      timings.preflightSkipped = upsertResult.preflightSkipped;
     } catch (err) {
       sourceHealthStatus = "degraded";
       // 디버그 측면에서 충분히 보이도록 800자까지 보존

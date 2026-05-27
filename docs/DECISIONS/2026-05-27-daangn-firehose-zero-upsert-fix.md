@@ -209,3 +209,57 @@ The remaining time was the in-process `classifyListing` / parser preparation bef
 
 - Observe the next full production `daangn-worker` after deploy. Expected full-run `rawUpsert` should move from `~100s` toward the `~20-45s` range depending on candidate count.
 - `tests/core-rules.test.ts` currently has two existing expectation mismatches in broad classifier behavior (`applewatch-se2-44mm` vs `applewatch-se2`, PS5 digital comparable broad vs exact). They are not on the Daangn ingest surface verified here, but should be handled in a separate catalog/parser correctness pass before using core-rules as a release gate again.
+
+## Follow-up — preflight skip before expensive classification
+
+### Context
+
+After v2 raw RPC rollout, production confirmed the app was using the new timing fields:
+
+- `2026-05-27 07:38 UTC` production `daangn-worker`
+  - `upsertCandidateArticles=500`
+  - `upserted_count=20`
+  - `rawSkippedExisting=480`
+  - `rawRpc=508ms`
+  - `parsedUpsert=90ms`
+  - `rawUpsert=42812ms`
+
+The database path was no longer the bottleneck. The remaining `rawUpsert` time was mostly CPU spent classifying/parsing rows that the DB later skipped.
+
+### Decision
+
+- Add a Daangn preflight stage before classifier/parser:
+  - dedupe by external id
+  - compute cheap pid/listing fields
+  - fetch existing `mvp_raw_listings` rows by pid with service-role REST headers
+  - skip expensive classification if:
+    - row already has `sku_id`
+    - `last_seen_at` is within the 2h coarse touch window
+    - cheap listing fields, source timestamp, region, shipping inference, and raw JSON identity are unchanged
+- Keep `sku_id IS NULL` rows eligible for reclassification so catalog/parser improvements can still rescue old unknown rows.
+- Add `preflight` and `preflightSkipped` timings to `timingsMs`.
+
+### Verification
+
+- Daangn ingest tests passed:
+  - `npx tsx --test tests/daangn-source-probe.test.ts tests/daangn-ingest.test.ts`
+- Local production-backed active sample:
+  - `articles=5988`
+  - `catalogHint=324`
+  - `upsertCandidate=324`
+  - `rawUpserted=200`
+  - `rawSkippedExisting=124`
+  - `preflight=641ms`
+  - `preflightSkipped=60`
+  - `rawRpc=431ms`
+  - `parsedUpsert=167ms`
+  - `rawUpsert=13155ms`
+  - `total=15795ms`
+
+### Deferred
+
+- Observe the next full production `daangn-worker` after deploy. Expected full-run `rawUpsert` should drop again when repeated candidates are common.
+- The remaining work for this Daangn wave is now:
+  - faster catalog hint matching (trie/hash)
+  - adaptive region/category rotation from observed yield
+  - optional worker sharding after yield logs are stable
