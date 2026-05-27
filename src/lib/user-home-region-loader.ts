@@ -1,6 +1,7 @@
 // Wave 773 (2026-05-27): 사용자 home region 로드 + Daangn 매물 거리 필터링 헬퍼.
 
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { evaluateDaangnRegionDistance } from "@/lib/daangn-region-distance";
 
 export type UserHomeRegion = {
   daangn_region_id: string;
@@ -25,18 +26,14 @@ export async function loadUserHomeRegion(userId: string): Promise<UserHomeRegion
 }
 
 /**
- * Daangn 매물이 user home region 과 같은 시/도에 있는지 체크.
- *   true = 같은 시/도 → 채팅 가능 (display)
- *   false = 다른 시/도 → 채팅 불가 (hide)
- *   user home 또는 daangn full_path 없으면 true (보수적, 보여줌).
+ * Backward-compatible helper for callers that only have a resolved item path.
+ * New feed code should use evaluateDaangnRegionDistance(userPath, regionId, regionName)
+ * so it can use static centroid coordinates instead of broad 시/도 matching.
  */
 export function isDaangnRegionNearby(
   userFullPath: string | null | undefined,
   itemFullPath: string | null | undefined,
 ): boolean {
   if (!userFullPath || !itemFullPath) return true;
-  const userSido = userFullPath.split(" ")[0];
-  const itemSido = itemFullPath.split(" ")[0];
-  if (!userSido || !itemSido) return true;
-  return userSido === itemSido;
+  return evaluateDaangnRegionDistance(userFullPath, null, itemFullPath).actionable;
 }

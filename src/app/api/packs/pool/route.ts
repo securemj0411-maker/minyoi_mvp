@@ -4,7 +4,8 @@ import { loadV7SiblingPresence, type V7SiblingPresenceMap } from "@/lib/band-awa
 import { pickByConditionFallback } from "@/lib/condition-fallback";
 import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
 import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
-import { loadUserHomeRegion, isDaangnRegionNearby } from "@/lib/user-home-region-loader";
+import { evaluateDaangnRegionDistance, type DaangnDistanceSignal } from "@/lib/daangn-region-distance";
+import { loadUserHomeRegion } from "@/lib/user-home-region-loader";
 import { loadSkuImageMap, resolveGenericImage } from "@/lib/sku-images";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
@@ -604,11 +605,16 @@ function buildItems(
       const meta = metaByPid.get(row.pid);
       if (!raw) return null;
       const marketplaceSource = normalizeMarketplaceSource(meta?.source ?? meta?.seller_source);
-      // Wave 773 (2026-05-27): Daangn 거리 필터 — 사용자 거주 시/도 다른 매물 hide.
-      //   당근 채팅 거리 제약 (자기 인증 동네 인근만 채팅 가능) 대응. 다른 시/도면 user가 채팅 못 함 → 추천 무의미.
-      if (marketplaceSource === "daangn" && userHomeRegion?.daangn_full_path) {
-        const itemFullPath = resolveDaangnFullRegion(meta?.daangn_region_id ?? null, meta?.daangn_region_name ?? null);
-        if (!isDaangnRegionNearby(userHomeRegion.daangn_full_path, itemFullPath)) {
+      let daangnDistance: DaangnDistanceSignal | null = null;
+      // Wave 888 (2026-05-27): 시/도 broad filter → centroid 거리 기반 실행성 필터.
+      //   상도1동 사용자가 서초/금천 생활권 매물은 볼 수 있지만, 서울 끝/타권역 매물은 후순위 또는 차단.
+      if (marketplaceSource === "daangn") {
+        daangnDistance = evaluateDaangnRegionDistance(
+          userHomeRegion?.daangn_full_path ?? null,
+          meta?.daangn_region_id ?? null,
+          meta?.daangn_region_name ?? null,
+        );
+        if (userHomeRegion?.daangn_full_path && !daangnDistance.actionable) {
           return null;
         }
       }
@@ -710,6 +716,9 @@ function buildItems(
         shippingAssumption: tx.assumption,
         // Wave launch-37: raw_json 없으면 description 에서 "직거래는 안동 송하동" 같은 패턴 추출.
         directTradeLocation: marketplaceLocationCombinedWithRegion(meta?.raw_json, meta?.description_preview ?? null, resolveDaangnFullRegion(meta?.daangn_region_id ?? null, meta?.daangn_region_name ?? null)),
+        daangnDistanceKm: daangnDistance?.distanceKm ?? null,
+        daangnDistanceLabel: daangnDistance?.label ?? null,
+        daangnDistanceRank: daangnDistance?.rank ?? null,
         imageCount: meta?.image_count ?? null,
         descriptionPreview: meta?.description_preview ?? "",
         lastSeenAt: meta?.last_seen_at ?? null,
@@ -753,6 +762,8 @@ function buildTeaserFeedItems<T extends ReturnType<typeof buildItems>[number]>(i
       listingUrl: null,
       // Wave 886.2 (2026-05-27): 잠금 카드 source 로고 노출 — 일반 이미지로 leak 차단된 후라 마켓플레이스 식별 공개 OK.
       // 매입가/시세 range는 그대로 fuzzy 유지 → 정확 listing 역산 어려움.
+      marketplaceSource: item.marketplaceSource,
+      marketplaceLabel: item.marketplaceLabel,
       price: roundedPrice,
       skuMedian: roundedMarketPrice,
       thumbnailUrl: item.thumbnailUrl,
@@ -777,6 +788,24 @@ function buildTeaserFeedItems<T extends ReturnType<typeof buildItems>[number]>(i
       velocitySignalLabel: item.velocitySignalLabel,
     };
   });
+}
+
+function sortDaangnItemsByDistance<T extends ReturnType<typeof buildItems>[number]>(items: T[]) {
+  return items
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => {
+      const aDaangn = a.item.marketplaceSource === "daangn";
+      const bDaangn = b.item.marketplaceSource === "daangn";
+      if (aDaangn && bDaangn) {
+        const rankDiff = (a.item.daangnDistanceRank ?? 4) - (b.item.daangnDistanceRank ?? 4);
+        if (rankDiff !== 0) return rankDiff;
+        const aDistance = a.item.daangnDistanceKm ?? Number.POSITIVE_INFINITY;
+        const bDistance = b.item.daangnDistanceKm ?? Number.POSITIVE_INFINITY;
+        if (aDistance !== bDistance) return aDistance - bDistance;
+      }
+      return a.index - b.index;
+    })
+    .map(({ item }) => item);
 }
 
 export async function GET(req: Request) {
@@ -878,6 +907,7 @@ export async function GET(req: Request) {
     } else if (preference === "aggressive") {
       items = [...items].sort((a, b) => b.expectedProfitMax - a.expectedProfitMax);
     }
+    items = sortDaangnItemsByDistance(items);
     items = items.slice(0, PAGE_SIZE);
     const responseItems = buildTeaserFeedItems(items);
 

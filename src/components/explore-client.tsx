@@ -24,8 +24,9 @@ import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 // Wave 338+339 (Phase 1a + 1b — Freemium /explore):
 // 매물 풀 browsing. 피드는 무료 teaser, 크레딧은 상세 분석/원문 공개 때만 차감.
 // + 통계 배너 + paywall 예고 + sold out 오버레이 + PackRevealModal 통합.
-// Wave 762 (2026-05-26): 1 → 2 변경. detail-access.ts FREE_DETAIL_ACCESS_LIMIT 와 동기화.
-const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 2;
+// detail-access.ts FREE_DETAIL_ACCESS_LIMIT 와 동기화.
+// 현재 정책은 free rate-limit 대신 가입 크레딧 grant 를 쓰므로 기본 free limit 은 0이다.
+const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 0;
 
 type PoolItem = {
   pid: number;
@@ -79,6 +80,9 @@ type PoolItem = {
   sellerSignalLabel?: string | null;
   marketSignalLabel?: string | null;
   velocitySignalLabel?: string | null;
+  daangnDistanceKm?: number | null;
+  daangnDistanceLabel?: string | null;
+  daangnDistanceRank?: number | null;
 };
 
 type ScrappedPoolItem = PoolItem & {
@@ -503,15 +507,21 @@ function defaultDetailAccessSnapshot(): DetailAccessSnapshot {
   return { creditBalance: null, freeUsed: 0, freeLimit: DEFAULT_FREE_DETAIL_ACCESS_LIMIT, unlimited: false };
 }
 
-function normalizeDetailAccessSnapshot(value: unknown): DetailAccessSnapshot | null {
+function normalizeDetailAccessSnapshot(
+  value: unknown,
+  options: { trustServerLimit?: boolean } = {},
+): DetailAccessSnapshot | null {
   if (!value || typeof value !== "object") return null;
   const record = value as Partial<DetailAccessSnapshot>;
   const rawFreeLimit = Number(record.freeLimit ?? DEFAULT_FREE_DETAIL_ACCESS_LIMIT);
-  const freeLimit = Math.min(rawFreeLimit, DEFAULT_FREE_DETAIL_ACCESS_LIMIT);
+  const normalizedFreeLimit = Math.max(0, Math.floor(rawFreeLimit));
+  const freeLimit = options.trustServerLimit
+    ? normalizedFreeLimit
+    : Math.min(normalizedFreeLimit, DEFAULT_FREE_DETAIL_ACCESS_LIMIT);
   const freeUsed = Number(record.freeUsed ?? 0);
   const creditBalance = record.creditBalance == null ? null : Number(record.creditBalance);
   const unlimited = record.unlimited === true;
-  if (!Number.isFinite(rawFreeLimit) || !Number.isFinite(freeLimit) || freeLimit <= 0 || !Number.isFinite(freeUsed)) return null;
+  if (!Number.isFinite(rawFreeLimit) || !Number.isFinite(freeLimit) || freeLimit < 0 || !Number.isFinite(freeUsed)) return null;
   return {
     creditBalance: creditBalance != null && Number.isFinite(creditBalance) ? creditBalance : null,
     freeUsed: unlimited ? freeLimit : Math.min(Math.max(0, freeUsed), freeLimit),
@@ -1928,7 +1938,7 @@ export default function ExploreClient({
         }
         setCooldown(data.cooldown);
         if (data.detailAccess) {
-          const nextDetailAccess = normalizeDetailAccessSnapshot(data.detailAccess) ?? defaultDetailAccessSnapshot();
+          const nextDetailAccess = normalizeDetailAccessSnapshot(data.detailAccess, { trustServerLimit: true }) ?? defaultDetailAccessSnapshot();
           setDetailAccessSnapshot(nextDetailAccess);
           writeDetailAccessSnapshot(storageScope, nextDetailAccess);
         }
@@ -2145,7 +2155,10 @@ export default function ExploreClient({
         const freeUsed = Number.isFinite(Number(data.freeUsed)) ? Number(data.freeUsed) : null;
         const creditBalance = Number.isFinite(Number(data.creditBalance)) ? Number(data.creditBalance) : null;
         if (freeLimit != null && freeUsed != null) {
-          const nextDetailAccess = normalizeDetailAccessSnapshot({ creditBalance, freeUsed, freeLimit }) ?? defaultDetailAccessSnapshot();
+          const nextDetailAccess = normalizeDetailAccessSnapshot(
+            { creditBalance, freeUsed, freeLimit },
+            { trustServerLimit: true },
+          ) ?? defaultDetailAccessSnapshot();
           setDetailAccessSnapshot(nextDetailAccess);
           writeDetailAccessSnapshot(storageScope, nextDetailAccess);
         }
@@ -2203,12 +2216,15 @@ export default function ExploreClient({
         window.dispatchEvent(new Event("minyoi:credits-changed"));
       }
       if (data.freeLimit != null && data.freeUsed != null) {
-        const nextDetailAccess = normalizeDetailAccessSnapshot({
-          creditBalance: data.creditBalance ?? null,
-          freeUsed: data.freeUsed,
-          freeLimit: data.freeLimit,
-          unlimited: data.unlimited,
-        }) ?? defaultDetailAccessSnapshot();
+        const nextDetailAccess = normalizeDetailAccessSnapshot(
+          {
+            creditBalance: data.creditBalance ?? null,
+            freeUsed: data.freeUsed,
+            freeLimit: data.freeLimit,
+            unlimited: data.unlimited,
+          },
+          { trustServerLimit: true },
+        ) ?? defaultDetailAccessSnapshot();
         setDetailAccessSnapshot(nextDetailAccess);
         writeDetailAccessSnapshot(storageScope, nextDetailAccess);
       }
@@ -2868,6 +2884,11 @@ export default function ExploreClient({
                         </span>
                         {/* Wave 886.2 (2026-05-27): 잠금 카드도 source 로고 노출 (일반 이미지로 leak 차단된 후). */}
                         <MarketplaceSourceBadge source={item.marketplaceSource} label={item.marketplaceLabel} />
+                        {item.marketplaceSource === "daangn" && item.daangnDistanceLabel ? (
+                          <span className="rounded-full bg-orange-50 px-1.5 py-0.5 font-bold text-orange-700 dark:bg-orange-950/40 dark:text-orange-200">
+                            {item.daangnDistanceLabel}
+                          </span>
+                        ) : null}
                         {lockedPreview && item.priceSignalLabel ? (
                           <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
                             {item.priceSignalLabel}
