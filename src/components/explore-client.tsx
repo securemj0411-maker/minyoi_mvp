@@ -1225,7 +1225,7 @@ function FirstFeedOnboardingCard({
             <div className="mt-4 flex items-center gap-3 rounded-[18px] border border-zinc-200 bg-white px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/%EC%97%90%EC%96%B4%ED%8C%9F%EC%A4%91%EA%B3%A0.jpg"
+                src="/airpods-pro-2-used.jpg"
                 alt="에어팟 프로 2세대"
                 className="h-[80px] w-[80px] shrink-0 rounded-[14px] bg-zinc-100 object-cover dark:bg-zinc-800"
               />
@@ -1268,7 +1268,7 @@ function FirstFeedOnboardingCard({
               <div className="flex items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/%EC%97%90%EC%96%B4%ED%8C%9F%EC%A4%91%EA%B3%A0.jpg"
+                  src="/airpods-pro-2-used.jpg"
                   alt="에어팟 프로 2세대"
                   className="h-[64px] w-[64px] shrink-0 rounded-[14px] bg-zinc-100 object-cover dark:bg-zinc-800"
                 />
