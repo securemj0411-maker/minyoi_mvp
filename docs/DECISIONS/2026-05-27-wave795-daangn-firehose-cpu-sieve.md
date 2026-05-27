@@ -80,6 +80,40 @@ Full nationwide dry-run (`maxCombos=267`, `dryRun=true`):
 - `rawUpsert=1598ms` (dry-run; no DB/classifier upsert)
 - `total=4349ms`
 
+## Production Observation
+
+First production `daangn-worker` run after deploy:
+
+- `started_at=2026-05-27T08:13:25Z`
+- `duration_ms=15589`
+- `collected_count=43367`
+- `upserted_count=64`
+- `rawSkippedExisting=436`
+- `catalogHintArticles=2293`
+- `upsertCandidateArticles=500`
+- `categoryFilter=8ms`
+- `catalogHint=1901ms`
+- `preflight=683ms`
+- `preflightSkipped=436`
+- `rawRpc=205ms`
+- `parsedUpsert=108ms`
+- `rawUpsert=7538ms`
+- `total=15522ms`
+
+Previous production run just before deploy:
+
+- `started_at=2026-05-27T08:08:40Z`
+- `duration_ms=35259`
+- `rawSkippedExisting=483`
+- `preflightSkipped=233`
+- `rawUpsert=26454ms`
+- `total=35200ms`
+
+Result:
+- Total worker time: `35.2s → 15.5s`
+- Raw upsert/classifier section: `26.5s → 7.5s`
+- Preflight skip moved much closer to the RPC no-op count: `233 → 436`
+
 ## Trade-off / Follow-up
 
 - `sku_id IS NULL` repeated rows no longer reclassify every tick. This is intentional.
