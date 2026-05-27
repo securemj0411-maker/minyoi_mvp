@@ -159,6 +159,65 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
     msrpKrw: 750000, minPriceKrw: 50000, released: 2003,  // Wave 767: 가품 floor
   },
 
+  // ─── Wave 783 (2026-05-27): Thom Browne Tee / Pants / Jacket narrow ───
+  //   broad 545건 audit: tee 87/pants 56/jacket 45 시세 dilution (₩250~950K spread).
+  //   기존 shirt/sweat-hoodie/suit-coat/cardigan/knit/4bar 외 누락 product type 신설.
+  {
+    id: "clothing-thombrowne-tee",
+    brand: "Thom Browne", category: "clothing", laneKey: "thombrowne_tee",
+    modelName: "Thom Browne Tee (반팔/티셔츠)",
+    aliases: ["Thom Browne Tee", "톰브라운 티셔츠", "톰브라운 반팔"],
+    mustContain: [
+      ["thom browne", "톰브라운", "톰 브라운"],
+      ["tee", "티셔츠", "반팔", "t-shirt", "t셔츠", "크루넥 반팔"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE, "tom ford", "톰포드",
+      "톰브라운 스타일", "톰브라운스타일",
+      "긴팔", "롱슬리브", "long sleeve",
+      "스웻", "sweat", "후드", "hoodie",
+      "니트", "knit", "셔츠", "shirt", "옥스포드",
+      "4-bar", "4바", "포바", "사바",
+    ],
+    msrpKrw: 380000, minPriceKrw: 50000, released: 2003,
+  },
+  {
+    id: "clothing-thombrowne-pants",
+    brand: "Thom Browne", category: "clothing", laneKey: "thombrowne_pants",
+    modelName: "Thom Browne Pants (팬츠/슬랙스)",
+    aliases: ["Thom Browne Pants", "톰브라운 팬츠", "톰브라운 슬랙스"],
+    mustContain: [
+      ["thom browne", "톰브라운", "톰 브라운"],
+      ["팬츠", "pants", "바지", "슬랙스", "slacks", "trouser", "치노", "조거"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE, "tom ford", "톰포드",
+      "톰브라운 스타일", "톰브라운스타일",
+      "반바지", "쇼츠", "shorts",
+      "수트 팬츠", "suit pants",  // suit-coat 라인은 따로
+      "4-bar", "4바", "포바", "사바",
+    ],
+    msrpKrw: 850000, minPriceKrw: 50000, released: 2003,
+  },
+  {
+    id: "clothing-thombrowne-jacket",
+    brand: "Thom Browne", category: "clothing", laneKey: "thombrowne_jacket",
+    modelName: "Thom Browne Jacket (자켓 단품 — suit/coat 외)",
+    aliases: ["Thom Browne Jacket", "톰브라운 자켓"],
+    mustContain: [
+      ["thom browne", "톰브라운", "톰 브라운"],
+      ["자켓", "재킷", "jacket"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE, "tom ford", "톰포드",
+      "톰브라운 스타일", "톰브라운스타일",
+      "수트", "suit", "블레이저", "blazer", "코트", "coat", "오버코트", "트렌치",  // suit-coat 라인은 따로
+      "후드", "hoodie", "후디",  // sweat-hoodie 라인 따로
+      "4-bar", "4바", "포바", "사바",
+    ],
+    msrpKrw: 950000, minPriceKrw: 100000, released: 2003,
+  },
+
   // ============================================================================
   // ===== Polo Apparel broad (488건 110x) → vintage 분리 =====
   // ============================================================================
