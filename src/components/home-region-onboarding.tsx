@@ -27,6 +27,7 @@ export function HomeRegionOnboarding() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [gpsStatus, setGpsStatus] = useState<"idle" | "requesting" | "resolving" | "success" | "error">("idle");
+  const [confirmedRegion, setConfirmedRegion] = useState<{ fullPath: string; name: string } | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastQueryRef = useRef<string>("");
 
@@ -92,10 +93,22 @@ export function HomeRegionOnboarding() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
       });
-      const json = await res.json() as { ok: boolean; error?: string };
+      const json = await res.json() as {
+        ok: boolean;
+        error?: string;
+        home_region?: { daangn_region_name?: string | null; daangn_full_path?: string | null };
+      };
       if (!res.ok || !json.ok) {
         setError(json.error || "저장 실패");
         return;
+      }
+      // Wave 886.6 (2026-05-27): 확정된 동네 1초 노출 후 navigate.
+      //   GPS 자동 설정한 사용자도 "어디로 설정됐는지" 알고 넘어감.
+      const fullPath = json.home_region?.daangn_full_path ?? "";
+      const name = json.home_region?.daangn_region_name ?? "";
+      if (fullPath || name) {
+        setConfirmedRegion({ fullPath, name });
+        await new Promise<void>((r) => setTimeout(r, 1100));
       }
       // Wave 886.5 (2026-05-27): 기존 "/explore" 라우트는 존재 X (404) → "/me" 로 redirect.
       router.push("/me");
@@ -141,6 +154,26 @@ export function HomeRegionOnboarding() {
 
   return (
     <div className="mx-auto max-w-md px-5 pt-12 pb-20">
+      {confirmedRegion && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/55 backdrop-blur-sm">
+          <div className="mx-5 flex max-w-sm flex-col items-center rounded-3xl bg-white px-7 py-8 shadow-2xl ring-1 ring-zinc-100 dark:bg-zinc-900 dark:ring-zinc-800">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </div>
+            <div className="mt-4 text-[13px] font-bold text-zinc-500 dark:text-zinc-400">
+              동네 설정 완료
+            </div>
+            <div className="mt-1.5 break-keep text-center text-[19px] font-black leading-tight text-zinc-950 dark:text-zinc-50">
+              {confirmedRegion.fullPath || confirmedRegion.name}
+            </div>
+            <div className="mt-3 text-[12px] text-zinc-500 dark:text-zinc-400">
+              잠시 후 매물 피드로 이동해요
+            </div>
+          </div>
+        </div>
+      )}
       <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-zinc-100 dark:bg-zinc-900 dark:ring-zinc-800">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 dark:bg-blue-950/45 dark:text-blue-300">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">

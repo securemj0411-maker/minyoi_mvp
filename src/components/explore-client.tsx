@@ -2391,8 +2391,9 @@ export default function ExploreClient({
         </div>
       </div>
 
-      {/* 필터/정렬 — sticky bar (당근식). Wave 370: 마진/패딩 압축 (모바일 화면 좁음). */}
-      <div className="sticky top-0 z-20 -mx-3 mb-2 flex flex-col items-stretch gap-1.5 bg-[#f5f7fb]/95 px-3 py-1.5 backdrop-blur dark:bg-zinc-950/95 sm:-mx-6 sm:flex-row sm:items-center sm:px-6">
+      {/* 필터/정렬 — sticky bar (당근식). Wave 370: 마진/패딩 압축 (모바일 화면 좁음).
+          Wave 886.6 (2026-05-27): app-nav (sticky top-0 z-40, ~60px high) 와 겹침 해소 — top-14 로 navbar 아래 부착. */}
+      <div className="sticky top-14 z-20 -mx-3 mb-2 flex flex-col items-stretch gap-1.5 bg-[#f5f7fb]/95 px-3 py-1.5 backdrop-blur dark:bg-zinc-950/95 sm:-mx-6 sm:flex-row sm:items-center sm:px-6">
         <div className="relative min-w-0 flex-1">
           <button
             type="button"
