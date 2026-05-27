@@ -155,3 +155,57 @@ Supabase CLI migration push is still unsafe because remote migration history con
 
 - Need observe the next full production `daangn-worker` run after app deploy. Expected result: much lower `rawUpsert` when candidates are mostly already-seen rows, plus meaningful `rawSkippedExisting` in stage stats.
 - If rawUpsert is still high for genuinely new rows, the next lever is sharding Daangn workers by region bucket or raising `DAANGN_INGEST_MAX_UPSERT_ARTICLES` gradually while watching DB write duration.
+
+## Follow-up — parsed-only-on-changed-pids and scoped Daangn classification
+
+### Context
+
+The first production run after the raw no-op skip confirmed that the raw DB function was working, but total `rawUpsert` stayed high:
+
+- `2026-05-27 07:08 UTC` production `daangn-worker`
+  - `upsertCandidateArticles=500`
+  - `upserted_count=12`
+  - `rawSkippedExisting=488`
+  - `rawUpsert=100453ms`
+
+This proved raw rows were mostly skipped, but the app still sent all candidate parsed rows after the raw call. A local timing split then showed the DB calls themselves were no longer the bottleneck:
+
+- local active sample (`maxCombos=30`, `upsertCandidate=314`)
+  - `rawRpc=654ms`
+  - `parsedUpsert=149ms`
+  - `rawUpsert=47640ms`
+
+The remaining time was the in-process `classifyListing` / parser preparation before the DB RPC.
+
+### Decision
+
+- Add `daangn_bulk_upsert_raw_listings_v2(jsonb)` returning:
+  - `affected`
+  - `affectedPids`
+- Keep the v1 integer RPC intact so already-deployed code remains safe during rollout.
+- Change Daangn ingest to:
+  - call v2
+  - send parsed rows only for pids actually inserted/updated by raw
+  - record `rawRpc` and `parsedUpsert` timing inside `timingsMs`
+- Deduplicate Daangn candidate articles by external id before the expensive classifier/parser path.
+- Reuse `classifyListing()`'s returned SKU instead of calling `ruleMatch()` a second time.
+- Add a scoped catalog matching path (`ruleMatchWithinCategories`) and pass Daangn source category-derived SKU categories into `classifyListing()` so the matcher scans fewer impossible SKU lanes.
+
+### Production Application
+
+`daangn_bulk_upsert_raw_listings_v2(jsonb)` was applied directly to production with the committed migration SQL. The old RPC remains available.
+
+### Verification
+
+- v2 function exists in production and returns `jsonb`.
+- Local active samples after app changes:
+  - before scoped classifier: `upsertCandidate=314`, `rawUpsert=47640ms`, `rawRpc=654ms`, `parsedUpsert=149ms`
+  - after dedupe/scoped classifier: `upsertCandidate=272`, `rawUpsert=20924ms`, `rawRpc=490ms`, `parsedUpsert=129ms`
+- Tests/build:
+  - `npx tsx --test tests/daangn-source-probe.test.ts tests/daangn-ingest.test.ts` passed
+  - `npm run build` passed
+
+### Deferred
+
+- Observe the next full production `daangn-worker` after deploy. Expected full-run `rawUpsert` should move from `~100s` toward the `~20-45s` range depending on candidate count.
+- `tests/core-rules.test.ts` currently has two existing expectation mismatches in broad classifier behavior (`applewatch-se2-44mm` vs `applewatch-se2`, PS5 digital comparable broad vs exact). They are not on the Daangn ingest surface verified here, but should be handled in a separate catalog/parser correctness pass before using core-rules as a release gate again.

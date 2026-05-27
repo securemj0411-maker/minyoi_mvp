@@ -53,7 +53,7 @@ import {
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { buildDaangnQueryPool } from "@/lib/daangn-query-pool";
 import { classifyListing } from "@/lib/pipeline";
-import { buildCatalogSearchQueryEntries, normalize, ruleMatch } from "@/lib/catalog";
+import { buildCatalogSearchQueryEntries, normalize, type Sku } from "@/lib/catalog";
 import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -140,6 +140,8 @@ export type DaangnIngestResult = {
     detailClassify?: number; // pre-classify for detail priority sort
     detailFetch?: number;   // sequential 5 detail fetches
     rawUpsert?: number;     // upsertDaangnRawListings (raw + parsed)
+    rawRpc?: number;        // daangn_bulk_upsert_raw_listings_v2
+    parsedUpsert?: number;  // daangn_bulk_upsert_listing_parsed for changed pids only
     healthCheck?: number;   // source health 평가
     total?: number;
   };
@@ -270,7 +272,7 @@ async function mapWithConcurrency<T, R>(
   return results;
 }
 
-const DAANGN_SKU_CATEGORIES_BY_CATEGORY_ID: Record<string, Set<string>> = {
+const DAANGN_SKU_CATEGORIES_BY_CATEGORY_ID: Record<string, Set<Sku["category"]>> = {
   "1": new Set(["smartphone", "tablet", "earphone", "laptop", "smartwatch", "desktop", "speaker", "camera", "drone", "monitor"]),
   "172": new Set(["home_appliance", "small_appliance"]),
   "2": new Set(["game_console", "lego"]),
@@ -280,6 +282,11 @@ const DAANGN_SKU_CATEGORIES_BY_CATEGORY_ID: Record<string, Set<string>> = {
   "14": new Set(["clothing", "shoe", "bag", "watch"]),
   "31": new Set(["clothing", "shoe", "bag", "watch"]),
 };
+
+function daangnSkuCategories(categoryId: string | null | undefined): Sku["category"][] | undefined {
+  const categories = categoryId ? DAANGN_SKU_CATEGORIES_BY_CATEGORY_ID[categoryId] : null;
+  return categories ? [...categories] : undefined;
+}
 
 let daangnCatalogHintCache: Map<string, string[]> | null = null;
 
@@ -338,9 +345,11 @@ function buildRawListingRow(
   const title = article.title ?? "";
   const description = ((article as DaangnDetailArticle).content ?? article.content ?? "") as string;
   const price = Number(article.price ?? 0);
-  const classified = classifyListing(title, description, price);
+  const classified = classifyListing(title, description, price, {
+    categories: daangnSkuCategories(article.category?.dbId),
+  });
   const storageListingType = classified.listingType === "normal" ? "normal" : (classified.listingType ?? "unknown");
-  const matched = classified.listingType === "normal" ? ruleMatch(title, description) : null;
+  const matched = classified.listingType === "normal" ? classified.sku : null;
   const parsedOptions = matched
     ? parseListingOptions({
       title,
@@ -428,8 +437,8 @@ function buildRawListingRow(
 async function upsertDaangnRawListings(
   articles: DaangnSearchArticle[],
   detailRecords: DaangnIngestDetailRecord[],
-): Promise<{ rawUpserted: number; rawSkippedExisting: number }> {
-  if (articles.length === 0) return { rawUpserted: 0, rawSkippedExisting: 0 };
+): Promise<{ rawUpserted: number; rawSkippedExisting: number; rawRpcMs: number; parsedUpsertMs: number }> {
+  if (articles.length === 0) return { rawUpserted: 0, rawSkippedExisting: 0, rawRpcMs: 0, parsedUpsertMs: 0 };
   const nowIso = new Date().toISOString();
 
   // detail enriched 매물 (shipping 추론됨) 은 우선 사용
@@ -445,9 +454,17 @@ async function upsertDaangnRawListings(
     }
   }
 
+  // 같은 매물이 region/category combo 여러 개에서 반복 유입된다.
+  // 비싼 classifier/parser 를 태우기 전에 external id 기준으로 먼저 줄인다.
+  const uniqueArticles = new Map<string, DaangnSearchArticle>();
+  for (const article of articles) {
+    const ext = parseDaangnExternalId(article.href);
+    if (ext && !uniqueArticles.has(ext)) uniqueArticles.set(ext, article);
+  }
+
   // dedupe by pid (같은 매물 여러 combo 중복 검색됨)
   const byPid = new Map<number, { raw: Record<string, unknown>; parsed: Record<string, unknown> | null }>();
-  for (const article of articles) {
+  for (const article of uniqueArticles.values()) {
     const ext = parseDaangnExternalId(article.href);
     if (!ext) continue;
     const shipping = detailShippingByExternal.get(ext) ?? null;
@@ -461,28 +478,44 @@ async function upsertDaangnRawListings(
 
   const rawRows = [...byPid.values()].map((b) => b.raw);
   const parsedRows = [...byPid.values()].map((b) => b.parsed).filter((p): p is Record<string, unknown> => Boolean(p));
-  if (rawRows.length === 0) return { rawUpserted: 0, rawSkippedExisting: 0 };
+  if (rawRows.length === 0) return { rawUpserted: 0, rawSkippedExisting: 0, rawRpcMs: 0, parsedUpsertMs: 0 };
 
   // Phase 6i++++ RPC bulk upsert: PostgREST ON CONFLICT 처리 serialize 한계 우회.
   //   parallel chunked 도 효과 X 확인 (213s) — Supabase 가 row 별 락 leitung.
   //   Postgres 안에서 single SQL transaction 으로 처리 → 5-10x 단축 기대.
-  const rawRes = await restFetch(rpcUrl("daangn_bulk_upsert_raw_listings"), {
+  const rawRpcStart = Date.now();
+  const rawRes = await restFetch(rpcUrl("daangn_bulk_upsert_raw_listings_v2"), {
     method: "POST",
     headers: serviceHeaders(),
     body: jsonBody({ rows: rawRows }),
   });
   if (!rawRes.ok) {
-    throw new Error(`daangn_bulk_upsert_raw_listings RPC failed: ${rawRes.status} ${await rawRes.text()}`);
+    throw new Error(`daangn_bulk_upsert_raw_listings_v2 RPC failed: ${rawRes.status} ${await rawRes.text()}`);
   }
-  const rawAffected = Number(await rawRes.json());
+  const rawPayload = await rawRes.json() as { affected?: unknown; affectedPids?: unknown } | number;
+  const rawRpcMs = Date.now() - rawRpcStart;
+  const affectedPids = Array.isArray((rawPayload as { affectedPids?: unknown }).affectedPids)
+    ? ((rawPayload as { affectedPids: unknown[] }).affectedPids)
+      .map((pid) => Number(pid))
+      .filter(Number.isFinite)
+    : [];
+  const rawAffected = typeof rawPayload === "number" ? rawPayload : Number(rawPayload.affected);
   const rawUpserted = Number.isFinite(rawAffected) ? Math.max(0, Math.floor(rawAffected)) : rawRows.length;
 
-  if (parsedRows.length > 0) {
+  const affectedPidSet = new Set(affectedPids);
+  const parsedRowsToUpsert = affectedPidSet.size > 0
+    ? parsedRows.filter((row) => affectedPidSet.has(Number(row.pid)))
+    : (rawUpserted >= rawRows.length ? parsedRows : []);
+
+  let parsedUpsertMs = 0;
+  if (parsedRowsToUpsert.length > 0) {
+    const parsedStart = Date.now();
     const parsedRes = await restFetch(rpcUrl("daangn_bulk_upsert_listing_parsed"), {
       method: "POST",
       headers: serviceHeaders(),
-      body: jsonBody({ rows: parsedRows }),
+      body: jsonBody({ rows: parsedRowsToUpsert }),
     });
+    parsedUpsertMs = Date.now() - parsedStart;
     if (!parsedRes.ok) {
       // parsed upsert 실패는 fatal X — raw 는 박혔으니 다음 cron 재시도
       console.warn(`daangn_bulk_upsert_listing_parsed RPC failed: ${parsedRes.status} ${await parsedRes.text()}`);
@@ -492,6 +525,8 @@ async function upsertDaangnRawListings(
   return {
     rawUpserted,
     rawSkippedExisting: Math.max(0, rawRows.length - rawUpserted),
+    rawRpcMs,
+    parsedUpsertMs,
   };
 }
 
@@ -915,6 +950,8 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
       const upsertResult = await upsertDaangnRawListings(upsertCandidateArticles, detailRecords);
       rawUpserted = upsertResult.rawUpserted;
       rawSkippedExisting = upsertResult.rawSkippedExisting;
+      timings.rawRpc = upsertResult.rawRpcMs;
+      timings.parsedUpsert = upsertResult.parsedUpsertMs;
     } catch (err) {
       sourceHealthStatus = "degraded";
       // 디버그 측면에서 충분히 보이도록 800자까지 보존

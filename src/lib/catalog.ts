@@ -15406,6 +15406,57 @@ function hasFashionReferenceOnlyFalsePositive(titleNorm: string): boolean {
   return false;
 }
 
+function ruleMatchFromCatalog(
+  title: string,
+  description: string,
+  candidates: Sku[],
+  allowedCategories?: Set<Sku["category"]>,
+): Sku | null {
+  const titleNorm = normalize(title);
+  const combinedRaw = `${title} ${stripLinkLikeText(description).slice(0, 200)}`;
+  const combined = normalize(combinedRaw);
+  if (hasBuyRequestMarker(combinedRaw, combined)) return null;
+  if (hasExchangeRequestMarker(combinedRaw, combined)) return null;
+  if (hasFashionReferenceOnlyFalsePositive(titleNorm)) return null;
+  const titleDirect = directSpecificMatch(title);
+  if (titleDirect && (!allowedCategories || allowedCategories.has(titleDirect.category))) {
+    return requiresCombinedLaneVeto(titleDirect) && !skuMatches(titleDirect, combined) ? null : titleDirect;
+  }
+
+  const titleCandidates = candidates.filter((s) => skuMatches(s, titleNorm));
+  const titleChoice = chooseUniqueCandidate(titleCandidates);
+  if (titleChoice) {
+    const combinedDirect = directSpecificMatch(combinedRaw);
+    const combinedDirectAllowed = combinedDirect && (!allowedCategories || allowedCategories.has(combinedDirect.category));
+    if (titleChoice.id === "airpods-4-anc" && combinedDirectAllowed && combinedDirect.id === "airpods-4") return combinedDirect;
+    if (combinedDirectAllowed && isFashionAxisDirectOverrideCompatible(titleChoice, combinedDirect)) return combinedDirect;
+    // Wave 108: title이 broad만 잡혔으면 narrow lane 재시도
+    const narrowPromoted = tryNarrowLanePromotion(titleChoice, combined, titleNorm);
+    if (narrowPromoted && (!allowedCategories || allowedCategories.has(narrowPromoted.category))) {
+      return requiresCombinedLaneVeto(narrowPromoted) && !skuMatches(narrowPromoted, combined) ? null : narrowPromoted;
+    }
+    return requiresCombinedLaneVeto(titleChoice) && !skuMatches(titleChoice, combined) ? null : titleChoice;
+  }
+  if (titleCandidates.length > 1) return null;
+
+  const combinedDirect = directSpecificMatch(combinedRaw);
+  if (combinedDirect && (!allowedCategories || allowedCategories.has(combinedDirect.category))) return combinedDirect;
+
+  const descCandidates = candidates.filter((s) => skuMatches(s, combined));
+  return chooseUniqueCandidate(descCandidates);
+}
+
+export function ruleMatchWithinCategories(
+  title: string,
+  description: string,
+  categories: readonly Sku["category"][],
+): Sku | null {
+  const allowedCategories = new Set(categories);
+  if (allowedCategories.size === 0) return ruleMatch(title, description);
+  const candidates = CATALOG_WITH_NOISE_W94.filter((sku) => allowedCategories.has(sku.category));
+  return ruleMatchFromCatalog(title, description, candidates, allowedCategories);
+}
+
 export function ruleMatch(title: string, description = ""): Sku | null {
   const titleNorm = normalize(title);
   const combinedRaw = `${title} ${stripLinkLikeText(description).slice(0, 200)}`;

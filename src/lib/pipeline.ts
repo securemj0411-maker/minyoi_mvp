@@ -8,7 +8,7 @@ import { createHash } from "node:crypto";
 import { shouldReviewByPolicy } from "@/lib/ai-l2-policy";
 import { applyEscrowTransition } from "@/lib/ai-l2-escrow";
 import { collectSearchItems, fetchDetail } from "@/lib/bunjang";
-import { normalize, ruleMatch, skuById, type Sku } from "@/lib/catalog";
+import { normalize, ruleMatch, ruleMatchWithinCategories, skuById, type Sku } from "@/lib/catalog";
 import { parseGameConsoleListing } from "@/lib/game-console-parser";
 import { GENERATED_NOISE_RULES } from "@/lib/generated/noise-rules";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
@@ -766,7 +766,12 @@ function categoryScopedNoise(title: string, desc: string, price: number, sku: Sk
   return null;
 }
 
-export function classifyListing(title: string, desc: string, price: number): ClassifyResult {
+export function classifyListing(
+  title: string,
+  desc: string,
+  price: number,
+  options: { categories?: readonly Sku["category"][] } = {},
+): ClassifyResult {
   const text = `${title}\n${desc}`;
   const normalizedText = nrm(text);
   const normalizedTitle = nrm(title);
@@ -834,7 +839,9 @@ export function classifyListing(title: string, desc: string, price: number): Cla
   if (descriptionMultiHits(desc)) multiHits.push("desc_multi_prices");
   if (multiHits.length > 0) return { listingType: "multi", sku: null };
 
-  const sku = ruleMatch(title, desc);
+  const sku = options.categories && options.categories.length > 0
+    ? ruleMatchWithinCategories(title, desc, options.categories)
+    : ruleMatch(title, desc);
   if (!sku) return { listingType: "unknown", sku: null };
   const scopedNoise = categoryScopedNoise(title, desc, price, sku);
   if (scopedNoise) return { listingType: scopedNoise, sku: null };
