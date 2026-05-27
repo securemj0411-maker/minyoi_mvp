@@ -102,22 +102,43 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
     msrpKrw: 950000, minPriceKrw: 50000, released: 2003,  // Wave 767: 가품 floor (사용자 #6 7,900원 매물 차단)
   },
 
-  // ─── Thom Browne Shirt (옥스포드/드레스 셔츠) ───
+  // ─── Thom Browne Shirt (옥스포드/드레스 셔츠 — basic) ───
   {
     id: "clothing-thombrowne-shirt",
     brand: "Thom Browne", category: "clothing", laneKey: "thombrowne_shirt",
-    modelName: "Thom Browne Shirt (옥스포드/드레스/럭비)",
+    modelName: "Thom Browne Shirt (옥스포드/드레스/체크 — basic)",
     aliases: ["Thom Browne Shirt", "톰브라운 셔츠", "톰브라운 럭비"],
     mustContain: [
       ["thom browne", "톰브라운", "톰 브라운"],
       ["셔츠", "shirt", "옥스포드", "옥스퍼드", "럭비", "rugby", "폴로", "polo", "버튼다운"],
     ],
+    // Wave 791 (2026-05-27): premium (히든삼선/4선) 별도 분리 → 차단.
     mustNotContain: [
       ...COMMON_NOISE, "tom ford", "톰포드",
       "톰브라운 스타일", "톰브라운스타일",
       "4-bar", "4바", "포바", "사바",
+      "히든삼선", "히든 삼선", "hidden 4-bar", "hidden 4bar",
     ],
     msrpKrw: 550000, minPriceKrw: 50000, released: 2003,  // Wave 767: 가품 floor
+  },
+  // Wave 791 (2026-05-27): Thom Browne Shirt Premium (히든삼선/4선) narrow.
+  //   sample 발견: 히든삼선 ₩350K vs 옥스포드 ₩130K (2.7배 차이).
+  {
+    id: "clothing-thombrowne-shirt-premium",
+    brand: "Thom Browne", category: "clothing", laneKey: "thombrowne_shirt_premium",
+    modelName: "Thom Browne Shirt Premium (히든삼선/4선)",
+    aliases: ["Thom Browne Shirt Premium", "톰브라운 히든삼선", "톰브라운 4선 셔츠"],
+    mustContain: [
+      ["thom browne", "톰브라운", "톰 브라운"],
+      ["셔츠", "shirt"],
+      ["히든삼선", "히든 삼선", "hidden 4-bar", "hidden 4bar", "4-bar", "4바", "포바", "사바"],
+    ],
+    mustNotContain: [
+      ...COMMON_NOISE, "tom ford", "톰포드",
+      "톰브라운 스타일",
+    ],
+    msrpKrw: 850000, minPriceKrw: 100000, released: 2003,
+    confusionNote: "Thom Browne Shirt Premium (히든삼선/4선). median ₩350K (DB). 일반 셔츠 (basic ₩130~240K) 와 분리.",
   },
 
   // ─── Thom Browne Suit / Blazer / Coat (premium tier) ───
