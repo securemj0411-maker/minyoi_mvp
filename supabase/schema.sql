@@ -109,6 +109,7 @@ create table if not exists public.mvp_raw_listings (
   query text not null default '',
   source text not null default 'bunjang',
   description_preview text not null default '',
+  description_hash text,
   sale_status text not null default '',
   shop_review_rating numeric,
   shop_review_count integer not null default 0 check (shop_review_count >= 0),
@@ -149,6 +150,7 @@ create table if not exists public.mvp_raw_listings (
 alter table public.mvp_raw_listings
   add column if not exists seller_uid text,
   add column if not exists seller_source text not null default 'bunjang',
+  add column if not exists description_hash text,
   add column if not exists pool_eligible boolean not null default true,
   add column if not exists score_dirty boolean not null default true;
 
@@ -588,6 +590,43 @@ create index if not exists mvp_raw_listings_market_stats_idx
 create index if not exists mvp_raw_listings_score_dirty_idx
   on public.mvp_raw_listings(last_seen_at desc)
   where score_dirty = true;
+
+create index if not exists mvp_raw_listings_dirty_scorable_recent_idx
+  on public.mvp_raw_listings(last_seen_at desc)
+  where score_dirty = true
+    and detail_status = 'done'
+    and sku_id is not null
+    and listing_state = 'active';
+
+create index if not exists mvp_raw_listings_dirty_scorable_source_recent_idx
+  on public.mvp_raw_listings(source, last_seen_at desc)
+  where score_dirty = true
+    and detail_status = 'done'
+    and sku_id is not null
+    and listing_state = 'active';
+
+create index if not exists mvp_raw_listings_dirty_scorable_sku_recent_idx
+  on public.mvp_raw_listings(sku_id text_pattern_ops, last_seen_at desc)
+  where score_dirty = true
+    and detail_status = 'done'
+    and sku_id is not null
+    and listing_state = 'active';
+
+create index if not exists mvp_raw_listings_active_fashion_first_seen_idx
+  on public.mvp_raw_listings(first_seen_at desc)
+  where listing_state = 'active'
+    and sku_id is not null
+    and (
+      sku_id like 'shoe-%' or
+      sku_id like 'clothing-%' or
+      sku_id like 'bag-%'
+    );
+
+create index if not exists mvp_raw_listings_active_description_seller_idx
+  on public.mvp_raw_listings(description_hash, seller_uid)
+  where description_hash is not null
+    and seller_uid is not null
+    and listing_state = 'active';
 
 create table if not exists public.mvp_cron_locks (
   mode text primary key,

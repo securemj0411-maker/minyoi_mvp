@@ -2147,6 +2147,8 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   const scorableBaseFilter = `${dirtyFilter}&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active`;
   const buildUrl = (extraFilter: string, rowLimit: number) =>
     `${tableUrl("mvp_raw_listings")}?select=${columns}${baseFilter}${extraFilter}&order=last_seen_at.desc&limit=${rowLimit}`;
+  const buildDirtyScorableUrl = (extraFilter: string, rowLimit: number) =>
+    `${tableUrl("mvp_raw_listings")}?select=${columns}${scorableBaseFilter}${extraFilter}&order=last_seen_at.desc&limit=${rowLimit}`;
   const fetchScorableRows = async (extraFilter: string, rowLimit: number, seenPids = new Set<number>()) => {
     const rows: ScorableRawRow[] = [];
     const scanLimit = scoreDirtyAvailable
@@ -2164,7 +2166,10 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
     };
 
     if (scoreDirtyAvailable) {
-      const dirtyRes = await restFetch(buildUrl(extraFilter, scanLimit), { headers: serviceHeaders() });
+      // Daangn firehose can leave many dirty search-only rows. Push the cheap
+      // scorable predicates into Postgres so the worker does not sort/fetch
+      // rows that JS will immediately throw away.
+      const dirtyRes = await restFetch(buildDirtyScorableUrl(extraFilter, scanLimit), { headers: serviceHeaders() });
       collect((await dirtyRes.json()) as ScorableRawRow[]);
     } else {
       const normalRes = await restFetch(buildUrl(`${extraFilter}&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active&listing_type=eq.normal`, rowLimit), { headers: serviceHeaders() });
@@ -3633,12 +3638,15 @@ export async function sourceHealthStage(): Promise<StageStats> {
 // 새: DB 안에서 GROUP BY HAVING — 작은 set 반환. 100배 빠름.
 async function loadFraudGroupHashes(): Promise<Set<string>> {
   try {
-    const timeoutMs = Number(process.env.PIPELINE_FRAUD_GROUP_HASH_TIMEOUT_MS ?? 1_500);
+    const configuredTimeoutMs = Number(process.env.PIPELINE_FRAUD_GROUP_HASH_TIMEOUT_MS ?? 8_000);
+    const timeoutMs = Number.isFinite(configuredTimeoutMs) && configuredTimeoutMs > 0
+      ? Math.max(configuredTimeoutMs, 8_000)
+      : 8_000;
     const res = await fetch(rpcUrl("get_fraud_group_hashes"), {
       method: "POST",
       headers: serviceHeaders(),
       body: jsonBody({}),
-      signal: AbortSignal.timeout(Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 5_000),
+      signal: AbortSignal.timeout(timeoutMs),
     });
     if (!res.ok) {
       const body = await res.text();

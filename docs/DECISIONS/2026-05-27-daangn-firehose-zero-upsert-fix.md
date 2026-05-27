@@ -49,3 +49,62 @@
 - Full 267 production write rehearsal was not completed because repeated local 267 fetches triggered Daangn `403` on the local IP. This does not prove Vercel IP is blocked, but it validates adding search concurrency.
 - Upsert cap may defer some catalog-hint articles each run. If ready inflow is still lower than desired after deploy, next step is either RPC bulk-upsert optimization or sharded Daangn workers by region bucket.
 - Catalog hint filtering is intentionally conservative for DB safety. Future catalog expansion should add aliases/searchQueries so Daangn prefilter keeps the new lane.
+
+## Follow-up — score-worker timeout after Daangn raw growth
+
+### Context
+
+After Daangn raw ingest recovered, `score-worker` started failing intermittently on `mvp_raw_listings` reads:
+
+- `canceling statement due to statement timeout`
+- failing path: score dirty rows ordered by `last_seen_at desc`
+
+Root cause was not Daangn fetching. The score loader fetched broad `score_dirty=true` rows first, then discarded non-scorable rows in JS. With Daangn firehose rows in the raw table, that scan became too expensive.
+
+### Decision
+
+- Push cheap scorable predicates into the DB query:
+  - `score_dirty=true`
+  - `detail_status=done`
+  - `sku_id is not null`
+  - `listing_state=active`
+- Add partial indexes for the score hot path:
+  - recent dirty scorable rows
+  - source-scoped dirty scorable rows
+  - SKU-prefix dirty scorable rows
+- Add two support indexes for score-stage side loaders:
+  - active fashion `first_seen_at` for low-volume SKU guard
+  - active `description_hash/seller_uid` for fraud-group hash RPC
+- Clamp `loadFraudGroupHashes` timeout to at least 8s. After indexing, the RPC was healthy but still slower than the old 1.5s local timeout.
+
+### Production Application
+
+Supabase CLI `db push --dry-run` could not be used safely because remote migration history contains many versions missing from local migration files. Instead, the five indexes were applied directly to production using `CREATE INDEX CONCURRENTLY IF NOT EXISTS`.
+
+Applied production indexes:
+
+- `mvp_raw_listings_dirty_scorable_recent_idx`
+- `mvp_raw_listings_dirty_scorable_source_recent_idx`
+- `mvp_raw_listings_dirty_scorable_sku_recent_idx`
+- `mvp_raw_listings_active_fashion_first_seen_idx`
+- `mvp_raw_listings_active_description_seller_idx`
+
+### Verification
+
+- Before score hot-path fix:
+  - score-worker failed with raw-listing statement timeout.
+- After indexes + query filter:
+  - Daangn scorable REST query: `324ms`
+  - General scorable REST query: `713ms`
+  - Fashion scorable REST query: `2464ms`
+  - Low-volume SKU REST query: `323ms`
+  - Fraud-group RPC: `5502ms`
+- Local production-backed score-stage rehearsal:
+  - `npx tsx scripts/run-score-stage-once.ts --limit=50 --budget-ms=90000`
+  - First run after score hot-path fix: `scored=50`, `poolUpserted=3`, `timedOut=false`
+  - Second run after side-loader indexes/timeout clamp: `scored=50`, `timedOut=false`, no side-loader timeout logs
+
+### Deferred
+
+- Raw upsert remains the largest Daangn-worker cost (`~100s` for 498 rows in the verified production run). If Daangn supply should exceed the current 500/write cap, optimize the raw upsert RPC or shard Daangn workers by region bucket before raising the cap.
+- Fraud-group RPC is now functional but still several seconds. If it grows again, replace the per-run aggregate with a materialized/cache table updated by housekeeper.
