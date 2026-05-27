@@ -37,9 +37,24 @@ export function JoongnaLogo({ className = "h-4 w-4" }: LogoProps) {
   );
 }
 
+// Wave 886.8 (2026-05-27): 당근 공식 로고 (public/brand/daangn.png) 박음. 기존 🥕 emoji 대체.
+export function DaangnLogo({ className = "h-4 w-4" }: LogoProps) {
+  return (
+    <img
+      src="/brand/daangn.png"
+      alt=""
+      aria-hidden="true"
+      className={`${className} shrink-0 rounded-md object-contain`}
+    />
+  );
+}
+
+// Wave 886.8 (2026-05-27): 모든 source 배지 흰색 통일. 로고로 식별, 배경 다양화는 가시성 떨어짐.
+const BADGE_BASE = "inline-flex items-center gap-1 rounded-full bg-white px-1.5 py-0.5 text-[9px] font-black text-zinc-800 ring-1 ring-zinc-200 dark:bg-zinc-900 dark:text-zinc-100 dark:ring-zinc-700";
+
 export function DanawaSourceBadge({ label = "다나와" }: { label?: string }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-1.5 py-0.5 text-[9px] font-black text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950/30 dark:text-blue-300 dark:ring-blue-900/50">
+    <span className={BADGE_BASE}>
       <DanawaLogo className="h-3.5 w-3.5 rounded-[3px]" />
       {label}
     </span>
@@ -48,7 +63,7 @@ export function DanawaSourceBadge({ label = "다나와" }: { label?: string }) {
 
 export function BunjangSourceBadge({ label = "번개" }: { label?: string }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-zinc-900 px-1.5 py-0.5 text-[9px] font-black text-white ring-1 ring-zinc-900/10 dark:bg-zinc-100 dark:text-zinc-900">
+    <span className={BADGE_BASE}>
       <BunjangLogo className="h-3.5 w-3.5 rounded-[3px]" />
       {label}
     </span>
@@ -57,18 +72,17 @@ export function BunjangSourceBadge({ label = "번개" }: { label?: string }) {
 
 export function JoongnaSourceBadge({ label = "중고나라" }: { label?: string }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-black text-sky-700 ring-1 ring-sky-100 dark:bg-sky-950/40 dark:text-sky-200 dark:ring-sky-900/60">
+    <span className={BADGE_BASE}>
       <JoongnaLogo className="h-3.5 w-3.5 rounded-[3px]" />
       {label}
     </span>
   );
 }
 
-// 당근 brand color: 주황. 공식 로고 파일 (public/brand/daangn.*) 박히기 전까지 🥕 emoji.
 export function DaangnSourceBadge({ label = "당근" }: { label?: string }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-1.5 py-0.5 text-[9px] font-black text-orange-700 ring-1 ring-orange-100 dark:bg-orange-950/40 dark:text-orange-200 dark:ring-orange-900/60">
-      <span className="inline-block text-[12px] leading-none" aria-hidden="true">🥕</span>
+    <span className={BADGE_BASE}>
+      <DaangnLogo className="h-3.5 w-3.5 rounded-[3px]" />
       {label}
     </span>
   );
