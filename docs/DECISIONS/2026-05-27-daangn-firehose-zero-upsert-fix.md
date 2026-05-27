@@ -36,6 +36,13 @@
 - Tests:
   - `npx tsx --test tests/daangn-source-probe.test.ts tests/daangn-ingest.test.ts` passed
   - `npm run build` passed
+- Production after deploy:
+  - deployment: `minyoi-1082brwl1-securemj0411-7703s-projects.vercel.app`
+  - run: `2026-05-27T05:58:50Z`
+  - `collected=29512`, `filteredArticles=18817`, `catalogHintArticles=1743`
+  - `upsertCandidateArticles=500`, `upserted=498`
+  - `searchConcurrency=50`, `durationMs=109700`, `rawUpsert=100654ms`
+  - health=`healthy`, reason=`ok`
 
 ## Deferred
 
