@@ -7,6 +7,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  daangnUpsertPreflightLimit,
   inferDaangnShipping,
   selectDaangnCombos,
   selectDaangnFirehoseCombos,
@@ -111,6 +112,19 @@ describe("selectDaangnFirehoseCombos", () => {
     });
     assert.equal(result.selectionMode, "adaptive");
     assert.deepEqual(result.combos.map((combo) => combo.region.id), ["r4", "r2", "r1"]);
+  });
+});
+
+describe("daangnUpsertPreflightLimit", () => {
+  it("checks a wider candidate window without raising the write cap", () => {
+    assert.equal(daangnUpsertPreflightLimit(500, 5000), 1500);
+    assert.equal(daangnUpsertPreflightLimit(500, 700), 700);
+    assert.equal(daangnUpsertPreflightLimit(800, 5000), 2000);
+  });
+
+  it("keeps zero caps disabled", () => {
+    assert.equal(daangnUpsertPreflightLimit(0, 5000), 0);
+    assert.equal(daangnUpsertPreflightLimit(500, 0), 0);
   });
 });
 

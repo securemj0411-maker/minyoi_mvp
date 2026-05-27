@@ -2197,15 +2197,13 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   const remainingAfterPool = Math.max(0, limit - poolRows.length);
   if (remainingAfterPool === 0) return poolRows.slice(0, limit);
 
-  // Wave 768 (2026-05-26 사용자 결정 — 당근 우선): source priority 재배치.
+  // Wave 768/891 (2026-05-27 사용자 결정 — 당근 우선): source priority 재배치.
   //   사용자: "당근이 우선임. 초반 gateway 역할. 당근 ready 빨리 늘리기."
-  //   기존 priority: pool → fashion (35%) → joongna (25%) → daangn (15%) → bunjang (나머지).
-  //   신규 priority: pool → **daangn (40%)** → fashion (25%) → joongna (15%) → bunjang (나머지).
-  //   효과: 당근 score backlog 4,000+ drain 속도 ↑ — 당근 ready 증가.
-  //   trade-off: 번장 backlog drain 약간 늦어짐 (번장 7만 → 부담 작음).
+  //   Wave 891: score-worker 1분 cadence 전환과 맞춰 Daangn reserve를 60%+로 상향.
+  //   외부 marketplace fetch 증가는 없고, 이미 들어온 dirty row의 ready 승격 지연만 줄인다.
 
   // Daangn lane — 사용자 의도 "초반 gateway" + score backlog 4,000+ drain 우선.
-  const daangnReserveLimit = Math.min(remainingAfterPool, Math.max(80, Math.floor(limit * 0.40)));
+  const daangnReserveLimit = Math.min(remainingAfterPool, Math.max(90, Math.floor(limit * 0.60)));
   const daangnRows = await (async () => {
     try {
       return fetchScorableRows("&source=eq.daangn", daangnReserveLimit, seenPids);

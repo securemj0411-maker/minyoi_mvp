@@ -162,6 +162,9 @@ export type DaangnIngestResult = {
     adaptiveRegionLoad?: number; // recent region yield stats lookup
     preflight?: number;     // existing-row lookup before expensive classify
     preflightSkipped?: number; // rows skipped before classifier/parser
+    preflightOverflow?: number; // changed rows left for the next run after write cap
+    preflightCandidates?: number; // wider candidate window checked before classify
+    classifyCandidates?: number; // rows selected for expensive classify/parser
     rawRpc?: number;        // daangn_bulk_upsert_raw_listings_v2
     parsedUpsert?: number;  // daangn_bulk_upsert_listing_parsed for changed pids only
     healthCheck?: number;   // source health 평가
@@ -193,6 +196,20 @@ export type DaangnIngestOptions = {
 // ───────────────────────────────────────────────────────────────────────────
 // Helpers
 // ───────────────────────────────────────────────────────────────────────────
+
+const DAANGN_UPSERT_PREFLIGHT_MULTIPLIER = 3;
+const DAANGN_UPSERT_PREFLIGHT_MAX = 2_000;
+
+export function daangnUpsertPreflightLimit(maxUpsertArticles: number, totalCandidates: number): number {
+  const writeCap = Math.max(0, Math.floor(maxUpsertArticles));
+  const total = Math.max(0, Math.floor(totalCandidates));
+  if (writeCap === 0 || total === 0) return 0;
+  const preflightCap = Math.max(
+    writeCap,
+    Math.min(DAANGN_UPSERT_PREFLIGHT_MAX, writeCap * DAANGN_UPSERT_PREFLIGHT_MULTIPLIER),
+  );
+  return Math.min(total, preflightCap);
+}
 
 function boundedInt(raw: string | number | undefined | null, fallback: number, min: number, max: number) {
   const parsed = typeof raw === "number" ? raw : Number.parseInt(String(raw ?? ""), 10);
@@ -679,8 +696,31 @@ function buildRawListingRow(
 async function upsertDaangnRawListings(
   articles: DaangnSearchArticle[],
   detailRecords: DaangnIngestDetailRecord[],
-): Promise<{ rawUpserted: number; rawSkippedExisting: number; rawRpcMs: number; parsedUpsertMs: number; preflightMs: number; preflightSkipped: number }> {
-  if (articles.length === 0) return { rawUpserted: 0, rawSkippedExisting: 0, rawRpcMs: 0, parsedUpsertMs: 0, preflightMs: 0, preflightSkipped: 0 };
+  options: { maxClassifyRows?: number } = {},
+): Promise<{
+  rawUpserted: number;
+  rawSkippedExisting: number;
+  rawRpcMs: number;
+  parsedUpsertMs: number;
+  preflightMs: number;
+  preflightSkipped: number;
+  preflightOverflow: number;
+  preflightCandidates: number;
+  classifyCandidates: number;
+}> {
+  if (articles.length === 0) {
+    return {
+      rawUpserted: 0,
+      rawSkippedExisting: 0,
+      rawRpcMs: 0,
+      parsedUpsertMs: 0,
+      preflightMs: 0,
+      preflightSkipped: 0,
+      preflightOverflow: 0,
+      preflightCandidates: 0,
+      classifyCandidates: 0,
+    };
+  }
   const nowIso = new Date().toISOString();
   const nowMs = Date.parse(nowIso);
 
@@ -718,11 +758,14 @@ async function upsertDaangnRawListings(
   const existingRows = await loadExistingDaangnRawRows(preflightRows.map((row) => row.pid));
   const rowsNeedingClassify = preflightRows.filter((row) => !canSkipDaangnClassify(existingRows.get(row.pid), row, nowMs));
   const preflightSkipped = preflightRows.length - rowsNeedingClassify.length;
+  const maxClassifyRows = Math.max(0, Math.floor(options.maxClassifyRows ?? rowsNeedingClassify.length));
+  const rowsSelectedForClassify = rowsNeedingClassify.slice(0, maxClassifyRows);
+  const preflightOverflow = Math.max(0, rowsNeedingClassify.length - rowsSelectedForClassify.length);
   const preflightMs = Date.now() - preflightStart;
 
   // dedupe by pid (같은 매물 여러 combo 중복 검색됨)
   const byPid = new Map<number, { raw: Record<string, unknown>; parsed: Record<string, unknown> | null }>();
-  for (const row of rowsNeedingClassify) {
+  for (const row of rowsSelectedForClassify) {
     const built = buildRawListingRow(row.article, row.daangnShippingInferred, nowIso);
     if (!built) continue;
     byPid.set(built.raw.pid as number, { raw: built.raw, parsed: built.parsed });
@@ -730,7 +773,19 @@ async function upsertDaangnRawListings(
 
   const rawRows = [...byPid.values()].map((b) => b.raw);
   const parsedRows = [...byPid.values()].map((b) => b.parsed).filter((p): p is Record<string, unknown> => Boolean(p));
-  if (rawRows.length === 0) return { rawUpserted: 0, rawSkippedExisting: preflightSkipped, rawRpcMs: 0, parsedUpsertMs: 0, preflightMs, preflightSkipped };
+  if (rawRows.length === 0) {
+    return {
+      rawUpserted: 0,
+      rawSkippedExisting: preflightSkipped,
+      rawRpcMs: 0,
+      parsedUpsertMs: 0,
+      preflightMs,
+      preflightSkipped,
+      preflightOverflow,
+      preflightCandidates: preflightRows.length,
+      classifyCandidates: rowsSelectedForClassify.length,
+    };
+  }
 
   // Phase 6i++++ RPC bulk upsert: PostgREST ON CONFLICT 처리 serialize 한계 우회.
   //   parallel chunked 도 효과 X 확인 (213s) — Supabase 가 row 별 락 leitung.
@@ -781,6 +836,9 @@ async function upsertDaangnRawListings(
     parsedUpsertMs,
     preflightMs,
     preflightSkipped,
+    preflightOverflow,
+    preflightCandidates: preflightRows.length,
+    classifyCandidates: rowsSelectedForClassify.length,
   };
 }
 
@@ -1338,12 +1396,13 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   }
   timings.catalogHint = Date.now() - tCatalogHintStart;
   const tUpsertPreselectStart = Date.now();
+  const upsertPreflightLimit = daangnUpsertPreflightLimit(maxUpsertArticles, catalogHintArticles.length);
   const upsertCandidateArticles = [...catalogHintArticles]
     .sort((a, b) => articleFreshnessMs(b) - articleFreshnessMs(a))
-    .slice(0, maxUpsertArticles);
+    .slice(0, upsertPreflightLimit);
   const articlesDeferredByUpsertCap = Math.max(0, catalogHintArticles.length - upsertCandidateArticles.length);
   if (articlesDeferredByUpsertCap > 0) {
-    console.log(`[wave780] upsert cap: ${articlesDeferredByUpsertCap}/${catalogHintArticles.length} catalog-hint 매물 defer (cap=${maxUpsertArticles})`);
+    console.log(`[wave891] upsert preflight window: ${articlesDeferredByUpsertCap}/${catalogHintArticles.length} catalog-hint 매물 defer (preflight=${upsertPreflightLimit}, writeCap=${maxUpsertArticles})`);
   }
   timings.upsertPreselect = Date.now() - tUpsertPreselectStart;
   const selectedRegions = [...new Map(combos.map((combo) => [combo.region.id, combo.region])).values()];
@@ -1358,13 +1417,18 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
 
   if (!dryRun) {
     try {
-      const upsertResult = await upsertDaangnRawListings(upsertCandidateArticles, detailRecords);
+      const upsertResult = await upsertDaangnRawListings(upsertCandidateArticles, detailRecords, {
+        maxClassifyRows: maxUpsertArticles,
+      });
       rawUpserted = upsertResult.rawUpserted;
       rawSkippedExisting = upsertResult.rawSkippedExisting;
       timings.rawRpc = upsertResult.rawRpcMs;
       timings.parsedUpsert = upsertResult.parsedUpsertMs;
       timings.preflight = upsertResult.preflightMs;
       timings.preflightSkipped = upsertResult.preflightSkipped;
+      timings.preflightOverflow = upsertResult.preflightOverflow;
+      timings.preflightCandidates = upsertResult.preflightCandidates;
+      timings.classifyCandidates = upsertResult.classifyCandidates;
     } catch (err) {
       sourceHealthStatus = "degraded";
       // 디버그 측면에서 충분히 보이도록 800자까지 보존
