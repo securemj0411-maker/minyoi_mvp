@@ -7500,7 +7500,7 @@ export const CATALOG: Sku[] = [
       ["갤럭시 워치", "갤워치", "galaxy watch", "갤럭시워치"],
       [" 4 ", "워치4", "워치 4"],
     ],
-    mustNotContain: [" 5 ", "워치5", " 6 ", "워치6", " 7 ", "워치7", "ultra", "울트라", "classic",
+    mustNotContain: [" 5 ", "워치5", " 6 ", "워치6", " 7 ", "워치7", " 8 ", "워치 8", "워치8", "watch 8", "watch8", "ultra", "울트라", "classic",
       // Wave 664 (2026-05-22): 42mm spread 236x audit — 톰브라운 collab + 부품 차단.
       "톰브라운", "thom browne", "thom-browne", "tb collab",
       "디올", "dior", "마틴 마르지엘라",
@@ -7523,7 +7523,7 @@ export const CATALOG: Sku[] = [
       ["갤럭시 워치", "갤워치", "galaxy watch", "갤럭시워치"],
       [" 5 ", "워치5", "워치 5"],
     ],
-    mustNotContain: [" 4 ", "워치4", " 6 ", "워치6", " 7 ", "워치7", "ultra", "울트라",
+    mustNotContain: [" 4 ", "워치4", " 6 ", "워치6", " 7 ", "워치7", " 8 ", "워치 8", "워치8", "watch 8", "watch8", "ultra", "울트라",
       // Wave 670: collab/부품 (Watch 3/4/6/7 패턴 spread).
       "톰브라운", "thom browne", "에디션",
       "베젤만", "베젤 부품", "베젤링",
@@ -7574,7 +7574,7 @@ export const CATALOG: Sku[] = [
       ["갤럭시 워치", "갤워치", "galaxy watch", "갤럭시워치"],
       [" 7 ", "워치7", "워치 7"],
     ],
-    mustNotContain: [" 6 ", "워치6", "ultra",
+    mustNotContain: [" 6 ", "워치6", " 8 ", "워치 8", "워치8", "watch 8", "watch8", "ultra",
       // Wave 668 (2026-05-22): 40mm spread 108x audit — 부품/스트랩만 차단.
       "베젤만", "베젤 부품", "베젤링", "베젤 링",
       "스트랩만", "스트랩 단품", "줄만", "정품 스트랩만",
@@ -11831,15 +11831,16 @@ export const CATALOG: Sku[] = [
     modelName: "Acne Studios Cardigan (RAYA 모헤어 등)",
     aliases: ["Acne Cardigan", "아크네 가디건"],
     mustContain: [["acne", "아크네"], ["가디건", "cardigan"]],
+    // Wave 794 (2026-05-27): C2 fix — "니트/knit/스웨터" 차단으로 "니트 가디건" 22% dead.
+    //   knit SKU 와의 충돌은 narrow lane preference 로 처리 + knit SKU mustNotContain "가디건" 유지.
     mustNotContain: [
       "키즈", "kids", "복각", "rep", "replica", "fake",
       "얀13", "yan13", "오일릴리", "듀엘", "duel", "자라", "zara",
       "지컷", "랑방", "lanvin",
-      "니트", "knit", "스웨터", "sweater", "풀오버",  // knit SKU 와 분리
       "코트", "coat", "자켓", "jacket",  // 다른 product type
     ],
     msrpKrw: 450000, minPriceKrw: 30000, released: 2020,
-    confusionNote: "Acne Cardigan (RAYA 모헤어 등). 일반 knit/sweater 와 별도 시세군 (₩89~105K range).",
+    confusionNote: "Acne Cardigan (RAYA 모헤어 등). 일반 knit/sweater 와 별도 시세군 (₩89~105K range). knit SKU 와 충돌은 narrow lane preference 처리.",
   },
   {
     id: "clothing-acne-polo",
@@ -13574,11 +13575,36 @@ export const CATALOG: Sku[] = [
     brand: "New Balance", category: "shoe", laneKey: "newbalance_1906r",
     modelName: "New Balance 1906R",
     aliases: ["NB 1906R", "뉴발란스 1906R", "1906R", "1906r"],
-    mustContain: [["1906r", "1906 r"], ["뉴발란스", "newbalance", "new balance", "nb ", "뉴발"]],
+    mustContain: [["1906r", "1906 r", "1906-r"], ["뉴발란스", "newbalance", "new balance", "nb ", "뉴발"]],
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
-      "짭", "가품", "미러", "샘플", "1:1", "11급", "삽니다", "구합니다", "매입"],
+      "짭", "가품", "미러", "샘플", "1:1", "11급", "삽니다", "구합니다", "매입",
+      "1906a", "1906l", "1906 a", "1906 l"],  // Wave 794: 다른 1906 variant 차단
     msrpKrw: 199000, released: 2022,
     confusionNote: "NB 1906R (2022). Y2K 트렌드. median ₩119K (DB 실측).",
+  },
+  // Wave 794 (2026-05-27): C3 fix — NB 1906A/1906L variant 누락 (83건 drop).
+  {
+    id: "shoe-newbalance-1906a",
+    brand: "New Balance", category: "shoe", laneKey: "newbalance_1906a",
+    modelName: "New Balance 1906A (Running)",
+    aliases: ["NB 1906A", "뉴발란스 1906A"],
+    mustContain: [["1906a", "1906 a", "1906-a"], ["뉴발란스", "newbalance", "new balance", "nb ", "뉴발"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake",
+      "1906r", "1906l", "1906 r", "1906 l", "삽니다", "매입"],
+    msrpKrw: 159000, released: 2023,
+    confusionNote: "NB 1906A (러닝 라인). ₩100K-150K range.",
+  },
+  {
+    id: "shoe-newbalance-1906l",
+    brand: "New Balance", category: "shoe", laneKey: "newbalance_1906l",
+    modelName: "New Balance 1906L (Loafer)",
+    aliases: ["NB 1906L", "뉴발란스 1906L"],
+    mustContain: [["1906l", "1906 l", "1906-l"], ["뉴발란스", "newbalance", "new balance", "nb ", "뉴발"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "fake",
+      "1906r", "1906a", "1906 r", "1906 a", "삽니다", "매입"],
+    msrpKrw: 199000, released: 2024,
+    defaultProductType: "loafer",
+    confusionNote: "NB 1906L (로퍼 라인). ₩120K-200K range.",
   },
   {
     id: "shoe-newbalance-2010",

@@ -192,12 +192,15 @@ export const WAVE_715_CLOTHING_NARROW: Sku[] = [
       ["thom browne", "톰브라운", "톰 브라운"],
       ["tee", "티셔츠", "반팔", "t-shirt", "t셔츠", "크루넥 반팔"],
     ],
+    // Wave 794 (2026-05-27): C1 fix — "셔츠" 차단이 "티셔츠" substring 매칭으로 35% dead.
+    //   "셔츠"/"shirt" 단독 토큰 제거. 옥스포드/드레스/버튼다운 셔츠만 명시 차단.
     mustNotContain: [
       ...COMMON_NOISE, "tom ford", "톰포드",
       "톰브라운 스타일", "톰브라운스타일",
       "긴팔", "롱슬리브", "long sleeve",
       "스웻", "sweat", "후드", "hoodie",
-      "니트", "knit", "셔츠", "shirt", "옥스포드",
+      "니트", "knit",
+      "옥스포드 셔츠", "드레스 셔츠", "버튼다운 셔츠", "럭비 셔츠",  // 셔츠 SKU 와 분리 (narrow lane preference 보조)
       "4-bar", "4바", "포바", "사바",
     ],
     msrpKrw: 380000, minPriceKrw: 50000, released: 2003,
