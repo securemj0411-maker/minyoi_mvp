@@ -183,7 +183,7 @@ export function HomeRegionOnboarding() {
   function handleGpsConfirm() {
     if (!gpsPreview) return;
     setGpsStatus("saving");
-    void submitWithToken({ lat: gpsPreview.lat, lng: gpsPreview.lng });
+    void submitWithToken({ lat: gpsPreview.lat, lng: gpsPreview.lng, fullPath: gpsPreview.fullPath });
   }
 
   function handleGpsReject() {
@@ -194,8 +194,8 @@ export function HomeRegionOnboarding() {
 
   function handleAddressPick(addr: AddressOption) {
     // Wave 886.4: 카카오 주소 검색 결과의 lat/lng를 기존 GPS 경로로 전달.
-    //   서버에서 reverseGeocode + matchDaangnRegionByPath 재사용.
-    void submitWithToken({ lat: addr.lat, lng: addr.lng });
+    // Wave 887: 사용자가 고른 주소 fullPath 를 같이 보내 저장 완료 토스트가 다른 동으로 바뀌지 않게 한다.
+    void submitWithToken({ lat: addr.lat, lng: addr.lng, fullPath: addr.fullPath });
   }
 
   const trimmed = search.trim();

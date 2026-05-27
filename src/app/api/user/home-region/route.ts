@@ -15,6 +15,7 @@ type SetHomeRegionPayload = {
   // GPS path
   lat?: number;
   lng?: number;
+  fullPath?: string;
   // Manual path
   daangn_region_id?: string;
 };
@@ -56,17 +57,26 @@ export async function POST(req: Request) {
   let source: "gps" | "manual" = "manual";
 
   if (body.lat != null && body.lng != null) {
-    // GPS path: Kakao reverse geocode → Daangn region 매핑.
-    const geo = await reverseGeocode(body.lat, body.lng);
-    if (!geo.ok || !geo.fullPath) {
-      return NextResponse.json({ ok: false, error: "geocode_failed", detail: geo.error }, { status: 400 });
+    // GPS/address path: preview/search 단계에서 사용자가 확인한 fullPath 가 있으면 그 값을 우선한다.
+    // 같은 좌표를 저장 시점에 다시 reverse-geocode 하며 다른 행정동으로 바뀌는 UX를 막는다.
+    let geoFullPath = typeof body.fullPath === "string" ? body.fullPath.trim().replace(/\s+/g, " ") : "";
+    let geoRegionName = geoFullPath ? geoFullPath.split(" ").filter(Boolean).at(-1) ?? geoFullPath : "";
+
+    if (!geoFullPath) {
+      const geo = await reverseGeocode(body.lat, body.lng);
+      if (!geo.ok || !geo.fullPath) {
+        return NextResponse.json({ ok: false, error: "geocode_failed", detail: geo.error }, { status: 400 });
+      }
+      geoFullPath = geo.fullPath;
+      geoRegionName = geo.region3 ?? geo.region2 ?? geo.fullPath;
     }
-    const match = matchDaangnRegionByPath(geo.fullPath);
+
+    const match = matchDaangnRegionByPath(geoFullPath);
     if (!match) {
       // Fallback: Kakao 결과 그대로 저장 (Daangn region 못 찾아도 사용자 거주지 자체는 알아야).
       regionId = "0";  // unknown daangn id
-      regionName = geo.region3 ?? geo.region2 ?? geo.fullPath;
-      fullPath = geo.fullPath;
+      regionName = geoRegionName || geoFullPath;
+      fullPath = geoFullPath;
     } else {
       regionId = match.daangn_region_id;
       regionName = match.daangn_region_name;

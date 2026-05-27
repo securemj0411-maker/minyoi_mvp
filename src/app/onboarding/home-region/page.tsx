@@ -4,6 +4,7 @@
 //   기존엔 비로그인 사용자도 페이지 직접 접근 가능 → 위치 prompt 노출 (사용자 짚음).
 //   로그인 안 됐으면 /login?next=/onboarding/home-region 으로 redirect.
 //   이미 home_region 박혀있으면 /me 로 redirect (재방문 차단).
+//   단, ?edit=1 은 기존 잘못 설정된 동네를 다시 덮어쓰기 위해 허용.
 
 import { redirect } from "next/navigation";
 import { HomeRegionOnboarding } from "@/components/home-region-onboarding";
@@ -16,13 +17,19 @@ export const metadata = {
   title: "동네 설정 — 득템잡이",
 };
 
-export default async function HomeRegionOnboardingPage() {
+export default async function HomeRegionOnboardingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ edit?: string }>;
+}) {
   const auth = await requireSupabaseUserFromCookies();
   if (!auth.ok) {
     redirect("/login?next=/onboarding/home-region");
   }
+  const params = await searchParams;
+  const editMode = params?.edit === "1";
   const existing = await loadUserHomeRegion(auth.user.id);
-  if (existing) {
+  if (existing && !editMode) {
     redirect("/me");
   }
   return (
