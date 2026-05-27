@@ -81,6 +81,15 @@ export type DaangnIngestDetailRecord = {
   shipping: DaangnShippingInference;
 };
 
+export type DaangnRegionYieldStat = {
+  regionId: string;
+  regionName: string;
+  fetched: number;
+  targetCategory: number;
+  catalogHint: number;
+  upsertCandidate: number;
+};
+
 export type DaangnIngestResult = {
   source: typeof DAANGN_SOURCE_ID;
   mode: DaangnSourceMode;
@@ -92,6 +101,8 @@ export type DaangnIngestResult = {
 
   // combo 진행
   combos: number;
+  regionSelectionMode?: DaangnComboSelection["selectionMode"];
+  adaptiveRegionScoreRegions?: number;
   executedCombos: number;
   blockedCombos: number;
   failedCombos: number;
@@ -107,6 +118,11 @@ export type DaangnIngestResult = {
   maxUpsertArticles: number;
   upsertCandidateArticles: number;
   articlesDeferredByUpsertCap: number;
+  regionYieldStats?: {
+    regions: DaangnRegionYieldStat[];
+    topCatalogHint: DaangnRegionYieldStat[];
+    zeroCatalogHintRegions: number;
+  };
   ongoing: number;
   crawlAllowedOngoing: number;
   freshBoosted24h: number;
@@ -143,6 +159,7 @@ export type DaangnIngestResult = {
     categoryFilter?: number; // raw DB write 전 target category sieve
     catalogHint?: number;   // catalog hint preselect before classifier/parser
     upsertPreselect?: number; // freshness sort + cap
+    adaptiveRegionLoad?: number; // recent region yield stats lookup
     preflight?: number;     // existing-row lookup before expensive classify
     preflightSkipped?: number; // rows skipped before classifier/parser
     rawRpc?: number;        // daangn_bulk_upsert_raw_listings_v2
@@ -167,6 +184,8 @@ export type DaangnIngestOptions = {
   categories?: DaangnCategorySeed[];
   // Phase 6i: region firehose 모드 (default true). false 시 legacy keyword combo 모드.
   useRegionFirehose?: boolean;
+  // Production fallback 용: maxCombos < region count 일 때 최근 수율 좋은 지역을 먼저 섞는다.
+  useAdaptiveRegionRotation?: boolean;
   // dry-run: DB write 안 함 (Stage 1 default)
   dryRun?: boolean;
 };
@@ -772,6 +791,7 @@ async function upsertDaangnRawListings(
 export type DaangnComboSelection = {
   combos: DaangnIngestCombo[];
   totalSpace: number;
+  selectionMode?: "all_regions" | "random" | "adaptive";
 };
 
 export function selectDaangnCombos(input: {
@@ -875,10 +895,31 @@ export function selectDaangnFirehoseCombos(input: {
   regions: DaangnRegionSeed[];
   maxRegions: number;
   shuffleRegions?: boolean;
+  regionScores?: Map<string, number>;
+  explorationRatio?: number;
 }): DaangnComboSelection {
   const shuffleRegions = input.shuffleRegions ?? false;
-  const order = shuffleRegions ? shuffleArray(input.regions) : input.regions;
-  const limit = Math.min(input.maxRegions, order.length);
+  const maxRegions = Math.max(0, input.maxRegions);
+  let selectionMode: DaangnComboSelection["selectionMode"] = "random";
+  let order: DaangnRegionSeed[];
+  if (maxRegions >= input.regions.length) {
+    order = shuffleRegions ? shuffleArray(input.regions) : input.regions;
+    selectionMode = "all_regions";
+  } else if (input.regionScores && input.regionScores.size > 0) {
+    const explorationRatio = Math.max(0, Math.min(0.5, input.explorationRatio ?? 0.2));
+    const exploreCount = Math.min(maxRegions, Math.max(1, Math.floor(maxRegions * explorationRatio)));
+    const exploitCount = Math.max(0, maxRegions - exploreCount);
+    const shuffled = shuffleRegions ? shuffleArray(input.regions) : [...input.regions];
+    const scored = [...shuffled].sort((a, b) => (input.regionScores?.get(b.id) ?? 0) - (input.regionScores?.get(a.id) ?? 0));
+    const exploit = scored.slice(0, exploitCount);
+    const exploitIds = new Set(exploit.map((region) => region.id));
+    const explore = shuffled.filter((region) => !exploitIds.has(region.id)).slice(0, exploreCount);
+    order = [...exploit, ...explore];
+    selectionMode = "adaptive";
+  } else {
+    order = shuffleRegions ? shuffleArray(input.regions) : input.regions;
+  }
+  const limit = Math.min(maxRegions, order.length);
   const combos: DaangnIngestCombo[] = [];
   for (let i = 0; i < limit; i += 1) {
     combos.push({
@@ -887,7 +928,107 @@ export function selectDaangnFirehoseCombos(input: {
       category: DAANGN_FIREHOSE_CATEGORY,
     });
   }
-  return { combos, totalSpace: input.regions.length };
+  return { combos, totalSpace: input.regions.length, selectionMode };
+}
+
+function daangnArticleRegionKey(article: DaangnSearchArticle): { id: string; name: string } {
+  return {
+    id: article.region.dbId ?? "unknown",
+    name: article.region.name ?? article.region.dbId ?? "unknown",
+  };
+}
+
+function countDaangnArticlesBySourceRegion(
+  articles: DaangnSearchArticle[],
+  sourceRegionByHref: Map<string, DaangnRegionSeed>,
+): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const article of articles) {
+    const sourceRegion = article.href ? sourceRegionByHref.get(article.href) : null;
+    const id = sourceRegion?.id ?? daangnArticleRegionKey(article).id;
+    out.set(id, (out.get(id) ?? 0) + 1);
+  }
+  return out;
+}
+
+function buildDaangnRegionYieldStats(input: {
+  selectedRegions: DaangnRegionSeed[];
+  sourceRegionByHref: Map<string, DaangnRegionSeed>;
+  allArticles: DaangnSearchArticle[];
+  filteredArticles: DaangnSearchArticle[];
+  catalogHintArticles: DaangnSearchArticle[];
+  upsertCandidateArticles: DaangnSearchArticle[];
+}): NonNullable<DaangnIngestResult["regionYieldStats"]> {
+  const selectedNames = new Map(input.selectedRegions.map((region) => [region.id, region.name]));
+  const names = new Map(selectedNames);
+  for (const article of input.allArticles) {
+    const { id, name } = daangnArticleRegionKey(article);
+    if (!names.has(id)) names.set(id, name);
+  }
+  const fetched = countDaangnArticlesBySourceRegion(input.allArticles, input.sourceRegionByHref);
+  const targetCategory = countDaangnArticlesBySourceRegion(input.filteredArticles, input.sourceRegionByHref);
+  const catalogHint = countDaangnArticlesBySourceRegion(input.catalogHintArticles, input.sourceRegionByHref);
+  const upsertCandidate = countDaangnArticlesBySourceRegion(input.upsertCandidateArticles, input.sourceRegionByHref);
+  const ids = new Set<string>([
+    ...selectedNames.keys(),
+    ...fetched.keys(),
+    ...targetCategory.keys(),
+    ...catalogHint.keys(),
+    ...upsertCandidate.keys(),
+  ]);
+  const regions = [...ids].map((id) => ({
+    regionId: id,
+    regionName: names.get(id) ?? id,
+    fetched: fetched.get(id) ?? 0,
+    targetCategory: targetCategory.get(id) ?? 0,
+    catalogHint: catalogHint.get(id) ?? 0,
+    upsertCandidate: upsertCandidate.get(id) ?? 0,
+  })).sort((a, b) => (
+    b.catalogHint - a.catalogHint ||
+    b.targetCategory - a.targetCategory ||
+    b.fetched - a.fetched ||
+    a.regionName.localeCompare(b.regionName, "ko")
+  ));
+  return {
+    regions,
+    topCatalogHint: regions.slice(0, 20),
+    zeroCatalogHintRegions: regions.filter((region) => region.catalogHint === 0).length,
+  };
+}
+
+type CollectRunRegionStatsRow = {
+  stage_stats: {
+    regionYieldStats?: {
+      regions?: DaangnRegionYieldStat[];
+    };
+  } | null;
+};
+
+async function loadRecentDaangnRegionScores(): Promise<Map<string, number>> {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)) {
+    return new Map();
+  }
+  const res = await restFetch(
+    `${tableUrl("mvp_collect_runs")}?select=stage_stats&status=eq.succeeded&request_path=eq.${encodeURIComponent("/api/cron/daangn-worker")}&order=started_at.desc&limit=24`,
+    { headers: serviceHeaders() },
+  );
+  const rows = await res.json() as CollectRunRegionStatsRow[];
+  const scores = new Map<string, number>();
+  rows.forEach((row, index) => {
+    const regions = row.stage_stats?.regionYieldStats?.regions;
+    if (!Array.isArray(regions)) return;
+    const recencyWeight = Math.max(0.25, 1 - index * 0.04);
+    for (const stat of regions) {
+      if (!stat.regionId) continue;
+      const score =
+        stat.catalogHint * 10 +
+        stat.upsertCandidate * 20 +
+        stat.targetCategory * 0.15 +
+        stat.fetched * 0.01;
+      scores.set(stat.regionId, (scores.get(stat.regionId) ?? 0) + score * recencyWeight);
+    }
+  });
+  return scores;
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -929,6 +1070,11 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const maxUpsertArticles = boundedInt(options.maxUpsertArticles, 500, 0, 5_000);
   const searchConcurrency = boundedInt(options.searchConcurrency, 50, 1, 300);
   const dryRun = options.dryRun ?? mode !== "active";
+  const useAdaptiveRegionRotation = options.useAdaptiveRegionRotation ?? true;
+
+  // Phase 6i+++ timing instrumentation
+  const timings: NonNullable<DaangnIngestResult["timingsMs"]> = {};
+  const tIngestStart = Date.now();
 
   // Region 기반 ingest (Phase 6g — 6e 전국 검색 가설 폐기).
   //   options.regions 으로 override 가능 (테스트/실험용).
@@ -941,15 +1087,31 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const useRegionFirehose = options.useRegionFirehose ?? true;
 
   let combos: DaangnIngestCombo[];
+  let regionSelectionMode: DaangnComboSelection["selectionMode"] | undefined;
+  let adaptiveRegionScoreRegions = 0;
   if (useRegionFirehose) {
     // Firehose 모드: keyword/category filter X, region 만 iteration.
     //   maxCombos = 한 tick 에서 fetch 할 region 수.
+    let regionScores: Map<string, number> | undefined;
+    if (useAdaptiveRegionRotation && maxCombos < regions.length) {
+      const tAdaptiveRegionLoadStart = Date.now();
+      try {
+        regionScores = await loadRecentDaangnRegionScores();
+        adaptiveRegionScoreRegions = regionScores.size;
+      } catch (err) {
+        console.warn("loadRecentDaangnRegionScores failed (non-fatal)", err);
+        regionScores = undefined;
+      }
+      timings.adaptiveRegionLoad = Date.now() - tAdaptiveRegionLoadStart;
+    }
     const result = selectDaangnFirehoseCombos({
       regions,
       maxRegions: maxCombos,
       shuffleRegions: true,
+      regionScores,
     });
     combos = result.combos;
+    regionSelectionMode = result.selectionMode;
   } else {
     // Legacy keyword 모드: catalog query × region × category combo (Phase 6g 동작).
     let queries = options.queries;
@@ -965,6 +1127,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     const categories = options.categories ?? DAANGN_FASHION_CATEGORIES;
     const result = selectDaangnCombos({ regions, queries, categories, maxCombos, shuffleRegions: true });
     combos = result.combos;
+    regionSelectionMode = result.selectionMode;
   }
 
   // 진행 통계
@@ -975,10 +1138,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
 
   const allArticles: DaangnSearchArticle[] = [];
   const ongoingSeenUrls = new Set<string>();
-
-  // Phase 6i+++ timing instrumentation
-  const timings: NonNullable<DaangnIngestResult["timingsMs"]> = {};
-  const tIngestStart = Date.now();
+  const sourceRegionByHref = new Map<string, DaangnRegionSeed>();
 
   // Phase 6i++ parallel search: sequential 5 region × ~50s = 250s. 제한된 동시성으로 burst block 위험 완화.
   //   delayMs 는 sequential 시 rate-limit 회피용이라 parallel 에서는 의미 X.
@@ -1002,7 +1162,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   // 결과 평가 — block 감지 시 후속 결과는 모두 무시 (안전).
   const tSearchParseStart = Date.now();
   let blockedDetected = false;
-  for (const { combo: _combo, resp, error } of comboResults) {
+  for (const { combo, resp, error } of comboResults) {
     if (blockedDetected) break;
     if (error || !resp) {
       failedCombos += 1;
@@ -1022,6 +1182,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
       const parsed = parseDaangnSearchHtml(resp.body);
       for (const a of parsed.articles) {
         allArticles.push(a);
+        if (a.href && !sourceRegionByHref.has(a.href)) sourceRegionByHref.set(a.href, combo.region);
         if (a.status === "Ongoing" && a.href) ongoingSeenUrls.add(a.href);
       }
       executedCombos += 1;
@@ -1185,6 +1346,15 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     console.log(`[wave780] upsert cap: ${articlesDeferredByUpsertCap}/${catalogHintArticles.length} catalog-hint 매물 defer (cap=${maxUpsertArticles})`);
   }
   timings.upsertPreselect = Date.now() - tUpsertPreselectStart;
+  const selectedRegions = [...new Map(combos.map((combo) => [combo.region.id, combo.region])).values()];
+  const regionYieldStats = buildDaangnRegionYieldStats({
+    selectedRegions,
+    sourceRegionByHref,
+    allArticles,
+    filteredArticles,
+    catalogHintArticles,
+    upsertCandidateArticles,
+  });
 
   if (!dryRun) {
     try {
@@ -1214,6 +1384,8 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     durationMs: finishedAt.getTime() - startedAt.getTime(),
 
     combos: combos.length,
+    regionSelectionMode,
+    adaptiveRegionScoreRegions,
     executedCombos,
     blockedCombos,
     failedCombos,
@@ -1228,6 +1400,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     maxUpsertArticles,
     upsertCandidateArticles: upsertCandidateArticles.length,
     articlesDeferredByUpsertCap,
+    regionYieldStats,
     ongoing: summary.ongoing,
     crawlAllowedOngoing: summary.crawlAllowedOngoing,
     freshBoosted24h: summary.freshBoosted24h,

@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import {
   inferDaangnShipping,
   selectDaangnCombos,
+  selectDaangnFirehoseCombos,
 } from "../src/lib/daangn-ingest";
 import {
   DAANGN_FASHION_CATEGORIES,
@@ -74,6 +75,42 @@ describe("selectDaangnCombos", () => {
     });
     assert.equal(result.totalSpace, 3 * 4 * 2);
     assert.equal(result.combos.length, 5);
+  });
+});
+
+describe("selectDaangnFirehoseCombos", () => {
+  const regions = [
+    { id: "r1", name: "R1" },
+    { id: "r2", name: "R2" },
+    { id: "r3", name: "R3" },
+    { id: "r4", name: "R4" },
+    { id: "r5", name: "R5" },
+  ];
+
+  it("marks full-region fetches as all_regions", () => {
+    const result = selectDaangnFirehoseCombos({
+      regions,
+      maxRegions: regions.length,
+      shuffleRegions: false,
+    });
+    assert.equal(result.combos.length, regions.length);
+    assert.equal(result.selectionMode, "all_regions");
+  });
+
+  it("uses recent region scores when maxRegions is lower than region count", () => {
+    const result = selectDaangnFirehoseCombos({
+      regions,
+      maxRegions: 3,
+      shuffleRegions: false,
+      explorationRatio: 0.34,
+      regionScores: new Map([
+        ["r4", 100],
+        ["r2", 50],
+        ["r5", 1],
+      ]),
+    });
+    assert.equal(result.selectionMode, "adaptive");
+    assert.deepEqual(result.combos.map((combo) => combo.region.id), ["r4", "r2", "r1"]);
   });
 });
 
