@@ -334,14 +334,14 @@ export const LANE_READINESS: LaneReadinessMap = {
     note: "Wave 754 Pareto: Seiko 5 79 unmatched (SRPD/SBSA narrow 외).",
   },
   watch_seiko_prospex_broad: {
-    status: "ready",
+    status: "internal_only",
     label: "Seiko Prospex (broad)",
-    note: "Wave 754 Pareto: Prospex/Turtle/Alpinist/Speedtimer/Diver 100+ unmatched.",
+    note: "Wave 770 (2026-05-26 사용자 결정): broad catch-all → internal_only. Diver/Turtle/Alpinist/Speedtimer 모델별 시세 차 큼. narrow lane 신설 전엔 ready 차단.",
   },
   watch_seiko_broad: {
-    status: "ready",
+    status: "internal_only",
     label: "Seiko (broad catch-all)",
-    note: "Wave 754 Pareto: 762 \"seiko_other\" unmatched 매물. Grand Seiko 명품 skip 정책 catalog 차단.",
+    note: "Wave 770 (2026-05-26 사용자 결정): broad catch-all → internal_only. 빈티지/액터스/돌체/SBTM/스피릿 모델 mixed = 시세 비교 불가. narrow lane 신설 전엔 ready 차단.",
   },
   // Wave 758 (2026-05-24) 게임 카테고리 deep sweep — 콘솔 6 SKU 신설.
   switch_2: {
