@@ -7852,6 +7852,53 @@ export const CATALOG: Sku[] = [
     released: 1979,
     confusionNote: "Seiko Alba (entry line, 1979~). median ₩110K (DB). 저가 라인 분리.",
   },
+  // Wave 786 (2026-05-27): Galaxy Watch 톰브라운 narrow (Watch 4/6/7) — owner 직접 우려.
+  //   매물 1~2건이지만 시세 거품 큼 (Watch 4 톰브라운 ₩1.18M vs base ₩125K).
+  {
+    id: "galaxywatch-4-thombrowne",
+    brand: "Samsung", category: "smartwatch",
+    modelName: "Galaxy Watch 4 Thom Browne Edition",
+    aliases: ["갤럭시 워치 4 톰브라운", "Galaxy Watch 4 Thom Browne"],
+    mustContain: [
+      ["갤럭시 워치", "갤워치", "galaxy watch", "갤럭시워치"],
+      [" 4 ", "워치4", "워치 4"],
+      ["톰브라운", "thom browne", "thombrowne"],
+    ],
+    mustNotContain: [" 5 ", "워치5", " 6 ", "워치6", " 7 ", "워치7", "ultra",
+      "베젤만", "스트랩만", "케이스만", "충전기만", "고장", "부품", "수리용", "매입", "삽니다"],
+    msrpKrw: 1390000, released: 2021,
+    confusionNote: "Galaxy Watch 4 Thom Browne Edition. median ₩1.18M (DB).",
+  },
+  {
+    id: "galaxywatch-6-thombrowne",
+    brand: "Samsung", category: "smartwatch",
+    modelName: "Galaxy Watch 6 Thom Browne Edition",
+    aliases: ["갤럭시 워치 6 톰브라운", "Galaxy Watch 6 Thom Browne"],
+    mustContain: [
+      ["갤럭시 워치", "갤워치", "galaxy watch", "갤럭시워치"],
+      [" 6 ", "워치6", "워치 6"],
+      ["톰브라운", "thom browne", "thombrowne"],
+    ],
+    mustNotContain: [" 4 ", "워치4", " 5 ", "워치5", " 7 ", "워치7", "ultra",
+      "베젤만", "스트랩만", "케이스만", "충전기만", "고장", "부품", "수리용", "매입", "삽니다"],
+    msrpKrw: 1390000, released: 2023,
+    confusionNote: "Galaxy Watch 6 Thom Browne Edition. median ₩700K (DB).",
+  },
+  {
+    id: "galaxywatch-7-thombrowne",
+    brand: "Samsung", category: "smartwatch",
+    modelName: "Galaxy Watch 7 Thom Browne Edition",
+    aliases: ["갤럭시 워치 7 톰브라운", "Galaxy Watch 7 Thom Browne"],
+    mustContain: [
+      ["갤럭시 워치", "갤워치", "galaxy watch", "갤럭시워치"],
+      [" 7 ", "워치7", "워치 7"],
+      ["톰브라운", "thom browne", "thombrowne"],
+    ],
+    mustNotContain: [" 4 ", "워치4", " 5 ", "워치5", " 6 ", "워치6", "ultra",
+      "베젤만", "스트랩만", "케이스만", "충전기만", "고장", "부품", "수리용", "매입", "삽니다"],
+    msrpKrw: 1490000, released: 2024,
+    confusionNote: "Galaxy Watch 7 Thom Browne Edition.",
+  },
   // Wave 784 (2026-05-27): Seiko 나머지 sub-line narrow — 매물 5~28건이지만 일관성.
   {
     id: "watch-seiko-presage",
