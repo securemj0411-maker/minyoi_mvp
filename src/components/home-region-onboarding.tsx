@@ -97,7 +97,8 @@ export function HomeRegionOnboarding() {
         setError(json.error || "저장 실패");
         return;
       }
-      router.push("/explore");
+      // Wave 886.5 (2026-05-27): 기존 "/explore" 라우트는 존재 X (404) → "/me" 로 redirect.
+      router.push("/me");
     } finally {
       setBusy(false);
     }
