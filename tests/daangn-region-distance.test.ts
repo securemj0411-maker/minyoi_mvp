@@ -15,11 +15,19 @@ test("Daangn distance keeps nearby Seoul life-zone listings actionable", () => {
 
   const seocho = evaluateDaangnRegionDistance(SANGDO_1, "366", "서초4동");
   assert.equal(seocho.actionable, true);
-  assert.ok((seocho.distanceKm ?? 999) < 16);
+  assert.ok((seocho.distanceKm ?? 999) < 10);
 
   const geumcheon = evaluateDaangnRegionDistance(SANGDO_1, "295", "가산동");
   assert.equal(geumcheon.actionable, true);
-  assert.ok((geumcheon.distanceKm ?? 999) < 16);
+  assert.ok((geumcheon.distanceKm ?? 999) < 10);
+});
+
+test("Daangn distance blocks listings outside the practical direct-trade radius", () => {
+  const iljik = evaluateDaangnRegionDistance(SANGDO_1, "4440", "일직동");
+
+  assert.equal(iljik.actionable, false);
+  assert.equal(iljik.bucket, "far");
+  assert.ok((iljik.distanceKm ?? 0) > 10);
 });
 
 test("Daangn distance blocks clearly non-local listings instead of allowing all same-country regions", () => {

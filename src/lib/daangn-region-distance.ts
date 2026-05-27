@@ -77,9 +77,9 @@ const FIRST_LEVEL_ALIASES: Record<string, string> = {
   제주특별자치도: "제주",
 };
 
-const NEAR_KM = 8;
-const REACHABLE_KM = 16;
-const FAR_KM = 28;
+const NEAR_KM = 6;
+const REACHABLE_KM = 10;
+const FAR_KM = 16;
 
 export function normalizeRegionPath(path: string | null | undefined) {
   return String(path ?? "").trim().replace(/\s+/g, " ");
@@ -196,10 +196,10 @@ export function evaluateDaangnRegionDistance(
       "too_far";
 
     return {
-      actionable: bucket !== "too_far",
+      actionable: bucket === "near" || bucket === "reachable",
       bucket,
       distanceKm: roundedDistance,
-      rank: bucket === "near" ? 0 : bucket === "reachable" ? 1 : bucket === "far" ? 2 : 9,
+      rank: bucket === "near" ? 0 : bucket === "reachable" ? 1 : bucket === "far" ? 8 : 9,
       label: distanceLabel(bucket, distance),
       userGeo,
       itemGeo: item.geo,
