@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { conditionFallbackChain } from "@/lib/condition-fallback";
 import { teaserBudgetRangeLabel, teaserProfitLabel } from "@/lib/feed-price-display";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
@@ -28,6 +29,8 @@ const TIER_A_COUNT = 2;
 const TIER_B_MAX_KRW = 150_000;
 const TIER_B_COUNT = 3;
 const PREVIEW_POOL_SCAN_LIMIT = 500;
+const PREVIEW_MARKET_SCAN_LIMIT = 160;
+const MIN_PREVIEW_MARKET_GAP = 10_000;
 const HIGH_PROFIT_ELECTRONICS_ROI = 0.4;
 const HIGH_PROFIT_WEAK_SIGNAL_ROI = 0.45;
 const HIGH_PROFIT_DEFAULT_ROI = 0.6;
@@ -131,16 +134,87 @@ type RawListingMeta = {
   shop_review_count: number | null;
 };
 
-function previewProfitRoi(row: PoolRow, raw: RawRow | undefined): number | null {
+type MarketPriceRow = {
+  comparable_key: string;
+  condition_class: string | null;
+  blended_median_price: number | null;
+  active_median_price: number | null;
+  sold_median_price: number | null;
+  active_sample_count: number | null;
+  sold_sample_count: number | null;
+  disappeared_sample_count: number | null;
+  date: string;
+  computed_at: string | null;
+};
+
+function marketPriceFromRow(row: MarketPriceRow | undefined): number | null {
+  if (!row) return null;
+  const value = Number(row.blended_median_price ?? row.active_median_price ?? row.sold_median_price ?? 0);
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+function buildMarketByKeyCondition(rows: MarketPriceRow[]) {
+  const byKey = new Map<string, Map<string, MarketPriceRow>>();
+  for (const row of rows) {
+    if (!row.comparable_key) continue;
+    const condition = row.condition_class ?? "normal";
+    const byCondition = byKey.get(row.comparable_key) ?? new Map<string, MarketPriceRow>();
+    // Query is ordered newest first, so the first row per key/condition wins.
+    if (!byCondition.has(condition)) byCondition.set(condition, row);
+    byKey.set(row.comparable_key, byCondition);
+  }
+  return byKey;
+}
+
+function marketPriceForPoolRow(
+  row: PoolRow,
+  raw: RawRow | undefined,
+  marketByKeyCondition: Map<string, Map<string, MarketPriceRow>>,
+): number | null {
+  if (row.comparable_key) {
+    const byCondition = marketByKeyCondition.get(row.comparable_key);
+    if (byCondition) {
+      for (const condition of conditionFallbackChain(row.condition_class ?? "normal")) {
+        const price = marketPriceFromRow(byCondition.get(condition));
+        if (price != null) return price;
+      }
+    }
+  }
+
+  const fallback = Number(raw?.sku_median ?? 0);
+  return Number.isFinite(fallback) && fallback > 0 ? fallback : null;
+}
+
+function previewMarketGap(
+  row: PoolRow,
+  raw: RawRow | undefined,
+  marketByKeyCondition: Map<string, Map<string, MarketPriceRow>>,
+): number | null {
+  const buyPrice = Number(raw?.price ?? 0);
+  const marketPrice = marketPriceForPoolRow(row, raw, marketByKeyCondition);
+  if (!Number.isFinite(buyPrice) || buyPrice <= 0 || marketPrice == null) return null;
+  const gap = marketPrice - buyPrice;
+  return Number.isFinite(gap) && gap > 0 ? gap : null;
+}
+
+function previewProfitRoi(
+  row: PoolRow,
+  raw: RawRow | undefined,
+  marketByKeyCondition: Map<string, Map<string, MarketPriceRow>>,
+): number | null {
   const buyBase = Math.max(Number(raw?.price ?? 0), 1);
-  const avgProfit = (Number(row.expected_profit_min ?? 0) + Number(row.expected_profit_max ?? 0)) / 2;
-  if (!Number.isFinite(buyBase) || !Number.isFinite(avgProfit) || avgProfit <= 0) return null;
-  const roi = avgProfit / buyBase;
+  const marketGap = previewMarketGap(row, raw, marketByKeyCondition);
+  if (!Number.isFinite(buyBase) || marketGap == null || marketGap <= 0) return null;
+  const roi = marketGap / buyBase;
   return Number.isFinite(roi) ? roi : null;
 }
 
-function isPreviewHighProfitAnomaly(row: PoolRow, raw: RawRow | undefined): boolean {
-  const roi = previewProfitRoi(row, raw);
+function isPreviewHighProfitAnomaly(
+  row: PoolRow,
+  raw: RawRow | undefined,
+  marketByKeyCondition: Map<string, Map<string, MarketPriceRow>>,
+): boolean {
+  const roi = previewProfitRoi(row, raw, marketByKeyCondition);
   if (roi == null || roi < HIGH_PROFIT_ELECTRONICS_ROI) return false;
 
   const category = row.category ?? "";
@@ -210,6 +284,22 @@ export async function GET() {
     const rawByPid = new Map<number, RawRow>(raws.map((r) => [r.pid, r]));
     const skuByPid = new Map<number, string | null>(rawListings.map((r) => [r.pid, r.sku_id]));
     const metaByPid = new Map<number, RawListingMeta>(rawListings.map((r) => [r.pid, r]));
+    const candidateRows = pool
+      .filter((row) => {
+        const raw = rawByPid.get(row.pid);
+        return Boolean(raw && raw.price > 0 && raw.price <= TIER_B_MAX_KRW);
+      })
+      .slice(0, PREVIEW_MARKET_SCAN_LIMIT);
+    const candidateComparableKeys = [
+      ...new Set(candidateRows.map((row) => row.comparable_key).filter((key): key is string => Boolean(key))),
+    ];
+    const marketRows = candidateComparableKeys.length > 0
+      ? await restFetch(
+        `${tableUrl("mvp_market_price_daily")}?select=comparable_key,condition_class,blended_median_price,active_median_price,sold_median_price,sold_sample_count,active_sample_count,disappeared_sample_count,date,computed_at&comparable_key=in.(${candidateComparableKeys.map(encodeURIComponent).join(",")})&order=date.desc,computed_at.desc&limit=${Math.max(200, candidateComparableKeys.length * 12)}`,
+        { headers },
+      ).then((res) => res.json() as Promise<MarketPriceRow[]>)
+      : [];
+    const marketByKeyCondition = buildMarketByKeyCondition(marketRows);
 
     // 2026-05-17: 가격 tier 분리 — 10만 이하 2개 + 10-30만 3개. SKU + category + condition_class 다양화.
     // pickFromTier 가 carry-over: cumulative usedSkus/categories/usedConditions.
@@ -221,12 +311,14 @@ export async function GET() {
     function pickFromTier(maxPriceKrw: number, target: number) {
       const tierPicked: PoolRow[] = [];
       // 1차 — sku + category + condition_class 다 dedup (가장 strict)
-      for (const row of pool) {
+      for (const row of candidateRows) {
         if (tierPicked.length >= target) break;
         if (selected.some((s) => s.pid === row.pid)) continue;
         const raw = rawByPid.get(row.pid);
         if (!raw || raw.price > maxPriceKrw) continue;
-        if (isPreviewHighProfitAnomaly(row, raw)) continue;
+        const currentGap = previewMarketGap(row, raw, marketByKeyCondition);
+        if (currentGap == null || currentGap < MIN_PREVIEW_MARKET_GAP) continue;
+        if (isPreviewHighProfitAnomaly(row, raw, marketByKeyCondition)) continue;
         const sku = skuByPid.get(row.pid);
         if (sku && usedSkus.has(sku)) continue;
         const cat = row.category ?? "other";
@@ -240,13 +332,15 @@ export async function GET() {
       }
       // 2차 — condition_class 중복 허용 (sku/category 만 유지)
       if (tierPicked.length < target) {
-        for (const row of pool) {
+        for (const row of candidateRows) {
           if (tierPicked.length >= target) break;
           if (selected.some((s) => s.pid === row.pid)) continue;
           if (tierPicked.some((s) => s.pid === row.pid)) continue;
           const raw = rawByPid.get(row.pid);
           if (!raw || raw.price > maxPriceKrw) continue;
-          if (isPreviewHighProfitAnomaly(row, raw)) continue;
+          const currentGap = previewMarketGap(row, raw, marketByKeyCondition);
+          if (currentGap == null || currentGap < MIN_PREVIEW_MARKET_GAP) continue;
+          if (isPreviewHighProfitAnomaly(row, raw, marketByKeyCondition)) continue;
           const sku = skuByPid.get(row.pid);
           if (sku && usedSkus.has(sku)) continue;
           const cat = row.category ?? "other";
@@ -258,13 +352,15 @@ export async function GET() {
       }
       // 3차 — sku 만 dedup (category 도 중복 허용, fallback)
       if (tierPicked.length < target) {
-        for (const row of pool) {
+        for (const row of candidateRows) {
           if (tierPicked.length >= target) break;
           if (selected.some((s) => s.pid === row.pid)) continue;
           if (tierPicked.some((s) => s.pid === row.pid)) continue;
           const raw = rawByPid.get(row.pid);
           if (!raw || raw.price > maxPriceKrw) continue;
-          if (isPreviewHighProfitAnomaly(row, raw)) continue;
+          const currentGap = previewMarketGap(row, raw, marketByKeyCondition);
+          if (currentGap == null || currentGap < MIN_PREVIEW_MARKET_GAP) continue;
+          if (isPreviewHighProfitAnomaly(row, raw, marketByKeyCondition)) continue;
           const sku = skuByPid.get(row.pid);
           if (sku && usedSkus.has(sku)) continue;
           tierPicked.push(row);
@@ -299,38 +395,22 @@ export async function GET() {
       return Date.now() - t < 24 * 60 * 60 * 1000;
     }
 
-    // 2026-05-17 Phase 3: selected 5개 매물에 한해서 market_price_daily + velocity fetch.
-    // 사용자 의도 "근거 chip" — sold count (수요), medianHoursToSold (회전).
+    // 2026-05-17 Phase 3: selected 5개 매물에 velocity fetch.
+    // market_price_daily 는 위에서 current market/gap 재계산에 이미 사용한다.
     const comparableKeys = selected
       .map((r) => r.comparable_key)
       .filter((k): k is string => !!k);
-    const [marketRes, velocityRes] = comparableKeys.length > 0
-      ? await Promise.all([
-        restFetch(
-          // 2026-05-17: date + condition_class 별로 row 분산되므로 select 에 date 포함 + 합산 처리.
-          // sold + active 합산 = 시장 거래량 (사용자: "번개에 많이 올라오는걸로 수요").
-          `${tableUrl("mvp_market_price_daily")}?select=comparable_key,condition_class,sold_sample_count,active_sample_count,date&comparable_key=in.(${comparableKeys.map(encodeURIComponent).join(",")})&order=date.desc&limit=${comparableKeys.length * 10}`,
-          { headers },
-        ),
-        restFetch(
+    const velocityRes = comparableKeys.length > 0
+      ? await restFetch(
           `${tableUrl("mvp_market_velocity")}?select=comparable_key,median_hours_to_sold&comparable_key=in.(${comparableKeys.map(encodeURIComponent).join(",")})`,
           { headers },
-        ).catch(() => null),
-      ])
-      : [null, null];
+        ).catch(() => null)
+      : null;
     const demandByKey = new Map<string, number>();
-    if (marketRes) {
-      // 2026-05-17 v2: 사용자 정책 "번개에 많이 올라오는 = 수요". sold + active 합산.
-      // sold detection 안정성 의존 X. active = 현재 매물 수 (시장 활성도). 합치면 robust.
-      // latest date 의 모든 condition_class row 합산.
-      const rows = (await marketRes.json()) as Array<{
-        comparable_key: string;
-        sold_sample_count: number | null;
-        active_sample_count: number | null;
-        date: string;
-      }>;
+    if (marketRows.length > 0) {
       const latestByKey = new Map<string, { date: string; total: number }>();
-      for (const r of rows) {
+      for (const r of marketRows) {
+        if (!comparableKeys.includes(r.comparable_key)) continue;
         const sample = (r.sold_sample_count ?? 0) + (r.active_sample_count ?? 0);
         if (sample <= 0) continue;
         const cur = latestByKey.get(r.comparable_key);
@@ -355,25 +435,26 @@ export async function GET() {
     const items = selected.map((row, idx) => {
       const raw = rawByPid.get(row.pid);
       const meta = metaByPid.get(row.pid);
-      const avgProfit = (Number(row.expected_profit_min ?? 0) + Number(row.expected_profit_max ?? 0)) / 2;
+      const marketPrice = marketPriceForPoolRow(row, raw, marketByKeyCondition);
+      const marketGap = previewMarketGap(row, raw, marketByKeyCondition) ?? 0;
       const fallbackTitle = categoryFriendlyLabel(row.category);
       return {
         slot: idx + 1,
         name: raw?.name ?? fallbackTitle,
         thumbnailUrl: raw?.thumbnail_url ?? null,
         previewTitle: raw?.name ?? fallbackTitle,
-        profitLabel: teaserProfitLabel(avgProfit),
+        profitLabel: teaserProfitLabel(marketGap),
         budgetLabel: teaserBudgetRangeLabel(raw?.price ?? null),
-        priceSignalLabel: relativeDiscountLabel(raw?.price ?? null, raw?.sku_median ?? null),
+        priceSignalLabel: relativeDiscountLabel(raw?.price ?? null, marketPrice),
         // (deprecated) launch-111 호환성 — 클라이언트 fallback.
         maskedName: raw?.name ?? fallbackTitle,
         blurredImage: raw?.thumbnail_url ?? null,
         category: row.category ?? "other",
         conditionClass: row.condition_class,
         price: raw?.price ?? 0,
-        skuMedian: raw?.sku_median ?? null,
-        expectedProfitMin: row.expected_profit_min,
-        expectedProfitMax: row.expected_profit_max,
+        skuMedian: marketPrice,
+        expectedProfitMin: marketGap,
+        expectedProfitMax: marketGap,
         profitBand: row.profit_band,
         // 2026-05-17: 신뢰 시그널 chips (dashboard 패턴).
         confidence: confLabel(row.confidence),

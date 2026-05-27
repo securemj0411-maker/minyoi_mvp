@@ -371,9 +371,14 @@ test("guest preview API keeps public sample visible without exposing original li
   assert.match(api, /name:\s*raw\?\.name/);
   assert.match(api, /thumbnailUrl:\s*raw\?\.thumbnail_url/);
   assert.match(api, /price:\s*raw\?\.price/);
-  assert.match(api, /skuMedian:\s*raw\?\.sku_median/);
-  assert.match(api, /expectedProfitMin:\s*row\.expected_profit_min/);
-  assert.match(api, /expectedProfitMax:\s*row\.expected_profit_max/);
+  assert.match(api, /marketPriceForPoolRow/);
+  assert.match(api, /previewMarketGap/);
+  assert.match(api, /MIN_PREVIEW_MARKET_GAP/);
+  assert.match(api, /skuMedian:\s*marketPrice/);
+  assert.match(api, /expectedProfitMin:\s*marketGap/);
+  assert.match(api, /expectedProfitMax:\s*marketGap/);
+  assert.doesNotMatch(api, /expectedProfitMin:\s*row\.expected_profit_min/);
+  assert.doesNotMatch(api, /expectedProfitMax:\s*row\.expected_profit_max/);
   assert.match(api, /previewTitle/);
   assert.match(api, /profitLabel/);
   assert.match(api, /budgetLabel/);
