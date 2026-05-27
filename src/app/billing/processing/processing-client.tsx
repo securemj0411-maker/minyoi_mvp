@@ -89,7 +89,7 @@ export default function ProcessingClient() {
     autoFiredRef.current = true;
     const t = window.setTimeout(() => {
       if (method === "kakaopay") {
-        openKakaopayQr(0);
+        openKakaopayQr(plan.priceKrw);
       } else {
         openTossSend(plan.priceKrw);
       }
@@ -259,7 +259,7 @@ export default function ProcessingClient() {
               <>
                 <div className="text-[13px] font-black text-zinc-950 dark:text-zinc-50">카카오페이가 열렸나요?</div>
                 <p className="mt-1.5 break-keep text-[12px] font-medium leading-5 text-zinc-600 dark:text-zinc-300">
-                  카카오페이에서 <b>{formatKrw(plan.priceKrw)}</b> 직접 입력해주세요. 메모 항목에 카톡 닉네임을 적어주시면 매칭이 빨라요.
+                  카카오페이 송금 화면에 <b>{formatKrw(plan.priceKrw)}</b> 가 자동으로 채워져 있어요. 메모에 카톡 닉네임을 적어주시면 매칭이 빨라요.
                 </p>
               </>
             ) : (
@@ -275,7 +275,7 @@ export default function ProcessingClient() {
             <div className="mt-3 flex gap-2">
               <button
                 type="button"
-                onClick={() => (method === "kakaopay" ? openKakaopayQr(0) : openTossSend(plan.priceKrw))}
+                onClick={() => (method === "kakaopay" ? openKakaopayQr(plan.priceKrw) : openTossSend(plan.priceKrw))}
                 className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[#cfddf7] bg-[#f5f9ff] text-[13px] font-black text-[#3182f6] transition hover:bg-[#ebf2ff] dark:border-zinc-700 dark:bg-blue-950/24 dark:text-blue-300 dark:hover:bg-blue-950/40"
               >
                 {method === "kakaopay" ? "카카오페이 다시 열기" : "토스 다시 열기"}

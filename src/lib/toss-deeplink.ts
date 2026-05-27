@@ -2,31 +2,36 @@
 //   supertoss://send 가 토스 앱 송금 화면을 prefill (bank + accountNo + amount).
 //   비공식 reverse-engineered scheme — 토스 앱 업데이트로 깨질 risk 있음.
 //   카나리아 모니터링 별도 wave 권장.
-// Wave 776 (2026-05-27): 카카오페이 QR universal link 추가.
-//   https://qr.kakaopay.com/{qrId} 가 본인 카카오페이 수취 QR.
-//   링크 클릭 → 카카오페이 앱 열림 → 송금 화면 (수취자 prefill).
-// Wave 776b (2026-05-27): 비공식 reverse-engineered amount prefill (사용자 결정 — 위험 인지).
-//   공식 spec 은 "금액 지정 URL 미지원" (카카오페이 개발자 포럼).
-//   비공식: `amount × 524288 → hex → user ID 뒤에 concatenate` 로 작동 확인됨
-//   (moeun2 블로그 / velog @locked 사례).
-//   ⚠ RISK: 카카오 정책 변경 시 즉시 깨짐 + owner 카카오페이 계정 정지 가능성.
-//   fallback: amount=0 또는 비공식 깨질 경우 base URL 로 자동 fallback.
+// Wave 776 (2026-05-27): 카카오페이 QR universal link.
+//   https://qr.kakaopay.com/{qrId} — owner 가 카카오페이 앱에서 패키지별 고정금액 QR 발급.
+//   링크 클릭 → 카카오페이 앱 열림 → 송금 화면 (수취자 + 금액 prefill).
+// Wave 776b: 비공식 hex concatenation 시도 → 실패 (owner 발급 QR 은 alphanumeric prefix + amount + salt 복합 인코딩, reverse-eng 불가).
+// Wave 776c: amount=0 base URL fallback 시도 → 검증용.
+// Wave 776d (2026-05-27): owner 가 패키지별 5개 QR 직접 발급 + share.
+//   amount → URL lookup table 로 처리. amount 없거나 unknown 이면 base URL fallback.
 
-// 카카오페이 QR universal link — owner 카카오페이 수취 QR 코드 ID
-const KAKAOPAY_USER_ID = "281006020758065968058098";
-export const KAKAOPAY_QR_BASE_URL = `https://qr.kakaopay.com/${KAKAOPAY_USER_ID}`;
+// 변동 금액 QR (fallback) — owner 일반 송금 QR
+const KAKAOPAY_BASE_QR_ID = "281006020758065968058098";
+export const KAKAOPAY_QR_BASE_URL = `https://qr.kakaopay.com/${KAKAOPAY_BASE_QR_ID}`;
+
+// Wave 776d: owner 가 카카오페이 앱에서 직접 발급한 패키지별 고정금액 QR.
+//   prefix `FHrTex3Pf` = owner user ID (alphanumeric, 변동금액 QR 의 24자리 숫자 ID 와 다름).
+//   suffix = amount + salt/timestamp 복합 인코딩 (reverse-eng 불가, 매번 발급마다 다를 수 있음).
+const KAKAOPAY_QR_BY_AMOUNT: Record<number, string> = {
+  690: "https://qr.kakaopay.com/FHrTex3Pf15902386",
+  2900: "https://qr.kakaopay.com/FHrTex3Pf5aa09554",
+  9900: "https://qr.kakaopay.com/FHrTex3Pf135607224",
+  19900: "https://qr.kakaopay.com/FHrTex3Pf26de06257",
+  49900: "https://qr.kakaopay.com/FHrTex3Pf617601061",
+};
 
 /**
- * 카카오페이 QR URL 생성 (amount 포함).
- * 비공식 reverse-engineered: amount * 2^19 → hex → user ID 뒤에 concat.
- * amount <= 0 이면 base URL (변동 금액 QR).
+ * 카카오페이 QR URL 생성 — amount 별 owner 발급 QR lookup.
+ * 매핑 없으면 base URL (변동 금액).
  */
 export function buildKakaopayQrUrl(amount: number): string {
-  if (!Number.isFinite(amount) || amount <= 0) {
-    return KAKAOPAY_QR_BASE_URL;
-  }
-  const hexAmount = Math.floor(amount * 524288).toString(16);
-  return `${KAKAOPAY_QR_BASE_URL}${hexAmount}`;
+  if (!Number.isFinite(amount) || amount <= 0) return KAKAOPAY_QR_BASE_URL;
+  return KAKAOPAY_QR_BY_AMOUNT[amount] ?? KAKAOPAY_QR_BASE_URL;
 }
 
 const TOSS_BANK_PARAM = "우리은행"; // Wave 774b — 풀네임 (짧은 "우리" 는 토스에서 인식 안 됨)
