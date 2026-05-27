@@ -553,7 +553,14 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   //   1 region 247 매물 = 73s. 5 region = ~250s 예상 (5x).
   //   24h × 5 region/tick × 288 tick = 1440 region-hits → 111 구 풀 13 cycle / day.
   //   detail 도 다시 활성화 (5 sample × 5s = 25s, budget 안에 들어옴).
-  const maxCombos = boundedInt(options.maxCombos, 5, 1, 200);
+  // Wave 777 (2026-05-27 사용자 결정): 5 → 267 (전국 region 다 ingest).
+  //   사용자 의도: "옛날로 돌려라. 번개장터 급 유입. firehose + 모든 지역. 미스매칭 상관없음."
+  //   안전 검증 (Wave 776): region 267 병렬 fetch 5초 안 끝남, lambda 300s 한도 안. Wave 776 의 revert 사유는
+  //   raw filter 로직 실패였음 — region 늘림 자체는 검증됨.
+  //   효과: 신선도 4.4h → 5분 (53배), 매물 유입 53배.
+  //   trade-off: 당근 rate limit 위험 약간 ↑ (Wave 776 검증 통과). Vercel 비용 fetch 시간 그대로 (병렬).
+  //   복원 가이드: 위험 신호 (429/403) 시 env DAANGN_INGEST_MAX_COMBOS=5 박으면 즉시 fallback.
+  const maxCombos = boundedInt(options.maxCombos, 267, 1, 300);
   const maxDetailSamples = boundedInt(options.maxDetailSamples, 5, 0, 100);
   const delayMs = boundedInt(options.delayMs, 400, 200, 5000);
   const activeWindowHours = boundedInt(options.activeWindowHours, 72, 1, 720);
