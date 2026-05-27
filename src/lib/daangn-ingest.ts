@@ -530,20 +530,6 @@ export function selectDaangnFirehoseCombos(input: {
   return { combos, totalSpace: input.regions.length };
 }
 
-
-// Wave 776 (2026-05-27): raw_listings ingest filter — 우리 catalog 매핑 카테고리 8개만 keep.
-//   firehose mode 에서 fetch 한 매물 중 미스매칭 (식품/유아동/도서 등) drop.
-//   사용자 mapping (Wave 775 검증):
-//     1   디지털기기      → smartphone/tablet/earphone/laptop/smartwatch/desktop/speaker/camera/drone/monitor
-//     2   취미/게임/음반  → game_console/lego
-//     3   스포츠/레저     → sport_golf/shoe/bike
-//     5   여성의류        → clothing
-//     6   뷰티/미용       → perfume
-//     14  남성패션/잡화   → clothing/shoe/bag
-//     31  여성잡화        → bag
-//     172 생활가전        → home_appliance
-const DAANGN_TARGET_CATEGORY_IDS = new Set(["1", "2", "3", "5", "6", "14", "31", "172"]);
-
 // ───────────────────────────────────────────────────────────────────────────
 // Main ingest
 // ───────────────────────────────────────────────────────────────────────────
@@ -567,7 +553,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   //   1 region 247 매물 = 73s. 5 region = ~250s 예상 (5x).
   //   24h × 5 region/tick × 288 tick = 1440 region-hits → 111 구 풀 13 cycle / day.
   //   detail 도 다시 활성화 (5 sample × 5s = 25s, budget 안에 들어옴).
-  const maxCombos = boundedInt(options.maxCombos, 267, 1, 300);
+  const maxCombos = boundedInt(options.maxCombos, 5, 1, 200);
   const maxDetailSamples = boundedInt(options.maxDetailSamples, 5, 0, 100);
   const delayMs = boundedInt(options.delayMs, 400, 200, 5000);
   const activeWindowHours = boundedInt(options.activeWindowHours, 72, 1, 720);
@@ -770,20 +756,9 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const tRawUpsertStart = Date.now();
   let rawUpserted = 0;
   let rawSkippedExisting = 0;
-  // Wave 776 (2026-05-27): raw level 카테고리 filter — 우리 catalog 매핑 8개만 ingest.
-  //   firehose 모드라 한 region 검색 = 모든 카테고리 매물 섞임. 식품/유아동/도서 등 drop.
-  const filteredArticles = allArticles.filter((article) => {
-    const catId = article.category?.dbId;
-    return catId != null && DAANGN_TARGET_CATEGORY_IDS.has(String(catId));
-  });
-  const articlesDropped = allArticles.length - filteredArticles.length;
-  if (articlesDropped > 0) {
-    console.log(`[daangn-ingest] Wave 776 filter: ${articlesDropped}/${allArticles.length} 매물 drop (비-target 카테고리)`);
-  }
-
   if (!dryRun) {
     try {
-      rawUpserted = await upsertDaangnRawListings(filteredArticles, detailRecords);
+      rawUpserted = await upsertDaangnRawListings(allArticles, detailRecords);
     } catch (err) {
       sourceHealthStatus = "degraded";
       // 디버그 측면에서 충분히 보이도록 800자까지 보존
