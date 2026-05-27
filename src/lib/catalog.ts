@@ -13272,6 +13272,31 @@ export const CATALOG: Sku[] = [
       "짭", "가품", "미러", "샘플", "1:1", "11급", "삽니다", "구합니다", "매입"],
     msrpKrw: 239000, released: 2022,
   },
+  // Wave 781 (2026-05-27): 누락 NB 모델 신설 — DB 매물 1906R 201건 + 2010 24건, narrow 없어서 null drop.
+  {
+    id: "shoe-newbalance-1906r",
+    brand: "New Balance", category: "shoe", laneKey: "newbalance_1906r",
+    modelName: "New Balance 1906R",
+    aliases: ["NB 1906R", "뉴발란스 1906R", "1906R", "1906r"],
+    mustContain: [["1906r", "1906 r"], ["뉴발란스", "newbalance", "new balance", "nb ", "뉴발"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
+      "짭", "가품", "미러", "샘플", "1:1", "11급", "삽니다", "구합니다", "매입"],
+    msrpKrw: 199000, released: 2022,
+    confusionNote: "NB 1906R (2022). Y2K 트렌드. median ₩119K (DB 실측).",
+  },
+  {
+    id: "shoe-newbalance-2010",
+    brand: "New Balance", category: "shoe", laneKey: "newbalance_2010",
+    modelName: "New Balance 2010",
+    aliases: ["NB 2010", "뉴발란스 2010", "2010"],
+    mustContain: [["2010"], ["뉴발란스", "newbalance", "new balance", "nb ", "뉴발"]],
+    mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake",
+      "짭", "가품", "미러", "샘플", "1:1", "11급", "삽니다", "구합니다", "매입",
+      "2010v2", "2002", "1906", "990", "991", "992", "993", "327", "530", "550",
+      "kith", "키스"],  // Kith collab 은 별도 SKU
+    msrpKrw: 269000, released: 2012,
+    confusionNote: "NB 2010 (2012 originally). 최근 Y2K 트렌드로 매물 ↑. median ₩262K (DB 실측, Kith collab 제외).",
+  },
   {
     id: "shoe-newbalance-990v3",
     brand: "New Balance", category: "shoe", laneKey: "newbalance_990v3",
