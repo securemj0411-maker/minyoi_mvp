@@ -29,6 +29,7 @@
 import {
   DAANGN_BASE_URL,
   DAANGN_FASHION_CATEGORIES,
+  DAANGN_TARGET_CATEGORIES,
   DAANGN_SOURCE_ID,
   DEFAULT_DAANGN_FASHION_QUERY_SEEDS,
   DEFAULT_DAANGN_REGION_SEEDS,
@@ -148,6 +149,8 @@ export type DaangnIngestOptions = {
   categories?: DaangnCategorySeed[];
   // Phase 6i: region firehose 모드 (default true). false 시 legacy keyword combo 모드.
   useRegionFirehose?: boolean;
+  // Wave 775: Category-firehose 모드 (region × 우리 catalog 카테고리). default ON.
+  useCategoryFirehose?: boolean;
   // dry-run: DB write 안 함 (Stage 1 default)
   dryRun?: boolean;
 };
@@ -530,6 +533,32 @@ export function selectDaangnFirehoseCombos(input: {
   return { combos, totalSpace: input.regions.length };
 }
 
+// Wave 775 (2026-05-27): Category-firehose 모드 — region × 우리 catalog 카테고리 combo.
+//   기존 region-firehose 의 80% 미스매칭 (식품/유아동/도서 등 흡수) 해결.
+//   fetch 수: region × categories (예: 5 region × 8 cat = 40 fetch, Promise.all parallel).
+//   keyword 는 없고 카테고리 필터만 박음 (firehose 의 자릿수 throughput 유지).
+export function selectDaangnCategoryFirehoseCombos(input: {
+  regions: DaangnRegionSeed[];
+  categories: DaangnCategorySeed[];
+  maxRegions: number;
+  shuffleRegions?: boolean;
+}): DaangnComboSelection {
+  const shuffleRegions = input.shuffleRegions ?? false;
+  const order = shuffleRegions ? shuffleArray(input.regions) : input.regions;
+  const limit = Math.min(input.maxRegions, order.length);
+  const combos: DaangnIngestCombo[] = [];
+  for (let i = 0; i < limit; i += 1) {
+    for (const category of input.categories) {
+      combos.push({
+        region: order[i],
+        query: DAANGN_FIREHOSE_QUERY,  // keyword 없음
+        category,                      // 카테고리 필터 박힘
+      });
+    }
+  }
+  return { combos, totalSpace: input.regions.length * input.categories.length };
+}
+
 // ───────────────────────────────────────────────────────────────────────────
 // Main ingest
 // ───────────────────────────────────────────────────────────────────────────
@@ -569,12 +598,28 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   //   배경: keyword × region combo 가 99% 매물 흘림 (지역 firehose 가 진짜 프리미티브).
   //   `?in=구-id` 단독 fetch → 지역 최신 매물 50+개 통째 ingest → 자릿수 다른 throughput.
   //   options.useRegionFirehose=false 로 keyword 모드 fallback 가능 (실험/테스트).
+  // Wave 775 (2026-05-27): Category-firehose 모드 default ON.
+  //   region-firehose 80% 미스매칭 (식품/유아동/도서) 해결.
+  //   region × 우리 catalog 카테고리 8개 combo (keyword 없음, 카테고리 필터만).
+  //   options.useCategoryFirehose=false 시 옛 region-firehose fallback.
+  const useCategoryFirehose = options.useCategoryFirehose ?? true;
   const useRegionFirehose = options.useRegionFirehose ?? true;
 
   let combos: DaangnIngestCombo[];
-  if (useRegionFirehose) {
-    // Firehose 모드: keyword/category filter X, region 만 iteration.
-    //   maxCombos = 한 tick 에서 fetch 할 region 수.
+  if (useCategoryFirehose) {
+    // Wave 775: Category-firehose — region × 우리 카테고리 8개.
+    //   fetch 수: maxCombos (region) × DAANGN_TARGET_CATEGORIES.length (8) parallel.
+    //   미스매칭 80% → 예상 20% ↓ (우리 catalog 매핑 카테고리만 fetch).
+    const targetCategories = options.categories ?? DAANGN_TARGET_CATEGORIES;
+    const result = selectDaangnCategoryFirehoseCombos({
+      regions,
+      categories: targetCategories,
+      maxRegions: maxCombos,
+      shuffleRegions: true,
+    });
+    combos = result.combos;
+  } else if (useRegionFirehose) {
+    // 옛 Region firehose 모드 (fallback): keyword/category filter X, region 만 iteration.
     const result = selectDaangnFirehoseCombos({
       regions,
       maxRegions: maxCombos,
