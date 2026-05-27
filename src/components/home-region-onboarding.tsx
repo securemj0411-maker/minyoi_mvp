@@ -26,8 +26,10 @@ export function HomeRegionOnboarding() {
   const [searching, setSearching] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [gpsStatus, setGpsStatus] = useState<"idle" | "requesting" | "resolving" | "success" | "error">("idle");
+  const [gpsStatus, setGpsStatus] = useState<"idle" | "requesting" | "resolving" | "preview" | "saving" | "success" | "error">("idle");
   const [confirmedRegion, setConfirmedRegion] = useState<{ fullPath: string; name: string } | null>(null);
+  // Wave 886.9: GPS 결과 미리보기 (저장 전 사용자 확인용).
+  const [gpsPreview, setGpsPreview] = useState<{ fullPath: string; region1: string; region2: string; region3: string; lat: number; lng: number } | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastQueryRef = useRef<string>("");
 
@@ -124,11 +126,47 @@ export function HomeRegionOnboarding() {
     }
     setGpsStatus("requesting");
     setError(null);
+    // Wave 886.9: enableHighAccuracy=true — 동 단위 정확도 ↑ (GPS hw 우선, wifi/cell triangulation fallback).
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         setGpsStatus("resolving");
-        await submitWithToken({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setGpsStatus("success");
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        // 저장 X, reverse-geocode 결과만 받아서 사용자 확인 받기.
+        try {
+          const supabase = getSupabaseBrowserClient();
+          if (!supabase) { setError("로그인 정보가 없어요"); setGpsStatus("error"); return; }
+          const { data: { session } } = await supabase.auth.getSession();
+          const token = session?.access_token;
+          if (!token) { router.push("/login?next=/onboarding/home-region"); return; }
+          const res = await fetch(`/api/user/home-region/reverse-geocode?lat=${lat}&lng=${lng}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const json = (await res.json()) as {
+            ok: boolean;
+            fullPath?: string;
+            region1?: string; region2?: string; region3?: string;
+            lat?: number; lng?: number;
+            error?: string;
+          };
+          if (!json.ok || !json.fullPath) {
+            setGpsStatus("error");
+            setError(json.error === "KAKAO_REST_API_KEY missing" ? "주소 변환 키가 설정되지 않았어요" : "위치 변환 실패. 동네를 직접 입력해주세요.");
+            return;
+          }
+          setGpsPreview({
+            fullPath: json.fullPath,
+            region1: json.region1 ?? "",
+            region2: json.region2 ?? "",
+            region3: json.region3 ?? "",
+            lat,
+            lng,
+          });
+          setGpsStatus("preview");
+        } catch {
+          setGpsStatus("error");
+          setError("위치 변환 중 오류. 동네를 직접 입력해주세요.");
+        }
       },
       (err) => {
         setGpsStatus("error");
@@ -138,8 +176,20 @@ export function HomeRegionOnboarding() {
           setError("위치를 가져오지 못했어요. 동네를 직접 입력해주세요.");
         }
       },
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60_000 },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60_000 },
     );
+  }
+
+  function handleGpsConfirm() {
+    if (!gpsPreview) return;
+    setGpsStatus("saving");
+    void submitWithToken({ lat: gpsPreview.lat, lng: gpsPreview.lng });
+  }
+
+  function handleGpsReject() {
+    setGpsPreview(null);
+    setGpsStatus("idle");
+    setError(null);
   }
 
   function handleAddressPick(addr: AddressOption) {
@@ -191,24 +241,56 @@ export function HomeRegionOnboarding() {
           가입한 동네를 알려주시면 가까운 매물 위주로 추천드릴게요.
         </p>
 
-        <button
-          type="button"
-          onClick={handleGpsClick}
-          disabled={busy || gpsStatus === "requesting" || gpsStatus === "resolving"}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#3182f6] py-4 text-[15px] font-black text-white shadow-sm transition active:scale-[0.98] disabled:opacity-50"
-        >
-          {gpsStatus === "requesting" || gpsStatus === "resolving" ? (
-            <span>위치 확인 중…</span>
-          ) : (
-            <>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-              </svg>
-              내 위치로 자동 설정
-            </>
-          )}
-        </button>
+        {gpsStatus === "preview" && gpsPreview ? (
+          <div className="mt-6 rounded-2xl border-2 border-blue-200 bg-blue-50/60 p-4 dark:border-blue-900 dark:bg-blue-950/30">
+            <div className="text-[12px] font-bold text-blue-700 dark:text-blue-300">
+              📍 이 위치 맞아요?
+            </div>
+            <div className="mt-1.5 break-keep text-[18px] font-black leading-tight text-zinc-950 dark:text-zinc-50">
+              {gpsPreview.fullPath}
+            </div>
+            <div className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+              GPS는 가끔 옆 동을 잡아요. 다르면 아래에서 직접 입력 ↓
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={handleGpsReject}
+                disabled={busy}
+                className="rounded-xl border border-zinc-200 bg-white py-3 text-[14px] font-bold text-zinc-700 transition active:scale-[0.98] disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+              >
+                다른 동네
+              </button>
+              <button
+                type="button"
+                onClick={handleGpsConfirm}
+                disabled={busy || gpsStatus === "saving"}
+                className="rounded-xl bg-[#3182f6] py-3 text-[14px] font-black text-white shadow-sm transition active:scale-[0.98] disabled:opacity-50"
+              >
+                {gpsStatus === "saving" ? "저장 중…" : "맞아요"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleGpsClick}
+            disabled={busy || gpsStatus === "requesting" || gpsStatus === "resolving"}
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#3182f6] py-4 text-[15px] font-black text-white shadow-sm transition active:scale-[0.98] disabled:opacity-50"
+          >
+            {gpsStatus === "requesting" || gpsStatus === "resolving" ? (
+              <span>위치 확인 중…</span>
+            ) : (
+              <>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                </svg>
+                내 위치로 자동 설정
+              </>
+            )}
+          </button>
+        )}
 
         <div className="mt-7 border-t border-zinc-100 pt-5 dark:border-zinc-800">
           <div className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300">
