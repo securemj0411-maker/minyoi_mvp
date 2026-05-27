@@ -2721,6 +2721,52 @@ const CORE_TABLET_CATALOG: Sku[] = [
     msrpKrw: 2399000,
     released: 2025,
   },
+  // Wave 792 (2026-05-27): iPad Pro 13" 2TB Cellular narrow — broad 12건 잔존 sample 발견.
+  //   M5 13" 2TB Cell 6건 + M4 13" 2TB Cell 1건 모두 ₩3.3~3.99M (premium tier, 256GB 와 별도).
+  {
+    id: "ipad-pro-13-m5-2tb-cellular",
+    brand: "Apple", category: "tablet", laneKey: "ipad_pro_13_m5_2tb_cellular",
+    modelName: "iPad Pro 13\" M5 2TB Cellular",
+    aliases: ["아이패드 프로 13 M5 2TB Cellular"],
+    mustContain: [
+      ["아이패드", "ipad"], ["프로", "pro"], ["m5"],
+      ["13인치", "13 인치", "13형", "13\""],
+      ["2tb", "2 tb", "2테라"],
+      ["셀룰러", "cellular", " lte ", " 5g "],
+    ],
+    mustNotContain: [
+      "에어", "air", "미니", "mini",
+      "11인치", "11 인치", "11형", "11\"",
+      "wifi", "와이파이", "wi-fi",
+      "128gb", "256gb", "512gb", "1tb",
+      "(m1)", "(m2)", "(m3)", "(m4)", " m1 ", " m2 ", " m3 ", " m4 ",
+      ...TABLET_NOISE,
+    ],
+    msrpKrw: 3990000, released: 2025,
+    confusionNote: "iPad Pro 13 M5 2TB Cellular (top tier). median ₩3.95M (DB 6건).",
+  },
+  {
+    id: "ipad-pro-13-m4-2tb-cellular",
+    brand: "Apple", category: "tablet", laneKey: "ipad_pro_13_m4_2tb_cellular",
+    modelName: "iPad Pro 13\" M4 2TB Cellular",
+    aliases: ["아이패드 프로 13 M4 2TB Cellular"],
+    mustContain: [
+      ["아이패드", "ipad"], ["프로", "pro"], ["m4"],
+      ["13인치", "13 인치", "13형", "13\""],
+      ["2tb", "2 tb", "2테라"],
+      ["셀룰러", "cellular", " lte ", " 5g "],
+    ],
+    mustNotContain: [
+      "에어", "air", "미니", "mini",
+      "11인치", "11 인치", "11형", "11\"",
+      "wifi", "와이파이", "wi-fi",
+      "128gb", "256gb", "512gb", "1tb",
+      "(m1)", "(m2)", "(m3)", "(m5)", " m1 ", " m2 ", " m3 ", " m5 ",
+      ...TABLET_NOISE,
+    ],
+    msrpKrw: 3490000, released: 2024,
+    confusionNote: "iPad Pro 13 M4 2TB Cellular (top tier). median ₩3.3M (DB).",
+  },
   {
     id: "ipad-pro-13-m2-256-wifi",
     brand: "Apple",
