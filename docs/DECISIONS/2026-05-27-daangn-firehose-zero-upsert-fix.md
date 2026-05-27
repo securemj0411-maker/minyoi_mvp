@@ -263,3 +263,21 @@ The database path was no longer the bottleneck. The remaining `rawUpsert` time w
   - faster catalog hint matching (trie/hash)
   - adaptive region/category rotation from observed yield
   - optional worker sharding after yield logs are stable
+
+### Production Observation
+
+First full production run after deploy:
+
+- `2026-05-27 07:58 UTC` production `daangn-worker`
+  - `collected_count=42616`
+  - `upsertCandidateArticles=500`
+  - `upserted_count=26`
+  - `rawSkippedExisting=474`
+  - `preflight=588ms`
+  - `preflightSkipped=230`
+  - `rawRpc=292ms`
+  - `parsedUpsert=74ms`
+  - `rawUpsert=26701ms`
+  - `total=36240ms`
+
+Compared with the previous post-v2 run (`2026-05-27 07:53 UTC`), total duration improved from `51268ms` to `36240ms`, and `rawUpsert` improved from `43322ms` to `26701ms`.
