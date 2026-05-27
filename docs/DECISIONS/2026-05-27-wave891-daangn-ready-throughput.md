@@ -28,3 +28,20 @@
 
 - `npx tsx --test tests/daangn-ingest.test.ts` => pass
 - `npm run build` => pass
+
+## Production Measurement
+
+- Read-only measurement at `2026-05-28 00:10 KST`; no manual cron trigger and no DB mutation.
+- Before new deploy, recent `daangn-worker` runs wrote only `3` raw rows because the 500-row candidate window was mostly existing rows:
+  - `upsertCandidateArticles=500`
+  - `rawSkippedExisting=495`
+  - `articlesDeferredByUpsertCap=1027~1028`
+- After deploy, the new preflight window is active on production:
+  - `2026-05-28 00:03 KST`: `upsertCandidateArticles=1500`, `rawSkippedExisting=663`, `classifyCandidates=500`, `upserted=500`, duration `45.8s`.
+  - `2026-05-28 00:08 KST`: `upsertCandidateArticles=1500`, `rawSkippedExisting=1125`, `classifyCandidates=366`, `upserted=366`, duration `34.8s`.
+- Raw Daangn ingestion throughput improved materially without increasing the external fetch cadence.
+- Ready pool did not jump at the same rate during the short window:
+  - ready source snapshot moved roughly `daangn 298 -> 299`.
+  - recent ready 30m moved `daangn 7 -> 13`.
+  - dirty Daangn backlog stayed low-ish (`24 -> 32`), so the new bottleneck appears to be score/pool acceptance quality, not raw collection.
+- Caution: `score-worker` 1-minute cadence is not clearly trade-off-free. Recent score-worker runs take `51~67s`, so Vercel may skip/overlap minutes. A lifecycle worker also hit one Supabase statement timeout during the same observation window. Do not increase score cadence further without either source-specific worker separation or a lock/claim review.
