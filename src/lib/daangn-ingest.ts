@@ -763,9 +763,40 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const tRawUpsertStart = Date.now();
   let rawUpserted = 0;
   let rawSkippedExisting = 0;
+
+  // Wave 778 (2026-05-27 사용자 결정): DB 저장 전 카테고리 filter — 우리 catalog 매핑 8개만 keep.
+  //   배경: firehose mode 라 한 region 검색 = 모든 카테고리 매물 섞임 (94% 잡화 — 책/가구/식품/유아/도서).
+  //   사용자: "DB 저장 전에 거를 수 있는데 왜 가지고 있는거임? catalog SKU 없으면 진짜 무관."
+  //   당근 카테고리 ID → 우리 ready SKU 카테고리 매핑:
+  //     1   디지털기기      → smartphone/tablet/earphone/laptop/smartwatch/desktop/speaker/camera/drone/monitor
+  //     2   취미/게임/음반  → game_console/lego
+  //     3   스포츠/레저     → sport_golf/shoe/bike
+  //     5   여성의류        → clothing
+  //     6   뷰티/미용       → perfume
+  //     14  남성패션/잡화   → clothing/shoe/bag
+  //     31  여성잡화        → bag
+  //     172 생활가전        → home_appliance
+  //   효과: DB 부담 ~16GB/월 → ~3.2GB/월 (80% drop). API limit 무관 (fetch 동일).
+  //   안전: drop = 진짜 catalog 외 매물 (책/가구/식품 등). Wave 776 동일 logic 박았다가 즉흥 revert (commit log 빈).
+  //   safety log: drop 비율 99% 초과 시 logic bug 의심 — console.warn.
+  const DAANGN_TARGET_CATEGORY_IDS = new Set(["1", "2", "3", "5", "6", "14", "31", "172"]);
+  const filteredArticles = allArticles.filter((article) => {
+    const catId = article.category?.dbId;
+    return catId != null && DAANGN_TARGET_CATEGORY_IDS.has(String(catId));
+  });
+  const articlesDropped = allArticles.length - filteredArticles.length;
+  if (allArticles.length > 0) {
+    const dropRatio = articlesDropped / allArticles.length;
+    if (dropRatio >= 0.99) {
+      console.warn(`[wave778] DROP RATIO ${(dropRatio * 100).toFixed(1)}% (${articlesDropped}/${allArticles.length}) — logic bug 의심? category.dbId 측정 실패 가능성.`);
+    } else if (articlesDropped > 0) {
+      console.log(`[wave778] filter: ${articlesDropped}/${allArticles.length} 매물 drop (${(dropRatio * 100).toFixed(1)}%, 비-target 카테고리)`);
+    }
+  }
+
   if (!dryRun) {
     try {
-      rawUpserted = await upsertDaangnRawListings(allArticles, detailRecords);
+      rawUpserted = await upsertDaangnRawListings(filteredArticles, detailRecords);
     } catch (err) {
       sourceHealthStatus = "degraded";
       // 디버그 측면에서 충분히 보이도록 800자까지 보존
