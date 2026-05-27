@@ -209,28 +209,6 @@ export const DAANGN_FASHION_CATEGORIES: DaangnCategorySeed[] = [
   { id: 5, name: "여성의류" },
 ];
 
-// Wave 775 (2026-05-27): 우리 catalog 매핑 가능한 8 카테고리 (사용자 검증).
-//   firehose mode 의 80% 미스매칭 (식품/유아동/도서 등 흡수) 해결.
-//   각 카테고리 우리 ready SKU 매핑:
-//     1   디지털기기      → smartphone/tablet/earphone/laptop/smartwatch/desktop/speaker/camera/drone/monitor
-//     2   취미/게임/음반  → game_console/lego
-//     3   스포츠/레저     → sport_golf/shoe/bike
-//     5   여성의류        → clothing
-//     6   뷰티/미용       → perfume
-//     14  남성패션/잡화   → clothing/shoe/bag
-//     31  여성잡화        → bag
-//     172 생활가전        → home_appliance
-export const DAANGN_TARGET_CATEGORIES: DaangnCategorySeed[] = [
-  { id: 1, name: "디지털기기" },
-  { id: 2, name: "취미/게임/음반" },
-  { id: 3, name: "스포츠/레저" },
-  { id: 5, name: "여성의류" },
-  { id: 6, name: "뷰티/미용" },
-  { id: 14, name: "남성패션/잡화" },
-  { id: 31, name: "여성잡화" },
-  { id: 172, name: "생활가전" },
-];
-
 // Phase 6h: 구·시·군 단위 region pool 111개 (광역시 + 경기도 + 광역단체).
 //
 // 배경 (Phase 6e 회귀 + 6g 확장):
