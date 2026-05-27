@@ -9279,6 +9279,8 @@ export const CATALOG: Sku[] = [
       "마론에디션", "에스피오나지", "espionage", "벨리에", "vellie", "투티", "투티/a9",
       "로어즈", "loars",
       "원피스", "dress", "드레스 폴로",
+      // Wave 790 (2026-05-27): minor patch — sample 1건 흡수.
+      "몽벨 재팬", "몽벨재팬",
       // Wave 236: 비폴로 brand 매물 차단 (사용자 코멘트 직접 발견 brand 다수).
       "바나나리퍼블릭", "banana republic", "타미힐피거", "tommy hilfiger", "유니클로", "uniqlo",
       // Wave 803: Nike polo shirt wording is a garment type, not Polo Ralph Lauren.
@@ -9347,6 +9349,9 @@ export const CATALOG: Sku[] = [
       // Wave 223: 다른 brand 의 "폴로/Polo" 단어 매물 차단.
       "타이틀리스트", "titleist", "캘러웨이", "callaway", "푸마 폴로", "puma polo",
       "골프 폴로", "골프폴로", "골프티", "골프 티",
+      // Wave 790 (2026-05-27): sample 4건 흡수 패턴.
+      "디젤", "diesel", "콜핑", "kolping", "pearly gates", "파리게이츠", "펄리게이츠",
+      "duvic", "듀빅",
       // Wave 802: generic/sub-brand "polo shirt" wording must not imply Polo Ralph Lauren.
       "z pattern", "z패턴", "zpattern", "cos", "코스", "솔리드옴므", "솔리드 옴므", "solid homme",
       "더 니트 컴퍼니", "the knit company", "인더로우", "in the row",
@@ -11963,14 +11968,59 @@ export const CATALOG: Sku[] = [
   {
     id: "shoe-mizuno-alpha",
     brand: "Mizuno", category: "shoe", laneKey: "mizuno_alpha",
-    modelName: "Mizuno Alpha (1 / 2 / 3 / 엘리트)",
-    aliases: ["Mizuno Alpha", "미즈노 알파", "알파 재팬", "알파 엘리트"],
+    modelName: "Mizuno Alpha (broad — 미커버 세대)",
+    aliases: ["Mizuno Alpha", "미즈노 알파", "알파 엘리트"],
     mustContain: [["mizuno", "미즈노"], ["알파", "alpha"]],
     // Wave 751b Pareto: 700x audit — "(가격 제시)" 같은 placeholder bait 차단.
+    // Wave 790 (2026-05-27): version narrow 분리 → broad 에서 차단.
     mustNotContain: ["키즈", "kids", "토들러", "복각", "rep ", "replica", "이미테이션", "fake", "모렐리아", "morelia", "살라", "sala", "모나르시다", "monarcida", "골프", "아이언",
       "(가격 제시)", "가격 제시", "가격제시", "(가격제시)", "가격 제안", "가격제안받", "가격 제안받",
+      "알파 재팬", "알파재팬", "alpha japan", "alpha jp", " jp", "made in japan",
+      "알파 2", "alpha 2", "알파2", "alpha2",
+      "알파 3", "alpha 3", "알파3", "alpha3",
+      "40주년", "40th",
     ],
+    msrpKrw: 120000, released: 2022,
+  },
+  // Wave 790 (2026-05-27): Mizuno Alpha version narrow — sample 시세 dilution.
+  //   Alpha JP MD ₩150K vs Alpha3 ₩71K vs 40주년 한정 ₩50K.
+  {
+    id: "shoe-mizuno-alpha-japan",
+    brand: "Mizuno", category: "shoe", laneKey: "mizuno_alpha_japan",
+    modelName: "Mizuno Alpha Japan (MD, Made in Japan)",
+    aliases: ["미즈노 알파 재팬", "Mizuno Alpha Japan MD"],
+    mustContain: [["mizuno", "미즈노"], ["알파", "alpha"], ["재팬", "japan", "jp", "md", "made in japan"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "모렐리아", "살라", "sala", "monarcida", "골프",
+      "알파 2", "alpha 2", "알파2", "alpha2",
+      "알파 3", "alpha 3", "알파3", "alpha3",
+      "40주년", "40th"],
     msrpKrw: 180000, released: 2022,
+    confusionNote: "Mizuno Alpha Japan MD (1세대). median ₩150K (DB).",
+  },
+  {
+    id: "shoe-mizuno-alpha-2",
+    brand: "Mizuno", category: "shoe", laneKey: "mizuno_alpha_2",
+    modelName: "Mizuno Alpha 2 (2세대)",
+    aliases: ["미즈노 알파 2", "Mizuno Alpha 2"],
+    mustContain: [["mizuno", "미즈노"], ["알파 2", "alpha 2", "알파2", "alpha2"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "모렐리아", "살라", "sala", "monarcida", "골프",
+      "재팬", "japan", "jp", " md",
+      "알파 3", "alpha 3", "알파3", "alpha3",
+      "40주년", "40th"],
+    msrpKrw: 160000, released: 2023,
+  },
+  {
+    id: "shoe-mizuno-alpha-3",
+    brand: "Mizuno", category: "shoe", laneKey: "mizuno_alpha_3",
+    modelName: "Mizuno Alpha 3 (3세대)",
+    aliases: ["미즈노 알파 3", "Mizuno Alpha 3"],
+    mustContain: [["mizuno", "미즈노"], ["알파 3", "alpha 3", "알파3", "alpha3"]],
+    mustNotContain: ["키즈", "kids", "복각", "rep ", "replica", "fake", "모렐리아", "살라", "sala", "monarcida", "골프",
+      "재팬", "japan", "jp", " md",
+      "알파 2", "alpha 2", "알파2", "alpha2",
+      "40주년", "40th"],
+    msrpKrw: 150000, released: 2024,
+    confusionNote: "Mizuno Alpha 3 (3세대). median ₩71K (DB).",
   },
   {
     id: "shoe-mizuno-monarcida",
