@@ -2192,9 +2192,30 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   const remainingAfterPool = Math.max(0, limit - poolRows.length);
   if (remainingAfterPool === 0) return poolRows.slice(0, limit);
 
+  // Wave 768 (2026-05-26 사용자 결정 — 당근 우선): source priority 재배치.
+  //   사용자: "당근이 우선임. 초반 gateway 역할. 당근 ready 빨리 늘리기."
+  //   기존 priority: pool → fashion (35%) → joongna (25%) → daangn (15%) → bunjang (나머지).
+  //   신규 priority: pool → **daangn (40%)** → fashion (25%) → joongna (15%) → bunjang (나머지).
+  //   효과: 당근 score backlog 4,000+ drain 속도 ↑ — 당근 ready 증가.
+  //   trade-off: 번장 backlog drain 약간 늦어짐 (번장 7만 → 부담 작음).
+
+  // Daangn lane — 사용자 의도 "초반 gateway" + score backlog 4,000+ drain 우선.
+  const daangnReserveLimit = Math.min(remainingAfterPool, Math.max(80, Math.floor(limit * 0.40)));
+  const daangnRows = await (async () => {
+    try {
+      return fetchScorableRows("&source=eq.daangn", daangnReserveLimit, seenPids);
+    } catch (err) {
+      console.warn("loadScorableRows daangn fetch failed (non-fatal)", err);
+      return [];
+    }
+  })();
+  const remainingAfterDaangn = Math.max(0, limit - poolRows.length - daangnRows.length);
+  if (remainingAfterDaangn === 0) return [...poolRows, ...daangnRows].slice(0, limit);
+
   // Wave 807: fashion parser drift backfills should not starve behind a broad fresh-dirty backlog.
   // 신발/의류는 parser/catalog split 빈도가 높아서 재채점 큐에 올라온 뒤에도 별도 reserve lane이 필요하다.
-  const fashionReserveLimit = Math.min(remainingAfterPool, Math.max(50, Math.floor(limit * 0.35)));
+  // Wave 768: 35% → 25% (당근 우선으로 quota 양보).
+  const fashionReserveLimit = Math.min(remainingAfterDaangn, Math.max(50, Math.floor(limit * 0.25)));
   const fashionRows = await (async () => {
     try {
       return fetchScorableRows(
@@ -2207,13 +2228,14 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
       return [];
     }
   })();
-  const remainingAfterFashion = Math.max(0, limit - poolRows.length - fashionRows.length);
-  if (remainingAfterFashion === 0) return [...poolRows, ...fashionRows].slice(0, limit);
+  const remainingAfterFashion = Math.max(0, limit - poolRows.length - daangnRows.length - fashionRows.length);
+  if (remainingAfterFashion === 0) return [...poolRows, ...daangnRows, ...fashionRows].slice(0, limit);
 
   // Joongna is a real second supply source, not just a garnish. Keep a
   // proportional lane so broad parser/fashion backfills cannot leave it stuck
   // at a tiny fixed trickle when the score queue is large.
-  const sourceReserveLimit = Math.min(remainingAfterFashion, Math.max(100, Math.floor(limit * 0.25)));
+  // Wave 768: 25% → 15% (당근 우선).
+  const sourceReserveLimit = Math.min(remainingAfterFashion, Math.max(60, Math.floor(limit * 0.15)));
   const joongnaRows = await (async () => {
     try {
       return fetchScorableRows("&source=eq.joongna", sourceReserveLimit, seenPids);
@@ -2222,26 +2244,12 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
       return [];
     }
   })();
-  const remainingAfterJoongna = Math.max(0, limit - poolRows.length - fashionRows.length - joongnaRows.length);
-  if (remainingAfterJoongna === 0) return [...poolRows, ...fashionRows, ...joongnaRows].slice(0, limit);
-
-  // Daangn (Phase 6 active): joongna 와 동일 패턴 — proportional lane.
-  // 신규 source 라 score queue 작음 → reserve quota 작게 (15% or 50 min).
-  const daangnReserveLimit = Math.min(remainingAfterJoongna, Math.max(50, Math.floor(limit * 0.15)));
-  const daangnRows = await (async () => {
-    try {
-      return fetchScorableRows("&source=eq.daangn", daangnReserveLimit, seenPids);
-    } catch (err) {
-      console.warn("loadScorableRows daangn fetch failed (non-fatal)", err);
-      return [];
-    }
-  })();
-  const remainingLimit = Math.max(0, limit - poolRows.length - fashionRows.length - joongnaRows.length - daangnRows.length);
-  if (remainingLimit === 0) return [...poolRows, ...fashionRows, ...joongnaRows, ...daangnRows].slice(0, limit);
+  const remainingLimit = Math.max(0, limit - poolRows.length - daangnRows.length - fashionRows.length - joongnaRows.length);
+  if (remainingLimit === 0) return [...poolRows, ...daangnRows, ...fashionRows, ...joongnaRows].slice(0, limit);
 
   const generalRows: ScorableRawRow[] = [];
   for (const source of GENERAL_SCORE_SOURCES) {
-    const sourceRemaining = Math.max(0, limit - poolRows.length - fashionRows.length - joongnaRows.length - daangnRows.length - generalRows.length);
+    const sourceRemaining = Math.max(0, limit - poolRows.length - daangnRows.length - fashionRows.length - joongnaRows.length - generalRows.length);
     if (sourceRemaining === 0) break;
     try {
       generalRows.push(...await fetchScorableRows(`&source=eq.${source}`, sourceRemaining, seenPids));
@@ -2249,7 +2257,7 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
       console.warn(`loadScorableRows ${source} fetch failed (non-fatal)`, err);
     }
   }
-  return [...poolRows, ...fashionRows, ...joongnaRows, ...daangnRows, ...generalRows].slice(0, limit);
+  return [...poolRows, ...daangnRows, ...fashionRows, ...joongnaRows, ...generalRows].slice(0, limit);
 }
 
 async function loadDirtyPoolScorableRows(
