@@ -10947,6 +10947,51 @@ export const CATALOG: Sku[] = [
     ],
     msrpKrw: 290000, released: 2018,
   },
+  // Wave 780 (2026-05-27): Dunk Mid/High broad — Low 만 narrow 36개 있고 Mid/High SKU 자체가 없어서
+  //   매물 ~183건 (DB sweep) null sku_id 로 drop 중. owner 조던 Hi/Low 패턴 동일 누락.
+  //   broad SKU 신설 → narrow split 은 추후 wave (Mid/High 매물 분포 확인 후).
+  {
+    id: "shoe-nike-dunk-mid-broad",
+    brand: "Nike", category: "shoe", laneKey: "nike_dunk_mid_broad",
+    modelName: "Nike Dunk Mid",
+    aliases: ["나이키 덩크 미드", "Nike Dunk Mid"],
+    mustContain: [
+      ["nike", "나이키"],
+      ["덩크", "dunk"],
+      ["미드", "mid", " mid"],
+    ],
+    mustNotContain: [
+      "키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake",
+      "low", "로우", "로우탑", "low top",
+      "high", "하이", "하이탑", "high top",
+      "sb", "슈프림", "supreme",
+      "에어포스", "airforce", "af1", "에어조던", "jordan",
+      "박스만", "박스 단품", "신발끈", "끈만", "라이너만",
+    ],
+    msrpKrw: 159000, released: 2020,
+    confusionNote: "Nike Dunk Mid broad. Dunk Low narrow 와 별도 (Wave 780).",
+  },
+  {
+    id: "shoe-nike-dunk-high-broad",
+    brand: "Nike", category: "shoe", laneKey: "nike_dunk_high_broad",
+    modelName: "Nike Dunk High",
+    aliases: ["나이키 덩크 하이", "Nike Dunk High"],
+    mustContain: [
+      ["nike", "나이키"],
+      ["덩크", "dunk"],
+      ["하이", "high", " high"],
+    ],
+    mustNotContain: [
+      "키즈", "kids", "복각", "rep ", "replica", "이미테이션", "fake",
+      "low", "로우", "로우탑", "low top",
+      "mid", "미드",
+      "sb", "슈프림", "supreme",
+      "에어포스", "airforce", "af1", "에어조던", "jordan",
+      "박스만", "박스 단품", "신발끈", "끈만", "라이너만",
+    ],
+    msrpKrw: 169000, released: 1985,
+    confusionNote: "Nike Dunk High broad. Dunk Low / Mid 와 별도.",
+  },
   {
     id: "shoe-supreme-timberland-collab",
     brand: "Supreme x Timberland", category: "shoe", laneKey: "supreme_timberland_collab",
