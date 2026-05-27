@@ -241,7 +241,7 @@ export function HomeRegionOnboarding() {
           가입한 동네를 알려주시면 가까운 매물 위주로 추천드릴게요.
         </p>
 
-        {gpsStatus === "preview" && gpsPreview ? (
+        {(gpsStatus === "preview" || gpsStatus === "saving") && gpsPreview ? (
           <div className="mt-6 rounded-2xl border-2 border-blue-200 bg-blue-50/60 p-4 dark:border-blue-900 dark:bg-blue-950/30">
             <div className="text-[12px] font-bold text-blue-700 dark:text-blue-300">
               📍 이 위치 맞아요?
