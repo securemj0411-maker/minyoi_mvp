@@ -1464,6 +1464,48 @@ export const SHOE_NARROW_CATALOG: Sku[] = [
     defaultProductType: "sneaker",
   },
 
+  // Wave 785 (2026-05-27): AJ3/AJ4 collab narrow — broad 에 차단되어 매물 drop 중.
+  //   매물 적지만 시세 거품 큼 (AJ4 Travis ₩440K vs broad ₩300K).
+  {
+    id: "shoe-nike-airjordan-3-fragment",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Jordan 3 Fragment",
+    aliases: ["AJ3 Fragment", "조던 3 프래그먼트"],
+    mustContain: [["조던", "jordan", "에어조던"], ["aj3", " 3 ", "3 retro"], ["fragment", "프래그먼트", "프라그먼트"]],
+    mustNotContain: ["aj1", "aj4", "aj5", "aj11", "조던 1", "조던 4",
+      "travis", "트래비스",
+      "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "삽니다", "매입"],
+    msrpKrw: 250000, released: 2020, defaultProductType: "sneaker",
+    confusionNote: "AJ3 Fragment collab. median ₩250K (DB 7건).",
+  },
+  {
+    id: "shoe-nike-airjordan-4-travis-scott",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Jordan 4 Travis Scott",
+    aliases: ["AJ4 Travis", "조던 4 트래비스 스콧"],
+    mustContain: [["조던", "jordan", "에어조던"], ["aj4", " 4 ", "4 retro", "조던4"], ["travis", "트래비스"]],
+    mustNotContain: ["aj1", "aj3", "aj5", "aj11", "조던 1", "조던 3",
+      "fragment", "sb", "nigel", "키즈", "kids", "td", "gs",
+      "짝퉁", "rep ", "replica", "fake", "11급", "1:1",
+      "삽니다", "매입"],
+    msrpKrw: 250000, released: 2018, defaultProductType: "sneaker",
+    confusionNote: "AJ4 Travis Scott (2018). median ₩440K (DB).",
+  },
+  {
+    id: "shoe-nike-airjordan-4-sb-pine-green",
+    brand: "Nike", category: "shoe",
+    modelName: "Air Jordan 4 SB Pine Green",
+    aliases: ["AJ4 SB", "조던 4 SB 파인그린"],
+    mustContain: [["조던", "jordan", "에어조던"], ["aj4", " 4 ", "4 retro", "조던4"], ["sb"], ["pine green", "파인그린", "파인 그린"]],
+    mustNotContain: ["aj1", "aj3", "aj5", "aj11", "travis", "fragment", "nigel",
+      "키즈", "kids", "td", "gs", "짝퉁", "rep ", "replica", "fake",
+      "삽니다", "매입"],
+    msrpKrw: 280000, released: 2023, defaultProductType: "sneaker",
+    confusionNote: "AJ4 SB Pine Green (2023). median ₩437K (DB).",
+  },
+
   {
     id: "shoe-nike-airjordan-11",
     brand: "Nike",
