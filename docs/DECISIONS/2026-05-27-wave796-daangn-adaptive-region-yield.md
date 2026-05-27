@@ -120,3 +120,32 @@ If this grows annoying, next wave should compact this JSON or move it into a dai
 - Once several runs are stored, lower `DAANGN_INGEST_MAX_COMBOS` in a controlled test to verify `regionSelectionMode=adaptive` and `adaptiveRegionScoreRegions > 0`.
 - Consider adding an admin view for top/zero-yield Daangn regions if we want operational visibility.
 
+## Production Observation
+
+Manual Vercel production deploy was required because GitHub CI is currently failing on older unrelated test fixture type errors (`wave141`, `wave145`, `wave148`, etc.). Remote Vercel build itself passed and was aliased to production.
+
+First observed production `daangn-worker` run after deploy:
+
+- `started_at=2026-05-27T08:33:02Z`
+- `duration_ms=24804`
+- `collected_count=34757`
+- `upserted_count=194`
+- `regionSelectionMode=all_regions`
+- `adaptiveRegionScoreRegions=0` (expected: no previous region-yield stats existed yet)
+- `regionRows=267`
+- `zeroCatalogHintRegions=139`
+- `catalogHintArticles=1976`
+- `upsertCandidateArticles=500`
+- `sourceHealthStatus=healthy`
+
+Top region-yield examples:
+
+| region | fetched | targetCategory | catalogHint | upsertCandidate |
+|---|---:|---:|---:|---:|
+| 용산구 | 269 | 226 | 40 | 25 |
+| 금천구 | 274 | 191 | 39 | 0 |
+| 부산 동구 | 267 | 200 | 37 | 15 |
+| 양천구 | 249 | 166 | 34 | 17 |
+| 강남구 | 263 | 221 | 33 | 33 |
+
+Important: region keys are now source seed ids/names, not dong-level article payload regions. This confirms the earlier dry-run correction is working in production.
