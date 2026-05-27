@@ -428,8 +428,8 @@ function buildRawListingRow(
 async function upsertDaangnRawListings(
   articles: DaangnSearchArticle[],
   detailRecords: DaangnIngestDetailRecord[],
-): Promise<number> {
-  if (articles.length === 0) return 0;
+): Promise<{ rawUpserted: number; rawSkippedExisting: number }> {
+  if (articles.length === 0) return { rawUpserted: 0, rawSkippedExisting: 0 };
   const nowIso = new Date().toISOString();
 
   // detail enriched 매물 (shipping 추론됨) 은 우선 사용
@@ -461,7 +461,7 @@ async function upsertDaangnRawListings(
 
   const rawRows = [...byPid.values()].map((b) => b.raw);
   const parsedRows = [...byPid.values()].map((b) => b.parsed).filter((p): p is Record<string, unknown> => Boolean(p));
-  if (rawRows.length === 0) return 0;
+  if (rawRows.length === 0) return { rawUpserted: 0, rawSkippedExisting: 0 };
 
   // Phase 6i++++ RPC bulk upsert: PostgREST ON CONFLICT 처리 serialize 한계 우회.
   //   parallel chunked 도 효과 X 확인 (213s) — Supabase 가 row 별 락 leitung.
@@ -474,6 +474,8 @@ async function upsertDaangnRawListings(
   if (!rawRes.ok) {
     throw new Error(`daangn_bulk_upsert_raw_listings RPC failed: ${rawRes.status} ${await rawRes.text()}`);
   }
+  const rawAffected = Number(await rawRes.json());
+  const rawUpserted = Number.isFinite(rawAffected) ? Math.max(0, Math.floor(rawAffected)) : rawRows.length;
 
   if (parsedRows.length > 0) {
     const parsedRes = await restFetch(rpcUrl("daangn_bulk_upsert_listing_parsed"), {
@@ -487,7 +489,10 @@ async function upsertDaangnRawListings(
     }
   }
 
-  return rawRows.length;
+  return {
+    rawUpserted,
+    rawSkippedExisting: Math.max(0, rawRows.length - rawUpserted),
+  };
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -907,7 +912,9 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
 
   if (!dryRun) {
     try {
-      rawUpserted = await upsertDaangnRawListings(upsertCandidateArticles, detailRecords);
+      const upsertResult = await upsertDaangnRawListings(upsertCandidateArticles, detailRecords);
+      rawUpserted = upsertResult.rawUpserted;
+      rawSkippedExisting = upsertResult.rawSkippedExisting;
     } catch (err) {
       sourceHealthStatus = "degraded";
       // 디버그 측면에서 충분히 보이도록 800자까지 보존

@@ -108,3 +108,50 @@ Applied production indexes:
 
 - Raw upsert remains the largest Daangn-worker cost (`~100s` for 498 rows in the verified production run). If Daangn supply should exceed the current 500/write cap, optimize the raw upsert RPC or shard Daangn workers by region bucket before raising the cap.
 - Fraud-group RPC is now functional but still several seconds. If it grows again, replace the per-run aggregate with a materialized/cache table updated by housekeeper.
+
+## Follow-up — raw upsert no-op skip
+
+### Context
+
+After score-worker stabilization, the remaining Daangn bottleneck was `daangn-worker` raw write time:
+
+- verified production run before fix: `rawUpsert=100654ms` for `~498` rows
+- function was already set-based, but conflict rows were updated every run
+- because Daangn firehose repeatedly sees the same boosted rows, this re-wrote `last_seen_at`, `updated_at`, `raw_json`, and `score_dirty` even when title/price/SKU/state did not change
+- side effect: already-scored rows could be requeued as `score_dirty=true` from a pure search touch
+
+### Decision
+
+- Replace `daangn_bulk_upsert_raw_listings(jsonb)` with a no-op-skip conflict policy:
+  - insert new rows normally
+  - update existing rows only if meaningful listing/scoring fields changed
+  - allow a coarse active touch only when existing `last_seen_at` is older than 2h
+  - preserve `score_dirty` for pure seen-again touches
+  - set `score_dirty=true` only when meaningful fields changed and the new row is pool eligible
+- Replace `daangn_bulk_upsert_listing_parsed(jsonb)` so parsed rows also skip no-op conflict updates.
+- Update `upsertDaangnRawListings()` to read the RPC affected-row count and report `rawSkippedExisting`.
+- Add missing Daangn/raw runtime columns to migration/schema snapshots so the RPC definition is reproducible.
+
+### Production Application
+
+Supabase CLI migration push is still unsafe because remote migration history contains many versions missing locally, so the function replacement was applied directly to production with the same SQL that was committed as a migration.
+
+### Verification
+
+- Production RPC repeat-payload test:
+  - input: `500` latest Daangn rows with fresh `last_seen_at`
+  - result: `affected=0`, `skipped=500`
+  - duration: `417ms`
+- Local small active ingest against production DB:
+  - `maxCombos=5`, `maxUpsertArticles=50`
+  - `articles=272`, `catalogHint=13`, `upsertCandidate=13`
+  - `rawUpserted=13`, `rawSkippedExisting=0`
+  - `rawUpsert=1737ms`, health=`healthy/ok`
+- Tests:
+  - `npx tsx --test tests/daangn-source-probe.test.ts tests/daangn-ingest.test.ts` passed
+  - `npm run build` passed
+
+### Deferred
+
+- Need observe the next full production `daangn-worker` run after app deploy. Expected result: much lower `rawUpsert` when candidates are mostly already-seen rows, plus meaningful `rawSkippedExisting` in stage stats.
+- If rawUpsert is still high for genuinely new rows, the next lever is sharding Daangn workers by region bucket or raising `DAANGN_INGEST_MAX_UPSERT_ARTICLES` gradually while watching DB write duration.
