@@ -140,6 +140,9 @@ export type DaangnIngestResult = {
     detailClassify?: number; // pre-classify for detail priority sort
     detailFetch?: number;   // sequential 5 detail fetches
     rawUpsert?: number;     // upsertDaangnRawListings (raw + parsed)
+    categoryFilter?: number; // raw DB write 전 target category sieve
+    catalogHint?: number;   // catalog hint preselect before classifier/parser
+    upsertPreselect?: number; // freshness sort + cap
     preflight?: number;     // existing-row lookup before expensive classify
     preflightSkipped?: number; // rows skipped before classifier/parser
     rawRpc?: number;        // daangn_bulk_upsert_raw_listings_v2
@@ -290,9 +293,52 @@ function daangnSkuCategories(categoryId: string | null | undefined): Sku["catego
   return categories ? [...categories] : undefined;
 }
 
-let daangnCatalogHintCache: Map<string, string[]> | null = null;
+type DaangnCatalogHintIndex = {
+  buckets: Map<string, string[]>;
+  shortHints: string[];
+};
 
-function daangnCatalogHints(categoryId: string | null): string[] {
+const EMPTY_DAANGN_CATALOG_HINT_INDEX: DaangnCatalogHintIndex = {
+  buckets: new Map(),
+  shortHints: [],
+};
+
+const DAANGN_CLASSIFIED_RECHECK_MS = 2 * 60 * 60 * 1000;
+const DAANGN_UNCLASSIFIED_RECHECK_MS = 2 * 60 * 60 * 1000;
+
+let daangnCatalogHintCache: Map<string, DaangnCatalogHintIndex> | null = null;
+
+function daangnHintKey(text: string): string | null {
+  const compact = text.replace(/\s+/g, "");
+  return compact.length >= 2 ? compact.slice(0, 2) : null;
+}
+
+function buildDaangnCatalogHintIndex(hints: string[]): DaangnCatalogHintIndex {
+  const buckets = new Map<string, string[]>();
+  const shortHints: string[] = [];
+  for (const hint of [...new Set(hints)].sort((a, b) => b.length - a.length)) {
+    const key = daangnHintKey(hint);
+    if (!key) {
+      shortHints.push(hint);
+      continue;
+    }
+    const bucket = buckets.get(key) ?? [];
+    bucket.push(hint);
+    buckets.set(key, bucket);
+  }
+  return { buckets, shortHints };
+}
+
+function daangnTextHintKeys(text: string): Set<string> {
+  const compact = text.replace(/\s+/g, "");
+  const keys = new Set<string>();
+  for (let i = 0; i < compact.length - 1; i += 1) {
+    keys.add(compact.slice(i, i + 2));
+  }
+  return keys;
+}
+
+function daangnCatalogHintIndex(categoryId: string | null): DaangnCatalogHintIndex {
   if (!daangnCatalogHintCache) {
     const all = buildCatalogSearchQueryEntries()
       .map((entry) => ({
@@ -300,23 +346,36 @@ function daangnCatalogHints(categoryId: string | null): string[] {
         query: normalize(entry.query),
       }))
       .filter((entry) => entry.query.replace(/\s+/g, "").length >= 4);
-    const map = new Map<string, string[]>();
-    const allHints = [...new Set(all.map((entry) => entry.query))].sort((a, b) => b.length - a.length);
-    map.set("*", allHints);
+    const map = new Map<string, DaangnCatalogHintIndex>();
+    map.set("*", buildDaangnCatalogHintIndex(all.map((entry) => entry.query)));
     for (const [daangnCategoryId, skuCategories] of Object.entries(DAANGN_SKU_CATEGORIES_BY_CATEGORY_ID)) {
       const scoped = all
         .filter((entry) => skuCategories.has(entry.category))
         .map((entry) => entry.query);
-      map.set(daangnCategoryId, [...new Set(scoped)].sort((a, b) => b.length - a.length));
+      map.set(daangnCategoryId, buildDaangnCatalogHintIndex(scoped));
     }
     daangnCatalogHintCache = map;
   }
-  return daangnCatalogHintCache.get(categoryId ?? "") ?? daangnCatalogHintCache.get("*") ?? [];
+  return daangnCatalogHintCache.get(categoryId ?? "") ?? daangnCatalogHintCache.get("*") ?? EMPTY_DAANGN_CATALOG_HINT_INDEX;
 }
 
 function hasDaangnCatalogHint(article: DaangnSearchArticle): boolean {
   const text = normalize(`${article.title ?? ""} ${article.content ?? ""}`).slice(0, 1200);
-  return daangnCatalogHints(article.category?.dbId ?? null).some((hint) => text.includes(hint));
+  const index = daangnCatalogHintIndex(article.category?.dbId ?? null);
+  for (const hint of index.shortHints) {
+    if (text.includes(hint)) return true;
+  }
+  const checked = new Set<string>();
+  for (const key of daangnTextHintKeys(text)) {
+    const bucket = index.buckets.get(key);
+    if (!bucket) continue;
+    for (const hint of bucket) {
+      if (checked.has(hint)) continue;
+      checked.add(hint);
+      if (text.includes(hint)) return true;
+    }
+  }
+  return false;
 }
 
 function articleFreshnessMs(article: DaangnSearchArticle): number {
@@ -426,10 +485,12 @@ function buildDaangnPreflightRow(
 
 function canSkipDaangnClassify(existing: ExistingDaangnRawRow | undefined, row: DaangnPreflightRow, nowMs: number): boolean {
   if (!existing) return false;
-  // sku_id 없는 과거 row 는 새 catalog/parser 개선으로 살아날 수 있어서 계속 재분류한다.
-  if (!existing.sku_id) return false;
   const lastSeenMs = existing.last_seen_at ? Date.parse(existing.last_seen_at) : 0;
-  if (!Number.isFinite(lastSeenMs) || nowMs - lastSeenMs >= 2 * 60 * 60 * 1000) return false;
+  if (!Number.isFinite(lastSeenMs)) return false;
+  // sku_id 없는 row 도 매 tick 재분류하면 firehose 반복 CPU 가 커진다.
+  // raw RPC no-op window 와 맞춰 2시간마다 다시 열고, catalog 대형 패치는 별도 rematch 로 즉시 반영한다.
+  const recheckMs = existing.sku_id ? DAANGN_CLASSIFIED_RECHECK_MS : DAANGN_UNCLASSIFIED_RECHECK_MS;
+  if (nowMs - lastSeenMs >= recheckMs) return false;
   return (
     existing.name === row.title &&
     Number(existing.price ?? -1) === row.price &&
@@ -1079,6 +1140,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   //   효과: DB 부담 ~16GB/월 → ~3.2GB/월 (80% drop). API limit 무관 (fetch 동일).
   //   안전: drop = 진짜 catalog 외 매물 (책/가구/식품 등). Wave 776 동일 logic 박았다가 즉흥 revert (commit log 빈).
   //   safety log: drop 비율 99% 초과 시 logic bug 의심 — console.warn.
+  const tCategoryFilterStart = Date.now();
   const DAANGN_TARGET_CATEGORY_IDS = new Set(["1", "2", "3", "5", "6", "14", "31", "172"]);
   let articlesMissingCategory = 0;
   const filteredArticles = allArticles.filter((article) => {
@@ -1099,10 +1161,12 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     sourceHealthStatus = "degraded";
     sourceHealthReason = `category_filter_zero_keep:missing_category_${articlesMissingCategory}`;
   }
+  timings.categoryFilter = Date.now() - tCategoryFilterStart;
 
   // Wave 779 hotfix: firehose target categories are still huge (clothing/digital alone can be 20K+ per tick).
   // DB write 전 catalog search-query hint 로 한 번 더 좁힌다. 실제 SKU match 는 buildRawListingRow 에서
   // ruleMatch/parseListingOptions 로 다시 확정하므로, 이 단계는 expensive matcher 앞의 cheap sieve 역할이다.
+  const tCatalogHintStart = Date.now();
   const catalogHintArticles = filteredArticles.filter(hasDaangnCatalogHint);
   const articlesDroppedByCatalogHint = filteredArticles.length - catalogHintArticles.length;
   if (filteredArticles.length > 0 && catalogHintArticles.length === 0) {
@@ -1111,6 +1175,8 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   } else if (articlesDroppedByCatalogHint > 0) {
     console.log(`[wave779] catalog hint: ${articlesDroppedByCatalogHint}/${filteredArticles.length} target-category 매물 skip (${((articlesDroppedByCatalogHint / Math.max(1, filteredArticles.length)) * 100).toFixed(1)}%)`);
   }
+  timings.catalogHint = Date.now() - tCatalogHintStart;
+  const tUpsertPreselectStart = Date.now();
   const upsertCandidateArticles = [...catalogHintArticles]
     .sort((a, b) => articleFreshnessMs(b) - articleFreshnessMs(a))
     .slice(0, maxUpsertArticles);
@@ -1118,6 +1184,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   if (articlesDeferredByUpsertCap > 0) {
     console.log(`[wave780] upsert cap: ${articlesDeferredByUpsertCap}/${catalogHintArticles.length} catalog-hint 매물 defer (cap=${maxUpsertArticles})`);
   }
+  timings.upsertPreselect = Date.now() - tUpsertPreselectStart;
 
   if (!dryRun) {
     try {
