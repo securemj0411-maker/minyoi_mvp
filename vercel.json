@@ -38,7 +38,7 @@
     },
     {
       "path": "/api/cron/market-worker",
-      "schedule": "12 * * * *"
+      "schedule": "12,42 * * * *"
     },
     {
       "path": "/api/cron/deep-crawl",
