@@ -11739,16 +11739,36 @@ export const CATALOG: Sku[] = [
   {
     id: "clothing-acne-knit",
     brand: "Acne Studios", category: "clothing", laneKey: "acne_knit",
-    modelName: "Acne Studios Knit / Cardigan",
-    aliases: ["Acne Knit", "아크네 니트", "아크네 가디건", "Acne Peele"],
-    mustContain: [["acne", "아크네"], ["니트", "knit", "스웨터", "sweater", "가디건", "cardigan", "peele"]],
+    modelName: "Acne Studios Knit / Sweater (가디건 외)",
+    aliases: ["Acne Knit", "아크네 니트", "Acne Peele"],
+    // Wave 789 (2026-05-27): 가디건 별도 SKU 분리 (modelName 변경 + 가디건 차단).
+    mustContain: [["acne", "아크네"], ["니트", "knit", "스웨터", "sweater", "peele", "풀오버"]],
     mustNotContain: [
       "키즈", "kids", "복각", "rep", "replica", "fake", "머플러", "목도리", "스카프", "scarf",
       // Wave 816: multi-brand listing bait such as "얀13 ... 아크네 듀엘 자라".
       "얀13", "yan13", "오일릴리", "오일 릴리", "oilily", "듀엘", "duel", "자라", "zara",
       "지컷", "g cut", "g-cut", "랑방", "lanvin",
+      // Wave 789 (2026-05-27): 가디건 별도 SKU 차단.
+      "가디건", "cardigan",
     ],
     msrpKrw: 390000, minPriceKrw: 30000, released: 2020,  // Wave 768: Acne knit 가품 floor (사용자 #6 발견 15K 매물 차단)
+  },
+  // Wave 789 (2026-05-27): Acne Cardigan narrow — RAYA 모헤어 가디건 등 별도 시세군.
+  {
+    id: "clothing-acne-cardigan",
+    brand: "Acne Studios", category: "clothing", laneKey: "acne_cardigan",
+    modelName: "Acne Studios Cardigan (RAYA 모헤어 등)",
+    aliases: ["Acne Cardigan", "아크네 가디건"],
+    mustContain: [["acne", "아크네"], ["가디건", "cardigan"]],
+    mustNotContain: [
+      "키즈", "kids", "복각", "rep", "replica", "fake",
+      "얀13", "yan13", "오일릴리", "듀엘", "duel", "자라", "zara",
+      "지컷", "랑방", "lanvin",
+      "니트", "knit", "스웨터", "sweater", "풀오버",  // knit SKU 와 분리
+      "코트", "coat", "자켓", "jacket",  // 다른 product type
+    ],
+    msrpKrw: 450000, minPriceKrw: 30000, released: 2020,
+    confusionNote: "Acne Cardigan (RAYA 모헤어 등). 일반 knit/sweater 와 별도 시세군 (₩89~105K range).",
   },
   {
     id: "clothing-acne-polo",
