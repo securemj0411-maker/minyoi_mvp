@@ -4,11 +4,30 @@
 //   카나리아 모니터링 별도 wave 권장.
 // Wave 776 (2026-05-27): 카카오페이 QR universal link 추가.
 //   https://qr.kakaopay.com/{qrId} 가 본인 카카오페이 수취 QR.
-//   링크 클릭 → 카카오페이 앱 열림 → 송금 화면 (수취자 prefill, 금액은 직접 입력).
-//   토스와 다르게 amount prefill 미지원 (사용자가 앱에서 직접 입력).
+//   링크 클릭 → 카카오페이 앱 열림 → 송금 화면 (수취자 prefill).
+// Wave 776b (2026-05-27): 비공식 reverse-engineered amount prefill (사용자 결정 — 위험 인지).
+//   공식 spec 은 "금액 지정 URL 미지원" (카카오페이 개발자 포럼).
+//   비공식: `amount × 524288 → hex → user ID 뒤에 concatenate` 로 작동 확인됨
+//   (moeun2 블로그 / velog @locked 사례).
+//   ⚠ RISK: 카카오 정책 변경 시 즉시 깨짐 + owner 카카오페이 계정 정지 가능성.
+//   fallback: amount=0 또는 비공식 깨질 경우 base URL 로 자동 fallback.
 
 // 카카오페이 QR universal link — owner 카카오페이 수취 QR 코드 ID
-export const KAKAOPAY_QR_URL = "https://qr.kakaopay.com/281006020758065968058098";
+const KAKAOPAY_USER_ID = "281006020758065968058098";
+export const KAKAOPAY_QR_BASE_URL = `https://qr.kakaopay.com/${KAKAOPAY_USER_ID}`;
+
+/**
+ * 카카오페이 QR URL 생성 (amount 포함).
+ * 비공식 reverse-engineered: amount * 2^19 → hex → user ID 뒤에 concat.
+ * amount <= 0 이면 base URL (변동 금액 QR).
+ */
+export function buildKakaopayQrUrl(amount: number): string {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return KAKAOPAY_QR_BASE_URL;
+  }
+  const hexAmount = Math.floor(amount * 524288).toString(16);
+  return `${KAKAOPAY_QR_BASE_URL}${hexAmount}`;
+}
 
 const TOSS_BANK_PARAM = "우리은행"; // Wave 774b — 풀네임 (짧은 "우리" 는 토스에서 인식 안 됨)
 const ACCOUNT_RAW = "1002367160511";
@@ -86,11 +105,11 @@ export function openTossSend(amount: number): void {
 }
 
 /**
- * 카카오페이 QR universal link 호출.
- * 카카오페이 앱 자동 실행 (수취자만 prefill). 금액은 사용자가 직접 입력.
+ * 카카오페이 QR universal link 호출 (amount prefill).
+ * 비공식 hex concatenation — Wave 776b.
  * universal link 라 별도 fallback 코드 불필요 (미설치 시 카카오페이 download 페이지 자동).
  */
-export function openKakaopayQr(): void {
+export function openKakaopayQr(amount: number): void {
   if (typeof window === "undefined") return;
-  window.location.href = KAKAOPAY_QR_URL;
+  window.location.href = buildKakaopayQrUrl(amount);
 }
