@@ -7492,6 +7492,8 @@ export const CATALOG: Sku[] = [
       "톰브라운", "thom browne", "thombrowne", "tb edition",
       "우영미", "wooyoungmi",
       "메종키츠네", "maison kitsune", "kitsune",
+      // Wave 788 (2026-05-27): P0 — 워치 8 매물 3건이 워치 6 SKU 에 잘못 흡수 (sample 검증).
+      "워치 8", "워치8", " 8 ", "watch 8", "watch8",
     ],
     msrpKrw: 369000,
     released: 2023,
