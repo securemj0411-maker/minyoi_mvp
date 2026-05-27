@@ -297,20 +297,29 @@ export default function ManualDepositClient() {
             ) : null}
           </div>
 
-          {/* Wave 774 (2026-05-27) → Wave 775: 토스 송금하기 클릭 → /billing/processing 으로 redirect.
-              processing 페이지가 자동으로 토스 deep link 호출 + 결제 처리 중 UI + 입금 확인 버튼.
-              mock PG 페이지 흐름 — 사용자한테 정식 PG 통과한 듯한 느낌. */}
+          {/* Wave 776 (2026-05-27): 토스 + 카카오페이 둘 다 옵션.
+              둘 다 클릭 시 /billing/processing 으로 navigate (URL param method).
+              processing 페이지가 method 보고 해당 deep link 자동 호출. */}
           <button
             type="button"
             onClick={() => {
-              router.push(`/billing/processing?credits=${plan.monthlyCredits}&plan=${planKey}`);
+              router.push(`/billing/processing?credits=${plan.monthlyCredits}&plan=${planKey}&method=toss`);
             }}
             className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#3182f6] text-[14.5px] font-black text-white shadow-[0_10px_22px_rgba(49,130,246,0.28)] transition hover:bg-[#1c6fe8] active:scale-[0.99]"
           >
             토스 앱으로 송금하기
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              router.push(`/billing/processing?credits=${plan.monthlyCredits}&plan=${planKey}&method=kakaopay`);
+            }}
+            className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#FEE500] text-[14.5px] font-black text-[#3C1E1E] shadow-[0_10px_22px_rgba(254,229,0,0.28)] transition hover:bg-[#FFD700] active:scale-[0.99]"
+          >
+            카카오페이로 송금하기
+          </button>
           <p className="mt-2 break-keep text-[11px] font-medium leading-4 text-zinc-500 dark:text-zinc-400">
-            토스 앱이 송금 화면을 자동으로 채워줘요. 다른 은행을 쓰시면 위 계좌번호 복사 후 본인 은행 앱에서 송금하고 아래 "입금 완료" 를 눌러주세요.
+            토스/카카오페이가 송금 화면을 자동으로 열어줘요. 다른 은행을 쓰시면 위 계좌번호 복사 후 본인 은행 앱에서 송금하고 아래 "입금 완료" 를 눌러주세요.
           </p>
 
           {/* Wave 775 (2026-05-27): 입금자명 input 제거 + 카톡 닉네임 자동 안내.

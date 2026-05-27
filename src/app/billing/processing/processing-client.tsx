@@ -15,7 +15,9 @@ import { useEffect, useRef, useState } from "react";
 import { displayNameForUser } from "@/lib/auth-users";
 import { formatKrw, planForKey, type PlanKey } from "@/lib/plan-config";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { openTossSend } from "@/lib/toss-deeplink";
+import { openKakaopayQr, openTossSend } from "@/lib/toss-deeplink";
+
+type PaymentMethod = "toss" | "kakaopay";
 
 const CREDIT_PACKAGE_TO_PLAN: Record<string, Exclude<PlanKey, "free">> = {
   "1": "single",
@@ -40,6 +42,8 @@ export default function ProcessingClient() {
   const router = useRouter();
   const creditPackageParam = params.get("credits");
   const planKeyParam = (params.get("plan") ?? "").toLowerCase();
+  const methodParam = (params.get("method") ?? "toss").toLowerCase();
+  const method: PaymentMethod = methodParam === "kakaopay" ? "kakaopay" : "toss";
   const planKey =
     creditPackageParam && CREDIT_PACKAGE_TO_PLAN[creditPackageParam]
       ? CREDIT_PACKAGE_TO_PLAN[creditPackageParam]
@@ -77,17 +81,21 @@ export default function ProcessingClient() {
     };
   }, []);
 
-  // 페이지 로드 시 토스 deep link 자동 호출 (1회만).
-  //   iOS 는 user gesture 없으면 일부 차단 가능 — fallback 으로 "토스 다시 열기" 버튼 제공.
+  // 페이지 로드 시 method 에 맞는 deep link 자동 호출 (1회만).
+  //   iOS 는 user gesture 없으면 일부 차단 가능 — fallback 으로 "다시 열기" 버튼 제공.
   useEffect(() => {
     if (autoFiredRef.current) return;
     if (authReady === "loading") return;
     autoFiredRef.current = true;
     const t = window.setTimeout(() => {
-      openTossSend(plan.priceKrw);
+      if (method === "kakaopay") {
+        openKakaopayQr();
+      } else {
+        openTossSend(plan.priceKrw);
+      }
     }, 300); // 페이지 transition 끝나고 호출
     return () => window.clearTimeout(t);
-  }, [authReady, plan.priceKrw]);
+  }, [authReady, method, plan.priceKrw]);
 
   // waiting countdown
   useEffect(() => {
@@ -244,22 +252,48 @@ export default function ProcessingClient() {
           </div>
         </section>
 
-        {/* 토스 안내 + 다시 열기 */}
+        {/* method 별 안내 + 다시 열기 */}
         {stage === "ready" || stage === "submitting" || stage === "error" ? (
           <section className="mt-3 rounded-[16px] border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="text-[13px] font-black text-zinc-950 dark:text-zinc-50">토스 앱이 열렸나요?</div>
-            <p className="mt-1.5 break-keep text-[12px] font-medium leading-5 text-zinc-600 dark:text-zinc-300">
-              토스 송금 화면에서 <b>"받는 분에게 표시"</b> 항목을 카톡 닉네임으로 바꿔주시면 매칭이 빨라요.
-              아래 입금자명과 같은 이름이면 자동 확인돼요.
-            </p>
+            {method === "kakaopay" ? (
+              <>
+                <div className="text-[13px] font-black text-zinc-950 dark:text-zinc-50">카카오페이가 열렸나요?</div>
+                <p className="mt-1.5 break-keep text-[12px] font-medium leading-5 text-zinc-600 dark:text-zinc-300">
+                  카카오페이는 금액을 자동으로 채워주지 못해요. 송금 화면에서 <b>{formatKrw(plan.priceKrw)}</b> 직접 입력해주세요.
+                  메모 항목에 카톡 닉네임을 적어주시면 매칭이 빨라요.
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="text-[13px] font-black text-zinc-950 dark:text-zinc-50">토스 앱이 열렸나요?</div>
+                <p className="mt-1.5 break-keep text-[12px] font-medium leading-5 text-zinc-600 dark:text-zinc-300">
+                  토스 송금 화면에서 <b>"받는 분에게 표시"</b> 항목을 카톡 닉네임으로 바꿔주시면 매칭이 빨라요.
+                  아래 입금자명과 같은 이름이면 자동 확인돼요.
+                </p>
+              </>
+            )}
 
-            <button
-              type="button"
-              onClick={() => openTossSend(plan.priceKrw)}
-              className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#cfddf7] bg-[#f5f9ff] text-[13px] font-black text-[#3182f6] transition hover:bg-[#ebf2ff] dark:border-zinc-700 dark:bg-blue-950/24 dark:text-blue-300 dark:hover:bg-blue-950/40"
-            >
-              토스 앱 다시 열기
-            </button>
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={() => (method === "kakaopay" ? openKakaopayQr() : openTossSend(plan.priceKrw))}
+                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[#cfddf7] bg-[#f5f9ff] text-[13px] font-black text-[#3182f6] transition hover:bg-[#ebf2ff] dark:border-zinc-700 dark:bg-blue-950/24 dark:text-blue-300 dark:hover:bg-blue-950/40"
+              >
+                {method === "kakaopay" ? "카카오페이 다시 열기" : "토스 다시 열기"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  // 다른 method 로 전환 — autoFiredRef 리셋해서 다시 열림
+                  autoFiredRef.current = false;
+                  const otherMethod = method === "kakaopay" ? "toss" : "kakaopay";
+                  router.replace(`/billing/processing?credits=${plan.monthlyCredits}&plan=${planKey}&method=${otherMethod}`);
+                }}
+                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white text-[12.5px] font-black text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                {method === "kakaopay" ? "토스로 바꾸기" : "카카오페이로 바꾸기"}
+              </button>
+            </div>
 
             {/* 카톡 닉네임 자동 안내 */}
             {authReady === "authed" && autoDepositorName ? (

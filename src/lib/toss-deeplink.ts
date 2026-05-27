@@ -2,6 +2,13 @@
 //   supertoss://send 가 토스 앱 송금 화면을 prefill (bank + accountNo + amount).
 //   비공식 reverse-engineered scheme — 토스 앱 업데이트로 깨질 risk 있음.
 //   카나리아 모니터링 별도 wave 권장.
+// Wave 776 (2026-05-27): 카카오페이 QR universal link 추가.
+//   https://qr.kakaopay.com/{qrId} 가 본인 카카오페이 수취 QR.
+//   링크 클릭 → 카카오페이 앱 열림 → 송금 화면 (수취자 prefill, 금액은 직접 입력).
+//   토스와 다르게 amount prefill 미지원 (사용자가 앱에서 직접 입력).
+
+// 카카오페이 QR universal link — owner 카카오페이 수취 QR 코드 ID
+export const KAKAOPAY_QR_URL = "https://qr.kakaopay.com/281006020758065968058098";
 
 const TOSS_BANK_PARAM = "우리은행"; // Wave 774b — 풀네임 (짧은 "우리" 는 토스에서 인식 안 됨)
 const ACCOUNT_RAW = "1002367160511";
@@ -76,4 +83,14 @@ export function openTossSend(amount: number): void {
 
   // Desktop: best-effort. 토스 데스크탑 앱 있으면 작동, 없으면 무시.
   window.location.href = buildTossDeepLink(amount);
+}
+
+/**
+ * 카카오페이 QR universal link 호출.
+ * 카카오페이 앱 자동 실행 (수취자만 prefill). 금액은 사용자가 직접 입력.
+ * universal link 라 별도 fallback 코드 불필요 (미설치 시 카카오페이 download 페이지 자동).
+ */
+export function openKakaopayQr(): void {
+  if (typeof window === "undefined") return;
+  window.location.href = KAKAOPAY_QR_URL;
 }
