@@ -8434,6 +8434,16 @@ export const CATALOG: Sku[] = [
     mustNotContain: [...GOLF_CLUB_COMMON_NOISE,
       "하프세트", "하프 세트", "half set",  // 하프세트는 별도
       "단품", "단일",  // 세트 아님
+      // Wave 787 (2026-05-27): P0 catalog bug — "임팩 드라이버" 전동공구 6건 흡수.
+      //   "드라이버" 단독 토큰이 골프 드라이버(클럽)뿐 아니라 전동드릴/임팩드라이버도 매칭.
+      //   sample 발견: JY-1500 임팩 드라이버, SWISS REVOLT 21V, REVOLT 21V 임팩드릴.
+      "임팩", "임펙", "impact", "임팩트드라이버", "임팩 드릴", "임팩드릴",
+      "전동", "전동공구", "전동 드릴",
+      "충전 드릴", "충전드릴", "충전 임팩",
+      "v 배터리", "12v", "14v", "18v", "20v", "21v", "24v", "36v",
+      "스위스 리볼트", "swiss revolt", "revolt",
+      "보쉬", "bosch", "마끼다", "makita", "디월트", "dewalt", "밀워키", "milwaukee", "리지드", "ridgid",
+      "jy-1500", "리오공구", "공구 세트",
     ],
     msrpKrw: 1000000, released: 2020,
   },
@@ -8448,6 +8458,10 @@ export const CATALOG: Sku[] = [
     ],
     mustNotContain: [...GOLF_CLUB_COMMON_NOISE,
       "풀세트", "풀 세트", "full set",
+      // Wave 787: 전동공구 차단 (full-set 와 동일).
+      "임팩", "임펙", "impact", "전동", "전동공구",
+      "v 배터리", "12v", "14v", "18v", "20v", "21v", "24v", "36v",
+      "보쉬", "bosch", "마끼다", "makita", "디월트", "dewalt",
     ],
     msrpKrw: 400000, released: 2020,
   },
