@@ -684,13 +684,77 @@ function booleanValue(value: unknown): boolean {
   return value === true;
 }
 
-function toDaangnArticle(raw: unknown): DaangnSearchArticle | null {
+const DAANGN_CATEGORY_BY_ID: Record<string, { dbId: string; name: string }> = {
+  "1": { dbId: "1", name: "디지털기기" },
+  "172": { dbId: "172", name: "생활가전" },
+  "8": { dbId: "8", name: "가구/인테리어" },
+  "7": { dbId: "7", name: "생활/주방" },
+  "4": { dbId: "4", name: "유아동" },
+  "173": { dbId: "173", name: "유아도서" },
+  "5": { dbId: "5", name: "여성의류" },
+  "31": { dbId: "31", name: "여성잡화" },
+  "14": { dbId: "14", name: "남성패션/잡화" },
+  "6": { dbId: "6", name: "뷰티/미용" },
+  "3": { dbId: "3", name: "스포츠/레저" },
+  "2": { dbId: "2", name: "취미/게임/음반" },
+  "9": { dbId: "9", name: "도서" },
+  "304": { dbId: "304", name: "티켓/교환권" },
+  "517": { dbId: "517", name: "e쿠폰" },
+  "305": { dbId: "305", name: "가공식품" },
+  "483": { dbId: "483", name: "건강기능식품" },
+  "16": { dbId: "16", name: "반려동물용품" },
+  "139": { dbId: "139", name: "식물" },
+  "13": { dbId: "13", name: "기타 중고물품" },
+  "32": { dbId: "32", name: "삽니다" },
+};
+
+const DAANGN_CATEGORY_BY_THUMBNAIL_DIGEST: Record<string, { dbId: string; name: string }> = {
+  "2c0811ac0c0f491039082d246cd41de636d58cd6e54368a0b012c386645d7c66": DAANGN_CATEGORY_BY_ID["1"],
+  "ff36d0fb3a3214a9cc86c79a84262e0d9e11b6d7289ed9aa75e40d0129764fac": DAANGN_CATEGORY_BY_ID["172"],
+  "088e41c5973184228a2e4a50961ceb6fc366bb3eb11b1ee7c7cd66bcdf9c5529": DAANGN_CATEGORY_BY_ID["8"],
+  "22a78937b8a8ccd0003ff7bb7c247b3863a5046f93a36b5341913ff2935efa43": DAANGN_CATEGORY_BY_ID["7"],
+  "1975d6ba1725dfbe053daa450cec51757a39943104d57fbdd3fc5c7d8ae07605": DAANGN_CATEGORY_BY_ID["4"],
+  "987b21e9e02255cb310e4736b16e056d0bfc90c397e423e599b544bad203601e": DAANGN_CATEGORY_BY_ID["173"],
+  "b99fb12bcc754a08e5a6f359861bafd80d38678a0c58521abdf314949f9c5e58": DAANGN_CATEGORY_BY_ID["5"],
+  "23f6b89ba63da7cf8135e1063bde3811fb6499dc073585eea161b3727a42535e": DAANGN_CATEGORY_BY_ID["31"],
+  "38dd757c99863d1748f16292142cabfae9621622cc751faff49a79ed60c1c5e7": DAANGN_CATEGORY_BY_ID["14"],
+  "1efa73a4e3b45610292223f44c42cbe3c7d93395a23f1134426a58d5639c179b": DAANGN_CATEGORY_BY_ID["6"],
+  "6379c3ba41f03dc6e27796c5f106c8b20b57d79ddb3ba52440084fcd4d10d8dd": DAANGN_CATEGORY_BY_ID["3"],
+  "074da39b1114588ebc61447883f5f0059dd4abc16127f4250f559360f40eb0e2": DAANGN_CATEGORY_BY_ID["2"],
+  "0ce93f6b19d61169b955dae5422aa9f842933d8ccf35dc4c53cea8656a293e40": DAANGN_CATEGORY_BY_ID["9"],
+  "631cb98e2c7cf46f1f2520f97b0ec2d30ce426c4c158ea3673f84e0aca088181": DAANGN_CATEGORY_BY_ID["304"],
+  "0fe7aebdff028cd484223d4bda59ddfd8f42595a035d7d57e62d8569703a51e8": DAANGN_CATEGORY_BY_ID["517"],
+  "243b21522a5ff57863942f0ed84a04b3cc72f30ca9edda818f31238fc94066ee": DAANGN_CATEGORY_BY_ID["305"],
+  "c22153f3cca52c69efb2b4c15e8e644ea7118b2f8c07d378ec8b75489c31cf46": DAANGN_CATEGORY_BY_ID["483"],
+  "763d2fb8809deb0a5ebd4ef2694ecb2d8b08f501ab185f7167d87a74a33aee10": DAANGN_CATEGORY_BY_ID["16"],
+  "248610f466d99a9a7cafa1c75a818a73bf850e05c7f7c205cbc60c7b7b16f876": DAANGN_CATEGORY_BY_ID["139"],
+  "407b005b01de954b59aff9e21f729b3c30e3ae249acfb643401f235598dea8e3": DAANGN_CATEGORY_BY_ID["13"],
+  "6a729d83f311aa3e8ffa12c9757cfda323591a0018ce2d25da6bf604615e33c2": DAANGN_CATEGORY_BY_ID["32"],
+};
+
+function categoryFromId(id: string | null): { dbId: string; name: string } | null {
+  if (!id) return null;
+  return DAANGN_CATEGORY_BY_ID[id] ?? null;
+}
+
+function categoryFromThumbnail(thumbnail: string | null): { dbId: string; name: string } | null {
+  if (!thumbnail) return null;
+  const match = /\/([a-f0-9]{64})\.png(?:\?|$)/i.exec(thumbnail);
+  if (!match?.[1]) return null;
+  return DAANGN_CATEGORY_BY_THUMBNAIL_DIGEST[match[1].toLowerCase()] ?? null;
+}
+
+function toDaangnArticle(raw: unknown, fallbackCategoryId?: string | null): DaangnSearchArticle | null {
   const row = objectRecord(raw);
   if (!row) return null;
   const href = stringValue(row.href) ?? stringValue(row.id);
   if (!href) return null;
   const region = objectRecord(row.region) ?? objectRecord(row.regionId);
   const category = objectRecord(row.category);
+  const inferredCategory =
+    categoryFromId(stringValue(category?.dbId)) ??
+    categoryFromThumbnail(stringValue(category?.thumbnail)) ??
+    categoryFromId(fallbackCategoryId ?? null);
   const user = objectRecord(row.user);
   return {
     id: stringValue(row.id) ?? href,
@@ -710,8 +774,8 @@ function toDaangnArticle(raw: unknown): DaangnSearchArticle | null {
       name: stringValue(region?.name),
     },
     category: {
-      dbId: stringValue(category?.dbId),
-      name: stringValue(category?.name),
+      dbId: stringValue(category?.dbId) ?? inferredCategory?.dbId ?? null,
+      name: stringValue(category?.name) ?? inferredCategory?.name ?? null,
     },
     user: {
       dbId: stringValue(user?.dbId),
@@ -739,11 +803,14 @@ export function parseDaangnSearchHtml(html: string): {
   const allPage = objectRecord(loader?.allPage);
   const rawArticles = Array.isArray(allPage?.fleamarketArticles) ? allPage.fleamarketArticles : [];
   const currentFilters = objectRecord(loader?.currentFilters);
+  const fallbackCategoryId = stringValue(currentFilters?.categoryId);
   return {
-    articles: rawArticles.map(toDaangnArticle).filter((article): article is DaangnSearchArticle => Boolean(article)),
+    articles: rawArticles
+      .map((raw) => toDaangnArticle(raw, fallbackCategoryId))
+      .filter((article): article is DaangnSearchArticle => Boolean(article)),
     currentFilters: {
       regionId: stringValue(currentFilters?.regionId),
-      categoryId: stringValue(currentFilters?.categoryId),
+      categoryId: fallbackCategoryId,
       search: stringValue(currentFilters?.search),
     },
   };

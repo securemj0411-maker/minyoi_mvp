@@ -53,7 +53,7 @@ import {
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { buildDaangnQueryPool } from "@/lib/daangn-query-pool";
 import { classifyListing } from "@/lib/pipeline";
-import { ruleMatch } from "@/lib/catalog";
+import { buildCatalogSearchQueryEntries, normalize, ruleMatch } from "@/lib/catalog";
 import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -98,6 +98,15 @@ export type DaangnIngestResult = {
 
   // 매물 통계 (probe 와 동일 키)
   articles: number;
+  filteredArticles: number;
+  articlesDroppedByCategory: number;
+  articlesMissingCategory: number;
+  categoryFilterDropRatio: number;
+  catalogHintArticles: number;
+  articlesDroppedByCatalogHint: number;
+  maxUpsertArticles: number;
+  upsertCandidateArticles: number;
+  articlesDeferredByUpsertCap: number;
   ongoing: number;
   crawlAllowedOngoing: number;
   freshBoosted24h: number;
@@ -116,6 +125,7 @@ export type DaangnIngestResult = {
   // DB write (Stage 1: 모두 0 — schema 적용 후 활성)
   rawUpserted: number;
   rawSkippedExisting: number;
+  searchConcurrency: number;
 
   // 안전 신호
   blockedSignals: DaangnBlockSignal[];
@@ -142,6 +152,8 @@ export type DaangnIngestOptions = {
   activeWindowHours?: number;
   freshWindowHours?: number;
   timeoutMs?: number;
+  maxUpsertArticles?: number;
+  searchConcurrency?: number;
   // test override
   regions?: DaangnRegionSeed[];
   queries?: DaangnQuerySeed[];
@@ -208,6 +220,15 @@ function buildEmptyResult(mode: DaangnSourceMode, skipReason: string | undefined
     blockedCombos: 0,
     failedCombos: 0,
     articles: 0,
+    filteredArticles: 0,
+    articlesDroppedByCategory: 0,
+    articlesMissingCategory: 0,
+    categoryFilterDropRatio: 0,
+    catalogHintArticles: 0,
+    articlesDroppedByCatalogHint: 0,
+    maxUpsertArticles: 0,
+    upsertCandidateArticles: 0,
+    articlesDeferredByUpsertCap: 0,
     ongoing: 0,
     crawlAllowedOngoing: 0,
     freshBoosted24h: 0,
@@ -220,6 +241,7 @@ function buildEmptyResult(mode: DaangnSourceMode, skipReason: string | undefined
     shipping: { shipping_possible: 0, direct_only: 0, unknown: 0 },
     rawUpserted: 0,
     rawSkippedExisting: 0,
+    searchConcurrency: 0,
     blockedSignals: [],
     sourceHealthStatus: "healthy",
     sourceHealthReason: skipReason ?? "no-op",
@@ -228,6 +250,69 @@ function buildEmptyResult(mode: DaangnSourceMode, skipReason: string | undefined
 
 function sleep(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, Math.max(0, ms)));
+}
+
+async function mapWithConcurrency<T, R>(
+  items: readonly T[],
+  concurrency: number,
+  mapper: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let nextIndex = 0;
+  const workerCount = Math.max(1, Math.min(concurrency, items.length));
+  await Promise.all(Array.from({ length: workerCount }, async () => {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex;
+      nextIndex += 1;
+      results[currentIndex] = await mapper(items[currentIndex] as T, currentIndex);
+    }
+  }));
+  return results;
+}
+
+const DAANGN_SKU_CATEGORIES_BY_CATEGORY_ID: Record<string, Set<string>> = {
+  "1": new Set(["smartphone", "tablet", "earphone", "laptop", "smartwatch", "desktop", "speaker", "camera", "drone", "monitor"]),
+  "172": new Set(["home_appliance", "small_appliance"]),
+  "2": new Set(["game_console", "lego"]),
+  "3": new Set(["sport_golf", "shoe", "bike", "drone", "kickboard"]),
+  "5": new Set(["clothing"]),
+  "6": new Set(["perfume"]),
+  "14": new Set(["clothing", "shoe", "bag", "watch"]),
+  "31": new Set(["clothing", "shoe", "bag", "watch"]),
+};
+
+let daangnCatalogHintCache: Map<string, string[]> | null = null;
+
+function daangnCatalogHints(categoryId: string | null): string[] {
+  if (!daangnCatalogHintCache) {
+    const all = buildCatalogSearchQueryEntries()
+      .map((entry) => ({
+        category: entry.category,
+        query: normalize(entry.query),
+      }))
+      .filter((entry) => entry.query.replace(/\s+/g, "").length >= 4);
+    const map = new Map<string, string[]>();
+    const allHints = [...new Set(all.map((entry) => entry.query))].sort((a, b) => b.length - a.length);
+    map.set("*", allHints);
+    for (const [daangnCategoryId, skuCategories] of Object.entries(DAANGN_SKU_CATEGORIES_BY_CATEGORY_ID)) {
+      const scoped = all
+        .filter((entry) => skuCategories.has(entry.category))
+        .map((entry) => entry.query);
+      map.set(daangnCategoryId, [...new Set(scoped)].sort((a, b) => b.length - a.length));
+    }
+    daangnCatalogHintCache = map;
+  }
+  return daangnCatalogHintCache.get(categoryId ?? "") ?? daangnCatalogHintCache.get("*") ?? [];
+}
+
+function hasDaangnCatalogHint(article: DaangnSearchArticle): boolean {
+  const text = normalize(`${article.title ?? ""} ${article.content ?? ""}`).slice(0, 1200);
+  return daangnCatalogHints(article.category?.dbId ?? null).some((hint) => text.includes(hint));
+}
+
+function articleFreshnessMs(article: DaangnSearchArticle): number {
+  const parsed = Date.parse(article.boostedAt ?? article.createdAt ?? "");
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -566,6 +651,8 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const activeWindowHours = boundedInt(options.activeWindowHours, 72, 1, 720);
   const freshWindowHours = boundedInt(options.freshWindowHours, 24, 1, 168);
   const timeoutMs = boundedInt(options.timeoutMs, 5_000, 1_000, 30_000);
+  const maxUpsertArticles = boundedInt(options.maxUpsertArticles, 500, 0, 5_000);
+  const searchConcurrency = boundedInt(options.searchConcurrency, 50, 1, 300);
   const dryRun = options.dryRun ?? mode !== "active";
 
   // Region 기반 ingest (Phase 6g — 6e 전국 검색 가설 폐기).
@@ -618,11 +705,11 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const timings: NonNullable<DaangnIngestResult["timingsMs"]> = {};
   const tIngestStart = Date.now();
 
-  // Phase 6i++ parallel search: sequential 5 region × ~50s = 250s. Promise.all 로 동시 → ~50s.
-  //   동일 결과, 단순 동시성. delayMs 는 sequential 시 rate-limit 회피용이라 parallel 에서는 의미 X.
+  // Phase 6i++ parallel search: sequential 5 region × ~50s = 250s. 제한된 동시성으로 burst block 위험 완화.
+  //   delayMs 는 sequential 시 rate-limit 회피용이라 parallel 에서는 의미 X.
   //   block signal 감지 시 후속 결과 모두 무시 (race condition X — 결과 받은 후 평가).
   const tSearchFetchStart = Date.now();
-  const comboPromises = combos.map(async (combo) => {
+  const comboResults = await mapWithConcurrency(combos, searchConcurrency, async (combo) => {
     const url = buildDaangnSearchUrl({
       regionId: combo.region.id || undefined,
       categoryId: combo.category.id,
@@ -635,7 +722,6 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
       return { combo, resp: null, error: err as Error };
     }
   });
-  const comboResults = await Promise.all(comboPromises);
   timings.searchFetch = Date.now() - tSearchFetchStart;
 
   // 결과 평가 — block 감지 시 후속 결과는 모두 무시 (안전).
@@ -780,23 +866,48 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   //   안전: drop = 진짜 catalog 외 매물 (책/가구/식품 등). Wave 776 동일 logic 박았다가 즉흥 revert (commit log 빈).
   //   safety log: drop 비율 99% 초과 시 logic bug 의심 — console.warn.
   const DAANGN_TARGET_CATEGORY_IDS = new Set(["1", "2", "3", "5", "6", "14", "31", "172"]);
+  let articlesMissingCategory = 0;
   const filteredArticles = allArticles.filter((article) => {
     const catId = article.category?.dbId;
+    if (catId == null) articlesMissingCategory += 1;
     return catId != null && DAANGN_TARGET_CATEGORY_IDS.has(String(catId));
   });
   const articlesDropped = allArticles.length - filteredArticles.length;
+  const categoryFilterDropRatio = allArticles.length > 0 ? articlesDropped / allArticles.length : 0;
   if (allArticles.length > 0) {
-    const dropRatio = articlesDropped / allArticles.length;
-    if (dropRatio >= 0.99) {
-      console.warn(`[wave778] DROP RATIO ${(dropRatio * 100).toFixed(1)}% (${articlesDropped}/${allArticles.length}) — logic bug 의심? category.dbId 측정 실패 가능성.`);
+    if (categoryFilterDropRatio >= 0.99) {
+      console.warn(`[wave778] DROP RATIO ${(categoryFilterDropRatio * 100).toFixed(1)}% (${articlesDropped}/${allArticles.length}) — logic bug 의심? category.dbId 측정 실패 가능성.`);
     } else if (articlesDropped > 0) {
-      console.log(`[wave778] filter: ${articlesDropped}/${allArticles.length} 매물 drop (${(dropRatio * 100).toFixed(1)}%, 비-target 카테고리)`);
+      console.log(`[wave778] filter: ${articlesDropped}/${allArticles.length} 매물 drop (${(categoryFilterDropRatio * 100).toFixed(1)}%, 비-target 카테고리)`);
     }
+  }
+  if (allArticles.length > 0 && filteredArticles.length === 0) {
+    sourceHealthStatus = "degraded";
+    sourceHealthReason = `category_filter_zero_keep:missing_category_${articlesMissingCategory}`;
+  }
+
+  // Wave 779 hotfix: firehose target categories are still huge (clothing/digital alone can be 20K+ per tick).
+  // DB write 전 catalog search-query hint 로 한 번 더 좁힌다. 실제 SKU match 는 buildRawListingRow 에서
+  // ruleMatch/parseListingOptions 로 다시 확정하므로, 이 단계는 expensive matcher 앞의 cheap sieve 역할이다.
+  const catalogHintArticles = filteredArticles.filter(hasDaangnCatalogHint);
+  const articlesDroppedByCatalogHint = filteredArticles.length - catalogHintArticles.length;
+  if (filteredArticles.length > 0 && catalogHintArticles.length === 0) {
+    sourceHealthStatus = "degraded";
+    sourceHealthReason = `catalog_hint_zero_keep:category_kept_${filteredArticles.length}`;
+  } else if (articlesDroppedByCatalogHint > 0) {
+    console.log(`[wave779] catalog hint: ${articlesDroppedByCatalogHint}/${filteredArticles.length} target-category 매물 skip (${((articlesDroppedByCatalogHint / Math.max(1, filteredArticles.length)) * 100).toFixed(1)}%)`);
+  }
+  const upsertCandidateArticles = [...catalogHintArticles]
+    .sort((a, b) => articleFreshnessMs(b) - articleFreshnessMs(a))
+    .slice(0, maxUpsertArticles);
+  const articlesDeferredByUpsertCap = Math.max(0, catalogHintArticles.length - upsertCandidateArticles.length);
+  if (articlesDeferredByUpsertCap > 0) {
+    console.log(`[wave780] upsert cap: ${articlesDeferredByUpsertCap}/${catalogHintArticles.length} catalog-hint 매물 defer (cap=${maxUpsertArticles})`);
   }
 
   if (!dryRun) {
     try {
-      rawUpserted = await upsertDaangnRawListings(filteredArticles, detailRecords);
+      rawUpserted = await upsertDaangnRawListings(upsertCandidateArticles, detailRecords);
     } catch (err) {
       sourceHealthStatus = "degraded";
       // 디버그 측면에서 충분히 보이도록 800자까지 보존
@@ -821,6 +932,15 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     failedCombos,
 
     articles: summary.total,
+    filteredArticles: filteredArticles.length,
+    articlesDroppedByCategory: articlesDropped,
+    articlesMissingCategory,
+    categoryFilterDropRatio,
+    catalogHintArticles: catalogHintArticles.length,
+    articlesDroppedByCatalogHint,
+    maxUpsertArticles,
+    upsertCandidateArticles: upsertCandidateArticles.length,
+    articlesDeferredByUpsertCap,
     ongoing: summary.ongoing,
     crawlAllowedOngoing: summary.crawlAllowedOngoing,
     freshBoosted24h: summary.freshBoosted24h,
@@ -835,6 +955,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     shipping,
     rawUpserted,
     rawSkippedExisting,
+    searchConcurrency,
 
     blockedSignals,
     sourceHealthStatus,

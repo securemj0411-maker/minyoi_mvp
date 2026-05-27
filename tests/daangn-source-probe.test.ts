@@ -113,6 +113,58 @@ test("daangn search parser extracts Remix articles and freshness summary", () =>
   assert.equal(summary.samples[0]?.title, "나이키 덩크 로우");
 });
 
+test("daangn search parser restores firehose category from thumbnail digest", () => {
+  const html = remixHtml("routes/kr.buy-sell._index", {
+    currentFilters: { regionId: "6035" },
+    allPage: {
+      fleamarketArticles: [
+        {
+          id: "/kr/buy-sell/a/",
+          href: "https://www.daangn.com/kr/buy-sell/a/",
+          title: "정품 AMD 라이젠5 1400 CPU + 쿨러",
+          price: "30000.0",
+          status: "Ongoing",
+          createdAt: "2026-05-24T11:00:00.000+09:00",
+          boostedAt: "2026-05-25T20:00:00.000+09:00",
+          user: { dbId: "u1", nickname: "seller", webCrawlNotAllowed: false },
+          region: { dbId: "6035", name: "역삼동" },
+          category: {
+            thumbnail: "https://dnvefa72aowie.cloudfront.net/origin/category/202306/2c0811ac0c0f491039082d246cd41de636d58cd6e54368a0b012c386645d7c66.png?service=webapp&f=webp",
+          },
+        },
+      ],
+    },
+  });
+
+  const parsed = parseDaangnSearchHtml(html);
+  assert.equal(parsed.articles[0]?.category.dbId, "1");
+  assert.equal(parsed.articles[0]?.category.name, "디지털기기");
+});
+
+test("daangn search parser falls back to current category filter when article category is sparse", () => {
+  const html = remixHtml("routes/kr.buy-sell._index", {
+    currentFilters: { regionId: "6035", categoryId: "14" },
+    allPage: {
+      fleamarketArticles: [
+        {
+          id: "/kr/buy-sell/a/",
+          href: "https://www.daangn.com/kr/buy-sell/a/",
+          title: "밀레 남성 폴로티",
+          price: "10000.0",
+          status: "Ongoing",
+          user: { dbId: "u1", nickname: "seller", webCrawlNotAllowed: false },
+          region: { dbId: "6035", name: "역삼동" },
+          category: { __typename: "FleamarketCategory" },
+        },
+      ],
+    },
+  });
+
+  const parsed = parseDaangnSearchHtml(html);
+  assert.equal(parsed.articles[0]?.category.dbId, "14");
+  assert.equal(parsed.articles[0]?.category.name, "남성패션/잡화");
+});
+
 test("daangn detail candidates require ongoing, crawl-allowed, active bumped rows", () => {
   const nowMs = Date.parse("2026-05-25T12:00:00.000Z");
   const base = {

@@ -75,8 +75,18 @@ async function handleDaangnWorker(req: NextRequest) {
   }
 
   try {
+    const useRegionFirehoseEnv = process.env.DAANGN_INGEST_USE_REGION_FIREHOSE;
     const result = await runDaangnIngest({
-      // env 가 source mode 결정. options 로 강제 가능하지만 운영은 env 우선.
+      // env 가 source mode 결정. fetch 규모는 운영 fallback 이 필요해서 env override 를 유지한다.
+      maxCombos: envInt("DAANGN_INGEST_MAX_COMBOS", 267, 1, 300),
+      maxDetailSamples: envInt("DAANGN_INGEST_MAX_DETAIL_SAMPLES", 5, 0, 100),
+      delayMs: envInt("DAANGN_INGEST_DELAY_MS", 400, 200, 5000),
+      activeWindowHours: envInt("DAANGN_INGEST_ACTIVE_HOURS", 72, 1, 720),
+      freshWindowHours: envInt("DAANGN_INGEST_FRESH_HOURS", 24, 1, 168),
+      timeoutMs: envInt("DAANGN_INGEST_TIMEOUT_MS", 5_000, 1_000, 30_000),
+      maxUpsertArticles: envInt("DAANGN_INGEST_MAX_UPSERT_ARTICLES", 500, 0, 5_000),
+      searchConcurrency: envInt("DAANGN_INGEST_SEARCH_CONCURRENCY", 50, 1, 300),
+      useRegionFirehose: useRegionFirehoseEnv === "false" ? false : undefined,
     });
 
     await finishCollectRunMinimal(run.id, run.startedAt, {
@@ -90,9 +100,19 @@ async function handleDaangnWorker(req: NextRequest) {
       skipped: result.skipped,
       skipReason: result.skipReason,
       combos: result.combos,
+      searchConcurrency: result.searchConcurrency,
       executedCombos: result.executedCombos,
       blockedCombos: result.blockedCombos,
       failedCombos: result.failedCombos,
+      filteredArticles: result.filteredArticles,
+      articlesDroppedByCategory: result.articlesDroppedByCategory,
+      articlesMissingCategory: result.articlesMissingCategory,
+      categoryFilterDropRatio: result.categoryFilterDropRatio,
+      catalogHintArticles: result.catalogHintArticles,
+      articlesDroppedByCatalogHint: result.articlesDroppedByCatalogHint,
+      maxUpsertArticles: result.maxUpsertArticles,
+      upsertCandidateArticles: result.upsertCandidateArticles,
+      articlesDeferredByUpsertCap: result.articlesDeferredByUpsertCap,
       ongoing: result.ongoing,
       crawlAllowedOngoing: result.crawlAllowedOngoing,
       freshBoosted24h: result.freshBoosted24h,
