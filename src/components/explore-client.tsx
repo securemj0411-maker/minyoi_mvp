@@ -453,6 +453,10 @@ function hasPaidOrFreeDetailAccess(snapshot: DetailAccessSnapshot, freeDetailRem
 type SortOption = "profit_desc" | "latest" | "price_asc";
 type SourceOption = "all" | "bunjang" | "joongna" | "daangn";
 type BudgetFilterOption = "all" | "150000" | "300000" | "500000";
+type LoadPoolOptions = {
+  autoScrollNew?: boolean;
+  serverSource?: SourceOption | null;
+};
 
 const SOURCE_OPTIONS: Array<{ value: SourceOption; label: string }> = [
   { value: "all", label: "출처 전체" },
@@ -573,6 +577,16 @@ function budgetApiParam(value: BudgetFilterOption) {
   if (value === "300000") return "300k";
   if (value === "500000") return "500k";
   return null;
+}
+
+function sourceOptionLabel(value: SourceOption) {
+  return SOURCE_OPTIONS.find((option) => option.value === value)?.label ?? "출처 전체";
+}
+
+function poolItemSource(item: PoolItem): SourceOption {
+  const source = String(item.marketplaceSource ?? "bunjang").toLowerCase();
+  if (source === "joongna" || source === "daangn") return source;
+  return "bunjang";
 }
 
 function safetyStatNumber(value: unknown) {
@@ -1886,12 +1900,12 @@ export default function ExploreClient({
     }, sessionId);
   }, [trackDetailEvent]);
 
-  // Wave 353: 카테고리 필터는 클라이언트 사이드 (서버 → 항상 다양화된 30개 풀, 클라가 필터링).
-  // 정렬은 백엔드 유지 — 풀 구성 자체가 달라짐 (latest = 최신 30 vs profit_desc = 차익 상위 30).
-  // Wave 514: 온보딩 예산은 서버 pool 요청에도 전달한다. 선택 직후 피드 자체가 예산권으로 다시 잡혀야 한다.
+  // Wave 894 (2026-05-28): source/sort/category는 현재 로드된 피드 snapshot 안에서만 적용한다.
+  // 예산만 서버 재조회 — 사용자가 "지금 보고 있는 매물"을 정렬/출처 필터한다고 느끼기 때문.
+  // "더 찾아보기"에서만 serverSource를 받아 현재 출처 조건의 추가 후보를 더 가져올 수 있게 한다.
   const loadPool = useCallback(async (
     refresh: boolean,
-    options?: { autoScrollNew?: boolean },
+    options?: LoadPoolOptions,
   ) => {
     if (refresh) setRefreshing(true);
     else {
@@ -1902,8 +1916,8 @@ export default function ExploreClient({
     try {
       const params = new URLSearchParams();
       if (refresh) params.set("refresh", "1");
-      if (sort !== "profit_desc") params.set("sort", sort);
-      if (source !== "all") params.set("source", source);
+      const serverSource = options?.serverSource ?? "all";
+      if (serverSource !== "all") params.set("source", serverSource);
       const budgetParam = budgetApiParam(budgetFilter);
       if (budgetParam) params.set("budget", budgetParam);
       // Wave 391: refresh 시 이미 본 pids 전달 → 백엔드가 제외하고 다른 매물 fetch.
@@ -1962,7 +1976,7 @@ export default function ExploreClient({
       setRefreshing(false);
       setLoading(false);
     }
-  }, [budgetFilter, sort, source, storageScope]);
+  }, [budgetFilter, storageScope]);
 
   const loadStats = useCallback(async () => {
     try {
@@ -2012,7 +2026,7 @@ export default function ExploreClient({
     }
   }, [scrollTargetPid, items]);
 
-  // 필터/정렬 변경 시 자동 재로드.
+  // 예산 변경 시 자동 재로드. 출처/정렬/카테고리는 현재 피드 snapshot 에서만 적용한다.
   // Wave launch-48 (사용자 짚음 "예산 선택 모달 뒤에 50만 매물 이미 보임"):
   //   onboarding modal 떠 있으면 fetch skip. 사용자 예산 선택 후 first fetch.
   //   selectFirstFeedBudget = setBudgetFilter + dismissFirstFeedOnboarding → 두 state batch update
@@ -2032,9 +2046,12 @@ export default function ExploreClient({
     const categoryFiltered = selectedCategories.size === 0
       ? items
       : items.filter((it) => it.category != null && selectedCategories.has(it.category));
+    const sourceFiltered = source === "all"
+      ? categoryFiltered
+      : categoryFiltered.filter((it) => poolItemSource(it) === source);
     const budgetFiltered = budgetOption.max
-      ? categoryFiltered.filter((it) => it.price > 0 && it.price <= budgetOption.max!)
-      : categoryFiltered;
+      ? sourceFiltered.filter((it) => it.price > 0 && it.price <= budgetOption.max!)
+      : sourceFiltered;
 
     // Wave launch-47 (사용자 짚음 "매입단가순인데 뒤에 더 싼게 나옴"):
     //   backend 가 PAGE_SIZE 30 단위로만 정렬 → frontend append 시 batch 별 정렬 유지되어
@@ -2054,7 +2071,17 @@ export default function ExploreClient({
       });
     }
     return budgetFiltered;
-  }, [budgetOption.max, items, scrapItems, scrapOnly, selectedCategories, sort]);
+  }, [budgetOption.max, items, scrapItems, scrapOnly, selectedCategories, sort, source]);
+
+  const currentServerSourceFilter = source !== "all" ? source : null;
+  const currentViewFilterLabel = useMemo(() => {
+    if (scrapOnly) return "스크랩";
+    const labels: string[] = [];
+    if (source !== "all") labels.push(sourceOptionLabel(source));
+    if (selectedCategories.size > 0) labels.push("선택 카테고리");
+    if (budgetFilter !== "all") labels.push(budgetOption.label);
+    return labels.join(" · ");
+  }, [budgetFilter, budgetOption.label, scrapOnly, selectedCategories.size, source]);
 
   // PackRevealModal용 result wrapper (single card)
   const modalResult: RevealResult | null = useMemo(() => {
@@ -2491,12 +2518,14 @@ export default function ExploreClient({
                 </button>
               );
             })}
-            {selectedCategories.size > 0 || scrapOnly || budgetFilter !== "all" ? (
+            {selectedCategories.size > 0 || scrapOnly || budgetFilter !== "all" || source !== "all" || sort !== "profit_desc" ? (
               <button
                 type="button"
                 onClick={() => {
                   setSelectedCategories(new Set());
                   setScrapOnly(false);
+                  setSource("all");
+                  setSort("profit_desc");
                   updateBudgetFilter("all");
                 }}
                 className="shrink-0 px-1.5 py-1 text-[10px] font-medium text-zinc-500 underline dark:text-zinc-400"
@@ -2650,13 +2679,17 @@ export default function ExploreClient({
           ) : null}
         </div>
       ) : displayItems.length === 0 ? (
-        // Wave 353: 클라이언트 필터 결과 빈 경우 — 풀엔 있는데 선택 카테고리에만 없음.
+        // Wave 894: 클라이언트 필터 결과 빈 경우 — 현재 피드 snapshot 안에만 없음.
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/60 dark:bg-amber-950/30">
           <p className="text-sm font-bold text-amber-900 dark:text-amber-100">
-            {scrapOnly ? "아직 스크랩한 매물이 없어요" : "이번 30개 풀에 해당 카테고리 매물이 없어요"}
+            {scrapOnly
+              ? "아직 스크랩한 매물이 없어요"
+              : currentViewFilterLabel
+                ? `현재 피드에 ${currentViewFilterLabel} 매물이 없어요`
+                : "현재 피드에 맞는 매물이 없어요"}
           </p>
           <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">
-            {scrapOnly ? "상세보기에서 북마크를 누르면 여기에 모여요." : "필터 초기화하거나, 다른 30개를 받아보세요."}
+            {scrapOnly ? "상세보기에서 북마크를 누르면 여기에 모여요." : "필터를 초기화하거나, 조건에 맞는 매물을 더 찾아볼게요."}
           </p>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
             <button
@@ -2664,6 +2697,9 @@ export default function ExploreClient({
               onClick={() => {
                 setSelectedCategories(new Set());
                 setScrapOnly(false);
+                setSource("all");
+                setSort("profit_desc");
+                updateBudgetFilter("all");
               }}
               className="rounded-full border border-amber-400 bg-white px-3 py-1.5 text-xs font-bold text-amber-800 dark:border-amber-700 dark:bg-zinc-900 dark:text-amber-200"
             >
@@ -2674,7 +2710,7 @@ export default function ExploreClient({
                 type="button"
                 onClick={() => {
                   if (canRefresh) {
-                    void loadPool(true);
+                    void loadPool(true, { serverSource: currentServerSourceFilter });
                   } else {
                     setRefreshModalOpen(true);
                   }
@@ -3071,7 +3107,7 @@ export default function ExploreClient({
             type="button"
             onClick={() => {
               if (canRefresh) {
-                void loadPool(true);
+                void loadPool(true, { serverSource: currentServerSourceFilter });
               } else {
                 setRefreshModalOpen(true);
               }
@@ -3133,7 +3169,7 @@ export default function ExploreClient({
                 type="button"
                 onClick={() => {
                   if (canRefresh) {
-                    void loadPool(true);
+                    void loadPool(true, { serverSource: currentServerSourceFilter });
                     closeRefreshModal();
                   }
                 }}
