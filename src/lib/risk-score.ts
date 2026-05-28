@@ -4,7 +4,7 @@
 //
 // 3 화면 통일 (admin-pool-browser / pack-reveal-modal / user-reveal-dashboard) — drift 차단.
 
-import { isJoongnaMarketplaceSource } from "@/lib/marketplace-source";
+import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource } from "@/lib/marketplace-source";
 import { joongnaTrustScoreBand, joongnaTrustScoreFromFacts } from "@/lib/marketplace-safety";
 
 export type RiskAxis = "fraud" | "lock" | "battery" | "seller" | "photo";
@@ -37,6 +37,7 @@ export type RiskScoreInput = {
   sellerReviewCount?: number | null;
   marketplaceSource?: string | null;
   joongnaTrustScore?: number | null;
+  daangnMannerTemperature?: number | null;
   photoCount?: number | null;
 };
 
@@ -128,6 +129,20 @@ function scoreBattery(input: RiskScoreInput, _flags: Set<string>): RiskAxisResul
 function scoreSeller(input: RiskScoreInput): RiskAxisResult {
   const count = input.sellerReviewCount ?? null;
   const rating = input.sellerReviewRating ?? null;
+  if (isDaangnMarketplaceSource(input.marketplaceSource)) {
+    const rawTemp = Number(input.daangnMannerTemperature ?? NaN);
+    const temp = Number.isFinite(rawTemp) && rawTemp > 0 ? rawTemp : null;
+    if (temp == null) {
+      return { axis: "seller", level: 1, reason: "매너온도 미확인" };
+    }
+    if (temp < 30) {
+      return { axis: "seller", level: 2, reason: `매너온도 ${temp.toFixed(1)}°C` };
+    }
+    if (temp < 36.5) {
+      return { axis: "seller", level: 1, reason: `매너온도 ${temp.toFixed(1)}°C` };
+    }
+    return { axis: "seller", level: 0, reason: null };
+  }
   if (isJoongnaMarketplaceSource(input.marketplaceSource)) {
     const trustScore = joongnaTrustScoreFromFacts(input);
     const trustBand = joongnaTrustScoreBand(trustScore);
@@ -159,6 +174,11 @@ function scoreSeller(input: RiskScoreInput): RiskAxisResult {
 function scorePhoto(input: RiskScoreInput): RiskAxisResult {
   const n = input.photoCount;
   if (n != null) {
+    // 당근은 초기 search row에서 상세 사진 수를 모르면 0으로 저장된 과거 row가 있다.
+    // 0장은 "사진 없음"이 아니라 "아직 미확인"으로 보고, detail 수집 후 1~2장일 때만 신호를 낸다.
+    if (isDaangnMarketplaceSource(input.marketplaceSource) && n <= 0) {
+      return { axis: "photo", level: 0, reason: null };
+    }
     if (n <= 1) return { axis: "photo", level: 2, reason: `사진 ${n}장` };
     if (n <= 2) return { axis: "photo", level: 1, reason: `사진 ${n}장` };
   }

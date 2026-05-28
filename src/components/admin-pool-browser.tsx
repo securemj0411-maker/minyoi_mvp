@@ -58,6 +58,7 @@ type PoolItem = {
   descriptionPreview: string | null;
   sellerReviewRating: number | null;
   sellerReviewCount: number | null;
+  daangnMannerTemperature: number | null;
   imageCount: number | null;
   freeShipping: boolean;
   numFaved: number | null;
@@ -742,6 +743,8 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                         confidence={item.confidence}
                         sellerReviewRating={item.sellerReviewRating}
                         sellerReviewCount={item.sellerReviewCount}
+                        marketplaceSource={item.marketplaceSource}
+                        daangnMannerTemperature={item.daangnMannerTemperature}
                         photoCount={item.imageCount}
                         showDetail
                       />

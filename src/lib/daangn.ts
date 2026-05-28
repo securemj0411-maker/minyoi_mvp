@@ -67,6 +67,7 @@ export type DaangnSearchArticle = {
   status: string | null;
   content: string | null;
   thumbnail: string | null;
+  images: string[];
   createdAt: string | null;
   boostedAt: string | null;
   favoriteCount: number | null;
@@ -786,6 +787,13 @@ function stringValue(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value : null;
 }
 
+function stringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => stringValue(item))
+    .filter((item): item is string => Boolean(item));
+}
+
 function numberValue(value: unknown): number | null {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
@@ -867,6 +875,7 @@ function toDaangnArticle(raw: unknown, fallbackCategoryId?: string | null): Daan
     categoryFromThumbnail(stringValue(category?.thumbnail)) ??
     categoryFromId(fallbackCategoryId ?? null);
   const user = objectRecord(row.user);
+  const images = stringArray(row.images);
   return {
     id: stringValue(row.id) ?? href,
     href,
@@ -874,7 +883,8 @@ function toDaangnArticle(raw: unknown, fallbackCategoryId?: string | null): Daan
     price: numberValue(row.price),
     status: stringValue(row.status),
     content: stringValue(row.content),
-    thumbnail: stringValue(row.thumbnail),
+    thumbnail: stringValue(row.thumbnail) ?? images[0] ?? null,
+    images,
     createdAt: stringValue(row.createdAt),
     boostedAt: stringValue(row.boostedAt),
     favoriteCount: numberValue(row.favoriteCount),

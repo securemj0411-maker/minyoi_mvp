@@ -324,7 +324,7 @@ export function buildMarketplaceSafetyDisplay(facts: MarketplaceSafetyFacts): Ma
         return {
           kind: "daangn_manner_temperature" as const,
           metric: `매너온도 ${tempLabel}`,
-          metricLabel: daangnReviews > 0 ? `후기 ${daangnReviews.toLocaleString("ko-KR")}건` : "후기 정보 없음",
+          metricLabel: "당근 셀러 프로필 기준",
           headline: `당근 매너온도 ${tempLabel} · ${tierLabel}`,
           body: tierBody,
           note: "당근은 안전결제가 없는 직거래 플랫폼이에요. 매너온도가 가장 강한 신뢰 신호이고, 만남 장소와 시간을 채팅으로 확정하세요.",

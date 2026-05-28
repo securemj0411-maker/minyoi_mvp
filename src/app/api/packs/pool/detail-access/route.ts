@@ -29,21 +29,30 @@ export const dynamic = "force-dynamic";
 
 const MAX_DETAIL_ACCESS_NUM_COMMENT = 8;
 
-async function patchDaangnMannerTemperature(
+async function patchDaangnLiveSignals(
   pid: number,
-  mannerTemperature: number,
-  reviewCount: number | null,
+  patch: {
+    mannerTemperature?: number | null;
+    reviewCount?: number | null;
+    imageCount?: number | null;
+    commentCount?: number | null;
+    rawJson?: Record<string, unknown> | null;
+  },
 ) {
+  const body: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+  if (patch.mannerTemperature != null) body.daangn_manner_temperature = patch.mannerTemperature;
+  if (patch.reviewCount !== undefined) body.daangn_review_count = patch.reviewCount;
+  if (patch.imageCount != null && patch.imageCount > 0) body.image_count = patch.imageCount;
+  if (patch.commentCount != null) body.num_comment = patch.commentCount;
+  if (patch.rawJson) body.raw_json = patch.rawJson;
   await restFetch(`${tableUrl("mvp_raw_listings")}?pid=eq.${pid}`, {
     method: "PATCH",
     headers: { ...serviceHeaders(), Prefer: "return=minimal" },
-    body: JSON.stringify({
-      daangn_manner_temperature: mannerTemperature,
-      daangn_review_count: reviewCount,
-      updated_at: new Date().toISOString(),
-    }),
+    body: JSON.stringify(body),
   }).catch((err) => {
-    console.warn("[detail-access] daangn manner patch failed", {
+    console.warn("[detail-access] daangn live signal patch failed", {
       pid,
       err: err instanceof Error ? err.message : String(err),
     });
@@ -485,12 +494,28 @@ async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAcce
     }
     const liveMannerTemperature = live.article.user.score ?? item.daangnMannerTemperature;
     const liveReviewCount = live.article.user.reviewCount ?? item.daangnReviewCount;
+    const liveImageCount = live.article.images.length > 0 ? live.article.images.length : item.imageCount;
+    const liveCommentCount = live.article.commentCount ?? item.commentCount;
+    const nextRawJson = {
+      ...(typeof item.rawJson === "object" && item.rawJson != null ? (item.rawJson as Record<string, unknown>) : {}),
+      viewCount: live.article.viewCount,
+      imageCount: live.article.images.length,
+      region: live.article.region,
+    };
     if (
-      live.article.user.score != null &&
-      (item.daangnMannerTemperature !== live.article.user.score ||
-        item.daangnReviewCount !== live.article.user.reviewCount)
+      (live.article.user.score != null &&
+        (item.daangnMannerTemperature !== live.article.user.score ||
+          item.daangnReviewCount !== live.article.user.reviewCount)) ||
+      (live.article.images.length > 0 && item.imageCount !== live.article.images.length) ||
+      (live.article.commentCount != null && item.commentCount !== live.article.commentCount)
     ) {
-      await patchDaangnMannerTemperature(item.pid, live.article.user.score, live.article.user.reviewCount);
+      await patchDaangnLiveSignals(item.pid, {
+        mannerTemperature: live.article.user.score,
+        reviewCount: live.article.user.reviewCount,
+        imageCount: live.article.images.length,
+        commentCount: live.article.commentCount,
+        rawJson: nextRawJson,
+      });
     }
     await patchPoolVerified(item.pid);
     return {
@@ -499,9 +524,11 @@ async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAcce
         ...item,
         listingState: "active",
         saleStatus: live.saleStatus || item.saleStatus || "selling",
-        commentCount: live.article.commentCount ?? item.commentCount,
+        commentCount: liveCommentCount,
+        imageCount: liveImageCount,
         daangnMannerTemperature: liveMannerTemperature,
         daangnReviewCount: liveReviewCount,
+        rawJson: nextRawJson,
       },
     };
   }

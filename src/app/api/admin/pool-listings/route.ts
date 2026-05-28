@@ -297,7 +297,7 @@ export async function GET(req: NextRequest) {
         { headers: serviceHeaders() },
       ),
       restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sale_status,listing_state,last_seen_at,query,seller_uid,shop_review_rating,shop_review_count,free_shipping,num_faved,num_comment,source,seller_source,url,description_preview,raw_json,daangn_region_id,daangn_region_name&pid=in.(${pidsCsv})`,
+        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sale_status,listing_state,last_seen_at,query,seller_uid,shop_review_rating,shop_review_count,free_shipping,num_faved,num_comment,source,seller_source,url,description_preview,image_count,raw_json,daangn_region_id,daangn_region_name,daangn_manner_temperature&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -471,7 +471,8 @@ export async function GET(req: NextRequest) {
         // Wave 199: shop_review_* / free_shipping / num_* 는 mvp_raw_listings 에서.
         sellerReviewRating: r.shop_review_rating != null ? Number(r.shop_review_rating) : null,
         sellerReviewCount: r.shop_review_count != null ? Number(r.shop_review_count) : null,
-        imageCount: l.image_count != null ? Number(l.image_count) : null,
+        daangnMannerTemperature: r.daangn_manner_temperature != null ? Number(r.daangn_manner_temperature) : null,
+        imageCount: marketplaceSource === "daangn" && r.image_count != null ? Number(r.image_count) : l.image_count != null ? Number(l.image_count) : null,
         freeShipping: Boolean(r.free_shipping),
         numFaved: r.num_faved != null ? Number(r.num_faved) : null,
         numComment: r.num_comment != null ? Number(r.num_comment) : null,

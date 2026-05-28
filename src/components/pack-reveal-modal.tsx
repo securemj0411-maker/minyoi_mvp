@@ -657,10 +657,24 @@ function beginnerPurchaseChecks(card: RevealCard): BeginnerPurchaseCheck[] {
   const detail = card.savedDetail;
   const category = categoryForBeginnerGuide(card);
   const description = detail?.descriptionPreview ?? "";
-  const imageCount = detail?.imageCount ?? null;
+  const imageCount = safety.isDaangn && detail?.imageCount === 0 ? null : detail?.imageCount ?? null;
   const reviewCount = detail?.sellerReviewCount ?? 0;
 
-  if (reviewCount < SELLER_TRUST_MIN_REVIEW_COUNT) {
+  if (safety.isDaangn) {
+    const temp = (safety.sellerTrust as { mannerTemperature?: number | null }).mannerTemperature ?? null;
+    if (temp == null || temp < 36.5) {
+      checks.push({
+        id: "seller",
+        title: temp == null ? "매너온도를 확인하세요" : "매너온도가 낮은 편이에요",
+        body: temp == null
+          ? "당근은 후기/별점보다 셀러 프로필의 매너온도가 핵심 신뢰 신호예요."
+          : `매너온도 ${temp.toFixed(1)}°C라 평균 36.5°C보다 낮아요.`,
+        ask: "원본에서 셀러 프로필 매너온도와 실물 인증 사진을 먼저 확인하세요.",
+        label: "매너온도",
+        tone: "amber",
+      });
+    }
+  } else if (reviewCount < SELLER_TRUST_MIN_REVIEW_COUNT) {
     checks.push({
       id: "seller",
       title: reviewCount > 0 ? "후기가 아직 적어요" : "후기 없는 판매자예요",
@@ -2135,6 +2149,7 @@ function revealRiskScoreInput(card: RevealCard): RiskScoreInput {
     sellerReviewCount: card.savedDetail?.sellerReviewCount ?? null,
     marketplaceSource: card.marketplaceSource ?? null,
     joongnaTrustScore: card.savedDetail?.joongnaTrustScore ?? null,
+    daangnMannerTemperature: card.savedDetail?.daangnMannerTemperature ?? null,
     photoCount: card.savedDetail?.imageCount ?? null,
   };
 }

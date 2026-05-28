@@ -2,6 +2,7 @@ import { fetchDetail } from "@/lib/bunjang";
 import { CATALOG } from "@/lib/catalog";
 import { categoryFromComparableKey, loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
+import { fetchDaangnLiveState } from "@/lib/daangn";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import {
   BUNJANG_SOURCE_ID,
@@ -1569,6 +1570,11 @@ type RevealDetailSourceMeta = {
   source: string | null;
   seller_source: string | null;
   url: string | null;
+  thumbnail_url: string | null;
+  description_preview: string | null;
+  num_faved: number | null;
+  num_comment: number | null;
+  image_count: number | null;
   free_shipping: boolean | null;
   shop_review_rating: number | null;
   shop_review_count: number | null;
@@ -1580,7 +1586,7 @@ type RevealDetailSourceMeta = {
 
 async function loadRevealDetailSourceMeta(pid: number): Promise<RevealDetailSourceMeta | null> {
   const res = await callSupabase(
-    `/mvp_raw_listings?select=pid,source,seller_source,url,free_shipping,shop_review_rating,shop_review_count,raw_json,daangn_region_name,daangn_manner_temperature,daangn_review_count&pid=eq.${pid}&limit=1`,
+    `/mvp_raw_listings?select=pid,source,seller_source,url,thumbnail_url,description_preview,num_faved,num_comment,image_count,free_shipping,shop_review_rating,shop_review_count,raw_json,daangn_region_name,daangn_manner_temperature,daangn_review_count&pid=eq.${pid}&limit=1`,
     { headers: authHeaders() },
   );
   const rows = (await res.json()) as RevealDetailSourceMeta[];
@@ -1840,33 +1846,92 @@ export async function loadRevealListingDetail(input: {
   }
 
   if (isDaangnMarketplaceSource(marketplaceSource)) {
+    const listingUrl = listingUrlForSource(input.pid, meta?.url, marketplaceSource);
+    const live = listingUrl
+      ? await fetchDaangnLiveState(listingUrl, 10_000).catch((err) => {
+          console.warn("[reveal_detail] daangn live detail failed", {
+            pid: input.pid,
+            err: err instanceof Error ? err.message : String(err),
+          });
+          return null;
+        })
+      : null;
+    if (live?.ok && live.listingState !== "active") {
+      await patchRevealDetailTerminalState(input.pid, live.listingState, live.saleStatus, `daangn_${live.reason}`);
+      return {
+        ...terminalRevealDetail(input.pid, live.saleStatus),
+        description: live.article.content || "추천 당시 매물이 현재 판매완료되어 더 이상 상세 정보를 확인할 수 없어요.",
+        thumbnailUrl: live.article.thumbnail,
+        imageUrls: live.article.images,
+        metrics: {
+          viewCount: live.article.viewCount,
+          favoriteCount: live.article.favoriteCount,
+          commentCount: live.article.commentCount,
+        },
+      };
+    }
+    const liveArticle = live?.ok ? live.article : null;
+    if (liveArticle) {
+      const imageCount = liveArticle.images.length;
+      await callSupabase(`/mvp_raw_listings?pid=eq.${input.pid}`, {
+        method: "PATCH",
+        headers: authHeaders("return=minimal"),
+        body: JSON.stringify({
+          description_preview: (liveArticle.content ?? meta?.description_preview ?? "").slice(0, 500),
+          num_faved: liveArticle.favoriteCount ?? meta?.num_faved ?? 0,
+          num_comment: liveArticle.commentCount ?? liveArticle.chatCount ?? meta?.num_comment ?? 0,
+          image_count: imageCount,
+          daangn_manner_temperature: liveArticle.user.score ?? meta?.daangn_manner_temperature ?? null,
+          daangn_review_count: liveArticle.user.reviewCount ?? meta?.daangn_review_count ?? null,
+          raw_json: {
+            ...(meta?.raw_json ?? {}),
+            viewCount: liveArticle.viewCount,
+            imageCount,
+            region: liveArticle.region,
+          },
+          updated_at: new Date().toISOString(),
+        }),
+      }).catch((err) => {
+        console.warn("[reveal_detail] daangn live patch failed", {
+          pid: input.pid,
+          err: err instanceof Error ? err.message : String(err),
+        });
+      });
+    }
     const facts = marketplaceFactsFromRawJson({
       marketplaceSource,
       marketplaceLabel: marketplaceSourceLabel(marketplaceSource),
       freeShipping: meta?.free_shipping ?? false,
       sellerReviewRating: meta?.shop_review_rating ?? null,
       sellerReviewCount: meta?.shop_review_count ?? 0,
-      rawJson: meta?.raw_json,
+      rawJson: liveArticle
+        ? {
+            ...(meta?.raw_json ?? {}),
+            viewCount: liveArticle.viewCount,
+            imageCount: liveArticle.images.length,
+            region: liveArticle.region,
+          }
+        : meta?.raw_json,
       // Wave 758 (2026-05-26): 매너온도 + 리뷰 수 — daangn-only 분기에서 사용.
-      daangnMannerTemperature: meta?.daangn_manner_temperature ?? null,
-      daangnReviewCount: meta?.daangn_review_count ?? null,
+      daangnMannerTemperature: liveArticle?.user.score ?? meta?.daangn_manner_temperature ?? null,
+      daangnReviewCount: liveArticle?.user.reviewCount ?? meta?.daangn_review_count ?? null,
     });
     const safety = buildMarketplaceSafetyDisplay(facts);
     return {
       pid: input.pid,
-      description: "",
+      description: liveArticle?.content ?? meta?.description_preview ?? "",
       saleStatus: "selling",
       conditionLabel: null,
-      thumbnailUrl: null,
-      imageUrls: [],
+      thumbnailUrl: liveArticle?.thumbnail ?? meta?.thumbnail_url ?? null,
+      imageUrls: liveArticle?.images ?? (meta?.thumbnail_url ? [meta.thumbnail_url] : []),
       metrics: {
-        viewCount: 0,
-        favoriteCount: null,
-        commentCount: null,
+        viewCount: liveArticle?.viewCount ?? (typeof meta?.raw_json?.viewCount === "number" ? meta.raw_json.viewCount : null),
+        favoriteCount: liveArticle?.favoriteCount ?? meta?.num_faved ?? null,
+        commentCount: liveArticle?.commentCount ?? meta?.num_comment ?? null,
       },
       seller: {
-        uid: null,
-        name: null,
+        uid: liveArticle?.user.dbId ?? null,
+        name: liveArticle?.user.nickname ?? null,
         reviewRating: meta?.shop_review_rating ?? null,
         reviewCount: safety.sellerTrust.reviewCount,
         followerCount: 0,

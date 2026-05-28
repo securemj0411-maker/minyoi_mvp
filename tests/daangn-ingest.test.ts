@@ -55,6 +55,7 @@ function makeArticle(overrides: Partial<DaangnSearchArticle> = {}): DaangnSearch
     status: "Ongoing",
     content: null,
     thumbnail: null,
+    images: [],
     createdAt: null,
     boostedAt: null,
     favoriteCount: null,

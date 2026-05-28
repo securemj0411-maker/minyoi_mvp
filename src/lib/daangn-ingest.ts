@@ -481,6 +481,7 @@ type DaangnPreflightRow = {
   numFaved: number;
   numComment: number;
   thumbnailUrl: string | null;
+  imageCount: number;
   listingState: "active" | "sold_confirmed" | "disappeared";
   saleStatus: string;
   sourceUpdatedAt: string;
@@ -499,6 +500,7 @@ type ExistingDaangnRawRow = {
   num_faved: number | null;
   num_comment: number | null;
   thumbnail_url: string | null;
+  image_count: number | null;
   description_preview: string | null;
   listing_state: string | null;
   sale_status: string | null;
@@ -531,6 +533,10 @@ function daangnDetailUser(article: DaangnSearchArticle | DaangnDetailArticle): {
     profileImage?: string | null;
     regionName?: string | null;
   } | null;
+}
+
+function daangnImageCount(article: DaangnSearchArticle | DaangnDetailArticle): number {
+  return Array.isArray(article.images) ? article.images.length : 0;
 }
 
 type ReusedDaangnClassification = {
@@ -576,6 +582,7 @@ function sameDaangnRawJson(a: Record<string, unknown> | null | undefined, b: Rec
     a.source === b.source &&
     a.externalId === b.externalId &&
     a.viewCount === b.viewCount &&
+    Number(a.imageCount ?? 0) === Number(b.imageCount ?? 0) &&
     (aRegion?.dbId ?? null) === (bRegion?.dbId ?? null) &&
     (aRegion?.name ?? null) === (bRegion?.name ?? null)
   );
@@ -591,6 +598,7 @@ function buildDaangnPreflightRow(
   const title = article.title || "(no title)";
   const description = ((article as DaangnDetailArticle).content ?? article.content ?? "") as string;
   const lifecycle = daangnLifecycleFromStatus(article.status);
+  const imageCount = daangnImageCount(article);
   return {
     article,
     externalId,
@@ -601,6 +609,7 @@ function buildDaangnPreflightRow(
     numFaved: article.favoriteCount ?? 0,
     numComment: article.chatCount ?? 0,
     thumbnailUrl: article.thumbnail ?? null,
+    imageCount,
     listingState: lifecycle.listingState,
     saleStatus: lifecycle.saleStatus,
     sourceUpdatedAt: article.boostedAt ?? article.createdAt ?? new Date(0).toISOString(),
@@ -608,6 +617,7 @@ function buildDaangnPreflightRow(
       source: DAANGN_SOURCE_ID,
       externalId,
       viewCount: article.viewCount,
+      imageCount,
       region: article.region,
     },
     daangnRegionId: article.region.dbId ?? null,
@@ -641,6 +651,7 @@ function canSkipDaangnClassify(existing: ExistingDaangnRawRow | undefined, row: 
     Number(existing.num_faved ?? 0) === row.numFaved &&
     Number(existing.num_comment ?? 0) === row.numComment &&
     (existing.thumbnail_url ?? null) === row.thumbnailUrl &&
+    Number(existing.image_count ?? 0) === row.imageCount &&
     (existing.description_preview ?? "") === row.descriptionPreview &&
     existing.listing_state === row.listingState &&
     existing.sale_status === row.saleStatus &&
@@ -749,6 +760,7 @@ async function loadExistingDaangnRawRows(pids: number[]): Promise<Map<number, Ex
     "num_faved",
     "num_comment",
     "thumbnail_url",
+    "image_count",
     "description_preview",
     "listing_state",
     "sale_status",
@@ -850,6 +862,7 @@ function buildRawListingRow(
   const priceInt = Math.max(0, Math.round(Number(article.price)));
   const detailUser = daangnDetailUser(article);
   const hasDetailPayload = hasDaangnDetailPayload(article);
+  const imageCount = daangnImageCount(article);
   const raw: Record<string, unknown> = {
     pid,
     source: DAANGN_SOURCE_ID,
@@ -870,7 +883,7 @@ function buildRawListingRow(
     sku_name: skuName,
     sale_status: lifecycle.saleStatus,
     shop_review_count: 0,
-    image_count: 0,
+    image_count: imageCount,
     missing_count: 0,
     detail_status: hasDetailPayload ? "done" : "pending",
     detail_enriched_at: hasDetailPayload ? nowIso : null,
@@ -888,6 +901,7 @@ function buildRawListingRow(
       externalId,
       queryLabel: queryLabel ?? null,
       viewCount: article.viewCount,
+      imageCount,
       region: article.region,  // { dbId, name } — direct-location 표시용
     },
     // Daangn 전용 컬럼 (Phase 3 schema migration)
