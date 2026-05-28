@@ -388,6 +388,8 @@ async function rawScoreDirtySchemaAvailable() {
 }
 
 const catalogById = new Map(CATALOG.map((sku) => [sku.id, sku]));
+const effectiveSkuCache = new Map<string, Sku | null>();
+const EFFECTIVE_SKU_CACHE_LIMIT = 5_000;
 
 function isFashionCategory(category: string | null | undefined): boolean {
   return category === "clothing" || category === "shoe" || category === "bag";
@@ -398,14 +400,28 @@ function isFashionSkuId(skuId: string | null | undefined): boolean {
 }
 
 function effectiveCatalogSkuForScorableRow(row: Pick<ScorableRawRow, "sku_id" | "name" | "description_preview">): Sku | null {
+  const cacheKey = [
+    row.sku_id ?? "",
+    row.name ?? "",
+    (row.description_preview ?? "").slice(0, 200),
+  ].join("\u0001");
+  if (effectiveSkuCache.has(cacheKey)) return effectiveSkuCache.get(cacheKey) ?? null;
   const stored = catalogById.get(row.sku_id ?? "") ?? null;
+  let resolved: Sku | null;
   if (isFashionCategory(stored?.category) || isFashionSkuId(row.sku_id)) {
     // Wave 412: fashion broad/fallback rows are too risky to trust from stored raw sku_id.
     // Re-evaluate against the current catalog on every score parse; if the current catalog
     // rejects it, do not let stale shoe/bag/clothing sku_ids keep pool access.
-    return ruleMatch(row.name, row.description_preview) ?? null;
+    resolved = ruleMatch(row.name, row.description_preview) ?? null;
+  } else {
+    resolved = stored ?? ruleMatch(row.name, row.description_preview) ?? null;
   }
-  return stored ?? ruleMatch(row.name, row.description_preview) ?? null;
+  if (effectiveSkuCache.size >= EFFECTIVE_SKU_CACHE_LIMIT) {
+    const firstKey = effectiveSkuCache.keys().next().value;
+    if (firstKey) effectiveSkuCache.delete(firstKey);
+  }
+  effectiveSkuCache.set(cacheKey, resolved);
+  return resolved;
 }
 
 function isScorableRawCandidate(row: Pick<ScorableRawRow, "detail_status" | "sku_id" | "listing_state" | "listing_type"> & { listing_type_override?: string | null }): boolean {
@@ -3668,8 +3684,33 @@ export async function sourceHealthStage(): Promise<StageStats> {
 // 2026-05-17 v46 cleanup: 20K row fetch + JS aggregate → DB function (get_fraud_group_hashes).
 // 이전: PostgREST 가 GROUP BY HAVING 못 해서 raw fetch + in-memory. 매 score-stage run 마다 20K row.
 // 새: DB 안에서 GROUP BY HAVING — 작은 set 반환. 100배 빠름.
-async function loadFraudGroupHashes(): Promise<Set<string>> {
+const MIN_FRAUD_GROUP_SELLERS = 2;
+async function loadFraudGroupHashes(targetHashes?: Iterable<string>): Promise<Set<string>> {
   try {
+    const target = Array.from(new Set(Array.from(targetHashes ?? [])
+      .map((hash) => String(hash ?? "").trim())
+      .filter(Boolean)));
+    if (target.length > 0) {
+      const sellerUidsByHash = new Map<string, Set<string>>();
+      for (const chunk of chunkArray(target, 100)) {
+        const encoded = chunk.map(encodeURIComponent).join(",");
+        const url = `${tableUrl("mvp_raw_listings")}?select=description_hash,seller_uid&description_hash=in.(${encoded})&seller_uid=not.is.null&limit=5000`;
+        const res = await restFetch(url, { headers: serviceHeaders() });
+        const rows = (await res.json()) as Array<{ description_hash: string | null; seller_uid: string | null }>;
+        for (const row of rows) {
+          if (!row.description_hash || !row.seller_uid) continue;
+          const sellers = sellerUidsByHash.get(row.description_hash) ?? new Set<string>();
+          sellers.add(row.seller_uid);
+          sellerUidsByHash.set(row.description_hash, sellers);
+        }
+      }
+      const hashes = new Set<string>();
+      for (const [hash, sellers] of sellerUidsByHash) {
+        if (sellers.size >= MIN_FRAUD_GROUP_SELLERS) hashes.add(hash);
+      }
+      return hashes;
+    }
+
     const configuredTimeoutMs = Number(process.env.PIPELINE_FRAUD_GROUP_HASH_TIMEOUT_MS ?? 8_000);
     const timeoutMs = Number.isFinite(configuredTimeoutMs) && configuredTimeoutMs > 0
       ? Math.max(configuredTimeoutMs, 8_000)
@@ -3814,8 +3855,11 @@ async function loadLowVolumeSkuIds(targetSkuIds?: Iterable<string>): Promise<Set
 
 // Wave 138 (2026-05-16): pool에 이미 있는 seller_uid별 매물 수 — buildCandidatePoolRows에 전달.
 // 같은 셀러 다수 매물 추가 진입 차단 (qty 위장 업자 탐지).
-async function loadExistingPoolSellerCounts(): Promise<Map<string, number>> {
+async function loadExistingPoolSellerCounts(targetSellerUids?: Iterable<string>): Promise<Map<string, number>> {
   try {
+    const target = Array.from(new Set(Array.from(targetSellerUids ?? [])
+      .map((sellerUid) => String(sellerUid ?? "").trim())
+      .filter(Boolean)));
     // pool ready 매물의 pid 가져온 후 raw_listings.seller_uid join (PostgREST 단순 query)
     const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.ready&limit=5000`;
     const poolRes = await restFetch(poolUrl, { headers: serviceHeaders() });
@@ -3826,7 +3870,10 @@ async function loadExistingPoolSellerCounts(): Promise<Map<string, number>> {
     const counts = new Map<string, number>();
     // chunk fetch
     for (const chunk of chunkArray(pids, 500)) {
-      const rawUrl = `${tableUrl("mvp_raw_listings")}?select=seller_uid&pid=in.(${chunk.join(",")})&seller_uid=not.is.null`;
+      const targetFilter = target.length > 0
+        ? `&seller_uid=in.(${target.map(encodeURIComponent).join(",")})`
+        : "";
+      const rawUrl = `${tableUrl("mvp_raw_listings")}?select=seller_uid&pid=in.(${chunk.join(",")})&seller_uid=not.is.null${targetFilter}`;
       const rawRes = await restFetch(rawUrl, { headers: serviceHeaders() });
       const rawRows = (await rawRes.json()) as Array<{ seller_uid: string | null }>;
       for (const r of rawRows) {
@@ -6839,21 +6886,31 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
         (skuId.startsWith("shoe-") || skuId.startsWith("clothing-") || skuId.startsWith("bag-"))
       )),
   );
+  const poolGateTargetSellerUids = new Set(
+    aiReview.rows
+      .map((row) => row.sellerUid)
+      .filter((sellerUid): sellerUid is string => Boolean(sellerUid)),
+  );
+  const poolGateTargetDescriptionHashes = new Set(
+    aiReview.rows
+      .map((row) => row.descriptionHash)
+      .filter((hash): hash is string => Boolean(hash)),
+  );
 
   const [existingPoolSellerCounts, fraudGroupHashes, lowVolumeSkuIds, daangnVolumeBySku] = await timedScoreSubstage("score_load_pool_gate_inputs", () => Promise.all([
-    loadExistingPoolSellerCounts().catch((err) => {
+    timedScoreSubstage("score_load_existing_pool_seller_counts", () => loadExistingPoolSellerCounts(poolGateTargetSellerUids)).catch((err) => {
       console.warn("loadExistingPoolSellerCounts failed (non-fatal)", err);
       return new Map<string, number>();
     }),
-    loadFraudGroupHashes().catch((err) => {
+    timedScoreSubstage("score_load_fraud_group_hashes", () => loadFraudGroupHashes(poolGateTargetDescriptionHashes)).catch((err) => {
       console.warn("loadFraudGroupHashes failed (non-fatal)", err);
       return new Set<string>();
     }),
-    loadLowVolumeSkuIds(lowVolumeTargetSkuIds).catch((err) => {
+    timedScoreSubstage("score_load_low_volume_sku_ids", () => loadLowVolumeSkuIds(lowVolumeTargetSkuIds)).catch((err) => {
       console.warn("loadLowVolumeSkuIds failed (non-fatal)", err);
       return new Set<string>();
     }),
-    loadDaangnVolumeBySku(daangnVolumeTargetSkuIds).catch((err) => {
+    timedScoreSubstage("score_load_daangn_volume_by_sku", () => loadDaangnVolumeBySku(daangnVolumeTargetSkuIds)).catch((err) => {
       console.warn("loadDaangnVolumeBySku failed (non-fatal)", err);
       return new Map<string, number>();
     }),

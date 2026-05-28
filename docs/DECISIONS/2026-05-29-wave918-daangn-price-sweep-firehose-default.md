@@ -89,3 +89,45 @@ score_load_rows ~= 4.2s
 - Do not raise cadence from every 30 minutes yet. If `blockedCombos=0` and `matchedArticles/detailParsed` stay useful, increase cadence or add a dedicated sweep lane later.
 - Do not loosen quality gates just to increase ready count. The current fix improves market basis without weakening pool safety.
 - Do not split score-worker cleanup into another worker until the new timing fields identify the actual hot stage.
+
+## Follow-up: score gate hot path
+
+After deploying the effective-SKU reuse, production score timings changed materially:
+
+```text
+score_build_batch_price_maps ~= 2-4ms
+score_row_loop ~= 8-11ms
+score_build_effective_sku_map ~= 7.3-8.6s
+score_load_pool_gate_inputs ~= 8.0-8.6s
+```
+
+So the previous repeated effective-SKU calls were fixed, but two hot paths remained.
+
+The pool gate input load was not a generic DB slowdown. Local production measurement showed:
+
+```text
+rpc_get_fraud_group_hashes ~= 8136ms, rows=1000
+pool_ready_pids ~= 75ms
+recent_scorable_skus ~= 62ms
+targeted description_hash fraud query, 100 hashes ~= 148ms
+```
+
+Decision:
+
+- Stop loading the global `get_fraud_group_hashes` set for every score run when the current score batch has known `description_hash` values.
+- Instead, query only the current batch hashes from `mvp_raw_listings`, count distinct `seller_uid` per hash, and return hashes with 2+ sellers.
+- Also restrict existing ready-pool seller counts to the seller IDs present in the current score batch.
+- Add nested timing keys inside `score_load_pool_gate_inputs`:
+  - `score_load_existing_pool_seller_counts`
+  - `score_load_fraud_group_hashes`
+  - `score_load_low_volume_sku_ids`
+  - `score_load_daangn_volume_by_sku`
+
+This keeps the same gate semantics for rows being scored while removing the 8s global fraud hash scan from the critical path.
+
+For `score_build_effective_sku_map`, add a bounded warm-process cache keyed by stored `sku_id`, title, and description preview. Catalog matching is deterministic per deploy, so reusing the result across repeated dirty rows in a warm function instance is safe. The cache is capped at 5,000 entries.
+
+Deferred:
+
+- Do not replace the DB RPC itself yet; the app no longer needs it on the score hot path, and a schema/function migration is a bigger operational step.
+- Do not merge low-volume and Daangn-volume loaders until the new nested timing fields show which one is still meaningful.
