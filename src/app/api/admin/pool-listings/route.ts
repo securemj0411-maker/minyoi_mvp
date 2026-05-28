@@ -7,6 +7,7 @@ import { isAdminUser } from "@/lib/auth-users";
 import { loadMarketBandsForKeys, loadV7SiblingPresence, resolveSkuMedianForDisplay } from "@/lib/band-aware-median";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { restFetchAll } from "@/lib/rest-paginated";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
@@ -110,11 +111,11 @@ export async function GET(req: NextRequest) {
     // Wave 757 (2026-05-26): 풀은 작은데 (~700 ready) raw 는 클 수 있음 (daangn 43k+).
     //   기존: raw_listings where source=daangn LIMIT 5000 → 풀 pids 못 잡으면 결과 0.
     //   변경: 풀 ready pids 먼저 가져와서 그걸로 raw 좁힘 (pid=in.(...) + source=eq.X).
-    const poolPidRes = await restFetch(
-      `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.${encodeURIComponent(statusFilter)}&limit=5000`,
-      { headers: serviceHeaders() },
+    const poolRowsForSource = await restFetchAll<{ pid: number }>(
+      `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.${encodeURIComponent(statusFilter)}`,
+      { maxRows: 20_000, orderBy: "pid.asc" },
     );
-    const poolPids = ((await poolPidRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+    const poolPids = poolRowsForSource.map((r) => Number(r.pid));
     if (poolPids.length === 0) {
       return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
     }
@@ -194,11 +195,10 @@ export async function GET(req: NextRequest) {
 
     if (hasExternalFilters) {
       // price/SKU/search 필터는 외부 테이블을 보지만, total/page는 candidate_pool base row 기준으로 한 번에 계산한다.
-      const scopedPoolRes = await restFetch(
-        `${tableUrl("mvp_candidate_pool")}?select=${cols}&${filter}&order=${order}&limit=5000`,
-        { headers: serviceHeaders() },
+      const allBaseRows = await restFetchAll<PoolRow>(
+        `${tableUrl("mvp_candidate_pool")}?select=${cols}&${filter}&order=${order}`,
+        { maxRows: 20_000, orderBy: order },
       );
-      const allBaseRows = (await scopedPoolRes.json()) as PoolRow[];
       const basePids = allBaseRows.map((row) => Number(row.pid));
       const listingMap = new Map<number, { name: string; sku_name: string | null; price: number | null }>();
       const rawSkuMap = new Map<number, string | null>();
@@ -535,11 +535,10 @@ export async function GET(req: NextRequest) {
       }
 
       // bySku breakdown — ready 매물만 (검토 대상)
-      const readyPoolRes = await restFetch(
-        `${tableUrl("mvp_candidate_pool")}?select=pid,category&status=eq.ready&limit=5000`,
-        { headers: serviceHeaders() },
+      const readyPoolRows = await restFetchAll<{ pid: number; category: string | null }>(
+        `${tableUrl("mvp_candidate_pool")}?select=pid,category&status=eq.ready`,
+        { maxRows: 20_000, orderBy: "pid.asc" },
       );
-      const readyPoolRows = (await readyPoolRes.json()) as Array<{ pid: number; category: string | null }>;
       const readyPids = readyPoolRows.map((r) => Number(r.pid));
       const categoryCount = new Map<string, number>();
       for (const row of readyPoolRows) {

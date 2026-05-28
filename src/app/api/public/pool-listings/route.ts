@@ -6,6 +6,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { restFetchAll } from "@/lib/rest-paginated";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 
@@ -104,11 +105,20 @@ export async function GET(req: NextRequest) {
 
   if (sourceFilter) {
     const normalizedSource = normalizeMarketplaceSource(sourceFilter);
-    const sourceRes = await restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid&source=eq.${encodeURIComponent(normalizedSource)}&limit=5000`,
-      { headers: serviceHeaders() },
+    const poolRowsForSource = await restFetchAll<{ pid: number }>(
+      `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.${encodeURIComponent(statusFilter)}`,
+      { maxRows: 20_000, orderBy: "pid.asc" },
     );
-    const sourcePids = ((await sourceRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid));
+    const poolPids = poolRowsForSource.map((r) => Number(r.pid));
+    const sourcePids: number[] = [];
+    for (let i = 0; i < poolPids.length; i += 500) {
+      const chunk = poolPids.slice(i, i + 500);
+      const sourceRes = await restFetch(
+        `${tableUrl("mvp_raw_listings")}?select=pid&source=eq.${encodeURIComponent(normalizedSource)}&pid=in.(${chunk.join(",")})&limit=5000`,
+        { headers: serviceHeaders() },
+      );
+      sourcePids.push(...((await sourceRes.json()) as Array<{ pid: number }>).map((r) => Number(r.pid)));
+    }
     if (sourcePids.length === 0) {
       return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
     }
@@ -171,11 +181,10 @@ export async function GET(req: NextRequest) {
     const hasExternalFilters = Boolean(scopedPidSet || priceBucket || skuFilter || searchQuery);
 
     if (hasExternalFilters) {
-      const scopedPoolRes = await restFetch(
-        `${tableUrl("mvp_candidate_pool")}?select=${cols}&${filter}&order=${order}&limit=5000`,
-        { headers: serviceHeaders() },
+      const allBaseRows = await restFetchAll<PoolRow>(
+        `${tableUrl("mvp_candidate_pool")}?select=${cols}&${filter}&order=${order}`,
+        { maxRows: 20_000, orderBy: order },
       );
-      const allBaseRows = (await scopedPoolRes.json()) as PoolRow[];
       const basePids = allBaseRows.map((row) => Number(row.pid));
       const listingMap = new Map<number, { name: string; sku_name: string | null; price: number | null }>();
       const rawSkuMap = new Map<number, string | null>();
@@ -355,11 +364,10 @@ export async function GET(req: NextRequest) {
         totals[r.status] = (totals[r.status] ?? 0) + r.count;
         totalAll += r.count;
       }
-      const readyPoolRes = await restFetch(
-        `${tableUrl("mvp_candidate_pool")}?select=pid,category&status=eq.ready&limit=5000`,
-        { headers: serviceHeaders() },
+      const readyPoolRows = await restFetchAll<{ pid: number; category: string | null }>(
+        `${tableUrl("mvp_candidate_pool")}?select=pid,category&status=eq.ready`,
+        { maxRows: 20_000, orderBy: "pid.asc" },
       );
-      const readyPoolRows = (await readyPoolRes.json()) as Array<{ pid: number; category: string | null }>;
       const readyPids = readyPoolRows.map((r) => Number(r.pid));
       const categoryCount = new Map<string, number>();
       for (const row of readyPoolRows) {
