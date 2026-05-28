@@ -546,7 +546,7 @@ async function fetchRowsByPidChunks<T>(
 async function loadPool(
   headers: Record<string, string>,
   options: {
-    sort?: "profit_desc" | "latest" | "price_asc";
+    sort?: "profit_desc" | "latest" | "price_asc" | "distance";
     source?: "bunjang" | "joongna" | "daangn" | null;
     priceMax?: number | null;
     excludePids?: number[];
@@ -1089,8 +1089,8 @@ export async function GET(req: Request) {
     const refresh = url.searchParams.get("refresh") === "1";
     // Wave 340: 정렬 옵션. Wave 353: 카테고리 필터는 클라이언트로 이동 (전체 vs 카테고리 일관성).
     const sortParam = url.searchParams.get("sort");
-    const sort: "profit_desc" | "latest" | "price_asc" =
-      sortParam === "latest" || sortParam === "price_asc" ? sortParam : "profit_desc";
+    const sort: "profit_desc" | "latest" | "price_asc" | "distance" =
+      sortParam === "latest" || sortParam === "price_asc" || sortParam === "distance" ? sortParam : "profit_desc";
 
     // Wave 373: personalization 필터 — 예산(가격 상한) + 성향(정렬/필터 우선순위).
     const budgetParam = url.searchParams.get("budget");
@@ -1174,6 +1174,20 @@ export async function GET(req: Request) {
       });
     } else if (preference === "aggressive") {
       items = [...items].sort((a, b) => b.expectedProfitMax - a.expectedProfitMax);
+    }
+    // Wave 799 (2026-05-27): "가까운 순" 정렬 옵션 — daangn 매물 모두 위로 + 거리 ASC, non-daangn 아래로 차익순.
+    if (sort === "distance") {
+      items = [...items].sort((a, b) => {
+        const aDaangn = a.marketplaceSource === "daangn";
+        const bDaangn = b.marketplaceSource === "daangn";
+        if (aDaangn !== bDaangn) return aDaangn ? -1 : 1;
+        if (aDaangn && bDaangn) {
+          const aDist = a.daangnDistanceKm ?? Number.POSITIVE_INFINITY;
+          const bDist = b.daangnDistanceKm ?? Number.POSITIVE_INFINITY;
+          if (aDist !== bDist) return aDist - bDist;
+        }
+        return (b.expectedProfitMax ?? 0) - (a.expectedProfitMax ?? 0);
+      });
     }
     items = sortDaangnItemsByDistance(items);
     items = items.slice(0, PAGE_SIZE);

@@ -458,7 +458,7 @@ function hasPaidOrFreeDetailAccess(snapshot: DetailAccessSnapshot, freeDetailRem
   return Boolean(snapshot.unlimited) || freeDetailRemaining > 0 || Number(snapshot.creditBalance ?? 0) > 0;
 }
 
-type SortOption = "profit_desc" | "latest" | "price_asc";
+type SortOption = "profit_desc" | "latest" | "price_asc" | "distance";
 type SourceOption = "all" | "bunjang" | "joongna" | "daangn";
 type BudgetFilterOption = "all" | "150000" | "300000" | "500000";
 type LoadPoolOptions = {
@@ -2580,6 +2580,7 @@ export default function ExploreClient({
           >
             <option value="profit_desc">차익순</option>
             <option value="price_asc">매입단가순</option>
+            <option value="distance">가까운 순 (당근)</option>
             <option value="latest">최신순</option>
           </select>
         </div>
