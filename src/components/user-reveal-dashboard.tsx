@@ -510,6 +510,10 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       disappearedSampleCount: 0,
       confidence: null,
       priceSource: "market" as const,
+      basisSource: null,
+      basisSourceLabel: null,
+      sourceFallbackUsed: false,
+      sourceSampleCount: null,
       computedAt: null,
       excludedExamples: [],
       // Wave 130 (2026-05-16): condition별 시세 분리 — 사업 보고서 L2. fallback marketBasis empty default.

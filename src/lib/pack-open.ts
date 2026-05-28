@@ -134,6 +134,12 @@ export type RevealMarketBasis = {
   // Wave 252.A real (2026-05-20): "v3_pending_rematch" = clothing v3 매물 (product_type 미박힘) +
   //   v7 sibling row 존재 → mixed-pool median 차단. UI 에서 "비교 기준 미확정 (재매칭 대기)" 표시.
   priceSource: "reference" | "market" | "v3_pending_rematch";
+  // Wave 893 (2026-05-28): source-aware basis for Daangn/Joongna/Bunjang.
+  // null = mixed market row. sourceFallbackUsed=true means source sample/table was not usable and mixed fallback is shown.
+  basisSource: string | null;
+  basisSourceLabel: string | null;
+  sourceFallbackUsed: boolean;
+  sourceSampleCount: number | null;
   computedAt: string | null;
   excludedExamples: string[];
   // Wave 130 (2026-05-16): condition별 시세 분리 — 사업 보고서 L2 retention.
@@ -635,6 +641,7 @@ async function assertRevealAccess(userRef: string, pid: number): Promise<void> {
 // 사업 보고서 L2: 같은 SKU+옵션 매물이라도 condition별 시세 spread 15~40% — 끼리 비교 retention.
 export type MarketStatsByCondition = Map<string, MarketPriceRow>;
 export type MarketStatsMap = Map<string, MarketStatsByCondition>;
+export type MarketStatsPerSourceMap = Map<string, Map<string, MarketStatsByCondition>>;
 
 type TtlEntry<T> = {
   value: T;
@@ -646,6 +653,7 @@ const MARKET_VELOCITY_CACHE_TTL_MS = ttlFromEnv("PACK_MARKET_VELOCITY_CACHE_TTL_
 const REFERENCE_PRICE_CACHE_TTL_MS = ttlFromEnv("PACK_REFERENCE_PRICE_CACHE_TTL_MS", 10 * 60 * 1000);
 
 const marketStatsCache = new Map<string, TtlEntry<MarketStatsByCondition>>();
+const marketStatsPerSourceCache = new Map<string, TtlEntry<Map<string, MarketStatsByCondition>>>();
 const marketVelocityCache = new Map<string, TtlEntry<MarketVelocityRow | null>>();
 const referencePriceCache = new Map<string, TtlEntry<number | null>>();
 
@@ -819,6 +827,74 @@ export async function fetchLatestMarketStats(comparableKeys: (string | null)[]):
     const byCondition = fetched.get(key) ?? new Map<string, MarketPriceRow>();
     writeTtl(marketStatsCache, key, byCondition, MARKET_STATS_CACHE_TTL_MS, now);
     map.set(key, byCondition);
+  }
+  return map;
+}
+
+export async function fetchLatestMarketStatsPerSource(
+  comparableKeys: (string | null)[],
+): Promise<MarketStatsPerSourceMap> {
+  const unique = [...new Set(comparableKeys.filter((key): key is string => Boolean(key)))];
+  if (unique.length === 0) return new Map();
+  const now = Date.now();
+  const map: MarketStatsPerSourceMap = new Map();
+  const missing: string[] = [];
+  for (const key of unique) {
+    const cached = readTtl(marketStatsPerSourceCache, key, now);
+    if (cached) {
+      map.set(key, cached);
+    } else {
+      missing.push(key);
+    }
+  }
+  if (missing.length === 0) return map;
+
+  const cols = [
+    "comparable_key",
+    "source",
+    "condition_class",
+    "active_median_price",
+    "sold_median_price",
+    "blended_median_price",
+    "p25_price",
+    "p75_price",
+    "active_sample_count",
+    "sold_sample_count",
+    "disappeared_sample_count",
+    "confidence",
+    "computed_at",
+  ].join(",");
+  const encoded = missing.map((key) => encodeURIComponent(key)).join(",");
+  try {
+    const res = await callSupabase(
+      `/mvp_market_price_daily_per_source?select=${cols}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(400, missing.length * 36)}`,
+      { headers: authHeaders() },
+    );
+    const rows = (await res.json()) as Array<MarketPriceRow & { source: string | null }>;
+    const fetched: MarketStatsPerSourceMap = new Map();
+    for (const row of rows) {
+      if (!row.source) continue;
+      const source = normalizeMarketplaceSource(row.source);
+      const bySource = fetched.get(row.comparable_key) ?? new Map<string, MarketStatsByCondition>();
+      const byCondition = bySource.get(source) ?? new Map<string, MarketPriceRow>();
+      if (!byCondition.has(row.condition_class)) {
+        byCondition.set(row.condition_class, row);
+      }
+      bySource.set(source, byCondition);
+      fetched.set(row.comparable_key, bySource);
+    }
+    for (const key of missing) {
+      const bySource = fetched.get(key) ?? new Map<string, MarketStatsByCondition>();
+      writeTtl(marketStatsPerSourceCache, key, bySource, MARKET_STATS_CACHE_TTL_MS, now);
+      map.set(key, bySource);
+    }
+  } catch (err) {
+    console.warn("[pack-open] per-source market stats fetch failed (mixed fallback)", err);
+    for (const key of missing) {
+      const empty = new Map<string, MarketStatsByCondition>();
+      writeTtl(marketStatsPerSourceCache, key, empty, MARKET_STATS_CACHE_TTL_MS, now);
+      map.set(key, empty);
+    }
   }
   return map;
 }
@@ -1071,6 +1147,7 @@ const CONDITION_LABEL: Record<string, string> = {
 };
 
 const MIN_SAMPLE_COUNT_FOR_CONFIDENCE = 3;
+const MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE = 3;
 
 // Wave 159h (2026-05-17): condition-fallback shared module 사용 (DRY).
 function selectMarketRowByCondition(
@@ -1084,6 +1161,37 @@ function selectMarketRowByCondition(
   );
 }
 
+function selectMarketRowBySource(
+  perSourceStats: MarketStatsPerSourceMap | undefined,
+  comparableKey: string | null,
+  marketplaceSource: string | null | undefined,
+  targetConditionClass: string | null,
+): {
+  row: MarketPriceRow;
+  conditionClass: string | null;
+  fallbackUsed: boolean;
+  source: string;
+  byCondition: MarketStatsByCondition;
+} | null {
+  if (!perSourceStats || !comparableKey || !marketplaceSource) return null;
+  const source = normalizeMarketplaceSource(marketplaceSource);
+  const byCondition = perSourceStats.get(comparableKey)?.get(source);
+  if (!byCondition) return null;
+  const selected = selectMarketRowByCondition(byCondition, targetConditionClass);
+  if (!selected.row) return null;
+  const sourceSampleCount =
+    Number(selected.row.active_sample_count ?? 0) +
+    Number(selected.row.sold_sample_count ?? 0);
+  if (sourceSampleCount < MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE) return null;
+  return {
+    row: selected.row,
+    conditionClass: selected.conditionClass,
+    fallbackUsed: selected.fallbackUsed,
+    source,
+    byCondition,
+  };
+}
+
 export function marketBasisForCandidate(
   comparableKey: string | null,
   skuName: string,
@@ -1093,6 +1201,9 @@ export function marketBasisForCandidate(
   referencePrices?: Map<string, number>,
   // Wave 252.A real (2026-05-20): v3 stale 가드 — v7 sibling 존재 시 mixed-pool row 차단.
   v7SiblingPresence?: V7SiblingPresenceMap,
+  // Wave 893: source-specific market stats when same-source sample is usable.
+  marketStatsPerSource?: MarketStatsPerSourceMap,
+  marketplaceSource?: string | null,
 ): RevealMarketBasis {
   // Wave 252.A real: v3 clothing key + v7 sibling 존재 → mixed-pool 신뢰 불가 → "v3_pending_rematch" 표시.
   //   medianPrice=null 로 caller (currentNetProfitFromMarketPrice) 가 차익 계산 skip → 사용자에게 잘못된 가격 노출 X.
@@ -1110,6 +1221,10 @@ export function marketBasisForCandidate(
       disappearedSampleCount: 0,
       confidence: null,
       priceSource: "v3_pending_rematch",
+      basisSource: null,
+      basisSourceLabel: null,
+      sourceFallbackUsed: false,
+      sourceSampleCount: null,
       computedAt: null,
       excludedExamples: excludedExamplesForKey(comparableKey),
       conditionClass: conditionClass ?? null,
@@ -1119,18 +1234,31 @@ export function marketBasisForCandidate(
     };
   }
   const byCondition = comparableKey ? marketStats.get(comparableKey) : undefined;
-  const { row: stat, conditionClass: actualCondition, fallbackUsed } = selectMarketRowByCondition(
+  const mixedSelection = selectMarketRowByCondition(
     byCondition,
     conditionClass,
   );
+  const sourceSelection = selectMarketRowBySource(
+    marketStatsPerSource,
+    comparableKey,
+    marketplaceSource,
+    conditionClass,
+  );
+  const stat = sourceSelection?.row ?? mixedSelection.row;
+  const actualCondition = sourceSelection?.conditionClass ?? mixedSelection.conditionClass;
+  const fallbackUsed = sourceSelection?.fallbackUsed ?? mixedSelection.fallbackUsed;
+  const selectedByCondition = sourceSelection?.byCondition ?? byCondition;
+  const basisSource = sourceSelection?.source ?? null;
+  const basisSourceLabel = basisSource ? marketplaceSourceLabel(basisSource) : null;
+  const sourceFallbackUsed = Boolean(marketplaceSource && !sourceSelection);
   const activeSampleCount = Number(stat?.active_sample_count ?? 0);
   const soldSampleCount = Number(stat?.sold_sample_count ?? 0);
   const disappearedSampleCount = Number(stat?.disappeared_sample_count ?? 0);
 
   // Wave 130: 다른 condition 시세 (UI에서 비교용 — "내 condition vs 전체" 표시).
   const otherConditions: RevealMarketBasis["otherConditions"] = [];
-  if (byCondition && actualCondition) {
-    for (const [cls, row] of byCondition.entries()) {
+  if (selectedByCondition && actualCondition) {
+    for (const [cls, row] of selectedByCondition.entries()) {
       if (cls === actualCondition || cls === "flawed") continue;
       const samples =
         Number(row.active_sample_count ?? 0) +
@@ -1167,6 +1295,10 @@ export function marketBasisForCandidate(
     // ref anchor 신뢰는 medium (단일 값이라 "high" 비호환).
     confidence: useRefAnchor ? "medium" : (stat?.confidence ?? null),
     priceSource: useRefAnchor ? "reference" : "market",
+    basisSource,
+    basisSourceLabel,
+    sourceFallbackUsed,
+    sourceSampleCount: basisSource ? activeSampleCount + soldSampleCount + disappearedSampleCount : null,
     computedAt: stat?.computed_at ?? null,
     excludedExamples: excludedExamplesForKey(comparableKey),
     conditionClass: actualCondition,
@@ -1800,9 +1932,10 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     const reservedPids = orderedReserved.map((r) => r.pid);
     // Wave 201 (2026-05-18): reference_prices fetch — unopened 매물 anchor (다나와 새 가격).
     // Wave 252.A real (2026-05-20): v7 sibling presence — v3 clothing key mixed-pool 차단 가드.
-    const [listingMap, marketStats, velocityStats, readinessMap, poolConditionMap, optionBaseAssumedMap, referencePrices, v7SiblingPresence, gradingMap] = await Promise.all([
+    const [listingMap, marketStats, marketStatsPerSource, velocityStats, readinessMap, poolConditionMap, optionBaseAssumedMap, referencePrices, v7SiblingPresence, gradingMap] = await Promise.all([
       fetchListings(reservedPids),
       fetchLatestMarketStats(orderedReserved.map((r) => r.comparable_key)),
+      fetchLatestMarketStatsPerSource(orderedReserved.map((r) => r.comparable_key)),
       fetchLatestMarketVelocity(orderedReserved.map((r) => r.comparable_key)),
       loadCategoryReadinessMap(),
       fetchPoolConditionClassByPids(reservedPids),
@@ -1997,6 +2130,8 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
           poolConditionMap.get(candidate.pid) ?? null,
           referencePrices,
           v7SiblingPresence,
+          marketStatsPerSource,
+          meta.marketplaceSource,
         ),
         velocityBasis: velocityBasisForCandidate(candidate.comparable_key, velocityStats, readinessMap),
         lastVerifiedAt: liveVerifiedAt,

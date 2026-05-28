@@ -5,6 +5,7 @@ import { loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { hasDetailAccess } from "@/lib/detail-access";
 import {
   fetchLatestMarketStats,
+  fetchLatestMarketStatsPerSource,
   fetchLatestMarketVelocity,
   fetchReferencePrices,
   fetchV7SiblingPresence,
@@ -13,6 +14,7 @@ import {
   velocityBasisForCandidate,
 } from "@/lib/pack-open";
 import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
+import { normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
@@ -24,6 +26,8 @@ const MAX_USER_REF = 64;
 
 type RawAnalysisRow = {
   pid: number;
+  source: string | null;
+  seller_source: string | null;
   name: string | null;
   sku_id: string | null;
   sku_name: string | null;
@@ -65,7 +69,7 @@ async function loadSkuListingFlow(skuId: string | null): Promise<RevealAnalysis[
 async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
   const [rawRows, parsedRows] = await Promise.all([
     loadJson<RawAnalysisRow[]>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,name,sku_id,sku_name&pid=eq.${pid}&limit=1`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,name,sku_id,sku_name&pid=eq.${pid}&limit=1`,
     ),
     loadJson<ParsedAnalysisRow[]>(
       `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class,parsed_json&pid=eq.${pid}&limit=1`,
@@ -89,6 +93,7 @@ async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
   // Wave launch-9: Promise.allSettled — 부분 실패 차단 (pool/analysis 와 동일 패턴).
   const results = await Promise.allSettled([
     fetchLatestMarketStats([comparableKey]),
+    fetchLatestMarketStatsPerSource([comparableKey]),
     fetchLatestMarketVelocity([comparableKey]),
     loadCategoryReadinessMap(),
     fetchReferencePrices([comparableKey]),
@@ -106,11 +111,13 @@ async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
   }
 
   const marketStats = unwrap(results[0], "marketStats", new Map());
-  const velocityStats = unwrap(results[1], "velocityStats", new Map());
-  const readinessMap = unwrap(results[2], "readinessMap", {} as Awaited<ReturnType<typeof loadCategoryReadinessMap>>);
-  const referencePrices = unwrap(results[3], "referencePrices", new Map());
-  const skuListingFlow = unwrap(results[4], "skuListingFlow", null);
-  const v7SiblingPresence = unwrap(results[5], "v7SiblingPresence", new Map());
+  const marketStatsPerSource = unwrap(results[1], "marketStatsPerSource", new Map());
+  const velocityStats = unwrap(results[2], "velocityStats", new Map());
+  const readinessMap = unwrap(results[3], "readinessMap", {} as Awaited<ReturnType<typeof loadCategoryReadinessMap>>);
+  const referencePrices = unwrap(results[4], "referencePrices", new Map());
+  const skuListingFlow = unwrap(results[5], "skuListingFlow", null);
+  const v7SiblingPresence = unwrap(results[6], "v7SiblingPresence", new Map());
+  const marketplaceSource = normalizeMarketplaceSource(raw?.source ?? raw?.seller_source);
 
   const marketBasis = marketStats.size > 0
     ? marketBasisForCandidate(
@@ -120,6 +127,8 @@ async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
         parsed?.condition_class ?? null,
         referencePrices,
         v7SiblingPresence,
+        marketStatsPerSource,
+        marketplaceSource,
       )
     : null;
 

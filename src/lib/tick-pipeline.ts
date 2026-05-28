@@ -4146,8 +4146,10 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
       perSourceMarketRows.push({
         date: today,
         comparable_key: comparableKey,
-        condition_class: group.conditionClass,
-        condition_tier: group.conditionTier,
+        condition_class: group.conditionClass ?? "",
+        // Wave 893 (2026-05-28): table PK has condition_tier NOT NULL DEFAULT ''.
+        // Passing JSON null bypasses the default and makes the whole per-source upsert fail silently.
+        condition_tier: group.conditionTier ?? "",
         source: src,
         ...marketKeyMeta(comparableKey, group.skuId),
         active_median_price: srcActiveMedian,

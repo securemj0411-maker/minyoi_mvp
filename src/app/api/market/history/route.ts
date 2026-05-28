@@ -10,6 +10,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { conditionFallbackChain } from "@/lib/condition-fallback";
+import { normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { checkRateLimit, clientIpKey } from "@/lib/rate-limit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
@@ -29,6 +30,8 @@ export async function GET(req: NextRequest) {
   const cc = url.searchParams.get("cc")?.trim();
   const ccFilter = cc && VALID_CCS.has(cc) ? cc : null;
   const strictCondition = url.searchParams.get("strict") === "1";
+  const sourceParam = url.searchParams.get("source")?.trim();
+  const source = sourceParam ? normalizeMarketplaceSource(sourceParam) : null;
 
   const rate = await checkRateLimit({
     bucketKey: `market-history:${clientIpKey(req)}`,
@@ -45,8 +48,10 @@ export async function GET(req: NextRequest) {
   try {
     const since = new Date(Date.now() - days * 24 * 3600 * 1000).toISOString().slice(0, 10);
     // 모든 cc 가져오고 JS에서 fallback. SQL filter로 cc 만 보면 fallback 어려움.
+    const table = source ? "mvp_market_price_daily_per_source" : "mvp_market_price_daily";
+    const sourceFilter = source ? `&source=eq.${encodeURIComponent(source)}` : "";
     const res = await restFetch(
-      `${tableUrl("mvp_market_price_daily")}?select=date,condition_class,active_median_price,sold_median_price,blended_median_price,active_sample_count,sold_sample_count,confidence&comparable_key=eq.${encodeURIComponent(ck)}&date=gte.${since}&order=date.asc,computed_at.desc&limit=1000`,
+      `${tableUrl(table)}?select=date,condition_class,active_median_price,sold_median_price,blended_median_price,active_sample_count,sold_sample_count,confidence&comparable_key=eq.${encodeURIComponent(ck)}${sourceFilter}&date=gte.${since}&order=date.asc,computed_at.desc&limit=1000`,
       { headers: serviceHeaders() },
     );
     if (!res.ok) {
@@ -88,6 +93,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       comparableKey: ck,
+      source,
       conditionClass: ccFilter,
       strictCondition,
       points: picked.map((r) => ({

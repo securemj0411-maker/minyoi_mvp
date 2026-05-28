@@ -70,6 +70,8 @@ export default function MarketHistoryChart({
   currentPrice,
   conditionClass,
   priceSource,
+  basisSource,
+  basisSourceLabel,
   referencePrice,
   lazy = false,
   // Wave launch-83 (사용자 결정 — 데이터 부족 placeholder 미완성 인상 차단):
@@ -83,6 +85,8 @@ export default function MarketHistoryChart({
   currentPrice?: number | null;
   conditionClass?: string | null;
   priceSource?: "reference" | "market" | "v3_pending_rematch" | null;
+  basisSource?: string | null;
+  basisSourceLabel?: string | null;
   referencePrice?: number | null;
   lazy?: boolean;
   nullOnEmpty?: boolean;
@@ -92,6 +96,7 @@ export default function MarketHistoryChart({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [opened, setOpened] = useState(!lazy);
+  const marketLabel = basisSourceLabel ?? "통합 중고";
 
   useEffect(() => {
     if (!comparableKey || !opened) return;
@@ -103,7 +108,8 @@ export default function MarketHistoryChart({
     const chartConditionClass = isReferenceChart ? "unopened" : conditionClass;
     const ccQuery = chartConditionClass ? `&cc=${encodeURIComponent(chartConditionClass)}` : "";
     const strictQuery = isReferenceChart ? "&strict=1" : "";
-    fetch(`/api/market/history?ck=${encodeURIComponent(comparableKey)}&days=30${ccQuery}${strictQuery}`, { cache: "no-store" })
+    const sourceQuery = basisSource ? `&source=${encodeURIComponent(basisSource)}` : "";
+    fetch(`/api/market/history?ck=${encodeURIComponent(comparableKey)}&days=30${ccQuery}${strictQuery}${sourceQuery}`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((j: HistoryResp) => {
         if (!cancelled) setData(j.points ?? []);
@@ -117,7 +123,7 @@ export default function MarketHistoryChart({
     return () => {
       cancelled = true;
     };
-  }, [comparableKey, conditionClass, opened, priceSource, onState]);
+  }, [basisSource, comparableKey, conditionClass, opened, priceSource, onState]);
 
   // Wave launch-83: data 상태 → parent 에 알림.
   //   data null = 아직 fetch 안 됨 (loading 별도 처리).
@@ -162,7 +168,7 @@ export default function MarketHistoryChart({
     if (priceSource === "reference" && referencePrice != null && referencePrice > 0) {
       return (
         <div className="rounded-md border border-blue-100 bg-blue-50/70 px-3 py-2 text-[11px] font-semibold text-blue-800 dark:border-blue-900/50 dark:bg-blue-950/20 dark:text-blue-200">
-          다나와 새상품 기준 {krwShort(referencePrice)} · 번개 미개봉 거래 추이는 표본 누적 중
+          다나와 새상품 기준 {krwShort(referencePrice)} · {marketLabel} 미개봉 거래 추이는 표본 누적 중
         </div>
       );
     }
@@ -176,7 +182,7 @@ export default function MarketHistoryChart({
     if (priceSource === "reference" && referencePrice != null && referencePrice > 0) {
       return (
         <div className="rounded-md border border-blue-100 bg-blue-50/70 px-3 py-2 text-[11px] font-semibold text-blue-800 dark:border-blue-900/50 dark:bg-blue-950/20 dark:text-blue-200">
-          다나와 새상품 기준 {krwShort(referencePrice)} · 번개 미개봉 추이는 내일부터 더 선명해져요
+          다나와 새상품 기준 {krwShort(referencePrice)} · {marketLabel} 미개봉 추이는 내일부터 더 선명해져요
         </div>
       );
     }
@@ -272,11 +278,11 @@ export default function MarketHistoryChart({
         ? { label: "△ 신뢰 보통", cls: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300" }
         : { label: "? 표본 부족", cls: "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400" };
   const baseTitle = priceSource === "reference"
-    ? "다나와 · 번개 미개봉 추이"
-    : `번개장터 시세 ${daysSpan}일 추이`;
+    ? `다나와 · ${marketLabel} 미개봉 추이`
+    : `${marketLabel} 시세 ${daysSpan}일 추이`;
   const title = baseTitle;
-  const activeLabel = priceSource === "reference" ? "번개 미개봉 호가" : "번개장터 호가";
-  const soldLabel = priceSource === "reference" ? "번개 미개봉 거래가" : "번개장터 거래가";
+  const activeLabel = priceSource === "reference" ? `${marketLabel} 미개봉 호가` : `${marketLabel} 호가`;
+  const soldLabel = priceSource === "reference" ? `${marketLabel} 미개봉 거래가` : `${marketLabel} 거래가`;
   const referenceLineY = showReferencePrice ? y(referencePrice as number) : null;
   const referenceLabelRectY = referenceLineY == null
     ? null

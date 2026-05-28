@@ -1851,12 +1851,13 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
       ? "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
       : "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200";
   const hasCondition = market.conditionClass && market.conditionClass !== "all";
+  const marketSourceLabel = market.basisSourceLabel ?? "통합 중고";
   const sourceLabel = market.priceSource === "reference"
-    ? "새상품 기준가 + 중고 마켓 흐름"
-    : `${market.conditionLabel ?? "같은 상태"} 통합 매물 기준`;
+    ? `새상품 기준가 + ${marketSourceLabel} 흐름`
+    : `${market.conditionLabel ?? "같은 상태"} ${marketSourceLabel} 매물 기준`;
   const compactSourceLabel = market.priceSource === "reference"
     ? "새상품 기준"
-    : `통합 ${market.conditionLabel ?? "같은 상태"}`;
+    : `${marketSourceLabel} ${market.conditionLabel ?? "같은 상태"}`;
   return (
     <div className="rounded-lg border border-zinc-200 bg-white px-2.5 py-2 dark:border-zinc-800 dark:bg-zinc-900/40">
       <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
@@ -1871,7 +1872,7 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
             <DanawaLogo className="h-3.5 w-3.5 rounded-[3px]" />
           ) : (
             <span className="flex h-3.5 w-3.5 items-center justify-center rounded-[3px] bg-zinc-900 text-[8px] font-black text-white dark:bg-zinc-100 dark:text-zinc-900">
-              통
+              {market.basisSourceLabel ? market.basisSourceLabel.slice(0, 1) : "통"}
             </span>
           )}
           {compactSourceLabel}
@@ -1915,7 +1916,7 @@ function MarketBasisMini({ card }: { card: RevealCard }) {
                 <DanawaLogo className="h-4 w-4 rounded-[4px]" />
               ) : (
                 <span className="flex h-4 w-4 items-center justify-center rounded-[4px] bg-zinc-900 text-[8px] font-black text-white dark:bg-zinc-100 dark:text-zinc-900">
-                  통
+                  {market.basisSourceLabel ? market.basisSourceLabel.slice(0, 1) : "통"}
                 </span>
               )}
               {sourceLabel}
@@ -3361,6 +3362,8 @@ function DetailMarketGraphSection({ card }: { card: RevealCard }) {
           currentPrice={card.price}
           conditionClass={card.marketBasis?.conditionClass ?? null}
           priceSource={card.marketBasis?.priceSource ?? null}
+          basisSource={card.marketBasis?.basisSource ?? null}
+          basisSourceLabel={card.marketBasis?.basisSourceLabel ?? null}
           referencePrice={card.marketBasis?.priceSource === "reference" ? card.marketBasis?.medianPrice ?? null : null}
           nullOnEmpty
           onState={setChartState}
@@ -3376,7 +3379,8 @@ function MarketGraphTrustLine({ card }: { card: RevealCard }) {
   const market = card.marketBasis;
   if (!market) return null;
   const condition = marketConditionLabel(card);
-  const source = market.priceSource === "reference" ? "새상품 기준선 + 중고 마켓 미개봉 추이" : `통합 ${condition} 매물 추이`;
+  const sourceLabel = market.basisSourceLabel ?? "통합 중고";
+  const source = market.priceSource === "reference" ? `새상품 기준선 + ${sourceLabel} 미개봉 추이` : `${sourceLabel} ${condition} 매물 추이`;
   return (
     <details className="rounded-lg border border-zinc-200 bg-white/70 px-3 py-2 text-[11px] font-semibold leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/45 dark:text-zinc-300">
       <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2">
@@ -5279,6 +5283,8 @@ function BeginnerGuideTrendVisual({ card }: { card: RevealCard }) {
         currentPrice={card.price}
         conditionClass={card.marketBasis?.conditionClass ?? null}
         priceSource={card.marketBasis?.priceSource ?? null}
+        basisSource={card.marketBasis?.basisSource ?? null}
+        basisSourceLabel={card.marketBasis?.basisSourceLabel ?? null}
         referencePrice={card.marketBasis?.priceSource === "reference" ? card.marketBasis?.medianPrice ?? null : null}
         nullOnEmpty
         onState={setChartState}

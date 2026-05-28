@@ -10,6 +10,7 @@ import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import {
   fetchReferencePrices,
   fetchLatestMarketStats,
+  fetchLatestMarketStatsPerSource,
   fetchLatestMarketVelocity,
   fetchV7SiblingPresence,
   marketBasisForCandidate,
@@ -762,8 +763,9 @@ export async function GET(req: Request) {
   //   reveal/detail은 단일 매물 호출용이라 list 진입엔 안 도달 → demand·supply 영구 미표시.
   //   batch로 묶어서 N+1 회피하면서 정상 표시 복구.
   const skuIdsToFetch = rawRows.map((row) => row.sku_id ?? null);
-  const [marketStats, referencePrices, velocityStats, readinessMap, skuFlowByIdMap, v7SiblingPresence] = await Promise.all([
+  const [marketStats, marketStatsPerSource, referencePrices, velocityStats, readinessMap, skuFlowByIdMap, v7SiblingPresence] = await Promise.all([
     fetchLatestMarketStats(comparableKeys),
+    fetchLatestMarketStatsPerSource(comparableKeys),
     fetchReferencePrices(comparableKeys),
     fetchLatestMarketVelocity(comparableKeys),
     loadCategoryReadinessMap(),
@@ -807,6 +809,8 @@ export async function GET(req: Request) {
             conditionClassByPid.get(Number(reveal.pid)) ?? null,
             referencePrices,
             v7SiblingPresence,
+            marketStatsPerSource,
+            marketplaceSource,
           )
         : null;
       const dbCurrentProfitMin = reveal.current_profit_min ?? null;

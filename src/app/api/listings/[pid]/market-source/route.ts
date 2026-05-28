@@ -7,7 +7,7 @@
 // 2026-05-16: rate limit 추가. pid enumeration abuse 차단. IP 기반 60 req / 60s.
 
 import { NextResponse } from "next/server";
-import { fetchLatestMarketStats, fetchReferencePrices, fetchV7SiblingPresence, marketBasisForCandidate } from "@/lib/pack-open";
+import { fetchLatestMarketStats, fetchLatestMarketStatsPerSource, fetchReferencePrices, fetchV7SiblingPresence, marketBasisForCandidate } from "@/lib/pack-open";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { checkRateLimit, clientIpKey } from "@/lib/rate-limit";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
@@ -124,12 +124,15 @@ export async function GET(
     const targetParsedJson = (parsed?.parsed_json as Record<string, unknown> | null) ?? null;
     const targetProductType = (targetParsedJson?.clothing_product_type as string | null) ?? null;
 
+    const ourMarketplaceSource = normalizeMarketplaceSource((raw?.source as string | null) ?? (raw?.seller_source as string | null));
+
     // 3. /me 카드와 동일한 marketBasis 산정. reference price(Danawa)까지 같은 함수로 맞춘다.
     let marketStats: Record<string, unknown> | null = null;
     let displayMarketBasis: ReturnType<typeof marketBasisForCandidate> | null = null;
     if (comparableKey) {
-      const [basisStats, referencePrices, v7SiblingPresence] = await Promise.all([
+      const [basisStats, basisStatsPerSource, referencePrices, v7SiblingPresence] = await Promise.all([
         fetchLatestMarketStats([comparableKey]),
+        fetchLatestMarketStatsPerSource([comparableKey]),
         fetchReferencePrices([comparableKey]),
         // Wave 252.A real (2026-05-20): v3 clothing key + v7 sibling 존재 시 mixed-pool median 차단.
         fetchV7SiblingPresence([comparableKey]),
@@ -141,6 +144,8 @@ export async function GET(
         conditionClass,
         referencePrices,
         v7SiblingPresence,
+        basisStatsPerSource,
+        ourMarketplaceSource,
       );
       const matchedCondition = displayMarketBasis.conditionClass;
       const byCondition = basisStats.get(comparableKey);
@@ -164,13 +169,13 @@ export async function GET(
     if (comparableKey) {
       // listing_parsed limit 더 크게 — sold 매물도 비교군에 들어갈 자리 확보 (#96).
       const sameKeyPidsRes = await restFetch(
-        `${tableUrl("mvp_listing_parsed")}?select=pid&comparable_key=eq.${encodeURIComponent(comparableKey)}&needs_review=eq.false&limit=${MAX_COMPARABLES + 20}`,
+        `${tableUrl("mvp_listing_parsed")}?select=pid&comparable_key=eq.${encodeURIComponent(comparableKey)}&needs_review=eq.false&limit=${MAX_COMPARABLES * 6}`,
         { headers: serviceHeaders() },
       );
       const sameKeyPids = ((await sameKeyPidsRes.json()) as Array<{ pid: number }>)
         .map((r) => Number(r.pid))
         .filter((p) => Number.isFinite(p) && p !== pid)
-        .slice(0, MAX_COMPARABLES);
+        .slice(0, MAX_COMPARABLES * 6);
       if (sameKeyPids.length > 0) {
         // Wave 90: listing_type=normal + risk_hits=0 + 새상품 제외 필터.
         const [rawListRes, analysisRes, parsedRes2] = await Promise.all([
@@ -269,6 +274,10 @@ export async function GET(
           const pid = Number(r.pid);
           if ((riskByPid.get(pid) ?? 0) > 0) return false;
           if (excludeByPid.get(pid) === true) return false;
+          if (displayMarketBasis?.basisSource) {
+            const source = normalizeMarketplaceSource((r.source as string | null) ?? (r.seller_source as string | null));
+            if (source !== displayMarketBasis.basisSource) return false;
+          }
           return true;
         });
         // Wave launch-31 (사용자 짚음): 같은 셀러 다수 매물 dedup.
@@ -341,7 +350,6 @@ export async function GET(
       mean: Math.round(activePrices.reduce((s, p) => s + p, 0) / activePrices.length),
     } : null;
 
-    const ourMarketplaceSource = normalizeMarketplaceSource((raw?.source as string | null) ?? (raw?.seller_source as string | null));
     const ourListingUrl = listingUrlForSource(pid, raw?.url as string | null, ourMarketplaceSource);
 
     // Wave 714d (2026-05-23): 본 매물 grading + chips (신발/의류).
@@ -366,9 +374,16 @@ export async function GET(
         marketPriceSource: displayMarketBasis?.priceSource ?? "market",
         marketPriceLabel: displayMarketBasis?.priceSource === "reference"
           ? "새상품 기준 시세"
-          : displayMarketBasis?.conditionLabel
-            ? `통합 ${displayMarketBasis.conditionLabel} 시세`
-            : "통합 중고 시세",
+          : displayMarketBasis?.basisSourceLabel && displayMarketBasis?.conditionLabel
+            ? `${displayMarketBasis.basisSourceLabel} ${displayMarketBasis.conditionLabel} 시세`
+            : displayMarketBasis?.basisSourceLabel
+              ? `${displayMarketBasis.basisSourceLabel} 중고 시세`
+              : displayMarketBasis?.conditionLabel
+                ? `통합 ${displayMarketBasis.conditionLabel} 시세`
+                : "통합 중고 시세",
+        marketPriceBasisSource: displayMarketBasis?.basisSource ?? null,
+        marketPriceBasisSourceLabel: displayMarketBasis?.basisSourceLabel ?? null,
+        marketPriceSourceFallbackUsed: displayMarketBasis?.sourceFallbackUsed ?? false,
         marketConditionLabel: displayMarketBasis?.conditionLabel ?? null,
         // Wave 251.4 (2026-05-19): 본 매물 clothing_product_type 노출 — 비교군 필터 투명성.
         productType: targetProductType,

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import {
   fetchLatestMarketStats,
+  fetchLatestMarketStatsPerSource,
   fetchLatestMarketVelocity,
   fetchReferencePrices,
   fetchV7SiblingPresence,
@@ -9,6 +10,7 @@ import {
   velocityBasisForCandidate,
 } from "@/lib/pack-open";
 import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
+import { normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { hasDetailAccess } from "@/lib/detail-access";
 import { isAdminUser } from "@/lib/auth-users";
@@ -27,6 +29,8 @@ export const dynamic = "force-dynamic";
 
 type RawAnalysisRow = {
   pid: number;
+  source: string | null;
+  seller_source: string | null;
   name: string | null;
   sku_id: string | null;
   sku_name: string | null;
@@ -68,7 +72,7 @@ async function loadSkuListingFlow(skuId: string | null): Promise<Analysis["skuLi
 async function loadAnalysis(pid: number): Promise<Analysis> {
   const [rawRows, parsedRows] = await Promise.all([
     loadJson<RawAnalysisRow[]>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,name,sku_id,sku_name&pid=eq.${pid}&limit=1`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,name,sku_id,sku_name&pid=eq.${pid}&limit=1`,
     ),
     loadJson<ParsedAnalysisRow[]>(
       `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class,parsed_json&pid=eq.${pid}&limit=1`,
@@ -94,12 +98,13 @@ async function loadAnalysis(pid: number): Promise<Analysis> {
   // 사용자는 expected_profit 표시되는데 시세 근거 미확정 안내 없이 그대로 신뢰 → 손해 risk.
   // 이제 marketStats 만 필수, 나머지는 보조 (실패 시 그 항목만 null, 나머지 표시).
   const results = await Promise.allSettled([
-    fetchLatestMarketStats([comparableKey]),         // 0: 필수
-    fetchLatestMarketVelocity([comparableKey]),       // 1: 보조
-    loadCategoryReadinessMap(),                        // 2: 보조 (velocity 가드용)
-    fetchReferencePrices([comparableKey]),             // 3: 보조
-    loadSkuListingFlow(raw?.sku_id ?? null),           // 4: 보조
-    fetchV7SiblingPresence([comparableKey]),           // 5: 보조 (v3 clothing 가드)
+    fetchLatestMarketStats([comparableKey]),           // 0: 필수
+    fetchLatestMarketStatsPerSource([comparableKey]),  // 1: 보조 (source-aware 시세)
+    fetchLatestMarketVelocity([comparableKey]),        // 2: 보조
+    loadCategoryReadinessMap(),                         // 3: 보조 (velocity 가드용)
+    fetchReferencePrices([comparableKey]),              // 4: 보조
+    loadSkuListingFlow(raw?.sku_id ?? null),            // 5: 보조
+    fetchV7SiblingPresence([comparableKey]),            // 6: 보조 (v3 clothing 가드)
   ]);
 
   function unwrap<T>(r: PromiseSettledResult<T>, slot: string, fallback: T): T {
@@ -112,11 +117,13 @@ async function loadAnalysis(pid: number): Promise<Analysis> {
   }
 
   const marketStats = unwrap(results[0], "marketStats", new Map());
-  const velocityStats = unwrap(results[1], "velocityStats", new Map());
-  const readinessMap = unwrap(results[2], "readinessMap", {} as Awaited<ReturnType<typeof loadCategoryReadinessMap>>);
-  const referencePrices = unwrap(results[3], "referencePrices", new Map());
-  const skuListingFlow = unwrap(results[4], "skuListingFlow", null);
-  const v7SiblingPresence = unwrap(results[5], "v7SiblingPresence", new Map());
+  const marketStatsPerSource = unwrap(results[1], "marketStatsPerSource", new Map());
+  const velocityStats = unwrap(results[2], "velocityStats", new Map());
+  const readinessMap = unwrap(results[3], "readinessMap", {} as Awaited<ReturnType<typeof loadCategoryReadinessMap>>);
+  const referencePrices = unwrap(results[4], "referencePrices", new Map());
+  const skuListingFlow = unwrap(results[5], "skuListingFlow", null);
+  const v7SiblingPresence = unwrap(results[6], "v7SiblingPresence", new Map());
+  const marketplaceSource = normalizeMarketplaceSource(raw?.source ?? raw?.seller_source);
 
   // marketStats (필수) 비었으면 marketBasis null — UI 가 "시세 확인중" 표시
   const marketBasis = marketStats.size > 0
@@ -127,6 +134,8 @@ async function loadAnalysis(pid: number): Promise<Analysis> {
         parsed?.condition_class ?? null,
         referencePrices,
         v7SiblingPresence,
+        marketStatsPerSource,
+        marketplaceSource,
       )
     : null;
 
