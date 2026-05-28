@@ -191,6 +191,7 @@ export type DaangnIngestResult = {
     preflightOverflow?: number; // changed rows left for the next run after write cap
     preflightCandidates?: number; // wider candidate window checked before classify
     classifyCandidates?: number; // rows selected for expensive classify/parser
+    rowBuild?: number;      // classifyListing + parseListingOptions for changed rows
     rawRpc?: number;        // daangn_bulk_upsert_raw_listings_v2
     parsedUpsert?: number;  // daangn_bulk_upsert_listing_parsed for changed pids only
     healthCheck?: number;   // source health 평가
@@ -239,6 +240,7 @@ export type DaangnIngestOptions = {
 const DAANGN_UPSERT_PREFLIGHT_MULTIPLIER = 20;
 const DAANGN_UPSERT_PREFLIGHT_MAX = 15_000;
 const DAANGN_PREFLIGHT_EXISTING_READ_CHUNK_SIZE = 250;
+const DAANGN_PREFLIGHT_EXISTING_READ_CONCURRENCY = 4;
 
 export const DAANGN_TARGET_CATEGORY_SEEDS: DaangnCategorySeed[] = [
   { id: 1, name: "디지털기기" },
@@ -656,13 +658,18 @@ async function loadExistingDaangnRawRows(pids: number[]): Promise<Map<number, Ex
     "daangn_manner_temperature",
     "daangn_review_count",
   ].join(",");
+  const chunks: number[][] = [];
   for (let i = 0; i < pids.length; i += DAANGN_PREFLIGHT_EXISTING_READ_CHUNK_SIZE) {
-    const chunk = pids.slice(i, i + DAANGN_PREFLIGHT_EXISTING_READ_CHUNK_SIZE);
+    chunks.push(pids.slice(i, i + DAANGN_PREFLIGHT_EXISTING_READ_CHUNK_SIZE));
+  }
+  const batches = await mapWithConcurrency(chunks, DAANGN_PREFLIGHT_EXISTING_READ_CONCURRENCY, async (chunk) => {
     const res = await restFetch(
       `${tableUrl("mvp_raw_listings")}?select=${columns}&source=eq.${DAANGN_SOURCE_ID}&pid=in.(${chunk.join(",")})`,
       { headers: serviceHeaders() },
     );
-    const rows = await res.json() as ExistingDaangnRawRow[];
+    return (await res.json()) as ExistingDaangnRawRow[];
+  });
+  for (const rows of batches) {
     for (const row of rows) out.set(Number(row.pid), row);
   }
   return out;
@@ -799,6 +806,7 @@ export async function upsertDaangnRawListings(
   preflightOverflow: number;
   preflightCandidates: number;
   classifyCandidates: number;
+  rowBuildMs: number;
   affectedPids: number[];
 }> {
   if (articles.length === 0) {
@@ -812,6 +820,7 @@ export async function upsertDaangnRawListings(
       preflightOverflow: 0,
       preflightCandidates: 0,
       classifyCandidates: 0,
+      rowBuildMs: 0,
       affectedPids: [],
     };
   }
@@ -860,6 +869,7 @@ export async function upsertDaangnRawListings(
   const preflightMs = Date.now() - preflightStart;
 
   // dedupe by pid (같은 매물 여러 combo 중복 검색됨)
+  const rowBuildStart = Date.now();
   const byPid = new Map<number, { raw: Record<string, unknown>; parsed: Record<string, unknown> | null }>();
   for (const row of rowsSelectedForClassify) {
     const ext = parseDaangnExternalId(row.article.href);
@@ -867,6 +877,7 @@ export async function upsertDaangnRawListings(
     if (!built) continue;
     byPid.set(built.raw.pid as number, { raw: built.raw, parsed: built.parsed });
   }
+  const rowBuildMs = Date.now() - rowBuildStart;
 
   const rawRows = [...byPid.values()].map((b) => b.raw);
   const parsedRows = [...byPid.values()].map((b) => b.parsed).filter((p): p is Record<string, unknown> => Boolean(p));
@@ -881,6 +892,7 @@ export async function upsertDaangnRawListings(
       preflightOverflow,
       preflightCandidates: preflightRows.length,
       classifyCandidates: rowsSelectedForClassify.length,
+      rowBuildMs,
       affectedPids: [],
     };
   }
@@ -937,6 +949,7 @@ export async function upsertDaangnRawListings(
     preflightOverflow,
     preflightCandidates: preflightRows.length,
     classifyCandidates: rowsSelectedForClassify.length,
+    rowBuildMs,
     affectedPids,
   };
 }
@@ -1833,6 +1846,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
       timings.preflightOverflow = upsertResult.preflightOverflow;
       timings.preflightCandidates = upsertResult.preflightCandidates;
       timings.classifyCandidates = upsertResult.classifyCandidates;
+      timings.rowBuild = upsertResult.rowBuildMs;
     } catch (err) {
       sourceHealthStatus = "degraded";
       // 디버그 측면에서 충분히 보이도록 800자까지 보존

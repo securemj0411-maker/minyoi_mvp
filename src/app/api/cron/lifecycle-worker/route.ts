@@ -31,6 +31,12 @@ function truncate(value: string | null, max = 500): string | null {
   return value.length > max ? `${value.slice(0, max)}...` : value;
 }
 
+function envBool(name: string, fallback: boolean): boolean {
+  const value = String(process.env[name] ?? "").trim().toLowerCase();
+  if (!value) return fallback;
+  return value === "1" || value === "true" || value === "yes" || value === "on";
+}
+
 function requestMeta(req: NextRequest, authOk: boolean, authReason: string): CollectRunRequestMeta {
   const headers = req.headers;
   const userAgent = headers.get("user-agent");
@@ -181,6 +187,21 @@ async function handleLifecycleWorker(req: NextRequest) {
 
   if (terminalRecheck || outcome.status !== 200) {
     return NextResponse.json(outcome.body, { status: outcome.status });
+  }
+
+  // Wave 915: terminal claim RPC is timing out in production and creating
+  // failed collect runs after successful lifecycle sweeps. Keep explicit
+  // ?mode=terminal-recheck available, but stop embedding it until the DB-side
+  // claim path is indexed/reworked.
+  if (!envBool("PIPELINE_EMBEDDED_TERMINAL_RECHECK_ENABLED", false)) {
+    return NextResponse.json({
+      ...outcome.body,
+      terminalRecheck: {
+        ok: true,
+        skipped: true,
+        reason: "embedded_terminal_recheck_disabled",
+      },
+    });
   }
 
   const terminalGuardMode: CronWorkerMode = "lifecycle_terminal_recheck";
