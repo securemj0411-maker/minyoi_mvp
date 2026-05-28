@@ -273,8 +273,8 @@ function isForceRun(req?: CronGuardRequestLike) {
 export function cronProjectRoleSkip(mode: string): Record<string, string | boolean> | null {
   const role = String(process.env.CRON_PROJECT_ROLE ?? "").trim().toLowerCase();
   if (!role || role === "primary" || role === "all") return null;
-  if (role === "daangn_b" && (mode === "daangn_worker_b" || mode === "score_worker_b")) return null;
-  if (role === "daangn_c" && mode === "daangn_worker_c") return null;
+  if (role === "daangn_b" && (mode === "daangn_worker_b" || mode === "score_worker_b" || mode === "daangn_detail_worker_b")) return null;
+  if (role === "daangn_c" && (mode === "daangn_worker_c" || mode === "daangn_detail_worker_c")) return null;
   if (role === "daangn_detail" && mode === "daangn_detail_worker") return null;
   return {
     ok: true,

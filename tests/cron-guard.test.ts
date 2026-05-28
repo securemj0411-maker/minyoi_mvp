@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   acquireCronGuard,
   acquireCronGuardWithSourceHealth,
+  cronProjectRoleSkip,
   getCronGuardSnapshot,
   resetCronGuardForTests,
   setCronGuardSourceHealthLoaderForTests,
@@ -130,4 +131,23 @@ test("cron guard lets market worker probe when source health is stale", async ()
   const guard = await acquireCronGuardWithSourceHealth("market_worker");
   assert.equal(guard.allowed, true);
   if (guard.allowed) guard.release();
+});
+
+test("daangn worker-only roles allow their detail shard lanes", () => {
+  const previousRole = process.env.CRON_PROJECT_ROLE;
+  try {
+    process.env.CRON_PROJECT_ROLE = "daangn_b";
+    assert.equal(cronProjectRoleSkip("daangn_detail_worker_b"), null);
+    assert.equal(cronProjectRoleSkip("daangn_detail_worker_c")?.reason, "project_role_disabled");
+
+    process.env.CRON_PROJECT_ROLE = "daangn_c";
+    assert.equal(cronProjectRoleSkip("daangn_detail_worker_c"), null);
+    assert.equal(cronProjectRoleSkip("daangn_detail_worker_b")?.reason, "project_role_disabled");
+  } finally {
+    if (previousRole == null) {
+      delete process.env.CRON_PROJECT_ROLE;
+    } else {
+      process.env.CRON_PROJECT_ROLE = previousRole;
+    }
+  }
 });

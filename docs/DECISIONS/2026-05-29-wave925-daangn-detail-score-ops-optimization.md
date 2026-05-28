@@ -80,3 +80,21 @@ Known build warnings remain unrelated:
   - score `score_load_pool_gate_inputs` p50/p95
   - raw region count query timeout improvement
 - Further detail worker concurrency increase beyond 3 shards. Do not raise until block signals stay clean.
+
+## Follow-up — B/C detail shard route unblocked
+
+Post-deploy observation showed only A detail shard (`daangn_detail_worker_a`) was starting. B/C ingestion crons were alive, but B/C detail shard runs were absent.
+
+Root cause:
+
+- B/C projects intentionally block frontend and unrelated cron routes in `src/middleware.ts`.
+- The allowlist included `daangn-worker-b`, `daangn-worker-c`, and `score-worker-b`, but not `/api/cron/daangn-detail-worker`.
+- Even after middleware, `cronProjectRoleSkip()` allowed `daangn_b` only for `daangn_worker_b` / `score_worker_b`, and `daangn_c` only for `daangn_worker_c`.
+
+Fix:
+
+- Allow `/api/cron/daangn-detail-worker` through B/C middleware.
+- Allow `daangn_detail_worker_b` for `CRON_PROJECT_ROLE=daangn_b`.
+- Allow `daangn_detail_worker_c` for `CRON_PROJECT_ROLE=daangn_c`.
+
+Expected effect: the previous 3-shard detail worker change can actually run across all A/B/C projects instead of silently staying A-only.
