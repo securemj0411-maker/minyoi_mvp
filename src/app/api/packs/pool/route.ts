@@ -11,7 +11,7 @@ import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { createPoolAccessToken, decodePoolAccessToken, syntheticPidForPoolToken } from "@/lib/pool-access-token";
 import { localizeProductLineLabel } from "@/lib/product-line-display";
-import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
+import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
@@ -223,6 +223,10 @@ type MarketBandRow = {
   disappeared_sample_count: number | null;
 };
 
+type SourceMarketBandRow = MarketBandRow & {
+  source: string | null;
+};
+
 type MarketVelocityRow = {
   comparable_key: string;
   condition_class: string;
@@ -266,6 +270,48 @@ async function loadMarketBandsForPool(
     byKey.set(row.comparable_key, byCondition);
   }
   return byKey;
+}
+
+async function loadSourceMarketBandsForPool(
+  headers: Record<string, string>,
+  comparableKeys: string[],
+): Promise<Map<string, Map<string, Map<string, MarketBandRow>>>> {
+  const unique = [...new Set(comparableKeys.filter((k): k is string => Boolean(k)))];
+  if (unique.length === 0) return new Map();
+  const cols = [
+    "comparable_key",
+    "source",
+    "condition_class",
+    "blended_median_price",
+    "active_median_price",
+    "active_sample_count",
+    "sold_sample_count",
+    "disappeared_sample_count",
+  ].join(",");
+  const encoded = unique.map((k) => encodeURIComponent(k)).join(",");
+  try {
+    const res = await restFetch(
+      `${tableUrl("mvp_market_price_daily_per_source")}?select=${cols}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(400, unique.length * 36)}`,
+      { headers },
+    );
+    const rows = (await res.json()) as SourceMarketBandRow[];
+    const byKey = new Map<string, Map<string, Map<string, MarketBandRow>>>();
+    for (const row of rows) {
+      if (!row.source) continue;
+      const source = normalizeMarketplaceSource(row.source);
+      const bySource = byKey.get(row.comparable_key) ?? new Map<string, Map<string, MarketBandRow>>();
+      const byCondition = bySource.get(source) ?? new Map<string, MarketBandRow>();
+      if (!byCondition.has(row.condition_class)) {
+        byCondition.set(row.condition_class, row);
+      }
+      bySource.set(source, byCondition);
+      byKey.set(row.comparable_key, bySource);
+    }
+    return byKey;
+  } catch (err) {
+    console.warn("[pool] source market bands fetch failed (non-fatal)", err instanceof Error ? err.message : String(err));
+    return new Map();
+  }
 }
 
 function velocitySignalLabel(row: MarketVelocityRow | null | undefined) {
@@ -337,6 +383,31 @@ function bandAwareMedian(
   return price && price > 0 ? price : null;
 }
 
+function sourceAwareMedian(
+  sourceBandMap: Map<string, Map<string, Map<string, MarketBandRow>>>,
+  comparableKey: string | null,
+  conditionClass: string | null,
+  marketplaceSource: string | null | undefined,
+  v7SiblingPresence?: V7SiblingPresenceMap,
+): number | null {
+  if (!comparableKey || !marketplaceSource) return null;
+  if (v7SiblingPresence && v7SiblingPresence.get(comparableKey) === true) return null;
+  const source = normalizeMarketplaceSource(marketplaceSource);
+  const byCondition = sourceBandMap.get(comparableKey)?.get(source);
+  if (!byCondition) return null;
+  const { row } = pickByConditionFallback(
+    byCondition,
+    conditionClass,
+    (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0),
+  );
+  const sourceSampleCount = row
+    ? Number(row.active_sample_count ?? 0) + Number(row.sold_sample_count ?? 0)
+    : 0;
+  if (!row || sourceSampleCount < 3) return null;
+  const price = row.blended_median_price ?? row.active_median_price ?? null;
+  return price && price > 0 ? price : null;
+}
+
 async function fetchPaginatedJson<T>(
   baseUrl: string,
   headers: Record<string, string>,
@@ -394,6 +465,7 @@ async function loadPool(
   raws: RawRow[];
   metas: RawListingMeta[];
   marketBands: Map<string, Map<string, MarketBandRow>>;
+  sourceMarketBands: Map<string, Map<string, Map<string, MarketBandRow>>>;
   v7SiblingPresence: V7SiblingPresenceMap;
   velocitySignals: Map<string, string>;
   parsedGradingRows: Array<{
@@ -562,7 +634,7 @@ async function loadPool(
   const pool = options.sort === "latest"
     ? [...readyRows, ...soldOutRows]
     : [...readyRows, ...soldOutRows].sort(() => Math.random() - 0.5);
-  if (pool.length === 0) return { pool: [], raws: [], metas: [], marketBands: new Map(), v7SiblingPresence: new Map(), velocitySignals: new Map(), parsedGradingRows: [] };
+  if (pool.length === 0) return { pool: [], raws: [], metas: [], marketBands: new Map(), sourceMarketBands: new Map(), v7SiblingPresence: new Map(), velocitySignals: new Map(), parsedGradingRows: [] };
 
   const pids = pool.map((r) => r.pid);
   // raws는 이미 rawByPid에 있음 — pool pids만 추출.
@@ -570,13 +642,14 @@ async function loadPool(
 
   // meta + marketBands fetch (pool pids만).
   const comparableKeys = [...new Set(pool.map((r) => r.comparable_key).filter((k): k is string => Boolean(k)))];
-  const [metaRes, marketBands, v7SiblingPresence, velocitySignals, parsedGradingRes] = await Promise.all([
+  const [metaRes, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, parsedGradingRes] = await Promise.all([
     restFetch(
       // Wave launch-4: listing_state 컬럼 추가 select. 응답 후 ready 였지만 active 아닌 row 차단.
       `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,raw_json,daangn_region_id,daangn_region_name,daangn_manner_temperature,daangn_review_count,listing_state&pid=in.(${pids.join(",")})`,
       { headers },
     ),
     loadMarketBandsForPool(headers, comparableKeys),
+    loadSourceMarketBandsForPool(headers, comparableKeys),
     loadV7SiblingPresence(headers, comparableKeys),
     loadVelocitySignalsForPool(headers, comparableKeys),
     // Wave 714k (2026-05-23): 신발/의류 5-tier grading + chips column fetch.
@@ -621,7 +694,7 @@ async function loadPool(
   const filteredRaws = raws.filter((r) => !blockedPids.has(r.pid));
   const filteredMetas = metas.filter((m) => !blockedPids.has(m.pid));
 
-  return { pool: filteredPool, raws: filteredRaws, metas: filteredMetas, marketBands, v7SiblingPresence, velocitySignals, parsedGradingRows };
+  return { pool: filteredPool, raws: filteredRaws, metas: filteredMetas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, parsedGradingRows };
 }
 
 function buildItems(
@@ -629,6 +702,7 @@ function buildItems(
   raws: RawRow[],
   metas: RawListingMeta[],
   marketBands: Map<string, Map<string, MarketBandRow>>,
+  sourceMarketBands: Map<string, Map<string, Map<string, MarketBandRow>>>,
   v7SiblingPresence: V7SiblingPresenceMap,
   velocitySignals: Map<string, string>,
   userHomeRegion: { daangn_full_path: string | null } | null,
@@ -696,28 +770,29 @@ function buildItems(
       });
       const tx = inferMarketplaceTransaction(facts);
       // Wave 247.2 (2026-05-19): band-aware sku_median.
-      //   기존: raw.sku_median (mvp_listings — condition_class 무시, 전체 median).
-      //   사용자 풀의 16% (82/500) sku_median=0 → "시세 0원" 미스리딩.
-      //   새: mvp_market_price_daily 의 (comparable_key, condition_class) band 우선 →
-      //     매칭 band 없으면 fallback chain (mint → clean → normal → worn) →
-      //     모든 band 없으면 raw.sku_median (전체 median).
-      //   pack-open.ts 의 marketBasisForCandidate 와 동일 정책. additive only — DB 변경 X.
+      // Wave 898 (2026-05-28): Daangn feed must use Daangn market stats, not mixed market median.
+      //   당근은 local execution market 이라 source median 없으면 피드에서 제외한다.
+      //   번개/중나는 source median 있으면 우선, 부족하면 기존 mixed fallback 유지.
       // Wave 252.A real (2026-05-20): v3 clothing key + v7 sibling 존재 시 mixed-pool 차단.
       //   v3 매물은 raw.sku_median 도 mixed-pool 계산값 → 둘 다 신뢰 불가 → skuMedianFinal=0
       //   (Wave 249 sku_median_unavailable 가드 동일 결과).
       const v3Stale = row.comparable_key && v7SiblingPresence.get(row.comparable_key) === true;
+      const sourceBandPrice = sourceAwareMedian(sourceMarketBands, row.comparable_key, row.condition_class, marketplaceSource, v7SiblingPresence);
       const bandPrice = bandAwareMedian(marketBands, row.comparable_key, row.condition_class, v7SiblingPresence);
-      const skuMedianFinal = v3Stale ? 0 : (bandPrice ?? raw.sku_median);
+      const skuMedianFinal = v3Stale
+        ? 0
+        : marketplaceSource === "daangn"
+          ? (sourceBandPrice ?? 0)
+          : (sourceBandPrice ?? bandPrice ?? raw.sku_median);
       // Wave 369 (2026-05-19): expected_profit 재계산 — pool builder 공식과 같이,
       // 표시 시세 (band-aware) 기준으로 응답 시점에 다시 계산.
       // 이유: DB column expected_profit_min/max는 pool builder 시점 계산이라
       // wave 247.2 band-aware median 적용 후 동기화 안 됨. 같은 매물에 "시세 < 매입인데 차익 +"
       // 같은 모순 노출 (사용자 신뢰 손상).
       //
-      // 공식 (candidate-pool-builder.ts line 398-402 와 동일):
-      //   sellFee = skuMedian * 3.5%
-      //   profitMax = max(0, skuMedian - price - sellFee - 3500(재배송) - 5000(buffer))
-      //   profitMin = max(0, skuMedian - (price + 3500(매입배송 추정)) - sellFee - 3500 - 5000)
+      // 공식:
+      //   번개/중나 = 안전결제 수수료 + 재배송비 + 버퍼.
+      //   당근 = source 시세 기준 직거래 재판매 가정 → 판매 수수료/재배송비 0원 + 버퍼.
       //
       // 정확한 buyer_shipping/estimated_buy_cost는 raw mvp_listings에 없어서 단순 가정.
       // 더 정확한 값 필요 시 mvp_listings join 추가 (별도 wave).
@@ -731,15 +806,14 @@ function buildItems(
       let recomputedProfitMin = row.expected_profit_min;
       let recomputedProfitMax = row.expected_profit_max;
       if (skuMedianFinal && skuMedianFinal > 0 && Number.isFinite(raw.price) && raw.price > 0) {
-        const sellFee = Math.round(skuMedianFinal * SELLING_FEE_RATE);
-        recomputedProfitMax = Math.max(
-          0,
-          skuMedianFinal - raw.price - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER,
-        );
-        recomputedProfitMin = Math.max(
-          0,
-          skuMedianFinal - (raw.price + assumedBuyShipping) - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER,
-        );
+        const profit = expectedProfitFromMarketPrice({
+          buyPrice: raw.price,
+          marketPrice: skuMedianFinal,
+          buyShipping: assumedBuyShipping,
+          marketplaceSource,
+        });
+        recomputedProfitMax = profit?.max ?? recomputedProfitMax;
+        recomputedProfitMin = profit?.min ?? recomputedProfitMin;
       }
       // Wave 368: 안전망 — 재계산 후 차익이 0이면 응답에서 제외 (사용자 화면 노출 차단).
       if (recomputedProfitMax <= 0) {
@@ -940,7 +1014,7 @@ export async function GET(req: Request) {
     // 예산 필터가 있을 때 더 넓은 가격대로 조용히 fallback하지 않는다.
     // 15만원 이하를 보고 있는데 서버가 30/50만원 매물을 가져와도 프론트에서 다시 숨겨져
     // "새 매물 붙이는 중"만 길게 보이는 문제가 생긴다.
-    const { pool, raws, metas, marketBands, v7SiblingPresence, velocitySignals, parsedGradingRows } = await loadPool(headers, {
+    const { pool, raws, metas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, parsedGradingRows } = await loadPool(headers, {
       sort,
       source,
       priceMax,
@@ -949,7 +1023,7 @@ export async function GET(req: Request) {
       userHomeDaangnFullPath: userHomeRegion?.daangn_full_path ?? null,
     });
     const skuImageMap = await loadSkuImageMap();
-    items = buildItems(pool, raws, metas, marketBands, v7SiblingPresence, velocitySignals, userHomeRegion, parsedGradingRows, skuImageMap);
+    items = buildItems(pool, raws, metas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, userHomeRegion, parsedGradingRows, skuImageMap);
 
     // Wave 373: 성향 정렬 — preference 따라 우선순위 재정렬.
     //   safe: 우수 셀러 (평점 4.5+ & 후기 10+) 우선

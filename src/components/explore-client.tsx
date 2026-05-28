@@ -18,7 +18,7 @@ import { detectBrandDepth } from "@/lib/category-brand-depth";
 import type { DetailEventType } from "@/lib/detail-analytics";
 import { teaserBudgetRangeLabel, teaserProfitLabel } from "@/lib/feed-price-display";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
-import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
+import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 // Wave 338+339 (Phase 1a + 1b — Freemium /explore):
@@ -231,13 +231,19 @@ function buyerShippingForPoolItem(item: Pick<PoolItem, "freeShipping" | "transac
   return item.freeShipping ? 0 : 3500;
 }
 
-function recomputePoolProfit(price: number, marketPrice: number | null | undefined, item: Pick<PoolItem, "freeShipping" | "transactionMode" | "shippingAssumption">) {
+function recomputePoolProfit(
+  price: number,
+  marketPrice: number | null | undefined,
+  item: Pick<PoolItem, "freeShipping" | "transactionMode" | "shippingAssumption" | "marketplaceSource">,
+) {
   if (!marketPrice || marketPrice <= 0 || !price || price <= 0) return null;
   const buyShipping = buyerShippingForPoolItem(item);
-  const sellFee = Math.round(marketPrice * SELLING_FEE_RATE);
-  const max = Math.round(marketPrice - price - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
-  const min = Math.round(marketPrice - (price + buyShipping) - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
-  return { min, max };
+  return expectedProfitFromMarketPrice({
+    buyPrice: price,
+    marketPrice,
+    buyShipping,
+    marketplaceSource: item.marketplaceSource,
+  });
 }
 
 function isDirectOnlyItem(item: Pick<PoolItem, "transactionMode" | "shippingAssumption">) {
@@ -301,6 +307,8 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
   const freshSeconds = Number.isFinite(verifiedMs)
     ? Math.max(0, Math.floor((Date.now() - verifiedMs) / 1000))
     : 0;
+  const feedBasisSource = item.marketplaceSource === "daangn" ? "daangn" : null;
+  const feedBasisSourceLabel = feedBasisSource ? "당근마켓" : null;
   return {
     pid: item.pid,
     name: item.name,
@@ -328,8 +336,8 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
       disappearedSampleCount: 0,
       confidence: null,
       priceSource: "market",
-      basisSource: null,
-      basisSourceLabel: null,
+      basisSource: feedBasisSource,
+      basisSourceLabel: feedBasisSourceLabel,
       sourceFallbackUsed: false,
       sourceSampleCount: null,
       computedAt: null,
@@ -2133,8 +2141,8 @@ export default function ExploreClient({
               disappearedSampleCount: 0,
               confidence: null,
               priceSource: "market" as const,
-              basisSource: null,
-              basisSourceLabel: null,
+              basisSource: it.marketplaceSource === "daangn" ? "daangn" : null,
+              basisSourceLabel: it.marketplaceSource === "daangn" ? "당근마켓" : null,
               sourceFallbackUsed: false,
               sourceSampleCount: null,
               computedAt: null,
@@ -2367,11 +2375,13 @@ export default function ExploreClient({
               freeShipping: prev.savedDetail?.freeShipping ?? false,
               transactionMode: prev.savedDetail?.transactionMode ?? null,
               shippingAssumption: prev.savedDetail?.shippingAssumption ?? null,
+              marketplaceSource: prev.marketplaceSource ?? null,
             });
+            const strictSourceMissing = marketBasis?.sourceFallbackUsed === true && marketBasis.medianPrice == null;
             return {
               ...prev,
-              expectedProfitMin: recomputedProfit?.min ?? prev.expectedProfitMin,
-              expectedProfitMax: recomputedProfit?.max ?? prev.expectedProfitMax,
+              expectedProfitMin: strictSourceMissing ? 0 : (recomputedProfit?.min ?? prev.expectedProfitMin),
+              expectedProfitMax: strictSourceMissing ? 0 : (recomputedProfit?.max ?? prev.expectedProfitMax),
               marketBasis: marketBasis ?? prev.marketBasis,
               velocityBasis: data.analysis!.velocityBasis ?? prev.velocityBasis,
               skuListingFlow: data.analysis!.skuListingFlow ?? prev.skuListingFlow,
@@ -2381,13 +2391,14 @@ export default function ExploreClient({
           setItems((prev) => prev.map((item) => {
             if (item.pid !== pid) return item;
             const recomputedProfit = recomputePoolProfit(item.price, marketBasis?.medianPrice, item);
+            const strictSourceMissing = marketBasis?.sourceFallbackUsed === true && marketBasis.medianPrice == null;
             return {
               ...item,
               skuMedian: marketBasis?.medianPrice ?? item.skuMedian,
               conditionClass: marketBasis?.conditionClass ?? item.conditionClass,
               comparableKey: marketBasis?.comparableKey ?? item.comparableKey,
-              expectedProfitMin: recomputedProfit?.min ?? item.expectedProfitMin,
-              expectedProfitMax: recomputedProfit?.max ?? item.expectedProfitMax,
+              expectedProfitMin: strictSourceMissing ? 0 : (recomputedProfit?.min ?? item.expectedProfitMin),
+              expectedProfitMax: strictSourceMissing ? 0 : (recomputedProfit?.max ?? item.expectedProfitMax),
             };
           }));
         }

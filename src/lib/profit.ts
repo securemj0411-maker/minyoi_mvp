@@ -3,6 +3,40 @@ import type { CandidateBand, CandidateSignal, CashoutHint, ListingCandidate } fr
 export const SELLING_FEE_RATE = 0.035;
 export const RESELL_SHIPPING_FEE = 3500;
 export const SAFETY_BUFFER = 5000;
+
+function isDaangnSource(source: string | null | undefined) {
+  const value = String(source ?? "").trim().toLowerCase();
+  return value === "daangn" || value === "daangnmarket" || value === "danggn";
+}
+
+export function sellingFeeForMarketPrice(marketPrice: number, marketplaceSource?: string | null) {
+  if (!Number.isFinite(marketPrice) || marketPrice <= 0) return 0;
+  if (isDaangnSource(marketplaceSource)) return 0;
+  return Math.round(marketPrice * SELLING_FEE_RATE);
+}
+
+export function resellShippingFeeForSource(marketplaceSource?: string | null) {
+  return isDaangnSource(marketplaceSource) ? 0 : RESELL_SHIPPING_FEE;
+}
+
+export function expectedProfitFromMarketPrice(input: {
+  buyPrice: number;
+  marketPrice: number | null | undefined;
+  buyShipping: number;
+  marketplaceSource?: string | null;
+}) {
+  const marketPrice = Number(input.marketPrice ?? 0);
+  const buyPrice = Number(input.buyPrice ?? 0);
+  if (!Number.isFinite(marketPrice) || marketPrice <= 0 || !Number.isFinite(buyPrice) || buyPrice <= 0) return null;
+  const sellFee = sellingFeeForMarketPrice(marketPrice, input.marketplaceSource);
+  const resellShipping = resellShippingFeeForSource(input.marketplaceSource);
+  return {
+    min: Math.max(0, Math.round(marketPrice - (buyPrice + input.buyShipping) - sellFee - resellShipping - SAFETY_BUFFER)),
+    max: Math.max(0, Math.round(marketPrice - buyPrice - sellFee - resellShipping - SAFETY_BUFFER)),
+    sellFee,
+    resellShipping,
+  };
+}
 const FATAL_LISTING_KEYWORDS = [
   "타오바오",
   "타오바이",
