@@ -137,13 +137,13 @@ export type DaangnPriceSweepResult = {
 
 const DEFAULT_TARGET_SAMPLES = 10;
 const DEFAULT_MAX_SKUS = 80;
-const DEFAULT_MAX_REGIONS = 24;
-const DEFAULT_MAX_SEARCH_COMBOS = 120;
-const DEFAULT_MAX_CATEGORY_COMBOS = 180;
-const DEFAULT_MAX_DETAIL_FETCHES = 140;
-const DEFAULT_SEARCH_CONCURRENCY = 36;
-const DEFAULT_DETAIL_CONCURRENCY = 10;
-const DEFAULT_REQUEST_DELAY_MS = 0;
+const DEFAULT_MAX_REGIONS = 4;
+const DEFAULT_MAX_SEARCH_COMBOS = 40;
+const DEFAULT_MAX_CATEGORY_COMBOS = 0;
+const DEFAULT_MAX_DETAIL_FETCHES = 100;
+const DEFAULT_SEARCH_CONCURRENCY = 1;
+const DEFAULT_DETAIL_CONCURRENCY = 2;
+const DEFAULT_REQUEST_DELAY_MS = 350;
 const DEFAULT_TIMEOUT_MS = 8_000;
 
 const CATEGORY_IDS_BY_SKU_CATEGORY: Partial<Record<Sku["category"], number[]>> = {
@@ -364,8 +364,12 @@ function buildTargets(
       const aHasSignal = a.current.total > 0 ? 1 : 0;
       const bHasSignal = b.current.total > 0 ? 1 : 0;
       if (aHasSignal !== bHasSignal) return bHasSignal - aHasSignal;
-      if (a.current.sold !== b.current.sold) return a.current.sold - b.current.sold;
-      if (a.current.total !== b.current.total) return a.current.total - b.current.total;
+      // For a sample-filling sweep, proven Daangn SKUs should reach the target
+      // first. Lowest-total sorting spent early requests on rare long-tail SKUs
+      // and barely moved ready recovery.
+      if (a.current.total !== b.current.total) return b.current.total - a.current.total;
+      if (a.current.active !== b.current.active) return b.current.active - a.current.active;
+      if (a.current.sold !== b.current.sold) return b.current.sold - a.current.sold;
       return b.deficit - a.deficit;
     });
 
@@ -393,28 +397,30 @@ function buildSweepCombos(
   const searchSeen = new Set<string>();
   const categorySeen = new Set<string>();
 
-  for (const target of targets) {
-    if (searchCombos.length >= maxSearchCombos) break;
-    const regionSlice = regions.slice(0, Math.min(4, regions.length));
-    for (const query of target.queries.slice(0, 2)) {
-      for (const categoryId of target.categoryIds.slice(0, 2)) {
-        for (const region of regionSlice) {
-          if (searchCombos.length >= maxSearchCombos) break;
-          const key = `${region.id}:${categoryId}:${query}`;
-          if (searchSeen.has(key)) continue;
-          searchSeen.add(key);
-          const category = { id: categoryId, name: CATEGORY_NAMES_BY_ID[categoryId] ?? String(categoryId) };
-          searchCombos.push({
-            mode: "keyword",
-            region,
-            category,
-            search: query,
-            targetSkuId: target.sku.id,
-            // Daangn server payload returns keyword rows reliably when category is omitted.
-            // Category remains on the combo only to scope our local classifier.
-            url: buildDaangnSearchUrl({ regionId: region.id, search: query }),
-          });
-        }
+  const searchRegions = regions.slice(0, Math.min(2, regions.length));
+  for (let queryIndex = 0; queryIndex < 2 && searchCombos.length < maxSearchCombos; queryIndex += 1) {
+    for (const target of targets) {
+      if (searchCombos.length >= maxSearchCombos) break;
+      const query = target.queries[queryIndex];
+      if (!query) continue;
+      const categoryId = target.categoryIds[0];
+      for (const region of searchRegions) {
+        if (searchCombos.length >= maxSearchCombos) break;
+        const key = `${region.id}:${query}`;
+        if (searchSeen.has(key)) continue;
+        searchSeen.add(key);
+        const category = { id: categoryId, name: CATEGORY_NAMES_BY_ID[categoryId] ?? String(categoryId) };
+        searchCombos.push({
+          mode: "keyword",
+          region,
+          category,
+          search: query,
+          targetSkuId: target.sku.id,
+          // Keep category out of the URL. Search+region is the stable payload path;
+          // category-only payloads can return empty loader data. Use category only
+          // as a local classifier hint and avoid duplicate URL fetches.
+          url: buildDaangnSearchUrl({ regionId: region.id, search: query }),
+        });
       }
     }
   }
@@ -740,7 +746,7 @@ export async function runDaangnPriceSweep(options: DaangnPriceSweepOptions = {})
   const searchConcurrency = toPositiveInt(options.searchConcurrency, DEFAULT_SEARCH_CONCURRENCY, 1, 200);
   const detailConcurrency = toPositiveInt(options.detailConcurrency, DEFAULT_DETAIL_CONCURRENCY, 1, 50);
   const requestDelayMs = toPositiveInt(options.requestDelayMs, DEFAULT_REQUEST_DELAY_MS, 0, 30_000);
-  const abortOnBlockedCombo = options.abortOnBlockedCombo ?? false;
+  const abortOnBlockedCombo = options.abortOnBlockedCombo ?? true;
   const regionRotationOffset = toPositiveInt(options.regionRotationOffset, 0, 0, DEFAULT_DAANGN_REGION_SEEDS.length - 1);
   const timeoutMs = toPositiveInt(options.timeoutMs, DEFAULT_TIMEOUT_MS, 1000, 30_000);
 

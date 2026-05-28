@@ -57,6 +57,8 @@ type PoolItem = {
   joongnaTrustScore?: number | null;
   joongnaSafeOrderSalesCount?: number | null;
   joongnaSafeOrderSalesText?: string | null;
+  daangnMannerTemperature?: number | null;
+  daangnReviewCount?: number | null;
   productTradeType?: number | null;
   parcelFeeYn?: number | null;
   tradeLabels?: string[];
@@ -344,6 +346,8 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
       joongnaTrustScore: item.joongnaTrustScore ?? null,
       joongnaSafeOrderSalesCount: item.joongnaSafeOrderSalesCount ?? null,
       joongnaSafeOrderSalesText: item.joongnaSafeOrderSalesText ?? null,
+      daangnMannerTemperature: item.daangnMannerTemperature ?? null,
+      daangnReviewCount: item.daangnReviewCount ?? null,
       productTradeType: item.productTradeType ?? null,
       parcelFeeYn: item.parcelFeeYn ?? null,
       tradeLabels: item.tradeLabels ?? [],
@@ -738,6 +742,8 @@ function revealCardToPoolItem(card: RevealCard): PoolItem {
     joongnaTrustScore: card.savedDetail?.joongnaTrustScore ?? null,
     joongnaSafeOrderSalesCount: card.savedDetail?.joongnaSafeOrderSalesCount ?? null,
     joongnaSafeOrderSalesText: card.savedDetail?.joongnaSafeOrderSalesText ?? null,
+    daangnMannerTemperature: card.savedDetail?.daangnMannerTemperature ?? null,
+    daangnReviewCount: card.savedDetail?.daangnReviewCount ?? null,
     productTradeType: card.savedDetail?.productTradeType ?? null,
     parcelFeeYn: card.savedDetail?.parcelFeeYn ?? null,
     tradeLabels: card.savedDetail?.tradeLabels ?? [],

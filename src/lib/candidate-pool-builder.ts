@@ -142,6 +142,9 @@ export type PoolCandidateInput = {
   // 신뢰도 낮은 셀러 (review_count < 5 OR rating < 4.5) + msrp * 0.25 이하 = 가품 의심.
   shopReviewCount?: number | null;
   shopReviewRating?: number | null;
+  // Daangn seller trust signal. Historical search-only Daangn rows can be
+  // detail_status='done' but still miss this; do not promote those to ready.
+  daangnMannerTemperature?: number | null;
   // Wave 148 (2026-05-16): 광고/소매 매물 차단 — description 검사.
   // 사이즈 다중 표기 / "행사할인특가" / "[구매하기]" 같은 광고문 매물 = 개인 거래 아님.
   // 시세 부정확 + 가품 risk + 카드 추천 부적합.
@@ -415,6 +418,11 @@ export function buildCandidatePoolRows(input: {
       invalidations.push({ pid, reason: "pool_eligible_false" });
       continue;
     }
+    if (row.source === "daangn" && row.daangnMannerTemperature == null) {
+      skipped += 1;
+      invalidations.push({ pid, reason: "daangn_manner_temperature_missing" });
+      continue;
+    }
     const expectedParserVersion = category ? input.latestParserVersionByCategory?.[category] : undefined;
     if (expectedParserVersion && parsed?.parser_version !== expectedParserVersion) {
       skipped += 1;
@@ -678,6 +686,10 @@ export function buildCandidatePoolRows(input: {
       continue;
     }
 
+    // Wave 903 (2026-05-28): pool 입구도 feed/detail 과 같은 source-aware 비용을 쓴다.
+    // Daangn은 직거래 재판매 기준이라 판매 수수료/재배송비를 0원으로 본다.
+    // 이전에는 모든 source에 번개장터식 3.5% + 재배송비 3,500원을 빼서
+    // Daangn 저마진 후보가 ready 진입 전에 과차단됐다.
     const sellFee = sellingFeeForMarketPrice(row.skuMedian, row.source);
     const resellShippingFee = resellShippingFeeForSource(row.source);
     const safetyBuffer = safetyBufferForSource(row.source);
@@ -686,10 +698,12 @@ export function buildCandidatePoolRows(input: {
     const profitMax = Math.max(0, row.skuMedian - buyMin - sellFee - resellShippingFee - safetyBuffer);
     const profitMin = Math.max(0, row.skuMedian - buyMax - sellFee - resellShippingFee - safetyBuffer);
     // Wave 755 (2026-05-24): category 전달 → clothing/shoe/bag 10K threshold (일반인 친화).
+    // Wave 907 (2026-05-28): band threshold는 이미 1원이라, 새 invalidation reason은
+    // old `profit_below_pack_band` 대신 실제 의미(비용 반영 후 순익 없음)를 기록한다.
     const band = bandFromProfit(profitMin, profitMax, category);
     if (band === null) {
       skipped += 1;
-      invalidations.push({ pid, reason: "profit_below_pack_band" });
+      invalidations.push({ pid, reason: "profit_not_positive_after_costs" });
       continue;
     }
 

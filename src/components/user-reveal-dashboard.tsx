@@ -35,6 +35,8 @@ type RevealItem = {
   joongnaTrustScore?: number | null;
   joongnaSafeOrderSalesCount?: number | null;
   joongnaSafeOrderSalesText?: string | null;
+  daangnMannerTemperature?: number | null;
+  daangnReviewCount?: number | null;
   productTradeType?: number | null;
   parcelFeeYn?: number | null;
   tradeLabels?: string[];
@@ -428,6 +430,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         joongnaTrustScore: card.savedDetail?.joongnaTrustScore ?? null,
         joongnaSafeOrderSalesCount: card.savedDetail?.joongnaSafeOrderSalesCount ?? null,
         joongnaSafeOrderSalesText: card.savedDetail?.joongnaSafeOrderSalesText ?? null,
+        daangnMannerTemperature: card.savedDetail?.daangnMannerTemperature ?? null,
+        daangnReviewCount: card.savedDetail?.daangnReviewCount ?? null,
         productTradeType: card.savedDetail?.productTradeType ?? null,
         parcelFeeYn: card.savedDetail?.parcelFeeYn ?? null,
         tradeLabels: card.savedDetail?.tradeLabels ?? [],
@@ -557,6 +561,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         joongnaTrustScore: selectedItem.joongnaTrustScore ?? null,
         joongnaSafeOrderSalesCount: selectedItem.joongnaSafeOrderSalesCount ?? null,
         joongnaSafeOrderSalesText: selectedItem.joongnaSafeOrderSalesText ?? null,
+        daangnMannerTemperature: selectedItem.daangnMannerTemperature ?? null,
+        daangnReviewCount: selectedItem.daangnReviewCount ?? null,
         productTradeType: selectedItem.productTradeType ?? null,
         parcelFeeYn: selectedItem.parcelFeeYn ?? null,
         tradeLabels: selectedItem.tradeLabels ?? [],

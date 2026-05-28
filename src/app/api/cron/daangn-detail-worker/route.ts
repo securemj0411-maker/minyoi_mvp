@@ -1,0 +1,148 @@
+import { NextRequest, NextResponse } from "next/server";
+
+import {
+  buildCronRequestMeta,
+  failCollectRun,
+  finishCollectRunMinimal,
+  markStaleCollectRuns,
+  startCollectRun,
+} from "@/lib/collect-logs";
+import { checkCronAuth } from "@/lib/cron-auth";
+import { acquireCronGuardWithSourceHealth, cronGuardSkipBody } from "@/lib/cron-guard";
+import { runDaangnDetailBackfill } from "@/lib/daangn-detail-backfill";
+import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
+
+export const maxDuration = 300;
+
+function envInt(name: string, fallback: number, min: number, max: number): number {
+  const parsed = Number.parseInt(process.env[name] ?? "", 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
+function envBool(name: string, fallback = false): boolean {
+  const value = String(process.env[name] ?? "").trim().toLowerCase();
+  if (!value) return fallback;
+  return value === "1" || value === "true" || value === "yes" || value === "on";
+}
+
+function isDaangnDetailProject() {
+  const role = String(process.env.CRON_PROJECT_ROLE ?? "").trim().toLowerCase();
+  return !role || role === "primary" || role === "all" || role === "daangn_detail";
+}
+
+async function handleDaangnDetailWorker(req: NextRequest) {
+  const { authOk, authReason } = checkCronAuth(req);
+  const meta = buildCronRequestMeta(req, authOk, authReason, "daangn-detail-worker");
+
+  if (!authOk) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  if (!isDaangnDetailProject()) {
+    return NextResponse.json({
+      ok: true,
+      started: false,
+      skipped: true,
+      mode: "daangn_detail_worker",
+      reason: "project_role_disabled",
+      projectRole: process.env.CRON_PROJECT_ROLE ?? null,
+    });
+  }
+
+  if (!envBool("DAANGN_DETAIL_WORKER_ENABLED", true)) {
+    return NextResponse.json({ ok: true, started: false, skipped: true, mode: "daangn_detail_worker", reason: "disabled" });
+  }
+
+  const guard = await acquireCronGuardWithSourceHealth("daangn_detail_worker", req);
+  if (!guard.allowed) {
+    return NextResponse.json(cronGuardSkipBody(guard));
+  }
+
+  const staleMarked = await markStaleCollectRuns(loadPipelineRuntimeConfig().staleRunMinutes);
+  const dryRun = req.nextUrl.searchParams.get("dryRun") === "1" || envBool("DAANGN_DETAIL_WORKER_DRY_RUN", false);
+  const limit = envInt("DAANGN_DETAIL_WORKER_LIMIT", 45, 1, 200);
+  const budgetMs = envInt("DAANGN_DETAIL_WORKER_BUDGET_MS", 50_000, 5_000, 260_000);
+  const delayMs = envInt("DAANGN_DETAIL_WORKER_DELAY_MS", 700, 0, 10_000);
+  const timeoutMs = envInt("DAANGN_DETAIL_WORKER_TIMEOUT_MS", 8_000, 1_000, 30_000);
+
+  const run = await startCollectRun({
+    ...meta,
+    requestMeta: {
+      ...meta.requestMeta,
+      pipelineMode: "daangn_detail_worker",
+      staleMarkedBeforeRun: staleMarked,
+      dryRun,
+      limit,
+      budgetMs,
+      delayMs,
+      timeoutMs,
+    },
+  });
+  if (!run.id) {
+    guard.release();
+    return NextResponse.json(
+      { ok: false, mode: "daangn_detail_worker", error: "supabase_unavailable_before_pipeline", ts: run.startedAt },
+      { status: 503 },
+    );
+  }
+
+  try {
+    const result = await runDaangnDetailBackfill({
+      dryRun,
+      limit,
+      budgetMs,
+      delayMs,
+      timeoutMs,
+    });
+
+    await finishCollectRunMinimal(run.id, run.startedAt, {
+      collected: result.selected,
+      enriched: result.patched,
+      titleNormal: result.fetched,
+      upserted: result.patched,
+    }, {
+      source: result.source,
+      mode: result.mode,
+      dryRun: result.dryRun,
+      selected: result.selected,
+      fetched: result.fetched,
+      patched: result.patched,
+      markedGone: result.markedGone,
+      nullScore: result.nullScore,
+      parseFailed: result.parseFailed,
+      fetchFailed: result.fetchFailed,
+      blocked: result.blocked,
+      blockedStatus: result.blockedStatus,
+      blockedReason: result.blockedReason,
+      skippedByBudget: result.skippedByBudget,
+      durationMs: result.durationMs,
+    });
+
+    return NextResponse.json({
+      ok: true,
+      runId: run.id,
+      mode: "daangn_detail_worker",
+      result,
+      ts: run.startedAt,
+    });
+  } catch (err) {
+    await failCollectRun(run.id, run.startedAt, err);
+    return NextResponse.json(
+      {
+        ok: false,
+        runId: run.id,
+        mode: "daangn_detail_worker",
+        error: err instanceof Error ? err.message : String(err),
+        ts: run.startedAt,
+      },
+      { status: 500 },
+    );
+  } finally {
+    guard.release();
+  }
+}
+
+export async function GET(req: NextRequest) {
+  return handleDaangnDetailWorker(req);
+}

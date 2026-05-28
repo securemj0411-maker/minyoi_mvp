@@ -9,14 +9,23 @@ import { NextRequest, NextResponse } from "next/server";
 const REFERRAL_COOKIE = "minyoi_referral";
 const REFERRAL_COOKIE_TTL_SECONDS = 30 * 24 * 60 * 60; // 30일
 const REFERRAL_CODE_PATTERN = /^[A-HJ-NP-Z2-9]{6}$/; // referral.ts 와 동일 alphabet (헷갈리는 문자 제외)
-const DAANGN_B_CRON_PATH = "/api/cron/daangn-worker-b";
+const DAANGN_WORKER_ONLY_CRON_PATHS: Record<string, Set<string>> = {
+  daangn_b: new Set([
+    "/api/cron/daangn-worker-b",
+    "/api/cron/score-worker-b",
+  ]),
+  daangn_c: new Set([
+    "/api/cron/daangn-worker-c",
+  ]),
+};
 
 function cronProjectRole() {
   return String(process.env.CRON_PROJECT_ROLE ?? "").trim().toLowerCase();
 }
 
 function isDaangnWorkerOnlyProject() {
-  return cronProjectRole() === "daangn_b";
+  const role = cronProjectRole();
+  return role === "daangn_b" || role === "daangn_c";
 }
 
 export function middleware(req: NextRequest) {
@@ -24,14 +33,15 @@ export function middleware(req: NextRequest) {
   const path = url.pathname;
 
   if (isDaangnWorkerOnlyProject()) {
-    if (path === DAANGN_B_CRON_PATH) return NextResponse.next();
+    const role = cronProjectRole();
+    if (DAANGN_WORKER_ONLY_CRON_PATHS[role]?.has(path)) return NextResponse.next();
     if (path.startsWith("/api/cron/")) {
       return NextResponse.json({
         ok: true,
         started: false,
         skipped: true,
         reason: "project_role_disabled",
-        projectRole: "daangn_b",
+        projectRole: role,
         path,
       });
     }

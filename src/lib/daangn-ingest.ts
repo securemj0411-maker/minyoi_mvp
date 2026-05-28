@@ -136,6 +136,9 @@ export type DaangnIngestResult = {
   categoryBoostRegions?: number;
   categoryBoostCombos?: number;
   categoryBoostAdaptivePairs?: number;
+  categoryTargetOnly?: boolean;
+  categoryTargetRegions?: number;
+  categoryTargetCategoryIds?: string[];
   regionYieldStats?: {
     regions: DaangnRegionYieldStat[];
     topCatalogHint: DaangnRegionYieldStat[];
@@ -216,6 +219,10 @@ export type DaangnIngestOptions = {
   useAdaptiveRegionRotation?: boolean;
   // Wave 907: 전국 region firehose 위에 고수율 일부 지역만 category-depth 보조 fetch.
   categoryBoostRegions?: number;
+  // Wave 911: C worker category-target experiment. Broad firehose 없이
+  // region x target category 조합만 수집해서 request 대비 ready 전환율을 측정한다.
+  categoryTargetOnly?: boolean;
+  categoryTargetRegions?: number;
   // dry-run: DB write 안 함 (Stage 1 default)
   dryRun?: boolean;
 };
@@ -231,7 +238,7 @@ const DAANGN_UPSERT_PREFLIGHT_MULTIPLIER = 10;
 const DAANGN_UPSERT_PREFLIGHT_MAX = 5_000;
 const DAANGN_PREFLIGHT_EXISTING_READ_CHUNK_SIZE = 250;
 
-const DAANGN_TARGET_CATEGORY_SEEDS: DaangnCategorySeed[] = [
+export const DAANGN_TARGET_CATEGORY_SEEDS: DaangnCategorySeed[] = [
   { id: 1, name: "디지털기기" },
   { id: 2, name: "취미/게임/음반" },
   { id: 3, name: "스포츠/레저" },
@@ -667,6 +674,7 @@ function buildRawListingRow(
   article: DaangnSearchArticle | DaangnDetailArticle,
   shipping: DaangnShippingInference | null,
   nowIso: string,
+  queryLabel?: string | null,
 ): { raw: Record<string, unknown>; parsed: Record<string, unknown> | null; sku_id: string | null } | null {
   const externalId = parseDaangnExternalId(article.href);
   if (!externalId) return null;
@@ -731,7 +739,7 @@ function buildRawListingRow(
     free_shipping: false,
     thumbnail_url: article.thumbnail ?? null,
     description_preview: (description ?? "").slice(0, 500),
-    query: `daangn:${article.region.name ?? article.region.dbId ?? "unknown"}`,
+    query: queryLabel || `daangn:${article.region.name ?? article.region.dbId ?? "unknown"}`,
     seller_uid: article.user.dbId ?? null,
     seller_source: DAANGN_SOURCE_ID,
     listing_state: lifecycle.listingState,
@@ -756,6 +764,7 @@ function buildRawListingRow(
     raw_json: {
       source: DAANGN_SOURCE_ID,
       externalId,
+      queryLabel: queryLabel ?? null,
       viewCount: article.viewCount,
       region: article.region,  // { dbId, name } — direct-location 표시용
     },
@@ -812,11 +821,13 @@ export async function upsertDaangnRawListings(
   // Wave 758 (2026-05-26): detail article (user.score 포함) 도 매핑 — 같은 ext 면 search 대신 detail 사용.
   //   buildRawListingRow 는 DaangnDetailArticle 일 때 manner_temperature 추출.
   const detailArticleByExternal = new Map<string, DaangnDetailArticle>();
+  const detailQueryLabelByExternal = new Map<string, string>();
   for (const r of detailRecords) {
     const ext = parseDaangnExternalId(r.article.href);
     if (ext) {
       detailShippingByExternal.set(ext, r.shipping);
       detailArticleByExternal.set(ext, r.article);
+      detailQueryLabelByExternal.set(ext, r.combo.query.label);
     }
   }
 
@@ -849,7 +860,8 @@ export async function upsertDaangnRawListings(
   // dedupe by pid (같은 매물 여러 combo 중복 검색됨)
   const byPid = new Map<number, { raw: Record<string, unknown>; parsed: Record<string, unknown> | null }>();
   for (const row of rowsSelectedForClassify) {
-    const built = buildRawListingRow(row.article, row.daangnShippingInferred, nowIso);
+    const ext = parseDaangnExternalId(row.article.href);
+    const built = buildRawListingRow(row.article, row.daangnShippingInferred, nowIso, ext ? detailQueryLabelByExternal.get(ext) : null);
     if (!built) continue;
     byPid.set(built.raw.pid as number, { raw: built.raw, parsed: built.parsed });
   }
@@ -1321,15 +1333,32 @@ type CollectRunRegionStatsRow = {
   } | null;
 };
 
-async function loadRecentDaangnRegionScores(): Promise<Map<string, number>> {
+const DAANGN_INGEST_CRON_PATHS = [
+  "/api/cron/daangn-worker",
+  "/api/cron/daangn-worker-b",
+  "/api/cron/daangn-worker-c",
+] as const;
+
+async function loadRecentDaangnCollectRuns(): Promise<CollectRunRegionStatsRow[]> {
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)) {
-    return new Map();
+    return [];
   }
-  const res = await restFetch(
-    `${tableUrl("mvp_collect_runs")}?select=stage_stats&status=eq.succeeded&request_path=eq.${encodeURIComponent("/api/cron/daangn-worker")}&order=started_at.desc&limit=24`,
-    { headers: serviceHeaders() },
-  );
-  const rows = await res.json() as CollectRunRegionStatsRow[];
+  const rows = await Promise.all(DAANGN_INGEST_CRON_PATHS.map(async (path) => {
+    try {
+      const res = await restFetch(
+        `${tableUrl("mvp_collect_runs")}?select=stage_stats&status=eq.succeeded&request_path=eq.${encodeURIComponent(path)}&order=started_at.desc&limit=12`,
+        { headers: serviceHeaders() },
+      );
+      return (await res.json()) as CollectRunRegionStatsRow[];
+    } catch {
+      return [];
+    }
+  }));
+  return rows.flat();
+}
+
+async function loadRecentDaangnRegionScores(): Promise<Map<string, number>> {
+  const rows = await loadRecentDaangnCollectRuns();
   const scores = new Map<string, number>();
   rows.forEach((row, index) => {
     const regions = row.stage_stats?.regionYieldStats?.regions;
@@ -1349,14 +1378,7 @@ async function loadRecentDaangnRegionScores(): Promise<Map<string, number>> {
 }
 
 async function loadRecentDaangnRegionCategoryScores(): Promise<Map<string, number>> {
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)) {
-    return new Map();
-  }
-  const res = await restFetch(
-    `${tableUrl("mvp_collect_runs")}?select=stage_stats&status=eq.succeeded&request_path=eq.${encodeURIComponent("/api/cron/daangn-worker")}&order=started_at.desc&limit=24`,
-    { headers: serviceHeaders() },
-  );
-  const rows = await res.json() as CollectRunRegionStatsRow[];
+  const rows = await loadRecentDaangnCollectRuns();
   const scores = new Map<string, number>();
   rows.forEach((row, index) => {
     const pairs = row.stage_stats?.categoryYieldStats?.pairs;
@@ -1416,6 +1438,8 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   // Wave 907: +120 fetch/run default. 267 full-region firehose is safe; full category
   // matrix (267 * 8) crossed previous block-risk boundaries, so only boost top pairs.
   const categoryBoostRegions = boundedInt(options.categoryBoostRegions, 15, 0, 30);
+  const categoryTargetOnly = options.categoryTargetOnly ?? false;
+  const categoryTargetRegions = boundedInt(options.categoryTargetRegions, 24, 1, 80);
   const searchConcurrency = boundedInt(options.searchConcurrency, 50, 1, 300);
   const dryRun = options.dryRun ?? mode !== "active";
   const useAdaptiveRegionRotation = options.useAdaptiveRegionRotation ?? true;
@@ -1442,7 +1466,43 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   let adaptiveRegionScoreRegions = 0;
   let categoryBoostCombos = 0;
   let categoryBoostAdaptivePairs = 0;
-  if (useRegionFirehose) {
+  if (categoryTargetOnly) {
+    // Wave 911: C worker category-target mode.
+    // Broad firehose 를 끄고, 당근 target category URL만 훑는다. A/B가 넓은
+    // 발견을 맡고 C는 request 대비 catalog-hint/ready 전환율을 측정한다.
+    let regionScores: Map<string, number> | undefined;
+    let regionCategoryScores: Map<string, number> | undefined;
+    if (useAdaptiveRegionRotation) {
+      const tAdaptiveRegionLoadStart = Date.now();
+      try {
+        const [loadedRegionScores, loadedRegionCategoryScores] = await Promise.all([
+          loadRecentDaangnRegionScores(),
+          loadRecentDaangnRegionCategoryScores(),
+        ]);
+        regionScores = loadedRegionScores;
+        regionCategoryScores = loadedRegionCategoryScores;
+        adaptiveRegionScoreRegions = regionScores.size;
+        categoryBoostAdaptivePairs = regionCategoryScores.size;
+      } catch (err) {
+        console.warn("loadRecentDaangn category scores failed (non-fatal)", err);
+        regionScores = undefined;
+        regionCategoryScores = undefined;
+      }
+      timings.adaptiveRegionLoad = Date.now() - tAdaptiveRegionLoadStart;
+    }
+    const categories = options.categories ?? DAANGN_TARGET_CATEGORY_SEEDS;
+    const result = selectDaangnCategoryBoostCombos({
+      regions,
+      categories,
+      maxRegions: categoryTargetRegions,
+      shuffleRegions: true,
+      regionScores,
+      pairScores: regionCategoryScores,
+    });
+    combos = result.combos.slice(0, maxCombos);
+    regionSelectionMode = result.selectionMode;
+    categoryBoostCombos = combos.length;
+  } else if (useRegionFirehose) {
     // Firehose 모드: keyword/category filter X, region 만 iteration.
     //   maxCombos = 한 tick 에서 fetch 할 region 수.
     let regionScores: Map<string, number> | undefined;
@@ -1809,6 +1869,11 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     categoryBoostRegions,
     categoryBoostCombos,
     categoryBoostAdaptivePairs,
+    categoryTargetOnly,
+    categoryTargetRegions: categoryTargetOnly ? categoryTargetRegions : undefined,
+    categoryTargetCategoryIds: categoryTargetOnly
+      ? [...new Set(combos.map((combo) => String(combo.category.id)).filter((id) => id !== "0"))]
+      : undefined,
     regionYieldStats,
     categoryYieldStats,
     ongoing: summary.ongoing,

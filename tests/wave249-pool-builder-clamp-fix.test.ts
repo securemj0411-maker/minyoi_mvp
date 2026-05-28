@@ -12,7 +12,7 @@
 // 동작 정렬:
 //   1. sku_median_unavailable 먼저 (skuMedian 신호 자체 없을 때)
 //   2. negative_resell_gap (skuMedian > 0 + price >= skuMedian)
-//   3. bandFromProfit (profitMin/Max 모두 0이면 profit_below_pack_band)
+//   3. bandFromProfit (profitMin/Max 모두 0이면 profit_not_positive_after_costs)
 //   4. poolSkipReason (price_gte_market 등 후순위 — 위 2개 가드로 이미 차단됨)
 
 import { describe, it } from "node:test";
@@ -158,6 +158,56 @@ describe("Wave 249 — negative_resell_gap gate", () => {
     assert.equal(skip, undefined, "차익 양수 매물은 두 gate 통과해야");
     // baseRow 의 다른 gate 도 모두 통과되도록 신경 썼으므로 entries 에 박혀야.
     assert.equal(result.entries.length, 1, `pool entries 1건. result: ${JSON.stringify(result)}`);
+  });
+
+  it("Daangn 매물은 pool 진입 계산에서도 수수료/재배송비 0원 기준을 쓴다", () => {
+    // 일반 marketplace 비용(3.5% + 재배송비 + 안전버퍼)을 빼면 0원 이하가 되지만,
+    // 당근 직거래 재판매 기준이면 source-aware 비용이 0원이라 ready 후보로 남아야 한다.
+    const result = buildCandidatePoolRows({
+      rows: [{
+        ...baseRow,
+        source: "daangn",
+        daangnMannerTemperature: 43.3,
+        price: 100000,
+        estimatedBuyCost: 100000,
+        shippingFee: 5000,
+        shippingFeeGeneral: null,
+        skuMedian: 112000,
+      }],
+      parsedByPid: baseParsed,
+      catalogById,
+      categoryReadiness,
+      now: new Date().toISOString(),
+    });
+
+    assert.equal(result.entries.length, 1, `Daangn source-aware 비용이면 pool 진입. result: ${JSON.stringify(result)}`);
+    assert.equal(result.entries[0]?.expected_profit_min, 7000);
+    assert.equal(result.entries[0]?.expected_profit_max, 12000);
+  });
+
+  it("Daangn 매너온도 없는 row는 ready pool 진입 차단", () => {
+    const result = buildCandidatePoolRows({
+      rows: [{
+        ...baseRow,
+        source: "daangn",
+        daangnMannerTemperature: null,
+        price: 100000,
+        estimatedBuyCost: 100000,
+        shippingFee: 5000,
+        shippingFeeGeneral: null,
+        skuMedian: 112000,
+      }],
+      parsedByPid: baseParsed,
+      catalogById,
+      categoryReadiness,
+      now: new Date().toISOString(),
+    });
+
+    assert.equal(result.entries.length, 0);
+    assert.ok(
+      result.invalidations.find((i) => i.reason === "daangn_manner_temperature_missing"),
+      `Daangn manner missing invalidation expected. result: ${JSON.stringify(result)}`,
+    );
   });
 
   it("price = 0 (placeholder) → negative_resell_gap gate 통과 (price>0 가드)", () => {

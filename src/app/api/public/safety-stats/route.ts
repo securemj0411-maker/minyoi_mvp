@@ -183,8 +183,8 @@ export async function GET(request: Request) {
       countHead("mvp_candidate_pool", poolQuery(`select=pid&invalidated_reason=like.seller_above*&updated_at=gte.${since24h}`)),
       // 8) Wave 138b: 다중 ID 사기 그룹 차단 (같은 description + 다른 셀러)
       countHead("mvp_candidate_pool", poolQuery(`select=pid&invalidated_reason=like.multi_id_fraud*&updated_at=gte.${since24h}`)),
-      // 9) 차익 미달 (profit_below_pack_band) — 가장 큰 카테고리. 모든 카테고리.
-      countHead("mvp_candidate_pool", poolQuery(`select=pid&invalidated_reason=eq.profit_below_pack_band&updated_at=gte.${since24h}`)),
+      // 9) 차익 미달 — legacy `profit_below_pack_band` + current `profit_not_positive_after_costs`.
+      countHead("mvp_candidate_pool", poolQuery(`select=pid&or=(invalidated_reason.eq.profit_below_pack_band,invalidated_reason.eq.profit_not_positive_after_costs)&updated_at=gte.${since24h}`)),
       // 10) 매물 사라짐/거래 종료 (lifecycle_* + pool_warmer_*_inactive). 모든 카테고리.
       countHead("mvp_candidate_pool", poolQuery(`select=pid&or=(invalidated_reason.like.lifecycle_*,invalidated_reason.like.pool_warmer_*_inactive,invalidated_reason.like.pool_sweep_*_inactive)&updated_at=gte.${since24h}`)),
       // 11) 시세 표본 부족 (wave99_thin_market + wave106_low_confidence_thin_sample)

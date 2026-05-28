@@ -976,6 +976,8 @@ function buildItems(
         joongnaTrustScore: facts.joongnaTrustScore ?? null,
         joongnaSafeOrderSalesCount: facts.joongnaSafeOrderSalesCount ?? null,
         joongnaSafeOrderSalesText: facts.joongnaSafeOrderSalesText ?? null,
+        daangnMannerTemperature: facts.daangnMannerTemperature ?? null,
+        daangnReviewCount: facts.daangnReviewCount ?? null,
         productTradeType: facts.productTradeType ?? null,
         parcelFeeYn: facts.parcelFeeYn ?? null,
         tradeLabels: [...(facts.tradeLabels ?? [])],

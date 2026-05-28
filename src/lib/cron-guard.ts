@@ -98,12 +98,15 @@ export type CronWorkerMode =
   | "reference_price_refresh"
   | "joongna_worker"
   | "score_worker"
+  | "score_worker_b"
   // Wave launch-44 (사용자 짚음 "invalidated to ready cron 해결책"):
   //   recovery cron 별도 worker 분리. score_worker 부담 ↓ (33% timeout 대응) + 회복 처리량 ↑.
   | "recovery_worker"
   // Phase 4 (당근 ingest cron, Shadow Mode 시작): 5분 간격.
   | "daangn_worker"
   | "daangn_worker_b"
+  | "daangn_worker_c"
+  | "daangn_detail_worker"
   | "daangn_price_sweep_worker";
 
 type CronGuardSkipReason = "cooldown" | "same_worker_running" | "source_health_unhealthy" | "project_role_disabled";
@@ -173,9 +176,12 @@ const DEFAULT_COOLDOWN_MS: Record<CronWorkerMode, number> = {
   reference_price_refresh: 60 * 60_000,
   joongna_worker: 5 * 60_000,
   score_worker: 60_000,
+  score_worker_b: 60_000,
   recovery_worker: 60_000,
-  daangn_worker: 5 * 60_000,
-  daangn_worker_b: 5 * 60_000,
+  daangn_worker: 4 * 60_000,
+  daangn_worker_b: 4 * 60_000,
+  daangn_worker_c: 4 * 60_000,
+  daangn_detail_worker: 2 * 60_000,
   daangn_price_sweep_worker: 20 * 60_000,
 };
 
@@ -195,9 +201,12 @@ const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
   reference_price_refresh: 2 * 60_000,
   joongna_worker: 2 * 60_000,
   score_worker: 90_000,
+  score_worker_b: 90_000,
   recovery_worker: 60_000,
   daangn_worker: 90_000,
   daangn_worker_b: 90_000,
+  daangn_worker_c: 90_000,
+  daangn_detail_worker: 2 * 60_000,
   daangn_price_sweep_worker: 2 * 60_000,
 };
 
@@ -209,6 +218,8 @@ const HEAVY_SOURCE_HEALTH_GUARD_MODES = new Set<CronWorkerMode>([
   "joongna_worker",
   "daangn_worker",
   "daangn_worker_b",
+  "daangn_worker_c",
+  "daangn_detail_worker",
   "daangn_price_sweep_worker",
 ]);
 
@@ -250,7 +261,9 @@ function isForceRun(req?: CronGuardRequestLike) {
 export function cronProjectRoleSkip(mode: string): Record<string, string | boolean> | null {
   const role = String(process.env.CRON_PROJECT_ROLE ?? "").trim().toLowerCase();
   if (!role || role === "primary" || role === "all") return null;
-  if (role === "daangn_b" && mode === "daangn_worker_b") return null;
+  if (role === "daangn_b" && (mode === "daangn_worker_b" || mode === "score_worker_b")) return null;
+  if (role === "daangn_c" && mode === "daangn_worker_c") return null;
+  if (role === "daangn_detail" && mode === "daangn_detail_worker") return null;
   return {
     ok: true,
     started: false,
@@ -341,7 +354,13 @@ function shouldSkipForSourceHealth(
 }
 
 function sourceForHealthGuard(mode: CronWorkerMode) {
-  if (mode === "daangn_worker" || mode === "daangn_worker_b" || mode === "daangn_price_sweep_worker") return "daangn";
+  if (
+    mode === "daangn_worker" ||
+    mode === "daangn_worker_b" ||
+    mode === "daangn_worker_c" ||
+    mode === "daangn_detail_worker" ||
+    mode === "daangn_price_sweep_worker"
+  ) return "daangn";
   return mode === "joongna_worker" ? "joongna" : "bunjang";
 }
 

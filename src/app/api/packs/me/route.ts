@@ -79,6 +79,27 @@ const MAX_USER_VISIBLE_NUM_COMMENT = 8;
 const RATE_LIMIT_MAX = Math.max(1, Number(process.env.PACKS_ME_RATE_LIMIT_MAX ?? 10));
 const RATE_LIMIT_WINDOW_SECONDS = Math.max(1, Number(process.env.PACKS_ME_RATE_LIMIT_WINDOW_SECONDS ?? 10));
 
+async function patchDaangnMannerTemperature(
+  pid: number,
+  mannerTemperature: number,
+  reviewCount: number | null,
+) {
+  await restFetch(`${tableUrl("mvp_raw_listings")}?pid=eq.${pid}`, {
+    method: "PATCH",
+    headers: serviceHeaders("return=minimal"),
+    body: JSON.stringify({
+      daangn_manner_temperature: mannerTemperature,
+      daangn_review_count: reviewCount,
+      updated_at: new Date().toISOString(),
+    }),
+  }).catch((err) => {
+    console.warn("[packs/me] daangn manner patch failed", {
+      pid,
+      err: err instanceof Error ? err.message : String(err),
+    });
+  });
+}
+
 type RevealSort = "latest" | "oldest" | "price_low" | "price_high" | "profit_low" | "profit_high";
 
 type RevealRow = {
@@ -125,6 +146,8 @@ type RawRow = {
   raw_json: Record<string, unknown> | null;
   daangn_region_id: string | null;
   daangn_region_name: string | null;
+  daangn_manner_temperature: number | null;
+  daangn_review_count: number | null;
 };
 
 type ListingCostRow = {
@@ -221,6 +244,8 @@ type RevealItem = {
   joongnaTrustScore: number | null;
   joongnaSafeOrderSalesCount: number | null;
   joongnaSafeOrderSalesText: string | null;
+  daangnMannerTemperature: number | null;
+  daangnReviewCount: number | null;
   productTradeType: number | null;
   parcelFeeYn: number | null;
   tradeLabels: string[];
@@ -533,6 +558,15 @@ async function liveVerifyVisibleItems(userRef: string, items: RevealItem[]): Pro
             verified[index] = item;
             continue;
           }
+          const liveMannerTemperature = live.article.user.score ?? item.daangnMannerTemperature;
+          const liveReviewCount = live.article.user.reviewCount ?? item.daangnReviewCount;
+          if (
+            live.article.user.score != null &&
+            (item.daangnMannerTemperature !== live.article.user.score ||
+              item.daangnReviewCount !== live.article.user.reviewCount)
+          ) {
+            await patchDaangnMannerTemperature(item.pid, live.article.user.score, live.article.user.reviewCount);
+          }
           if (live.listingState !== "active") {
             await patchLiveTerminalState(item, live.listingState, live.saleStatus, `daangn_${live.reason}`);
             verified[index] = {
@@ -540,6 +574,8 @@ async function liveVerifyVisibleItems(userRef: string, items: RevealItem[]): Pro
               listingState: live.listingState,
               saleStatus: live.saleStatus,
               commentCount: live.article.commentCount ?? item.commentCount,
+              daangnMannerTemperature: liveMannerTemperature,
+              daangnReviewCount: liveReviewCount,
             };
             continue;
           }
@@ -548,6 +584,8 @@ async function liveVerifyVisibleItems(userRef: string, items: RevealItem[]): Pro
             listingState: "active",
             saleStatus: live.saleStatus || item.saleStatus || "selling",
             commentCount: live.article.commentCount ?? item.commentCount,
+            daangnMannerTemperature: liveMannerTemperature,
+            daangnReviewCount: liveReviewCount,
           };
           continue;
         }
@@ -685,7 +723,7 @@ export async function GET(req: Request) {
   const packOpenList = packOpenIds.join(",");
   const [rawRows, listingCostRows, feedbackRows, packOpenRows, parsedRows] = await Promise.all([
     loadJson<RawRow[]>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,name,url,price,num_faved,free_shipping,description_preview,image_count,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment,first_seen_at,raw_json,daangn_region_id,daangn_region_name&pid=in.(${pidList})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,name,url,price,num_faved,free_shipping,description_preview,image_count,shop_review_rating,shop_review_count,sku_id,thumbnail_url,sku_name,listing_state,sale_status,num_comment,first_seen_at,raw_json,daangn_region_id,daangn_region_name,daangn_manner_temperature,daangn_review_count&pid=in.(${pidList})`,
     ),
     loadJson<ListingCostRow[]>(
       `${tableUrl("mvp_listings")}?select=pid,price,shipping_fee,shipping_fee_general,estimated_buy_cost&pid=in.(${pidList})`,
@@ -828,6 +866,8 @@ export async function GET(req: Request) {
         sellerReviewRating: raw?.shop_review_rating ?? null,
         sellerReviewCount: raw?.shop_review_count ?? 0,
         rawJson: raw?.raw_json,
+        daangnMannerTemperature: raw?.daangn_manner_temperature ?? null,
+        daangnReviewCount: raw?.daangn_review_count ?? null,
       });
       const tx = inferMarketplaceTransaction(facts);
       // Wave 213 (2026-05-18): 실시간 marketBasis 계산 후 순현재차익 min/max 산출.
@@ -878,6 +918,8 @@ export async function GET(req: Request) {
         joongnaTrustScore: facts.joongnaTrustScore ?? null,
         joongnaSafeOrderSalesCount: facts.joongnaSafeOrderSalesCount ?? null,
         joongnaSafeOrderSalesText: facts.joongnaSafeOrderSalesText ?? null,
+        daangnMannerTemperature: facts.daangnMannerTemperature ?? null,
+        daangnReviewCount: facts.daangnReviewCount ?? null,
         productTradeType: facts.productTradeType ?? null,
         parcelFeeYn: facts.parcelFeeYn ?? null,
         tradeLabels: [...(facts.tradeLabels ?? [])],

@@ -29,6 +29,27 @@ export const dynamic = "force-dynamic";
 
 const MAX_DETAIL_ACCESS_NUM_COMMENT = 8;
 
+async function patchDaangnMannerTemperature(
+  pid: number,
+  mannerTemperature: number,
+  reviewCount: number | null,
+) {
+  await restFetch(`${tableUrl("mvp_raw_listings")}?pid=eq.${pid}`, {
+    method: "PATCH",
+    headers: { ...serviceHeaders(), Prefer: "return=minimal" },
+    body: JSON.stringify({
+      daangn_manner_temperature: mannerTemperature,
+      daangn_review_count: reviewCount,
+      updated_at: new Date().toISOString(),
+    }),
+  }).catch((err) => {
+    console.warn("[detail-access] daangn manner patch failed", {
+      pid,
+      err: err instanceof Error ? err.message : String(err),
+    });
+  });
+}
+
 async function isReadyPoolPid(pid: number): Promise<boolean> {
   const rows = await restFetch(
     `${tableUrl("mvp_candidate_pool")}?select=pid&pid=eq.${pid}&status=eq.ready&limit=1`,
@@ -66,7 +87,7 @@ async function loadExactPoolItem(pid: number) {
       url: string | null;
     }>>),
     restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,listing_state,detail_status,sale_status,num_comment,raw_json,daangn_region_id,daangn_region_name&pid=eq.${pid}&limit=1`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,listing_state,detail_status,sale_status,num_comment,raw_json,daangn_region_id,daangn_region_name,daangn_manner_temperature,daangn_review_count&pid=eq.${pid}&limit=1`,
       { headers },
     ).then((res) => res.json() as Promise<Array<{
       pid: number;
@@ -89,6 +110,8 @@ async function loadExactPoolItem(pid: number) {
       raw_json: Record<string, unknown> | null;
       daangn_region_id: string | null;
       daangn_region_name: string | null;
+      daangn_manner_temperature: number | null;
+      daangn_review_count: number | null;
     }>>),
     // Wave 714n (2026-05-23): 신발/의류 5-tier grading + chips fetch — 매물 클릭 시 모달 path 의 진짜 source.
     restFetch(
@@ -130,6 +153,8 @@ async function loadExactPoolItem(pid: number) {
     sellerReviewRating: meta?.shop_review_rating ?? null,
     sellerReviewCount: meta?.shop_review_count ?? 0,
     rawJson: meta?.raw_json,
+    daangnMannerTemperature: meta?.daangn_manner_temperature ?? null,
+    daangnReviewCount: meta?.daangn_review_count ?? null,
   });
   const tx = inferMarketplaceTransaction(facts);
   return {
@@ -158,6 +183,8 @@ async function loadExactPoolItem(pid: number) {
     joongnaTrustScore: facts.joongnaTrustScore ?? null,
     joongnaSafeOrderSalesCount: facts.joongnaSafeOrderSalesCount ?? null,
     joongnaSafeOrderSalesText: facts.joongnaSafeOrderSalesText ?? null,
+    daangnMannerTemperature: facts.daangnMannerTemperature ?? null,
+    daangnReviewCount: facts.daangnReviewCount ?? null,
     productTradeType: facts.productTradeType ?? null,
     parcelFeeYn: facts.parcelFeeYn ?? null,
     tradeLabels: [...(facts.tradeLabels ?? [])],
@@ -456,6 +483,15 @@ async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAcce
         : "이미 거래가 끝난 매물이라 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요.";
       return { ok: false, status: 404, error: "not_ready", message };
     }
+    const liveMannerTemperature = live.article.user.score ?? item.daangnMannerTemperature;
+    const liveReviewCount = live.article.user.reviewCount ?? item.daangnReviewCount;
+    if (
+      live.article.user.score != null &&
+      (item.daangnMannerTemperature !== live.article.user.score ||
+        item.daangnReviewCount !== live.article.user.reviewCount)
+    ) {
+      await patchDaangnMannerTemperature(item.pid, live.article.user.score, live.article.user.reviewCount);
+    }
     await patchPoolVerified(item.pid);
     return {
       ok: true,
@@ -464,6 +500,8 @@ async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAcce
         listingState: "active",
         saleStatus: live.saleStatus || item.saleStatus || "selling",
         commentCount: live.article.commentCount ?? item.commentCount,
+        daangnMannerTemperature: liveMannerTemperature,
+        daangnReviewCount: liveReviewCount,
       },
     };
   }

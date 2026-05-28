@@ -10,7 +10,7 @@ import {
 import { checkCronAuth } from "@/lib/cron-auth";
 import { acquireCronGuardWithSourceHealth, cronGuardSkipBody } from "@/lib/cron-guard";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
-import { scoreStage } from "@/lib/tick-pipeline";
+import { scoreStage, type ScoreStageOptions } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
 
 // Wave 724 (2026-05-23): p95 70.8s/max 88.3s 측정 → 150s buffer. 90s 거의 도달이라 spike fail risk.
@@ -32,8 +32,27 @@ function envInt(name: string, fallback: number, min: number, max: number): numbe
   return Math.max(min, Math.min(max, parsed));
 }
 
+function envIntAny(names: string[], fallback: number, min: number, max: number): number {
+  for (const name of names) {
+    const parsed = Number.parseInt(process.env[name] ?? "", 10);
+    if (Number.isFinite(parsed)) return Math.max(min, Math.min(max, parsed));
+  }
+  return fallback;
+}
+
 function scoreWorkerBudgetMs() {
   return envInt("PIPELINE_SCORE_WORKER_BUDGET_MS", 55_000, 5_000, 55_000);
+}
+
+function scoreStageOptions(): ScoreStageOptions {
+  const shardCount = envIntAny(["PIPELINE_SCORE_DAANGN_SHARD_COUNT", "DAANGN_INGEST_REGION_SHARD_COUNT"], 1, 1, 20);
+  const shardIndex = envIntAny(["PIPELINE_SCORE_DAANGN_SHARD_INDEX", "DAANGN_INGEST_REGION_SHARD_INDEX"], 0, 0, Math.max(0, shardCount - 1));
+  return {
+    lane: "a",
+    cleanup: true,
+    daangnShardCount: shardCount,
+    daangnShardIndex: shardIndex,
+  };
 }
 
 function requestMeta(req: NextRequest, authOk: boolean, authReason: string): CollectRunRequestMeta {
@@ -104,6 +123,7 @@ async function handleScoreWorker(req: NextRequest) {
 
   const config = loadPipelineRuntimeConfig();
   const budgetMs = scoreWorkerBudgetMs();
+  const scoreOptions = scoreStageOptions();
   const staleMarked = await markStaleCollectRuns(config.staleRunMinutes);
   const run = await startCollectRun({
     ...meta,
@@ -114,6 +134,7 @@ async function handleScoreWorker(req: NextRequest) {
         score: budgetMs,
       },
       scoreLimit: config.tickScoreLimit,
+      scoreOptions,
       staleMarkedBeforeRun: staleMarked,
     },
   });
@@ -126,7 +147,7 @@ async function handleScoreWorker(req: NextRequest) {
   }
 
   try {
-    const result = await scoreStage(Date.now() + budgetMs);
+    const result = await scoreStage(Date.now() + budgetMs, scoreOptions);
     await finishCollectRun(run.id, run.startedAt, toPipelineResult(result), {
       stages: { score: result },
       stageDurationsMs: { score: Date.now() - Date.parse(run.startedAt) },

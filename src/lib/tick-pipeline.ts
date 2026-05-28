@@ -91,7 +91,7 @@ import {
   type ListingOutputRow,
 } from "@/lib/score-output-mapper";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
-import { normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { normalizeMarketplaceSource, type KnownMarketplaceSource } from "@/lib/marketplace-source";
 // Wave 254.3 (2026-05-20): cap 1000 silent miss fix — restFetchAll page-loop.
 import { restFetchAll } from "@/lib/rest-paginated";
 
@@ -184,6 +184,7 @@ type ScorableRawRow = RawListingRow & {
   //   shoe 4011건 / bag 1018건 등 8000+ 매물에 박혀있는데 parseFashionMobility 가 안 씀.
   //   parseFashionMobility 안에서 bunjangLabelToConditionClass + resolveConditionClass 로 활용.
   bunjang_condition_label: string | null;
+  daangn_manner_temperature: number | null;
   pool_eligible?: boolean | null;
 };
 
@@ -347,6 +348,14 @@ const DEFAULT_SELLER_SEARCH_REFRESH_MS = 3 * 60 * 60 * 1000;
 const PARSED_PID_READ_CHUNK_SIZE = 300;
 const REST_KEY_READ_CHUNK_SIZE = 50;
 const TERMINAL_LISTING_STATES = new Set(["sold_confirmed", "disappeared", "archived"]);
+
+export type ScoreStageOptions = {
+  lane?: string;
+  sourceFilter?: KnownMarketplaceSource | null;
+  daangnShardCount?: number;
+  daangnShardIndex?: number;
+  cleanup?: boolean;
+};
 // Wave 713 (2026-05-23): v1→v2 bump — Wave 712 catalog 152 신설 후 stale 168K 매물 reparse.
 //   bias-free 검증으로 brand 매물 매칭 가능한데 title_triage_v1 단계에서 차단된 매물 대량 발견.
 //   v2 bump 시 isCurrentTitleTriageSkip false → cron이 점진적 reparse.
@@ -2135,18 +2144,38 @@ async function loadExistingScoreOutputs(pids: number[]): Promise<{
   return { listings, analyses };
 }
 
-async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
+function positiveModulo(value: number, modulo: number): number {
+  return ((value % modulo) + modulo) % modulo;
+}
+
+function scoreStageScope(row: Pick<ScorableRawRow, "pid" | "source">, options: ScoreStageOptions): boolean {
+  const source = normalizeMarketplaceSource(row.source);
+  if (options.sourceFilter && source !== options.sourceFilter) return false;
+
+  const shardCount = Math.max(1, Math.floor(Number(options.daangnShardCount ?? 1)));
+  if (source === "daangn" && shardCount > 1) {
+    const shardIndex = Math.max(0, Math.min(shardCount - 1, Math.floor(Number(options.daangnShardIndex ?? 0))));
+    const pid = Number(row.pid);
+    if (!Number.isFinite(pid)) return false;
+    return positiveModulo(pid, shardCount) === shardIndex;
+  }
+
+  return true;
+}
+
+async function loadScorableRows(limit: number, options: ScoreStageOptions = {}): Promise<ScorableRawRow[]> {
   // P0-5: event-driven score. score_dirty=true인 row만 처리한다.
   // search touch만 발생한 row(변경 없음)는 dirty 안 됨 → score 재계산 안 함.
   // raw upsert / detail enrichment / market invalidation 시점에 dirty=true로 마킹.
   const scoreDirtyAvailable = await rawScoreDirtySchemaAvailable();
   // Wave 132: num_comment 추가 — candidate-pool-builder가 >= 8 차단.
   // Wave 217 (2026-05-19): bunjang_condition_label 추가 — parseFashionMobility 가 metadata 활용.
-  const baseColumns = "pid,source,query,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,detail_status,listing_type,listing_type_override,listing_state,sale_status,num_comment,qty,description_hash,bunjang_condition_label,raw_json";
+  const baseColumns = "pid,source,query,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,detail_status,listing_type,listing_type_override,listing_state,sale_status,num_comment,qty,description_hash,bunjang_condition_label,raw_json,daangn_manner_temperature";
   const columns = scoreDirtyAvailable ? `${baseColumns},pool_eligible` : baseColumns;
   const dirtyFilter = scoreDirtyAvailable ? "&score_dirty=eq.true" : "";
-  const baseFilter = dirtyFilter;
-  const scorableBaseFilter = `${dirtyFilter}&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active`;
+  const sourceFilter = options.sourceFilter ? `&source=eq.${options.sourceFilter}` : "";
+  const baseFilter = `${dirtyFilter}${sourceFilter}`;
+  const scorableBaseFilter = `${dirtyFilter}${sourceFilter}&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active&or=(listing_type.eq.normal,listing_type_override.eq.normal)`;
   const buildUrl = (extraFilter: string, rowLimit: number) =>
     `${tableUrl("mvp_raw_listings")}?select=${columns}${baseFilter}${extraFilter}&order=last_seen_at.desc&limit=${rowLimit}`;
   const buildDirtyScorableUrl = (extraFilter: string, rowLimit: number) =>
@@ -2159,6 +2188,7 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
     const collect = (batch: ScorableRawRow[]) => {
       for (const row of batch) {
         if (scoreDirtyAvailable && !isScorableRawCandidate(row)) continue;
+        if (!scoreStageScope(row, options)) continue;
         const pid = Number(row.pid);
         if (!Number.isFinite(pid) || seenPids.has(pid)) continue;
         seenPids.add(pid);
@@ -2208,7 +2238,7 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   const daangnReserveLimit = Math.min(remainingAfterPool, Math.max(90, Math.floor(limit * 0.60)));
   const daangnRows = await (async () => {
     try {
-      return fetchScorableRows("&source=eq.daangn", daangnReserveLimit, seenPids);
+      return fetchScorableRows(options.sourceFilter === "daangn" ? "" : "&source=eq.daangn", daangnReserveLimit, seenPids);
     } catch (err) {
       console.warn("loadScorableRows daangn fetch failed (non-fatal)", err);
       return [];
@@ -2216,6 +2246,7 @@ async function loadScorableRows(limit: number): Promise<ScorableRawRow[]> {
   })();
   const remainingAfterDaangn = Math.max(0, limit - poolRows.length - daangnRows.length);
   if (remainingAfterDaangn === 0) return [...poolRows, ...daangnRows].slice(0, limit);
+  if (options.sourceFilter === "daangn") return [...poolRows, ...daangnRows].slice(0, limit);
 
   // Wave 807: fashion parser drift backfills should not starve behind a broad fresh-dirty backlog.
   // 신발/의류는 parser/catalog split 빈도가 높아서 재채점 큐에 올라온 뒤에도 별도 reserve lane이 필요하다.
@@ -3668,19 +3699,43 @@ async function loadFraudGroupHashes(): Promise<Set<string>> {
 //   사용자 reveal 직후 다음 매물 답답함 차단.
 // Wave 796 (2026-05-27): 당근 source 표본 부족 — sku 당 당근 매물 < 3 차단용.
 //   owner 정책: 당근은 안전결제 X 직거래라 시세 정확도 ↑ 필요.
-async function loadDaangnVolumeBySku(): Promise<Map<string, number>> {
+async function loadDaangnVolumeBySku(targetSkuIds?: Iterable<string>): Promise<Map<string, number>> {
   try {
     const since7dIso = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
     const all: Array<{ sku_id: string }> = [];
-    let offset = 0;
     const PAGE = 1000;
-    while (offset < 10000) {
-      const url = `${tableUrl("mvp_raw_listings")}?select=sku_id&source=eq.daangn&listing_state=eq.active&first_seen_at=gte.${encodeURIComponent(since7dIso)}&sku_id=not.is.null&order=first_seen_at.desc&limit=${PAGE}&offset=${offset}`;
-      const res = await restFetch(url, { headers: serviceHeaders() });
-      const rows = (await res.json()) as Array<{ sku_id: string }>;
-      all.push(...rows);
-      if (rows.length < PAGE) break;
-      offset += PAGE;
+    const target = Array.from(new Set(Array.from(targetSkuIds ?? [])
+      .map((id) => String(id ?? "").trim())
+      .filter(Boolean)));
+
+    if (target.length > 0) {
+      // Wave 904 (2026-05-28): exact target-SKU volume for the current score batch.
+      // The previous top-10K global scan could miss a SKU that is currently being
+      // scored, causing false `daangn_volume_below_3` invalidations even when that
+      // SKU had plenty of Daangn samples. Querying only batch SKUs is both cheaper
+      // and more accurate.
+      for (const chunk of chunkArray(target, 100)) {
+        const encoded = chunk.map(encodeURIComponent).join(",");
+        let offset = 0;
+        while (offset < 50_000) {
+          const url = `${tableUrl("mvp_raw_listings")}?select=sku_id&source=eq.daangn&listing_state=eq.active&first_seen_at=gte.${encodeURIComponent(since7dIso)}&sku_id=in.(${encoded})&order=first_seen_at.desc&limit=${PAGE}&offset=${offset}`;
+          const res = await restFetch(url, { headers: serviceHeaders() });
+          const rows = (await res.json()) as Array<{ sku_id: string }>;
+          all.push(...rows);
+          if (rows.length < PAGE) break;
+          offset += PAGE;
+        }
+      }
+    } else {
+      let offset = 0;
+      while (offset < 10000) {
+        const url = `${tableUrl("mvp_raw_listings")}?select=sku_id&source=eq.daangn&listing_state=eq.active&first_seen_at=gte.${encodeURIComponent(since7dIso)}&sku_id=not.is.null&order=first_seen_at.desc&limit=${PAGE}&offset=${offset}`;
+        const res = await restFetch(url, { headers: serviceHeaders() });
+        const rows = (await res.json()) as Array<{ sku_id: string }>;
+        all.push(...rows);
+        if (rows.length < PAGE) break;
+        offset += PAGE;
+      }
     }
     const counts = new Map<string, number>();
     for (const r of all) {
@@ -3694,23 +3749,44 @@ async function loadDaangnVolumeBySku(): Promise<Map<string, number>> {
   }
 }
 
-async function loadLowVolumeSkuIds(): Promise<Set<string>> {
+async function loadLowVolumeSkuIds(targetSkuIds?: Iterable<string>): Promise<Set<string>> {
   try {
     const since7dIso = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
     const since2dMs = Date.now() - 2 * 24 * 3600 * 1000;
+    const target = Array.from(new Set(Array.from(targetSkuIds ?? [])
+      .map((id) => String(id ?? "").trim())
+      .filter(Boolean)));
     const maxRows = Number(process.env.PIPELINE_LOW_VOLUME_MAX_ROWS ?? 1_000);
     const all: Array<{ sku_id: string; first_seen_at: string }> = [];
-    let offset = 0;
     const PAGE = 1000;
-    while (!Number.isFinite(maxRows) || maxRows <= 0 || all.length < maxRows) {
-      const pageLimit = Number.isFinite(maxRows) && maxRows > 0 ? Math.min(PAGE, maxRows - all.length) : PAGE;
-      if (pageLimit <= 0) break;
-      const url = `${tableUrl("mvp_raw_listings")}?select=sku_id,first_seen_at&sku_id=not.is.null&first_seen_at=gte.${encodeURIComponent(since7dIso)}&listing_state=eq.active&or=(sku_id.like.shoe-%2A,sku_id.like.clothing-%2A,sku_id.like.bag-%2A)&order=first_seen_at.desc&limit=${pageLimit}&offset=${offset}`;
-      const res = await restFetch(url, { headers: serviceHeaders() });
-      const rows = (await res.json()) as Array<{ sku_id: string; first_seen_at: string }>;
-      all.push(...rows);
-      if (rows.length < pageLimit) break;
-      offset += pageLimit;
+
+    if (target.length > 0) {
+      // Wave 904: exact batch-SKU counts avoid the global maxRows window
+      // under-counting popular SKUs that are outside the newest page.
+      for (const chunk of chunkArray(target, 100)) {
+        const encoded = chunk.map(encodeURIComponent).join(",");
+        let offset = 0;
+        while (offset < 50_000) {
+          const url = `${tableUrl("mvp_raw_listings")}?select=sku_id,first_seen_at&sku_id=in.(${encoded})&first_seen_at=gte.${encodeURIComponent(since7dIso)}&listing_state=eq.active&order=first_seen_at.desc&limit=${PAGE}&offset=${offset}`;
+          const res = await restFetch(url, { headers: serviceHeaders() });
+          const rows = (await res.json()) as Array<{ sku_id: string; first_seen_at: string }>;
+          all.push(...rows);
+          if (rows.length < PAGE) break;
+          offset += PAGE;
+        }
+      }
+    } else {
+      let offset = 0;
+      while (!Number.isFinite(maxRows) || maxRows <= 0 || all.length < maxRows) {
+        const pageLimit = Number.isFinite(maxRows) && maxRows > 0 ? Math.min(PAGE, maxRows - all.length) : PAGE;
+        if (pageLimit <= 0) break;
+        const url = `${tableUrl("mvp_raw_listings")}?select=sku_id,first_seen_at&sku_id=not.is.null&first_seen_at=gte.${encodeURIComponent(since7dIso)}&listing_state=eq.active&or=(sku_id.like.shoe-%2A,sku_id.like.clothing-%2A,sku_id.like.bag-%2A)&order=first_seen_at.desc&limit=${pageLimit}&offset=${offset}`;
+        const res = await restFetch(url, { headers: serviceHeaders() });
+        const rows = (await res.json()) as Array<{ sku_id: string; first_seen_at: string }>;
+        all.push(...rows);
+        if (rows.length < pageLimit) break;
+        offset += pageLimit;
+      }
     }
     const d7BySku = new Map<string, number>();
     const d2BySku = new Map<string, number>();
@@ -4703,8 +4779,10 @@ async function markStaleInvalidatedPoolRowsDirty(limit: number): Promise<number>
 //   → fashion 내부 SKU 강화 진행 중 매물도 평가 통과해야 ready 가니까 안전.
 //
 //   회복 가능 사유 (의도적 영구 차단 제외):
-//   - 시세/가격 변동: sku_median_unavailable, profit_below_pack_band, negative_resell_gap,
+//   - 시세/가격 변동: sku_median_unavailable, profit_below_pack_band(legacy),
+//     profit_not_positive_after_costs, negative_resell_gap,
 //     wave99_thin_market_n_lt_5
+//   - volume gate 재평가: daangn_volume_below_3, sku_low_volume_below_2d1_or_7d3
 //   - raw 복구: pool_eligible_false_residue
 //   - parser/policy stale: wave410_pool_key_drift, wave408/410_*_lane/category_*,
 //     wave498/500/501_stale_*, wave226_wrong_sku_match_cleanup, wave230_sku_id_null_stale,
@@ -4721,7 +4799,10 @@ const RECOVERABLE_INVALIDATED_REASONS = [
   "sku_median_unavailable",
   "wave99_thin_market_n_lt_5",
   "profit_below_pack_band",
+  "profit_not_positive_after_costs",
   "negative_resell_gap",
+  "daangn_volume_below_3",
+  "sku_low_volume_below_2d1_or_7d3",
   "pool_eligible_false_residue",
   "wave410_pool_key_drift",
   "wave408_category_internal_only_clothing_lane_required",
@@ -6230,39 +6311,45 @@ export async function housekeeperStage(): Promise<StageStats> {
   return stats;
 }
 
-export async function scoreStage(deadlineMs: number): Promise<StageStats> {
+export async function scoreStage(deadlineMs: number, options: ScoreStageOptions = {}): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
   const readyFloor = await loadPoolReadyFloorState();
-  const unscorableDirtyCleared = readyFloor.deferCleanup
+  const cleanupEnabled = options.cleanup !== false;
+  const unscorableDirtyCleared = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
     : await clearUnscorableScoreDirty(Math.max(config.tickScoreLimit * 20, 1000));
-  const nonScorableDirtyCleared = readyFloor.deferCleanup
+  const nonScorableDirtyCleared = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
     : await clearNonScorableScoreDirty(Math.max(config.tickScoreLimit * 2, 500));
-  const poolIneligibleResidues = readyFloor.deferCleanup
+  const poolIneligibleResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
     : await invalidatePoolIneligibleResidues(Math.max(config.tickScoreLimit * 2, 1000));
-  const poolLowSellerRatingResidues = readyFloor.deferCleanup
+  const poolLowSellerRatingResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
     : await invalidatePoolLowSellerRatingResidues(Math.max(config.tickScoreLimit * 2, 1000));
-  const poolStaleParserResidues = readyFloor.deferCleanup
+  const poolStaleParserResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
     : await invalidatePoolStaleParserResidues(Math.max(config.tickScoreLimit * 2, 1000));
-  const staleInvalidatedPoolDirtyMarked = readyFloor.deferCleanup
+  const staleInvalidatedPoolDirtyMarked = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
     : await markStaleInvalidatedPoolRowsDirty(Math.min(Math.max(config.tickScoreLimit, 100), 250));
-  const skuMedianUnavailableMarketInvalidations = readyFloor.deferCleanup
+  const skuMedianUnavailableMarketInvalidations = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
     : await enqueueSkuMedianUnavailableMarketInvalidations(Math.min(Math.max(config.tickScoreLimit, 100), 250));
   // Wave launch-44 (사용자 짚음 "invalidated to ready cron 해결책"):
   //   markRecoveredMarketInvalidatedPoolRowsDirty 호출 제거. recovery-worker (별도 cron) 로 이전.
   //   score_worker 부담 ↓ (33% timeout 대응) + recovery 자체 처리량 ↑ (큰 limit 가능).
-  const poolAiAuditResidues = readyFloor.deferCleanup
+  const poolAiAuditResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
     : await invalidatePoolAiAuditResidues(Math.max(config.tickScoreLimit * 2, 1000));
   stats.timingsMs = {
     ...(stats.timingsMs ?? {}),
+    score_lane_b_worker: options.lane === "b" ? 1 : 0,
+    score_source_filter_daangn: options.sourceFilter === "daangn" ? 1 : 0,
+    score_cleanup_enabled: cleanupEnabled ? 1 : 0,
+    score_daangn_shard_count: Math.max(1, Math.floor(Number(options.daangnShardCount ?? 1))),
+    score_daangn_shard_index: Math.max(0, Math.floor(Number(options.daangnShardIndex ?? 0))),
     score_pool_ready_floor_count: readyFloor.readyCount,
     score_pool_ready_floor_threshold: readyFloor.threshold,
     score_pool_ready_floor_cleanup_deferred: readyFloor.deferCleanup ? 1 : 0,
@@ -6275,7 +6362,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     score_sku_median_unavailable_market_invalidations: skuMedianUnavailableMarketInvalidations,
     score_pool_ai_audit_residue_invalidated_rows: poolAiAuditResidues,
   };
-  const rows = await loadScorableRows(config.tickScoreLimit);
+  const rows = await loadScorableRows(config.tickScoreLimit, options);
   if (rows.length === 0) return stats;
   const categoryReadiness = await loadCategoryReadinessMap();
   const laneReadiness = await loadLaneReadinessMap();
@@ -6593,6 +6680,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       // Wave 145 (2026-05-16): 셀러 신뢰도 → 가품 floor v2 tier 2 gate.
       shopReviewCount: row.shop_review_count ?? null,
       shopReviewRating: row.shop_review_rating ?? null,
+      daangnMannerTemperature: row.daangn_manner_temperature ?? null,
       poolEligible: row.pool_eligible ?? null,
       poolEligibleFalseStale: isStaleBunjangPoolEligibleFalse(row),
       ...shipping,
@@ -6670,6 +6758,21 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   // Wave 138b: 다중 ID 사기 그룹 hash set (같은 description + 다른 셀러 2+).
   // Wave 224 (2026-05-19): SKU 별 7d 매물 수 < 3 차단 — 사용자 정책 "매물 받쳐주는 거만".
   //   sparse SKU (LV variant / Yeezy colorway / 한정 Jordan / Hoka 모델 등) pool 진입 차단.
+  const daangnVolumeTargetSkuIds = new Set(
+    aiReview.rows
+      .filter((row) => normalizeMarketplaceSource(row.source) === "daangn")
+      .map((row) => row.skuId)
+      .filter((skuId): skuId is string => Boolean(skuId)),
+  );
+  const lowVolumeTargetSkuIds = new Set(
+    aiReview.rows
+      .map((row) => row.skuId)
+      .filter((skuId): skuId is string => (
+        Boolean(skuId) &&
+        (skuId.startsWith("shoe-") || skuId.startsWith("clothing-") || skuId.startsWith("bag-"))
+      )),
+  );
+
   const [existingPoolSellerCounts, fraudGroupHashes, lowVolumeSkuIds, daangnVolumeBySku] = await Promise.all([
     loadExistingPoolSellerCounts().catch((err) => {
       console.warn("loadExistingPoolSellerCounts failed (non-fatal)", err);
@@ -6679,11 +6782,11 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
       console.warn("loadFraudGroupHashes failed (non-fatal)", err);
       return new Set<string>();
     }),
-    loadLowVolumeSkuIds().catch((err) => {
+    loadLowVolumeSkuIds(lowVolumeTargetSkuIds).catch((err) => {
       console.warn("loadLowVolumeSkuIds failed (non-fatal)", err);
       return new Set<string>();
     }),
-    loadDaangnVolumeBySku().catch((err) => {
+    loadDaangnVolumeBySku(daangnVolumeTargetSkuIds).catch((err) => {
       console.warn("loadDaangnVolumeBySku failed (non-fatal)", err);
       return new Map<string, number>();
     }),
@@ -6743,10 +6846,10 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   });
   const guardedPoolInvalidations = await filterPoolInvalidationsForReadyFloor(poolInvalidations, readyFloor);
   await invalidatePoolEntries(guardedPoolInvalidations.entries);
-  const postPoolIneligibleResidues = readyFloor.deferCleanup
+  const postPoolIneligibleResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
     : await invalidatePoolIneligibleResidues(Math.max(config.tickScoreLimit * 2, 1000));
-  const postPoolStaleParserResidues = readyFloor.deferCleanup
+  const postPoolStaleParserResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
     : await invalidatePoolStaleParserResidues(Math.max(config.tickScoreLimit * 2, 1000));
 
@@ -6795,7 +6898,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     console.warn("[wave238] shadow audit failed (non-fatal)", err);
     (stats as Record<string, unknown>).aiL2ShadowAuditError = (err as Error).message?.slice(0, 200) ?? "unknown";
   }
-  const postAuditPoolAiAuditResidues = readyFloor.deferCleanup
+  const postAuditPoolAiAuditResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
     : await invalidatePoolAiAuditResidues(Math.max(config.tickScoreLimit * 2, 1000));
   stats.timingsMs = {

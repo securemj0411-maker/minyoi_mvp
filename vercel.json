@@ -13,6 +13,10 @@
       "schedule": "* * * * *"
     },
     {
+      "path": "/api/cron/score-worker-b",
+      "schedule": "* * * * *"
+    },
+    {
       "path": "/api/cron/recovery-worker",
       "schedule": "* * * * *"
     },
@@ -55,6 +59,14 @@
     {
       "path": "/api/cron/daangn-worker-b",
       "schedule": "1,6,11,16,21,26,31,36,41,46,51,56 * * * *"
+    },
+    {
+      "path": "/api/cron/daangn-worker-c",
+      "schedule": "4,9,14,19,24,29,34,39,44,49,54,59 * * * *"
+    },
+    {
+      "path": "/api/cron/daangn-detail-worker",
+      "schedule": "0,5,10,15,20,25,30,35,40,45,50,55 * * * *"
     },
     {
       "path": "/api/cron/daangn-price-sweep-worker",
