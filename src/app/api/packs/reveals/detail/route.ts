@@ -10,7 +10,7 @@ import {
   fetchReferencePrices,
   fetchV7SiblingPresence,
   loadRevealListingDetail,
-  marketBasisForCandidateWithLiveSourceFallback,
+  marketBasisForCandidate,
   velocityBasisForCandidate,
 } from "@/lib/pack-open";
 import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
@@ -120,16 +120,17 @@ async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
   const marketplaceSource = normalizeMarketplaceSource(raw?.source ?? raw?.seller_source);
 
   const marketBasis = comparableKey
-    ? await marketBasisForCandidateWithLiveSourceFallback(
+    ? marketBasisForCandidate(
         comparableKey,
         raw?.sku_name ?? raw?.name ?? "",
         marketStats,
         parsed?.condition_class ?? null,
         referencePrices,
         v7SiblingPresence,
-        marketStatsPerSource,
-        marketplaceSource,
-        pid,
+        {
+          listingSource: marketplaceSource,
+          perSourceMarketStats: marketStatsPerSource,
+        },
       )
     : null;
 

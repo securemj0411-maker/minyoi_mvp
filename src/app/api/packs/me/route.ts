@@ -14,7 +14,7 @@ import {
   fetchLatestMarketStatsPerSource,
   fetchLatestMarketVelocity,
   fetchV7SiblingPresence,
-  marketBasisForCandidateWithLiveSourceFallback,
+  marketBasisForCandidate,
   velocityBasisForCandidate,
 } from "@/lib/pack-open";
 import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
@@ -834,16 +834,17 @@ export async function GET(req: Request) {
       // DB current_profit_*는 cron lag/cache 값이라, 있더라도 stale할 수 있다. 사용자가 /me를
       // 새로고침하면 그 시점의 latest market/reference median 기준으로 차익을 다시 보여준다.
       const computedMarketBasis = comparableKey
-        ? await marketBasisForCandidateWithLiveSourceFallback(
+        ? marketBasisForCandidate(
             comparableKey,
             skuName ?? "",
             marketStats,
             conditionClassByPid.get(Number(reveal.pid)) ?? null,
             referencePrices,
             v7SiblingPresence,
-            marketStatsPerSource,
-            marketplaceSource,
-            Number(reveal.pid),
+            {
+              listingSource: marketplaceSource,
+              perSourceMarketStats: marketStatsPerSource,
+            },
           )
         : null;
       const dbCurrentProfitMin = reveal.current_profit_min ?? null;

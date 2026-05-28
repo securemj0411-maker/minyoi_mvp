@@ -84,7 +84,7 @@ export default function MarketHistoryChart({
   comparableKey: string | null;
   currentPrice?: number | null;
   conditionClass?: string | null;
-  priceSource?: "reference" | "market" | "v3_pending_rematch" | null;
+  priceSource?: "reference" | "market" | "source_market" | "v3_pending_rematch" | null;
   basisSource?: string | null;
   basisSourceLabel?: string | null;
   referencePrice?: number | null;
