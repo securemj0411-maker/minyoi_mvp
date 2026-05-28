@@ -42,6 +42,7 @@ type Comparable = {
   conditionConfidence?: number | null;
   conditionFlags?: Record<string, unknown> | null;
   conditionChips?: string[] | null;
+  conditionClass?: string | null;
 };
 
 function trimComparableOutlierRows(rows: Array<Record<string, unknown>>) {
@@ -56,6 +57,36 @@ function trimComparableOutlierRows(rows: Array<Record<string, unknown>>) {
     const price = Number(row.price ?? 0);
     return Number.isFinite(price) && price > 0 && price >= minAllowed && price <= maxAllowed;
   });
+}
+
+function trimComparableDisplayRows(
+  rows: Array<Record<string, unknown>>,
+  marketStats: Record<string, unknown> | null,
+) {
+  const madRows = trimComparableOutlierRows(rows);
+  const p25 = Number(marketStats?.p25_price ?? 0);
+  const p75 = Number(marketStats?.p75_price ?? 0);
+  if (!Number.isFinite(p25) || !Number.isFinite(p75) || p25 <= 0 || p75 <= 0 || p75 < p25) {
+    return madRows;
+  }
+
+  // Display is for user trust, not for recomputing market price. If the daily market row already has
+  // a trusted middle band, show that band first so stale/aspirational high asks do not look like
+  // the basis of the estimate.
+  const middleBandRows = madRows.filter((row) => {
+    const price = Number(row.price ?? 0);
+    return Number.isFinite(price) && price >= p25 && price <= p75;
+  });
+  if (middleBandRows.length >= Math.min(5, madRows.length)) return middleBandRows;
+
+  const iqr = Math.max(1, p75 - p25);
+  const lowFence = Math.max(1, p25 - iqr * 1.5);
+  const highFence = p75 + iqr * 1.5;
+  const fenceRows = madRows.filter((row) => {
+    const price = Number(row.price ?? 0);
+    return Number.isFinite(price) && price >= lowFence && price <= highFence;
+  });
+  return fenceRows.length >= Math.min(5, madRows.length) ? fenceRows : madRows;
 }
 
 export async function GET(
@@ -225,11 +256,17 @@ export async function GET(
         }
         const riskByPid = new Map(analysisRows.map((r) => [Number(r.pid), Number(r.risk_hits ?? 0)]));
         const excludeByPid = new Map<number, boolean>();
+        const strictConditionSampleCount = conditionClass == null
+          ? 0
+          : parsedRowsForCond.filter((p) => p.condition_class === conditionClass).length;
+        const requireKnownCondition = conditionClass != null && strictConditionSampleCount >= 5;
         // 2026-05-17 v46 cleanup: COMPARABLE_EXCLUDE_NOTES condition-policy.ts 단일 source 로 옮김 (drift 차단).
         // 사용자 코멘트 #92 (pid 406610698) 가 정확히 이 drift 지적 — 시세 sample 제외 list 와 비교군 UI 제외 list 가 불일치.
         // 2026-05-16 (사용자 코멘트 #95 pid 406094154): 본 매물 = "사용감 많음" (worn) 인데 비교군에 mint 매물.
         // wave 130 condition_class 시세 분리는 작동하지만 비교군 UI 가 condition 무관 다 표시 = 사용자 헷갈림.
-        // 본 매물 condition_class 와 같은 class 매물만 비교군 list 표시. null 이면 필터 안 함 (옛 매물 호환).
+        // 본 매물 condition_class 와 같은 class 매물만 비교군 list 표시.
+        // Wave 896: 같은 상태 표본이 5개 이상 있으면 condition_class null 옛 row도 제외한다.
+        //   "SSS급" 같은 제목이 null로 남아 target worn 라벨을 달고 보이는 신뢰 손상을 막는다.
         for (const p of parsedRowsForCond) {
           const notes = (p.parsed_json?.condition_notes as string[] | undefined) ?? [];
           if (COMPARABLE_EXCLUDE_NOTES.some((n) => notes.includes(n))) {
@@ -237,9 +274,15 @@ export async function GET(
             continue;
           }
           // condition_class 분리: 본 매물 cc != null && 비교 매물 cc != 본 매물 cc → exclude.
-          if (conditionClass != null && p.condition_class != null && p.condition_class !== conditionClass) {
-            excludeByPid.set(Number(p.pid), true);
-            continue;
+          if (conditionClass != null) {
+            if (p.condition_class == null && requireKnownCondition) {
+              excludeByPid.set(Number(p.pid), true);
+              continue;
+            }
+            if (p.condition_class != null && p.condition_class !== conditionClass) {
+              excludeByPid.set(Number(p.pid), true);
+              continue;
+            }
           }
           // Wave launch-78: 신발/의류 5-tier 분리. 본 D급에 A급 매물 섞이는 문제 차단.
           //   본 매물 tier S/A/B/C/D 면 비교 매물도 같은 tier 만 keep.
@@ -301,12 +344,14 @@ export async function GET(
           }
           return [...bestPerSeller.values(), ...noSellerRows];
         })();
-        const displayRows = trimComparableOutlierRows(dedupedBySeller);
+        const displayRows = trimComparableDisplayRows(dedupedBySeller, marketStats);
+        const parsedByPid = new Map(parsedRowsForCond.map((row) => [Number(row.pid), row]));
         comparables = displayRows.map((row) => {
           const rowPid = Number(row.pid);
           const marketplaceSource = normalizeMarketplaceSource((row.source as string | null) ?? (row.seller_source as string | null));
           const listingUrl = listingUrlForSource(rowPid, row.url as string | null, marketplaceSource);
           const grading = gradingByPid.get(rowPid);
+          const parsedRow = parsedByPid.get(rowPid);
           return {
             pid: rowPid,
             name: String(row.name ?? ""),
@@ -326,6 +371,7 @@ export async function GET(
             conditionConfidence: grading?.confidence ?? null,
             conditionFlags: grading?.flags ?? null,
             conditionChips: grading?.chips ?? null,
+            conditionClass: parsedRow?.condition_class ?? null,
           };
         });
       }

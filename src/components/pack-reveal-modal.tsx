@@ -1415,6 +1415,17 @@ function tierShortLabel(tier: string | null | undefined): string | null {
   return null;
 }
 
+function conditionShortLabel(conditionClass: string | null | undefined): string | null {
+  if (conditionClass === "unopened") return "미개봉";
+  if (conditionClass === "mint") return "S급";
+  if (conditionClass === "clean") return "A급";
+  if (conditionClass === "worn") return "사용감 있는";
+  if (conditionClass === "flawed") return "하자 있는";
+  if (conditionClass === "low_batt") return "배터리 약한";
+  if (conditionClass === "normal") return "비슷한 상태";
+  return null;
+}
+
 // Wave launch-81 (사용자 정정 — 3 화면 비교 매물 통일):
 //   운영자풀(market-source-debug.tsx) 패턴 — `같은 등급(X급) > 인접 등급(±1) > 그 외 > 등급 정보 없음`
 //   을 상세페이지/쉬운모드에도 적용. 신발/의류 대상 (옛 conditionClass 매물은 grouping 적용 X).
@@ -2580,6 +2591,7 @@ type ComparableListing = {
   // Wave launch-78: 신발/의류는 비교 매물 각자 tier 표시 (옛 conditionClass 일괄 "A급" 표시 차단).
   // API(/api/listings/[pid]/market-source) 가 이미 부여하고 있음.
   conditionTier?: string | null;
+  conditionClass?: string | null;
 };
 
 function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; mode?: "simple" | "detailed" }) {
@@ -2634,14 +2646,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
       const tierLabel = tierShortLabel(card.conditionTier);
       if (tierLabel) return tierLabel;
     }
-    return cc === "unopened" ? "미개봉"
-      : cc === "mint" ? "S급"
-      : cc === "clean" ? "A급"
-      : cc === "worn" ? "사용감 있는"
-      : cc === "flawed" ? "하자 있는"
-      : cc === "low_batt" ? "배터리 약한"
-      : cc === "normal" ? "비슷한 상태"
-      : null;
+    return conditionShortLabel(cc);
   })();
 
   const totalListings = listings?.length ?? 0;
@@ -2766,7 +2771,9 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                       : null;
                   const needsBorder = hasMyItemRow || overallIdx > 0;
                   overallIdx += 1;
-                  const itemTierLabel = ourTier ? (tierShortLabel(item.conditionTier) ?? ccLabel) : ccLabel;
+                  const itemConditionLabel = ourTier
+                    ? (tierShortLabel(item.conditionTier) ?? "등급 정보 부족")
+                    : (conditionShortLabel(item.conditionClass) ?? "상태 정보 부족");
                   return (
                     <li
                       key={item.pid}
@@ -2800,9 +2807,9 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                             <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                               {evidenceType}
                             </span>
-                            {itemTierLabel ? (
+                            {itemConditionLabel ? (
                               <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                                {itemTierLabel}
+                                {itemConditionLabel}
                               </span>
                             ) : null}
                             {item.marketplaceLabel ? (
@@ -5066,14 +5073,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
       const tierLabel = tierShortLabel(card.conditionTier);
       if (tierLabel) return tierLabel;
     }
-    return cc === "unopened" ? "미개봉"
-      : cc === "mint" ? "S급"
-      : cc === "clean" ? "A급"
-      : cc === "worn" ? "사용감 있는"
-      : cc === "flawed" ? "하자 있는"
-      : cc === "low_batt" ? "배터리 약한"
-      : cc === "normal" ? "비슷한 상태"
-      : "비슷한 상태";
+    return conditionShortLabel(cc) ?? "비슷한 상태";
   })();
 
   useEffect(() => {
@@ -5193,7 +5193,9 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
                   const diff = item.price - card.price;
                   const diffLabel = diff > 0 ? `이 매물보다 ${krw(diff)} 비쌈` : diff < 0 ? `이 매물보다 ${krw(Math.abs(diff))} 쌈` : "비슷한 가격";
                   const isSold = item.listingState === "sold" || item.saleStatus === "SOLD_OUT" || item.saleStatus === "sold";
-                  const itemTierLabel = ourTier ? tierShortLabel(item.conditionTier) : null;
+                  const itemConditionLabel = ourTier
+                    ? tierShortLabel(item.conditionTier)
+                    : conditionShortLabel(item.conditionClass);
                   const seenLabel = seenAgoLabel(item.lastSeenAt);
                   const sourceLabel = item.marketplaceLabel ?? null;
                   return (
@@ -5220,9 +5222,9 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <span className="line-clamp-1 text-[12px] font-black text-[#172019] dark:text-zinc-100">{item.name || "비교 매물"}</span>
-                          {itemTierLabel ? (
+                          {itemConditionLabel ? (
                             <span className="shrink-0 rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                              {itemTierLabel}
+                              {itemConditionLabel}
                             </span>
                           ) : null}
                         </div>
