@@ -46,6 +46,15 @@ type PoolRow = {
 
 type PriceBucketKey = (typeof PRICE_BUCKETS)[number]["key"];
 
+const DAANGN_PROVINCE_RE = /^(서울특별시|경기도|인천광역시|부산광역시|대구광역시|광주광역시|대전광역시|울산광역시|세종특별자치시|강원특별자치도|강원도|충청북도|충청남도|전북특별자치도|전라북도|전라남도|경상북도|경상남도|제주특별자치도)$/;
+
+type DaangnRegionParts = {
+  province: string;
+  district: string;
+  neighborhood: string;
+  full: string;
+};
+
 function priceBucketFor(price: number): PriceBucketKey {
   for (const bucket of PRICE_BUCKETS) {
     if (bucket.min != null && price < bucket.min) continue;
@@ -53,6 +62,75 @@ function priceBucketFor(price: number): PriceBucketKey {
     return bucket.key;
   }
   return "gte_150";
+}
+
+function splitDaangnRegion(regionId: string | number | null | undefined, regionName: string | null | undefined): DaangnRegionParts | null {
+  const full = resolveDaangnFullRegion(regionId, regionName);
+  if (!full) return null;
+  const parts = full.split(/\s+/).map((part) => part.trim()).filter(Boolean);
+  if (parts.length === 0) return null;
+  if (DAANGN_PROVINCE_RE.test(parts[0])) {
+    if (parts.length === 1) return { province: parts[0], district: "", neighborhood: "", full };
+    if (parts.length === 2) return { province: parts[0], district: parts[1], neighborhood: "", full };
+    return {
+      province: parts[0],
+      district: parts.slice(1, -1).join(" "),
+      neighborhood: parts.at(-1) ?? "",
+      full,
+    };
+  }
+  if (parts.length === 1) return { province: "기타/미상", district: parts[0], neighborhood: "", full };
+  return {
+    province: parts[0],
+    district: parts.slice(1, -1).join(" "),
+    neighborhood: parts.at(-1) ?? "",
+    full,
+  };
+}
+
+function daangnRegionMatches(parts: DaangnRegionParts | null, filters: {
+  province: string | null;
+  district: string | null;
+  neighborhood: string | null;
+}) {
+  if (!parts) return false;
+  if (filters.province && parts.province !== filters.province) return false;
+  if (filters.district && parts.district !== filters.district) return false;
+  if (filters.neighborhood && parts.neighborhood !== filters.neighborhood) return false;
+  return true;
+}
+
+async function loadDaangnRegionScopedPids(input: {
+  statusFilter: string;
+  province: string | null;
+  district: string | null;
+  neighborhood: string | null;
+}) {
+  const poolRows = await restFetchAll<{ pid: number }>(
+    `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.${encodeURIComponent(input.statusFilter)}`,
+    { maxRows: 20_000, orderBy: "pid.asc" },
+  );
+  const poolPids = poolRows.map((row) => Number(row.pid));
+  if (poolPids.length === 0) return [];
+
+  const out: number[] = [];
+  for (let i = 0; i < poolPids.length; i += 500) {
+    const chunk = poolPids.slice(i, i + 500);
+    const res = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,daangn_region_id,daangn_region_name&source=eq.daangn&pid=in.(${chunk.join(",")})&limit=5000`,
+      { headers: serviceHeaders() },
+    );
+    const rows = (await res.json()) as Array<{
+      pid: number;
+      daangn_region_id: string | null;
+      daangn_region_name: string | null;
+    }>;
+    for (const row of rows) {
+      const parts = splitDaangnRegion(row.daangn_region_id, row.daangn_region_name);
+      if (daangnRegionMatches(parts, input)) out.push(Number(row.pid));
+    }
+  }
+  return out;
 }
 
 export async function GET(req: NextRequest) {
@@ -74,6 +152,10 @@ export async function GET(req: NextRequest) {
   const priceBucket = PRICE_BUCKETS.some((item) => item.key === priceBucketParam) ? priceBucketParam : null;
   const skuFilter = url.searchParams.get("sku")?.trim() || null;
   const sourceFilter = url.searchParams.get("source")?.trim().toLowerCase() || null;
+  const daangnRegionProvince = url.searchParams.get("daangnRegion1")?.trim() || null;
+  const daangnRegionDistrict = url.searchParams.get("daangnRegion2")?.trim() || null;
+  const daangnRegionNeighborhood = url.searchParams.get("daangnRegion3")?.trim() || null;
+  const hasDaangnRegionFilter = Boolean(daangnRegionProvince || daangnRegionDistrict || daangnRegionNeighborhood);
   // Wave 176 (2026-05-17): 검색어 — 매물명/SKU명/comparable_key/pid 통합 검색.
   // 운영자가 특정 매물/모델 찾을 때 (예: "327", "Gazelle", "shoe|nb_327").
   const searchQuery = url.searchParams.get("q")?.trim() || null;
@@ -136,6 +218,22 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
     }
     applyPidScope(sourcePids);
+  }
+
+  if (hasDaangnRegionFilter) {
+    if (sourceFilter && normalizeMarketplaceSource(sourceFilter) !== "daangn") {
+      return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
+    }
+    const regionPids = await loadDaangnRegionScopedPids({
+      statusFilter,
+      province: daangnRegionProvince,
+      district: daangnRegionDistrict,
+      neighborhood: daangnRegionNeighborhood,
+    });
+    if (regionPids.length === 0) {
+      return NextResponse.json({ page, pageSize, total: 0, totalPages: 1, items: [], stats: null });
+    }
+    applyPidScope(regionPids);
   }
 
   // SKU filter — mvp_candidate_pool에는 sku_id 컬럼 없음 → mvp_raw_listings에서 pid pre-filter
@@ -525,6 +623,7 @@ export async function GET(req: NextRequest) {
       byPriceBucket: Array<{ key: string; label: string; ready_count: number }>;
       byCategory: Array<{ category: string; ready_count: number }>;
       bySource: Array<{ source: string; label: string; ready_count: number }>;
+      byDaangnRegion: Array<{ province: string; district: string; neighborhood: string; full: string; ready_count: number }>;
     } | null = null;
     if (page === 1) {
       const bands = [1, 2, 3];
@@ -561,6 +660,7 @@ export async function GET(req: NextRequest) {
       const skuCount = new Map<string, { name: string | null; count: number }>();
       const priceBucketCount = new Map<string, number>();
       const sourceCount = new Map<string, number>();
+      const daangnRegionCount = new Map<string, { province: string; district: string; neighborhood: string; full: string; count: number }>();
       if (readyPids.length > 0) {
         // chunk fetch
         const chunkSize = 500;
@@ -568,7 +668,7 @@ export async function GET(req: NextRequest) {
           const chunk = readyPids.slice(i, i + chunkSize);
           const [rawRes, listingRes] = await Promise.all([
             restFetch(
-              `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name,source,seller_source&pid=in.(${chunk.join(",")})`,
+              `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sku_name,source,seller_source,daangn_region_id,daangn_region_name&pid=in.(${chunk.join(",")})`,
               { headers: serviceHeaders() },
             ),
             restFetch(
@@ -576,7 +676,14 @@ export async function GET(req: NextRequest) {
               { headers: serviceHeaders() },
             ),
           ]);
-          const rows = (await rawRes.json()) as Array<{ sku_id: string | null; sku_name: string | null; source: string | null; seller_source: string | null }>;
+          const rows = (await rawRes.json()) as Array<{
+            sku_id: string | null;
+            sku_name: string | null;
+            source: string | null;
+            seller_source: string | null;
+            daangn_region_id: string | null;
+            daangn_region_name: string | null;
+          }>;
           for (const r of rows) {
             const sku = r.sku_id ?? "(no_sku)";
             const entry = skuCount.get(sku) ?? { name: r.sku_name, count: 0 };
@@ -585,6 +692,15 @@ export async function GET(req: NextRequest) {
             skuCount.set(sku, entry);
             const source = normalizeMarketplaceSource(r.source ?? r.seller_source);
             sourceCount.set(source, (sourceCount.get(source) ?? 0) + 1);
+            if (source === "daangn") {
+              const parts = splitDaangnRegion(r.daangn_region_id, r.daangn_region_name);
+              if (parts) {
+                const key = `${parts.province}\u0000${parts.district}\u0000${parts.neighborhood}`;
+                const entry = daangnRegionCount.get(key) ?? { ...parts, count: 0 };
+                entry.count += 1;
+                daangnRegionCount.set(key, entry);
+              }
+            }
           }
           const listingRows = (await listingRes.json()) as Array<{ price: number | null }>;
           for (const row of listingRows) {
@@ -609,8 +725,17 @@ export async function GET(req: NextRequest) {
       const bySource = [...sourceCount.entries()]
         .map(([source, count]) => ({ source, label: marketplaceSourceLabel(source), ready_count: count }))
         .sort((a, b) => b.ready_count - a.ready_count);
+      const byDaangnRegion = [...daangnRegionCount.values()]
+        .map((row) => ({
+          province: row.province,
+          district: row.district,
+          neighborhood: row.neighborhood,
+          full: row.full,
+          ready_count: row.count,
+        }))
+        .sort((a, b) => b.ready_count - a.ready_count || a.full.localeCompare(b.full, "ko"));
 
-      stats = { byBandStatus, totals, totalAll, bySku, byPriceBucket, byCategory, bySource };
+      stats = { byBandStatus, totals, totalAll, bySku, byPriceBucket, byCategory, bySource, byDaangnRegion };
     }
 
     return NextResponse.json({

@@ -96,8 +96,12 @@ type Resp = {
     byPriceBucket: Array<{ key: string; label: string; ready_count: number }>;
     byCategory: Array<{ category: string; ready_count: number }>;
     bySource: Array<{ source: string; label: string; ready_count: number }>;
+    byDaangnRegion: Array<{ province: string; district: string; neighborhood: string; full: string; ready_count: number }>;
   } | null;
 };
+
+type DaangnRegionRow = NonNullable<Resp["stats"]>["byDaangnRegion"][number];
+type RegionOption = { value: string; ready_count: number };
 
 const krw = (v: number) => `₩${Math.round(v).toLocaleString("ko-KR")}`;
 
@@ -167,6 +171,22 @@ function categoryLabel(category: string) {
   return CATEGORY_LABEL[category] ?? category;
 }
 
+function aggregateRegionOptions(rows: DaangnRegionRow[], keyOf: (row: DaangnRegionRow) => string) {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const key = keyOf(row).trim();
+    if (!key) continue;
+    counts.set(key, (counts.get(key) ?? 0) + row.ready_count);
+  }
+  return [...counts.entries()]
+    .map(([value, ready_count]) => ({ value, ready_count }))
+    .sort((a, b) => b.ready_count - a.ready_count || a.value.localeCompare(b.value, "ko"));
+}
+
+function regionOptionLabel(option: RegionOption) {
+  return `${option.value} — ${option.ready_count.toLocaleString()}건`;
+}
+
 export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings" }: { endpoint?: string } = {}) {
   const [data, setData] = useState<Resp | null>(null);
   const [stats, setStats] = useState<Resp["stats"]>(null);
@@ -180,6 +200,9 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
   const [priceBucket, setPriceBucket] = useState<string>("");
   const [sku, setSku] = useState<string>("");
   const [source, setSource] = useState<string>("");
+  const [daangnRegion1, setDaangnRegion1] = useState<string>("");
+  const [daangnRegion2, setDaangnRegion2] = useState<string>("");
+  const [daangnRegion3, setDaangnRegion3] = useState<string>("");
   const [sort, setSort] = useState("newest_added");
   // Wave 176 (2026-05-17): 검색 — searchDraft는 input 입력 buffer, searchQuery는 실제 fetch 파라미터.
   // Enter 또는 🔍 버튼 클릭 시 draft → query 적용 (typing 마다 fetch 안 함, UX 부담 ↓).
@@ -196,6 +219,9 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
       if (priceBucket) params.set("priceBucket", priceBucket);
       if (sku) params.set("sku", sku);
       if (source) params.set("source", source);
+      if (daangnRegion1) params.set("daangnRegion1", daangnRegion1);
+      if (daangnRegion2) params.set("daangnRegion2", daangnRegion2);
+      if (daangnRegion3) params.set("daangnRegion3", daangnRegion3);
       if (searchQuery) params.set("q", searchQuery);
       const res = await fetch(`${endpoint}?${params}`, { credentials: "include" });
       if (!res.ok) {
@@ -211,7 +237,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, status, band, category, priceBucket, sku, source, sort, searchQuery, endpoint]);
+  }, [page, pageSize, status, band, category, priceBucket, sku, source, daangnRegion1, daangnRegion2, daangnRegion3, sort, searchQuery, endpoint]);
 
   // Wave 176: Enter / 🔍 버튼 / X 클릭 시 draft → query 적용 + 페이지 리셋.
   const applySearch = useCallback(() => {
@@ -231,6 +257,19 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
     setPriceBucket("");
     setSku("");
     setSource("");
+    setDaangnRegion1("");
+    setDaangnRegion2("");
+    setDaangnRegion3("");
+    setPage(1);
+  }, []);
+
+  const changeSource = useCallback((next: string) => {
+    setSource(next);
+    if (next !== "daangn") {
+      setDaangnRegion1("");
+      setDaangnRegion2("");
+      setDaangnRegion3("");
+    }
     setPage(1);
   }, []);
 
@@ -259,6 +298,19 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
     const start = Math.max(1, Math.min(page - 4, totalPages - max + 1));
     return Array.from({ length: max }, (_, i) => start + i);
   })();
+  const daangnRegionRows = stats?.byDaangnRegion ?? [];
+  const daangnProvinceOptions = aggregateRegionOptions(daangnRegionRows, (row) => row.province);
+  const daangnDistrictOptions = aggregateRegionOptions(
+    daangnRegionRows.filter((row) => !daangnRegion1 || row.province === daangnRegion1),
+    (row) => row.district,
+  );
+  const daangnNeighborhoodOptions = aggregateRegionOptions(
+    daangnRegionRows.filter((row) =>
+      (!daangnRegion1 || row.province === daangnRegion1) &&
+      (!daangnRegion2 || row.district === daangnRegion2),
+    ),
+    (row) => row.neighborhood,
+  );
 
   return (
     <section className="space-y-4 px-3 py-4 sm:px-4 sm:py-6 lg:px-8 lg:py-8">
@@ -340,7 +392,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     <button
                       key={row.source}
                       type="button"
-                      onClick={() => { setSource(row.source); setPage(1); }}
+                      onClick={() => changeSource(row.source)}
                       className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-black text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
                     >
                       <MarketplaceSourceBadge source={row.source} label={row.label} />
@@ -413,6 +465,55 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     {categoryLabel(row.category)} <span className="font-mono">{row.ready_count.toLocaleString()}</span>
                   </button>
                 ))}
+              </div>
+            </div>
+            <div className="rounded-lg border border-zinc-200 bg-white p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div className="font-bold text-zinc-700 dark:text-zinc-200">당근 지역별 ready</div>
+                {(daangnRegion1 || daangnRegion2 || daangnRegion3) ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDaangnRegion1("");
+                      setDaangnRegion2("");
+                      setDaangnRegion3("");
+                      setPage(1);
+                    }}
+                    className="text-[10px] font-black text-blue-700 hover:underline dark:text-blue-300"
+                  >
+                    지역 해제
+                  </button>
+                ) : null}
+              </div>
+              <div className="flex max-h-24 flex-wrap gap-1.5 overflow-y-auto pr-1">
+                {(daangnRegion2 ? daangnNeighborhoodOptions : daangnRegion1 ? daangnDistrictOptions : daangnProvinceOptions)
+                  .slice(0, 24)
+                  .map((row) => (
+                    <button
+                      key={row.value}
+                      type="button"
+                      onClick={() => {
+                        setSource("daangn");
+                        if (!daangnRegion1) {
+                          setDaangnRegion1(row.value);
+                          setDaangnRegion2("");
+                          setDaangnRegion3("");
+                        } else if (!daangnRegion2) {
+                          setDaangnRegion2(row.value);
+                          setDaangnRegion3("");
+                        } else {
+                          setDaangnRegion3(row.value);
+                        }
+                        setPage(1);
+                      }}
+                      className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-black text-zinc-700 transition hover:border-blue-300 hover:bg-blue-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+                    >
+                      {row.value} <span className="font-mono">{row.ready_count.toLocaleString()}</span>
+                    </button>
+                  ))}
+                {daangnProvinceOptions.length === 0 && (
+                  <span className="text-[11px] text-zinc-400 dark:text-zinc-500">당근 ready 지역 데이터 없음</span>
+                )}
               </div>
             </div>
           </div>
@@ -488,7 +589,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
               }
             }
             return (
-              <select value={source} onChange={(e) => { setSource(e.target.value); setPage(1); }} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">
+              <select value={source} onChange={(e) => changeSource(e.target.value)} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">
                 <option value="">출처 전체</option>
                 {merged.map((row) => (
                   <option key={row.source} value={row.source}>
@@ -498,6 +599,60 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
               </select>
             );
           })()}
+          {stats && daangnProvinceOptions.length > 0 && (
+            <select
+              value={daangnRegion1}
+              onChange={(e) => {
+                const next = e.target.value;
+                setDaangnRegion1(next);
+                setDaangnRegion2("");
+                setDaangnRegion3("");
+                if (next) setSource("daangn");
+                setPage(1);
+              }}
+              className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800"
+            >
+              <option value="">당근 시/도 전체</option>
+              {daangnProvinceOptions.map((row) => (
+                <option key={row.value} value={row.value}>{regionOptionLabel(row)}</option>
+              ))}
+            </select>
+          )}
+          {stats && daangnRegion1 && daangnDistrictOptions.length > 0 && (
+            <select
+              value={daangnRegion2}
+              onChange={(e) => {
+                const next = e.target.value;
+                setDaangnRegion2(next);
+                setDaangnRegion3("");
+                if (next) setSource("daangn");
+                setPage(1);
+              }}
+              className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800"
+            >
+              <option value="">시/군/구 전체</option>
+              {daangnDistrictOptions.map((row) => (
+                <option key={row.value} value={row.value}>{regionOptionLabel(row)}</option>
+              ))}
+            </select>
+          )}
+          {stats && daangnRegion1 && daangnRegion2 && daangnNeighborhoodOptions.length > 0 && (
+            <select
+              value={daangnRegion3}
+              onChange={(e) => {
+                const next = e.target.value;
+                setDaangnRegion3(next);
+                if (next) setSource("daangn");
+                setPage(1);
+              }}
+              className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800"
+            >
+              <option value="">동/읍/면 전체</option>
+              {daangnNeighborhoodOptions.map((row) => (
+                <option key={row.value} value={row.value}>{regionOptionLabel(row)}</option>
+              ))}
+            </select>
+          )}
           {stats && stats.byPriceBucket.length > 0 && (
             <select value={priceBucket} onChange={(e) => { setPriceBucket(e.target.value); setPage(1); }} className="rounded-md border border-zinc-300 bg-white px-2 py-1 dark:border-zinc-700 dark:bg-zinc-800">
               <option value="">가격대 전체</option>
@@ -534,7 +689,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
           <button onClick={fetchPage} disabled={loading} className="rounded-md border border-zinc-300 bg-white px-3 py-1 font-semibold hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700">
             {loading ? "..." : "↻ 새로고침"}
           </button>
-          {(band || category || priceBucket || sku) && (
+          {(band || category || priceBucket || sku || source || daangnRegion1 || daangnRegion2 || daangnRegion3) && (
             <button onClick={clearPoolFilters} disabled={loading} className="rounded-md border border-zinc-300 bg-white px-3 py-1 font-semibold hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700">
               필터 초기화
             </button>
