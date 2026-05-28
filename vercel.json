@@ -42,7 +42,7 @@
     },
     {
       "path": "/api/cron/market-worker",
-      "schedule": "12,42 * * * *"
+      "schedule": "2,12,22,32,42,52 * * * *"
     },
     {
       "path": "/api/cron/deep-crawl",

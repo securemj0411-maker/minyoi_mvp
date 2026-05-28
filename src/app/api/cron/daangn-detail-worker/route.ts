@@ -116,6 +116,7 @@ async function handleDaangnDetailWorker(req: NextRequest) {
       blockedStatus: result.blockedStatus,
       blockedReason: result.blockedReason,
       skippedByBudget: result.skippedByBudget,
+      marketInvalidationsQueued: result.marketInvalidationsQueued,
       durationMs: result.durationMs,
     });
 

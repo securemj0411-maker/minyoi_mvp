@@ -4935,7 +4935,7 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
 async function enqueueSkuMedianUnavailableMarketInvalidations(limit: number): Promise<number> {
   const rowLimit = Math.max(1, Math.min(limit, 250));
   const res = await restFetch(
-    `${tableUrl("mvp_candidate_pool")}?select=pid,category,comparable_key&status=eq.invalidated&category=in.(clothing,shoe,bag)&invalidated_reason=eq.sku_median_unavailable&order=updated_at.desc&limit=${rowLimit}`,
+    `${tableUrl("mvp_candidate_pool")}?select=pid,category,comparable_key&status=eq.invalidated&invalidated_reason=eq.sku_median_unavailable&order=updated_at.desc&limit=${rowLimit}`,
     { headers: serviceHeaders() },
   );
   if (!res.ok) {
@@ -4951,7 +4951,7 @@ async function enqueueSkuMedianUnavailableMarketInvalidations(limit: number): Pr
   const pids = [...new Set(poolRows.map((row) => Number(row.pid)).filter(Number.isFinite))];
   if (pids.length === 0) return 0;
 
-  const eligibleRaw = new Set<number>();
+  const eligibleRaw = new Map<number, string | null>();
   for (const chunk of chunkArray(pids, REST_WRITE_CHUNK_SIZE)) {
     const rawRes = await restFetch(
       `${tableUrl("mvp_raw_listings")}?select=pid,source,query,raw_json,pool_eligible,detail_status,listing_state,listing_type,listing_type_override,sku_id&pid=in.(${chunk.join(",")})`,
@@ -4983,7 +4983,7 @@ async function enqueueSkuMedianUnavailableMarketInvalidations(limit: number): Pr
         listing_type: raw.listing_type ?? "",
         listing_type_override: raw.listing_type_override,
       })) {
-        eligibleRaw.add(pid);
+        eligibleRaw.set(pid, raw.source ?? null);
       }
     }
   }
@@ -4993,14 +4993,17 @@ async function enqueueSkuMedianUnavailableMarketInvalidations(limit: number): Pr
       pid: Number(row.pid),
       comparableKey: row.comparable_key,
       category: row.category,
+      source: eligibleRaw.get(Number(row.pid)) ?? null,
     }))
     .filter((row) => Number.isFinite(row.pid) && eligibleRaw.has(row.pid) && Boolean(row.comparableKey))
     .map((row) => ({
       comparableKey: row.comparableKey,
-      reason: row.category === "shoe"
+      reason: row.source === "daangn"
+        ? "daangn_sku_median_unavailable_refresh"
+        : row.category === "shoe"
         ? "sku_median_unavailable_size_any_refresh"
         : "sku_median_unavailable_refresh",
-      priority: row.category === "shoe" ? 85 : 55,
+      priority: row.source === "daangn" ? 92 : row.category === "shoe" ? 85 : 55,
       affectedPid: row.pid,
     }));
 

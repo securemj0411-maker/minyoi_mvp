@@ -1,5 +1,5 @@
 import { DAANGN_SOURCE_ID, fetchDaangnText, parseDaangnDetailHtml } from "@/lib/daangn";
-import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 export type DaangnDetailBackfillOptions = {
   dryRun?: boolean;
@@ -24,6 +24,7 @@ export type DaangnDetailBackfillResult = {
   blockedStatus: number | null;
   blockedReason: string | null;
   skippedByBudget: number;
+  marketInvalidationsQueued: number;
   durationMs: number;
 };
 
@@ -48,6 +49,14 @@ type RawPendingRow = {
   daangn_manner_temperature: number | null;
 };
 
+type ParsedRow = {
+  pid: number;
+  comparable_key: string | null;
+  parser_version: string | null;
+};
+
+const PARSED_READ_CHUNK_SIZE = 250;
+
 function boundedInt(value: number | undefined, fallback: number, min: number, max: number) {
   if (!Number.isFinite(value)) return fallback;
   return Math.max(min, Math.min(max, Math.trunc(value!)));
@@ -56,6 +65,12 @@ function boundedInt(value: number | undefined, fallback: number, min: number, ma
 async function sleep(ms: number) {
   if (ms <= 0) return;
   await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function chunkArray<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) chunks.push(items.slice(i, i + size));
+  return chunks;
 }
 
 async function loadInvalidatedMissingCandidates(limit: number): Promise<DetailCandidate[]> {
@@ -168,6 +183,58 @@ async function patchDetailError(candidate: DetailCandidate, reason: string, dryR
   });
 }
 
+async function loadParsedRows(pids: number[]): Promise<ParsedRow[]> {
+  const unique = [...new Set(pids.filter((pid) => Number.isFinite(pid)))];
+  if (unique.length === 0) return [];
+  const out: ParsedRow[] = [];
+  for (const chunk of chunkArray(unique, PARSED_READ_CHUNK_SIZE)) {
+    const res = await restFetch(
+      `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parser_version&pid=in.(${chunk.join(",")})`,
+      { headers: serviceHeaders() },
+    );
+    const rows = (await res.json()) as ParsedRow[];
+    out.push(...rows);
+  }
+  return out;
+}
+
+async function enqueueMarketInvalidations(pids: number[], dryRun: boolean): Promise<number> {
+  if (dryRun) return 0;
+  const parsedRows = await loadParsedRows(pids);
+  const byKey = new Map<string, ParsedRow>();
+  for (const row of parsedRows) {
+    const key = row.comparable_key?.trim();
+    if (!key) continue;
+    if (!byKey.has(key)) byKey.set(key, row);
+  }
+
+  let queued = 0;
+  for (const row of byKey.values()) {
+    try {
+      await restFetch(rpcUrl("enqueue_mvp_market_key_invalidation"), {
+        method: "POST",
+        headers: serviceHeaders(),
+        body: jsonBody({
+          p_comparable_key: row.comparable_key,
+          p_reason: "daangn_detail_backfill",
+          p_priority: 92,
+          p_affected_pid: row.pid,
+          p_old_comparable_key: row.comparable_key,
+          p_new_comparable_key: row.comparable_key,
+          p_parser_version: row.parser_version,
+        }),
+      });
+      queued += 1;
+    } catch (err) {
+      console.warn("daangn detail backfill invalidation enqueue failed", {
+        comparableKey: row.comparable_key,
+        error: err instanceof Error ? err.message.slice(0, 300) : String(err).slice(0, 300),
+      });
+    }
+  }
+  return queued;
+}
+
 export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptions = {}): Promise<DaangnDetailBackfillResult> {
   const startedAt = Date.now();
   const dryRun = options.dryRun ?? false;
@@ -189,6 +256,7 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
   let blockedStatus: number | null = null;
   let blockedReason: string | null = null;
   let skippedByBudget = 0;
+  const marketRefreshPids: number[] = [];
 
   for (const candidate of candidates) {
     if (Date.now() + timeoutMs + delayMs > deadline) {
@@ -221,6 +289,7 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
       if (fetchedDetail.status === 404 || fetchedDetail.status === 410) {
         await patchGone(candidate, fetchedDetail.status, dryRun);
         markedGone += 1;
+        marketRefreshPids.push(candidate.pid);
       } else {
         await patchDetailError(candidate, `daangn_detail_http_${fetchedDetail.status}`, dryRun);
       }
@@ -246,8 +315,11 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
 
     await patchSuccess(candidate, mannerTemperature, parsed.user.reviewCount, dryRun);
     patched += 1;
+    marketRefreshPids.push(candidate.pid);
     await sleep(delayMs);
   }
+
+  const marketInvalidationsQueued = await enqueueMarketInvalidations(marketRefreshPids, dryRun);
 
   return {
     source: DAANGN_SOURCE_ID,
@@ -264,6 +336,7 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
     blockedStatus,
     blockedReason,
     skippedByBudget,
+    marketInvalidationsQueued,
     durationMs: Date.now() - startedAt,
   };
 }
