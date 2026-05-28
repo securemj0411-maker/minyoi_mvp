@@ -44,12 +44,31 @@ function scoreWorkerBudgetMs() {
   return envInt("PIPELINE_SCORE_WORKER_BUDGET_MS", 55_000, 5_000, 55_000);
 }
 
-function scoreStageOptions(): ScoreStageOptions {
+function scoreCleanupDecision(req: NextRequest) {
+  const explicit = req.nextUrl.searchParams.get("cleanup");
+  if (explicit === "1" || explicit === "true") {
+    return { enabled: true, intervalMinutes: 1, reason: "query_forced_on" };
+  }
+  if (explicit === "0" || explicit === "false") {
+    return { enabled: false, intervalMinutes: 1, reason: "query_forced_off" };
+  }
+
+  const intervalMinutes = envInt("PIPELINE_SCORE_CLEANUP_INTERVAL_MINUTES", 5, 1, 60);
+  if (intervalMinutes <= 1) {
+    return { enabled: true, intervalMinutes, reason: "interval_every_run" };
+  }
+
+  const minuteBucket = Math.floor(Date.now() / 60_000);
+  const enabled = minuteBucket % intervalMinutes === 0;
+  return { enabled, intervalMinutes, reason: enabled ? "interval_due" : "interval_skip" };
+}
+
+function scoreStageOptions(cleanup: ReturnType<typeof scoreCleanupDecision>): ScoreStageOptions {
   const shardCount = envIntAny(["PIPELINE_SCORE_DAANGN_SHARD_COUNT", "DAANGN_INGEST_REGION_SHARD_COUNT"], 1, 1, 20);
   const shardIndex = envIntAny(["PIPELINE_SCORE_DAANGN_SHARD_INDEX", "DAANGN_INGEST_REGION_SHARD_INDEX"], 0, 0, Math.max(0, shardCount - 1));
   return {
     lane: "a",
-    cleanup: true,
+    cleanup: cleanup.enabled,
     daangnShardCount: shardCount,
     daangnShardIndex: shardIndex,
   };
@@ -123,7 +142,8 @@ async function handleScoreWorker(req: NextRequest) {
 
   const config = loadPipelineRuntimeConfig();
   const budgetMs = scoreWorkerBudgetMs();
-  const scoreOptions = scoreStageOptions();
+  const cleanup = scoreCleanupDecision(req);
+  const scoreOptions = scoreStageOptions(cleanup);
   const staleMarked = await markStaleCollectRuns(config.staleRunMinutes);
   const run = await startCollectRun({
     ...meta,
@@ -135,6 +155,7 @@ async function handleScoreWorker(req: NextRequest) {
       },
       scoreLimit: config.tickScoreLimit,
       scoreOptions,
+      cleanupCadence: cleanup,
       staleMarkedBeforeRun: staleMarked,
     },
   });
