@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { checkCronAuth } from "@/lib/cron-auth";
+import { cronProjectRoleSkip } from "@/lib/cron-guard";
 import { grantManualDeposit, type ManualDepositRequest } from "@/lib/manual-deposit-grant";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { notifyAdminTelegram } from "@/lib/telegram-notify";
@@ -15,6 +16,8 @@ export const maxDuration = 30;
 export async function GET(req: NextRequest) {
   const { authOk } = checkCronAuth(req);
   if (!authOk) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const roleSkip = cronProjectRoleSkip("manual_deposit_auto_approve");
+  if (roleSkip) return NextResponse.json(roleSkip);
 
   const nowIso = new Date().toISOString();
   // pending 중 scheduled_at 지난 row 다 fetch.

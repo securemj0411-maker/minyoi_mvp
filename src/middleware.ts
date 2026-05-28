@@ -9,9 +9,35 @@ import { NextRequest, NextResponse } from "next/server";
 const REFERRAL_COOKIE = "minyoi_referral";
 const REFERRAL_COOKIE_TTL_SECONDS = 30 * 24 * 60 * 60; // 30일
 const REFERRAL_CODE_PATTERN = /^[A-HJ-NP-Z2-9]{6}$/; // referral.ts 와 동일 alphabet (헷갈리는 문자 제외)
+const DAANGN_B_CRON_PATH = "/api/cron/daangn-worker-b";
+
+function cronProjectRole() {
+  return String(process.env.CRON_PROJECT_ROLE ?? "").trim().toLowerCase();
+}
+
+function isDaangnWorkerOnlyProject() {
+  return cronProjectRole() === "daangn_b";
+}
 
 export function middleware(req: NextRequest) {
   const url = new URL(req.url);
+  const path = url.pathname;
+
+  if (isDaangnWorkerOnlyProject()) {
+    if (path === DAANGN_B_CRON_PATH) return NextResponse.next();
+    if (path.startsWith("/api/cron/")) {
+      return NextResponse.json({
+        ok: true,
+        started: false,
+        skipped: true,
+        reason: "project_role_disabled",
+        projectRole: "daangn_b",
+        path,
+      });
+    }
+    return new NextResponse("Not found", { status: 404 });
+  }
+
   const ref = url.searchParams.get("ref");
   if (!ref) return NextResponse.next();
 
@@ -28,7 +54,10 @@ export function middleware(req: NextRequest) {
   return res;
 }
 
-// 사용자 첫 진입 페이지에만 적용 — API / static / image 제외
+// Daangn-B 전용 프로젝트에서는 프론트/API 전체를 차단해야 하므로 모든 앱 라우트를 본다.
+// 정적 에셋은 제외해서 일반 프로젝트의 asset path 비용/동작은 건드리지 않는다.
 export const config = {
-  matcher: ["/", "/signup", "/login", "/invite", "/how-it-works", "/plans"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|css|js|map|txt|xml|woff|woff2)$).*)",
+  ],
 };

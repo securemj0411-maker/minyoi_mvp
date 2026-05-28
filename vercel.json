@@ -53,6 +53,14 @@
       "schedule": "3,8,13,18,23,28,33,38,43,48,53,58 * * * *"
     },
     {
+      "path": "/api/cron/daangn-worker-b",
+      "schedule": "1,6,11,16,21,26,31,36,41,46,51,56 * * * *"
+    },
+    {
+      "path": "/api/cron/daangn-price-sweep-worker",
+      "schedule": "24,54 * * * *"
+    },
+    {
       "path": "/api/cron/daily-backup",
       "schedule": "0 19 * * *"
     },

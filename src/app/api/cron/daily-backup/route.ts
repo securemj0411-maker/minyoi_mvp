@@ -19,6 +19,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { checkCronAuth } from "@/lib/cron-auth";
+import { cronProjectRoleSkip } from "@/lib/cron-guard";
 import { logAndRespond } from "@/lib/error-response";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
@@ -131,6 +132,8 @@ export async function GET(req: NextRequest) {
   if (!auth.authOk) {
     return NextResponse.json({ error: "unauthorized", reason: auth.authReason }, { status: 401 });
   }
+  const roleSkip = cronProjectRoleSkip("daily_backup");
+  if (roleSkip) return NextResponse.json(roleSkip);
 
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
   const oldDate = new Date();

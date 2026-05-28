@@ -35,7 +35,6 @@ import {
   buildDaangnSearchUrl,
   daangnLifecycleFromStatus,
   daangnInternalPid,
-  detectDaangnBlockSignal,
   fetchDaangnText,
   getDaangnSourceMode,
   parseDaangnDetailHtml,
@@ -91,6 +90,17 @@ export type DaangnRegionYieldStat = {
   upsertCandidate: number;
 };
 
+export type DaangnCategoryYieldStat = {
+  sourceRegionId: string;
+  sourceRegionName: string;
+  categoryId: string;
+  categoryName: string;
+  fetched: number;
+  targetCategory: number;
+  catalogHint: number;
+  upsertCandidate: number;
+};
+
 export type DaangnIngestResult = {
   source: typeof DAANGN_SOURCE_ID;
   mode: DaangnSourceMode;
@@ -102,6 +112,9 @@ export type DaangnIngestResult = {
 
   // combo 진행
   combos: number;
+  regionShardCount?: number;
+  regionShardIndex?: number;
+  regionShardRegions?: number;
   regionSelectionMode?: DaangnComboSelection["selectionMode"];
   adaptiveRegionScoreRegions?: number;
   executedCombos: number;
@@ -110,6 +123,7 @@ export type DaangnIngestResult = {
 
   // 매물 통계 (probe 와 동일 키)
   articles: number;
+  duplicateArticlesDropped?: number;
   filteredArticles: number;
   articlesDroppedByCategory: number;
   articlesMissingCategory: number;
@@ -119,10 +133,17 @@ export type DaangnIngestResult = {
   maxUpsertArticles: number;
   upsertCandidateArticles: number;
   articlesDeferredByUpsertCap: number;
+  categoryBoostRegions?: number;
+  categoryBoostCombos?: number;
+  categoryBoostAdaptivePairs?: number;
   regionYieldStats?: {
     regions: DaangnRegionYieldStat[];
     topCatalogHint: DaangnRegionYieldStat[];
     zeroCatalogHintRegions: number;
+  };
+  categoryYieldStats?: {
+    pairs: DaangnCategoryYieldStat[];
+    topCatalogHint: DaangnCategoryYieldStat[];
   };
   ongoing: number;
   crawlAllowedOngoing: number;
@@ -188,8 +209,13 @@ export type DaangnIngestOptions = {
   categories?: DaangnCategorySeed[];
   // Phase 6i: region firehose 모드 (default true). false 시 legacy keyword combo 모드.
   useRegionFirehose?: boolean;
+  // Wave 909: A/B 프로젝트가 같은 전국 firehose 를 중복으로 긁지 않도록 지역 shard 를 나눈다.
+  regionShardCount?: number;
+  regionShardIndex?: number;
   // Production fallback 용: maxCombos < region count 일 때 최근 수율 좋은 지역을 먼저 섞는다.
   useAdaptiveRegionRotation?: boolean;
+  // Wave 907: 전국 region firehose 위에 고수율 일부 지역만 category-depth 보조 fetch.
+  categoryBoostRegions?: number;
   // dry-run: DB write 안 함 (Stage 1 default)
   dryRun?: boolean;
 };
@@ -198,8 +224,25 @@ export type DaangnIngestOptions = {
 // Helpers
 // ───────────────────────────────────────────────────────────────────────────
 
-const DAANGN_UPSERT_PREFLIGHT_MULTIPLIER = 3;
-const DAANGN_UPSERT_PREFLIGHT_MAX = 2_000;
+// Wave 905 (2026-05-28): nationwide firehose repeats many already-seen rows.
+// Keep the write/classify cap unchanged, but inspect a much wider cheap
+// preflight window so existing rows near the top do not hide fresh candidates.
+const DAANGN_UPSERT_PREFLIGHT_MULTIPLIER = 10;
+const DAANGN_UPSERT_PREFLIGHT_MAX = 5_000;
+const DAANGN_PREFLIGHT_EXISTING_READ_CHUNK_SIZE = 250;
+
+const DAANGN_TARGET_CATEGORY_SEEDS: DaangnCategorySeed[] = [
+  { id: 1, name: "디지털기기" },
+  { id: 2, name: "취미/게임/음반" },
+  { id: 3, name: "스포츠/레저" },
+  { id: 5, name: "여성의류" },
+  { id: 6, name: "뷰티/미용" },
+  { id: 14, name: "남성패션/잡화" },
+  { id: 31, name: "여성잡화" },
+  { id: 172, name: "생활가전" },
+];
+
+const DAANGN_TARGET_CATEGORY_IDS = new Set(DAANGN_TARGET_CATEGORY_SEEDS.map((category) => String(category.id)));
 
 export function daangnUpsertPreflightLimit(maxUpsertArticles: number, totalCandidates: number): number {
   const writeCap = Math.max(0, Math.floor(maxUpsertArticles));
@@ -223,13 +266,6 @@ function ageHours(timestamp: string | null, nowMs: number): number | null {
   const t = Date.parse(timestamp);
   if (!Number.isFinite(t)) return null;
   return (nowMs - t) / 3_600_000;
-}
-
-function articleBucket(hours: number | null, freshH: number, activeH: number) {
-  if (hours == null) return "unknown" as const;
-  if (hours <= freshH) return "fresh_24h" as const;
-  if (hours <= activeH) return "active_72h" as const;
-  return "stale" as const;
 }
 
 // shipping 추론 — 보수적 (direct_only default).
@@ -264,6 +300,7 @@ function buildEmptyResult(mode: DaangnSourceMode, skipReason: string | undefined
     blockedCombos: 0,
     failedCombos: 0,
     articles: 0,
+    duplicateArticlesDropped: 0,
     filteredArticles: 0,
     articlesDroppedByCategory: 0,
     articlesMissingCategory: 0,
@@ -451,6 +488,7 @@ type ExistingDaangnRawRow = {
   description_preview: string | null;
   listing_state: string | null;
   sale_status: string | null;
+  detail_status: string | null;
   source_updated_at: string | null;
   last_seen_at: string | null;
   raw_json: Record<string, unknown> | null;
@@ -460,7 +498,33 @@ type ExistingDaangnRawRow = {
   daangn_boosted_at: string | null;
   daangn_web_crawl_allowed: boolean | null;
   daangn_shipping_inferred: string | null;
+  daangn_manner_temperature: number | null;
+  daangn_review_count: number | null;
 };
+
+function daangnDetailUser(article: DaangnSearchArticle | DaangnDetailArticle): {
+  score?: number | null;
+  reviewCount?: number | null;
+  profileImage?: string | null;
+  regionName?: string | null;
+} | null {
+  return article.user as {
+    score?: number | null;
+    reviewCount?: number | null;
+    profileImage?: string | null;
+    regionName?: string | null;
+  } | null;
+}
+
+export function hasDaangnDetailPayload(article: DaangnSearchArticle | DaangnDetailArticle): boolean {
+  const detailUser = daangnDetailUser(article);
+  return Boolean(
+    Object.prototype.hasOwnProperty.call(article, "recommendedCount")
+    || Object.prototype.hasOwnProperty.call(article, "commentCount")
+    || Object.prototype.hasOwnProperty.call(detailUser ?? {}, "score")
+    || Object.prototype.hasOwnProperty.call(detailUser ?? {}, "reviewCount")
+  );
+}
 
 function sameInstant(a: string | null | undefined, b: string | null | undefined): boolean {
   if (!a && !b) return true;
@@ -525,6 +589,15 @@ function canSkipDaangnClassify(existing: ExistingDaangnRawRow | undefined, row: 
   if (!existing) return false;
   const lastSeenMs = existing.last_seen_at ? Date.parse(existing.last_seen_at) : 0;
   if (!Number.isFinite(lastSeenMs)) return false;
+  const incomingHasDetailPayload = hasDaangnDetailPayload(row.article);
+  if (incomingHasDetailPayload) {
+    const detailUser = daangnDetailUser(row.article);
+    const score = detailUser?.score ?? null;
+    const reviewCount = detailUser?.reviewCount ?? null;
+    if (existing.detail_status !== "done") return false;
+    if (score != null && Number(existing.daangn_manner_temperature ?? Number.NaN) !== score) return false;
+    if (reviewCount != null && Number(existing.daangn_review_count ?? Number.NaN) !== reviewCount) return false;
+  }
   // sku_id 없는 row 도 매 tick 재분류하면 firehose 반복 CPU 가 커진다.
   // raw RPC no-op window 와 맞춰 2시간마다 다시 열고, catalog 대형 패치는 별도 rematch 로 즉시 반영한다.
   const recheckMs = existing.sku_id ? DAANGN_CLASSIFIED_RECHECK_MS : DAANGN_UNCLASSIFIED_RECHECK_MS;
@@ -561,6 +634,7 @@ async function loadExistingDaangnRawRows(pids: number[]): Promise<Map<number, Ex
     "description_preview",
     "listing_state",
     "sale_status",
+    "detail_status",
     "source_updated_at",
     "last_seen_at",
     "raw_json",
@@ -570,9 +644,11 @@ async function loadExistingDaangnRawRows(pids: number[]): Promise<Map<number, Ex
     "daangn_boosted_at",
     "daangn_web_crawl_allowed",
     "daangn_shipping_inferred",
+    "daangn_manner_temperature",
+    "daangn_review_count",
   ].join(",");
-  for (let i = 0; i < pids.length; i += 100) {
-    const chunk = pids.slice(i, i + 100);
+  for (let i = 0; i < pids.length; i += DAANGN_PREFLIGHT_EXISTING_READ_CHUNK_SIZE) {
+    const chunk = pids.slice(i, i + DAANGN_PREFLIGHT_EXISTING_READ_CHUNK_SIZE);
     const res = await restFetch(
       `${tableUrl("mvp_raw_listings")}?select=${columns}&source=eq.${DAANGN_SOURCE_ID}&pid=in.(${chunk.join(",")})`,
       { headers: serviceHeaders() },
@@ -642,6 +718,8 @@ function buildRawListingRow(
   //   shop_review_count, listing_type, detail_status, raw_json, listing_state, missing_count,
   //   seller_source, score_dirty) 는 default 사용 가능하지만 명시 박기.
   const priceInt = Math.max(0, Math.round(Number(article.price)));
+  const detailUser = daangnDetailUser(article);
+  const hasDetailPayload = hasDaangnDetailPayload(article);
   const raw: Record<string, unknown> = {
     pid,
     source: DAANGN_SOURCE_ID,
@@ -664,8 +742,8 @@ function buildRawListingRow(
     shop_review_count: 0,
     image_count: 0,
     missing_count: 0,
-    detail_status: "done",
-    detail_enriched_at: nowIso,
+    detail_status: hasDetailPayload ? "done" : "pending",
+    detail_enriched_at: hasDetailPayload ? nowIso : null,
     source_updated_at: article.boostedAt ?? article.createdAt ?? nowIso,
     last_seen_at: nowIso,
     last_changed_at: nowIso,
@@ -690,13 +768,13 @@ function buildRawListingRow(
     // Wave 758 (2026-05-26): 매너온도 + 리뷰 수 — detail article 일 때만 user.score/reviewCount 추출.
     //   search-only article 은 NULL (RPC 에서 COALESCE 로 옛 값 유지).
     //   당근 신뢰 신호는 manner temperature (0~99.9°C) 주축. reviewCount 는 참고.
-    daangn_manner_temperature: ((article as DaangnDetailArticle).user as { score?: number | null } | null)?.score ?? null,
-    daangn_review_count: ((article as DaangnDetailArticle).user as { reviewCount?: number | null } | null)?.reviewCount ?? null,
+    daangn_manner_temperature: hasDetailPayload ? (detailUser?.score ?? null) : null,
+    daangn_review_count: hasDetailPayload ? (detailUser?.reviewCount ?? null) : null,
   };
   return { raw, parsed: parsedRow, sku_id: skuId };
 }
 
-async function upsertDaangnRawListings(
+export async function upsertDaangnRawListings(
   articles: DaangnSearchArticle[],
   detailRecords: DaangnIngestDetailRecord[],
   options: { maxClassifyRows?: number } = {},
@@ -710,6 +788,7 @@ async function upsertDaangnRawListings(
   preflightOverflow: number;
   preflightCandidates: number;
   classifyCandidates: number;
+  affectedPids: number[];
 }> {
   if (articles.length === 0) {
     return {
@@ -722,6 +801,7 @@ async function upsertDaangnRawListings(
       preflightOverflow: 0,
       preflightCandidates: 0,
       classifyCandidates: 0,
+      affectedPids: [],
     };
   }
   const nowIso = new Date().toISOString();
@@ -787,6 +867,7 @@ async function upsertDaangnRawListings(
       preflightOverflow,
       preflightCandidates: preflightRows.length,
       classifyCandidates: rowsSelectedForClassify.length,
+      affectedPids: [],
     };
   }
 
@@ -842,6 +923,7 @@ async function upsertDaangnRawListings(
     preflightOverflow,
     preflightCandidates: preflightRows.length,
     classifyCandidates: rowsSelectedForClassify.length,
+    affectedPids,
   };
 }
 
@@ -935,6 +1017,27 @@ function shuffleArray<T>(arr: readonly T[]): T[] {
   return out;
 }
 
+function stableShardHash(value: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash >>> 0;
+}
+
+export function selectDaangnRegionShard(
+  regions: DaangnRegionSeed[],
+  shardCount: number,
+  shardIndex: number,
+): DaangnRegionSeed[] {
+  const count = Math.max(1, Math.floor(shardCount));
+  if (count <= 1) return regions;
+  const index = Math.max(0, Math.min(count - 1, Math.floor(shardIndex)));
+  const selected = regions.filter((region) => stableShardHash(region.id || region.name) % count === index);
+  return selected.length > 0 ? selected : regions;
+}
+
 // Phase 6i: Region firehose 모드 sentinel.
 //   ?in=구-id 만으로 fetch (키워드/카테고리 filter X) → 지역 최신 매물 통째 ingest.
 //   keyword combo 의 99% 흘림 문제 해결 — 자릿수 다른 ingest 양.
@@ -992,11 +1095,90 @@ export function selectDaangnFirehoseCombos(input: {
   return { combos, totalSpace: input.regions.length, selectionMode };
 }
 
+export function selectDaangnCategoryBoostCombos(input: {
+  regions: DaangnRegionSeed[];
+  categories: DaangnCategorySeed[];
+  maxRegions: number;
+  shuffleRegions?: boolean;
+  regionScores?: Map<string, number>;
+  pairScores?: Map<string, number>;
+  explorationRatio?: number;
+}): DaangnComboSelection {
+  const maxRegions = Math.max(0, input.maxRegions);
+  const shuffled = input.shuffleRegions ? shuffleArray(input.regions) : [...input.regions];
+  const order = input.regionScores && input.regionScores.size > 0
+    ? shuffled.sort((a, b) => (input.regionScores?.get(b.id) ?? 0) - (input.regionScores?.get(a.id) ?? 0))
+    : shuffled;
+  const maxCombos = Math.min(input.regions.length * input.categories.length, maxRegions * input.categories.length);
+  const combos: DaangnIngestCombo[] = [];
+
+  if (input.pairScores && input.pairScores.size > 0 && maxCombos > 0) {
+    const allPairs = shuffled.flatMap((region) =>
+      input.categories.map((category) => ({
+        region,
+        category,
+        key: daangnRegionCategoryScoreKey(region.id, String(category.id)),
+        score: input.pairScores?.get(daangnRegionCategoryScoreKey(region.id, String(category.id))) ?? 0,
+      }))
+    );
+    const explorationRatio = Math.max(0, Math.min(0.5, input.explorationRatio ?? 0.2));
+    const exploreCount = Math.min(maxCombos, Math.floor(maxCombos * explorationRatio));
+    const exploitCount = Math.max(0, maxCombos - exploreCount);
+    const exploit = [...allPairs]
+      .sort((a, b) => b.score - a.score)
+      .filter((pair) => pair.score > 0)
+      .slice(0, exploitCount);
+    const exploitKeys = new Set(exploit.map((pair) => pair.key));
+    const explore = allPairs
+      .filter((pair) => !exploitKeys.has(pair.key))
+      .slice(0, maxCombos - exploit.length);
+    for (const pair of [...exploit, ...explore]) {
+      combos.push({
+        region: pair.region,
+        query: DAANGN_FIREHOSE_QUERY,
+        category: pair.category,
+      });
+    }
+    return {
+      combos,
+      totalSpace: input.regions.length * input.categories.length,
+      selectionMode: "adaptive",
+    };
+  }
+
+  const limit = Math.min(maxRegions, order.length);
+  for (let i = 0; i < limit; i += 1) {
+    for (const category of input.categories) {
+      combos.push({
+        region: order[i],
+        query: DAANGN_FIREHOSE_QUERY,
+        category,
+      });
+    }
+  }
+  return {
+    combos,
+    totalSpace: input.regions.length * input.categories.length,
+    selectionMode: input.regionScores && input.regionScores.size > 0 ? "adaptive" : "random",
+  };
+}
+
 function daangnArticleRegionKey(article: DaangnSearchArticle): { id: string; name: string } {
   return {
     id: article.region.dbId ?? "unknown",
     name: article.region.name ?? article.region.dbId ?? "unknown",
   };
+}
+
+function daangnArticleCategoryKey(article: DaangnSearchArticle): { id: string; name: string } {
+  return {
+    id: article.category?.dbId ?? "unknown",
+    name: article.category?.name ?? article.category?.dbId ?? "unknown",
+  };
+}
+
+function daangnRegionCategoryScoreKey(regionId: string, categoryId: string): string {
+  return `${regionId}:${categoryId}`;
 }
 
 function countDaangnArticlesBySourceRegion(
@@ -1008,6 +1190,22 @@ function countDaangnArticlesBySourceRegion(
     const sourceRegion = article.href ? sourceRegionByHref.get(article.href) : null;
     const id = sourceRegion?.id ?? daangnArticleRegionKey(article).id;
     out.set(id, (out.get(id) ?? 0) + 1);
+  }
+  return out;
+}
+
+function countDaangnArticlesBySourceRegionCategory(
+  articles: DaangnSearchArticle[],
+  sourceRegionByHref: Map<string, DaangnRegionSeed>,
+): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const article of articles) {
+    const sourceRegion = article.href ? sourceRegionByHref.get(article.href) : null;
+    const regionId = sourceRegion?.id ?? daangnArticleRegionKey(article).id;
+    const categoryId = daangnArticleCategoryKey(article).id;
+    if (!DAANGN_TARGET_CATEGORY_IDS.has(categoryId)) continue;
+    const key = daangnRegionCategoryScoreKey(regionId, categoryId);
+    out.set(key, (out.get(key) ?? 0) + 1);
   }
   return out;
 }
@@ -1057,10 +1255,68 @@ function buildDaangnRegionYieldStats(input: {
   };
 }
 
+function buildDaangnCategoryYieldStats(input: {
+  sourceRegionByHref: Map<string, DaangnRegionSeed>;
+  allArticles: DaangnSearchArticle[];
+  filteredArticles: DaangnSearchArticle[];
+  catalogHintArticles: DaangnSearchArticle[];
+  upsertCandidateArticles: DaangnSearchArticle[];
+}): NonNullable<DaangnIngestResult["categoryYieldStats"]> {
+  const regionNames = new Map<string, string>();
+  const categoryNames = new Map<string, string>();
+  for (const article of input.allArticles) {
+    const sourceRegion = article.href ? input.sourceRegionByHref.get(article.href) : null;
+    const region = sourceRegion ?? daangnArticleRegionKey(article);
+    regionNames.set(region.id, region.name);
+    const category = daangnArticleCategoryKey(article);
+    categoryNames.set(category.id, category.name);
+  }
+  for (const category of DAANGN_TARGET_CATEGORY_SEEDS) {
+    categoryNames.set(String(category.id), category.name);
+  }
+
+  const fetched = countDaangnArticlesBySourceRegionCategory(input.allArticles, input.sourceRegionByHref);
+  const targetCategory = countDaangnArticlesBySourceRegionCategory(input.filteredArticles, input.sourceRegionByHref);
+  const catalogHint = countDaangnArticlesBySourceRegionCategory(input.catalogHintArticles, input.sourceRegionByHref);
+  const upsertCandidate = countDaangnArticlesBySourceRegionCategory(input.upsertCandidateArticles, input.sourceRegionByHref);
+  const keys = new Set<string>([
+    ...fetched.keys(),
+    ...targetCategory.keys(),
+    ...catalogHint.keys(),
+    ...upsertCandidate.keys(),
+  ]);
+  const pairs = [...keys].map((key) => {
+    const [sourceRegionId = "unknown", categoryId = "unknown"] = key.split(":");
+    return {
+      sourceRegionId,
+      sourceRegionName: regionNames.get(sourceRegionId) ?? sourceRegionId,
+      categoryId,
+      categoryName: categoryNames.get(categoryId) ?? categoryId,
+      fetched: fetched.get(key) ?? 0,
+      targetCategory: targetCategory.get(key) ?? 0,
+      catalogHint: catalogHint.get(key) ?? 0,
+      upsertCandidate: upsertCandidate.get(key) ?? 0,
+    };
+  }).sort((a, b) => (
+    b.catalogHint - a.catalogHint ||
+    b.upsertCandidate - a.upsertCandidate ||
+    b.targetCategory - a.targetCategory ||
+    b.fetched - a.fetched ||
+    a.sourceRegionName.localeCompare(b.sourceRegionName, "ko")
+  ));
+  return {
+    pairs: pairs.slice(0, 120),
+    topCatalogHint: pairs.slice(0, 40),
+  };
+}
+
 type CollectRunRegionStatsRow = {
   stage_stats: {
     regionYieldStats?: {
       regions?: DaangnRegionYieldStat[];
+    };
+    categoryYieldStats?: {
+      pairs?: DaangnCategoryYieldStat[];
     };
   } | null;
 };
@@ -1087,6 +1343,34 @@ async function loadRecentDaangnRegionScores(): Promise<Map<string, number>> {
         stat.targetCategory * 0.15 +
         stat.fetched * 0.01;
       scores.set(stat.regionId, (scores.get(stat.regionId) ?? 0) + score * recencyWeight);
+    }
+  });
+  return scores;
+}
+
+async function loadRecentDaangnRegionCategoryScores(): Promise<Map<string, number>> {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)) {
+    return new Map();
+  }
+  const res = await restFetch(
+    `${tableUrl("mvp_collect_runs")}?select=stage_stats&status=eq.succeeded&request_path=eq.${encodeURIComponent("/api/cron/daangn-worker")}&order=started_at.desc&limit=24`,
+    { headers: serviceHeaders() },
+  );
+  const rows = await res.json() as CollectRunRegionStatsRow[];
+  const scores = new Map<string, number>();
+  rows.forEach((row, index) => {
+    const pairs = row.stage_stats?.categoryYieldStats?.pairs;
+    if (!Array.isArray(pairs)) return;
+    const recencyWeight = Math.max(0.25, 1 - index * 0.04);
+    for (const stat of pairs) {
+      if (!stat.sourceRegionId || !stat.categoryId) continue;
+      const key = daangnRegionCategoryScoreKey(stat.sourceRegionId, stat.categoryId);
+      const score =
+        stat.catalogHint * 20 +
+        stat.upsertCandidate * 40 +
+        stat.targetCategory * 0.1 +
+        stat.fetched * 0.02;
+      scores.set(key, (scores.get(key) ?? 0) + score * recencyWeight);
     }
   });
   return scores;
@@ -1129,9 +1413,14 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const freshWindowHours = boundedInt(options.freshWindowHours, 24, 1, 168);
   const timeoutMs = boundedInt(options.timeoutMs, 5_000, 1_000, 30_000);
   const maxUpsertArticles = boundedInt(options.maxUpsertArticles, 500, 0, 5_000);
+  // Wave 907: +120 fetch/run default. 267 full-region firehose is safe; full category
+  // matrix (267 * 8) crossed previous block-risk boundaries, so only boost top pairs.
+  const categoryBoostRegions = boundedInt(options.categoryBoostRegions, 15, 0, 30);
   const searchConcurrency = boundedInt(options.searchConcurrency, 50, 1, 300);
   const dryRun = options.dryRun ?? mode !== "active";
   const useAdaptiveRegionRotation = options.useAdaptiveRegionRotation ?? true;
+  const regionShardCount = boundedInt(options.regionShardCount, 1, 1, 20);
+  const regionShardIndex = boundedInt(options.regionShardIndex, 0, 0, Math.max(0, regionShardCount - 1));
 
   // Phase 6i+++ timing instrumentation
   const timings: NonNullable<DaangnIngestResult["timingsMs"]> = {};
@@ -1139,7 +1428,8 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
 
   // Region 기반 ingest (Phase 6g — 6e 전국 검색 가설 폐기).
   //   options.regions 으로 override 가능 (테스트/실험용).
-  const regions = options.regions ?? DEFAULT_DAANGN_REGION_SEEDS;
+  const allRegions = options.regions ?? DEFAULT_DAANGN_REGION_SEEDS;
+  const regions = selectDaangnRegionShard(allRegions, regionShardCount, regionShardIndex);
 
   // Phase 6i: Region firehose 모드 default ON.
   //   배경: keyword × region combo 가 99% 매물 흘림 (지역 firehose 가 진짜 프리미티브).
@@ -1150,18 +1440,28 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   let combos: DaangnIngestCombo[];
   let regionSelectionMode: DaangnComboSelection["selectionMode"] | undefined;
   let adaptiveRegionScoreRegions = 0;
+  let categoryBoostCombos = 0;
+  let categoryBoostAdaptivePairs = 0;
   if (useRegionFirehose) {
     // Firehose 모드: keyword/category filter X, region 만 iteration.
     //   maxCombos = 한 tick 에서 fetch 할 region 수.
     let regionScores: Map<string, number> | undefined;
-    if (useAdaptiveRegionRotation && maxCombos < regions.length) {
+    let regionCategoryScores: Map<string, number> | undefined;
+    if (useAdaptiveRegionRotation && (maxCombos < regions.length || categoryBoostRegions > 0)) {
       const tAdaptiveRegionLoadStart = Date.now();
       try {
-        regionScores = await loadRecentDaangnRegionScores();
+        const [loadedRegionScores, loadedRegionCategoryScores] = await Promise.all([
+          loadRecentDaangnRegionScores(),
+          categoryBoostRegions > 0 ? loadRecentDaangnRegionCategoryScores() : Promise.resolve(new Map<string, number>()),
+        ]);
+        regionScores = loadedRegionScores;
+        regionCategoryScores = loadedRegionCategoryScores;
         adaptiveRegionScoreRegions = regionScores.size;
+        categoryBoostAdaptivePairs = regionCategoryScores.size;
       } catch (err) {
         console.warn("loadRecentDaangnRegionScores failed (non-fatal)", err);
         regionScores = undefined;
+        regionCategoryScores = undefined;
       }
       timings.adaptiveRegionLoad = Date.now() - tAdaptiveRegionLoadStart;
     }
@@ -1173,6 +1473,21 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     });
     combos = result.combos;
     regionSelectionMode = result.selectionMode;
+    if (categoryBoostRegions > 0) {
+      const boost = selectDaangnCategoryBoostCombos({
+        regions,
+        categories: DAANGN_TARGET_CATEGORY_SEEDS,
+        maxRegions: categoryBoostRegions,
+        shuffleRegions: true,
+        regionScores,
+        pairScores: regionCategoryScores,
+      });
+      categoryBoostCombos = boost.combos.length;
+      combos = [...combos, ...boost.combos];
+      if (regionSelectionMode === "all_regions" && boost.selectionMode === "adaptive") {
+        regionSelectionMode = "all_regions";
+      }
+    }
   } else {
     // Legacy keyword 모드: catalog query × region × category combo (Phase 6g 동작).
     let queries = options.queries;
@@ -1253,9 +1568,23 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   }
   timings.searchParse = Date.now() - tSearchParseStart;
 
+  // Category-depth boost intentionally overlaps with the broad region firehose.
+  // Dedupe immediately so duplicate hrefs do not consume detail/preselect windows.
+  const uniqueArticleByHref = new Map<string, DaangnSearchArticle>();
+  const hreflessArticles: DaangnSearchArticle[] = [];
+  for (const article of allArticles) {
+    if (!article.href) {
+      hreflessArticles.push(article);
+      continue;
+    }
+    if (!uniqueArticleByHref.has(article.href)) uniqueArticleByHref.set(article.href, article);
+  }
+  const searchArticles = [...uniqueArticleByHref.values(), ...hreflessArticles];
+  const duplicateArticlesDropped = Math.max(0, allArticles.length - searchArticles.length);
+
   // Summarize
   const tSummarizeStart = Date.now();
-  const summary = summarizeDaangnArticles(allArticles, {
+  const summary = summarizeDaangnArticles(searchArticles, {
     freshWindowHours,
     activeWindowHours,
     staleBoostedDays: 14,
@@ -1272,7 +1601,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   //   buildRawListingRow 가 어차피 매물별 classify 함 (중복) — 여기 30s 낭비.
   //   단순 freshness-only sort 로 복귀.
   const tDetailClassifyStart = Date.now();
-  const detailCandidates = allArticles
+  const detailCandidates = searchArticles
     .filter((a) => shouldFetchDaangnDetailCandidate(a, { activeWindowHours, nowMs }))
     .map((a) => ({ article: a, hours: ageHours(a.boostedAt ?? a.createdAt, nowMs) }))
     .sort((a, b) => (a.hours ?? Infinity) - (b.hours ?? Infinity))
@@ -1292,7 +1621,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     try {
       resp = await fetchDaangnText(url, timeoutMs);
       detailFetched += 1;
-    } catch (err) {
+    } catch {
       detailFailed += 1;
       if (delayMs > 0) await sleep(delayMs);
       continue;
@@ -1363,23 +1692,22 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   //   안전: drop = 진짜 catalog 외 매물 (책/가구/식품 등). Wave 776 동일 logic 박았다가 즉흥 revert (commit log 빈).
   //   safety log: drop 비율 99% 초과 시 logic bug 의심 — console.warn.
   const tCategoryFilterStart = Date.now();
-  const DAANGN_TARGET_CATEGORY_IDS = new Set(["1", "2", "3", "5", "6", "14", "31", "172"]);
   let articlesMissingCategory = 0;
-  const filteredArticles = allArticles.filter((article) => {
+  const filteredArticles = searchArticles.filter((article) => {
     const catId = article.category?.dbId;
     if (catId == null) articlesMissingCategory += 1;
     return catId != null && DAANGN_TARGET_CATEGORY_IDS.has(String(catId));
   });
-  const articlesDropped = allArticles.length - filteredArticles.length;
-  const categoryFilterDropRatio = allArticles.length > 0 ? articlesDropped / allArticles.length : 0;
-  if (allArticles.length > 0) {
+  const articlesDropped = searchArticles.length - filteredArticles.length;
+  const categoryFilterDropRatio = searchArticles.length > 0 ? articlesDropped / searchArticles.length : 0;
+  if (searchArticles.length > 0) {
     if (categoryFilterDropRatio >= 0.99) {
-      console.warn(`[wave778] DROP RATIO ${(categoryFilterDropRatio * 100).toFixed(1)}% (${articlesDropped}/${allArticles.length}) — logic bug 의심? category.dbId 측정 실패 가능성.`);
+      console.warn(`[wave778] DROP RATIO ${(categoryFilterDropRatio * 100).toFixed(1)}% (${articlesDropped}/${searchArticles.length}) — logic bug 의심? category.dbId 측정 실패 가능성.`);
     } else if (articlesDropped > 0) {
-      console.log(`[wave778] filter: ${articlesDropped}/${allArticles.length} 매물 drop (${(categoryFilterDropRatio * 100).toFixed(1)}%, 비-target 카테고리)`);
+      console.log(`[wave778] filter: ${articlesDropped}/${searchArticles.length} 매물 drop (${(categoryFilterDropRatio * 100).toFixed(1)}%, 비-target 카테고리)`);
     }
   }
-  if (allArticles.length > 0 && filteredArticles.length === 0) {
+  if (searchArticles.length > 0 && filteredArticles.length === 0) {
     sourceHealthStatus = "degraded";
     sourceHealthReason = `category_filter_zero_keep:missing_category_${articlesMissingCategory}`;
   }
@@ -1412,7 +1740,14 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const regionYieldStats = buildDaangnRegionYieldStats({
     selectedRegions,
     sourceRegionByHref,
-    allArticles,
+    allArticles: searchArticles,
+    filteredArticles,
+    catalogHintArticles,
+    upsertCandidateArticles,
+  });
+  const categoryYieldStats = buildDaangnCategoryYieldStats({
+    sourceRegionByHref,
+    allArticles: searchArticles,
     filteredArticles,
     catalogHintArticles,
     upsertCandidateArticles,
@@ -1451,6 +1786,9 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     durationMs: finishedAt.getTime() - startedAt.getTime(),
 
     combos: combos.length,
+    regionShardCount,
+    regionShardIndex,
+    regionShardRegions: regions.length,
     regionSelectionMode,
     adaptiveRegionScoreRegions,
     executedCombos,
@@ -1458,6 +1796,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     failedCombos,
 
     articles: summary.total,
+    duplicateArticlesDropped,
     filteredArticles: filteredArticles.length,
     articlesDroppedByCategory: articlesDropped,
     articlesMissingCategory,
@@ -1467,7 +1806,11 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
     maxUpsertArticles,
     upsertCandidateArticles: upsertCandidateArticles.length,
     articlesDeferredByUpsertCap,
+    categoryBoostRegions,
+    categoryBoostCombos,
+    categoryBoostAdaptivePairs,
     regionYieldStats,
+    categoryYieldStats,
     ongoing: summary.ongoing,
     crawlAllowedOngoing: summary.crawlAllowedOngoing,
     freshBoosted24h: summary.freshBoosted24h,

@@ -14,6 +14,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { checkCronAuth } from "@/lib/cron-auth";
+import { cronProjectRoleSkip } from "@/lib/cron-guard";
 import { logAndRespond } from "@/lib/error-response";
 import { rpcUrl, serviceHeaders } from "@/lib/supabase-rest";
 
@@ -30,6 +31,8 @@ export async function GET(req: NextRequest) {
       { status: 401 },
     );
   }
+  const roleSkip = cronProjectRoleSkip("sync_market_velocity");
+  if (roleSkip) return NextResponse.json(roleSkip);
 
   const startedAt = new Date();
   try {

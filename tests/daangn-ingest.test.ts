@@ -8,9 +8,12 @@ import assert from "node:assert/strict";
 
 import {
   daangnUpsertPreflightLimit,
+  hasDaangnDetailPayload,
   inferDaangnShipping,
+  selectDaangnCategoryBoostCombos,
   selectDaangnCombos,
   selectDaangnFirehoseCombos,
+  selectDaangnRegionShard,
 } from "../src/lib/daangn-ingest";
 import {
   DAANGN_FASHION_CATEGORIES,
@@ -116,11 +119,88 @@ describe("selectDaangnFirehoseCombos", () => {
   });
 });
 
+describe("selectDaangnRegionShard", () => {
+  const regions = [
+    { id: "r1", name: "R1" },
+    { id: "r2", name: "R2" },
+    { id: "r3", name: "R3" },
+    { id: "r4", name: "R4" },
+    { id: "r5", name: "R5" },
+    { id: "r6", name: "R6" },
+  ];
+
+  it("splits regions into stable disjoint shards", () => {
+    const a = selectDaangnRegionShard(regions, 2, 0);
+    const b = selectDaangnRegionShard(regions, 2, 1);
+    const aIds = new Set(a.map((region) => region.id));
+    const bIds = new Set(b.map((region) => region.id));
+    assert.ok(a.length > 0);
+    assert.ok(b.length > 0);
+    assert.equal(a.filter((region) => bIds.has(region.id)).length, 0);
+    assert.equal(b.filter((region) => aIds.has(region.id)).length, 0);
+    assert.equal(new Set([...aIds, ...bIds]).size, regions.length);
+  });
+
+  it("keeps all regions when shard count is one", () => {
+    assert.deepEqual(selectDaangnRegionShard(regions, 1, 0), regions);
+  });
+});
+
+describe("selectDaangnCategoryBoostCombos", () => {
+  const regions = [
+    { id: "r1", name: "R1" },
+    { id: "r2", name: "R2" },
+    { id: "r3", name: "R3" },
+  ];
+  const categories = [
+    { id: 1, name: "디지털기기" },
+    { id: 14, name: "남성패션/잡화" },
+  ];
+
+  it("adds category-depth combos only for the requested top regions", () => {
+    const result = selectDaangnCategoryBoostCombos({
+      regions,
+      categories,
+      maxRegions: 2,
+      shuffleRegions: false,
+      regionScores: new Map([
+        ["r3", 100],
+        ["r1", 50],
+      ]),
+    });
+    assert.equal(result.combos.length, 4);
+    assert.equal(result.totalSpace, 6);
+    assert.equal(result.selectionMode, "adaptive");
+    assert.deepEqual(result.combos.map((combo) => `${combo.region.id}:${combo.category.id}`), [
+      "r3:1",
+      "r3:14",
+      "r1:1",
+      "r1:14",
+    ]);
+  });
+
+  it("uses learned region-category pair scores before broad region scores", () => {
+    const result = selectDaangnCategoryBoostCombos({
+      regions,
+      categories,
+      maxRegions: 1,
+      shuffleRegions: false,
+      regionScores: new Map([["r1", 100]]),
+      pairScores: new Map([["r3:14", 999]]),
+      explorationRatio: 0,
+    });
+    assert.deepEqual(result.combos.map((combo) => `${combo.region.id}:${combo.category.id}`), [
+      "r3:14",
+      "r1:1",
+    ]);
+  });
+});
+
 describe("daangnUpsertPreflightLimit", () => {
   it("checks a wider candidate window without raising the write cap", () => {
-    assert.equal(daangnUpsertPreflightLimit(500, 5000), 1500);
+    assert.equal(daangnUpsertPreflightLimit(500, 5000), 5000);
     assert.equal(daangnUpsertPreflightLimit(500, 700), 700);
-    assert.equal(daangnUpsertPreflightLimit(800, 5000), 2000);
+    assert.equal(daangnUpsertPreflightLimit(800, 5000), 5000);
   });
 
   it("keeps zero caps disabled", () => {
@@ -229,5 +309,38 @@ describe("inferDaangnShipping (conservative default)", () => {
       commentCount: null,
     };
     assert.equal(inferDaangnShipping(detail), "shipping_possible");
+  });
+});
+
+describe("hasDaangnDetailPayload", () => {
+  it("does not treat search-only seller profile fields as detail enrichment", () => {
+    const searchLike = makeArticle({
+      user: {
+        dbId: "1",
+        nickname: "tester",
+        webCrawlNotAllowed: false,
+        profileImage: "https://example.com/profile.png",
+        regionName: "사당동",
+      } as DaangnSearchArticle["user"],
+    });
+    assert.equal(hasDaangnDetailPayload(searchLike), false);
+  });
+
+  it("recognizes parsed detail payloads that can carry manner temperature", () => {
+    const detail: DaangnDetailArticle = {
+      ...makeArticle({ content: "택배 가능" }),
+      user: {
+        dbId: "1",
+        nickname: "tester",
+        webCrawlNotAllowed: false,
+        score: 43.3,
+        reviewCount: 26,
+        profileImage: null,
+        regionName: "사당동",
+      },
+      recommendedCount: null,
+      commentCount: 0,
+    };
+    assert.equal(hasDaangnDetailPayload(detail), true);
   });
 });

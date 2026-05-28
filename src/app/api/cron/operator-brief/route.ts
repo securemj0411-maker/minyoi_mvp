@@ -14,6 +14,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { checkCronAuth } from "@/lib/cron-auth";
+import { cronProjectRoleSkip } from "@/lib/cron-guard";
 import { sendOperatorBrief } from "@/lib/operational-notifier";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
@@ -93,6 +94,8 @@ export async function GET(req: NextRequest) {
   if (!auth.authOk) {
     return NextResponse.json({ error: "unauthorized", reason: auth.authReason }, { status: 401 });
   }
+  const roleSkip = cronProjectRoleSkip("operator_brief");
+  if (roleSkip) return NextResponse.json(roleSkip);
 
   const yesterday = yesterdayDate();
   const yesterdayStart = yesterdayStartIso();

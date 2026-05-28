@@ -52,6 +52,8 @@ function skipStatusOf(reason: CronGuardSkipReason): string {
       return "skipped_running";
     case "source_health_unhealthy":
       return "skipped_unhealthy";
+    case "project_role_disabled":
+      return "skipped_project_role";
   }
 }
 
@@ -100,9 +102,11 @@ export type CronWorkerMode =
   //   recovery cron 별도 worker 분리. score_worker 부담 ↓ (33% timeout 대응) + 회복 처리량 ↑.
   | "recovery_worker"
   // Phase 4 (당근 ingest cron, Shadow Mode 시작): 5분 간격.
-  | "daangn_worker";
+  | "daangn_worker"
+  | "daangn_worker_b"
+  | "daangn_price_sweep_worker";
 
-type CronGuardSkipReason = "cooldown" | "same_worker_running" | "source_health_unhealthy";
+type CronGuardSkipReason = "cooldown" | "same_worker_running" | "source_health_unhealthy" | "project_role_disabled";
 
 type SourceHealthStatus = "healthy" | "degraded" | "unhealthy";
 
@@ -171,6 +175,8 @@ const DEFAULT_COOLDOWN_MS: Record<CronWorkerMode, number> = {
   score_worker: 60_000,
   recovery_worker: 60_000,
   daangn_worker: 5 * 60_000,
+  daangn_worker_b: 5 * 60_000,
+  daangn_price_sweep_worker: 20 * 60_000,
 };
 
 const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
@@ -191,6 +197,8 @@ const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
   score_worker: 90_000,
   recovery_worker: 60_000,
   daangn_worker: 90_000,
+  daangn_worker_b: 90_000,
+  daangn_price_sweep_worker: 2 * 60_000,
 };
 
 const HEAVY_SOURCE_HEALTH_GUARD_MODES = new Set<CronWorkerMode>([
@@ -200,6 +208,8 @@ const HEAVY_SOURCE_HEALTH_GUARD_MODES = new Set<CronWorkerMode>([
   "lifecycle_terminal_recheck",
   "joongna_worker",
   "daangn_worker",
+  "daangn_worker_b",
+  "daangn_price_sweep_worker",
 ]);
 
 let sourceHealthLoaderForTests: (() => Promise<SourceHealthForGuard | null>) | null = null;
@@ -235,6 +245,21 @@ function modeEnvKey(prefix: string, mode: CronWorkerMode) {
 function isForceRun(req?: CronGuardRequestLike) {
   const raw = req?.nextUrl?.searchParams?.get("force");
   return raw === "1" || raw === "true" || raw === "on";
+}
+
+export function cronProjectRoleSkip(mode: string): Record<string, string | boolean> | null {
+  const role = String(process.env.CRON_PROJECT_ROLE ?? "").trim().toLowerCase();
+  if (!role || role === "primary" || role === "all") return null;
+  if (role === "daangn_b" && mode === "daangn_worker_b") return null;
+  return {
+    ok: true,
+    started: false,
+    skipped: true,
+    mode,
+    reason: "project_role_disabled",
+    projectRole: role,
+    ts: new Date().toISOString(),
+  };
 }
 
 function hourBucket(now: number) {
@@ -316,6 +341,7 @@ function shouldSkipForSourceHealth(
 }
 
 function sourceForHealthGuard(mode: CronWorkerMode) {
+  if (mode === "daangn_worker" || mode === "daangn_worker_b" || mode === "daangn_price_sweep_worker") return "daangn";
   return mode === "joongna_worker" ? "joongna" : "bunjang";
 }
 
@@ -340,6 +366,14 @@ function acquireCronGuardInternal(
   const now = Date.now();
   const state = guardState();
   const force = isForceRun(req);
+  if (!force) {
+    const roleSkip = cronProjectRoleSkip(mode);
+    if (roleSkip) {
+      const projectRole = String(roleSkip.projectRole ?? "");
+      void logCronSkip(mode, randomUUID(), "project_role_disabled", { projectRole });
+      return skipped(state, mode, "project_role_disabled", 0, now, { projectRole });
+    }
+  }
   const cooldownMs = force
     ? 0
     : envMs(modeEnvKey("CRON_GUARD_COOLDOWN_MS", mode), DEFAULT_COOLDOWN_MS[mode], 0, 24 * 60 * 60_000);

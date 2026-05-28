@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { checkCronAuth } from "@/lib/cron-auth";
+import { cronProjectRoleSkip } from "@/lib/cron-guard";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 export const runtime = "nodejs";
@@ -62,6 +63,8 @@ export async function GET(req: NextRequest) {
   if (!authOk) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
+  const roleSkip = cronProjectRoleSkip("safety_stats_warmer");
+  if (roleSkip) return NextResponse.json(roleSkip);
 
   try {
     const result = await warmSnapshot();
