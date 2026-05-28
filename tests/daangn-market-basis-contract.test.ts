@@ -14,7 +14,10 @@ test("Daangn detail access rejects missing same-source market basis before charg
   assert.match(route, /verifiedItem\.marketBasisUsable === false/);
   assert.match(route, /daangn_market_basis_missing/);
   assert.match(packOpen, /const daangnMarketBasisMissing = isDaangnMarketplaceSource\(meta\.marketplaceSource\)/);
+  assert.match(packOpen, /!marketBasis\.sourceSampleUsed/);
   assert.match(packOpen, /marketBasis\.sampleCount < MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE/);
+  assert.match(packOpen, /basisSource: useListingSourceStat \? listingSource : null/);
+  assert.match(packOpen, /basisSourceLabel: useListingSourceStat \? marketplaceSourceLabel\(listingSource\) : null/);
   assert.match(packOpen, /rpcInvalidate\(candidate\.pid, "daangn_market_basis_missing"\)/);
   assert.match(route, /당근 기준 비교 매물이 아직 부족해 추천에서 내렸어요/);
 });
