@@ -231,11 +231,12 @@ export type DaangnIngestOptions = {
 // Helpers
 // ───────────────────────────────────────────────────────────────────────────
 
-// Wave 905 (2026-05-28): nationwide firehose repeats many already-seen rows.
-// Keep the write/classify cap unchanged, but inspect a much wider cheap
-// preflight window so existing rows near the top do not hide fresh candidates.
-const DAANGN_UPSERT_PREFLIGHT_MULTIPLIER = 10;
-const DAANGN_UPSERT_PREFLIGHT_MAX = 5_000;
+// Wave 915 (2026-05-29): A/B/C firehose can surface 5k+ already-seen rows
+// before fresh candidates, especially in category-target mode. Keep the
+// write/classify cap unchanged, but inspect deeper so top existing rows do not
+// starve new rows from the same fetched batch.
+const DAANGN_UPSERT_PREFLIGHT_MULTIPLIER = 20;
+const DAANGN_UPSERT_PREFLIGHT_MAX = 15_000;
 const DAANGN_PREFLIGHT_EXISTING_READ_CHUNK_SIZE = 250;
 
 export const DAANGN_TARGET_CATEGORY_SEEDS: DaangnCategorySeed[] = [

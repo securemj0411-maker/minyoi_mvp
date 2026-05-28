@@ -153,3 +153,30 @@ Expected effect:
 - Aggressive category-only Daangn crawling across more Vercel projects is deferred until this ready-promotion bottleneck is measured.
 - Relaxing Daangn source median sample requirements is deferred because it would increase ready count at the cost of trust.
 - Rewriting price-sweep fallback is deferred because current production blocking suggests search-combo sweep is less reliable than using already-ingested Daangn raw rows plus market refresh.
+
+## Wave 915 Follow-up — Deeper Daangn upsert preflight
+
+Production review after Wave 914c showed A/B/C discovery workers are not idle:
+
+- In the last 2 hours, A/B/C Daangn workers fetched over 2M article impressions and upserted about 5.3K raw rows.
+- The C category-target worker often produced about `8.8K` catalog-hint candidates per run.
+- However, `upsertCandidateArticles` was capped at `5K`. Those top `5K` were often already-seen rows, so thousands of lower-ranked candidates were deferred without even checking whether they were new.
+
+Decision:
+
+- Keep the write/classify cap unchanged. This avoids dumping unlimited rows into DB/score.
+- Increase only the cheap existing-row preflight window:
+  - multiplier `10 → 20`
+  - max window `5,000 → 15,000`
+- This lets a run look past already-seen top rows and fill the same write cap with fresh candidates when they exist.
+
+Expected effect:
+
+- `preflightCandidates` should rise above `5,000` on A/B/C when enough catalog-hint candidates exist.
+- `rawUpserted` should become less dependent on whether the freshest 5K rows were already seen.
+- More fresh raw rows should enter score without lowering quality gates such as `negative_resell_gap`, `daangn_volume_below_3`, or source-market median requirements.
+
+Verification:
+
+- `npx tsx --test tests/daangn-ingest.test.ts` passed.
+- `npx eslint src/lib/daangn-ingest.ts tests/daangn-ingest.test.ts` passed.

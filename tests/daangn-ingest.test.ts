@@ -201,6 +201,8 @@ describe("daangnUpsertPreflightLimit", () => {
     assert.equal(daangnUpsertPreflightLimit(500, 5000), 5000);
     assert.equal(daangnUpsertPreflightLimit(500, 700), 700);
     assert.equal(daangnUpsertPreflightLimit(800, 5000), 5000);
+    assert.equal(daangnUpsertPreflightLimit(500, 12000), 10000);
+    assert.equal(daangnUpsertPreflightLimit(800, 20000), 15000);
   });
 
   it("keeps zero caps disabled", () => {
