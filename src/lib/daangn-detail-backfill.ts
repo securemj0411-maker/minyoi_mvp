@@ -261,10 +261,10 @@ async function enqueueMarketInvalidations(pids: number[], dryRun: boolean): Prom
 export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptions = {}): Promise<DaangnDetailBackfillResult> {
   const startedAt = Date.now();
   const dryRun = options.dryRun ?? false;
-  const limit = boundedInt(options.limit, 100, 1, 200);
+  const limit = boundedInt(options.limit, 150, 1, 200);
   const timeoutMs = boundedInt(options.timeoutMs, 8_000, 1_000, 30_000);
-  const delayMs = boundedInt(options.delayMs, 450, 0, 10_000);
-  const budgetMs = boundedInt(options.budgetMs, 115_000, 5_000, 260_000);
+  const delayMs = boundedInt(options.delayMs, 350, 0, 10_000);
+  const budgetMs = boundedInt(options.budgetMs, 175_000, 5_000, 260_000);
   const deadline = startedAt + budgetMs;
 
   const candidates = await loadCandidates(limit);

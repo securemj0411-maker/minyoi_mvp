@@ -180,3 +180,43 @@ Verification:
 
 - `npx tsx --test tests/daangn-ingest.test.ts` passed.
 - `npx eslint src/lib/daangn-ingest.ts tests/daangn-ingest.test.ts` passed.
+
+Production verification:
+
+- Main/A and B deployments picked up the deeper preflight window automatically.
+  - A: `preflightCandidates=5,636`, `articlesDeferredByUpsertCap=0`, `rawUpserted=441`.
+  - B: `preflightCandidates=5,739`, `articlesDeferredByUpsertCap=0`, `rawUpserted=161`.
+- C was still on an older separate Vercel project deployment (`minyoi-mvp-daangn-c`) and stayed capped at `5,000`.
+- Manually deployed clean commit `a555ffc` to the C project.
+- After C deployment, C run verified:
+  - `preflightCandidates=9,162`
+  - `articlesDeferredByUpsertCap=0`
+  - `rawUpserted=414`
+
+## Wave 915b Follow-up — Detail backfill catch-up
+
+After deeper preflight landed, raw dirty backlog rose as expected:
+
+- Daangn ready moved `507 → 527`.
+- Raw `active + sku_id + score_dirty=true` rose to `986`.
+- Raw dirty rows missing Daangn manner temperature rose to `560`.
+
+Decision:
+
+- Increase detail backfill throughput now that discovery can push more scorable Daangn rows.
+- Keep this bounded and overlap-safe:
+  - detail limit `100 → 150`
+  - delay `450ms → 350ms`
+  - budget `115s → 175s`
+  - detail worker lease `2m → 4m`
+  - force DB cron lock for `daangn_detail_worker`
+
+Expected effect:
+
+- The detail worker should process roughly 50% more Daangn rows per run while avoiding overlapping detail runs across Vercel instances.
+- This should reduce `daangn_manner_temperature_missing` skips after the next detail + score cycles.
+
+Verification:
+
+- `npx eslint src/lib/daangn-detail-backfill.ts src/app/api/cron/daangn-detail-worker/route.ts src/lib/cron-guard.ts` passed.
+- `npx tsx --test tests/cron-guard.test.ts tests/daangn-ingest.test.ts` passed.
