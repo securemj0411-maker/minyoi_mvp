@@ -3690,6 +3690,7 @@ async function loadFraudGroupHashes(targetHashes?: Iterable<string>): Promise<Se
     const target = Array.from(new Set(Array.from(targetHashes ?? [])
       .map((hash) => String(hash ?? "").trim())
       .filter(Boolean)));
+    if (targetHashes && target.length === 0) return new Set();
     if (target.length > 0) {
       const sellerUidsByHash = new Map<string, Set<string>>();
       for (const chunk of chunkArray(target, 100)) {
@@ -3756,18 +3757,20 @@ async function loadDaangnVolumeBySku(targetSkuIds?: Iterable<string>): Promise<M
       // scored, causing false `daangn_volume_below_3` invalidations even when that
       // SKU had plenty of Daangn samples. Querying only batch SKUs is both cheaper
       // and more accurate.
-      for (const chunk of chunkArray(target, 100)) {
-        const encoded = chunk.map(encodeURIComponent).join(",");
-        let offset = 0;
-        while (offset < 50_000) {
-          const url = `${tableUrl("mvp_raw_listings")}?select=sku_id&source=eq.daangn&listing_state=eq.active&first_seen_at=gte.${encodeURIComponent(since7dIso)}&sku_id=in.(${encoded})&order=first_seen_at.desc&limit=${PAGE}&offset=${offset}`;
+      // Wave 918 follow-up: the pool gate only needs the <3 threshold, not an exact
+      // count above 3. Fetch at most 3 rows per target SKU so popular SKUs do not
+      // force a large 7-day window scan on every score run.
+      const counts = new Map<string, number>();
+      for (const chunk of chunkArray(target, 8)) {
+        const results = await Promise.all(chunk.map(async (skuId) => {
+          const url = `${tableUrl("mvp_raw_listings")}?select=sku_id&source=eq.daangn&listing_state=eq.active&first_seen_at=gte.${encodeURIComponent(since7dIso)}&sku_id=eq.${encodeURIComponent(skuId)}&order=first_seen_at.desc&limit=3`;
           const res = await restFetch(url, { headers: serviceHeaders() });
           const rows = (await res.json()) as Array<{ sku_id: string }>;
-          all.push(...rows);
-          if (rows.length < PAGE) break;
-          offset += PAGE;
-        }
+          return [skuId, rows.length] as const;
+        }));
+        for (const [skuId, count] of results) counts.set(skuId, count);
       }
+      return counts;
     } else {
       let offset = 0;
       while (offset < 10000) {
@@ -3805,18 +3808,26 @@ async function loadLowVolumeSkuIds(targetSkuIds?: Iterable<string>): Promise<Set
     if (target.length > 0) {
       // Wave 904: exact batch-SKU counts avoid the global maxRows window
       // under-counting popular SKUs that are outside the newest page.
-      for (const chunk of chunkArray(target, 100)) {
-        const encoded = chunk.map(encodeURIComponent).join(",");
-        let offset = 0;
-        while (offset < 50_000) {
-          const url = `${tableUrl("mvp_raw_listings")}?select=sku_id,first_seen_at&sku_id=in.(${encoded})&first_seen_at=gte.${encodeURIComponent(since7dIso)}&listing_state=eq.active&order=first_seen_at.desc&limit=${PAGE}&offset=${offset}`;
+      // Wave 918 follow-up: this gate only needs to know whether a SKU has
+      // 7d >= 3 and 2d >= 1. Query each target SKU with limit=3 so popular SKUs
+      // do not force a large 7-day window scan just to prove they are not sparse.
+      const lowVolume = new Set<string>();
+      for (const chunk of chunkArray(target, 8)) {
+        const results = await Promise.all(chunk.map(async (skuId) => {
+          const url = `${tableUrl("mvp_raw_listings")}?select=sku_id,first_seen_at&sku_id=eq.${encodeURIComponent(skuId)}&first_seen_at=gte.${encodeURIComponent(since7dIso)}&listing_state=eq.active&order=first_seen_at.desc&limit=3`;
           const res = await restFetch(url, { headers: serviceHeaders() });
           const rows = (await res.json()) as Array<{ sku_id: string; first_seen_at: string }>;
-          all.push(...rows);
-          if (rows.length < PAGE) break;
-          offset += PAGE;
+          const hasRecent2d = rows.some((row) => {
+            const ts = new Date(row.first_seen_at).getTime();
+            return Number.isFinite(ts) && ts >= since2dMs;
+          });
+          return [skuId, rows.length, hasRecent2d] as const;
+        }));
+        for (const [skuId, d7, hasRecent2d] of results) {
+          if (d7 > 0 && (d7 < 3 || !hasRecent2d)) lowVolume.add(skuId);
         }
       }
+      return lowVolume;
     } else {
       let offset = 0;
       while (!Number.isFinite(maxRows) || maxRows <= 0 || all.length < maxRows) {

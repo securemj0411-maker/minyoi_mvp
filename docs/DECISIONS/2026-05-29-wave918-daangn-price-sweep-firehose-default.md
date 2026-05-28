@@ -131,3 +131,27 @@ Deferred:
 
 - Do not replace the DB RPC itself yet; the app no longer needs it on the score hot path, and a schema/function migration is a bigger operational step.
 - Do not merge low-volume and Daangn-volume loaders until the new nested timing fields show which one is still meaningful.
+
+## Follow-up: score volume gate threshold reads
+
+First production run after targeted fraud hashes confirmed the fix on primary:
+
+```text
+score_load_fraud_group_hashes ~= 257ms
+score_load_pool_gate_inputs ~= 5964ms
+score_load_low_volume_sku_ids ~= 5962ms
+score_load_daangn_volume_by_sku ~= 4657ms
+```
+
+But one B run had a batch with no `description_hash`; that still fell back to the old global fraud RPC and spent 8005ms. Fix: when the caller passes an explicit empty target-hash set, return an empty set instead of global fallback. No current row has a hash to compare, so no fraud hash can be applied to that batch.
+
+The remaining volume gates do not need exact counts above the threshold:
+
+- low-volume gate only needs `7d >= 3` and `2d >= 1`
+- Daangn gate only needs `Daangn 7d >= 3`
+
+Decision:
+
+- For target SKU mode, fetch at most 3 rows per SKU with bounded concurrency instead of scanning all 7-day rows for a large `sku_id=in.(...)` window.
+- Preserve the legacy global scan only for callers that do not pass target SKUs.
+- Keep the old semantics that target SKUs with no 7-day raw rows are not added to `lowVolumeSkuIds`; Daangn volume still returns 0 and candidate policy blocks `<3`.
