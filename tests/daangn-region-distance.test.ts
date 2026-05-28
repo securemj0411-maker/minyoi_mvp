@@ -38,12 +38,12 @@ test("Daangn distance blocks clearly non-local listings instead of allowing all 
   assert.ok((jeju.distanceKm ?? 0) > 400);
 });
 
-test("Daangn distance falls back from an unmapped dong to its area centroid", () => {
+test("Daangn distance resolves Sangdo 1-dong to its exact centroid", () => {
   const geo = resolveDaangnGeoByPath(SANGDO_1);
 
   assert.ok(geo);
-  assert.equal(geo.id, "324");
-  assert.equal(geo.name, "동작구");
+  assert.equal(geo.id, "6092");
+  assert.equal(geo.name, "상도1동");
 });
 
 test("Daangn distance does not show a far label before the user sets a home region", () => {

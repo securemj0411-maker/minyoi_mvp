@@ -255,8 +255,9 @@ export const DAANGN_FASHION_CATEGORIES: DaangnCategorySeed[] = [
 //   - 경기도 37 시·구 (수원/성남/고양/용인/안산/안양 분구 + 핵심 시 + 화성/평택/김포/광명 등)
 //   - 총 111 region (인구밀집 광역시 + 경기 핵심 = 한국 인구 ~75% cover)
 //
-// 동 단위 (Phase 6) 는 deprecated — 구 단위가 strictly broader coverage.
-// 영업 시작 가능 = YES (서울 25 구 + 광역시 49 구 + 경기 37 시·구).
+// 동 단위 (Phase 6) 는 대부분 deprecated — 구 단위가 broader coverage.
+// 단, 직거래 피드 신뢰가 중요한 생활권은 cherry-pick dong seed 를 같이 둔다.
+// 영업 시작 가능 = YES (서울 25 구 + 광역시 49 구 + 경기 37 시·구 + 일부 생활권 동).
 export const DEFAULT_DAANGN_REGION_SEEDS: DaangnRegionSeed[] = [
   // ─────── 서울특별시 25 구 ───────
   { id: "381", name: "강남구" },
@@ -271,6 +272,14 @@ export const DEFAULT_DAANGN_REGION_SEEDS: DaangnRegionSeed[] = [
   { id: "154", name: "도봉구" },
   { id: "87",  name: "동대문구" },
   { id: "324", name: "동작구" },
+  // 상도권 사용자가 사당동만 보는 문제 방지용 동작구 dong precision seeds.
+  { id: "6088", name: "노량진동" },
+  { id: "6089", name: "동작동" },
+  { id: "6090", name: "본동" },
+  { id: "6091", name: "사당동" },
+  { id: "6092", name: "상도1동" },
+  { id: "6093", name: "상도동" },
+  { id: "6094", name: "신대방동" },
   { id: "221", name: "마포구" },
   { id: "206", name: "서대문구" },
   { id: "362", name: "서초구" },
