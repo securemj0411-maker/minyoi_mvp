@@ -615,6 +615,8 @@ async function loadPool(
   const sourceByPid = new Map<number, string | null>();
   const listingStateByPid = new Map<number, string | null>();
   const daangnActionableByPid = new Map<number, boolean>();
+  // Wave 797 (2026-05-27): 거리 우선 정렬용 — 당근 매물 distanceKm 저장.
+  const daangnDistanceKmByPid = new Map<number, number>();
   const rawByPid = new Map<number, RawRow>();
   const [rawAll, sourceRows] = await Promise.all([
     fetchRowsByPidChunks<RawRow>(
@@ -648,6 +650,10 @@ async function loadPool(
         row.daangn_region_name,
       );
       daangnActionableByPid.set(Number(row.pid), distance.actionable);
+      // Wave 797: distanceKm 저장 (정렬용). null 이면 Infinity 로 (가장 멀게 처리).
+      if (distance.distanceKm != null && Number.isFinite(distance.distanceKm)) {
+        daangnDistanceKmByPid.set(Number(row.pid), distance.distanceKm);
+      }
     }
   }
   const sourcePass = (row: PoolRow & { soldOut: boolean }) => {
@@ -703,9 +709,20 @@ async function loadPool(
 
     // Phase 1: protected source quota (당근/중나 최소 슬롯 보장)
     // options.source 가 지정돼 있으면 quota skip — 사용자가 단일 source 선택했을 때 무관한 source 강제 X.
+    // Wave 797 (2026-05-27): 당근 매물 distance ASC 정렬 — 가까운 동네 우선.
+    //   user home region 등록된 경우만 효과. tie-break: 차익 DESC.
     if (!options.source) {
       for (const [src, quota] of Object.entries(SOURCE_QUOTA)) {
-        for (const row of rows) {
+        const candidateRows = (src === 'daangn' && options.userHomeDaangnFullPath)
+          ? [...rows].sort((a, b) => {
+              const aDist = daangnDistanceKmByPid.get(a.pid) ?? Number.POSITIVE_INFINITY;
+              const bDist = daangnDistanceKmByPid.get(b.pid) ?? Number.POSITIVE_INFINITY;
+              if (aDist !== bDist) return aDist - bDist;
+              // Tie-break: 차익 DESC (expected_profit_max)
+              return (b.expected_profit_max ?? 0) - (a.expected_profit_max ?? 0);
+            })
+          : rows;
+        for (const row of candidateRows) {
           if (out.length >= maxRows) break;
           if ((perSource.get(src) ?? 0) >= quota) break;
           if ((sourceByPid.get(row.pid) ?? null) !== src) continue;
