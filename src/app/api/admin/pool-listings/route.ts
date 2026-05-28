@@ -6,6 +6,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { loadMarketBandsForKeys, loadV7SiblingPresence, resolveSkuMedianForDisplay } from "@/lib/band-aware-median";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
+import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
+import { marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { restFetchAll } from "@/lib/rest-paginated";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -295,7 +297,7 @@ export async function GET(req: NextRequest) {
         { headers: serviceHeaders() },
       ),
       restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sale_status,listing_state,last_seen_at,query,seller_uid,shop_review_rating,shop_review_count,free_shipping,num_faved,num_comment,source,seller_source,url&pid=in.(${pidsCsv})`,
+        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,sale_status,listing_state,last_seen_at,query,seller_uid,shop_review_rating,shop_review_count,free_shipping,num_faved,num_comment,source,seller_source,url,description_preview,raw_json,daangn_region_id,daangn_region_name&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -454,6 +456,16 @@ export async function GET(req: NextRequest) {
         lastSeenAt: (r.last_seen_at as string | null) ?? null,
         query: (r.query as string | null) ?? null,
         sellerUid: (r.seller_uid as string | null) ?? null,
+        directTradeLocation: marketplaceSource === "daangn"
+          ? marketplaceLocationCombinedWithRegion(
+              r.raw_json,
+              ((r.description_preview as string | null) ?? (l.description_preview as string | null)) ?? null,
+              resolveDaangnFullRegion(
+                (r.daangn_region_id as string | null) ?? null,
+                (r.daangn_region_name as string | null) ?? null,
+              ),
+            )
+          : null,
         // 2026-05-17 Phase 0 L4 — RiskScoreBar 입력.
         descriptionPreview: (l.description_preview as string | null) ?? null,
         // Wave 199: shop_review_* / free_shipping / num_* 는 mvp_raw_listings 에서.

@@ -31,6 +31,7 @@ type PoolItem = {
   listingUrl: string;
   marketplaceSource: string;
   marketplaceLabel: string;
+  directTradeLocation: string | null;
   comparableKey: string | null;
   parseConfidence: number | null;
   needsReview: boolean;
@@ -711,6 +712,11 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-zinc-500 dark:text-zinc-400">
                       <MarketplaceSourceBadge source={item.marketplaceSource} label={item.marketplaceLabel} />
                       <span>{item.skuName ?? "—"} · {item.poolStatus} · {relAge(item.lastVerifiedAt)} · 노출 {item.exposureCount}/{item.maxExposure}</span>
+                      {item.marketplaceSource === "daangn" && item.directTradeLocation ? (
+                        <span className="rounded-full border border-orange-200 bg-orange-50 px-1.5 py-0.5 text-[10px] font-black text-orange-700 dark:border-orange-900/60 dark:bg-orange-950/30 dark:text-orange-200">
+                          📍 {item.directTradeLocation}
+                        </span>
+                      ) : null}
                       {(() => {
                         const stale = verifiedAtStaleness(item.lastVerifiedAt);
                         if (!stale) return null;
