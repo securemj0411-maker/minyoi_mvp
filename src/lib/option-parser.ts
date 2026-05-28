@@ -6,6 +6,7 @@ import { parseFashionMobility } from "@/lib/parsers/wave92-fashion-mobility";
 import { parseGameConsoleListing } from "@/lib/game-console-parser";
 // Wave 182 Phase 3 (2026-05-17): base option fallback (옵션 명시 X → 가장 낮은 옵션 가정).
 import { baseOptionsFor } from "@/lib/sku-base-options";
+import { parseEarphoneConditionEvidence } from "@/lib/condition-evidence/earphone";
 
 export type ParsedListingOptions = {
   parserVersion: string;
@@ -2069,6 +2070,9 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     ? (parseMonitorShape(title) ?? parseMonitorShape(text) ?? monitorModelHint?.monitorShape ?? null)
     : null;
   const { conditionScore, conditionNotes } = conditionFromText(text, batteryHealth, batteryCycles, category);
+  const earphoneConditionEvidence = category === "earphone"
+    ? parseEarphoneConditionEvidence({ title, description })
+    : null;
   const tabletBundlePriceReview = category === "tablet" && hasTabletBundlePriceReview(text);
   // Wave 90: tablet generation을 comparableParts에 전달 (세대별 시세 분리)
   const tabletGeneration = category === "tablet" ? parseTabletGeneration(text, model) : null;
@@ -2421,6 +2425,15 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       critical_unknown: criticalUnknown,
       tablet_bundle_price_review: tabletBundlePriceReview,
       condition_notes: conditionNotes,
+      earphone_condition_evidence: earphoneConditionEvidence?.facts ?? null,
+      earphone_condition_signals: earphoneConditionEvidence?.signals ?? null,
+      earphone_condition_policy: earphoneConditionEvidence ? {
+        version: earphoneConditionEvidence.version,
+        mode: "shadow_only",
+        hard_block_candidates: earphoneConditionEvidence.hardBlockCandidates,
+        warning_signals: earphoneConditionEvidence.warningSignals,
+        positive_signals: earphoneConditionEvidence.positiveSignals,
+      } : null,
       // 2026-05-16 v46 cleanup: condition_class 는 mvp_listing_parsed.condition_class column 에만 박음.
       // parsed_json 안 중복 저장 제거 (denormalization 클루지 차단 — 향후 drift 위험 0).
     },
