@@ -3,8 +3,9 @@
 ## Decision
 - Keep the existing Next.js metadata sitemap at `/sitemap.xml`.
 - Add a route-handler sitemap at `/sitemap-main.xml` that returns explicit XML with `application/xml`.
+- Add a plain static sitemap at `/sitemap-static.xml` to bypass Next.js sitemap route handling entirely if Google Search Console keeps a stale fetch failure.
 - Share the public URL list between `/sitemap.xml`, `/sitemap-main.xml`, and `robots.txt` so public page drift does not recur.
-- Advertise both sitemap URLs from `robots.txt`.
+- Advertise all sitemap URLs from `robots.txt`.
 
 ## Why
 - Google Search Console can remain stuck on a failed `/sitemap.xml` fetch even after the XML becomes valid.

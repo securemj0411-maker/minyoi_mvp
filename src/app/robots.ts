@@ -14,6 +14,10 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/me/", "/debug/", "/admin/", "/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY/", "/billing/checkout/", "/peek-pool-7f3kz9"],
       },
     ],
-    sitemap: [`${SITE_ORIGIN}/sitemap.xml`, `${SITE_ORIGIN}/sitemap-main.xml`],
+    sitemap: [
+      `${SITE_ORIGIN}/sitemap.xml`,
+      `${SITE_ORIGIN}/sitemap-main.xml`,
+      `${SITE_ORIGIN}/sitemap-static.xml`,
+    ],
   };
 }
