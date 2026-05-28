@@ -6345,35 +6345,58 @@ export async function housekeeperStage(): Promise<StageStats> {
 export async function scoreStage(deadlineMs: number, options: ScoreStageOptions = {}): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
-  const readyFloor = await loadPoolReadyFloorState();
+  const addScoreTiming = (name: string, durationMs: number) => {
+    const current = Number(stats.timingsMs?.[name] ?? 0);
+    stats.timingsMs = {
+      ...(stats.timingsMs ?? {}),
+      [name]: current + durationMs,
+    };
+  };
+  const timedScoreSubstage = async <T>(name: string, fn: () => Promise<T>): Promise<T> => {
+    const started = Date.now();
+    try {
+      return await fn();
+    } finally {
+      addScoreTiming(name, Date.now() - started);
+    }
+  };
+  const timedScoreBlock = <T>(name: string, fn: () => T): T => {
+    const started = Date.now();
+    try {
+      return fn();
+    } finally {
+      addScoreTiming(name, Date.now() - started);
+    }
+  };
+  const readyFloor = await timedScoreSubstage("score_ready_floor", () => loadPoolReadyFloorState());
   const cleanupEnabled = options.cleanup !== false;
   const unscorableDirtyCleared = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
-    : await clearUnscorableScoreDirty(Math.max(config.tickScoreLimit * 20, 1000));
+    : await timedScoreSubstage("score_cleanup_clear_unscorable", () => clearUnscorableScoreDirty(Math.max(config.tickScoreLimit * 20, 1000)));
   const nonScorableDirtyCleared = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
-    : await clearNonScorableScoreDirty(Math.max(config.tickScoreLimit * 2, 500));
+    : await timedScoreSubstage("score_cleanup_clear_non_scorable", () => clearNonScorableScoreDirty(Math.max(config.tickScoreLimit * 2, 500)));
   const poolIneligibleResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
-    : await invalidatePoolIneligibleResidues(Math.max(config.tickScoreLimit * 2, 1000));
+    : await timedScoreSubstage("score_cleanup_pool_ineligible_residue", () => invalidatePoolIneligibleResidues(Math.max(config.tickScoreLimit * 2, 1000)));
   const poolLowSellerRatingResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
-    : await invalidatePoolLowSellerRatingResidues(Math.max(config.tickScoreLimit * 2, 1000));
+    : await timedScoreSubstage("score_cleanup_low_seller_residue", () => invalidatePoolLowSellerRatingResidues(Math.max(config.tickScoreLimit * 2, 1000)));
   const poolStaleParserResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
-    : await invalidatePoolStaleParserResidues(Math.max(config.tickScoreLimit * 2, 1000));
+    : await timedScoreSubstage("score_cleanup_stale_parser_residue", () => invalidatePoolStaleParserResidues(Math.max(config.tickScoreLimit * 2, 1000)));
   const staleInvalidatedPoolDirtyMarked = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
-    : await markStaleInvalidatedPoolRowsDirty(Math.min(Math.max(config.tickScoreLimit, 100), 250));
+    : await timedScoreSubstage("score_cleanup_mark_stale_invalidated", () => markStaleInvalidatedPoolRowsDirty(Math.min(Math.max(config.tickScoreLimit, 100), 250)));
   const skuMedianUnavailableMarketInvalidations = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
-    : await enqueueSkuMedianUnavailableMarketInvalidations(Math.min(Math.max(config.tickScoreLimit, 100), 250));
+    : await timedScoreSubstage("score_cleanup_enqueue_median_invalidations", () => enqueueSkuMedianUnavailableMarketInvalidations(Math.min(Math.max(config.tickScoreLimit, 100), 250)));
   // Wave launch-44 (사용자 짚음 "invalidated to ready cron 해결책"):
   //   markRecoveredMarketInvalidatedPoolRowsDirty 호출 제거. recovery-worker (별도 cron) 로 이전.
   //   score_worker 부담 ↓ (33% timeout 대응) + recovery 자체 처리량 ↑ (큰 limit 가능).
   const poolAiAuditResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
-    : await invalidatePoolAiAuditResidues(Math.max(config.tickScoreLimit * 2, 1000));
+    : await timedScoreSubstage("score_cleanup_ai_audit_residue", () => invalidatePoolAiAuditResidues(Math.max(config.tickScoreLimit * 2, 1000)));
   stats.timingsMs = {
     ...(stats.timingsMs ?? {}),
     score_lane_b_worker: options.lane === "b" ? 1 : 0,
@@ -6393,26 +6416,32 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     score_sku_median_unavailable_market_invalidations: skuMedianUnavailableMarketInvalidations,
     score_pool_ai_audit_residue_invalidated_rows: poolAiAuditResidues,
   };
-  const rows = await loadScorableRows(config.tickScoreLimit, options);
+  const rows = await timedScoreSubstage("score_load_rows", () => loadScorableRows(config.tickScoreLimit, options));
+  stats.timingsMs = {
+    ...(stats.timingsMs ?? {}),
+    score_rows_loaded: rows.length,
+  };
   if (rows.length === 0) return stats;
-  const categoryReadiness = await loadCategoryReadinessMap();
-  const laneReadiness = await loadLaneReadinessMap();
-  const parsedByPid = await ensureParsedRows(rows, await loadParsedRows(rows.map((row) => row.pid)));
-  const preciseKeys = rows
+  const [categoryReadiness, laneReadiness] = await timedScoreSubstage("score_load_readiness", () => Promise.all([
+    loadCategoryReadinessMap(),
+    loadLaneReadinessMap(),
+  ]));
+  const parsedByPid = await timedScoreSubstage("score_load_and_parse_rows", async () => ensureParsedRows(rows, await loadParsedRows(rows.map((row) => row.pid))));
+  const preciseKeys = timedScoreBlock("score_build_precise_keys", () => rows
     .map((row) => preciseComparableKey(parsedByPid.get(row.pid)))
-    .filter((key): key is string => Boolean(key));
-  const marketStatsByKey = await loadMarketPriceStats([
+    .filter((key): key is string => Boolean(key)));
+  const marketStatsByKey = await timedScoreSubstage("score_load_market_stats", () => loadMarketPriceStats([
     ...preciseKeys,
     ...preciseKeys.map(shoeSizeAgnosticComparableKey).filter((key): key is string => Boolean(key)),
-  ]);
+  ]));
 
   // Wave 886 Phase 3 (2026-05-26 사용자 결정): per-source 시세 같이 로딩 — 당근 매물 한정 우선 사용.
   //   당근 매물 source = daangn → per-source map 의 daangn stat 시도 (sample ≥ 3 면) → 부족 시 mixed fallback.
   //   비파괴: fetch 실패해도 mixed 만 사용 (try/catch).
-  const marketStatsPerSource = await loadMarketPriceStatsPerSource([
+  const marketStatsPerSource = await timedScoreSubstage("score_load_market_stats_per_source", () => loadMarketPriceStatsPerSource([
     ...preciseKeys,
     ...preciseKeys.map(shoeSizeAgnosticComparableKey).filter((key): key is string => Boolean(key)),
-  ]).catch((err) => {
+  ])).catch((err) => {
     console.warn("[wave886] per-source loader fall back to mixed only", err instanceof Error ? err.message : String(err));
     return null as MarketPriceStatsPerSourceMap | null;
   });
@@ -6420,7 +6449,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
   // 2026-05-15: 미개봉/새상품 매물 시세 = 다나와 reference price (쿠팡/네이버 등 합산 최저가).
   // 중고 시세와 비교하면 호가 부풀려 풀에서 빠짐 → 진짜 꿀 매물 놓침.
   // reference price 있으면 미개봉 매물의 skuMedian = 그 가격, 없으면 기존 중고 시세 fallback.
-  const referencePricesByKey = await (async () => {
+  const referencePricesByKey = await timedScoreSubstage("score_load_reference_prices", async () => {
     try {
       const refRes = await restFetch(
         `${tableUrl("mvp_reference_prices")}?select=comparable_key,effective_price&effective_price=not.is.null`,
@@ -6435,8 +6464,9 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     } catch {
       return new Map<string, number>();
     }
-  })();
+  });
 
+  const batchPriceMapStart = Date.now();
   const pricesByMarket = new Map<string, number[]>();
   // Wave 179b (2026-05-17 사용자 코멘트 iPad mini 6 stale): broad SKU mixed batch median 차단.
   // 이전: marketKey 하나에 모든 condition + 다른 세대/옵션 매물 가격 섞임 → median 부풀려짐.
@@ -6467,6 +6497,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     pricesByMarketCondition.get(compositeKey)!.push(row.price);
     favsByMarket.get(marketKey)!.push(row.num_faved);
   }
+  addScoreTiming("score_build_batch_price_maps", Date.now() - batchPriceMapStart);
 
   const _skuMsrp = new Map(CATALOG.map((sku) => [sku.id, sku.msrpKrw]));
   const now = new Date().toISOString();
@@ -6497,6 +6528,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
   let phase2EscrowSelected = 0;
   const phase2EscrowFlagByPid = new Map<string, "ai_escrow_pending">();
   const handledPids: number[] = [];
+  const scoreRowLoopStart = Date.now();
   for (const row of rows) {
     if (Date.now() >= deadlineMs) {
       stats.timedOut = true;
@@ -6718,19 +6750,20 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
       ...shipping,
     });
   }
+  addScoreTiming("score_row_loop", Date.now() - scoreRowLoopStart);
 
   let parserNeedsReviewPoolInvalidationDeferred = 0;
   if (parserNeedsReviewPoolInvalidations.length > 0) {
-    const guarded = await filterPoolInvalidationsForReadyFloor(parserNeedsReviewPoolInvalidations, readyFloor);
+    const guarded = await timedScoreSubstage("score_filter_parser_needs_review_invalidations", () => filterPoolInvalidationsForReadyFloor(parserNeedsReviewPoolInvalidations, readyFloor));
     parserNeedsReviewPoolInvalidationDeferred = guarded.deferred;
-    await invalidatePoolEntries(guarded.entries);
+    await timedScoreSubstage("score_invalidate_parser_needs_review_pool", () => invalidatePoolEntries(guarded.entries));
   }
 
-  const aiReview = await applyAiReview(scoredRows, {
+  const aiReview = await timedScoreSubstage("score_apply_ai_review", () => applyAiReview(scoredRows, {
     enabled: config.aiReviewTopN > 0,
     topN: config.aiReviewTopN,
     concurrency: config.aiReviewConcurrency,
-  });
+  }));
   stats.aiReviewRequested = aiReview.stats.requested;
   stats.aiCacheHits = aiReview.stats.cacheHits;
   stats.aiApiCalls = aiReview.stats.apiCalls;
@@ -6751,9 +6784,9 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     }
   }
 
-  const listings = toListingOutputRows(aiReview.rows, now);
-  const rankedAnalyses = toRankedAnalysisRows(aiReview.rows, now);
-  const existingOutputs = await loadExistingScoreOutputs(listings.map((row) => row.pid));
+  const listings = timedScoreBlock("score_build_listing_outputs", () => toListingOutputRows(aiReview.rows, now));
+  const rankedAnalyses = timedScoreBlock("score_build_analysis_outputs", () => toRankedAnalysisRows(aiReview.rows, now));
+  const existingOutputs = await timedScoreSubstage("score_load_existing_outputs", () => loadExistingScoreOutputs(listings.map((row) => row.pid)));
   const listingDiffCounts = new Map<string, number>();
   const analysisDiffCounts = new Map<string, number>();
   const listingUpserts: ListingOutputRow[] = listings.filter((row) => {
@@ -6767,8 +6800,8 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     return analysisOutputChanged(row, existingOutputs.analyses.get(row.pid));
   });
 
-  await upsertRows("mvp_listings", listingUpserts, "pid");
-  await upsertRows("mvp_listing_analysis", analysisUpserts, "pid");
+  await timedScoreSubstage("score_upsert_listings", () => upsertRows("mvp_listings", listingUpserts, "pid"));
+  await timedScoreSubstage("score_upsert_analysis", () => upsertRows("mvp_listing_analysis", analysisUpserts, "pid"));
   stats.scored = scoredRows.length;
   stats.upserted = new Set([
     ...listingUpserts.map((row) => row.pid),
@@ -6805,7 +6838,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
       )),
   );
 
-  const [existingPoolSellerCounts, fraudGroupHashes, lowVolumeSkuIds, daangnVolumeBySku] = await Promise.all([
+  const [existingPoolSellerCounts, fraudGroupHashes, lowVolumeSkuIds, daangnVolumeBySku] = await timedScoreSubstage("score_load_pool_gate_inputs", () => Promise.all([
     loadExistingPoolSellerCounts().catch((err) => {
       console.warn("loadExistingPoolSellerCounts failed (non-fatal)", err);
       return new Map<string, number>();
@@ -6822,9 +6855,9 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
       console.warn("loadDaangnVolumeBySku failed (non-fatal)", err);
       return new Map<string, number>();
     }),
-  ]);
+  ]));
 
-  const poolBuild = buildCandidatePoolRows({
+  const poolBuild = timedScoreBlock("score_build_candidate_pool_rows", () => buildCandidatePoolRows({
     rows: aiReview.rows,
     parsedByPid,
     catalogById,
@@ -6836,7 +6869,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     fraudGroupHashes,
     lowVolumeSkuIds,
     daangnVolumeBySku,
-  });
+  }));
   const poolBuildPids = poolBuild.entries
     .map((entry) => Number(entry.pid))
     .filter(Number.isFinite);
@@ -6846,7 +6879,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     raw_json: row.raw_json ?? null,
     pool_eligible: row.pool_eligible ?? null,
   }]));
-  const rawPoolIneligiblePids = await loadRawPoolIneligiblePids(poolBuildPids);
+  const rawPoolIneligiblePids = await timedScoreSubstage("score_load_raw_pool_ineligible_pids", () => loadRawPoolIneligiblePids(poolBuildPids));
   const poolEntries = poolBuild.entries.filter((entry) => {
     const pid = Number(entry.pid);
     const rawEligibility = rawPoolEligibilityByPid.get(pid);
@@ -6860,13 +6893,13 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     })
     .map((entry) => ({ pid: Number(entry.pid), reason: "pool_eligible_false" }))
     .filter((entry) => Number.isFinite(entry.pid));
-  await upsertRows("mvp_candidate_pool", poolEntries, "pid");
-  const poolAiAuditCacheSynced = await syncPoolAiAuditStatusesFromCurrentCache(poolEntries, aiReview.rows);
-  await promoteLifecyclePriority(
+  await timedScoreSubstage("score_upsert_candidate_pool", () => upsertRows("mvp_candidate_pool", poolEntries, "pid"));
+  const poolAiAuditCacheSynced = await timedScoreSubstage("score_sync_pool_ai_audit_cache", () => syncPoolAiAuditStatusesFromCurrentCache(poolEntries, aiReview.rows));
+  await timedScoreSubstage("score_promote_lifecycle_priority", () => promoteLifecyclePriority(
     poolEntries.map((entry) => Number(entry.pid)).filter(Number.isFinite),
     "pool",
     new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-  );
+  ));
   const poolInvalidations = [...poolBuild.invalidations, ...runtimePoolEligibilityInvalidations].map((entry) => {
     const parsed = parsedByPid.get(Number(entry.pid));
     return {
@@ -6876,21 +6909,21 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
       condition_class: parsed?.condition_class ?? null,
     };
   });
-  const guardedPoolInvalidations = await filterPoolInvalidationsForReadyFloor(poolInvalidations, readyFloor);
-  await invalidatePoolEntries(guardedPoolInvalidations.entries);
+  const guardedPoolInvalidations = await timedScoreSubstage("score_filter_pool_invalidations", () => filterPoolInvalidationsForReadyFloor(poolInvalidations, readyFloor));
+  await timedScoreSubstage("score_invalidate_pool_entries", () => invalidatePoolEntries(guardedPoolInvalidations.entries));
   const postPoolIneligibleResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
-    : await invalidatePoolIneligibleResidues(Math.max(config.tickScoreLimit * 2, 1000));
+    : await timedScoreSubstage("score_cleanup_post_pool_ineligible_residue", () => invalidatePoolIneligibleResidues(Math.max(config.tickScoreLimit * 2, 1000)));
   const postPoolStaleParserResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
-    : await invalidatePoolStaleParserResidues(Math.max(config.tickScoreLimit * 2, 1000));
+    : await timedScoreSubstage("score_cleanup_post_stale_parser_residue", () => invalidatePoolStaleParserResidues(Math.max(config.tickScoreLimit * 2, 1000)));
 
   // Wave 238 (2026-05-19): shadow audit — ready 매물 중 AI 안 본 매물 강제 호출.
   //   baseline 91.1% AI 안 봄 → fashion mismatch 근본 source. Option A 본체.
   //   Phase 1 = shadow audit 기록, Phase 2 = fashion non-pass ready/reserved 즉시 cleanup.
   //   비용 cap (AI_L2_DAILY_BUDGET_USD env, default $10/일) + telegram alert.
   try {
-    const auditStats = await runShadowAudit({
+    const auditStats = await timedScoreSubstage("score_run_shadow_audit", () => runShadowAudit({
       rows: aiReview.rows,
       poolEntries: poolEntries.map((e) => ({
         pid: Number(e.pid),
@@ -6900,7 +6933,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
         const row = aiReview.rows.find((r) => Number(r.pid) === pid);
         return row?.skuId ?? null;
       },
-    });
+    }));
     (stats as Record<string, unknown>).aiL2ShadowAudit = {
       enabled: auditStats.enabled,
       candidates: auditStats.candidates,
@@ -6932,7 +6965,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
   }
   const postAuditPoolAiAuditResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
-    : await invalidatePoolAiAuditResidues(Math.max(config.tickScoreLimit * 2, 1000));
+    : await timedScoreSubstage("score_cleanup_post_ai_audit_residue", () => invalidatePoolAiAuditResidues(Math.max(config.tickScoreLimit * 2, 1000)));
   stats.timingsMs = {
     ...(stats.timingsMs ?? {}),
     score_pool_ineligible_pre_upsert_blocked_rows: runtimePoolEligibilityInvalidations.length,
@@ -6967,7 +7000,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
   //   그때 raw_listings.score_dirty=true로 다시 마킹되어 자연스럽게 재진입한다.
   // - budget timeout으로 일부만 처리했다면 그 부분만 내림 — 나머지는 dirty=true 그대로.
   const processedPids = handledPids.filter(Number.isFinite);
-  await clearScoreDirty(processedPids);
+  await timedScoreSubstage("score_clear_score_dirty", () => clearScoreDirty(processedPids));
   stats.timingsMs = {
     ...(stats.timingsMs ?? {}),
     score_dirty_cleared_rows: processedPids.length,
