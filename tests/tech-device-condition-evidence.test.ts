@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { parseTechDeviceConditionEvidence } from "@/lib/condition-evidence/tech-device";
+import { parseListingOptions } from "@/lib/option-parser";
 
 function signals(title: string, description = "") {
   return parseTechDeviceConditionEvidence({ title, description }).signals;
@@ -148,5 +149,47 @@ describe("tech device condition evidence parser", () => {
     });
 
     assert.ok(result.hardBlockCandidates.includes("carrier_or_finance_risk"));
+  });
+
+  it("parseListingOptions는 smartphone/tablet/smartwatch parsedJson에 shadow evidence를 저장한다", () => {
+    const phone = parseListingOptions({
+      category: "smartphone",
+      title: "아이폰 17 프로",
+      description: "유심기변용이고 확정기변 불가능합니다.",
+      skuId: "iphone-17-pro",
+      skuName: "iPhone 17 Pro",
+    });
+    const tablet = parseListingOptions({
+      category: "tablet",
+      title: "아이패드 미니 7",
+      description: "아이클라우드 로그아웃 완료했고 초기화 완료입니다.",
+      skuId: "ipad-mini",
+      skuName: "iPad mini",
+    });
+    const watch = parseListingOptions({
+      category: "smartwatch",
+      title: "애플워치 8",
+      description: "배터리 효율 78%, 사이클 620회입니다.",
+      skuId: "apple-watch-series-8-41mm",
+      skuName: "Apple Watch Series 8",
+    });
+
+    assert.equal((phone.parsedJson.tech_device_condition_policy as { mode?: string } | null)?.mode, "shadow_only");
+    assert.ok((phone.parsedJson.tech_device_condition_signals as string[]).includes("carrier_or_finance_risk"));
+    assert.ok((tablet.parsedJson.tech_device_condition_signals as string[]).includes("unlocked_reset_positive"));
+    assert.ok((watch.parsedJson.tech_device_condition_signals as string[]).includes("low_battery_health"));
+  });
+
+  it("다른 카테고리 parsedJson에는 tech device shadow evidence를 박지 않는다", () => {
+    const parsed = parseListingOptions({
+      category: "earphone",
+      title: "에어팟 프로 2",
+      description: "정상 작동합니다.",
+      skuId: "airpods-pro-2-usbc",
+      skuName: "AirPods Pro 2 USB-C",
+    });
+
+    assert.equal(parsed.parsedJson.tech_device_condition_evidence, null);
+    assert.equal(parsed.parsedJson.tech_device_condition_policy, null);
   });
 });
