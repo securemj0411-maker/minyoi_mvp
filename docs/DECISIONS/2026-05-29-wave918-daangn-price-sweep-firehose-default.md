@@ -66,6 +66,17 @@ Also added score-stage sub-timings under `stage_stats.stages.score.timingsMs` so
 - shadow audit
 - dirty clearing
 
+First production score run with the new timings showed a real hot path:
+
+```text
+score_build_batch_price_maps ~= 12.3s
+score_load_pool_gate_inputs ~= 8.0s
+score_row_loop ~= 6.1s
+score_load_rows ~= 4.2s
+```
+
+`score_build_batch_price_maps` and `score_row_loop` both called `effectiveCatalogSkuForScorableRow()` repeatedly for the same raw rows. That can re-run expensive catalog matching, especially for fashion rows. Within a single score run, the effective SKU decision is stable, so Wave 918 now builds an `effectiveSkuByPid` map once and reuses it in the batch price map and row scoring loop.
+
 ## Expected effect
 
 - More same-source Daangn sample rows for SKUs that currently fail `sku_median_unavailable` / Daangn volume gates.

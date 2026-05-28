@@ -6466,6 +6466,9 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     }
   });
 
+  const effectiveSkuByPid = timedScoreBlock("score_build_effective_sku_map", () => new Map(
+    rows.map((row) => [Number(row.pid), effectiveCatalogSkuForScorableRow(row)]),
+  ));
   const batchPriceMapStart = Date.now();
   const pricesByMarket = new Map<string, number[]>();
   // Wave 179b (2026-05-17 사용자 코멘트 iPad mini 6 stale): broad SKU mixed batch median 차단.
@@ -6480,9 +6483,8 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     // Wave 218 (2026-05-19): isPlaceholderPrice 헬퍼 사용 (같은 자리수 반복 5+ 패턴 포함).
     if (isPlaceholderPrice(row.price)) continue;
     // Wave 719 (2026-05-23): score-stage 동일 outlier 필터 (시세 fallback sample 부풀림 차단).
-    const _scoreSkuForOutlier = effectiveCatalogSkuForScorableRow(row);
-    if (isPriceOutlierForSku(row.price, _scoreSkuForOutlier?.id ?? null)) continue;
-    const effectiveSku = effectiveCatalogSkuForScorableRow(row);
+    const effectiveSku = effectiveSkuByPid.get(Number(row.pid)) ?? null;
+    if (isPriceOutlierForSku(row.price, effectiveSku?.id ?? null)) continue;
     const skuId = effectiveSku?.id ?? "";
     const parsedRow = parsedByPid.get(row.pid);
     const marketKey = marketGroupKey(row, parsedRow);
@@ -6537,7 +6539,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     // 처리 시도 자체를 했다면 dirty=false 후보. needs_review가 다시 false로 바뀌면
     // detail-worker의 raw patch에서 score_dirty=true로 재마킹된다.
     handledPids.push(Number(row.pid));
-    const effectiveSku = effectiveCatalogSkuForScorableRow(row);
+    const effectiveSku = effectiveSkuByPid.get(Number(row.pid)) ?? null;
     if (!effectiveSku) continue;
     const skuId = effectiveSku?.id ?? "";
     const parsed = parsedByPid.get(row.pid);
