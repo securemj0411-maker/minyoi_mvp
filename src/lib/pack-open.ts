@@ -36,6 +36,7 @@ import {
   parseShippingFromDescription,
   parseShippingFromTrade,
 } from "@/lib/pipeline";
+import { expectedProfitFromMarketPrice } from "@/lib/profit";
 
 const TIMEOUT_MS = 30_000;
 const USER_REVEAL_DEDUPE_LIMIT = 1000;
@@ -2175,6 +2176,34 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       const skuConfusionNote = meta.sku_id
         ? CATALOG.find((sku) => sku.id === meta.sku_id)?.confusionNote ?? null
         : null;
+      const marketBasis = marketBasisForCandidate(
+        candidate.comparable_key,
+        meta.sku_name,
+        marketStats,
+        poolConditionMap.get(candidate.pid) ?? null,
+        referencePrices,
+        v7SiblingPresence,
+        {
+          listingSource: meta.marketplaceSource,
+          perSourceMarketStats: marketStatsPerSource,
+        },
+      );
+      const sourceAwareProfit = expectedProfitFromMarketPrice({
+        buyPrice: meta.price,
+        marketPrice: marketBasis.medianPrice,
+        buyShipping: savedDetail?.freeShipping ? 0 : 3500,
+        marketplaceSource: meta.marketplaceSource,
+      });
+      const daangnMarketBasisMissing = isDaangnMarketplaceSource(meta.marketplaceSource)
+        && (!marketBasis.medianPrice || !marketBasis.sourceSampleUsed || marketBasis.sampleCount < MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE);
+      if (daangnMarketBasisMissing) {
+        await rpcInvalidate(candidate.pid, "daangn_market_basis_missing");
+        continue;
+      }
+      if (isDaangnMarketplaceSource(meta.marketplaceSource) && (!sourceAwareProfit || sourceAwareProfit.max <= 0)) {
+        await rpcInvalidate(candidate.pid, "profit_negative");
+        continue;
+      }
       reveals.push({
         pid: candidate.pid,
         name: meta.name,
@@ -2186,25 +2215,14 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         skuName: meta.sku_name,
         confusionNote: skuConfusionNote,
         thumbnailUrl: meta.thumbnail_url,
-        expectedProfitMin: candidate.expected_profit_min,
-        expectedProfitMax: candidate.expected_profit_max,
+        expectedProfitMin: sourceAwareProfit?.min ?? candidate.expected_profit_min,
+        expectedProfitMax: sourceAwareProfit?.max ?? candidate.expected_profit_max,
         confidence: candidate.confidence,
         // 2026-05-17 (사용자 요청): 모달 카드에 band chip 표시.
         band: (candidate.profit_band as 1 | 2 | 3) ?? null,
         // Wave 130 (2026-05-16): 매물 condition_class lookup → 매칭되는 condition별 시세 우선 표시.
         // Wave 201 (2026-05-18): unopened 매물 → reference_prices anchor 우선.
-        marketBasis: marketBasisForCandidate(
-          candidate.comparable_key,
-          meta.sku_name,
-          marketStats,
-          poolConditionMap.get(candidate.pid) ?? null,
-          referencePrices,
-          v7SiblingPresence,
-          {
-            listingSource: meta.marketplaceSource,
-            perSourceMarketStats: marketStatsPerSource,
-          },
-        ),
+        marketBasis,
         velocityBasis: velocityBasisForCandidate(candidate.comparable_key, velocityStats, readinessMap),
         lastVerifiedAt: liveVerifiedAt,
         freshSeconds,

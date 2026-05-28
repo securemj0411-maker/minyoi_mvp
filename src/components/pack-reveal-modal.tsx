@@ -1018,13 +1018,15 @@ function getWhyCheapReasons(card: RevealCard): string[] {
 
   // 상태 라벨 (카피 안 형용사 형식 — "X 매물 중에서도" 자연 어법)
   const condLabel =
-    cond === "unopened" ? "미개봉" :
-    cond === "mint" ? "S급" :
-    cond === "clean" ? "A급" :
-    cond === "worn" ? "사용감 있는" :
-    cond === "flawed" ? "하자 있는" :
-    cond === "low_batt" ? "배터리 약한" :
-    cond === "normal" ? "비슷한 상태의" : null;
+    isShoeOrClothingCard(card) && tierShortLabel(card.conditionTier)
+      ? tierShortLabel(card.conditionTier)
+      : cond === "unopened" ? "미개봉" :
+        cond === "mint" ? "S급" :
+        cond === "clean" ? "A급" :
+        cond === "worn" ? "사용감 있는" :
+        cond === "flawed" ? "하자 있는" :
+        cond === "low_batt" ? "배터리 약한" :
+        cond === "normal" ? "비슷한 상태의" : null;
 
   // 1. Description 키워드 — 가장 명확한 셀러 의도
   if (/급매|급처|빨리/.test(desc)) {
@@ -2643,6 +2645,12 @@ type ComparableListing = {
   conditionClass?: string | null;
 };
 
+function isSameSourceComparableForCard(card: RevealCard, item: ComparableListing) {
+  const cardSource = String(card.marketplaceSource ?? "").toLowerCase();
+  if (cardSource !== "daangn") return true;
+  return String(item.marketplaceSource ?? "").toLowerCase() === cardSource;
+}
+
 function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; mode?: "simple" | "detailed" }) {
   const [listings, setListings] = useState<ComparableListing[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -2671,6 +2679,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
           // simple = 6, detailed = 12 표시. fetch 한 번에 16 까지 보관해서 mode 변경 시 re-fetch X.
           const filtered = (j.comparables ?? [])
             .filter((c) => c.listingState !== "disappeared")
+            .filter((c) => isSameSourceComparableForCard(card, c))
             .sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
             .slice(0, 16);
           setListings(filtered);
@@ -5143,6 +5152,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
         if (cancelled) return;
         const filtered = (j.comparables ?? [])
           .filter((item) => item.listingState !== "disappeared")
+          .filter((item) => isSameSourceComparableForCard(card, item))
           .sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
           .slice(0, 16);
         setListings(filtered);

@@ -9,7 +9,7 @@
 import { NextResponse } from "next/server";
 import { fetchLatestMarketStats, fetchLatestMarketStatsPerSource, fetchReferencePrices, fetchV7SiblingPresence, marketBasisForCandidate } from "@/lib/pack-open";
 import type { RevealMarketBasis } from "@/lib/pack-open";
-import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { isDaangnMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { checkRateLimit, clientIpKey } from "@/lib/rate-limit";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -320,10 +320,11 @@ export async function GET(
           const pid = Number(r.pid);
           if ((riskByPid.get(pid) ?? 0) > 0) return false;
           if (excludeByPid.get(pid) === true) return false;
-          if (displayMarketBasis?.basisSource) {
-            const source = normalizeMarketplaceSource((r.source as string | null) ?? (r.seller_source as string | null));
-            if (source !== displayMarketBasis.basisSource) return false;
-          }
+          const source = normalizeMarketplaceSource((r.source as string | null) ?? (r.seller_source as string | null));
+          // Daangn is a local execution market. Even if the display market basis is missing
+          // or v3-stale, never show Bunjang/Joongna rows as the visible proof for a Daangn listing.
+          if (isDaangnMarketplaceSource(ourMarketplaceSource) && source !== ourMarketplaceSource) return false;
+          if (displayMarketBasis?.basisSource && source !== displayMarketBasis.basisSource) return false;
           return true;
         });
         // Wave launch-31 (사용자 짚음): 같은 셀러 다수 매물 dedup.

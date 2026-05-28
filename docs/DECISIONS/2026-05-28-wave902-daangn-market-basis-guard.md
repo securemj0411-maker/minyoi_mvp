@@ -15,7 +15,11 @@ The user reported Daangn detail pages where S-grade or B-grade listings were sho
 ## Changes
 
 - Detail access now invalidates Daangn ready rows when Daangn same-source market basis is missing or has fewer than 3 samples.
+- Pack reveal creation now applies the same guard before inserting reveal cards, so stale pool profit snapshots cannot create Daangn detail cards with 0-1 comparison listing.
 - The invalidation reason is now `daangn_market_basis_missing`, with a user message explaining that Daangn comparison listings are still insufficient.
+- The market-source comparable proof API now source-filters Daangn listings by the listing source itself, not only by `marketBasis.basisSource`. This prevents Bunjang/Joongna rows from being shown as visible proof for a Daangn buy decision.
+- The detail modal also applies the same defensive source filter client-side.
+- The “why cheap” copy now uses S/A/B/C/D tier labels for shoe/clothing cards, so a B-tier card no longer says “A급 매물 중에서도”.
 - `/me` API now sets Daangn current profit to `0` when same-source market basis is missing, instead of falling back to stale snapshots.
 - `/me` client-side detail refresh now uses canonical `expectedProfitFromMarketPrice`, so Daangn keeps `0원` resale fee and `0원` reshipping.
 - Detail modal no longer labels generic zero-profit/market-basis holds as `판매완료 처리`; it shows `시세 근거 부족` or `보류 처리`.
