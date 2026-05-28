@@ -622,6 +622,24 @@ export function buildCandidatePoolRows(input: {
       continue;
     }
 
+    // Wave 777 (2026-05-27): mint/unopened + 본체 flaw 키워드 명시 매물 차단.
+    //   사용자 신뢰 직격 (예: pid 9002566589675 나이키 에어맥스 90 — "이염있어서" but condition_tier=A).
+    //   wave92-fashion-mobility parser hasASignal logic이 일부 매물에서 flaw 키워드 무시.
+    //   여기는 safety net — parser root fix는 별도 wave.
+    //   conservative: 본체 vs 박스 context 구분 없이 무조건 mint 차단 (precision 우선, 박스만 flaw 매물은 recall loss 수용).
+    const parsedRow = input.parsedByPid.get(pid);
+    const conditionClass = parsedRow?.condition_class;
+    if (conditionClass === "mint" || conditionClass === "unopened") {
+      const descTxt = row.descriptionPreview || "";
+      // negation 형 ("얼룩 없음", "오염X" 등) 제외 후 flaw keyword 검사.
+      const flawWithoutNegation = /(?<!\s)(이염|얼룩|오염|변색|찍힘|흠집|스크래치|기스|마모)(?!\s*(?:없|x|X|아닙|아니|제로))/u;
+      if (flawWithoutNegation.test(descTxt)) {
+        skipped += 1;
+        invalidations.push({ pid, reason: "mint_with_flaw_keyword_wave777" });
+        continue;
+      }
+    }
+
     const sellerTrustReason = sellerTrustReviewReason({
       source: row.source,
       shopReviewCount: row.shopReviewCount,
