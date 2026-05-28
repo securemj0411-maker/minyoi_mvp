@@ -12,7 +12,7 @@ import {
   fetchLatestMarketStatsPerSource,
   fetchReferencePrices,
   fetchV7SiblingPresence,
-  marketBasisForCandidateWithLiveSourceFallback,
+  marketBasisForCandidate,
 } from "@/lib/pack-open";
 import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
 import { classifyListing } from "@/lib/pipeline";
@@ -66,7 +66,7 @@ async function loadExactPoolItem(pid: number) {
       url: string | null;
     }>>),
     restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,listing_state,sale_status,num_comment,raw_json,daangn_region_id,daangn_region_name&pid=eq.${pid}&limit=1`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,listing_state,detail_status,sale_status,num_comment,raw_json,daangn_region_id,daangn_region_name&pid=eq.${pid}&limit=1`,
       { headers },
     ).then((res) => res.json() as Promise<Array<{
       pid: number;
@@ -83,6 +83,7 @@ async function loadExactPoolItem(pid: number) {
       image_count: number | null;
       description_preview: string | null;
       listing_state: string | null;
+      detail_status: string | null;
       sale_status: string | null;
       num_comment: number | null;
       raw_json: Record<string, unknown> | null;
@@ -167,6 +168,7 @@ async function loadExactPoolItem(pid: number) {
     imageCount: meta?.image_count ?? null,
     descriptionPreview: meta?.description_preview ?? "",
     listingState: meta?.listing_state ?? "unknown",
+    detailStatus: meta?.detail_status ?? "unknown",
     saleStatus: meta?.sale_status ?? "",
     commentCount: meta?.num_comment == null ? null : Number(meta.num_comment),
     soldOut: false,
@@ -194,16 +196,19 @@ async function recomputeExactPoolItemProfit(item: ExactPoolItem | null): Promise
     fetchReferencePrices([item.comparableKey]),
     fetchV7SiblingPresence([item.comparableKey]),
   ]);
-  const marketBasis = await marketBasisForCandidateWithLiveSourceFallback(
+  // Wave 797b (2026-05-27): marketBasisForCandidateWithLiveSourceFallback 가 pack-open 에 export 안 됨
+  //   (다른 worktree incomplete 변경). 기존 marketBasisForCandidate (sync + sourceOptions object) 사용.
+  const marketBasis = marketBasisForCandidate(
     item.comparableKey,
     item.skuName ?? item.name ?? "",
     marketStats,
     item.conditionClass ?? null,
     referencePrices,
     v7SiblingPresence,
-    marketStatsPerSource,
-    item.marketplaceSource,
-    item.pid,
+    {
+      listingSource: item.marketplaceSource,
+      perSourceMarketStats: marketStatsPerSource,
+    },
   );
   if (isDaangnMarketplaceSource(item.marketplaceSource) && (!marketBasis.medianPrice || marketBasis.sampleCount < 3)) {
     return {
@@ -316,6 +321,36 @@ type DetailAccessLiveVerifyResult =
   | { ok: false; status: number; error: string; message: string };
 
 async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAccessLiveVerifyResult> {
+  if (item.listingState !== "active") {
+    await invalidateReadyPoolItem(item.pid, `detail_access_listing_state_${item.listingState}`);
+    return {
+      ok: false,
+      status: 404,
+      error: "not_ready",
+      message: "이미 상태가 바뀐 매물이라 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요.",
+    };
+  }
+
+  if (item.detailStatus !== "done") {
+    await invalidateReadyPoolItem(item.pid, "detail_access_raw_detail_not_done");
+    return {
+      ok: false,
+      status: 404,
+      error: "not_ready",
+      message: "분석이 아직 완성되지 않은 매물이라 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요.",
+    };
+  }
+
+  if (!item.skuId) {
+    await invalidateReadyPoolItem(item.pid, "wave230_sku_id_null_stale", { score_dirty: true });
+    return {
+      ok: false,
+      status: 404,
+      error: "not_ready",
+      message: "상품 분류가 다시 필요한 매물이라 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요.",
+    };
+  }
+
   if (isCommentBlocked(item.commentCount)) {
     await invalidateReadyPoolItem(item.pid, `num_comment_above_${MAX_DETAIL_ACCESS_NUM_COMMENT}`, {
       num_comment: item.commentCount,

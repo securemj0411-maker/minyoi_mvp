@@ -2,10 +2,18 @@ import { fetchDetail } from "@/lib/bunjang";
 import { CATALOG } from "@/lib/catalog";
 import { categoryFromComparableKey, loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
-import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
 import { fetchJoongnaDetail } from "@/lib/joongna";
-import { trimmedSellerMarket } from "@/lib/market-math";
-import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import {
+  BUNJANG_SOURCE_ID,
+  DAANGN_SOURCE_ID,
+  JOONGNA_SOURCE_ID,
+  isDaangnMarketplaceSource,
+  isJoongnaMarketplaceSource,
+  listingUrlForSource,
+  marketplaceSourceLabel,
+  normalizeMarketplaceSource,
+  type KnownMarketplaceSource,
+} from "@/lib/marketplace-source";
 import {
   buildMarketplaceSafetyDisplay,
   inferMarketplaceTransaction,
@@ -28,7 +36,6 @@ import {
   parseShippingFromDescription,
   parseShippingFromTrade,
 } from "@/lib/pipeline";
-import { expectedProfitFromMarketPrice } from "@/lib/profit";
 
 const TIMEOUT_MS = 30_000;
 const USER_REVEAL_DEDUPE_LIMIT = 1000;
@@ -136,13 +143,17 @@ export type RevealMarketBasis = {
   // "reference" = Danawa/official new-product anchor, "market" = Bunjang market stats.
   // Wave 252.A real (2026-05-20): "v3_pending_rematch" = clothing v3 매물 (product_type 미박힘) +
   //   v7 sibling row 존재 → mixed-pool median 차단. UI 에서 "비교 기준 미확정 (재매칭 대기)" 표시.
-  priceSource: "reference" | "market" | "v3_pending_rematch";
-  // Wave 893 (2026-05-28): source-aware basis for Daangn/Joongna/Bunjang.
-  // null = mixed market row. sourceFallbackUsed=true means source sample/table was not usable and mixed fallback is shown.
-  basisSource: string | null;
-  basisSourceLabel: string | null;
-  sourceFallbackUsed: boolean;
-  sourceSampleCount: number | null;
+  priceSource: "reference" | "market" | "source_market" | "v3_pending_rematch";
+  marketplaceSource?: KnownMarketplaceSource | "mixed" | null;
+  marketplaceLabel?: string | null;
+  sourceSampleUsed?: boolean;
+  sourceFallbackUsed?: boolean;
+  // Wave 797b (2026-05-27): basis source UI 라벨 (당근 매물 표시용).
+  //   다른 worktree 작업에서 explore-client / user-reveal-dashboard 가 사용 — type 누락 fix.
+  basisSource?: string | null;
+  basisSourceLabel?: string | null;
+  sourceSampleCount?: number | null;
+  resaleChannels?: ResaleChannelBasis[];
   computedAt: string | null;
   excludedExamples: string[];
   // Wave 130 (2026-05-16): condition별 시세 분리 — 사업 보고서 L2 retention.
@@ -157,6 +168,19 @@ export type RevealMarketBasis = {
     medianPrice: number | null;
     sampleCount: number;
   }>;
+};
+
+export type ResaleChannelBasis = {
+  source: KnownMarketplaceSource;
+  label: string;
+  salePrice: number | null;
+  sampleCount: number;
+  activeSampleCount: number;
+  soldSampleCount: number;
+  disappearedSampleCount: number;
+  confidence: string | null;
+  priceBasis: "source" | "mixed" | "reference" | "unavailable";
+  fallbackUsed: boolean;
 };
 
 export type RevealListingDetail = {
@@ -336,6 +360,8 @@ type MarketPriceRow = {
   confidence: string | null;
   computed_at: string | null;
 };
+
+type MarketPriceRowWithSource = MarketPriceRow & { source: KnownMarketplaceSource | string };
 
 type MarketVelocityRow = {
   comparable_key: string;
@@ -644,7 +670,7 @@ async function assertRevealAccess(userRef: string, pid: number): Promise<void> {
 // 사업 보고서 L2: 같은 SKU+옵션 매물이라도 condition별 시세 spread 15~40% — 끼리 비교 retention.
 export type MarketStatsByCondition = Map<string, MarketPriceRow>;
 export type MarketStatsMap = Map<string, MarketStatsByCondition>;
-export type MarketStatsPerSourceMap = Map<string, Map<string, MarketStatsByCondition>>;
+export type MarketStatsBySourceMap = Map<string, Map<KnownMarketplaceSource, MarketStatsByCondition>>;
 
 type TtlEntry<T> = {
   value: T;
@@ -656,7 +682,7 @@ const MARKET_VELOCITY_CACHE_TTL_MS = ttlFromEnv("PACK_MARKET_VELOCITY_CACHE_TTL_
 const REFERENCE_PRICE_CACHE_TTL_MS = ttlFromEnv("PACK_REFERENCE_PRICE_CACHE_TTL_MS", 10 * 60 * 1000);
 
 const marketStatsCache = new Map<string, TtlEntry<MarketStatsByCondition>>();
-const marketStatsPerSourceCache = new Map<string, TtlEntry<Map<string, MarketStatsByCondition>>>();
+const marketStatsPerSourceCache = new Map<string, TtlEntry<MarketStatsByCondition>>();
 const marketVelocityCache = new Map<string, TtlEntry<MarketVelocityRow | null>>();
 const referencePriceCache = new Map<string, TtlEntry<number | null>>();
 
@@ -834,28 +860,41 @@ export async function fetchLatestMarketStats(comparableKeys: (string | null)[]):
   return map;
 }
 
+function marketStatsPerSourceCacheKey(source: KnownMarketplaceSource, comparableKey: string) {
+  return `${source}:${comparableKey}`;
+}
+
 export async function fetchLatestMarketStatsPerSource(
   comparableKeys: (string | null)[],
-): Promise<MarketStatsPerSourceMap> {
-  const unique = [...new Set(comparableKeys.filter((key): key is string => Boolean(key)))];
-  if (unique.length === 0) return new Map();
-  const now = Date.now();
-  const map: MarketStatsPerSourceMap = new Map();
-  const missing: string[] = [];
-  for (const key of unique) {
-    const cached = readTtl(marketStatsPerSourceCache, key, now);
-    if (cached) {
-      map.set(key, cached);
-    } else {
-      missing.push(key);
-    }
-  }
-  if (missing.length === 0) return map;
+  sources: KnownMarketplaceSource[] = [DAANGN_SOURCE_ID],
+): Promise<MarketStatsBySourceMap> {
+  const uniqueKeys = [...new Set(comparableKeys.filter((key): key is string => Boolean(key)))];
+  const uniqueSources = [...new Set(sources.map((source) => normalizeMarketplaceSource(source)))];
+  const map: MarketStatsBySourceMap = new Map();
+  if (uniqueKeys.length === 0 || uniqueSources.length === 0) return map;
 
+  const now = Date.now();
+  const missingPairs: Array<{ source: KnownMarketplaceSource; key: string }> = [];
+  for (const key of uniqueKeys) {
+    const bySource = map.get(key) ?? new Map<KnownMarketplaceSource, MarketStatsByCondition>();
+    for (const source of uniqueSources) {
+      const cached = readTtl(marketStatsPerSourceCache, marketStatsPerSourceCacheKey(source, key), now);
+      if (cached) {
+        bySource.set(source, cached);
+      } else {
+        missingPairs.push({ source, key });
+      }
+    }
+    if (bySource.size > 0) map.set(key, bySource);
+  }
+  if (missingPairs.length === 0) return map;
+
+  const missingKeys = [...new Set(missingPairs.map((pair) => pair.key))];
+  const missingSources = [...new Set(missingPairs.map((pair) => pair.source))];
   const cols = [
     "comparable_key",
-    "source",
     "condition_class",
+    "source",
     "active_median_price",
     "sold_median_price",
     "blended_median_price",
@@ -867,36 +906,30 @@ export async function fetchLatestMarketStatsPerSource(
     "confidence",
     "computed_at",
   ].join(",");
-  const encoded = missing.map((key) => encodeURIComponent(key)).join(",");
-  try {
-    const res = await callSupabase(
-      `/mvp_market_price_daily_per_source?select=${cols}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc&limit=${Math.max(400, missing.length * 36)}`,
-      { headers: authHeaders() },
-    );
-    const rows = (await res.json()) as Array<MarketPriceRow & { source: string | null }>;
-    const fetched: MarketStatsPerSourceMap = new Map();
-    for (const row of rows) {
-      if (!row.source) continue;
-      const source = normalizeMarketplaceSource(row.source);
-      const bySource = fetched.get(row.comparable_key) ?? new Map<string, MarketStatsByCondition>();
-      const byCondition = bySource.get(source) ?? new Map<string, MarketPriceRow>();
-      if (!byCondition.has(row.condition_class)) {
-        byCondition.set(row.condition_class, row);
-      }
-      bySource.set(source, byCondition);
-      fetched.set(row.comparable_key, bySource);
-    }
-    for (const key of missing) {
-      const bySource = fetched.get(key) ?? new Map<string, MarketStatsByCondition>();
-      writeTtl(marketStatsPerSourceCache, key, bySource, MARKET_STATS_CACHE_TTL_MS, now);
-      map.set(key, bySource);
-    }
-  } catch (err) {
-    console.warn("[pack-open] per-source market stats fetch failed (mixed fallback)", err);
-    for (const key of missing) {
-      const empty = new Map<string, MarketStatsByCondition>();
-      writeTtl(marketStatsPerSourceCache, key, empty, MARKET_STATS_CACHE_TTL_MS, now);
-      map.set(key, empty);
+  const encodedKeys = missingKeys.map((key) => encodeURIComponent(key)).join(",");
+  const encodedSources = missingSources.map((source) => encodeURIComponent(source)).join(",");
+  const res = await callSupabase(
+    `/mvp_market_price_daily_per_source?select=${cols}&comparable_key=in.(${encodedKeys})&source=in.(${encodedSources})&order=date.desc,computed_at.desc&limit=${Math.max(400, missingKeys.length * missingSources.length * 12)}`,
+    { headers: authHeaders() },
+  );
+  const rows = (await res.json()) as MarketPriceRowWithSource[];
+  const fetched = new Map<string, MarketStatsByCondition>();
+  for (const row of rows) {
+    const source = normalizeMarketplaceSource(row.source);
+    const cacheKey = marketStatsPerSourceCacheKey(source, row.comparable_key);
+    const byCondition = fetched.get(cacheKey) ?? new Map<string, MarketPriceRow>();
+    if (!byCondition.has(row.condition_class)) byCondition.set(row.condition_class, row);
+    fetched.set(cacheKey, byCondition);
+  }
+
+  for (const pair of missingPairs) {
+    const cacheKey = marketStatsPerSourceCacheKey(pair.source, pair.key);
+    const byCondition = fetched.get(cacheKey) ?? new Map<string, MarketPriceRow>();
+    writeTtl(marketStatsPerSourceCache, cacheKey, byCondition, MARKET_STATS_CACHE_TTL_MS, now);
+    if (byCondition.size > 0) {
+      const bySource = map.get(pair.key) ?? new Map<KnownMarketplaceSource, MarketStatsByCondition>();
+      bySource.set(pair.source, byCondition);
+      map.set(pair.key, bySource);
     }
   }
   return map;
@@ -1151,8 +1184,6 @@ const CONDITION_LABEL: Record<string, string> = {
 
 const MIN_SAMPLE_COUNT_FOR_CONFIDENCE = 3;
 const MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE = 3;
-const STRICT_SOURCE_MARKET_SOURCES = new Set(["daangn"]);
-const LIVE_SOURCE_MARKET_LIMIT = 240;
 
 // Wave 159h (2026-05-17): condition-fallback shared module 사용 (DRY).
 function selectMarketRowByCondition(
@@ -1166,153 +1197,45 @@ function selectMarketRowByCondition(
   );
 }
 
-function selectMarketRowBySource(
-  perSourceStats: MarketStatsPerSourceMap | undefined,
-  comparableKey: string | null,
-  marketplaceSource: string | null | undefined,
-  targetConditionClass: string | null,
-): {
-  row: MarketPriceRow;
-  conditionClass: string | null;
-  fallbackUsed: boolean;
-  source: string;
-  byCondition: MarketStatsByCondition;
-} | null {
-  if (!perSourceStats || !comparableKey || !marketplaceSource) return null;
-  const source = normalizeMarketplaceSource(marketplaceSource);
-  const byCondition = perSourceStats.get(comparableKey)?.get(source);
-  if (!byCondition) return null;
-  const selected = selectMarketRowByCondition(byCondition, targetConditionClass);
-  if (!selected.row) return null;
-  const sourceSampleCount =
-    Number(selected.row.active_sample_count ?? 0) +
-    Number(selected.row.sold_sample_count ?? 0);
-  if (sourceSampleCount < MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE) return null;
+function marketRowSampleCount(row: MarketPriceRow | null | undefined) {
+  return Number(row?.active_sample_count ?? 0)
+    + Number(row?.sold_sample_count ?? 0)
+    + Number(row?.disappeared_sample_count ?? 0);
+}
+
+function marketRowActiveSoldSampleCount(row: MarketPriceRow | null | undefined) {
+  return Number(row?.active_sample_count ?? 0) + Number(row?.sold_sample_count ?? 0);
+}
+
+function marketSalePrice(row: MarketPriceRow | null | undefined) {
+  return row?.blended_median_price ?? row?.active_median_price ?? null;
+}
+
+function resaleChannelBasis(
+  source: KnownMarketplaceSource,
+  label: string,
+  row: MarketPriceRow | null | undefined,
+  priceBasis: ResaleChannelBasis["priceBasis"],
+  fallbackUsed: boolean,
+): ResaleChannelBasis {
   return {
-    row: selected.row,
-    conditionClass: selected.conditionClass,
-    fallbackUsed: selected.fallbackUsed,
     source,
-    byCondition,
+    label,
+    salePrice: marketSalePrice(row),
+    sampleCount: marketRowSampleCount(row),
+    activeSampleCount: Number(row?.active_sample_count ?? 0),
+    soldSampleCount: Number(row?.sold_sample_count ?? 0),
+    disappearedSampleCount: Number(row?.disappeared_sample_count ?? 0),
+    confidence: row?.confidence ?? null,
+    priceBasis: row ? priceBasis : "unavailable",
+    fallbackUsed,
   };
 }
 
-type LiveSourceMarketBasisInput = {
-  comparableKey: string | null;
-  excludePid?: number | null;
-  skuName: string;
-  conditionClass: string | null;
-  marketplaceSource: string | null | undefined;
-  base: RevealMarketBasis;
+type MarketBasisSourceOptions = {
+  listingSource?: string | null;
+  perSourceMarketStats?: MarketStatsBySourceMap | null;
 };
-
-async function fetchLiveSourceMarketBasis(input: LiveSourceMarketBasisInput): Promise<RevealMarketBasis | null> {
-  const comparableKey = input.comparableKey;
-  if (!comparableKey) return null;
-  const source = input.marketplaceSource ? normalizeMarketplaceSource(input.marketplaceSource) : null;
-  if (!source || !STRICT_SOURCE_MARKET_SOURCES.has(source)) return null;
-
-  const parsedRes = await callSupabase(
-    `/mvp_listing_parsed?select=pid,condition_class,parsed_json&comparable_key=eq.${encodeURIComponent(comparableKey)}&needs_review=eq.false&limit=${LIVE_SOURCE_MARKET_LIMIT}`,
-    { headers: authHeaders() },
-  );
-  const parsedRows = (await parsedRes.json()) as Array<{
-    pid: number;
-    condition_class: string | null;
-    parsed_json: Record<string, unknown> | null;
-  }>;
-  const pids = parsedRows.map((row) => Number(row.pid)).filter((pid) => Number.isFinite(pid));
-  if (pids.length === 0) return null;
-
-  const exactConditionCount = input.conditionClass == null
-    ? 0
-    : parsedRows.filter((row) => row.condition_class === input.conditionClass).length;
-  const requireKnownCondition = input.conditionClass != null && exactConditionCount >= 5;
-  const parsedByPid = new Map(parsedRows.map((row) => [Number(row.pid), row]));
-
-  const [rawRes, analysisRes] = await Promise.all([
-    callSupabase(
-      `/mvp_raw_listings?select=pid,source,seller_source,price,listing_state,sale_status,seller_uid,last_seen_at&pid=in.(${pids.join(",")})&listing_type=eq.normal&order=last_seen_at.desc`,
-      { headers: authHeaders() },
-    ),
-    callSupabase(
-      `/mvp_listing_analysis?select=pid,risk_hits&pid=in.(${pids.join(",")})`,
-      { headers: authHeaders() },
-    ),
-  ]);
-  const rawRows = (await rawRes.json()) as Array<{
-    pid: number;
-    source: string | null;
-    seller_source: string | null;
-    price: number | null;
-    listing_state: string | null;
-    sale_status: string | null;
-    seller_uid: string | null;
-  }>;
-  const analysisRows = (await analysisRes.json()) as Array<{ pid: number; risk_hits: number | null }>;
-  const riskByPid = new Map(analysisRows.map((row) => [Number(row.pid), Number(row.risk_hits ?? 0)]));
-
-  const rows = rawRows.filter((row) => {
-    if (input.excludePid != null && Number(row.pid) === Number(input.excludePid)) return false;
-    if ((riskByPid.get(Number(row.pid)) ?? 0) > 0) return false;
-    const rowSource = normalizeMarketplaceSource(row.source ?? row.seller_source);
-    if (rowSource !== source) return false;
-    const price = Number(row.price ?? 0);
-    if (!Number.isFinite(price) || price <= 0) return false;
-    const state = String(row.listing_state ?? "").toLowerCase();
-    if (state === "disappeared" || state === "deleted" || state === "hidden") return false;
-    const parsed = parsedByPid.get(Number(row.pid));
-    const notes = (parsed?.parsed_json?.condition_notes as string[] | undefined) ?? [];
-    if (COMPARABLE_EXCLUDE_NOTES.some((note) => notes.includes(note))) return false;
-    if (input.conditionClass != null) {
-      if (parsed?.condition_class == null && requireKnownCondition) return false;
-      if (parsed?.condition_class != null && parsed.condition_class !== input.conditionClass) return false;
-    }
-    return true;
-  });
-  const activeRows = rows.filter((row) => String(row.listing_state ?? "").toLowerCase() === "active");
-  const soldRows = rows.filter((row) => {
-    const state = String(row.listing_state ?? "").toLowerCase();
-    const status = String(row.sale_status ?? "").toLowerCase();
-    return state === "sold" || status === "sold" || status === "sold_out";
-  });
-  const pricedRows = activeRows.length >= MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE ? activeRows : [...activeRows, ...soldRows];
-  if (pricedRows.length < MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE) return null;
-
-  const market = trimmedSellerMarket(pricedRows.map((row) => ({
-    pid: Number(row.pid),
-    price: Number(row.price ?? 0),
-    seller_uid: row.seller_uid ?? null,
-  })));
-  if (market.median == null || market.count < MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE) return null;
-
-  const sampleCount = market.count;
-  return {
-    ...input.base,
-    comparableKey,
-    label: marketBasisLabel(comparableKey, input.skuName),
-    p25Price: market.p25,
-    medianPrice: market.median,
-    p75Price: market.p75,
-    sampleCount,
-    activeSampleCount: activeRows.length,
-    soldSampleCount: soldRows.length,
-    disappearedSampleCount: 0,
-    confidence: sampleCount >= 6 ? "medium" : "low",
-    priceSource: "market",
-    basisSource: source,
-    basisSourceLabel: marketplaceSourceLabel(source),
-    sourceFallbackUsed: false,
-    sourceSampleCount: sampleCount,
-    computedAt: new Date().toISOString(),
-    conditionClass: input.conditionClass ?? input.base.conditionClass,
-    conditionLabel: (input.conditionClass ?? input.base.conditionClass)
-      ? CONDITION_LABEL[input.conditionClass ?? input.base.conditionClass ?? ""] ?? (input.conditionClass ?? input.base.conditionClass)
-      : null,
-    fallbackUsed: false,
-    otherConditions: [],
-  };
-}
 
 export function marketBasisForCandidate(
   comparableKey: string | null,
@@ -1323,9 +1246,7 @@ export function marketBasisForCandidate(
   referencePrices?: Map<string, number>,
   // Wave 252.A real (2026-05-20): v3 stale 가드 — v7 sibling 존재 시 mixed-pool row 차단.
   v7SiblingPresence?: V7SiblingPresenceMap,
-  // Wave 893: source-specific market stats when same-source sample is usable.
-  marketStatsPerSource?: MarketStatsPerSourceMap,
-  marketplaceSource?: string | null,
+  sourceOptions?: MarketBasisSourceOptions,
 ): RevealMarketBasis {
   // Wave 252.A real: v3 clothing key + v7 sibling 존재 → mixed-pool 신뢰 불가 → "v3_pending_rematch" 표시.
   //   medianPrice=null 로 caller (currentNetProfitFromMarketPrice) 가 차익 계산 skip → 사용자에게 잘못된 가격 노출 X.
@@ -1343,10 +1264,11 @@ export function marketBasisForCandidate(
       disappearedSampleCount: 0,
       confidence: null,
       priceSource: "v3_pending_rematch",
-      basisSource: null,
-      basisSourceLabel: null,
+      marketplaceSource: null,
+      marketplaceLabel: null,
+      sourceSampleUsed: false,
       sourceFallbackUsed: false,
-      sourceSampleCount: null,
+      resaleChannels: [],
       computedAt: null,
       excludedExamples: excludedExamplesForKey(comparableKey),
       conditionClass: conditionClass ?? null,
@@ -1356,66 +1278,36 @@ export function marketBasisForCandidate(
     };
   }
   const byCondition = comparableKey ? marketStats.get(comparableKey) : undefined;
-  const normalizedMarketplaceSource = marketplaceSource ? normalizeMarketplaceSource(marketplaceSource) : null;
-  const strictSourceMarket = normalizedMarketplaceSource != null && STRICT_SOURCE_MARKET_SOURCES.has(normalizedMarketplaceSource);
-  const mixedSelection = selectMarketRowByCondition(
+  const { row: mixedStat, conditionClass: mixedCondition, fallbackUsed: mixedFallbackUsed } = selectMarketRowByCondition(
     byCondition,
     conditionClass,
   );
-  const sourceSelection = selectMarketRowBySource(
-    marketStatsPerSource,
-    comparableKey,
-    normalizedMarketplaceSource,
-    conditionClass,
-  );
-
-  // Wave 897 (2026-05-28): Daangn is a local-market execution channel.
-  // If Daangn-specific market stats are not available, do not silently show mixed Bunjang/Joongna
-  // as if it were the evidence for a Daangn buy decision.
-  if (strictSourceMarket && !sourceSelection) {
-    const sourceLabel = marketplaceSourceLabel(normalizedMarketplaceSource);
-    return {
-      comparableKey,
-      label: marketBasisLabel(comparableKey, skuName),
-      p25Price: null,
-      medianPrice: null,
-      p75Price: null,
-      sampleCount: 0,
-      activeSampleCount: 0,
-      soldSampleCount: 0,
-      disappearedSampleCount: 0,
-      confidence: null,
-      priceSource: "market",
-      basisSource: normalizedMarketplaceSource,
-      basisSourceLabel: sourceLabel,
-      sourceFallbackUsed: true,
-      sourceSampleCount: 0,
-      computedAt: null,
-      excludedExamples: excludedExamplesForKey(comparableKey),
-      conditionClass: conditionClass ?? mixedSelection.conditionClass,
-      conditionLabel: (conditionClass ?? mixedSelection.conditionClass)
-        ? CONDITION_LABEL[conditionClass ?? mixedSelection.conditionClass ?? ""] ?? (conditionClass ?? mixedSelection.conditionClass)
-        : null,
-      fallbackUsed: false,
-      otherConditions: [],
-    };
-  }
-
-  const stat = sourceSelection?.row ?? mixedSelection.row;
-  const actualCondition = sourceSelection?.conditionClass ?? mixedSelection.conditionClass;
-  const fallbackUsed = sourceSelection?.fallbackUsed ?? mixedSelection.fallbackUsed;
-  const selectedByCondition = sourceSelection?.byCondition ?? byCondition;
-  const basisSource = sourceSelection?.source ?? null;
-  const basisSourceLabel = basisSource ? marketplaceSourceLabel(basisSource) : null;
-  const sourceFallbackUsed = Boolean(marketplaceSource && !sourceSelection);
+  const listingSource = sourceOptions?.listingSource ? normalizeMarketplaceSource(sourceOptions.listingSource) : null;
+  const sourceByCondition = comparableKey && listingSource
+    ? sourceOptions?.perSourceMarketStats?.get(comparableKey)?.get(listingSource)
+    : undefined;
+  const {
+    row: sourceStatCandidate,
+    conditionClass: sourceCondition,
+    fallbackUsed: sourceConditionFallbackUsed,
+  } = selectMarketRowByCondition(sourceByCondition, conditionClass);
+  const sourceStatUsable = sourceStatCandidate != null
+    && marketRowActiveSoldSampleCount(sourceStatCandidate) >= MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE;
+  // Wave 887: 당근 매물은 당근 sample 이 충분하면 상세/쉬운모드 기준 시세도 당근 기준으로 표시한다.
+  // 부족하면 mixed 로 fallback 하되 sourceFallbackUsed 를 내려 UI/후속에서 라벨 분리 가능하게 둔다.
+  const useListingSourceStat = listingSource === DAANGN_SOURCE_ID && sourceStatUsable;
+  const stat = useListingSourceStat ? sourceStatCandidate : mixedStat;
+  const actualCondition = useListingSourceStat ? sourceCondition : mixedCondition;
+  const fallbackUsed = useListingSourceStat ? sourceConditionFallbackUsed : mixedFallbackUsed;
   const activeSampleCount = Number(stat?.active_sample_count ?? 0);
   const soldSampleCount = Number(stat?.sold_sample_count ?? 0);
   const disappearedSampleCount = Number(stat?.disappeared_sample_count ?? 0);
 
   // Wave 130: 다른 condition 시세 (UI에서 비교용 — "내 condition vs 전체" 표시).
   const otherConditions: RevealMarketBasis["otherConditions"] = [];
-  if (selectedByCondition && actualCondition) {
-    for (const [cls, row] of selectedByCondition.entries()) {
+  const comparisonByCondition = useListingSourceStat ? sourceByCondition : byCondition;
+  if (comparisonByCondition && actualCondition) {
+    for (const [cls, row] of comparisonByCondition.entries()) {
       if (cls === actualCondition || cls === "flawed") continue;
       const samples =
         Number(row.active_sample_count ?? 0) +
@@ -1436,8 +1328,28 @@ export function marketBasisForCandidate(
   // Wave 201 (2026-05-18): unopened 매물 시세 = reference_prices.effective_price (다나와/공식 anchor).
   // 사용자 정정: 미개봉 매물은 번개 중고 sold median이 아니라 다나와 새 가격 표시해야 함.
   const refPrice = (actualCondition === "unopened" && comparableKey && referencePrices?.get(comparableKey)) || null;
-  const useRefAnchor = refPrice != null && refPrice > 0;
-  const medianPriceFinal = useRefAnchor ? refPrice : (stat?.blended_median_price ?? stat?.active_median_price ?? null);
+  const useRefAnchor = !useListingSourceStat && refPrice != null && refPrice > 0;
+  const medianPriceFinal = useRefAnchor ? refPrice : marketSalePrice(stat);
+  const daangnByCondition = comparableKey
+    ? sourceOptions?.perSourceMarketStats?.get(comparableKey)?.get(DAANGN_SOURCE_ID)
+    : undefined;
+  const {
+    row: daangnChannelStat,
+    fallbackUsed: daangnChannelFallbackUsed,
+  } = selectMarketRowByCondition(daangnByCondition, conditionClass);
+  const daangnChannelUsable = daangnChannelStat != null
+    && marketRowActiveSoldSampleCount(daangnChannelStat) >= MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE;
+  const resaleChannels: ResaleChannelBasis[] = [
+    resaleChannelBasis(BUNJANG_SOURCE_ID, marketplaceSourceLabel(BUNJANG_SOURCE_ID), mixedStat, "mixed", mixedFallbackUsed),
+    resaleChannelBasis(JOONGNA_SOURCE_ID, marketplaceSourceLabel(JOONGNA_SOURCE_ID), mixedStat, "mixed", mixedFallbackUsed),
+    resaleChannelBasis(
+      DAANGN_SOURCE_ID,
+      marketplaceSourceLabel(DAANGN_SOURCE_ID),
+      daangnChannelUsable ? daangnChannelStat : null,
+      "source",
+      daangnChannelFallbackUsed,
+    ),
+  ];
 
   return {
     comparableKey,
@@ -1451,11 +1363,12 @@ export function marketBasisForCandidate(
     disappearedSampleCount,
     // ref anchor 신뢰는 medium (단일 값이라 "high" 비호환).
     confidence: useRefAnchor ? "medium" : (stat?.confidence ?? null),
-    priceSource: useRefAnchor ? "reference" : "market",
-    basisSource,
-    basisSourceLabel,
-    sourceFallbackUsed,
-    sourceSampleCount: basisSource ? activeSampleCount + soldSampleCount + disappearedSampleCount : null,
+    priceSource: useRefAnchor ? "reference" : (useListingSourceStat ? "source_market" : "market"),
+    marketplaceSource: useListingSourceStat ? listingSource : "mixed",
+    marketplaceLabel: useListingSourceStat ? marketplaceSourceLabel(listingSource) : "통합",
+    sourceSampleUsed: useListingSourceStat,
+    sourceFallbackUsed: listingSource === DAANGN_SOURCE_ID && !useListingSourceStat,
+    resaleChannels,
     computedAt: stat?.computed_at ?? null,
     excludedExamples: excludedExamplesForKey(comparableKey),
     conditionClass: actualCondition,
@@ -1463,47 +1376,6 @@ export function marketBasisForCandidate(
     fallbackUsed,
     otherConditions,
   };
-}
-
-export async function marketBasisForCandidateWithLiveSourceFallback(
-  comparableKey: string | null,
-  skuName: string,
-  marketStats: MarketStatsMap,
-  conditionClass: string | null = null,
-  referencePrices?: Map<string, number>,
-  v7SiblingPresence?: V7SiblingPresenceMap,
-  marketStatsPerSource?: MarketStatsPerSourceMap,
-  marketplaceSource?: string | null,
-  excludePid?: number | null,
-): Promise<RevealMarketBasis> {
-  const basis = marketBasisForCandidate(
-    comparableKey,
-    skuName,
-    marketStats,
-    conditionClass,
-    referencePrices,
-    v7SiblingPresence,
-    marketStatsPerSource,
-    marketplaceSource,
-  );
-  if (!(basis.sourceFallbackUsed && basis.medianPrice == null)) return basis;
-  try {
-    return await fetchLiveSourceMarketBasis({
-      comparableKey,
-      excludePid,
-      skuName,
-      conditionClass,
-      marketplaceSource,
-      base: basis,
-    }) ?? basis;
-  } catch (err) {
-    console.warn("[pack-open] live source market basis fallback failed", {
-      comparableKey,
-      marketplaceSource,
-      err: err instanceof Error ? err.message : String(err),
-    });
-    return basis;
-  }
 }
 
 export function velocityBasisForCandidate(
@@ -2133,7 +2005,7 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
     const [listingMap, marketStats, marketStatsPerSource, velocityStats, readinessMap, poolConditionMap, optionBaseAssumedMap, referencePrices, v7SiblingPresence, gradingMap] = await Promise.all([
       fetchListings(reservedPids),
       fetchLatestMarketStats(orderedReserved.map((r) => r.comparable_key)),
-      fetchLatestMarketStatsPerSource(orderedReserved.map((r) => r.comparable_key)),
+      fetchLatestMarketStatsPerSource(orderedReserved.map((r) => r.comparable_key), [DAANGN_SOURCE_ID]),
       fetchLatestMarketVelocity(orderedReserved.map((r) => r.comparable_key)),
       loadCategoryReadinessMap(),
       fetchPoolConditionClassByPids(reservedPids),
@@ -2303,23 +2175,6 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       const skuConfusionNote = meta.sku_id
         ? CATALOG.find((sku) => sku.id === meta.sku_id)?.confusionNote ?? null
         : null;
-      const marketBasis = await marketBasisForCandidateWithLiveSourceFallback(
-        candidate.comparable_key,
-        meta.sku_name,
-        marketStats,
-        poolConditionMap.get(candidate.pid) ?? null,
-        referencePrices,
-        v7SiblingPresence,
-        marketStatsPerSource,
-        meta.marketplaceSource,
-        candidate.pid,
-      );
-      const sourceAwareProfit = expectedProfitFromMarketPrice({
-        buyPrice: meta.price,
-        marketPrice: marketBasis.medianPrice,
-        buyShipping: savedDetail?.freeShipping ? 0 : 3500,
-        marketplaceSource: meta.marketplaceSource,
-      });
       reveals.push({
         pid: candidate.pid,
         name: meta.name,
@@ -2331,14 +2186,25 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         skuName: meta.sku_name,
         confusionNote: skuConfusionNote,
         thumbnailUrl: meta.thumbnail_url,
-        expectedProfitMin: sourceAwareProfit?.min ?? candidate.expected_profit_min,
-        expectedProfitMax: sourceAwareProfit?.max ?? candidate.expected_profit_max,
+        expectedProfitMin: candidate.expected_profit_min,
+        expectedProfitMax: candidate.expected_profit_max,
         confidence: candidate.confidence,
         // 2026-05-17 (사용자 요청): 모달 카드에 band chip 표시.
         band: (candidate.profit_band as 1 | 2 | 3) ?? null,
         // Wave 130 (2026-05-16): 매물 condition_class lookup → 매칭되는 condition별 시세 우선 표시.
         // Wave 201 (2026-05-18): unopened 매물 → reference_prices anchor 우선.
-        marketBasis,
+        marketBasis: marketBasisForCandidate(
+          candidate.comparable_key,
+          meta.sku_name,
+          marketStats,
+          poolConditionMap.get(candidate.pid) ?? null,
+          referencePrices,
+          v7SiblingPresence,
+          {
+            listingSource: meta.marketplaceSource,
+            perSourceMarketStats: marketStatsPerSource,
+          },
+        ),
         velocityBasis: velocityBasisForCandidate(candidate.comparable_key, velocityStats, readinessMap),
         lastVerifiedAt: liveVerifiedAt,
         freshSeconds,
