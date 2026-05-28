@@ -220,3 +220,18 @@ Verification:
 
 - `npx eslint src/lib/daangn-detail-backfill.ts src/app/api/cron/daangn-detail-worker/route.ts src/lib/cron-guard.ts` passed.
 - `npx tsx --test tests/cron-guard.test.ts tests/daangn-ingest.test.ts` passed.
+
+Production verification:
+
+- First run after deploy:
+  - `selected=150`
+  - `patched=143`
+  - `markedGone=7`
+  - `blocked=false`
+  - `skippedByBudget=0`
+  - duration about `119s`
+- Backlog response shortly after:
+  - raw dirty missing manner temperature moved `560 → 446 → 382`.
+  - Daangn `sku_median_unavailable` moved `63 → 59`.
+  - Daangn ready stock moved around `527 → 538 → 537`; stock can dip when lifecycle removes sold/disappeared rows, so watch ready-updated flow too.
+  - Daangn ready rows updated in the last 15 minutes: `92`.
