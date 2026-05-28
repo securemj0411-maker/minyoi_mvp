@@ -124,24 +124,6 @@ type StatsResponse = {
   freshLast24h?: number;
 };
 
-type SafetyStatsResponse = {
-  stats?: {
-    total_reviewed_7d?: number;
-    profit_low_7d?: number;
-    stat_missing_7d?: number;
-    fake_or_lock_7d?: number;
-    suspicious_price_7d?: number;
-    needs_review_7d?: number;
-    listing_parts_7d?: number;
-    listing_damaged_7d?: number;
-    listing_accessory_7d?: number;
-    listing_callout_7d?: number;
-    listing_commercial_7d?: number;
-    listing_buying_7d?: number;
-    listing_multi_7d?: number;
-  };
-};
-
 type DetailAccessResponse = {
   ok?: boolean;
   error?: string;
@@ -484,12 +466,6 @@ const LEGACY_SAVED_REVEAL_PIDS_STORAGE_KEY = "minyoi_saved_reveal_pids_v1";
 const FIRST_FEED_ONBOARDING_STORAGE_KEY = "minyoi_first_feed_value_hook_v1";
 const FEED_BUDGET_FILTER_STORAGE_KEY = "minyoi_feed_budget_filter_v1";
 const DETAIL_ACCESS_SNAPSHOT_STORAGE_KEY = "minyoi_detail_access_snapshot_v1";
-// Wave launch-86 (사용자 보고: 폰 첫 가입 시 "몇 건 걸렀고" 숫자 안 나옴):
-//   3.5s 가 mobile 4G + Vercel cold start + DB snapshot read 합치면 부족.
-//   abort 시 stats=null 채로 statsLoaded=true → row 라벨만 보이고 숫자 빈칸.
-//   DB snapshot 자체는 매 30분 cron 으로 신선 — 단지 client fetch 가 못 끝낸 것.
-//   8s 로 늘림: cold start (~1s) + DB cache read (~200ms) + TLS (~500ms) + mobile latency (~500ms) 충분 buffer.
-const SAFETY_STATS_FETCH_TIMEOUT_MS = 8000;
 const MAX_LOCAL_SCRAP_SNAPSHOTS = 500;
 
 function scopedStorageKey(baseKey: string, storageScope: string) {
@@ -595,42 +571,6 @@ function poolItemSource(item: PoolItem): SourceOption {
   const source = String(item.marketplaceSource ?? "bunjang").toLowerCase();
   if (source === "joongna" || source === "daangn") return source;
   return "bunjang";
-}
-
-function safetyStatNumber(value: unknown) {
-  const n = Number(value ?? 0);
-  return Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
-}
-
-function safetyRowsForExplore(stats: SafetyStatsResponse["stats"] | null | undefined) {
-  if (!stats) {
-    return [
-      { label: "돈 안 되는 것", value: null as number | null },
-      { label: "거래 주의 신호", value: null as number | null },
-      { label: "상품 확인 필요", value: null as number | null },
-    ];
-  }
-  const lowProfit = safetyStatNumber(stats.profit_low_7d) + safetyStatNumber(stats.stat_missing_7d);
-  const caution = safetyStatNumber(stats.fake_or_lock_7d) + safetyStatNumber(stats.suspicious_price_7d);
-  const unclear =
-    safetyStatNumber(stats.needs_review_7d) +
-    safetyStatNumber(stats.listing_parts_7d) +
-    safetyStatNumber(stats.listing_damaged_7d) +
-    safetyStatNumber(stats.listing_accessory_7d) +
-    safetyStatNumber(stats.listing_callout_7d) +
-    safetyStatNumber(stats.listing_commercial_7d) +
-    safetyStatNumber(stats.listing_buying_7d) +
-    safetyStatNumber(stats.listing_multi_7d);
-  return [
-    { label: "돈 안 되는 것", value: lowProfit },
-    { label: "거래 주의 신호", value: caution },
-    { label: "상품 확인 필요", value: unclear },
-  ];
-}
-
-function formatStatMaybe(value: number | null, loaded = false) {
-  if (value == null) return loaded ? "" : "확인 중";
-  return `${value.toLocaleString("ko-KR")}건`;
 }
 
 function isScrappedPoolItem(value: unknown): value is ScrappedPoolItem {
@@ -1201,26 +1141,16 @@ function DirectTradeConfirmModal({
 }
 
 function FirstFeedOnboardingCard({
-  stats,
-  statsLoaded,
   selectedBudget,
   onSelectBudget,
   onDismiss,
 }: {
-  stats: SafetyStatsResponse["stats"] | null;
-  statsLoaded: boolean;
   selectedBudget: BudgetFilterOption;
   onSelectBudget: (value: BudgetFilterOption) => void;
   onDismiss: () => void;
 }) {
   const [step, setStep] = useState(0);
   const [pendingBudget, setPendingBudget] = useState<BudgetFilterOption>(selectedBudget);
-  const totalReviewed = stats ? safetyStatNumber(stats.total_reviewed_7d) : 0;
-  const rows = safetyRowsForExplore(stats);
-  const showStats = !statsLoaded || stats != null;
-  const reviewedLabel = statsLoaded && totalReviewed > 0
-    ? `${totalReviewed.toLocaleString("ko-KR")}건`
-    : "확인 중";
   const pendingBudgetOption = budgetFilterOption(pendingBudget);
 
   useEffect(() => {
@@ -1234,9 +1164,9 @@ function FirstFeedOnboardingCard({
     >
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-[520px] flex-col px-6 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-[calc(env(safe-area-inset-top)+18px)]">
         <div className="flex items-center justify-between">
-          {/* Wave launch-125 (2026-05-25): onboarding 4 step (의심 mirror → 답 + 예시 → 풀 통계 → 예산). */}
-          <div className="flex gap-1.5" aria-label={`${step + 1}/4`}>
-            {[0, 1, 2, 3].map((idx) => (
+          {/* Wave 905 (2026-05-28): 풀 통계 step 제거. 3 step = 의심 → 비교 예시 → 예산. */}
+          <div className="flex gap-1.5" aria-label={`${step + 1}/3`}>
+            {[0, 1, 2].map((idx) => (
               <span
                 key={idx}
                 className={`h-1.5 rounded-full transition-all ${idx === step ? "w-7 bg-[#3182f6]" : "w-1.5 bg-zinc-300 dark:bg-zinc-700"}`}
@@ -1363,55 +1293,8 @@ function FirstFeedOnboardingCard({
               ※ 예시 매물. 실제 추천은 다음 화면부터.
             </p>
           </div>
-        ) : step === 2 ? (
-          /* (기존 step 0) — 풀 통계. */
-          <div className="flex flex-1 flex-col justify-center pb-24">
-            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">첫 피드 준비</div>
-            {/* Wave launch-104 (사용자 정정 — 일반인 친화 카피):
-                "후보" / "추천 풀" 같은 내부 용어 → "중고 상품" / "어려운 상품 걸러냈어요". */}
-            <h2 className="mt-3 break-keep text-[34px] font-black leading-[1.12] tracking-tight sm:text-[42px]">
-              오늘 볼 만한
-              <br />
-              중고 상품만 남겼어요
-            </h2>
-            <p className="mt-5 break-keep text-[16px] font-bold leading-7 text-zinc-600 dark:text-zinc-300">
-              {statsLoaded && !stats ? (
-                <>전체 중고 상품에서 어려운 건 먼저 걸러냈어요.</>
-              ) : (
-                <>
-                  전체 중고 상품 <span className="font-black text-[#3182f6] dark:text-blue-300">{reviewedLabel}</span> 중에서
-                  어려운 상품은 먼저 걸러냈어요.
-                </>
-              )}
-            </p>
-
-            {/* Wave launch-90 (사용자 정정 — "숫자 로딩 속도 진짜 느림. 글자는 박혀있고 숫자만 기다리게"):
-                row 라벨은 즉시 표시 + 숫자 자리에 3 dots staggered bounce placeholder.
-                데이터 도착 시 dots → 숫자 swap. Whisper 앱 패턴. */}
-            {showStats ? (
-              <div className="mt-9 space-y-5">
-                {rows.map((row) => (
-                  <div key={row.label} className="flex items-end justify-between border-b border-zinc-200/80 pb-4 dark:border-zinc-800">
-                    <div className="text-[16px] font-black text-zinc-700 dark:text-zinc-200">{row.label}</div>
-                    {statsLoaded && row.value != null ? (
-                      <div className="text-[30px] font-black leading-none text-[#0a9f69] dark:text-blue-300">
-                        {row.value.toLocaleString("ko-KR")}건
-                      </div>
-                    ) : (
-                      // Wave 730: bounce-high keyframe (더 높이 튐) + opacity 제거로 다크모드 가시성 강화.
-                      <div className="flex h-[30px] items-end gap-1.5">
-                        <span className="h-2 w-2 animate-bounce-high rounded-full bg-[#3182f6] dark:bg-[#ffffff] [animation-delay:-0.32s]" />
-                        <span className="h-2 w-2 animate-bounce-high rounded-full bg-[#3182f6] dark:bg-[#ffffff] [animation-delay:-0.16s]" />
-                        <span className="h-2 w-2 animate-bounce-high rounded-full bg-[#3182f6] dark:bg-[#ffffff]" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : null}
-          </div>
         ) : (
-          /* step === 3 — 예산 (기존 step 1). */
+          /* step === 2 — 예산. */
           <div className="flex flex-1 flex-col justify-center pb-24">
             {/* Wave launch-104: "감당 가능한" + "후보" 어색 → "예산" + "상품" 친화 카피. */}
             <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">예산</div>
@@ -1450,7 +1333,7 @@ function FirstFeedOnboardingCard({
 
         <div className="fixed bottom-0 left-0 right-0 z-[91] bg-[linear-gradient(180deg,rgba(245,247,251,0)_0%,#f5f7fb_34%)] px-6 pb-[calc(env(safe-area-inset-bottom)+18px)] pt-8 dark:bg-[linear-gradient(180deg,rgba(9,9,11,0)_0%,#09090b_34%)]">
           <div className="mx-auto max-w-[520px]">
-            {/* Wave launch-125: 4 step CTA — 의심 → 답 → 풀 통계 → 예산. */}
+            {/* Wave 905: 3 step CTA — 의심 → 답/예시 → 예산. */}
             {step === 0 ? (
               <button
                 type="button"
@@ -1463,14 +1346,6 @@ function FirstFeedOnboardingCard({
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="flex min-h-[56px] w-full items-center justify-center rounded-[20px] bg-[#3182f6] text-[16px] font-black text-white shadow-[0_14px_34px_rgba(49,130,246,0.28)] active:scale-[0.99]"
-              >
-                지금 보러 가기 →
-              </button>
-            ) : step === 2 ? (
-              <button
-                type="button"
-                onClick={() => setStep(3)}
                 className="flex min-h-[56px] w-full items-center justify-center rounded-[20px] bg-[#3182f6] text-[16px] font-black text-white shadow-[0_14px_34px_rgba(49,130,246,0.28)] active:scale-[0.99]"
               >
                 내 예산 맞춰보기
@@ -1507,8 +1382,6 @@ export default function ExploreClient({
   const cardRefs = useRef<Map<number, HTMLElement>>(new Map());
   const [cooldown, setCooldown] = useState<PoolResponse["cooldown"] | null>(null);
   const [stats, setStats] = useState<StatsResponse | null>(null);
-  const [safetyStats, setSafetyStats] = useState<SafetyStatsResponse["stats"] | null>(null);
-  const [safetyStatsLoaded, setSafetyStatsLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [detailAccessSnapshot, setDetailAccessSnapshot] = useState<DetailAccessSnapshot>(() => readDetailAccessSnapshot(storageScope));
@@ -1995,33 +1868,10 @@ export default function ExploreClient({
     }
   }, []);
 
-  const loadSafetyStats = useCallback(async () => {
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), SAFETY_STATS_FETCH_TIMEOUT_MS);
-    try {
-      // CDN/browser cache를 살린다. 이 숫자는 온보딩 value hook이라 실시간 exact query보다 빠른 표시가 우선.
-      const res = await fetch("/api/public/safety-stats", { signal: controller.signal });
-      if (res.ok) {
-        const data = (await res.json()) as SafetyStatsResponse;
-        setSafetyStats(data.stats ?? null);
-      }
-    } catch {
-      // 첫 방문 가치 카드 통계 실패는 피드 로딩을 막지 않는다.
-    } finally {
-      window.clearTimeout(timeoutId);
-      setSafetyStatsLoaded(true);
-    }
-  }, []);
-
   // 초기 1회 통계 fetch. 서버 예산/성향 게이트 제거 상태를 유지한다.
   useEffect(() => {
     void loadStats();
   }, [loadStats]);
-
-  useEffect(() => {
-    if (!showFirstFeedOnboarding || safetyStatsLoaded) return;
-    void loadSafetyStats();
-  }, [loadSafetyStats, safetyStatsLoaded, showFirstFeedOnboarding]);
 
   // Wave 394.7.j: 더 찾아보기 후 새 매물 첫 카드로 자동 스크롤.
   useEffect(() => {
@@ -2420,8 +2270,6 @@ export default function ExploreClient({
     <div className="mx-auto w-full max-w-6xl px-3 pb-4 pt-2 sm:px-6 sm:pt-4">
       {showFirstFeedIntro && showFirstFeedOnboarding && !scrapOnly ? (
         <FirstFeedOnboardingCard
-          stats={safetyStats}
-          statsLoaded={safetyStatsLoaded}
           selectedBudget={budgetFilter}
           onSelectBudget={selectFirstFeedBudget}
           onDismiss={dismissFirstFeedOnboarding}
