@@ -104,6 +104,7 @@ type RawListingMeta = {
   // Wave launch-4 (launch audit CRITICAL #4): listing_state 받아서 'active' 외 매물 사용자 풀에서 차단.
   // candidate_pool.status=ready 가드만으로는 lifecycle cron lag 시 sold_confirmed/disappeared 노출 가능.
   listing_state: string | null;
+  detail_status: string | null;
 };
 
 async function patchDaangnVisiblePoolTerminal(
@@ -610,7 +611,9 @@ async function loadPool(
   // Wave 388: 모든 candidate pid의 raw mvp_listings fetch (다양화/budget filter 전).
   // Wave 895: 후보 1.5k 구간에서도 pid=in URL 이 길어지지 않게 chunk fetch.
   // Wave 886.3 (2026-05-27): source filter 안 켜져 있어도 다양화에 필요 — 항상 fetch.
+  // Wave 795 (2026-05-27): listing_state 추가 fetch — "방금 거래" 표시 진짜 sold 만 (active 73% leak fix).
   const sourceByPid = new Map<number, string | null>();
+  const listingStateByPid = new Map<number, string | null>();
   const daangnActionableByPid = new Map<number, boolean>();
   const rawByPid = new Map<number, RawRow>();
   const [rawAll, sourceRows] = await Promise.all([
@@ -625,9 +628,10 @@ async function loadPool(
       source: string | null;
       daangn_region_id: string | null;
       daangn_region_name: string | null;
+      listing_state: string | null;
     }>(
       "mvp_raw_listings",
-      "pid,source,daangn_region_id,daangn_region_name",
+      "pid,source,daangn_region_id,daangn_region_name,listing_state",
       allCandidatePids,
       headers,
     ),
@@ -636,6 +640,7 @@ async function loadPool(
   for (const row of sourceRows) {
     const normalizedSource = row.source ? normalizeMarketplaceSource(row.source) : null;
     sourceByPid.set(Number(row.pid), normalizedSource);
+    listingStateByPid.set(Number(row.pid), row.listing_state);
     if (normalizedSource === "daangn" && options.userHomeDaangnFullPath) {
       const distance = evaluateDaangnRegionDistance(
         options.userHomeDaangnFullPath,
@@ -660,9 +665,18 @@ async function loadPool(
     const raw = rawByPid.get(row.pid);
     return raw != null && Number.isFinite(raw.price) && raw.price > 0 && raw.price <= options.priceMax;
   };
+  // Wave 795 (2026-05-27): sold_out 필터 추가 — invalidated 매물 중 진짜 sold 만 keep.
+  //   DB sweep 발견: invalidated 1,073건 중 73.5% (789건) 가 active+SELLING 매물 (catalog 변경/시세 변동/AI reject 등 invalidation 사유).
+  //   "방금 거래된 상품" 라벨이 73% 거짓 정보 → 사용자 신뢰 직격.
+  //   listing_state IN ('sold_confirmed', 'disappeared') 만 진짜 sold 로 표시.
+  const realSoldPass = (row: PoolRow & { soldOut: boolean }) => {
+    const state = listingStateByPid.get(row.pid);
+    return state === 'sold_confirmed' || state === 'disappeared';
+  };
   // Wave launch-40: source + budget 통합 필터. 다양화 전.
+  // Wave 895 (당근 거리 필터) + Wave 795 (진짜 sold 만) 통합.
   const readyFiltered = readyRowsRaw.filter((r) => sourcePass(r) && budgetPass(r) && daangnDistancePass(r));
-  const soldOutFiltered = soldOutRowsRaw.filter((r) => sourcePass(r) && budgetPass(r) && daangnDistancePass(r));
+  const soldOutFiltered = soldOutRowsRaw.filter((r) => sourcePass(r) && budgetPass(r) && daangnDistancePass(r) && realSoldPass(r));
 
   // Wave 346: 카테고리 다양화 — budget filter 통과 매물 안에서만.
   // Wave 886.3 (2026-05-27): source 다양화 추가.
@@ -737,7 +751,7 @@ async function loadPool(
   const [metaRes, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, parsedGradingRes] = await Promise.all([
     restFetch(
       // Wave launch-4: listing_state 컬럼 추가 select. 응답 후 ready 였지만 active 아닌 row 차단.
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,raw_json,daangn_region_id,daangn_region_name,daangn_manner_temperature,daangn_review_count,listing_state&pid=in.(${pids.join(",")})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,raw_json,daangn_region_id,daangn_region_name,daangn_manner_temperature,daangn_review_count,listing_state,detail_status&pid=in.(${pids.join(",")})`,
       { headers },
     ),
     loadMarketBandsForPool(headers, comparableKeys),
@@ -762,6 +776,9 @@ async function loadPool(
   }>;
 
   // Wave launch-4 (launch audit CRITICAL #4): ready 였지만 listing_state != 'active' 인 매물 사용자 풀 차단.
+  // Wave 799 (2026-05-27): raw detail/SKU가 stale 하게 search 상태로 되돌아간 ready residue도 차단.
+  //   운영 audit: ready 1306개 중 detail_status=pending 133개, sku_id NULL 48개 발견.
+  //   teaser라도 이런 row가 새면 상세 진입 때 크레딧/신뢰가 깨진다.
   // candidate_pool.status=ready 가드만으로는 lifecycle cron lag 시 sold_confirmed / disappeared /
   // missing_suspect 매물이 사용자 화면에 노출됨. 신뢰 박살 risk.
   // soldOut row (status=invalidated) 는 그대로 — 이미 sold_out 마스킹 디자인 적용됨.
@@ -771,13 +788,13 @@ async function loadPool(
     if (row.soldOut) continue; // sold_out 행은 의도적으로 살림
     const meta = metaByPidLocal.get(row.pid);
     const state = meta?.listing_state ?? null;
-    // listing_state null 은 옛 데이터 — 의심스러우면 일단 차단 (보수)
-    if (state !== "active") {
+    // listing_state/detail_status null 은 옛 데이터 — 의심스러우면 일단 차단 (보수)
+    if (state !== "active" || meta?.detail_status !== "done" || !meta?.sku_id) {
       blockedPids.add(row.pid);
     }
   }
   if (blockedPids.size > 0) {
-    console.warn("[pool] listing_state stale block", {
+    console.warn("[pool] raw stale block", {
       blocked: blockedPids.size,
       total_ready: pool.filter((r) => !r.soldOut).length,
     });
