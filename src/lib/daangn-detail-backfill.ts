@@ -7,6 +7,8 @@ export type DaangnDetailBackfillOptions = {
   timeoutMs?: number;
   delayMs?: number;
   budgetMs?: number;
+  shardCount?: number;
+  shardIndex?: number;
 };
 
 export type DaangnDetailBackfillResult = {
@@ -25,6 +27,8 @@ export type DaangnDetailBackfillResult = {
   blockedReason: string | null;
   skippedByBudget: number;
   marketInvalidationsQueued: number;
+  shardCount: number;
+  shardIndex: number;
   durationMs: number;
 };
 
@@ -61,6 +65,11 @@ type ParsedRow = {
 
 const PARSED_READ_CHUNK_SIZE = 250;
 
+type DetailShard = {
+  count: number;
+  index: number;
+};
+
 function boundedInt(value: number | undefined, fallback: number, min: number, max: number) {
   if (!Number.isFinite(value)) return fallback;
   return Math.max(min, Math.min(max, Math.trunc(value!)));
@@ -77,7 +86,27 @@ function chunkArray<T>(items: T[], size: number): T[][] {
   return chunks;
 }
 
-async function loadInvalidatedMissingCandidates(limit: number): Promise<DetailCandidate[]> {
+function normalizeDetailShard(shardCount?: number, shardIndex?: number): DetailShard {
+  const count = boundedInt(shardCount, 1, 1, 3);
+  const index = boundedInt(shardIndex, 0, 0, count - 1);
+  return { count, index };
+}
+
+function acceptsDetailShard(pid: number, shard: DetailShard) {
+  if (shard.count <= 1) return true;
+  return Math.abs(Math.trunc(pid)) % shard.count === shard.index;
+}
+
+function shardLimit(limit: number, shard: DetailShard) {
+  if (shard.count <= 1) return limit;
+  return Math.min(1000, Math.max(limit, limit * shard.count * 2));
+}
+
+function applyDetailShard(candidates: DetailCandidate[], shard: DetailShard) {
+  return candidates.filter((candidate) => acceptsDetailShard(candidate.pid, shard));
+}
+
+async function loadInvalidatedMissingCandidates(limit: number, shard: DetailShard): Promise<DetailCandidate[]> {
   const res = await restFetch(
     `${tableUrl("mvp_candidate_pool")}` +
       `?select=pid,raw:mvp_raw_listings!inner(pid,url,source,listing_state,sku_id,daangn_manner_temperature)` +
@@ -87,16 +116,16 @@ async function loadInvalidatedMissingCandidates(limit: number): Promise<DetailCa
       `&raw.listing_state=eq.active` +
       `&raw.sku_id=not.is.null` +
       `&raw.daangn_manner_temperature=is.null` +
-      `&order=updated_at.desc&limit=${limit}`,
+      `&order=updated_at.desc&limit=${shardLimit(limit, shard)}`,
     { headers: serviceHeaders() },
   );
   const rows = (await res.json()) as InvalidatedMissingRow[];
-  return rows
+  return applyDetailShard(rows
     .filter((row) => row.raw?.url && row.raw.daangn_manner_temperature == null)
-    .map((row) => ({ pid: Number(row.pid), url: row.raw!.url!, sourceKind: "invalidated_missing" as const }));
+    .map((row) => ({ pid: Number(row.pid), url: row.raw!.url!, sourceKind: "invalidated_missing" as const })), shard);
 }
 
-async function loadRawPendingCandidates(limit: number): Promise<DetailCandidate[]> {
+async function loadRawPendingCandidates(limit: number, shard: DetailShard): Promise<DetailCandidate[]> {
   const res = await restFetch(
     `${tableUrl("mvp_raw_listings")}` +
       `?select=pid,url,daangn_manner_temperature` +
@@ -104,16 +133,16 @@ async function loadRawPendingCandidates(limit: number): Promise<DetailCandidate[
       `&listing_state=eq.active` +
       `&sku_id=not.is.null` +
       `&daangn_manner_temperature=is.null` +
-      `&order=last_seen_at.desc&limit=${limit}`,
+      `&order=last_seen_at.desc&limit=${shardLimit(limit, shard)}`,
     { headers: serviceHeaders() },
   );
   const rows = (await res.json()) as RawPendingRow[];
-  return rows
+  return applyDetailShard(rows
     .filter((row) => row.url && row.daangn_manner_temperature == null)
-    .map((row) => ({ pid: Number(row.pid), url: row.url!, sourceKind: "raw_pending" as const }));
+    .map((row) => ({ pid: Number(row.pid), url: row.url!, sourceKind: "raw_pending" as const })), shard);
 }
 
-async function loadRawDirtyMissingCandidates(limit: number): Promise<DetailCandidate[]> {
+async function loadRawDirtyMissingCandidates(limit: number, shard: DetailShard): Promise<DetailCandidate[]> {
   const res = await restFetch(
     `${tableUrl("mvp_raw_listings")}` +
       `?select=pid,url,daangn_manner_temperature,score_dirty` +
@@ -122,22 +151,22 @@ async function loadRawDirtyMissingCandidates(limit: number): Promise<DetailCandi
       `&sku_id=not.is.null` +
       `&daangn_manner_temperature=is.null` +
       `&score_dirty=eq.true` +
-      `&order=updated_at.desc&limit=${limit}`,
+      `&order=updated_at.desc&limit=${shardLimit(limit, shard)}`,
     { headers: serviceHeaders() },
   );
   const rows = (await res.json()) as RawDirtyMissingRow[];
-  return rows
+  return applyDetailShard(rows
     .filter((row) => row.url && row.daangn_manner_temperature == null && row.score_dirty === true)
-    .map((row) => ({ pid: Number(row.pid), url: row.url!, sourceKind: "raw_pending" as const }));
+    .map((row) => ({ pid: Number(row.pid), url: row.url!, sourceKind: "raw_pending" as const })), shard);
 }
 
-async function loadCandidates(limit: number): Promise<DetailCandidate[]> {
+async function loadCandidates(limit: number, shard: DetailShard): Promise<DetailCandidate[]> {
   const primaryLimit = Math.ceil(limit * 0.5);
   const secondaryLimit = limit * 2;
   const [invalidated, dirtyMissing, rawPending] = await Promise.all([
-    loadInvalidatedMissingCandidates(primaryLimit),
-    loadRawDirtyMissingCandidates(secondaryLimit),
-    loadRawPendingCandidates(secondaryLimit),
+    loadInvalidatedMissingCandidates(primaryLimit, shard),
+    loadRawDirtyMissingCandidates(secondaryLimit, shard),
+    loadRawPendingCandidates(secondaryLimit, shard),
   ]);
   const seen = new Set<number>();
   const out: DetailCandidate[] = [];
@@ -265,9 +294,10 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
   const timeoutMs = boundedInt(options.timeoutMs, 8_000, 1_000, 30_000);
   const delayMs = boundedInt(options.delayMs, 350, 0, 10_000);
   const budgetMs = boundedInt(options.budgetMs, 175_000, 5_000, 260_000);
+  const shard = normalizeDetailShard(options.shardCount, options.shardIndex);
   const deadline = startedAt + budgetMs;
 
-  const candidates = await loadCandidates(limit);
+  const candidates = await loadCandidates(limit, shard);
 
   let fetched = 0;
   let patched = 0;
@@ -360,6 +390,8 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
     blockedReason,
     skippedByBudget,
     marketInvalidationsQueued,
+    shardCount: shard.count,
+    shardIndex: shard.index,
     durationMs: Date.now() - startedAt,
   };
 }

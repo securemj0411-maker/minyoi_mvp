@@ -107,6 +107,9 @@ export type CronWorkerMode =
   | "daangn_worker_b"
   | "daangn_worker_c"
   | "daangn_detail_worker"
+  | "daangn_detail_worker_a"
+  | "daangn_detail_worker_b"
+  | "daangn_detail_worker_c"
   | "daangn_price_sweep_worker";
 
 type CronGuardSkipReason = "cooldown" | "same_worker_running" | "source_health_unhealthy" | "project_role_disabled";
@@ -182,6 +185,9 @@ const DEFAULT_COOLDOWN_MS: Record<CronWorkerMode, number> = {
   daangn_worker_b: 4 * 60_000,
   daangn_worker_c: 4 * 60_000,
   daangn_detail_worker: 4 * 60_000,
+  daangn_detail_worker_a: 4 * 60_000,
+  daangn_detail_worker_b: 4 * 60_000,
+  daangn_detail_worker_c: 4 * 60_000,
   daangn_price_sweep_worker: 20 * 60_000,
 };
 
@@ -207,6 +213,9 @@ const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
   daangn_worker_b: 90_000,
   daangn_worker_c: 90_000,
   daangn_detail_worker: 2 * 60_000,
+  daangn_detail_worker_a: 2 * 60_000,
+  daangn_detail_worker_b: 2 * 60_000,
+  daangn_detail_worker_c: 2 * 60_000,
   daangn_price_sweep_worker: 2 * 60_000,
 };
 
@@ -220,6 +229,9 @@ const HEAVY_SOURCE_HEALTH_GUARD_MODES = new Set<CronWorkerMode>([
   "daangn_worker_b",
   "daangn_worker_c",
   "daangn_detail_worker",
+  "daangn_detail_worker_a",
+  "daangn_detail_worker_b",
+  "daangn_detail_worker_c",
   "daangn_price_sweep_worker",
 ]);
 
@@ -359,6 +371,9 @@ function sourceForHealthGuard(mode: CronWorkerMode) {
     mode === "daangn_worker_b" ||
     mode === "daangn_worker_c" ||
     mode === "daangn_detail_worker" ||
+    mode === "daangn_detail_worker_a" ||
+    mode === "daangn_detail_worker_b" ||
+    mode === "daangn_detail_worker_c" ||
     mode === "daangn_price_sweep_worker"
   ) return "daangn";
   return mode === "joongna_worker" ? "joongna" : "bunjang";
@@ -473,7 +488,7 @@ export async function acquireCronGuardWithSourceHealth(
 
   // P0-3: DB lease 보강. CRON_GUARD_DB_LOCK_ENABLED=1일 때만 활성.
   // 멀티 인스턴스에서 동일 mode 동시 실행을 차단한다. 실패하면 메모리 release 후 skip.
-  const dbLockEnabled = mode === "joongna_worker" || mode === "daangn_detail_worker" || envBool("CRON_GUARD_DB_LOCK_ENABLED", false);
+  const dbLockEnabled = mode === "joongna_worker" || mode.startsWith("daangn_detail_worker") || envBool("CRON_GUARD_DB_LOCK_ENABLED", false);
   if (!dbLockEnabled || isForceRun(req)) {
     return memoryResult;
   }

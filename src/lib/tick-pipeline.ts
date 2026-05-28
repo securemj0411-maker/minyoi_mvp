@@ -3687,11 +3687,11 @@ export async function sourceHealthStage(): Promise<StageStats> {
 const MIN_FRAUD_GROUP_SELLERS = 2;
 const VOLUME_GATE_TARGET_READ_CONCURRENCY = Math.max(
   1,
-  Math.min(Number(process.env.PIPELINE_VOLUME_GATE_TARGET_READ_CONCURRENCY ?? 16), 32),
+  Math.min(Number(process.env.PIPELINE_VOLUME_GATE_TARGET_READ_CONCURRENCY ?? 24), 32),
 );
 const VOLUME_GATE_BULK_QUERY_THRESHOLD = Math.max(
   1,
-  Math.min(Number(process.env.PIPELINE_VOLUME_GATE_BULK_QUERY_THRESHOLD ?? 48), 200),
+  Math.min(Number(process.env.PIPELINE_VOLUME_GATE_BULK_QUERY_THRESHOLD ?? 128), 200),
 );
 async function loadFraudGroupHashes(targetHashes?: Iterable<string>): Promise<Set<string>> {
   try {

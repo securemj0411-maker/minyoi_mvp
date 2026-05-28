@@ -8,7 +8,7 @@ import {
   startCollectRun,
 } from "@/lib/collect-logs";
 import { checkCronAuth } from "@/lib/cron-auth";
-import { acquireCronGuardWithSourceHealth, cronGuardSkipBody } from "@/lib/cron-guard";
+import { acquireCronGuardWithSourceHealth, cronGuardSkipBody, type CronWorkerMode } from "@/lib/cron-guard";
 import { runDaangnDetailBackfill } from "@/lib/daangn-detail-backfill";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 
@@ -28,7 +28,26 @@ function envBool(name: string, fallback = false): boolean {
 
 function isDaangnDetailProject() {
   const role = String(process.env.CRON_PROJECT_ROLE ?? "").trim().toLowerCase();
-  return !role || role === "primary" || role === "all" || role === "daangn_detail";
+  return !role || role === "primary" || role === "all" || role === "daangn_detail" || role === "daangn_b" || role === "daangn_c";
+}
+
+function defaultDetailShardIndex() {
+  const role = String(process.env.CRON_PROJECT_ROLE ?? "").trim().toLowerCase();
+  if (role === "daangn_b") return 1;
+  if (role === "daangn_c") return 2;
+  return 0;
+}
+
+function defaultDetailShardCount() {
+  const role = String(process.env.CRON_PROJECT_ROLE ?? "").trim().toLowerCase();
+  return !role || role === "primary" || role === "all" || role === "daangn_b" || role === "daangn_c" ? 3 : 1;
+}
+
+function detailGuardMode(shardCount: number, shardIndex: number): CronWorkerMode {
+  if (shardCount <= 1) return "daangn_detail_worker";
+  if (shardIndex === 1) return "daangn_detail_worker_b";
+  if (shardIndex === 2) return "daangn_detail_worker_c";
+  return "daangn_detail_worker_a";
 }
 
 async function handleDaangnDetailWorker(req: NextRequest) {
@@ -54,14 +73,17 @@ async function handleDaangnDetailWorker(req: NextRequest) {
     return NextResponse.json({ ok: true, started: false, skipped: true, mode: "daangn_detail_worker", reason: "disabled" });
   }
 
-  const guard = await acquireCronGuardWithSourceHealth("daangn_detail_worker", req);
+  const shardCount = envInt("DAANGN_DETAIL_WORKER_SHARD_COUNT", defaultDetailShardCount(), 1, 3);
+  const shardIndex = envInt("DAANGN_DETAIL_WORKER_SHARD_INDEX", defaultDetailShardIndex(), 0, Math.max(0, shardCount - 1));
+  const guardMode = detailGuardMode(shardCount, shardIndex);
+  const guard = await acquireCronGuardWithSourceHealth(guardMode, req);
   if (!guard.allowed) {
     return NextResponse.json(cronGuardSkipBody(guard));
   }
 
   const staleMarked = await markStaleCollectRuns(loadPipelineRuntimeConfig().staleRunMinutes);
   const dryRun = req.nextUrl.searchParams.get("dryRun") === "1" || envBool("DAANGN_DETAIL_WORKER_DRY_RUN", false);
-  const limit = envInt("DAANGN_DETAIL_WORKER_LIMIT", 150, 1, 200);
+  const limit = envInt("DAANGN_DETAIL_WORKER_LIMIT", shardCount > 1 ? 100 : 150, 1, 200);
   const budgetMs = envInt("DAANGN_DETAIL_WORKER_BUDGET_MS", 175_000, 5_000, 260_000);
   const delayMs = envInt("DAANGN_DETAIL_WORKER_DELAY_MS", 350, 0, 10_000);
   const timeoutMs = envInt("DAANGN_DETAIL_WORKER_TIMEOUT_MS", 8_000, 1_000, 30_000);
@@ -77,6 +99,9 @@ async function handleDaangnDetailWorker(req: NextRequest) {
       budgetMs,
       delayMs,
       timeoutMs,
+      shardCount,
+      shardIndex,
+      guardMode,
     },
   });
   if (!run.id) {
@@ -94,6 +119,8 @@ async function handleDaangnDetailWorker(req: NextRequest) {
       budgetMs,
       delayMs,
       timeoutMs,
+      shardCount,
+      shardIndex,
     });
 
     await finishCollectRunMinimal(run.id, run.startedAt, {
@@ -117,6 +144,9 @@ async function handleDaangnDetailWorker(req: NextRequest) {
       blockedReason: result.blockedReason,
       skippedByBudget: result.skippedByBudget,
       marketInvalidationsQueued: result.marketInvalidationsQueued,
+      shardCount: result.shardCount,
+      shardIndex: result.shardIndex,
+      guardMode,
       durationMs: result.durationMs,
     });
 
