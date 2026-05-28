@@ -173,6 +173,8 @@ async function loadExactPoolItem(pid: number) {
     // Wave launch-38: detail HTML 에서 추출한 위치 patch 시 기존 raw_json 보존용.
     rawJson: meta?.raw_json ?? null,
     tradeLocation: null as string | null,
+    marketBasisSampleCount: null as number | null,
+    marketBasisUsable: null as boolean | null,
     // Wave 714n (2026-05-23): 신발/의류 5-tier grading + chips — 매물 클릭 시 모달 path 의 진짜 source.
     //   loadExactPoolItem 가 listing_parsed query 안 했었음 → setSelectedCard 의 input PoolItem 에
     //   conditionTier 자체 없어서 모달 디버그 tier=null 표시. 이제 fetch + 박음.
@@ -203,6 +205,16 @@ async function recomputeExactPoolItemProfit(item: ExactPoolItem | null): Promise
     item.marketplaceSource,
     item.pid,
   );
+  if (isDaangnMarketplaceSource(item.marketplaceSource) && (!marketBasis.medianPrice || marketBasis.sampleCount < 3)) {
+    return {
+      ...item,
+      skuMedian: marketBasis.medianPrice ?? null,
+      expectedProfitMin: 0,
+      expectedProfitMax: 0,
+      marketBasisSampleCount: marketBasis.sampleCount,
+      marketBasisUsable: false,
+    };
+  }
   const profit = expectedProfitFromMarketPrice({
     buyPrice: item.price,
     marketPrice: marketBasis.medianPrice,
@@ -215,6 +227,8 @@ async function recomputeExactPoolItemProfit(item: ExactPoolItem | null): Promise
     skuMedian: marketBasis.medianPrice ?? item.skuMedian,
     expectedProfitMin: profit.min,
     expectedProfitMax: profit.max,
+    marketBasisSampleCount: marketBasis.sampleCount,
+    marketBasisUsable: true,
   };
 }
 
@@ -519,12 +533,20 @@ export async function POST(req: Request) {
   //   사용자 frustration: "차익 마이너스인데 모달에 '판매완료' 헤더가 떠서 헷갈렸음".
   const verifiedItem = await recomputeExactPoolItemProfit(liveVerify.item) ?? liveVerify.item;
   if (Number(verifiedItem.expectedProfitMax ?? 0) <= 0) {
-    await invalidateReadyPoolItem(verifiedItem.pid, "profit_negative");
+    const daangnBasisMissing = isDaangnMarketplaceSource(verifiedItem.marketplaceSource)
+      && (
+        verifiedItem.marketBasisUsable === false
+        || !verifiedItem.skuMedian
+        || Number(verifiedItem.skuMedian) <= 0
+      );
+    await invalidateReadyPoolItem(verifiedItem.pid, daangnBasisMissing ? "daangn_market_basis_missing" : "profit_negative");
     return NextResponse.json(
       {
         error: "not_ready",
-        reason: "profit_lost",
-        message: "시세가 떨어져서 차익이 사라졌어요. 새로고침하면 다른 매물 보여드릴게요.",
+        reason: daangnBasisMissing ? "market_basis_missing" : "profit_lost",
+        message: daangnBasisMissing
+          ? "당근 기준 비교 매물이 아직 부족해 추천에서 내렸어요. 새로고침하면 다른 매물 보여드릴게요."
+          : "시세가 떨어져서 차익이 사라졌어요. 새로고침하면 다른 매물 보여드릴게요.",
       },
       { status: 404 },
     );

@@ -11,7 +11,7 @@ import { BunjangSourceBadge, DanawaSourceBadge, MarketplaceSourceBadge } from "@
 import { SkuImageLockBadge } from "@/components/sku-image-lock-badge";
 import { PACK_REVEALS_UPDATED_EVENT, type PackRevealsUpdatedDetail } from "@/lib/pack-events";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail, RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
-import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
+import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { buyPriceGuidance, verdictUiLabel } from "@/lib/buy-price-guidance";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { detectBrandDepth } from "@/lib/category-brand-depth";
@@ -228,10 +228,12 @@ function recomputeCurrentProfitFromMarketBasis(item: RevealItem, marketBasis: Re
     item.freeShipping
       ? 0
       : 3500;
-  const sellFee = Math.round(market * SELLING_FEE_RATE);
-  const max = Math.round(market - item.price - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
-  const min = Math.round(market - (item.price + assumedBuyShipping) - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
-  return { min, max };
+  return expectedProfitFromMarketPrice({
+    buyPrice: item.price,
+    marketPrice: market,
+    buyShipping: assumedBuyShipping,
+    marketplaceSource: item.marketplaceSource,
+  });
 }
 
 function profitPercent(item: RevealItem) {

@@ -851,10 +851,12 @@ export async function GET(req: Request) {
       const dbMarketInvalidatedAt = reveal.market_invalidated_at ?? null;
       const fallbackMedian = computedMarketBasis?.medianPrice ?? null;
       const currentNetProfit = currentNetProfitFromMarketPrice(raw, listingCost, fallbackMedian, marketplaceSource);
-      const marketGapKrw = currentNetProfit?.min ?? dbCurrentProfitMin;
-      const marketGapKrwMax = currentNetProfit?.max ?? dbCurrentProfitMax ?? marketGapKrw;
+      const daangnMarketBasisMissing = isDaangnMarketplaceSource(marketplaceSource)
+        && (!computedMarketBasis?.medianPrice || (computedMarketBasis.sampleCount ?? 0) < 3);
+      const marketGapKrw = daangnMarketBasisMissing ? 0 : (currentNetProfit?.min ?? dbCurrentProfitMin);
+      const marketGapKrwMax = daangnMarketBasisMissing ? 0 : (currentNetProfit?.max ?? dbCurrentProfitMax ?? marketGapKrw);
       const marketStale = marketGapKrw != null
-        ? marketGapKrw <= 0
+        ? marketGapKrw <= 0 || daangnMarketBasisMissing
         : dbMarketInvalidatedAt != null;
       return {
         pid: Number(reveal.pid),

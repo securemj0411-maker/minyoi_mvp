@@ -36,9 +36,8 @@ test("/me detail refresh keeps market price and profit on the same basis", () =>
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
 
   assert.match(dashboard, /function recomputeCurrentProfitFromMarketBasis/);
-  assert.match(dashboard, /SELLING_FEE_RATE/);
-  assert.match(dashboard, /RESELL_SHIPPING_FEE/);
-  assert.match(dashboard, /SAFETY_BUFFER/);
+  assert.match(dashboard, /expectedProfitFromMarketPrice/);
+  assert.match(dashboard, /marketplaceSource: item\.marketplaceSource/);
   assert.match(dashboard, /const marketBasis = detailData\.analysis\?\.marketBasis \?\? item\.marketBasis/);
   assert.match(dashboard, /const recomputedProfit = recomputeCurrentProfitFromMarketBasis\(item, marketBasis\)/);
   assert.match(dashboard, /marketGapKrw: recomputedProfit\?\.min \?\? item\.marketGapKrw/);

@@ -381,6 +381,20 @@ function netProfitPercent(card: RevealCard) {
   return Number.isFinite(pct) ? pct : null;
 }
 
+function hasUsableMarketBasis(card: RevealCard) {
+  const median = card.marketBasis?.medianPrice ?? null;
+  return Boolean(median && median > 0 && (card.marketBasis?.sampleCount ?? 0) >= 3);
+}
+
+function holdReasonText(card: RevealCard) {
+  if (!hasUsableMarketBasis(card)) return "같은 출처·같은 상태의 시세 근거가 아직 부족해요.";
+  return "시세 갱신으로 지금은 순익이 사라졌어요.";
+}
+
+function holdChipText(card: RevealCard) {
+  return hasUsableMarketBasis(card) ? "보류 처리" : "시세 근거 부족";
+}
+
 function marketDiscountPercent(card: RevealCard) {
   const median = card.marketBasis?.medianPrice ?? null;
   if (!median || median <= 0 || !card.price || card.price <= 0) return null;
@@ -1026,6 +1040,10 @@ function getWhyCheapReasons(card: RevealCard): string[] {
   // 2. 차익률 큰데 (>=30%) → 셀러가 그 상태 시세 모름
   if (reasons.length === 0 && profitPct >= 30 && condLabel) {
     reasons.push(`${condLabel} 매물 중에서도 셀러가 낮게 등록한 듯`);
+  }
+
+  if (reasons.length === 0 && !hasUsableMarketBasis(card)) {
+    reasons.push("같은 출처·같은 상태 비교 매물이 더 필요해요");
   }
 
   // Fallback — band-aware 비교 명시 (정직한 일반론)
@@ -2166,7 +2184,7 @@ function PurchaseDecisionHeader({ card }: { card: RevealCard }) {
         badgeClass: "bg-rose-100 text-rose-800 ring-rose-200 dark:bg-rose-950/40 dark:text-rose-200 dark:ring-rose-900/60",
         borderClass: "border-rose-200 bg-rose-50 dark:border-rose-900/60 dark:bg-rose-950/25",
         headline: "지금은 보류할 매물",
-        body: "판매완료나 시세 갱신으로 차익이 사라졌어요. 비교 매물부터 다시 확인하세요.",
+        body: holdReasonText(card),
       }
     : hasHighCounterfeitRisk
       ? {
@@ -6198,7 +6216,7 @@ function RevealCardItem({
                   ) : null}
                   {isMarketInvalidated ? (
                     <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-bold text-rose-800 dark:bg-rose-950/50 dark:text-rose-200">
-                      판매완료 처리
+                      {holdChipText(card)}
                     </span>
                   ) : null}
                 </div>
@@ -7530,7 +7548,7 @@ export default function PackRevealModal({
                     </div>
                     <div className="mt-0.5 truncate text-[12.5px] font-black leading-none tabular-nums text-blue-600 dark:text-blue-400">
                       {Math.min(activeRevealCard.expectedProfitMin, activeRevealCard.expectedProfitMax) <= 0
-                        ? <span className="text-rose-600 dark:text-rose-400">판매완료 처리</span>
+                        ? <span className="text-rose-600 dark:text-rose-400">{holdChipText(activeRevealCard)}</span>
                         : displayProfitRange(activeRevealCard)}
                     </div>
                   </div>
