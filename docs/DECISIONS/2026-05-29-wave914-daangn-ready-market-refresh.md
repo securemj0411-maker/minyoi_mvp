@@ -63,6 +63,10 @@ Production review after A/B/C discovery and detail workers showed that raw Daang
 - `vercel.json`
   - Changed `/api/cron/market-worker` from every 30 minutes to every 10 minutes.
 
+- `src/lib/cron-guard.ts`
+  - Reduced `market_worker` cooldown from 10 minutes to 8 minutes.
+  - Reason: a market-worker run often takes 40-60 seconds, so a strict 10-minute cooldown can cause the next 10-minute cron tick to skip.
+
 ## Expected Effect
 
 This does not magically make every Daangn row ready. `negative_resell_gap` and true low-profit rows should still be filtered.
@@ -72,6 +76,20 @@ It should raise ready throughput by preventing recoverable Daangn rows from sitt
 - fewer `sku_median_unavailable` skips in score-worker logs;
 - more pending/done market invalidation rows for Daangn comparable keys;
 - higher Daangn `poolUpserted` count after the next few market-worker + score-worker cycles.
+
+## Production Verification
+
+After the first deployment:
+
+- `daangn-detail-worker` ran with `patched=38` and `marketInvalidationsQueued=36`.
+- The next `market-worker` claimed `129` market invalidation keys and marked `5000` rows dirty for score refresh.
+- Daangn ready count moved from `445` to `453` after the first market/score cycle.
+- `daangn_detail_backfill` invalidations moved to `done`, confirming the new queue path is live.
+
+Follow-up issue:
+
+- The 10-minute `market-worker` cron tick can be skipped by the previous 10-minute cooldown because the worker duration counts against the interval.
+- The cooldown was lowered to 8 minutes so the 10-minute cadence can actually execute.
 
 ## Deferred
 

@@ -164,7 +164,7 @@ const DEFAULT_COOLDOWN_MS: Record<CronWorkerMode, number> = {
   tick: 60_000,
   detail_worker: 60_000,
   deep_crawl: 10 * 60_000,
-  market_worker: 10 * 60_000,
+  market_worker: 8 * 60_000,
   pool_warmer: 5 * 60_000,
   lifecycle_worker: 2 * 60_000,
   lifecycle_terminal_recheck: 5 * 60_000,
