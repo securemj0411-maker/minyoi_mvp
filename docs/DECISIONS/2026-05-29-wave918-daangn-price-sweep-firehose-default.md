@@ -165,3 +165,23 @@ B score_load_fraud_group_hashes ~= 18ms after the explicit-empty-target fix reac
 ```
 
 B still had one run where `score_load_daangn_volume_by_sku ~= 4918ms` because target SKU threshold reads were processed in 8-wide waves. Increase default target-read concurrency to 16, capped by `PIPELINE_VOLUME_GATE_TARGET_READ_CONCURRENCY` with a hard max of 32.
+
+Follow-up check:
+
+```text
+primary remained good: score_load_pool_gate_inputs ~= 1552ms
+B sparse batch was good: ~= 1107ms
+B full 89-100 row batches could still spike to ~= 7.2-10.1s
+```
+
+Interpretation: per-SKU threshold reads are faster for small target sets, but worse than bulk for large target sets because they create too many small HTTP queries. Add adaptive mode:
+
+- target SKU count `<= PIPELINE_VOLUME_GATE_BULK_QUERY_THRESHOLD` (default 48): use per-SKU `limit=3` threshold reads
+- target SKU count above threshold: use the previous bulk `sku_id=in.(...)` query path
+
+Also log target set sizes in score timings:
+
+- `score_pool_gate_target_sellers`
+- `score_pool_gate_target_hashes`
+- `score_pool_gate_low_volume_target_skus`
+- `score_pool_gate_daangn_volume_target_skus`

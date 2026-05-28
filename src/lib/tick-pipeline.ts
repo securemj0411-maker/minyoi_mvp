@@ -3689,6 +3689,10 @@ const VOLUME_GATE_TARGET_READ_CONCURRENCY = Math.max(
   1,
   Math.min(Number(process.env.PIPELINE_VOLUME_GATE_TARGET_READ_CONCURRENCY ?? 16), 32),
 );
+const VOLUME_GATE_BULK_QUERY_THRESHOLD = Math.max(
+  1,
+  Math.min(Number(process.env.PIPELINE_VOLUME_GATE_BULK_QUERY_THRESHOLD ?? 48), 200),
+);
 async function loadFraudGroupHashes(targetHashes?: Iterable<string>): Promise<Set<string>> {
   try {
     const target = Array.from(new Set(Array.from(targetHashes ?? [])
@@ -3764,17 +3768,32 @@ async function loadDaangnVolumeBySku(targetSkuIds?: Iterable<string>): Promise<M
       // Wave 918 follow-up: the pool gate only needs the <3 threshold, not an exact
       // count above 3. Fetch at most 3 rows per target SKU so popular SKUs do not
       // force a large 7-day window scan on every score run.
-      const counts = new Map<string, number>();
-      for (const chunk of chunkArray(target, VOLUME_GATE_TARGET_READ_CONCURRENCY)) {
-        const results = await Promise.all(chunk.map(async (skuId) => {
-          const url = `${tableUrl("mvp_raw_listings")}?select=sku_id&source=eq.daangn&listing_state=eq.active&first_seen_at=gte.${encodeURIComponent(since7dIso)}&sku_id=eq.${encodeURIComponent(skuId)}&order=first_seen_at.desc&limit=3`;
-          const res = await restFetch(url, { headers: serviceHeaders() });
-          const rows = (await res.json()) as Array<{ sku_id: string }>;
-          return [skuId, rows.length] as const;
-        }));
-        for (const [skuId, count] of results) counts.set(skuId, count);
+      if (target.length > VOLUME_GATE_BULK_QUERY_THRESHOLD) {
+        for (const chunk of chunkArray(target, 100)) {
+          const encoded = chunk.map(encodeURIComponent).join(",");
+          let offset = 0;
+          while (offset < 50_000) {
+            const url = `${tableUrl("mvp_raw_listings")}?select=sku_id&source=eq.daangn&listing_state=eq.active&first_seen_at=gte.${encodeURIComponent(since7dIso)}&sku_id=in.(${encoded})&order=first_seen_at.desc&limit=${PAGE}&offset=${offset}`;
+            const res = await restFetch(url, { headers: serviceHeaders() });
+            const rows = (await res.json()) as Array<{ sku_id: string }>;
+            all.push(...rows);
+            if (rows.length < PAGE) break;
+            offset += PAGE;
+          }
+        }
+      } else {
+        const counts = new Map<string, number>();
+        for (const chunk of chunkArray(target, VOLUME_GATE_TARGET_READ_CONCURRENCY)) {
+          const results = await Promise.all(chunk.map(async (skuId) => {
+            const url = `${tableUrl("mvp_raw_listings")}?select=sku_id&source=eq.daangn&listing_state=eq.active&first_seen_at=gte.${encodeURIComponent(since7dIso)}&sku_id=eq.${encodeURIComponent(skuId)}&order=first_seen_at.desc&limit=3`;
+            const res = await restFetch(url, { headers: serviceHeaders() });
+            const rows = (await res.json()) as Array<{ sku_id: string }>;
+            return [skuId, rows.length] as const;
+          }));
+          for (const [skuId, count] of results) counts.set(skuId, count);
+        }
+        return counts;
       }
-      return counts;
     } else {
       let offset = 0;
       while (offset < 10000) {
@@ -3815,23 +3834,38 @@ async function loadLowVolumeSkuIds(targetSkuIds?: Iterable<string>): Promise<Set
       // Wave 918 follow-up: this gate only needs to know whether a SKU has
       // 7d >= 3 and 2d >= 1. Query each target SKU with limit=3 so popular SKUs
       // do not force a large 7-day window scan just to prove they are not sparse.
-      const lowVolume = new Set<string>();
-      for (const chunk of chunkArray(target, VOLUME_GATE_TARGET_READ_CONCURRENCY)) {
-        const results = await Promise.all(chunk.map(async (skuId) => {
-          const url = `${tableUrl("mvp_raw_listings")}?select=sku_id,first_seen_at&sku_id=eq.${encodeURIComponent(skuId)}&first_seen_at=gte.${encodeURIComponent(since7dIso)}&listing_state=eq.active&order=first_seen_at.desc&limit=3`;
-          const res = await restFetch(url, { headers: serviceHeaders() });
-          const rows = (await res.json()) as Array<{ sku_id: string; first_seen_at: string }>;
-          const hasRecent2d = rows.some((row) => {
-            const ts = new Date(row.first_seen_at).getTime();
-            return Number.isFinite(ts) && ts >= since2dMs;
-          });
-          return [skuId, rows.length, hasRecent2d] as const;
-        }));
-        for (const [skuId, d7, hasRecent2d] of results) {
-          if (d7 > 0 && (d7 < 3 || !hasRecent2d)) lowVolume.add(skuId);
+      if (target.length > VOLUME_GATE_BULK_QUERY_THRESHOLD) {
+        for (const chunk of chunkArray(target, 100)) {
+          const encoded = chunk.map(encodeURIComponent).join(",");
+          let offset = 0;
+          while (offset < 50_000) {
+            const url = `${tableUrl("mvp_raw_listings")}?select=sku_id,first_seen_at&sku_id=in.(${encoded})&first_seen_at=gte.${encodeURIComponent(since7dIso)}&listing_state=eq.active&order=first_seen_at.desc&limit=${PAGE}&offset=${offset}`;
+            const res = await restFetch(url, { headers: serviceHeaders() });
+            const rows = (await res.json()) as Array<{ sku_id: string; first_seen_at: string }>;
+            all.push(...rows);
+            if (rows.length < PAGE) break;
+            offset += PAGE;
+          }
         }
+      } else {
+        const lowVolume = new Set<string>();
+        for (const chunk of chunkArray(target, VOLUME_GATE_TARGET_READ_CONCURRENCY)) {
+          const results = await Promise.all(chunk.map(async (skuId) => {
+            const url = `${tableUrl("mvp_raw_listings")}?select=sku_id,first_seen_at&sku_id=eq.${encodeURIComponent(skuId)}&first_seen_at=gte.${encodeURIComponent(since7dIso)}&listing_state=eq.active&order=first_seen_at.desc&limit=3`;
+            const res = await restFetch(url, { headers: serviceHeaders() });
+            const rows = (await res.json()) as Array<{ sku_id: string; first_seen_at: string }>;
+            const hasRecent2d = rows.some((row) => {
+              const ts = new Date(row.first_seen_at).getTime();
+              return Number.isFinite(ts) && ts >= since2dMs;
+            });
+            return [skuId, rows.length, hasRecent2d] as const;
+          }));
+          for (const [skuId, d7, hasRecent2d] of results) {
+            if (d7 > 0 && (d7 < 3 || !hasRecent2d)) lowVolume.add(skuId);
+          }
+        }
+        return lowVolume;
       }
-      return lowVolume;
     } else {
       let offset = 0;
       while (!Number.isFinite(maxRows) || maxRows <= 0 || all.length < maxRows) {
@@ -6911,6 +6945,13 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
       .map((row) => row.descriptionHash)
       .filter((hash): hash is string => Boolean(hash)),
   );
+  stats.timingsMs = {
+    ...(stats.timingsMs ?? {}),
+    score_pool_gate_target_sellers: poolGateTargetSellerUids.size,
+    score_pool_gate_target_hashes: poolGateTargetDescriptionHashes.size,
+    score_pool_gate_low_volume_target_skus: lowVolumeTargetSkuIds.size,
+    score_pool_gate_daangn_volume_target_skus: daangnVolumeTargetSkuIds.size,
+  };
 
   const [existingPoolSellerCounts, fraudGroupHashes, lowVolumeSkuIds, daangnVolumeBySku] = await timedScoreSubstage("score_load_pool_gate_inputs", () => Promise.all([
     timedScoreSubstage("score_load_existing_pool_seller_counts", () => loadExistingPoolSellerCounts(poolGateTargetSellerUids)).catch((err) => {
