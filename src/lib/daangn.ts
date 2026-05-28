@@ -95,6 +95,34 @@ export type DaangnDetailArticle = DaangnSearchArticle & {
   commentCount: number | null;
 };
 
+export type DaangnLifecycleState = "active" | "sold_confirmed" | "disappeared";
+
+export type DaangnStatusLifecycle = {
+  listingState: DaangnLifecycleState;
+  saleStatus: string;
+  reason: "active" | "reserved" | "closed" | "non_ongoing";
+};
+
+export type DaangnLiveState =
+  | {
+      ok: true;
+      article: DaangnDetailArticle;
+      sourceStatus: string | null;
+      listingState: DaangnLifecycleState;
+      saleStatus: string;
+      reason: DaangnStatusLifecycle["reason"];
+    }
+  | {
+      ok: false;
+      article: null;
+      sourceStatus: null;
+      listingState: null;
+      saleStatus: null;
+      reason: "fetch_failed" | "parse_failed" | "blocked";
+      status: number | null;
+      blockReason: string | null;
+    };
+
 export type DaangnSearchProbeCombo = {
   region: DaangnRegionSeed;
   query: DaangnQuerySeed;
@@ -600,6 +628,77 @@ export async function fetchDaangnText(url: string, timeoutMs = 10_000): Promise<
     contentType,
     body,
     blockSignal,
+  };
+}
+
+export function daangnLifecycleFromStatus(status: string | null | undefined): DaangnStatusLifecycle {
+  const raw = String(status ?? "").trim();
+  const normalized = raw.toLowerCase();
+  if (normalized === "ongoing") {
+    return { listingState: "active", saleStatus: "selling", reason: "active" };
+  }
+  if (normalized === "reserved") {
+    return { listingState: "disappeared", saleStatus: "reserved", reason: "reserved" };
+  }
+  if (normalized === "closed") {
+    return { listingState: "sold_confirmed", saleStatus: "closed", reason: "closed" };
+  }
+  return {
+    listingState: "disappeared",
+    saleStatus: normalized || "unknown",
+    reason: "non_ongoing",
+  };
+}
+
+export async function fetchDaangnLiveState(url: string, timeoutMs = 10_000): Promise<DaangnLiveState> {
+  const fetched = await fetchDaangnText(url, timeoutMs).catch((): DaangnFetchResult | null => null);
+  if (!fetched) {
+    return {
+      ok: false,
+      article: null,
+      sourceStatus: null,
+      listingState: null,
+      saleStatus: null,
+      reason: "fetch_failed",
+      status: null,
+      blockReason: null,
+    };
+  }
+  if (!fetched.ok) {
+    return {
+      ok: false,
+      article: null,
+      sourceStatus: null,
+      listingState: null,
+      saleStatus: null,
+      reason: fetched.blockSignal.blocked ? "blocked" : "fetch_failed",
+      status: fetched.status,
+      blockReason: fetched.blockSignal.reason,
+    };
+  }
+
+  const article = parseDaangnDetailHtml(fetched.body);
+  if (!article) {
+    return {
+      ok: false,
+      article: null,
+      sourceStatus: null,
+      listingState: null,
+      saleStatus: null,
+      reason: "parse_failed",
+      status: fetched.status,
+      blockReason: null,
+    };
+  }
+
+  const lifecycle = daangnLifecycleFromStatus(article.status);
+  return {
+    ok: true,
+    article,
+    sourceStatus: article.status,
+    listingState: lifecycle.listingState,
+    saleStatus: lifecycle.saleStatus,
+    reason: lifecycle.reason,
   };
 }
 

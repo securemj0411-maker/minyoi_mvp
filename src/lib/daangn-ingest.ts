@@ -33,6 +33,7 @@ import {
   DEFAULT_DAANGN_FASHION_QUERY_SEEDS,
   DEFAULT_DAANGN_REGION_SEEDS,
   buildDaangnSearchUrl,
+  daangnLifecycleFromStatus,
   daangnInternalPid,
   detectDaangnBlockSignal,
   fetchDaangnText,
@@ -429,7 +430,7 @@ type DaangnPreflightRow = {
   numFaved: number;
   numComment: number;
   thumbnailUrl: string | null;
-  listingState: "active" | "disappeared";
+  listingState: "active" | "sold_confirmed" | "disappeared";
   saleStatus: string;
   sourceUpdatedAt: string;
   rawJson: Record<string, unknown>;
@@ -492,6 +493,7 @@ function buildDaangnPreflightRow(
   if (article.price == null || !Number.isFinite(Number(article.price))) return null;
   const title = article.title || "(no title)";
   const description = ((article as DaangnDetailArticle).content ?? article.content ?? "") as string;
+  const lifecycle = daangnLifecycleFromStatus(article.status);
   return {
     article,
     externalId,
@@ -502,8 +504,8 @@ function buildDaangnPreflightRow(
     numFaved: article.favoriteCount ?? 0,
     numComment: article.chatCount ?? 0,
     thumbnailUrl: article.thumbnail ?? null,
-    listingState: article.status === "Ongoing" ? "active" : "disappeared",
-    saleStatus: article.status === "Ongoing" ? "selling" : (article.status?.toLowerCase() ?? ""),
+    listingState: lifecycle.listingState,
+    saleStatus: lifecycle.saleStatus,
     sourceUpdatedAt: article.boostedAt ?? article.createdAt ?? new Date(0).toISOString(),
     rawJson: {
       source: DAANGN_SOURCE_ID,
@@ -621,6 +623,7 @@ function buildRawListingRow(
   const skuId = parsedOptions && !parsedOptions.needsReview ? matched?.id ?? null : null;
   const skuName = parsedOptions && !parsedOptions.needsReview ? matched?.modelName ?? null : null;
   const parsedRow = parsedOptions ? toParsedListingRow(pid, parsedOptions) : null;
+  const lifecycle = daangnLifecycleFromStatus(article.status);
 
   // pool_eligible 정책 (Phase 6 수정 — 사용자 정책):
   //   당근 매물 = 동네 직거래 default OK.
@@ -630,7 +633,7 @@ function buildRawListingRow(
   const poolEligible =
     Boolean(skuId) &&
     storageListingType === "normal" &&
-    article.status === "Ongoing" &&
+    lifecycle.listingState === "active" &&
     !article.user.webCrawlNotAllowed;
 
   // mvp_raw_listings NOT NULL columns — 안전 fallback 박기 (NOT NULL no-default 모두 cover):
@@ -653,11 +656,11 @@ function buildRawListingRow(
     query: `daangn:${article.region.name ?? article.region.dbId ?? "unknown"}`,
     seller_uid: article.user.dbId ?? null,
     seller_source: DAANGN_SOURCE_ID,
-    listing_state: article.status === "Ongoing" ? "active" : "disappeared",
+    listing_state: lifecycle.listingState,
     listing_type: storageListingType,
     sku_id: skuId,
     sku_name: skuName,
-    sale_status: article.status === "Ongoing" ? "selling" : (article.status?.toLowerCase() ?? ""),
+    sale_status: lifecycle.saleStatus,
     shop_review_count: 0,
     image_count: 0,
     missing_count: 0,

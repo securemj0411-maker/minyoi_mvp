@@ -79,6 +79,7 @@ import {
 } from "@/lib/sold-out";
 // Wave launch-41: joongna lifecycle detail fetch.
 import { fetchJoongnaDetail } from "@/lib/joongna";
+import { fetchDaangnLiveState } from "@/lib/daangn";
 import {
   analysisOutputDiffReasons,
   analysisOutputChanged,
@@ -5235,6 +5236,7 @@ function shouldSkipLifecycleForHealth(row: LifecycleClaimRow, health: SourceHeal
 // Wave launch-41: source 별 lifecycle detail fetch + sold signal 감지.
 //   bunjang: fetchDetail (bunjang API) + detectSoldOut (sale_status / text / image 종합)
 //   joongna: fetchJoongnaDetail (HTML parse) + productStatus + text hit
+//   daangn: detail HTML status (Ongoing/Reserved/Closed) 로 active/terminal 판단
 //     pack-open.ts:1503-1507 의 joongna sold 감지 패턴 통합.
 //   반환값: LifecycleClaimRow 의 나머지 코드 (isSoldOut, canPermanentlyInvalidateSoldOut,
 //   markRawLifecycleState) 에서 사용할 saleStatus 와 signals.
@@ -5243,7 +5245,8 @@ async function fetchLifecycleDetailBySource(row: LifecycleClaimRow): Promise<{
   detail: { saleStatus: string | null } | null;
   signals: SoldOutSignal[];
 }> {
-  if (row.source === "joongna") {
+  const source = normalizeMarketplaceSource(row.source);
+  if (source === "joongna") {
     if (!row.url) return { detail: null, signals: ["fetch_failed"] };
     const j = await fetchJoongnaDetail(row.url, 10_000);
     if (!j.ok) return { detail: null, signals: ["fetch_failed"] };
@@ -5264,6 +5267,13 @@ async function fetchLifecycleDetailBySource(row: LifecycleClaimRow): Promise<{
       ? `JOONGNA_STATUS_${j.productStatus}`
       : null;
     return { detail: { saleStatus }, signals };
+  }
+  if (source === "daangn") {
+    if (!row.url) return { detail: null, signals: ["fetch_failed"] };
+    const d = await fetchDaangnLiveState(row.url, 10_000);
+    if (!d.ok) return { detail: null, signals: ["fetch_failed"] };
+    const signals: SoldOutSignal[] = d.listingState === "active" ? [] : ["sale_status_inactive"];
+    return { detail: { saleStatus: d.saleStatus }, signals };
   }
   // bunjang default
   const d = await fetchDetail(String(row.pid));
@@ -5478,6 +5488,56 @@ export async function poolWarmerStage(deadlineMs: number): Promise<StageStats> {
           : soldByStatus ? `pool_warmer_joongna_status_${j.productStatus}`
           : "pool_warmer_joongna_text_traded";
         await invalidatePoolEntries([{ pid: row.pid, reason }]);
+        stats.poolSkipped += 1;
+        continue;
+      }
+      await markPoolVerified(row.pid);
+      stats.enriched += 1;
+      continue;
+    }
+
+    if (normalizeMarketplaceSource(raw?.source) === "daangn") {
+      if (!raw?.url) {
+        stats.detailFailed += 1;
+        continue;
+      }
+      const d = await fetchDaangnLiveState(raw.url, 10_000);
+      if (config.detailDelayMs > 0) await new Promise((resolve) => setTimeout(resolve, config.detailDelayMs));
+      if (!d.ok) {
+        if (d.status === 404) {
+          const now = new Date().toISOString();
+          await Promise.allSettled([
+            patchRows("mvp_raw_listings", `pid=eq.${row.pid}`, {
+              listing_state: "disappeared",
+              sale_status: "missing",
+              disappeared_at: now,
+              last_missing_at: now,
+              updated_at: now,
+            }),
+            invalidatePoolEntries([{ pid: row.pid, reason: "pool_warmer_daangn_detail_404" }]),
+          ]);
+          stats.poolSkipped += 1;
+          continue;
+        }
+        stats.detailFailed += 1;
+        continue;
+      }
+      if (d.listingState !== "active") {
+        const now = new Date().toISOString();
+        const rawPatch: Record<string, unknown> = {
+          listing_state: d.listingState,
+          sale_status: d.saleStatus,
+          updated_at: now,
+        };
+        if (d.listingState === "sold_confirmed") rawPatch.sold_detected_at = now;
+        if (d.listingState === "disappeared") {
+          rawPatch.disappeared_at = now;
+          rawPatch.last_missing_at = now;
+        }
+        await Promise.allSettled([
+          patchRows("mvp_raw_listings", `pid=eq.${row.pid}`, rawPatch),
+          invalidatePoolEntries([{ pid: row.pid, reason: `pool_warmer_daangn_${d.reason}` }]),
+        ]);
         stats.poolSkipped += 1;
         continue;
       }

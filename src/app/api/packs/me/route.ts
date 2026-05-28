@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { fetchDetail } from "@/lib/bunjang";
+import { fetchDaangnLiveState } from "@/lib/daangn";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
@@ -513,10 +514,39 @@ async function liveVerifyVisibleItems(userRef: string, items: RevealItem[]): Pro
         }
 
         if (isDaangnMarketplaceSource(item.marketplaceSource)) {
+          if (!item.url) {
+            verified[index] = item;
+            continue;
+          }
+          const live = await fetchDaangnLiveState(item.url, 8_000);
+          if (!live.ok) {
+            if (live.status === 404) {
+              await patchLiveTerminalState(item, "disappeared", null, "daangn_detail_404");
+              verified[index] = {
+                ...item,
+                listingState: "disappeared",
+                saleStatus: item.saleStatus || "missing",
+              };
+              continue;
+            }
+            verified[index] = item;
+            continue;
+          }
+          if (live.listingState !== "active") {
+            await patchLiveTerminalState(item, live.listingState, live.saleStatus, `daangn_${live.reason}`);
+            verified[index] = {
+              ...item,
+              listingState: live.listingState,
+              saleStatus: live.saleStatus,
+              commentCount: live.article.commentCount ?? item.commentCount,
+            };
+            continue;
+          }
           verified[index] = {
             ...item,
             listingState: "active",
-            saleStatus: item.saleStatus || "selling",
+            saleStatus: live.saleStatus || item.saleStatus || "selling",
+            commentCount: live.article.commentCount ?? item.commentCount,
           };
           continue;
         }

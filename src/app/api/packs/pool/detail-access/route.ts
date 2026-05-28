@@ -3,6 +3,7 @@ import { isAdminUser } from "@/lib/auth-users";
 import { fetchDetail } from "@/lib/bunjang";
 import { consumeDetailAccess } from "@/lib/detail-access";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
+import { fetchDaangnLiveState } from "@/lib/daangn";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
@@ -379,13 +380,41 @@ async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAcce
   }
 
   if (isDaangnMarketplaceSource(item.marketplaceSource)) {
+    if (!item.listingUrl) {
+      return { ok: false, status: 503, error: "live_verify_unavailable", message: "당근 원본 매물을 확인하지 못했어요. 새로고침 후 다시 시도해주세요." };
+    }
+    const live = await fetchDaangnLiveState(item.listingUrl, 8_000).catch((err) => {
+      console.error("pool/detail-access daangn live verify failed", {
+        pid: item.pid,
+        err: err instanceof Error ? err.message : String(err),
+      });
+      return null;
+    });
+    if (!live) {
+      return { ok: false, status: 503, error: "live_verify_unavailable", message: "당근 원본 확인이 잠시 실패했어요. 크레딧은 사용하지 않았어요." };
+    }
+    if (!live.ok) {
+      if (live.status === 404) {
+        await markTerminalBeforeAccess(item, "disappeared", null, "daangn_detail_404");
+        return { ok: false, status: 404, error: "not_ready", message: "원본 매물이 사라져 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요." };
+      }
+      return { ok: false, status: 503, error: "live_verify_unavailable", message: "당근 원본 확인이 잠시 불안정해요. 크레딧은 사용하지 않았어요." };
+    }
+    if (live.listingState !== "active") {
+      await markTerminalBeforeAccess(item, live.listingState, live.saleStatus, `daangn_${live.reason}`);
+      const message = live.reason === "reserved"
+        ? "예약중인 매물이라 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요."
+        : "이미 거래가 끝난 매물이라 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요.";
+      return { ok: false, status: 404, error: "not_ready", message };
+    }
     await patchPoolVerified(item.pid);
     return {
       ok: true,
       item: {
         ...item,
         listingState: "active",
-        saleStatus: item.saleStatus || "selling",
+        saleStatus: live.saleStatus || item.saleStatus || "selling",
+        commentCount: live.article.commentCount ?? item.commentCount,
       },
     };
   }

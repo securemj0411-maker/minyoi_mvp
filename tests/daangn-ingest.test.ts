@@ -16,6 +16,7 @@ import {
   DAANGN_FASHION_CATEGORIES,
   DEFAULT_DAANGN_FASHION_QUERY_SEEDS,
   DEFAULT_DAANGN_REGION_SEEDS,
+  daangnLifecycleFromStatus,
   daangnInternalPid,
   parseDaangnExternalId,
   type DaangnDetailArticle,
@@ -125,6 +126,26 @@ describe("daangnUpsertPreflightLimit", () => {
   it("keeps zero caps disabled", () => {
     assert.equal(daangnUpsertPreflightLimit(0, 5000), 0);
     assert.equal(daangnUpsertPreflightLimit(500, 0), 0);
+  });
+});
+
+describe("daangnLifecycleFromStatus", () => {
+  it("keeps only Ongoing active and blocks Reserved/Closed from ready", () => {
+    assert.deepEqual(daangnLifecycleFromStatus("Ongoing"), {
+      listingState: "active",
+      saleStatus: "selling",
+      reason: "active",
+    });
+    assert.deepEqual(daangnLifecycleFromStatus("Reserved"), {
+      listingState: "disappeared",
+      saleStatus: "reserved",
+      reason: "reserved",
+    });
+    assert.deepEqual(daangnLifecycleFromStatus("Closed"), {
+      listingState: "sold_confirmed",
+      saleStatus: "closed",
+      reason: "closed",
+    });
   });
 });
 

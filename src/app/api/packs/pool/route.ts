@@ -8,7 +8,7 @@ import { evaluateDaangnRegionDistance, type DaangnDistanceSignal } from "@/lib/d
 import { loadUserHomeRegion } from "@/lib/user-home-region-loader";
 import { loadSkuImageMap, resolveGenericImage } from "@/lib/sku-images";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
-import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { isDaangnMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { createPoolAccessToken, decodePoolAccessToken, syntheticPidForPoolToken } from "@/lib/pool-access-token";
 import { localizeProductLineLabel } from "@/lib/product-line-display";
 import { expectedProfitFromMarketPrice } from "@/lib/profit";
@@ -18,6 +18,7 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 import { getDetailAccessSnapshot } from "@/lib/detail-access";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { teaserBudgetRangeLabel } from "@/lib/feed-price-display";
+import { fetchDaangnLiveState } from "@/lib/daangn";
 
 // Wave 338 (Phase 1a — Freemium /explore):
 // 무료 사용자 매물 풀 browsing. 6h 이상 지난 매물만 노출 (유료는 즉시 — Phase 2).
@@ -36,7 +37,7 @@ import { teaserBudgetRangeLabel } from "@/lib/feed-price-display";
 // }
 //
 // 액션 (POST 또는 ?refresh=1):
-//   새 teaser 매물 응답. 상세보기 진입 시에만 실시간 검증 + 차감.
+//   새 teaser 매물 응답. 당근은 최종 노출 전 status 확인, 상세보기 진입 시 전체 source 실시간 검증 + 차감.
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -57,6 +58,7 @@ const FETCH_POOL_OVERFETCH = 1500;
 const POOL_PAGE_SIZE = 1000;
 const PID_LOOKUP_CHUNK_SIZE = 400;
 const REFRESH_READY_CANDIDATE_LIMIT = 500;
+const DAANGN_POOL_LIVE_VERIFY_CONCURRENCY = 8;
 
 type PoolRow = {
   pid: number;
@@ -103,6 +105,96 @@ type RawListingMeta = {
   // candidate_pool.status=ready 가드만으로는 lifecycle cron lag 시 sold_confirmed/disappeared 노출 가능.
   listing_state: string | null;
 };
+
+async function patchDaangnVisiblePoolTerminal(
+  pid: number,
+  state: "sold_confirmed" | "disappeared",
+  saleStatus: string | null,
+  reason: string,
+) {
+  const now = new Date().toISOString();
+  const rawPatch: Record<string, unknown> = {
+    listing_state: state,
+    updated_at: now,
+  };
+  if (saleStatus != null) rawPatch.sale_status = saleStatus;
+  if (state === "sold_confirmed") rawPatch.sold_detected_at = now;
+  if (state === "disappeared") {
+    rawPatch.disappeared_at = now;
+    rawPatch.last_missing_at = now;
+  }
+  await Promise.allSettled([
+    restFetch(`${tableUrl("mvp_raw_listings")}?pid=eq.${pid}`, {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: JSON.stringify(rawPatch),
+    }),
+    restFetch(`${tableUrl("mvp_candidate_pool")}?pid=eq.${pid}&status=in.(ready,reserved)`, {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: JSON.stringify({
+        status: "invalidated",
+        invalidated_reason: `pool_daangn_live_${reason}`.slice(0, 120),
+        updated_at: now,
+      }),
+    }),
+  ]);
+}
+
+async function liveVerifyDaangnVisiblePool(
+  pool: (PoolRow & { soldOut: boolean })[],
+  raws: RawRow[],
+  metas: RawListingMeta[],
+): Promise<{
+  pool: (PoolRow & { soldOut: boolean })[];
+  raws: RawRow[];
+  metas: RawListingMeta[];
+}> {
+  const metaByPid = new Map(metas.map((m) => [m.pid, m]));
+  const targets = pool
+    .filter((row) => !row.soldOut)
+    .map((row) => ({ row, meta: metaByPid.get(row.pid) }))
+    .filter((entry): entry is { row: PoolRow & { soldOut: boolean }; meta: RawListingMeta } => (
+      Boolean(entry.meta?.url) && isDaangnMarketplaceSource(entry.meta?.source ?? entry.meta?.seller_source)
+    ));
+  if (targets.length === 0) return { pool, raws, metas };
+
+  const blockedPids = new Set<number>();
+  let cursor = 0;
+  async function worker() {
+    while (cursor < targets.length) {
+      const index = cursor;
+      cursor += 1;
+      const target = targets[index];
+      if (!target?.meta.url) continue;
+      const live = await fetchDaangnLiveState(target.meta.url, 3_000);
+      if (!live.ok) {
+        if (live.status === 404) {
+          blockedPids.add(target.row.pid);
+          await patchDaangnVisiblePoolTerminal(target.row.pid, "disappeared", null, "detail_404");
+        }
+        continue;
+      }
+      if (live.listingState !== "active") {
+        blockedPids.add(target.row.pid);
+        await patchDaangnVisiblePoolTerminal(target.row.pid, live.listingState, live.saleStatus, live.reason);
+      }
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(DAANGN_POOL_LIVE_VERIFY_CONCURRENCY, targets.length) }, () => worker()));
+  if (blockedPids.size > 0) {
+    console.warn("[pool] daangn live-state block", {
+      blocked: blockedPids.size,
+      checked: targets.length,
+    });
+  }
+  return {
+    pool: pool.filter((r) => !blockedPids.has(r.pid)),
+    raws: raws.filter((r) => !blockedPids.has(r.pid)),
+    metas: metas.filter((m) => !blockedPids.has(m.pid)),
+  };
+}
 
 const LOCKED_CATEGORY_LABELS: Record<string, string> = {
   earphone: "이어폰/헤드셋",
@@ -693,8 +785,9 @@ async function loadPool(
   const filteredPool = pool.filter((r) => !blockedPids.has(r.pid));
   const filteredRaws = raws.filter((r) => !blockedPids.has(r.pid));
   const filteredMetas = metas.filter((m) => !blockedPids.has(m.pid));
+  const liveFiltered = await liveVerifyDaangnVisiblePool(filteredPool, filteredRaws, filteredMetas);
 
-  return { pool: filteredPool, raws: filteredRaws, metas: filteredMetas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, parsedGradingRows };
+  return { pool: liveFiltered.pool, raws: liveFiltered.raws, metas: liveFiltered.metas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, parsedGradingRows };
 }
 
 function buildItems(
