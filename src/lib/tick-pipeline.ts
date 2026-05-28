@@ -2929,18 +2929,19 @@ function pickPerSourceStatForMatter(
   comparableKey: string | null,
   conditionClass: string | null,
   matterSource: string | null | undefined,
+  category?: Sku["category"] | null,
 ): MarketPriceRowWithSource | null {
   if (!perSourceMap || !comparableKey || !matterSource) return null;
   const bySource = perSourceMap.get(comparableKey);
   if (!bySource) return null;
   const byCond = bySource.get(matterSource);
   if (!byCond) return null;
-  const stat = pickMarketStatByCondition(byCond, conditionClass) as MarketPriceRowWithSource | undefined;
-  if (!stat) return null;
-  const total = (stat.active_sample_count ?? 0) + (stat.sold_sample_count ?? 0);
-  // sample ≥ 3 — Wave 885 의 thin_market 와 동일 threshold (사용자 결정).
-  if (total < 3) return null;
-  return stat;
+  for (const cls of conditionFallbackChain(conditionClass)) {
+    const stat = byCond.get(cls);
+    if (!stat) continue;
+    if (trustedMarketMedian(stat, category) != null) return stat;
+  }
+  return null;
 }
 
 // Wave 159h (2026-05-17): condition-fallback shared module 사용 (DRY).
@@ -4840,7 +4841,7 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
   const pids = [...new Set(poolRows.map((row) => Number(row.pid)).filter(Number.isFinite))];
   if (pids.length === 0) return 0;
 
-  const eligibleRaw = new Set<number>();
+  const eligibleRaw = new Map<number, string | null>();
   const recoveredMarket = new Set<number>();
   const parsedByPid = new Map<number, {
     category: Sku["category"] | null;
@@ -4883,7 +4884,7 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
       if (!Number.isFinite(pid)) continue;
       const normalListing = raw.listing_type === "normal" || raw.listing_type_override === "normal";
       if (isRawPublicPoolEligible(raw) && raw.detail_status === "done" && raw.listing_state === "active" && normalListing && raw.sku_id) {
-        eligibleRaw.add(pid);
+        eligibleRaw.set(pid, raw.source ?? null);
       }
     }
     const listingRows = (await listingRes.json()) as Array<{ pid: number | string; sku_median: number | null }>;
@@ -4913,8 +4914,35 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
     ...comparableKeys,
     ...comparableKeys.map(shoeSizeAgnosticComparableKey).filter((key): key is string => Boolean(key)),
   ]);
+  const marketStatsPerSource = await loadMarketPriceStatsPerSource([
+    ...comparableKeys,
+    ...comparableKeys.map(shoeSizeAgnosticComparableKey).filter((key): key is string => Boolean(key)),
+  ]).catch((err) => {
+    console.warn("markRecoveredMarketInvalidatedPoolRowsDirty per-source fetch failed", err instanceof Error ? err.message : String(err));
+    return null as MarketPriceStatsPerSourceMap | null;
+  });
   for (const [pid, parsed] of parsedByPid.entries()) {
     if (recoveredMarket.has(pid) || !parsed.comparable_key) continue;
+    const rawSource = eligibleRaw.get(pid) ?? null;
+    if (normalizeMarketplaceSource(rawSource) === "daangn") {
+      const sourceStat = pickPerSourceStatForMatter(
+        marketStatsPerSource,
+        parsed.comparable_key,
+        parsed.condition_class ?? null,
+        rawSource,
+        parsed.category,
+      );
+      const sizeAnyKey = shoeSizeAgnosticComparableKey(parsed.comparable_key);
+      const sourceSizeAnyStat = pickPerSourceStatForMatter(
+        marketStatsPerSource,
+        sizeAnyKey ?? null,
+        parsed.condition_class ?? null,
+        rawSource,
+        parsed.category,
+      );
+      if (sourceStat || sourceSizeAnyStat) recoveredMarket.add(pid);
+      continue;
+    }
     const byCondition = marketStatsByKey.get(parsed.comparable_key);
     const stat = pickMarketStatByCondition(byCondition, parsed.condition_class ?? null);
     const exactMedian = trustedMarketMedian(stat, parsed.category);
@@ -6533,6 +6561,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
       comparableKey,
       parsed?.condition_class ?? null,
       row.source,
+      parsed?.category,
     );
     const matterSource = normalizeMarketplaceSource(row.source);
     const requiresSourceMarket = matterSource === "daangn";

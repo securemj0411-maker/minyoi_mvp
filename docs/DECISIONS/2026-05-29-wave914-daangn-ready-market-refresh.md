@@ -91,6 +91,37 @@ Follow-up issue:
 - The 10-minute `market-worker` cron tick can be skipped by the previous 10-minute cooldown because the worker duration counts against the interval.
 - The cooldown was lowered to 8 minutes so the 10-minute cadence can actually execute.
 
+## Wave 914b Follow-up
+
+Production after the first fix showed the pipeline was moving, but too slowly:
+
+- Last 2 hours:
+  - Daangn discovery upserted `6,989` raw rows.
+  - Daangn detail worker patched `382` rows and queued `268` market invalidations.
+  - Score workers promoted `70` rows to pool but skipped many candidates.
+- Top score blockers:
+  - `negative_resell_gap`: expected/non-actionable quality filter.
+  - `sku_median_unavailable`: still too high.
+  - `daangn_manner_temperature_missing`: detail worker still racing behind score workers.
+
+Implemented follow-up:
+
+- Fixed Daangn per-source market stat selection to use `trustedMarketMedian(...)` instead of hard-cutting `sample < 3`.
+  - Existing policy already allows thin categories such as clothing/shoe/bag at `sample >= 2`.
+  - The old per-source picker cut those rows before the policy could apply.
+- Made recovery for invalidated rows source-aware.
+  - Daangn `sku_median_unavailable` recovery now checks Daangn per-source stats instead of mixed stats.
+- Increased Daangn detail worker default throughput:
+  - `limit`: `45` → `70`
+  - `budgetMs`: `50s` → `80s`
+  - `delayMs`: `700ms` → `550ms`
+
+Expected effect:
+
+- Clothing/shoe/bag Daangn rows with 2 trusted source samples should stop dying at `sku_median_unavailable`.
+- Rows with one weak condition sample but a trusted adjacent fallback condition should recover instead of staying invalidated.
+- Manner temperature backlog should drain faster without changing ready quality thresholds.
+
 ## Deferred
 
 - Aggressive category-only Daangn crawling across more Vercel projects is deferred until this ready-promotion bottleneck is measured.

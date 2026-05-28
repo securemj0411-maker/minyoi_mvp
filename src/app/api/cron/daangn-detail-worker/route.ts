@@ -61,9 +61,9 @@ async function handleDaangnDetailWorker(req: NextRequest) {
 
   const staleMarked = await markStaleCollectRuns(loadPipelineRuntimeConfig().staleRunMinutes);
   const dryRun = req.nextUrl.searchParams.get("dryRun") === "1" || envBool("DAANGN_DETAIL_WORKER_DRY_RUN", false);
-  const limit = envInt("DAANGN_DETAIL_WORKER_LIMIT", 45, 1, 200);
-  const budgetMs = envInt("DAANGN_DETAIL_WORKER_BUDGET_MS", 50_000, 5_000, 260_000);
-  const delayMs = envInt("DAANGN_DETAIL_WORKER_DELAY_MS", 700, 0, 10_000);
+  const limit = envInt("DAANGN_DETAIL_WORKER_LIMIT", 70, 1, 200);
+  const budgetMs = envInt("DAANGN_DETAIL_WORKER_BUDGET_MS", 80_000, 5_000, 260_000);
+  const delayMs = envInt("DAANGN_DETAIL_WORKER_DELAY_MS", 550, 0, 10_000);
   const timeoutMs = envInt("DAANGN_DETAIL_WORKER_TIMEOUT_MS", 8_000, 1_000, 30_000);
 
   const run = await startCollectRun({
