@@ -262,7 +262,7 @@ test("smartwatch full unit with included case or box is not excluded as accessor
     95_000,
   );
   assert.notEqual(result.listingType, "accessory");
-  assert.equal(result.sku?.id, "applewatch-se2");
+  assert.equal(result.sku?.id, "applewatch-se2-44mm");
 });
 
 test("non-earphone title-dominant accessory listings stay excluded", () => {
@@ -976,7 +976,7 @@ test("global classifier does not treat PS5 full-unit body wording as earbud part
     skuId: "ps5-digital-standard",
     skuName: "PlayStation 5 (Digital, Standard)",
   });
-  assert.equal(parsed.comparableKey, "game_console|playstation_5_digital_standard");
+  assert.equal(parsed.comparableKey, "game_console|playstation_5|digital|full_set");
   assert.equal(parsed.needsReview, false);
 });
 

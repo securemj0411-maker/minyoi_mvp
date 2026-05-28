@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import type { Sku } from "@/lib/catalog";
 // Wave 92: 신규 카테고리 (shoe/bag/bike) parser는 별도 모듈에서 dispatch.
 import { parseFashionMobility } from "@/lib/parsers/wave92-fashion-mobility";
+import { parseGameConsoleListing } from "@/lib/game-console-parser";
 // Wave 182 Phase 3 (2026-05-17): base option fallback (옵션 명시 X → 가장 낮은 옵션 가정).
 import { baseOptionsFor } from "@/lib/sku-base-options";
 
@@ -2268,8 +2269,14 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     if (golfSexKey) partsWithGolf = [...partsWithGolf, golfSexKey];
     if (golfIronSetKey) partsWithGolf = [...partsWithGolf, golfIronSetKey];
   }
-  const comparableKey = partsWithGolf?.map(slug).join("|") ?? null;
-  const parseConfidence = confidence({
+  const gameConsoleParsed = category === "game_console"
+    ? parseGameConsoleListing(title, description)
+    : null;
+  const gameConsoleComparableKey = gameConsoleParsed?.listingType === "normal"
+    ? gameConsoleParsed.comparableKey
+    : null;
+  const comparableKey = gameConsoleComparableKey ?? partsWithGolf?.map(slug).join("|") ?? null;
+  const baseParseConfidence = confidence({
     category,
     model,
     releaseYear,
@@ -2293,7 +2300,12 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     batteryHealth,
     batteryCycles,
   });
-  const variantKey = parts ? parts.slice(2).join(" / ") : null;
+  const parseConfidence = gameConsoleComparableKey
+    ? Math.max(baseParseConfidence, gameConsoleParsed?.parseConfidence ?? 0)
+    : baseParseConfidence;
+  const variantKey = gameConsoleComparableKey
+    ? gameConsoleComparableKey.split("|").slice(2).join(" / ")
+    : parts ? parts.slice(2).join(" / ") : null;
   const criticalUnknown = criticalUnknowns(category, comparableKey);
   const poolBlockConditionNote = conditionNotes.some((note) => [
     "multi_device_bundle",
@@ -2317,6 +2329,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     || airpodsMaxGeneration === "unknown_generation"
     || (airpodsMaxGeneration === "max_lightning" && !airpodsMaxFullProductContext)
     || (category === "monitor" && !monitorModelCode)
+    || Boolean(gameConsoleComparableKey && gameConsoleParsed?.needsReview)
     || !comparableKey;
 
   // Wave 140 (사용자 코멘트 #122) + 2026-05-16 v46 (사용자 정책 변경):
@@ -2390,6 +2403,14 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       monitor_panel_type: monitorPanelType,
       monitor_shape: monitorShape,
       monitor_model_hint: monitorModelHint,
+      game_console_parser: gameConsoleParsed ? {
+        listing_type: gameConsoleParsed.listingType,
+        platform: gameConsoleParsed.platform,
+        edition: gameConsoleParsed.edition,
+        body_config: gameConsoleParsed.bodyConfig,
+        comparable_key: gameConsoleParsed.comparableKey,
+        needs_review: gameConsoleParsed.needsReview,
+      } : null,
       laptop_model_number: laptopModelNumber,
       laptop_model_hint: laptopModelHint,
       inferred_release_year: parsedReleaseYear == null && releaseYear != null,
