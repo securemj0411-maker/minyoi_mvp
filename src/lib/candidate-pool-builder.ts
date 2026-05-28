@@ -13,7 +13,7 @@ import {
   poolMaxExposure,
   poolSkipReason,
 } from "@/lib/pool-policy.mjs";
-import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
+import { safetyBufferForSource, sellingFeeForMarketPrice, resellShippingFeeForSource } from "@/lib/profit";
 import { POOL_BLOCK_NOTES } from "@/lib/condition-policy";
 
 // 2026-05-15 (사용자 코멘트 pid 400051960): 풀 진입 가격 상한.
@@ -678,11 +678,13 @@ export function buildCandidatePoolRows(input: {
       continue;
     }
 
-    const sellFee = Math.round(row.skuMedian * SELLING_FEE_RATE);
+    const sellFee = sellingFeeForMarketPrice(row.skuMedian, row.source);
+    const resellShippingFee = resellShippingFeeForSource(row.source);
+    const safetyBuffer = safetyBufferForSource(row.source);
     const buyMax = row.price + (row.shippingFeeGeneral ?? row.shippingFee);
     const buyMin = row.estimatedBuyCost;
-    const profitMax = Math.max(0, row.skuMedian - buyMin - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
-    const profitMin = Math.max(0, row.skuMedian - buyMax - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER);
+    const profitMax = Math.max(0, row.skuMedian - buyMin - sellFee - resellShippingFee - safetyBuffer);
+    const profitMin = Math.max(0, row.skuMedian - buyMax - sellFee - resellShippingFee - safetyBuffer);
     // Wave 755 (2026-05-24): category 전달 → clothing/shoe/bag 10K threshold (일반인 친화).
     const band = bandFromProfit(profitMin, profitMax, category);
     if (band === null) {

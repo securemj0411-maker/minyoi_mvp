@@ -22,7 +22,7 @@ import { loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { detectSoldOut, describeSignals, isSoldOut, soldOutTextHits } from "@/lib/sold-out";
-import { SAFETY_BUFFER, sellingFeeForMarketPrice, resellShippingFeeForSource } from "@/lib/profit";
+import { safetyBufferForSource, sellingFeeForMarketPrice, resellShippingFeeForSource } from "@/lib/profit";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -262,7 +262,7 @@ type RevealItem = {
   conditionFlags?: Record<string, unknown> | null;
   conditionChips?: string[] | null;
   // Wave 213 (2026-05-18): request-time current net profit.
-  // 운영자풀과 같은 비용 모델(매입 배송비, 판매수수료, 재배송비, 안전버퍼)을 차감한다.
+  // 운영자풀과 같은 비용 모델(매입 배송비, 판매수수료, 재배송비, source별 버퍼)을 차감한다.
   // 값은 signed로 둔다. 0원 이하이면 프론트에서 판매완료 tombstone으로 접는다.
   marketGapKrw: number | null;
   marketGapKrwMax: number | null;
@@ -356,10 +356,11 @@ function currentNetProfitFromMarketPrice(
   const buyCostMax = price + generalShippingFee;
   const sellFee = sellingFeeForMarketPrice(market, marketplaceSource);
   const resellShippingFee = resellShippingFeeForSource(marketplaceSource);
+  const safetyBuffer = safetyBufferForSource(marketplaceSource);
 
   return {
-    min: Math.round(market - buyCostMax - sellFee - resellShippingFee - SAFETY_BUFFER),
-    max: Math.round(market - estimatedBuyCost - sellFee - resellShippingFee - SAFETY_BUFFER),
+    min: Math.round(market - buyCostMax - sellFee - resellShippingFee - safetyBuffer),
+    max: Math.round(market - estimatedBuyCost - sellFee - resellShippingFee - safetyBuffer),
   };
 }
 

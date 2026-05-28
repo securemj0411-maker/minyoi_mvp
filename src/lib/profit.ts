@@ -19,6 +19,10 @@ export function resellShippingFeeForSource(marketplaceSource?: string | null) {
   return isDaangnSource(marketplaceSource) ? 0 : RESELL_SHIPPING_FEE;
 }
 
+export function safetyBufferForSource(marketplaceSource?: string | null) {
+  return isDaangnSource(marketplaceSource) ? 0 : SAFETY_BUFFER;
+}
+
 export function expectedProfitFromMarketPrice(input: {
   buyPrice: number;
   marketPrice: number | null | undefined;
@@ -30,11 +34,13 @@ export function expectedProfitFromMarketPrice(input: {
   if (!Number.isFinite(marketPrice) || marketPrice <= 0 || !Number.isFinite(buyPrice) || buyPrice <= 0) return null;
   const sellFee = sellingFeeForMarketPrice(marketPrice, input.marketplaceSource);
   const resellShipping = resellShippingFeeForSource(input.marketplaceSource);
+  const safetyBuffer = safetyBufferForSource(input.marketplaceSource);
   return {
-    min: Math.max(0, Math.round(marketPrice - (buyPrice + input.buyShipping) - sellFee - resellShipping - SAFETY_BUFFER)),
-    max: Math.max(0, Math.round(marketPrice - buyPrice - sellFee - resellShipping - SAFETY_BUFFER)),
+    min: Math.max(0, Math.round(marketPrice - (buyPrice + input.buyShipping) - sellFee - resellShipping - safetyBuffer)),
+    max: Math.max(0, Math.round(marketPrice - buyPrice - sellFee - resellShipping - safetyBuffer)),
     sellFee,
     resellShipping,
+    safetyBuffer,
   };
 }
 const FATAL_LISTING_KEYWORDS = [

@@ -35,6 +35,7 @@ import {
   SELLING_FEE_RATE,
   expectedProfitFromMarketPrice,
   resellShippingFeeForSource,
+  safetyBufferForSource,
   sellingFeeForMarketPrice,
 } from "@/lib/profit";
 import { buyPriceGuidance, verdictUiLabel } from "@/lib/buy-price-guidance";
@@ -901,15 +902,15 @@ function finalMoneyGuideStep(card: RevealCard): BeginnerGuideStep {
     : snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} (${krw(snapshot.sellingFee)})`;
   // 2026-05-26 (사용자 짚음 "한 줄 문장 가시성 0"):
   //   body 한 줄 문장 → "" (renderer 가 BeginnerGuideBuyMetricGrid grid 카드 박음).
-  //   note 만 유지 (수수료/안전버퍼 설명 보조).
+  //   note 만 유지 (수수료/버퍼 설명 보조).
   return {
     eyebrow: "1. 숫자 요약",
     title: "정확한 숫자부터 볼게요",
     metric: displayProfitRange(card),
-    metricLabel: isDaangn ? "당근 수수료 0원 · 안전버퍼 반영" : "배송비·수수료·안전버퍼 반영",
+    metricLabel: isDaangn ? "당근 수수료 0원 · 직거래 기준" : "배송비·수수료·안전버퍼 반영",
     body: "",
     note: isDaangn
-      ? `당근 기준 판매 수수료와 재배송비는 0원으로 보고, 안전버퍼 ${krw(SAFETY_BUFFER)}를 뺀 순익이에요.`
+      ? "당근 기준 판매 수수료와 재배송비는 0원으로 봐요. 네고·이동·거래 불발 리스크는 구매 전 따로 확인하세요."
       : `순익은 구매 배송비와 되팔 때 수수료 ${sellingFeeLabel}, 재배송비 ${krw(snapshot.resellShippingFee)}, 안전버퍼 ${krw(SAFETY_BUFFER)}까지 감안한 값이에요.`,
     tone: "buy",
   };
@@ -1297,6 +1298,7 @@ function costAssuranceSnapshot(card: RevealCard) {
     : krwRange(Math.min(salePriceLow, salePriceHigh), Math.max(salePriceLow, salePriceHigh));
   const sellingFee = salePrice == null ? null : sellingFeeForMarketPrice(salePrice, card.marketplaceSource);
   const resellShippingFee = resellShippingFeeForSource(card.marketplaceSource);
+  const safetyBuffer = safetyBufferForSource(card.marketplaceSource);
   const shippingLabel = safety.shipping.label;
   const confidenceLabel = safety.shipping.confidenceLabel;
   const confidenceClass = safety.shipping.buyerShippingHigh === 0
@@ -1308,6 +1310,7 @@ function costAssuranceSnapshot(card: RevealCard) {
     salePriceLabel,
     sellingFee,
     resellShippingFee,
+    safetyBuffer,
     buyerCostLabel,
     shippingLabel,
     shippingValueLabel: safety.shipping.valueLabel,
@@ -1321,7 +1324,7 @@ function resalePriceFromProfit(profit: number, buyCost: number, marketplaceSourc
   const sellFeeRate = String(marketplaceSource ?? "").toLowerCase() === "daangn" ? 0 : SELLING_FEE_RATE;
   const denominator = 1 - sellFeeRate;
   if (!Number.isFinite(profit) || !Number.isFinite(buyCost) || denominator <= 0) return null;
-  return finiteKrw((profit + buyCost + resellShippingFeeForSource(marketplaceSource) + SAFETY_BUFFER) / denominator);
+  return finiteKrw((profit + buyCost + resellShippingFeeForSource(marketplaceSource) + safetyBufferForSource(marketplaceSource)) / denominator);
 }
 
 // Wave 2026-05-19 v2 (외부인 #7 권장 매입가 프레임):
@@ -4222,7 +4225,9 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
       note: isDaangn ? "당근 직거래 재판매 기준" : "셀러가 부담 (시세 대비 차감)",
     },
     { label: "재배송비", value: krw(snapshot.resellShippingFee), note: isDaangn ? "직거래 재판매 가정" : "재판매 발송 시" },
-    { label: "안전버퍼", value: krw(SAFETY_BUFFER), note: "분쟁/반품 등 예비비" },
+    isDaangn
+      ? { label: "직거래 리스크", value: "별도 확인", note: "네고·이동·거래 불발 가능성" }
+      : { label: "안전버퍼", value: krw(snapshot.safetyBuffer), note: "분쟁/반품 등 예비비" },
   ];
 
   async function handleCopy() {
@@ -4246,7 +4251,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
     : "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200";
   const profitFormula = snapshot.salePrice != null
     ? isDaangn
-      ? `수익 기준 시세 ${snapshot.salePriceLabel} − 매입 ${snapshot.buyerCostLabel} − 안전버퍼 ${krw(SAFETY_BUFFER)}`
+      ? `수익 기준 시세 ${snapshot.salePriceLabel} − 매입 ${snapshot.buyerCostLabel}`
       : `수익 기준 시세 ${snapshot.salePriceLabel} − 매입 ${snapshot.buyerCostLabel} − 비용`
     : `매입 ${snapshot.buyerCostLabel} − 비용 확인`;
 
@@ -5384,7 +5389,7 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
         </div>
         <div className="mt-2 break-keep text-[12.5px] font-semibold leading-5 text-[#667164] dark:text-zinc-400">
           {isDaangn
-            ? `당근 수수료 0원, 안전버퍼 ${krw(SAFETY_BUFFER)}를 빼고 본 값이에요.`
+            ? "당근 수수료 0원, 재배송비 0원 직거래 기준이에요. 네고·이동 리스크는 별도 확인하세요."
             : "구매 배송비, 판매 수수료, 재배송비, 안전버퍼 다 빼고 본 값이에요."}
         </div>
 
@@ -5407,8 +5412,8 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
           </span>
           <span className="text-right tabular-nums">
             {isDaangn
-              ? `당근 수수료 ${sellingFeeLabel} · 안전버퍼 ${krw(SAFETY_BUFFER)}`
-              : `수수료 ${sellingFeeLabel} · 재배송·버퍼 +${krw(snapshot.resellShippingFee + SAFETY_BUFFER)}`}
+              ? `당근 수수료 ${sellingFeeLabel} · 직거래 기준`
+              : `수수료 ${sellingFeeLabel} · 재배송·버퍼 +${krw(snapshot.resellShippingFee + snapshot.safetyBuffer)}`}
           </span>
         </div>
       </div>
@@ -6245,7 +6250,7 @@ function RevealCardItem({
                 </div>
                 {isDaangn && card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0 ? (
                   <div className={`mt-1 text-[10.5px] font-bold leading-4 ${profitMutedClass}`}>
-                    당근 수수료 0원 · 안전버퍼 {krw(SAFETY_BUFFER)} 차감
+                    당근 수수료 0원 · 직거래 기준
                   </div>
                 ) : null}
 
