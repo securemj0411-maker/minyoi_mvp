@@ -205,10 +205,14 @@ export default function MarketHistoryChart({
   const innerW = width - padX - padR;
   const innerH = height - padTop - padBottom;
 
+  const hasSoldHistory = data.some(
+    (p) => p.soldCount > 0 && p.sold != null && p.sold > 0 && p.sold < 100_000_000,
+  );
+
   const allPrices: number[] = [];
   for (const p of data) {
     if (p.active != null && p.active > 0 && p.active < 100_000_000) allPrices.push(p.active);
-    if (p.sold != null && p.sold > 0 && p.sold < 100_000_000) allPrices.push(p.sold);
+    if (hasSoldHistory && p.soldCount > 0 && p.sold != null && p.sold > 0 && p.sold < 100_000_000) allPrices.push(p.sold);
   }
   // 2026-05-16: placeholder price (999999999, 111111111 등) 매물은 chart 표시 안 함.
   // currentPrice가 placeholder면 그래프 끌어올려 다른 점이 안 보임.
@@ -247,7 +251,7 @@ export default function MarketHistoryChart({
       .join(" ");
   };
   const activePath = linePath((p) => p.active);
-  const soldPath = linePath((p) => p.sold);
+  const soldPath = hasSoldHistory ? linePath((p) => (p.soldCount > 0 ? p.sold : null)) : "";
   const xAxisTicks = (() => {
     const maxLabels = 5;
     if (data.length <= maxLabels) {
@@ -264,8 +268,11 @@ export default function MarketHistoryChart({
   })();
 
   const latestActive = data[data.length - 1]?.active;
-  const latestSold = data[data.length - 1]?.sold;
   const totalSoldCount = data.reduce((sum, p) => sum + p.soldCount, 0);
+  const latestSoldPoint = hasSoldHistory
+    ? [...data].reverse().find((p) => p.soldCount > 0 && p.sold != null && p.sold > 0)
+    : null;
+  const latestSold = latestSoldPoint?.sold ?? null;
   // 2026-05-19 P0: "30일 추이" 거짓 카피 정직화. 5/16 incident로 historical 4일밖에 없는데
   // 30일이라 표기하면 사용자가 trend 풍부함으로 오인. 실제 data.length 기반 동적 표기.
   const daysSpan = data.length;
@@ -279,7 +286,7 @@ export default function MarketHistoryChart({
         : { label: "? 표본 부족", cls: "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400" };
   const baseTitle = priceSource === "reference"
     ? `다나와 · ${marketLabel} 미개봉 추이`
-    : `${marketLabel} 시세 ${daysSpan}일 추이`;
+    : hasSoldHistory ? `${marketLabel} 시세 ${daysSpan}일 추이` : `${marketLabel} 호가 ${daysSpan}일 추이`;
   const title = baseTitle;
   const activeLabel = priceSource === "reference" ? `${marketLabel} 미개봉 호가` : `${marketLabel} 호가`;
   const soldLabel = priceSource === "reference" ? `${marketLabel} 미개봉 거래가` : `${marketLabel} 거래가`;
@@ -303,13 +310,15 @@ export default function MarketHistoryChart({
         </span>
         <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5 justify-end">
           <span className="inline-flex items-center gap-1">
-            <span className="inline-block h-1.5 w-3 rounded bg-blue-500" />
+            <span className="inline-block h-1.5 w-3 rounded bg-emerald-500" />
             {activeLabel}
           </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="inline-block h-1.5 w-3 rounded bg-blue-500" />
-            {soldLabel}
-          </span>
+          {hasSoldHistory ? (
+            <span className="inline-flex items-center gap-1">
+              <span className="inline-block h-1.5 w-3 rounded bg-blue-500" />
+              {soldLabel}
+            </span>
+          ) : null}
           {showReferencePrice ? (
             <span className="inline-flex items-center gap-1">
               <span className="inline-block h-[2px] w-3 bg-violet-500" style={{ borderTop: "2px dashed #8b5cf6", background: "transparent" }} />
@@ -388,9 +397,9 @@ export default function MarketHistoryChart({
         {/* sold 라인 (blue) */}
         {soldPath ? <path d={soldPath} fill="none" stroke="#3b82f6" strokeWidth="1.5" pathLength={1} className="minyoi-chart-line minyoi-chart-line--sold" /> : null}
         {/* 거래가가 실제 관측된 날짜들. X축 라벨과 분리해 "전체 기간"과 "거래 관측일"을 혼동하지 않게 한다. */}
-        {data.map((p, i) => p.sold != null ? (
+        {hasSoldHistory ? data.map((p, i) => p.soldCount > 0 && p.sold != null ? (
           <circle key={`sold-${p.date}`} cx={x(i)} cy={y(p.sold)} r="2.5" fill="#3b82f6" stroke="white" strokeWidth="0.75" className="minyoi-chart-pop" style={{ animationDelay: `${180 + i * 24}ms` }} />
-        ) : null)}
+        ) : null) : null}
         {/* 현재 매물 가격 horizontal line — 가장 위에 그림 */}
         {showCurrentPrice ? (
           <line x1={padX} y1={y(currentPrice as number)} x2={width - padR} y2={y(currentPrice as number)} stroke="#ef4444" strokeWidth="2" strokeDasharray="4,3" className="minyoi-chart-price-line" style={{ animationDelay: "220ms" }} />
@@ -403,7 +412,7 @@ export default function MarketHistoryChart({
         {latestActive != null ? (
           <>
             <circle cx={width - padR} cy={y(latestActive)} r="3" fill="#10b981" stroke="white" strokeWidth="1" className="minyoi-chart-pop" style={{ animationDelay: "360ms" }} />
-            <text x={width - padR + 5} y={y(latestActive) + 3} fontSize="9" fill="#3182f6" fontWeight="bold">
+            <text x={width - padR + 5} y={y(latestActive) + 3} fontSize="9" fill="#059669" fontWeight="bold">
               {krwShort(latestActive)}
             </text>
           </>
@@ -439,10 +448,10 @@ export default function MarketHistoryChart({
         <span>
           {showReferencePrice ? `다나와 ${krwShort(referencePrice as number)}` : ""}
           {latestActive != null ? `${showReferencePrice ? " · " : ""}최근 ${activeLabel} ${krwShort(latestActive)}` : ""}
-          {latestSold != null ? ` · 최근 ${soldLabel} ${krwShort(latestSold)}` : ""}
+          {hasSoldHistory && latestSold != null ? ` · 최근 ${soldLabel} ${krwShort(latestSold)}` : ""}
         </span>
         <span>
-          {totalSoldCount > 0 ? `번개장터 거래 ${totalSoldCount}건 / 30일` : "번개장터 거래 0건 — 호가 추정"}
+          {hasSoldHistory ? `${marketLabel} 거래 ${totalSoldCount}건 / 30일` : `${activeLabel} 기준`}
         </span>
       </div>
     </div>

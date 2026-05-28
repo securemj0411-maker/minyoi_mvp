@@ -15,7 +15,7 @@ test("market history line paths start at the first available non-null point", ()
   assert.match(chart, /const command = pathStarted \? "L" : "M"/);
   assert.match(chart, /pathStarted = true/);
   assert.match(chart, /const activePath = linePath\(\(p\) => p\.active\)/);
-  assert.match(chart, /const soldPath = linePath\(\(p\) => p\.sold\)/);
+  assert.match(chart, /const soldPath = hasSoldHistory \? linePath\(\(p\) => \(p\.soldCount > 0 \? p\.sold : null\)\) : ""/);
   assert.doesNotMatch(chart, /i === 0 \? "M" : "L"/);
 });
 
@@ -29,6 +29,16 @@ test("market history x-axis labels the full timeline, not only sold dates", () =
   assert.match(chart, /key=\{`sold-\$\{p\.date\}`\}/);
   assert.doesNotMatch(chart, /const soldDays = data/);
   assert.doesNotMatch(chart, /거래 날짜 X축 라벨/);
+});
+
+test("market history hides sold series when no sold samples exist", () => {
+  const chart = source("src/components/market-history-chart.tsx");
+
+  assert.match(chart, /const hasSoldHistory = data\.some/);
+  assert.match(chart, /p\.soldCount > 0 && p\.sold != null/);
+  assert.match(chart, /\{hasSoldHistory \? \(/);
+  assert.match(chart, /hasSoldHistory \? `\$\{marketLabel\} 시세 \$\{daysSpan\}일 추이` : `\$\{marketLabel\} 호가 \$\{daysSpan\}일 추이`/);
+  assert.doesNotMatch(chart, /거래 0건 — 호가 추정/);
 });
 
 test("market history chart animates line drawing without breaking reduced motion", () => {
