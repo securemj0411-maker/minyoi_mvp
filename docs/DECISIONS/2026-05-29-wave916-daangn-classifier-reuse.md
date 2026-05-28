@@ -38,10 +38,23 @@ Added timing/count fields:
 
 - `timingsMs.writeCandidates`
 - `timingsMs.classifyCandidates`
+- `timingsMs.classifyCacheHits`
 - `timingsMs.preflightReusedClassified`
 
 This lets production logs show how much of `rowBuild` is still true classifier
 work versus cheap reuse.
+
+## Follow-up Optimization
+
+Added a small in-process exact-input LRU cache for Daangn classifier/parser
+results.
+
+- Cache key: category id, price, title, full description.
+- Cache value: storage listing type, sku id/name, and parsed option result.
+- Max size: 20,000 entries.
+- The cache is exact-input only, so it does not loosen matching or change output.
+- Warm serverless instances can reuse repeated title/description/price inputs
+  without re-running the expensive catalog matcher.
 
 ## Deferred
 
@@ -50,6 +63,8 @@ work versus cheap reuse.
 - If production shows many changed rows still running classifier/parser, the next
   optimization target is a precision-safe candidate index inside the catalog
   matcher.
+- Serverless cache hit rate is opportunistic. Cold starts still pay the full
+  classifier/parser cost.
 
 ## Verification
 

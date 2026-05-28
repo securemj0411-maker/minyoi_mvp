@@ -55,7 +55,7 @@ import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/sup
 import { buildDaangnQueryPool } from "@/lib/daangn-query-pool";
 import { classifyListing } from "@/lib/pipeline";
 import { buildCatalogSearchQueryEntries, normalize, skuById, type Sku } from "@/lib/catalog";
-import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
+import { parseListingOptions, toParsedListingRow, type ParsedListingOptions } from "@/lib/option-parser";
 
 // ───────────────────────────────────────────────────────────────────────────
 // Types
@@ -192,6 +192,7 @@ export type DaangnIngestResult = {
     preflightCandidates?: number; // wider candidate window checked before classify
     writeCandidates?: number; // rows selected for raw write/touch after preflight
     classifyCandidates?: number; // rows that actually ran expensive classify/parser
+    classifyCacheHits?: number; // exact input cache hits before expensive classify/parser
     preflightReusedClassified?: number; // rows that reused stable existing sku_id instead of classifier/parser
     rowBuild?: number;      // classifyListing + parseListingOptions for changed rows
     rawRpc?: number;        // daangn_bulk_upsert_raw_listings_v2
@@ -538,6 +539,16 @@ type ReusedDaangnClassification = {
   skuName: string;
 };
 
+type DaangnClassifyParseResult = {
+  storageListingType: string;
+  skuId: string | null;
+  skuName: string | null;
+  parsedOptions: ParsedListingOptions | null;
+};
+
+const DAANGN_CLASSIFY_PARSE_CACHE_MAX = 20_000;
+let daangnClassifyParseCache = new Map<string, DaangnClassifyParseResult>();
+
 export function hasDaangnDetailPayload(article: DaangnSearchArticle | DaangnDetailArticle): boolean {
   const detailUser = daangnDetailUser(article);
   return Boolean(
@@ -666,6 +677,68 @@ function reusableDaangnClassification(
   };
 }
 
+function daangnClassifyParseCacheKey(input: {
+  title: string;
+  description: string;
+  price: number;
+  categoryId: string | null | undefined;
+}): string {
+  return [
+    input.categoryId ?? "",
+    Math.round(input.price),
+    input.title,
+    input.description,
+  ].join("\u0000");
+}
+
+function getDaangnClassifyParseCache(key: string): DaangnClassifyParseResult | null {
+  const hit = daangnClassifyParseCache.get(key);
+  if (!hit) return null;
+  daangnClassifyParseCache.delete(key);
+  daangnClassifyParseCache.set(key, hit);
+  return hit;
+}
+
+function setDaangnClassifyParseCache(key: string, value: DaangnClassifyParseResult) {
+  daangnClassifyParseCache.set(key, value);
+  while (daangnClassifyParseCache.size > DAANGN_CLASSIFY_PARSE_CACHE_MAX) {
+    const oldest = daangnClassifyParseCache.keys().next().value;
+    if (!oldest) break;
+    daangnClassifyParseCache.delete(oldest);
+  }
+}
+
+function classifyParseDaangnRow(input: {
+  title: string;
+  description: string;
+  price: number;
+  categoryId: string | null | undefined;
+}): DaangnClassifyParseResult & { cacheHit: boolean } {
+  const cacheKey = daangnClassifyParseCacheKey(input);
+  const cached = getDaangnClassifyParseCache(cacheKey);
+  if (cached) return { ...cached, cacheHit: true };
+
+  const classified = classifyListing(input.title, input.description, input.price, {
+    categories: daangnSkuCategories(input.categoryId),
+  });
+  const storageListingType = classified.listingType === "normal" ? "normal" : (classified.listingType ?? "unknown");
+  const matched = classified.listingType === "normal" ? classified.sku : null;
+  const parsedOptions = matched
+    ? parseListingOptions({
+      title: input.title,
+      description: input.description,
+      skuId: matched.id,
+      skuName: matched.modelName,
+      category: matched.category,
+    })
+    : null;
+  const skuId = parsedOptions && !parsedOptions.needsReview ? matched?.id ?? null : null;
+  const skuName = parsedOptions && !parsedOptions.needsReview ? matched?.modelName ?? null : null;
+  const result = { storageListingType, skuId, skuName, parsedOptions };
+  setDaangnClassifyParseCache(cacheKey, result);
+  return { ...result, cacheHit: false };
+}
+
 async function loadExistingDaangnRawRows(pids: number[]): Promise<Map<number, ExistingDaangnRawRow>> {
   if (pids.length === 0) return new Map();
   const out = new Map<number, ExistingDaangnRawRow>();
@@ -722,7 +795,7 @@ function buildRawListingRow(
   nowIso: string,
   queryLabel?: string | null,
   reuse?: ReusedDaangnClassification | null,
-): { raw: Record<string, unknown>; parsed: Record<string, unknown> | null; sku_id: string | null } | null {
+): { raw: Record<string, unknown>; parsed: Record<string, unknown> | null; sku_id: string | null; classifyCacheHit: boolean } | null {
   const externalId = parseDaangnExternalId(article.href);
   if (!externalId) return null;
   // mvp_raw_listings.price 는 NOT NULL (no default).
@@ -741,23 +814,19 @@ function buildRawListingRow(
   let skuId: string | null = reuse?.skuId ?? null;
   let skuName: string | null = reuse?.skuName ?? null;
   let parsedRow: Record<string, unknown> | null = null;
+  let classifyCacheHit = false;
   if (!reuse) {
-    const classified = classifyListing(title, description, price, {
-      categories: daangnSkuCategories(article.category?.dbId),
+    const classified = classifyParseDaangnRow({
+      title,
+      description,
+      price,
+      categoryId: article.category?.dbId,
     });
-    storageListingType = classified.listingType === "normal" ? "normal" : (classified.listingType ?? "unknown");
-    const matched = classified.listingType === "normal" ? classified.sku : null;
-    const parsedOptions = matched
-      ? parseListingOptions({
-        title,
-        description,
-        skuId: matched.id,
-        skuName: matched.modelName,
-        category: matched.category,
-      })
-      : null;
-    skuId = parsedOptions && !parsedOptions.needsReview ? matched?.id ?? null : null;
-    skuName = parsedOptions && !parsedOptions.needsReview ? matched?.modelName ?? null : null;
+    storageListingType = classified.storageListingType;
+    skuId = classified.skuId;
+    skuName = classified.skuName;
+    classifyCacheHit = classified.cacheHit;
+    const parsedOptions = classified.parsedOptions;
     parsedRow = parsedOptions ? toParsedListingRow(pid, parsedOptions) : null;
   }
   const lifecycle = daangnLifecycleFromStatus(article.status);
@@ -833,7 +902,7 @@ function buildRawListingRow(
     daangn_manner_temperature: hasDetailPayload ? (detailUser?.score ?? null) : null,
     daangn_review_count: hasDetailPayload ? (detailUser?.reviewCount ?? null) : null,
   };
-  return { raw, parsed: parsedRow, sku_id: skuId };
+  return { raw, parsed: parsedRow, sku_id: skuId, classifyCacheHit };
 }
 
 export async function upsertDaangnRawListings(
@@ -851,6 +920,7 @@ export async function upsertDaangnRawListings(
   preflightCandidates: number;
   writeCandidates: number;
   classifyCandidates: number;
+  classifyCacheHits: number;
   preflightReusedClassified: number;
   rowBuildMs: number;
   affectedPids: number[];
@@ -867,6 +937,7 @@ export async function upsertDaangnRawListings(
       preflightCandidates: 0,
       writeCandidates: 0,
       classifyCandidates: 0,
+      classifyCacheHits: 0,
       preflightReusedClassified: 0,
       rowBuildMs: 0,
       affectedPids: [],
@@ -921,13 +992,15 @@ export async function upsertDaangnRawListings(
   const byPid = new Map<number, { raw: Record<string, unknown>; parsed: Record<string, unknown> | null }>();
   let preflightReusedClassified = 0;
   let classifyCandidates = 0;
+  let classifyCacheHits = 0;
   for (const row of rowsSelectedForWrite) {
     const ext = parseDaangnExternalId(row.article.href);
     const reuse = reusableDaangnClassification(existingRows.get(row.pid), row);
     if (reuse) preflightReusedClassified += 1;
-    else classifyCandidates += 1;
     const built = buildRawListingRow(row.article, row.daangnShippingInferred, nowIso, ext ? detailQueryLabelByExternal.get(ext) : null, reuse);
     if (!built) continue;
+    if (!reuse && built.classifyCacheHit) classifyCacheHits += 1;
+    else if (!reuse) classifyCandidates += 1;
     byPid.set(built.raw.pid as number, { raw: built.raw, parsed: built.parsed });
   }
   const rowBuildMs = Date.now() - rowBuildStart;
@@ -946,6 +1019,7 @@ export async function upsertDaangnRawListings(
       preflightCandidates: preflightRows.length,
       writeCandidates: rowsSelectedForWrite.length,
       classifyCandidates,
+      classifyCacheHits,
       preflightReusedClassified,
       rowBuildMs,
       affectedPids: [],
@@ -1005,6 +1079,7 @@ export async function upsertDaangnRawListings(
     preflightCandidates: preflightRows.length,
     writeCandidates: rowsSelectedForWrite.length,
     classifyCandidates,
+    classifyCacheHits,
     preflightReusedClassified,
     rowBuildMs,
     affectedPids,
@@ -1904,6 +1979,7 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
       timings.preflightCandidates = upsertResult.preflightCandidates;
       timings.writeCandidates = upsertResult.writeCandidates;
       timings.classifyCandidates = upsertResult.classifyCandidates;
+      timings.classifyCacheHits = upsertResult.classifyCacheHits;
       timings.preflightReusedClassified = upsertResult.preflightReusedClassified;
       timings.rowBuild = upsertResult.rowBuildMs;
     } catch (err) {
