@@ -90,6 +90,7 @@ import {
   type ListingOutputRow,
 } from "@/lib/score-output-mapper";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { normalizeMarketplaceSource } from "@/lib/marketplace-source";
 // Wave 254.3 (2026-05-20): cap 1000 silent miss fix — restFetchAll page-loop.
 import { restFetchAll } from "@/lib/rest-paginated";
 
@@ -6234,20 +6235,22 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     const byCondition = comparableKey ? marketStatsByKey.get(comparableKey) : undefined;
     const exactMixedMarketStat = pickMarketStatByCondition(byCondition, parsed?.condition_class ?? null);
     // Wave 886 Phase 3 (2026-05-26 사용자 결정): 매물 source 일치 per-source stat 시도.
-    //   당근 매물 (source=daangn): 같은 SKU/condition 의 당근 sample ≥ 3 → 당근 median 우선.
-    //   부족 → mixed median fallback (기존 동작 — exactMixedMarketStat).
-    //   번장/중나 매물: per-source 도 시도 (source 일치 sample ≥ 3 면 사용) — 정확성 ↑.
+    //   당근 매물 (source=daangn): 같은 SKU/condition 의 당근 sample ≥ 3 → 당근 median.
+    //   Wave 897 (2026-05-28): 당근은 local execution market 이라 mixed fallback 으로 차익 계산 금지.
+    //   번장/중나 매물: per-source 도 시도하되 부족하면 mixed fallback 유지.
     const perSourceMarketStat = pickPerSourceStatForMatter(
       marketStatsPerSource,
       comparableKey,
       parsed?.condition_class ?? null,
       row.source,
     );
-    const exactMarketStat = perSourceMarketStat ?? exactMixedMarketStat;
+    const matterSource = normalizeMarketplaceSource(row.source);
+    const requiresSourceMarket = matterSource === "daangn";
+    const exactMarketStat = perSourceMarketStat ?? (requiresSourceMarket ? undefined : exactMixedMarketStat);
     let marketStat = exactMarketStat;
     let trustedMedian = trustedMarketMedian(marketStat, parsed?.category);
     let usedShoeSizeAnyMarket = false;
-    if (trustedMedian == null && comparableKey) {
+    if (trustedMedian == null && comparableKey && !requiresSourceMarket) {
       const sizeAnyKey = shoeSizeAgnosticComparableKey(comparableKey);
       const sizeAnyStat = pickMarketStatByCondition(
         sizeAnyKey ? marketStatsByKey.get(sizeAnyKey) : undefined,

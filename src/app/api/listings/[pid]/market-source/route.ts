@@ -61,11 +61,11 @@ function trimComparableOutlierRows(rows: Array<Record<string, unknown>>) {
 
 function trimComparableDisplayRows(
   rows: Array<Record<string, unknown>>,
-  marketStats: Record<string, unknown> | null,
+  marketBasis: { p25Price: number | null; p75Price: number | null } | null,
 ) {
   const madRows = trimComparableOutlierRows(rows);
-  const p25 = Number(marketStats?.p25_price ?? 0);
-  const p75 = Number(marketStats?.p75_price ?? 0);
+  const p25 = Number(marketBasis?.p25Price ?? 0);
+  const p75 = Number(marketBasis?.p75Price ?? 0);
   if (!Number.isFinite(p25) || !Number.isFinite(p75) || p25 <= 0 || p75 <= 0 || p75 < p25) {
     return madRows;
   }
@@ -344,7 +344,7 @@ export async function GET(
           }
           return [...bestPerSeller.values(), ...noSellerRows];
         })();
-        const displayRows = trimComparableDisplayRows(dedupedBySeller, marketStats);
+        const displayRows = trimComparableDisplayRows(dedupedBySeller, displayMarketBasis);
         const parsedByPid = new Map(parsedRowsForCond.map((row) => [Number(row.pid), row]));
         comparables = displayRows.map((row) => {
           const rowPid = Number(row.pid);
@@ -441,16 +441,16 @@ export async function GET(
         listingUrl: ourListingUrl,
         bunjangUrl: ourListingUrl,
       },
-      marketDailyStats: marketStats ? {
-        blendedMedian: marketStats.blended_median_price ?? null,
-        activeMedian: marketStats.active_median_price ?? null,
-        p25: marketStats.p25_price ?? null,
-        p75: marketStats.p75_price ?? null,
-        activeCount: marketStats.active_sample_count ?? null,
-        soldCount: marketStats.sold_sample_count ?? null,
-        disappearedCount: marketStats.disappeared_sample_count ?? null,
-        confidence: marketStats.confidence ?? null,
-        computedAt: marketStats.computed_at ?? null,
+      marketDailyStats: displayMarketBasis && displayMarketBasis.medianPrice != null ? {
+        blendedMedian: displayMarketBasis.medianPrice,
+        activeMedian: null,
+        p25: displayMarketBasis.p25Price,
+        p75: displayMarketBasis.p75Price,
+        activeCount: displayMarketBasis.activeSampleCount,
+        soldCount: displayMarketBasis.soldSampleCount,
+        disappearedCount: displayMarketBasis.disappearedSampleCount,
+        confidence: displayMarketBasis.confidence,
+        computedAt: displayMarketBasis.computedAt,
       } : null,
       comparableSource,
       comparables,

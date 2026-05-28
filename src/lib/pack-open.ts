@@ -1148,6 +1148,7 @@ const CONDITION_LABEL: Record<string, string> = {
 
 const MIN_SAMPLE_COUNT_FOR_CONFIDENCE = 3;
 const MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE = 3;
+const STRICT_SOURCE_MARKET_SOURCES = new Set(["daangn"]);
 
 // Wave 159h (2026-05-17): condition-fallback shared module 사용 (DRY).
 function selectMarketRowByCondition(
@@ -1234,6 +1235,8 @@ export function marketBasisForCandidate(
     };
   }
   const byCondition = comparableKey ? marketStats.get(comparableKey) : undefined;
+  const normalizedMarketplaceSource = marketplaceSource ? normalizeMarketplaceSource(marketplaceSource) : null;
+  const strictSourceMarket = normalizedMarketplaceSource != null && STRICT_SOURCE_MARKET_SOURCES.has(normalizedMarketplaceSource);
   const mixedSelection = selectMarketRowByCondition(
     byCondition,
     conditionClass,
@@ -1241,9 +1244,42 @@ export function marketBasisForCandidate(
   const sourceSelection = selectMarketRowBySource(
     marketStatsPerSource,
     comparableKey,
-    marketplaceSource,
+    normalizedMarketplaceSource,
     conditionClass,
   );
+
+  // Wave 897 (2026-05-28): Daangn is a local-market execution channel.
+  // If Daangn-specific market stats are not available, do not silently show mixed Bunjang/Joongna
+  // as if it were the evidence for a Daangn buy decision.
+  if (strictSourceMarket && !sourceSelection) {
+    const sourceLabel = marketplaceSourceLabel(normalizedMarketplaceSource);
+    return {
+      comparableKey,
+      label: marketBasisLabel(comparableKey, skuName),
+      p25Price: null,
+      medianPrice: null,
+      p75Price: null,
+      sampleCount: 0,
+      activeSampleCount: 0,
+      soldSampleCount: 0,
+      disappearedSampleCount: 0,
+      confidence: null,
+      priceSource: "market",
+      basisSource: normalizedMarketplaceSource,
+      basisSourceLabel: sourceLabel,
+      sourceFallbackUsed: true,
+      sourceSampleCount: 0,
+      computedAt: null,
+      excludedExamples: excludedExamplesForKey(comparableKey),
+      conditionClass: conditionClass ?? mixedSelection.conditionClass,
+      conditionLabel: (conditionClass ?? mixedSelection.conditionClass)
+        ? CONDITION_LABEL[conditionClass ?? mixedSelection.conditionClass ?? ""] ?? (conditionClass ?? mixedSelection.conditionClass)
+        : null,
+      fallbackUsed: false,
+      otherConditions: [],
+    };
+  }
+
   const stat = sourceSelection?.row ?? mixedSelection.row;
   const actualCondition = sourceSelection?.conditionClass ?? mixedSelection.conditionClass;
   const fallbackUsed = sourceSelection?.fallbackUsed ?? mixedSelection.fallbackUsed;
