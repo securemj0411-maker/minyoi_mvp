@@ -167,15 +167,19 @@ export function getQueryForComparableKey(comparableKey: string, fallbackLabel?: 
 export async function scrapeBatch(
   items: { comparableKey: string; label: string }[],
   onProgress?: (done: number, total: number, current: ScrapedPrice) => void,
+  options?: { maxElapsedMs?: number; delayMs?: number },
 ): Promise<Map<string, ScrapedPrice>> {
   const result = new Map<string, ScrapedPrice>();
+  const startedAt = Date.now();
+  const delayMs = Math.max(0, options?.delayMs ?? 1000);
   for (let i = 0; i < items.length; i++) {
+    if (options?.maxElapsedMs != null && Date.now() - startedAt >= options.maxElapsedMs) break;
     const item = items[i];
     const query = getQueryForComparableKey(item.comparableKey, item.label);
     const scraped = await fetchDanawaMinPrice(query);
     result.set(item.comparableKey, scraped);
     onProgress?.(i + 1, items.length, scraped);
-    if (i < items.length - 1) await sleep(1000); // rate limit
+    if (i < items.length - 1 && delayMs > 0) await sleep(delayMs); // rate limit
   }
   return result;
 }

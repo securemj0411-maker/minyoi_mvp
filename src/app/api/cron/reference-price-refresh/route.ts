@@ -21,7 +21,23 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 90;
 
-const MAX_SKUS_PER_RUN = 60;
+const DEFAULT_MAX_SKUS_PER_RUN = 8;
+const DEFAULT_SCRAPE_BUDGET_MS = 70_000;
+const DEFAULT_DELAY_MS = 1_000;
+
+function parsePositiveInt(value: string | null | undefined, fallback: number, max: number) {
+  const parsed = Number.parseInt(value ?? "", 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return Math.min(parsed, max);
+}
+
+function rotateCandidates<T>(items: T[], limit: number, offsetSeed = 0) {
+  if (items.length <= limit) return { rotated: items, offset: 0 };
+  const dayIndex = Math.floor(Date.now() / 86_400_000);
+  const offset = Math.abs((dayIndex * limit + offsetSeed) % items.length);
+  const wrapped = [...items.slice(offset), ...items.slice(0, offset)];
+  return { rotated: wrapped.slice(0, limit), offset };
+}
 
 type CandidateKey = {
   comparable_key: string;
@@ -46,7 +62,7 @@ async function loadTopCandidates(): Promise<CandidateKey[]> {
     group by p.comparable_key
     having count(*) filter (where (p.parsed_json->>'condition_notes') like '%new_or_open_box%') >= 1
     order by new_count desc
-    limit ${MAX_SKUS_PER_RUN}
+    limit ${DEFAULT_MAX_SKUS_PER_RUN}
   `;
   // PostgREST 직접 SQL 안 됨. RPC 없으면 별도 방식.
   // 임시: REST API로 listing_parsed 전체 fetch + JS에서 group by. 비용 큼.
@@ -124,13 +140,18 @@ async function handle(req: NextRequest) {
 
   const startedAt = Date.now();
   try {
-    const candidates = await loadTopCandidates();
+    const maxSkus = parsePositiveInt(process.env.REFERENCE_PRICE_REFRESH_MAX_SKUS_PER_RUN, DEFAULT_MAX_SKUS_PER_RUN, 20);
+    const offsetSeed = Number.parseInt(process.env.REFERENCE_PRICE_REFRESH_OFFSET_SEED ?? "0", 10) || 0;
+    const scrapeBudgetMs = parsePositiveInt(process.env.REFERENCE_PRICE_REFRESH_BUDGET_MS, DEFAULT_SCRAPE_BUDGET_MS, 85_000);
+    const delayMs = parsePositiveInt(process.env.REFERENCE_PRICE_REFRESH_DELAY_MS, DEFAULT_DELAY_MS, 3_000);
+    const allCandidates = await loadTopCandidates();
+    const { rotated: candidates, offset } = rotateCandidates(allCandidates, maxSkus, offsetSeed);
     const items = candidates.map((c) => ({ comparableKey: c.comparable_key, label: c.sample_label }));
 
     const progress: Array<{ key: string; price: number | null }> = [];
     const scraped = await scrapeBatch(items, (done, total, current) => {
       console.log(`[ref-price] ${done}/${total} — ${current.query}: ${current.minPrice ?? "FAIL"}`);
-    });
+    }, { maxElapsedMs: scrapeBudgetMs, delayMs });
 
     let successCount = 0;
     let failCount = 0;
@@ -154,7 +175,13 @@ async function handle(req: NextRequest) {
 
     await finishCollectRunMinimal(run.id, run.startedAt, { upserted: successCount, collected: items.length }, {
       mode: "reference-price-refresh",
+      candidateTotal: allCandidates.length,
+      selectedOffset: offset,
+      selectedLimit: maxSkus,
+      scrapeBudgetMs,
+      delayMs,
       total: items.length,
+      attempted: scraped.size,
       success: successCount,
       fail: failCount,
       durationMs: Date.now() - startedAt,
@@ -162,6 +189,10 @@ async function handle(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
+      candidateTotal: allCandidates.length,
+      selectedOffset: offset,
+      selectedLimit: maxSkus,
+      attempted: scraped.size,
       total: items.length,
       success: successCount,
       fail: failCount,
