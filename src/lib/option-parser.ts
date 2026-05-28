@@ -2429,7 +2429,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       earphone_condition_signals: earphoneConditionEvidence?.signals ?? null,
       earphone_condition_policy: earphoneConditionEvidence ? {
         version: earphoneConditionEvidence.version,
-        mode: "shadow_only",
+        mode: "pool_gate_v1",
         hard_block_candidates: earphoneConditionEvidence.hardBlockCandidates,
         warning_signals: earphoneConditionEvidence.warningSignals,
         positive_signals: earphoneConditionEvidence.positiveSignals,

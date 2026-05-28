@@ -1,11 +1,67 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
+import { buildCandidatePoolRows } from "@/lib/candidate-pool-builder";
+import { CATALOG } from "@/lib/catalog";
 import { parseEarphoneConditionEvidence } from "@/lib/condition-evidence/earphone";
 import { parseListingOptions } from "@/lib/option-parser";
 
 function signals(title: string, description = "") {
   return parseEarphoneConditionEvidence({ title, description }).signals;
+}
+
+function buildAirpodsPool(parsedJson: Record<string, unknown>, pid = 926001) {
+  const sku = CATALOG.find((item) => item.laneKey === "airpods_max_usbc" || item.id === "airpods-max-usbc");
+  assert.ok(sku, "airpods max catalog sku must exist");
+
+  return buildCandidatePoolRows({
+    rows: [
+      {
+        pid,
+        source: "bunjang",
+        price: 130_000,
+        skuMedian: 170_000,
+        estimatedBuyCost: 130_000,
+        shippingFee: 0,
+        shippingFeeGeneral: 0,
+        riskHits: 0,
+        thumbnailUrl: "https://example.com/airpods.jpg",
+        skuId: sku.id,
+        score: 95,
+        scoreFlags: [],
+        imageCount: 4,
+        shopReviewCount: 12,
+      },
+    ],
+    parsedByPid: new Map([
+      [
+        pid,
+        {
+          category: "earphone",
+          comparable_key: "airpods|airpods_max_usbc|usbc",
+          parse_confidence: 0.95,
+          needs_review: false,
+          parsed_json: {
+            condition_notes: [],
+            ...parsedJson,
+          },
+          condition_class: "normal",
+        },
+      ],
+    ]),
+    catalogById: new Map(CATALOG.map((item) => [item.id, item])),
+    categoryReadiness: {
+      earphone: {
+        status: "ready",
+        label: "Audio",
+        note: "ready",
+        minReadyPool: 6,
+        minParseRate: 0.85,
+        minTrustedKeys: 5,
+      },
+    } as Parameters<typeof buildCandidatePoolRows>[0]["categoryReadiness"],
+    now: "2026-05-29T00:00:00.000Z",
+  });
 }
 
 describe("earphone condition evidence shadow parser", () => {
@@ -96,7 +152,7 @@ describe("earphone condition evidence shadow parser", () => {
     assert.ok(signals("에어팟 프로", "이어팁에 화장품이 조금 묻어 있습니다.").includes("hygiene_or_stain"));
   });
 
-  it("parseListingOptions는 earphone parsedJson에 shadow evidence를 저장한다", () => {
+  it("parseListingOptions는 earphone parsedJson에 gate evidence를 저장한다", () => {
     const parsed = parseListingOptions({
       category: "earphone",
       title: "애플 에어팟 프로 1세대",
@@ -105,11 +161,52 @@ describe("earphone condition evidence shadow parser", () => {
       skuName: "AirPods Pro 1",
     });
 
-    assert.equal((parsed.parsedJson.earphone_condition_policy as { mode?: string } | null)?.mode, "shadow_only");
+    assert.equal((parsed.parsedJson.earphone_condition_policy as { mode?: string } | null)?.mode, "pool_gate_v1");
     assert.deepEqual(
       (parsed.parsedJson.earphone_condition_signals as string[]).filter((signal) => signal.includes("issue")).sort(),
       ["anc_or_transparency_issue", "audio_output_issue"],
     );
+  });
+
+  it("pool_gate_v1 hard candidate는 candidate pool 진입을 차단한다", () => {
+    const result = buildAirpodsPool({
+      earphone_condition_policy: {
+        mode: "pool_gate_v1",
+        hard_block_candidates: ["audio_output_issue"],
+        warning_signals: [],
+      },
+    });
+
+    assert.equal(result.entries.length, 0);
+    assert.deepEqual(result.invalidations, [
+      { pid: 926001, reason: "earphone_condition_audio_output_issue" },
+    ]);
+  });
+
+  it("shadow_only hard candidate는 기존 row 보호를 위해 pool gate로 쓰지 않는다", () => {
+    const result = buildAirpodsPool({
+      earphone_condition_policy: {
+        mode: "shadow_only",
+        hard_block_candidates: ["audio_output_issue"],
+        warning_signals: [],
+      },
+    });
+
+    assert.equal(result.invalidations.length, 0);
+    assert.equal(result.entries.length, 1);
+  });
+
+  it("pool_gate_v1 warning-only signal은 candidate pool을 막지 않는다", () => {
+    const result = buildAirpodsPool({
+      earphone_condition_policy: {
+        mode: "pool_gate_v1",
+        hard_block_candidates: [],
+        warning_signals: ["missing_parts"],
+      },
+    });
+
+    assert.equal(result.invalidations.length, 0);
+    assert.equal(result.entries.length, 1);
   });
 
   it("다른 카테고리 parsedJson에는 earphone shadow evidence를 박지 않는다", () => {

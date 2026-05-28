@@ -174,6 +174,42 @@ export type CandidatePoolBuildResult = {
   skipReasonCounts: Record<string, number>;
 };
 
+const EARPHONE_CONDITION_GATE_MODE = "pool_gate_v1";
+
+const EARPHONE_POOL_BLOCK_SIGNALS = new Set([
+  "audio_output_issue",
+  "anc_or_transparency_issue",
+  "mic_issue",
+  "pairing_or_connection_issue",
+  "battery_degraded",
+  "physical_damage",
+  "single_side_unit",
+  "charging_case_only",
+  "protective_case_only",
+]);
+
+function earphoneConditionEvidenceBlockReason(input: {
+  category: Sku["category"] | null;
+  parsedJson?: Record<string, unknown> | null;
+}): string | null {
+  if (input.category !== "earphone") return null;
+
+  const policy = input.parsedJson?.earphone_condition_policy as {
+    mode?: unknown;
+    hard_block_candidates?: unknown;
+  } | null | undefined;
+  if (!policy || policy.mode !== EARPHONE_CONDITION_GATE_MODE) return null;
+
+  const candidates = Array.isArray(policy.hard_block_candidates)
+    ? policy.hard_block_candidates
+    : [];
+  const hit = candidates.find(
+    (signal): signal is string => typeof signal === "string" && EARPHONE_POOL_BLOCK_SIGNALS.has(signal),
+  );
+
+  return hit ? `earphone_condition_${hit}` : null;
+}
+
 function formatRoiPctForReason(roi: number): string {
   return `${Math.round(roi * 100)}pct`;
 }
@@ -620,7 +656,7 @@ export function buildCandidatePoolRows(input: {
     // 진짜 풀 차단해야 할 것:
     //   - multi_device_bundle (양쪽 카테고리 어느 쪽과도 비교 불가)
     //   - display_defect / screen_replaced / faceid_issue (사용자가 사면 명확한 손해)
-    const preCheckNotes = (input.parsedByPid.get(pid)?.parsed_json?.condition_notes as string[] | undefined) ?? [];
+    const preCheckNotes = (parsed?.parsed_json?.condition_notes as string[] | undefined) ?? [];
     // 2026-05-17 v46 cleanup: POOL_BLOCK_NOTES 가 condition-policy.ts 단일 source 로 옮김 (drift 차단).
     // 정책: FLAWED 중 "사용자 손해 명확" 5종 subset. 나머지 FLAWED 는 시세 sample 차단 자체로 score 0 → 자연 차단.
     const noteHit = POOL_BLOCK_NOTES.find((n) => preCheckNotes.includes(n));
@@ -630,13 +666,24 @@ export function buildCandidatePoolRows(input: {
       continue;
     }
 
+    // Wave 926 (2026-05-29): 이어폰 상세 상태 증거 gate.
+    // 기존 shadow_only row는 건드리지 않고, 새 parser output이 pool_gate_v1을 명시한 경우만 차단한다.
+    const earphoneConditionReason = earphoneConditionEvidenceBlockReason({
+      category,
+      parsedJson: parsed?.parsed_json,
+    });
+    if (earphoneConditionReason) {
+      skipped += 1;
+      invalidations.push({ pid, reason: earphoneConditionReason });
+      continue;
+    }
+
     // Wave 777 (2026-05-27): mint/unopened + 본체 flaw 키워드 명시 매물 차단.
     //   사용자 신뢰 직격 (예: pid 9002566589675 나이키 에어맥스 90 — "이염있어서" but condition_tier=A).
     //   wave92-fashion-mobility parser hasASignal logic이 일부 매물에서 flaw 키워드 무시.
     //   여기는 safety net — parser root fix는 별도 wave.
     //   conservative: 본체 vs 박스 context 구분 없이 무조건 mint 차단 (precision 우선, 박스만 flaw 매물은 recall loss 수용).
-    const parsedRow = input.parsedByPid.get(pid);
-    const conditionClass = parsedRow?.condition_class;
+    const conditionClass = parsed?.condition_class;
     if (conditionClass === "mint" || conditionClass === "unopened") {
       const descTxt = row.descriptionPreview || "";
       // negation 형 ("얼룩 없음", "오염X" 등) 제외 후 flaw keyword 검사.
