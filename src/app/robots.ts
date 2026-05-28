@@ -3,17 +3,17 @@
 
 import type { MetadataRoute } from "next";
 
-const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://minyoi-mvp.vercel.app";
+import { PUBLIC_SITE_PATHS, SITE_ORIGIN } from "@/lib/public-site-map";
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/plans", "/how-it-works", "/login", "/signup", "/privacy", "/terms", "/refund-policy", "/youth-policy"],
+        allow: PUBLIC_SITE_PATHS.map((entry) => entry.path),
         disallow: ["/api/", "/me/", "/debug/", "/admin/", "/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY/", "/billing/checkout/", "/peek-pool-7f3kz9"],
       },
     ],
-    sitemap: `${SITE_ORIGIN}/sitemap.xml`,
+    sitemap: [`${SITE_ORIGIN}/sitemap.xml`, `${SITE_ORIGIN}/sitemap-main.xml`],
   };
 }
