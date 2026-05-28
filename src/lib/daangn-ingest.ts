@@ -54,7 +54,7 @@ import {
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { buildDaangnQueryPool } from "@/lib/daangn-query-pool";
 import { classifyListing } from "@/lib/pipeline";
-import { buildCatalogSearchQueryEntries, normalize, type Sku } from "@/lib/catalog";
+import { buildCatalogSearchQueryEntries, normalize, skuById, type Sku } from "@/lib/catalog";
 import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -190,7 +190,9 @@ export type DaangnIngestResult = {
     preflightSkipped?: number; // rows skipped before classifier/parser
     preflightOverflow?: number; // changed rows left for the next run after write cap
     preflightCandidates?: number; // wider candidate window checked before classify
-    classifyCandidates?: number; // rows selected for expensive classify/parser
+    writeCandidates?: number; // rows selected for raw write/touch after preflight
+    classifyCandidates?: number; // rows that actually ran expensive classify/parser
+    preflightReusedClassified?: number; // rows that reused stable existing sku_id instead of classifier/parser
     rowBuild?: number;      // classifyListing + parseListingOptions for changed rows
     rawRpc?: number;        // daangn_bulk_upsert_raw_listings_v2
     parsedUpsert?: number;  // daangn_bulk_upsert_listing_parsed for changed pids only
@@ -503,7 +505,10 @@ type ExistingDaangnRawRow = {
   source_updated_at: string | null;
   last_seen_at: string | null;
   raw_json: Record<string, unknown> | null;
+  listing_type: string | null;
   sku_id: string | null;
+  sku_name: string | null;
+  pool_eligible: boolean | null;
   daangn_region_id: string | null;
   daangn_region_name: string | null;
   daangn_boosted_at: string | null;
@@ -526,6 +531,12 @@ function daangnDetailUser(article: DaangnSearchArticle | DaangnDetailArticle): {
     regionName?: string | null;
   } | null;
 }
+
+type ReusedDaangnClassification = {
+  listingType: "normal";
+  skuId: string;
+  skuName: string;
+};
 
 export function hasDaangnDetailPayload(article: DaangnSearchArticle | DaangnDetailArticle): boolean {
   const detailUser = daangnDetailUser(article);
@@ -632,6 +643,29 @@ function canSkipDaangnClassify(existing: ExistingDaangnRawRow | undefined, row: 
   );
 }
 
+function reusableDaangnClassification(
+  existing: ExistingDaangnRawRow | undefined,
+  row: DaangnPreflightRow,
+): ReusedDaangnClassification | null {
+  if (!existing?.sku_id) return null;
+  if (existing.listing_type !== "normal") return null;
+
+  // If the parser input is unchanged, a scheduled 2h touch does not need to
+  // re-run the expensive catalog matcher. Catalog-wide rematches should use
+  // explicit reparse/rematch jobs, not every Daangn firehose tick.
+  if (existing.name !== row.title) return null;
+  if (Number(existing.price ?? -1) !== row.price) return null;
+  if ((existing.description_preview ?? "") !== row.descriptionPreview) return null;
+
+  const sku = skuById(existing.sku_id);
+  if (!sku) return null;
+  return {
+    listingType: "normal",
+    skuId: existing.sku_id,
+    skuName: existing.sku_name ?? sku.modelName,
+  };
+}
+
 async function loadExistingDaangnRawRows(pids: number[]): Promise<Map<number, ExistingDaangnRawRow>> {
   if (pids.length === 0) return new Map();
   const out = new Map<number, ExistingDaangnRawRow>();
@@ -649,7 +683,10 @@ async function loadExistingDaangnRawRows(pids: number[]): Promise<Map<number, Ex
     "source_updated_at",
     "last_seen_at",
     "raw_json",
+    "listing_type",
     "sku_id",
+    "sku_name",
+    "pool_eligible",
     "daangn_region_id",
     "daangn_region_name",
     "daangn_boosted_at",
@@ -684,6 +721,7 @@ function buildRawListingRow(
   shipping: DaangnShippingInference | null,
   nowIso: string,
   queryLabel?: string | null,
+  reuse?: ReusedDaangnClassification | null,
 ): { raw: Record<string, unknown>; parsed: Record<string, unknown> | null; sku_id: string | null } | null {
   const externalId = parseDaangnExternalId(article.href);
   if (!externalId) return null;
@@ -699,23 +737,29 @@ function buildRawListingRow(
   const title = article.title ?? "";
   const description = ((article as DaangnDetailArticle).content ?? article.content ?? "") as string;
   const price = Number(article.price ?? 0);
-  const classified = classifyListing(title, description, price, {
-    categories: daangnSkuCategories(article.category?.dbId),
-  });
-  const storageListingType = classified.listingType === "normal" ? "normal" : (classified.listingType ?? "unknown");
-  const matched = classified.listingType === "normal" ? classified.sku : null;
-  const parsedOptions = matched
-    ? parseListingOptions({
-      title,
-      description,
-      skuId: matched.id,
-      skuName: matched.modelName,
-      category: matched.category,
-    })
-    : null;
-  const skuId = parsedOptions && !parsedOptions.needsReview ? matched?.id ?? null : null;
-  const skuName = parsedOptions && !parsedOptions.needsReview ? matched?.modelName ?? null : null;
-  const parsedRow = parsedOptions ? toParsedListingRow(pid, parsedOptions) : null;
+  let storageListingType = reuse?.listingType ?? "unknown";
+  let skuId: string | null = reuse?.skuId ?? null;
+  let skuName: string | null = reuse?.skuName ?? null;
+  let parsedRow: Record<string, unknown> | null = null;
+  if (!reuse) {
+    const classified = classifyListing(title, description, price, {
+      categories: daangnSkuCategories(article.category?.dbId),
+    });
+    storageListingType = classified.listingType === "normal" ? "normal" : (classified.listingType ?? "unknown");
+    const matched = classified.listingType === "normal" ? classified.sku : null;
+    const parsedOptions = matched
+      ? parseListingOptions({
+        title,
+        description,
+        skuId: matched.id,
+        skuName: matched.modelName,
+        category: matched.category,
+      })
+      : null;
+    skuId = parsedOptions && !parsedOptions.needsReview ? matched?.id ?? null : null;
+    skuName = parsedOptions && !parsedOptions.needsReview ? matched?.modelName ?? null : null;
+    parsedRow = parsedOptions ? toParsedListingRow(pid, parsedOptions) : null;
+  }
   const lifecycle = daangnLifecycleFromStatus(article.status);
 
   // pool_eligible 정책 (Phase 6 수정 — 사용자 정책):
@@ -805,7 +849,9 @@ export async function upsertDaangnRawListings(
   preflightSkipped: number;
   preflightOverflow: number;
   preflightCandidates: number;
+  writeCandidates: number;
   classifyCandidates: number;
+  preflightReusedClassified: number;
   rowBuildMs: number;
   affectedPids: number[];
 }> {
@@ -819,7 +865,9 @@ export async function upsertDaangnRawListings(
       preflightSkipped: 0,
       preflightOverflow: 0,
       preflightCandidates: 0,
+      writeCandidates: 0,
       classifyCandidates: 0,
+      preflightReusedClassified: 0,
       rowBuildMs: 0,
       affectedPids: [],
     };
@@ -864,16 +912,21 @@ export async function upsertDaangnRawListings(
   const rowsNeedingClassify = preflightRows.filter((row) => !canSkipDaangnClassify(existingRows.get(row.pid), row, nowMs));
   const preflightSkipped = preflightRows.length - rowsNeedingClassify.length;
   const maxClassifyRows = Math.max(0, Math.floor(options.maxClassifyRows ?? rowsNeedingClassify.length));
-  const rowsSelectedForClassify = rowsNeedingClassify.slice(0, maxClassifyRows);
-  const preflightOverflow = Math.max(0, rowsNeedingClassify.length - rowsSelectedForClassify.length);
+  const rowsSelectedForWrite = rowsNeedingClassify.slice(0, maxClassifyRows);
+  const preflightOverflow = Math.max(0, rowsNeedingClassify.length - rowsSelectedForWrite.length);
   const preflightMs = Date.now() - preflightStart;
 
   // dedupe by pid (같은 매물 여러 combo 중복 검색됨)
   const rowBuildStart = Date.now();
   const byPid = new Map<number, { raw: Record<string, unknown>; parsed: Record<string, unknown> | null }>();
-  for (const row of rowsSelectedForClassify) {
+  let preflightReusedClassified = 0;
+  let classifyCandidates = 0;
+  for (const row of rowsSelectedForWrite) {
     const ext = parseDaangnExternalId(row.article.href);
-    const built = buildRawListingRow(row.article, row.daangnShippingInferred, nowIso, ext ? detailQueryLabelByExternal.get(ext) : null);
+    const reuse = reusableDaangnClassification(existingRows.get(row.pid), row);
+    if (reuse) preflightReusedClassified += 1;
+    else classifyCandidates += 1;
+    const built = buildRawListingRow(row.article, row.daangnShippingInferred, nowIso, ext ? detailQueryLabelByExternal.get(ext) : null, reuse);
     if (!built) continue;
     byPid.set(built.raw.pid as number, { raw: built.raw, parsed: built.parsed });
   }
@@ -891,7 +944,9 @@ export async function upsertDaangnRawListings(
       preflightSkipped,
       preflightOverflow,
       preflightCandidates: preflightRows.length,
-      classifyCandidates: rowsSelectedForClassify.length,
+      writeCandidates: rowsSelectedForWrite.length,
+      classifyCandidates,
+      preflightReusedClassified,
       rowBuildMs,
       affectedPids: [],
     };
@@ -948,7 +1003,9 @@ export async function upsertDaangnRawListings(
     preflightSkipped,
     preflightOverflow,
     preflightCandidates: preflightRows.length,
-    classifyCandidates: rowsSelectedForClassify.length,
+    writeCandidates: rowsSelectedForWrite.length,
+    classifyCandidates,
+    preflightReusedClassified,
     rowBuildMs,
     affectedPids,
   };
@@ -1845,7 +1902,9 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
       timings.preflightSkipped = upsertResult.preflightSkipped;
       timings.preflightOverflow = upsertResult.preflightOverflow;
       timings.preflightCandidates = upsertResult.preflightCandidates;
+      timings.writeCandidates = upsertResult.writeCandidates;
       timings.classifyCandidates = upsertResult.classifyCandidates;
+      timings.preflightReusedClassified = upsertResult.preflightReusedClassified;
       timings.rowBuild = upsertResult.rowBuildMs;
     } catch (err) {
       sourceHealthStatus = "degraded";
