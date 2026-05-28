@@ -49,6 +49,10 @@ type RawPendingRow = {
   daangn_manner_temperature: number | null;
 };
 
+type RawDirtyMissingRow = RawPendingRow & {
+  score_dirty: boolean | null;
+};
+
 type ParsedRow = {
   pid: number;
   comparable_key: string | null;
@@ -109,16 +113,35 @@ async function loadRawPendingCandidates(limit: number): Promise<DetailCandidate[
     .map((row) => ({ pid: Number(row.pid), url: row.url!, sourceKind: "raw_pending" as const }));
 }
 
+async function loadRawDirtyMissingCandidates(limit: number): Promise<DetailCandidate[]> {
+  const res = await restFetch(
+    `${tableUrl("mvp_raw_listings")}` +
+      `?select=pid,url,daangn_manner_temperature,score_dirty` +
+      `&source=eq.${DAANGN_SOURCE_ID}` +
+      `&listing_state=eq.active` +
+      `&sku_id=not.is.null` +
+      `&daangn_manner_temperature=is.null` +
+      `&score_dirty=eq.true` +
+      `&order=updated_at.desc&limit=${limit}`,
+    { headers: serviceHeaders() },
+  );
+  const rows = (await res.json()) as RawDirtyMissingRow[];
+  return rows
+    .filter((row) => row.url && row.daangn_manner_temperature == null && row.score_dirty === true)
+    .map((row) => ({ pid: Number(row.pid), url: row.url!, sourceKind: "raw_pending" as const }));
+}
+
 async function loadCandidates(limit: number): Promise<DetailCandidate[]> {
-  const primaryLimit = Math.ceil(limit * 0.7);
+  const primaryLimit = Math.ceil(limit * 0.5);
   const secondaryLimit = limit * 2;
-  const [invalidated, rawPending] = await Promise.all([
+  const [invalidated, dirtyMissing, rawPending] = await Promise.all([
     loadInvalidatedMissingCandidates(primaryLimit),
+    loadRawDirtyMissingCandidates(secondaryLimit),
     loadRawPendingCandidates(secondaryLimit),
   ]);
   const seen = new Set<number>();
   const out: DetailCandidate[] = [];
-  for (const candidate of [...invalidated, ...rawPending]) {
+  for (const candidate of [...invalidated, ...dirtyMissing, ...rawPending]) {
     if (seen.has(candidate.pid)) continue;
     seen.add(candidate.pid);
     out.push(candidate);
@@ -238,10 +261,10 @@ async function enqueueMarketInvalidations(pids: number[], dryRun: boolean): Prom
 export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptions = {}): Promise<DaangnDetailBackfillResult> {
   const startedAt = Date.now();
   const dryRun = options.dryRun ?? false;
-  const limit = boundedInt(options.limit, 70, 1, 200);
+  const limit = boundedInt(options.limit, 100, 1, 200);
   const timeoutMs = boundedInt(options.timeoutMs, 8_000, 1_000, 30_000);
-  const delayMs = boundedInt(options.delayMs, 550, 0, 10_000);
-  const budgetMs = boundedInt(options.budgetMs, 80_000, 5_000, 260_000);
+  const delayMs = boundedInt(options.delayMs, 450, 0, 10_000);
+  const budgetMs = boundedInt(options.budgetMs, 115_000, 5_000, 260_000);
   const deadline = startedAt + budgetMs;
 
   const candidates = await loadCandidates(limit);

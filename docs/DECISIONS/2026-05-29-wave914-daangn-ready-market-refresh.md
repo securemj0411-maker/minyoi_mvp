@@ -122,6 +122,32 @@ Expected effect:
 - Rows with one weak condition sample but a trusted adjacent fallback condition should recover instead of staying invalidated.
 - Manner temperature backlog should drain faster without changing ready quality thresholds.
 
+## Wave 914c Follow-up
+
+Immediate production verification after Wave 914b:
+
+- Daangn ready moved `459 → 469`.
+- `sku_median_unavailable` dropped `84 → 47`.
+- The dominant score blocker shifted to `daangn_manner_temperature_missing`.
+
+Implemented follow-up:
+
+- Detail worker now prioritizes raw rows with:
+  - `source=daangn`
+  - `score_dirty=true`
+  - active listing
+  - `sku_id` present
+  - missing `daangn_manner_temperature`
+- Detail worker throughput increased again:
+  - `limit`: `70` → `100`
+  - `budgetMs`: `80s` → `115s`
+  - `delayMs`: `550ms` → `450ms`
+
+Expected effect:
+
+- Score workers should see fewer immediately-skipped Daangn rows due to missing manner temperature.
+- Detail worker should spend less budget on low-urgency rows and more on rows already waiting in the score queue.
+
 ## Deferred
 
 - Aggressive category-only Daangn crawling across more Vercel projects is deferred until this ready-promotion bottleneck is measured.
