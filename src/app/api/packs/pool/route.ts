@@ -754,9 +754,10 @@ async function loadPool(
   const readyRows = diversifyByCategory(readyFiltered, options.readyCandidateLimit ?? READY_SLOTS);
   const soldOutRows = diversifyByCategory(soldOutFiltered, SOLD_OUT_SLOTS);
 
-  const pool = options.sort === "latest"
-    ? [...readyRows, ...soldOutRows]
-    : [...readyRows, ...soldOutRows].sort(() => Math.random() - 0.5);
+  // Wave 798 (2026-05-27): random shuffle 제거 — diversifyByCategory 내부 거리 정렬 효과 보존.
+  //   기존: shuffle 으로 거리 ASC 정렬 (line 714-732, Wave 797) 결과 뒤집힘 → 사용자 피드 10km > 1km 보임.
+  //   변경: diversifyByCategory 결과 순서 그대로 유지 (category quota + source quota + 거리 정렬 모두 처리됨).
+  const pool = [...readyRows, ...soldOutRows];
   if (pool.length === 0) return { pool: [], raws: [], metas: [], marketBands: new Map(), sourceMarketBands: new Map(), v7SiblingPresence: new Map(), velocitySignals: new Map(), parsedGradingRows: [] };
 
   const pids = pool.map((r) => r.pid);
