@@ -892,9 +892,11 @@ function finalMoneyGuideStep(card: RevealCard): BeginnerGuideStep {
     eyebrow: "1. 숫자 요약",
     title: "정확한 숫자부터 볼게요",
     metric: displayProfitRange(card),
-    metricLabel: "배송비·수수료·안전버퍼 반영",
+    metricLabel: isDaangn ? "당근 수수료 0원 · 안전버퍼 반영" : "배송비·수수료·안전버퍼 반영",
     body: "",
-    note: `순익은 구매 배송비와 되팔 때 수수료 ${sellingFeeLabel}, 재배송비 ${krw(snapshot.resellShippingFee)}, 안전버퍼 ${krw(SAFETY_BUFFER)}까지 감안한 값이에요.`,
+    note: isDaangn
+      ? `당근 기준 판매 수수료와 재배송비는 0원으로 보고, 안전버퍼 ${krw(SAFETY_BUFFER)}를 뺀 순익이에요.`
+      : `순익은 구매 배송비와 되팔 때 수수료 ${sellingFeeLabel}, 재배송비 ${krw(snapshot.resellShippingFee)}, 안전버퍼 ${krw(SAFETY_BUFFER)}까지 감안한 값이에요.`,
     tone: "buy",
   };
 }
@@ -4216,7 +4218,9 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
     ? "bg-blue-50 text-blue-800 dark:bg-blue-950/40 dark:text-blue-200"
     : "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200";
   const profitFormula = snapshot.salePrice != null
-    ? `수익 기준 시세 ${snapshot.salePriceLabel} − 매입 ${snapshot.buyerCostLabel} − 비용`
+    ? isDaangn
+      ? `수익 기준 시세 ${snapshot.salePriceLabel} − 매입 ${snapshot.buyerCostLabel} − 안전버퍼 ${krw(SAFETY_BUFFER)}`
+      : `수익 기준 시세 ${snapshot.salePriceLabel} − 매입 ${snapshot.buyerCostLabel} − 비용`
     : `매입 ${snapshot.buyerCostLabel} − 비용 확인`;
 
   return (
@@ -5351,7 +5355,9 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
           {displayProfitRange(card)}
         </div>
         <div className="mt-2 break-keep text-[12.5px] font-semibold leading-5 text-[#667164] dark:text-zinc-400">
-          구매 배송비, 판매 수수료, 재배송비, 안전버퍼 다 빼고 본 값이에요.
+          {isDaangn
+            ? `당근 수수료 0원, 안전버퍼 ${krw(SAFETY_BUFFER)}를 빼고 본 값이에요.`
+            : "구매 배송비, 판매 수수료, 재배송비, 안전버퍼 다 빼고 본 값이에요."}
         </div>
 
         {/* 매입가 + 시세 2-col grid — 단순 */}
@@ -5372,7 +5378,9 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
             {snapshot.confidenceLabel}
           </span>
           <span className="text-right tabular-nums">
-            수수료 {sellingFeeLabel} · 재배송·버퍼 +{krw(snapshot.resellShippingFee + SAFETY_BUFFER)}
+            {isDaangn
+              ? `당근 수수료 ${sellingFeeLabel} · 안전버퍼 ${krw(SAFETY_BUFFER)}`
+              : `수수료 ${sellingFeeLabel} · 재배송·버퍼 +${krw(snapshot.resellShippingFee + SAFETY_BUFFER)}`}
           </span>
         </div>
       </div>
@@ -6015,6 +6023,7 @@ function RevealCardItem({
   const [mode, setMode] = useState<"simple" | "detailed">("simple");
   const profitCalculationRef = useRef<HTMLDivElement | null>(null);
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
+  const isDaangn = card.marketplaceSource === "daangn";
   const netPct = netProfitPercent(card);
   // Wave 394.7.f (외부 review 2라운드 #3): brand 가품 위험 큰 카테고리는 "조건부 매입 OK".
   // 사용자 짚음 — "매입 OK + 가품 위험 큼" 충돌. 정품 확인 필요 명시.
@@ -6206,6 +6215,11 @@ function RevealCardItem({
                     <> · <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">기본 옵션 가정</span></>
                   ) : null}
                 </div>
+                {isDaangn && card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0 ? (
+                  <div className={`mt-1 text-[10.5px] font-bold leading-4 ${profitMutedClass}`}>
+                    당근 수수료 0원 · 안전버퍼 {krw(SAFETY_BUFFER)} 차감
+                  </div>
+                ) : null}
 
                 {/* 큰 흰 버튼 — 계산 근거 토글. 비교 매물은 바로 아래 독립 섹션에서 전담. */}
                 <button
