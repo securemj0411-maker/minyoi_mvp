@@ -155,3 +155,13 @@ Decision:
 - For target SKU mode, fetch at most 3 rows per SKU with bounded concurrency instead of scanning all 7-day rows for a large `sku_id=in.(...)` window.
 - Preserve the legacy global scan only for callers that do not pass target SKUs.
 - Keep the old semantics that target SKUs with no 7-day raw rows are not added to `lowVolumeSkuIds`; Daangn volume still returns 0 and candidate policy blocks `<3`.
+
+Production check after deploy:
+
+```text
+primary score_load_pool_gate_inputs ~= 1126-2202ms
+primary score_load_fraud_group_hashes ~= 18-94ms
+B score_load_fraud_group_hashes ~= 18ms after the explicit-empty-target fix reached the worker
+```
+
+B still had one run where `score_load_daangn_volume_by_sku ~= 4918ms` because target SKU threshold reads were processed in 8-wide waves. Increase default target-read concurrency to 16, capped by `PIPELINE_VOLUME_GATE_TARGET_READ_CONCURRENCY` with a hard max of 32.

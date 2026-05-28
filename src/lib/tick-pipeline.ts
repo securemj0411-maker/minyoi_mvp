@@ -3685,6 +3685,10 @@ export async function sourceHealthStage(): Promise<StageStats> {
 // 이전: PostgREST 가 GROUP BY HAVING 못 해서 raw fetch + in-memory. 매 score-stage run 마다 20K row.
 // 새: DB 안에서 GROUP BY HAVING — 작은 set 반환. 100배 빠름.
 const MIN_FRAUD_GROUP_SELLERS = 2;
+const VOLUME_GATE_TARGET_READ_CONCURRENCY = Math.max(
+  1,
+  Math.min(Number(process.env.PIPELINE_VOLUME_GATE_TARGET_READ_CONCURRENCY ?? 16), 32),
+);
 async function loadFraudGroupHashes(targetHashes?: Iterable<string>): Promise<Set<string>> {
   try {
     const target = Array.from(new Set(Array.from(targetHashes ?? [])
@@ -3761,7 +3765,7 @@ async function loadDaangnVolumeBySku(targetSkuIds?: Iterable<string>): Promise<M
       // count above 3. Fetch at most 3 rows per target SKU so popular SKUs do not
       // force a large 7-day window scan on every score run.
       const counts = new Map<string, number>();
-      for (const chunk of chunkArray(target, 8)) {
+      for (const chunk of chunkArray(target, VOLUME_GATE_TARGET_READ_CONCURRENCY)) {
         const results = await Promise.all(chunk.map(async (skuId) => {
           const url = `${tableUrl("mvp_raw_listings")}?select=sku_id&source=eq.daangn&listing_state=eq.active&first_seen_at=gte.${encodeURIComponent(since7dIso)}&sku_id=eq.${encodeURIComponent(skuId)}&order=first_seen_at.desc&limit=3`;
           const res = await restFetch(url, { headers: serviceHeaders() });
@@ -3812,7 +3816,7 @@ async function loadLowVolumeSkuIds(targetSkuIds?: Iterable<string>): Promise<Set
       // 7d >= 3 and 2d >= 1. Query each target SKU with limit=3 so popular SKUs
       // do not force a large 7-day window scan just to prove they are not sparse.
       const lowVolume = new Set<string>();
-      for (const chunk of chunkArray(target, 8)) {
+      for (const chunk of chunkArray(target, VOLUME_GATE_TARGET_READ_CONCURRENCY)) {
         const results = await Promise.all(chunk.map(async (skuId) => {
           const url = `${tableUrl("mvp_raw_listings")}?select=sku_id,first_seen_at&sku_id=eq.${encodeURIComponent(skuId)}&first_seen_at=gte.${encodeURIComponent(since7dIso)}&listing_state=eq.active&order=first_seen_at.desc&limit=3`;
           const res = await restFetch(url, { headers: serviceHeaders() });
