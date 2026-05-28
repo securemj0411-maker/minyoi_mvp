@@ -124,6 +124,11 @@ Post-fix verification:
 - A shard: `daangn_detail_worker_a`, shard `0/3`, `selected=100`, `patched=99`, `blocked=false`.
 - B shard: `daangn_detail_worker_b`, shard `1/3`, `selected=100`, `patched=88`, `blocked=false`.
 - C shard: `daangn_detail_worker_c`, shard `2/3`, `selected=100`, `patched=100`, `blocked=false`.
+- Automatic 21:10 UTC slot confirmed all three shards succeeded:
+  - A `selected=100`, `patched=100`
+  - B `selected=100`, `patched=95`
+  - C `selected=100`, `patched=99`
+- Automatic 21:15 UTC slot confirmed all three shards started again.
 - Index existence verified after production apply; all eight indexes exist.
 - Current ready pool after the fix/checkpoint:
   - Daangn `942`
