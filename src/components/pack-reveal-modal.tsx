@@ -29,7 +29,14 @@ import {
 } from "@/components/icons";
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
-import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
+import {
+  RESELL_SHIPPING_FEE,
+  SAFETY_BUFFER,
+  SELLING_FEE_RATE,
+  expectedProfitFromMarketPrice,
+  resellShippingFeeForSource,
+  sellingFeeForMarketPrice,
+} from "@/lib/profit";
 import { buyPriceGuidance, verdictUiLabel } from "@/lib/buy-price-guidance";
 import { computeDealScore, type DealScore } from "@/lib/deal-score";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
@@ -351,6 +358,20 @@ function expectedProfitAverage(card: RevealCard) {
   if (!Number.isFinite(min)) return Math.round(max);
   if (!Number.isFinite(max)) return Math.round(min);
   return Math.round((min + max) / 2);
+}
+
+function sourceAwareProfitAverage(card: RevealCard, marketplaceSource?: string | null) {
+  const marketPrice = card.marketBasis?.medianPrice ?? null;
+  if (!marketPrice || marketPrice <= 0) return expectedProfitAverage(card);
+  const safety = marketplaceSafetyForCard(card);
+  const profit = expectedProfitFromMarketPrice({
+    buyPrice: card.price,
+    marketPrice,
+    buyShipping: safety.shipping.buyerShippingHigh,
+    marketplaceSource: marketplaceSource ?? card.marketplaceSource ?? null,
+  });
+  if (!profit) return expectedProfitAverage(card);
+  return Math.round((profit.min + profit.max) / 2);
 }
 
 function netProfitPercent(card: RevealCard) {
@@ -860,7 +881,10 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
 function finalMoneyGuideStep(card: RevealCard): BeginnerGuideStep {
   const snapshot = costAssuranceSnapshot(card);
   const feeRateLabel = `${Math.round(SELLING_FEE_RATE * 1000) / 10}%`;
-  const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} (${krw(snapshot.sellingFee)})`;
+  const isDaangn = card.marketplaceSource === "daangn";
+  const sellingFeeLabel = isDaangn
+    ? "0원"
+    : snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} (${krw(snapshot.sellingFee)})`;
   // 2026-05-26 (사용자 짚음 "한 줄 문장 가시성 0"):
   //   body 한 줄 문장 → "" (renderer 가 BeginnerGuideBuyMetricGrid grid 카드 박음).
   //   note 만 유지 (수수료/안전버퍼 설명 보조).
@@ -870,7 +894,7 @@ function finalMoneyGuideStep(card: RevealCard): BeginnerGuideStep {
     metric: displayProfitRange(card),
     metricLabel: "배송비·수수료·안전버퍼 반영",
     body: "",
-    note: `순익은 구매 배송비와 되팔 때 안전결제 수수료 ${sellingFeeLabel}, 재배송비 ${krw(RESELL_SHIPPING_FEE)}, 안전버퍼 ${krw(SAFETY_BUFFER)}까지 감안한 값이에요.`,
+    note: `순익은 구매 배송비와 되팔 때 수수료 ${sellingFeeLabel}, 재배송비 ${krw(snapshot.resellShippingFee)}, 안전버퍼 ${krw(SAFETY_BUFFER)}까지 감안한 값이에요.`,
     tone: "buy",
   };
 }
@@ -879,10 +903,8 @@ function finalMoneyGuideStep(card: RevealCard): BeginnerGuideStep {
 // safePaymentGuideStep 함수는 sellerTrustGuideStep note 에 합쳐짐 — 이 함수는 더 이상 사용 X.
 
 function channelGuideStep(card: RevealCard): BeginnerGuideStep {
-  const market = card.marketBasis;
-  const marketplaceProfit = expectedProfitAverage(card);
-  const marketplaceFee = market?.medianPrice ? Math.round(market.medianPrice * SELLING_FEE_RATE) : 0;
-  const daangnProfit = marketplaceProfit + marketplaceFee;
+  const daangnProfit = sourceAwareProfitAverage(card, "daangn");
+  const marketplaceProfit = sourceAwareProfitAverage(card, card.marketplaceSource ?? "bunjang");
   const betterChannel = daangnProfit > marketplaceProfit ? "당근 직거래가 더 남을 수 있지만" : "중고 마켓 재판매는";
 
   return {
@@ -1236,18 +1258,23 @@ function costAssuranceSnapshot(card: RevealCard) {
   const buyCostLow = card.price + buyerShippingLow;
   const buyCostHigh = card.price + buyerShippingHigh;
   const buyerCostLabel = krwRange(buyCostLow, buyCostHigh);
-  const profitBasisSaleLow = resalePriceFromProfit(card.expectedProfitMin, buyCostHigh);
-  const profitBasisSaleHigh = resalePriceFromProfit(card.expectedProfitMax, buyCostLow);
   const fallbackSalePrice = finiteKrw(card.marketBasis?.medianPrice);
-  const salePriceLow = profitBasisSaleLow ?? fallbackSalePrice;
-  const salePriceHigh = profitBasisSaleHigh ?? salePriceLow;
+  const profitBasisSaleLow = fallbackSalePrice == null
+    ? resalePriceFromProfit(card.expectedProfitMin, buyCostHigh, card.marketplaceSource)
+    : null;
+  const profitBasisSaleHigh = fallbackSalePrice == null
+    ? resalePriceFromProfit(card.expectedProfitMax, buyCostLow, card.marketplaceSource)
+    : null;
+  const salePriceLow = fallbackSalePrice ?? profitBasisSaleLow;
+  const salePriceHigh = fallbackSalePrice ?? profitBasisSaleHigh ?? salePriceLow;
   const salePrice = salePriceLow == null || salePriceHigh == null
     ? null
     : Math.round((salePriceLow + salePriceHigh) / 2);
   const salePriceLabel = salePriceLow == null || salePriceHigh == null
     ? "시세 확인 중"
     : krwRange(Math.min(salePriceLow, salePriceHigh), Math.max(salePriceLow, salePriceHigh));
-  const sellingFee = salePrice == null ? null : Math.round(salePrice * SELLING_FEE_RATE);
+  const sellingFee = salePrice == null ? null : sellingFeeForMarketPrice(salePrice, card.marketplaceSource);
+  const resellShippingFee = resellShippingFeeForSource(card.marketplaceSource);
   const shippingLabel = safety.shipping.label;
   const confidenceLabel = safety.shipping.confidenceLabel;
   const confidenceClass = safety.shipping.buyerShippingHigh === 0
@@ -1258,6 +1285,7 @@ function costAssuranceSnapshot(card: RevealCard) {
     salePrice,
     salePriceLabel,
     sellingFee,
+    resellShippingFee,
     buyerCostLabel,
     shippingLabel,
     shippingValueLabel: safety.shipping.valueLabel,
@@ -1267,10 +1295,11 @@ function costAssuranceSnapshot(card: RevealCard) {
   };
 }
 
-function resalePriceFromProfit(profit: number, buyCost: number) {
-  const denominator = 1 - SELLING_FEE_RATE;
+function resalePriceFromProfit(profit: number, buyCost: number, marketplaceSource?: string | null) {
+  const sellFeeRate = String(marketplaceSource ?? "").toLowerCase() === "daangn" ? 0 : SELLING_FEE_RATE;
+  const denominator = 1 - sellFeeRate;
   if (!Number.isFinite(profit) || !Number.isFinite(buyCost) || denominator <= 0) return null;
-  return finiteKrw((profit + buyCost + RESELL_SHIPPING_FEE + SAFETY_BUFFER) / denominator);
+  return finiteKrw((profit + buyCost + resellShippingFeeForSource(marketplaceSource) + SAFETY_BUFFER) / denominator);
 }
 
 // Wave 2026-05-19 v2 (외부인 #7 권장 매입가 프레임):
@@ -4030,14 +4059,12 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
   const market = card.marketBasis;
   if (!market?.medianPrice || market.medianPrice <= 0) return null;
 
-  const marketplaceFee = Math.round(market.medianPrice * SELLING_FEE_RATE);
-  const joongnaFee = joongnaSellerSafePaymentFee(market.medianPrice);
-  const marketplaceProfit = expectedProfitAverage(card);
-  const joongnaProfit = marketplaceProfit + marketplaceFee - joongnaFee;
-  const daangnProfit = marketplaceProfit + marketplaceFee;
-  if (marketplaceProfit <= 0 && daangnProfit <= 0) return null;
-  const bonusFromDaangn = marketplaceFee;
-  const currentSource = card.marketplaceSource === "joongna" ? "joongna" : "bunjang";
+  const bunjangProfit = sourceAwareProfitAverage(card, "bunjang");
+  const joongnaProfit = sourceAwareProfitAverage(card, "joongna");
+  const daangnProfit = sourceAwareProfitAverage(card, "daangn");
+  if (bunjangProfit <= 0 && joongnaProfit <= 0 && daangnProfit <= 0) return null;
+  const bonusFromDaangn = Math.max(0, daangnProfit - Math.max(bunjangProfit, joongnaProfit));
+  const currentSource = card.marketplaceSource === "daangn" ? "daangn" : card.marketplaceSource === "joongna" ? "joongna" : "bunjang";
   // Wave launch-66/67 (사용자 짚음 "셀러/판매자 통일 + chip 위계"):
   //   chip = 결제 시스템 (위계 1). joongna chip = "안심결제" 단독.
   //   note = 수수료 (판매자 + 구매자 둘 다 표시 — joongna 가 사실 더 부담).
@@ -4045,7 +4072,7 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
     {
       source: "bunjang",
       label: "번개장터",
-      profit: marketplaceProfit,
+      profit: bunjangProfit,
       note: `판매자 ${Math.round(SELLING_FEE_RATE * 1000) / 10}% 수수료 차감`,
       chips: ["번개페이", "앱 결제"],
     },
@@ -4099,9 +4126,15 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
           </div>
         ))}
         <div className="relative rounded-[14px] border-[1.5px] border-amber-400 bg-gradient-to-br from-[#fffaf0] to-[#fff5dc] px-3 pb-3 pt-3 dark:border-amber-800 dark:from-amber-950/35 dark:to-zinc-950">
-          <div className="absolute -top-2 right-2.5 rounded-full bg-amber-700 px-2 py-1 text-[9px] font-extrabold tracking-wide text-amber-100 dark:bg-amber-500 dark:text-zinc-950">
-            +{krw(bonusFromDaangn)} 더
-          </div>
+          {currentSource === "daangn" ? (
+            <div className="absolute -top-2 right-2.5 rounded-full bg-blue-700 px-2 py-1 text-[9px] font-extrabold tracking-wide text-white dark:bg-blue-500 dark:text-zinc-950">
+              원본 출처
+            </div>
+          ) : bonusFromDaangn > 0 ? (
+            <div className="absolute -top-2 right-2.5 rounded-full bg-amber-700 px-2 py-1 text-[9px] font-extrabold tracking-wide text-amber-100 dark:bg-amber-500 dark:text-zinc-950">
+              +{krw(bonusFromDaangn)} 더
+            </div>
+          ) : null}
           <div className="mb-2 flex items-center gap-1.5">
             <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[#ff6f0f]">
               <DaangnLogo className="h-3.5 w-3.5" />
@@ -4139,6 +4172,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
   const [copied, setCopied] = useState(false);
   const snapshot = costAssuranceSnapshot(card);
   const feeRateLabel = `${Math.round(SELLING_FEE_RATE * 1000) / 10}%`;
+  const isDaangn = card.marketplaceSource === "daangn";
   const questions = sellerQuestionText(card);
   // Wave 337 (사용자 + 메모리 정책 bunjang_safe_payment_mandate):
   // 번개장터 안전결제 의무화 → 셀러가 3.5% 부담. 구매자(우리 사용자가 살 때)는 0원.
@@ -4154,11 +4188,11 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
   ];
   const resellRows = [
     {
-      label: "안전결제 수수료",
-      value: snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} · ${krw(snapshot.sellingFee)}`,
-      note: "셀러가 부담 (시세 대비 차감)",
+      label: isDaangn ? "재판매 수수료" : "안전결제 수수료",
+      value: isDaangn ? "0원" : snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} · ${krw(snapshot.sellingFee)}`,
+      note: isDaangn ? "당근 직거래 재판매 기준" : "셀러가 부담 (시세 대비 차감)",
     },
-    { label: "재배송비", value: krw(RESELL_SHIPPING_FEE), note: "재판매 발송 시" },
+    { label: "재배송비", value: krw(snapshot.resellShippingFee), note: isDaangn ? "직거래 재판매 가정" : "재판매 발송 시" },
     { label: "안전버퍼", value: krw(SAFETY_BUFFER), note: "분쟁/반품 등 예비비" },
   ];
 
@@ -5298,7 +5332,8 @@ function BeginnerGuideTrendVisual({ card }: { card: RevealCard }) {
 function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
   const snapshot = costAssuranceSnapshot(card);
   const feeRateLabel = `${Math.round(SELLING_FEE_RATE * 1000) / 10}%`;
-  const sellingFeeLabel = snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} · ${krw(snapshot.sellingFee)}`;
+  const isDaangn = card.marketplaceSource === "daangn";
+  const sellingFeeLabel = isDaangn ? "0원" : snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} · ${krw(snapshot.sellingFee)}`;
   const marketPriceLabel = card.marketBasis?.medianPrice && card.marketBasis.medianPrice > 0
     ? krw(card.marketBasis.medianPrice)
     : snapshot.salePriceLabel;
@@ -5337,7 +5372,7 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
             {snapshot.confidenceLabel}
           </span>
           <span className="text-right tabular-nums">
-            안전결제 {sellingFeeLabel} · 재배송·버퍼 +{krw(RESELL_SHIPPING_FEE + SAFETY_BUFFER)}
+            수수료 {sellingFeeLabel} · 재배송·버퍼 +{krw(snapshot.resellShippingFee + SAFETY_BUFFER)}
           </span>
         </div>
       </div>
@@ -5389,18 +5424,16 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
   //   가드: medianPrice 없으면 채널 비교 X (시세 확보 후 표시).
   if (!market?.medianPrice || market.medianPrice <= 0) return null;
 
-  const marketplaceProfit = expectedProfitAverage(card);
-  const marketplaceFee = Math.round(market.medianPrice * SELLING_FEE_RATE);
-  const joongnaFee = joongnaSellerSafePaymentFee(market.medianPrice);
-  const joongnaProfit = marketplaceProfit + marketplaceFee - joongnaFee;
-  const daangnProfit = marketplaceProfit + marketplaceFee;
-  const preferDaangn = daangnProfit > marketplaceProfit;
-  const currentSource = card.marketplaceSource === "joongna" ? "joongna" : "bunjang";
+  const bunjangProfit = sourceAwareProfitAverage(card, "bunjang");
+  const joongnaProfit = sourceAwareProfitAverage(card, "joongna");
+  const daangnProfit = sourceAwareProfitAverage(card, "daangn");
+  const preferDaangn = daangnProfit > Math.max(bunjangProfit, joongnaProfit);
+  const currentSource = card.marketplaceSource === "daangn" ? "daangn" : card.marketplaceSource === "joongna" ? "joongna" : "bunjang";
   // Wave launch-67 (사용자 짚음 "chip 위계 + 구매자 수수료 중고나라 더 부담인데"):
   //   chip = 결제 시스템 (위계 1). note = 수수료 정보 (위계 2).
   //   joongna note 에 구매자 fee 도 같이 표시 — 매물 가격 인상 effect (구매자가 위에 얹어서).
   const marketChannels = [
-    { source: "bunjang", label: "번개장터", profit: marketplaceProfit, note: `판매자 ${Math.round(SELLING_FEE_RATE * 1000) / 10}% 수수료`, chip: "번개페이" },
+    { source: "bunjang", label: "번개장터", profit: bunjangProfit, note: `판매자 ${Math.round(SELLING_FEE_RATE * 1000) / 10}% 수수료`, chip: "번개페이" },
     { source: "joongna", label: "중고나라", profit: joongnaProfit, note: `판매자 ${Math.round(JOONGNA_SELLER_SAFE_PAYMENT_FEE_RATE * 100)}% · 구매자 ${Math.round(JOONGNA_BUYER_SAFE_PAYMENT_FEE_RATE * 1000) / 10}% 별도`, chip: "안심결제" },
   ];
 
@@ -5429,7 +5462,12 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
             <div className="mt-2 rounded-full bg-blue-50 px-1.5 py-1 text-center text-[9px] font-black text-blue-700 dark:bg-blue-950/35 dark:text-blue-200 sm:mt-3 sm:px-2.5 sm:text-[11px]">{channel.chip}</div>
           </div>
         ))}
-        <div className="min-w-0 rounded-[16px] bg-amber-50/80 px-2 py-2.5 ring-1 ring-amber-200 dark:bg-amber-950/20 dark:ring-amber-900/55 sm:rounded-[22px] sm:p-4">
+        <div className="relative min-w-0 rounded-[16px] bg-amber-50/80 px-2 py-2.5 ring-1 ring-amber-200 dark:bg-amber-950/20 dark:ring-amber-900/55 sm:rounded-[22px] sm:p-4">
+          {currentSource === "daangn" ? (
+            <div className="absolute right-1.5 top-1.5 rounded-full bg-blue-100 px-1.5 py-0.5 text-[8px] font-black text-blue-700 dark:bg-blue-950/45 dark:text-blue-200 sm:right-3 sm:top-3 sm:px-2 sm:text-[9px]">
+              원본 출처
+            </div>
+          ) : null}
           <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:gap-2">
             <DaangnLogo className="h-6 w-6 rounded-full sm:h-7 sm:w-7" />
             <div className="text-[10.5px] font-black leading-tight text-[#172019] dark:text-zinc-50 sm:text-[13px]">당근 직거래</div>

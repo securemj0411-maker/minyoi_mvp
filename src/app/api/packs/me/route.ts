@@ -13,7 +13,7 @@ import {
   fetchLatestMarketStatsPerSource,
   fetchLatestMarketVelocity,
   fetchV7SiblingPresence,
-  marketBasisForCandidate,
+  marketBasisForCandidateWithLiveSourceFallback,
   velocityBasisForCandidate,
 } from "@/lib/pack-open";
 import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
@@ -21,7 +21,7 @@ import { loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { detectSoldOut, describeSignals, isSoldOut, soldOutTextHits } from "@/lib/sold-out";
-import { RESELL_SHIPPING_FEE, SAFETY_BUFFER, SELLING_FEE_RATE } from "@/lib/profit";
+import { SAFETY_BUFFER, sellingFeeForMarketPrice, resellShippingFeeForSource } from "@/lib/profit";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -340,6 +340,7 @@ function currentNetProfitFromMarketPrice(
   raw: RawRow | undefined,
   cost: ListingCostRow | undefined,
   marketPrice: number | null | undefined,
+  marketplaceSource?: string | null,
 ) {
   if (!raw) return null;
   const market = positiveNumber(marketPrice);
@@ -352,11 +353,12 @@ function currentNetProfitFromMarketPrice(
     : nonNegativeNumber(cost.shipping_fee_general);
   const estimatedBuyCost = positiveNumber(cost?.estimated_buy_cost) ?? price + shippingFee;
   const buyCostMax = price + generalShippingFee;
-  const sellFee = Math.round(market * SELLING_FEE_RATE);
+  const sellFee = sellingFeeForMarketPrice(market, marketplaceSource);
+  const resellShippingFee = resellShippingFeeForSource(marketplaceSource);
 
   return {
-    min: Math.round(market - buyCostMax - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER),
-    max: Math.round(market - estimatedBuyCost - sellFee - RESELL_SHIPPING_FEE - SAFETY_BUFFER),
+    min: Math.round(market - buyCostMax - sellFee - resellShippingFee - SAFETY_BUFFER),
+    max: Math.round(market - estimatedBuyCost - sellFee - resellShippingFee - SAFETY_BUFFER),
   };
 }
 
@@ -777,8 +779,8 @@ export async function GET(req: Request) {
 
   const skuImageMap = await loadSkuImageMap();
 
-  const allItems = reveals
-    .map((reveal): RevealItem => {
+  const allItems = await Promise.all(reveals
+    .map(async (reveal): Promise<RevealItem> => {
       const raw = rawByPid.get(Number(reveal.pid));
       const listingCost = listingCostByPid.get(Number(reveal.pid));
       const feedback = feedbackByPid.get(Number(reveal.pid));
@@ -802,7 +804,7 @@ export async function GET(req: Request) {
       // DB current_profit_*는 cron lag/cache 값이라, 있더라도 stale할 수 있다. 사용자가 /me를
       // 새로고침하면 그 시점의 latest market/reference median 기준으로 차익을 다시 보여준다.
       const computedMarketBasis = comparableKey
-        ? marketBasisForCandidate(
+        ? await marketBasisForCandidateWithLiveSourceFallback(
             comparableKey,
             skuName ?? "",
             marketStats,
@@ -811,13 +813,14 @@ export async function GET(req: Request) {
             v7SiblingPresence,
             marketStatsPerSource,
             marketplaceSource,
+            Number(reveal.pid),
           )
         : null;
       const dbCurrentProfitMin = reveal.current_profit_min ?? null;
       const dbCurrentProfitMax = reveal.current_profit_max ?? null;
       const dbMarketInvalidatedAt = reveal.market_invalidated_at ?? null;
       const fallbackMedian = computedMarketBasis?.medianPrice ?? null;
-      const currentNetProfit = currentNetProfitFromMarketPrice(raw, listingCost, fallbackMedian);
+      const currentNetProfit = currentNetProfitFromMarketPrice(raw, listingCost, fallbackMedian, marketplaceSource);
       const marketGapKrw = currentNetProfit?.min ?? dbCurrentProfitMin;
       const marketGapKrwMax = currentNetProfit?.max ?? dbCurrentProfitMax ?? marketGapKrw;
       const marketStale = marketGapKrw != null
@@ -893,7 +896,7 @@ export async function GET(req: Request) {
         marketStale,
         commentCount: raw?.num_comment == null ? null : Number(raw.num_comment),
       };
-    });
+    }));
 
   const rawCommentBlockedItems = allItems.filter((item) => isUserVisibleCommentBlocked(item.commentCount));
   if (rawCommentBlockedItems.length > 0) {

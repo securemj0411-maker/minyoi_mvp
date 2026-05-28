@@ -2,7 +2,9 @@ import { fetchDetail } from "@/lib/bunjang";
 import { CATALOG } from "@/lib/catalog";
 import { categoryFromComparableKey, loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
+import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
 import { fetchJoongnaDetail } from "@/lib/joongna";
+import { trimmedSellerMarket } from "@/lib/market-math";
 import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import {
   buildMarketplaceSafetyDisplay,
@@ -26,6 +28,7 @@ import {
   parseShippingFromDescription,
   parseShippingFromTrade,
 } from "@/lib/pipeline";
+import { expectedProfitFromMarketPrice } from "@/lib/profit";
 
 const TIMEOUT_MS = 30_000;
 const USER_REVEAL_DEDUPE_LIMIT = 1000;
@@ -1149,6 +1152,7 @@ const CONDITION_LABEL: Record<string, string> = {
 const MIN_SAMPLE_COUNT_FOR_CONFIDENCE = 3;
 const MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE = 3;
 const STRICT_SOURCE_MARKET_SOURCES = new Set(["daangn"]);
+const LIVE_SOURCE_MARKET_LIMIT = 240;
 
 // Wave 159h (2026-05-17): condition-fallback shared module 사용 (DRY).
 function selectMarketRowByCondition(
@@ -1190,6 +1194,123 @@ function selectMarketRowBySource(
     fallbackUsed: selected.fallbackUsed,
     source,
     byCondition,
+  };
+}
+
+type LiveSourceMarketBasisInput = {
+  comparableKey: string | null;
+  excludePid?: number | null;
+  skuName: string;
+  conditionClass: string | null;
+  marketplaceSource: string | null | undefined;
+  base: RevealMarketBasis;
+};
+
+async function fetchLiveSourceMarketBasis(input: LiveSourceMarketBasisInput): Promise<RevealMarketBasis | null> {
+  const comparableKey = input.comparableKey;
+  if (!comparableKey) return null;
+  const source = input.marketplaceSource ? normalizeMarketplaceSource(input.marketplaceSource) : null;
+  if (!source || !STRICT_SOURCE_MARKET_SOURCES.has(source)) return null;
+
+  const parsedRes = await callSupabase(
+    `/mvp_listing_parsed?select=pid,condition_class,parsed_json&comparable_key=eq.${encodeURIComponent(comparableKey)}&needs_review=eq.false&limit=${LIVE_SOURCE_MARKET_LIMIT}`,
+    { headers: authHeaders() },
+  );
+  const parsedRows = (await parsedRes.json()) as Array<{
+    pid: number;
+    condition_class: string | null;
+    parsed_json: Record<string, unknown> | null;
+  }>;
+  const pids = parsedRows.map((row) => Number(row.pid)).filter((pid) => Number.isFinite(pid));
+  if (pids.length === 0) return null;
+
+  const exactConditionCount = input.conditionClass == null
+    ? 0
+    : parsedRows.filter((row) => row.condition_class === input.conditionClass).length;
+  const requireKnownCondition = input.conditionClass != null && exactConditionCount >= 5;
+  const parsedByPid = new Map(parsedRows.map((row) => [Number(row.pid), row]));
+
+  const [rawRes, analysisRes] = await Promise.all([
+    callSupabase(
+      `/mvp_raw_listings?select=pid,source,seller_source,price,listing_state,sale_status,seller_uid,last_seen_at&pid=in.(${pids.join(",")})&listing_type=eq.normal&order=last_seen_at.desc`,
+      { headers: authHeaders() },
+    ),
+    callSupabase(
+      `/mvp_listing_analysis?select=pid,risk_hits&pid=in.(${pids.join(",")})`,
+      { headers: authHeaders() },
+    ),
+  ]);
+  const rawRows = (await rawRes.json()) as Array<{
+    pid: number;
+    source: string | null;
+    seller_source: string | null;
+    price: number | null;
+    listing_state: string | null;
+    sale_status: string | null;
+    seller_uid: string | null;
+  }>;
+  const analysisRows = (await analysisRes.json()) as Array<{ pid: number; risk_hits: number | null }>;
+  const riskByPid = new Map(analysisRows.map((row) => [Number(row.pid), Number(row.risk_hits ?? 0)]));
+
+  const rows = rawRows.filter((row) => {
+    if (input.excludePid != null && Number(row.pid) === Number(input.excludePid)) return false;
+    if ((riskByPid.get(Number(row.pid)) ?? 0) > 0) return false;
+    const rowSource = normalizeMarketplaceSource(row.source ?? row.seller_source);
+    if (rowSource !== source) return false;
+    const price = Number(row.price ?? 0);
+    if (!Number.isFinite(price) || price <= 0) return false;
+    const state = String(row.listing_state ?? "").toLowerCase();
+    if (state === "disappeared" || state === "deleted" || state === "hidden") return false;
+    const parsed = parsedByPid.get(Number(row.pid));
+    const notes = (parsed?.parsed_json?.condition_notes as string[] | undefined) ?? [];
+    if (COMPARABLE_EXCLUDE_NOTES.some((note) => notes.includes(note))) return false;
+    if (input.conditionClass != null) {
+      if (parsed?.condition_class == null && requireKnownCondition) return false;
+      if (parsed?.condition_class != null && parsed.condition_class !== input.conditionClass) return false;
+    }
+    return true;
+  });
+  const activeRows = rows.filter((row) => String(row.listing_state ?? "").toLowerCase() === "active");
+  const soldRows = rows.filter((row) => {
+    const state = String(row.listing_state ?? "").toLowerCase();
+    const status = String(row.sale_status ?? "").toLowerCase();
+    return state === "sold" || status === "sold" || status === "sold_out";
+  });
+  const pricedRows = activeRows.length >= MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE ? activeRows : [...activeRows, ...soldRows];
+  if (pricedRows.length < MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE) return null;
+
+  const market = trimmedSellerMarket(pricedRows.map((row) => ({
+    pid: Number(row.pid),
+    price: Number(row.price ?? 0),
+    seller_uid: row.seller_uid ?? null,
+  })));
+  if (market.median == null || market.count < MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE) return null;
+
+  const sampleCount = market.count;
+  return {
+    ...input.base,
+    comparableKey,
+    label: marketBasisLabel(comparableKey, input.skuName),
+    p25Price: market.p25,
+    medianPrice: market.median,
+    p75Price: market.p75,
+    sampleCount,
+    activeSampleCount: activeRows.length,
+    soldSampleCount: soldRows.length,
+    disappearedSampleCount: 0,
+    confidence: sampleCount >= 6 ? "medium" : "low",
+    priceSource: "market",
+    basisSource: source,
+    basisSourceLabel: marketplaceSourceLabel(source),
+    sourceFallbackUsed: false,
+    sourceSampleCount: sampleCount,
+    computedAt: new Date().toISOString(),
+    conditionClass: input.conditionClass ?? input.base.conditionClass,
+    conditionLabel: (input.conditionClass ?? input.base.conditionClass)
+      ? CONDITION_LABEL[input.conditionClass ?? input.base.conditionClass ?? ""] ?? (input.conditionClass ?? input.base.conditionClass)
+      : null,
+    fallbackUsed: false,
+    otherConditions: [],
   };
 }
 
@@ -1342,6 +1463,47 @@ export function marketBasisForCandidate(
     fallbackUsed,
     otherConditions,
   };
+}
+
+export async function marketBasisForCandidateWithLiveSourceFallback(
+  comparableKey: string | null,
+  skuName: string,
+  marketStats: MarketStatsMap,
+  conditionClass: string | null = null,
+  referencePrices?: Map<string, number>,
+  v7SiblingPresence?: V7SiblingPresenceMap,
+  marketStatsPerSource?: MarketStatsPerSourceMap,
+  marketplaceSource?: string | null,
+  excludePid?: number | null,
+): Promise<RevealMarketBasis> {
+  const basis = marketBasisForCandidate(
+    comparableKey,
+    skuName,
+    marketStats,
+    conditionClass,
+    referencePrices,
+    v7SiblingPresence,
+    marketStatsPerSource,
+    marketplaceSource,
+  );
+  if (!(basis.sourceFallbackUsed && basis.medianPrice == null)) return basis;
+  try {
+    return await fetchLiveSourceMarketBasis({
+      comparableKey,
+      excludePid,
+      skuName,
+      conditionClass,
+      marketplaceSource,
+      base: basis,
+    }) ?? basis;
+  } catch (err) {
+    console.warn("[pack-open] live source market basis fallback failed", {
+      comparableKey,
+      marketplaceSource,
+      err: err instanceof Error ? err.message : String(err),
+    });
+    return basis;
+  }
 }
 
 export function velocityBasisForCandidate(
@@ -2141,6 +2303,23 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       const skuConfusionNote = meta.sku_id
         ? CATALOG.find((sku) => sku.id === meta.sku_id)?.confusionNote ?? null
         : null;
+      const marketBasis = await marketBasisForCandidateWithLiveSourceFallback(
+        candidate.comparable_key,
+        meta.sku_name,
+        marketStats,
+        poolConditionMap.get(candidate.pid) ?? null,
+        referencePrices,
+        v7SiblingPresence,
+        marketStatsPerSource,
+        meta.marketplaceSource,
+        candidate.pid,
+      );
+      const sourceAwareProfit = expectedProfitFromMarketPrice({
+        buyPrice: meta.price,
+        marketPrice: marketBasis.medianPrice,
+        buyShipping: savedDetail?.freeShipping ? 0 : 3500,
+        marketplaceSource: meta.marketplaceSource,
+      });
       reveals.push({
         pid: candidate.pid,
         name: meta.name,
@@ -2152,23 +2331,14 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         skuName: meta.sku_name,
         confusionNote: skuConfusionNote,
         thumbnailUrl: meta.thumbnail_url,
-        expectedProfitMin: candidate.expected_profit_min,
-        expectedProfitMax: candidate.expected_profit_max,
+        expectedProfitMin: sourceAwareProfit?.min ?? candidate.expected_profit_min,
+        expectedProfitMax: sourceAwareProfit?.max ?? candidate.expected_profit_max,
         confidence: candidate.confidence,
         // 2026-05-17 (사용자 요청): 모달 카드에 band chip 표시.
         band: (candidate.profit_band as 1 | 2 | 3) ?? null,
         // Wave 130 (2026-05-16): 매물 condition_class lookup → 매칭되는 condition별 시세 우선 표시.
         // Wave 201 (2026-05-18): unopened 매물 → reference_prices anchor 우선.
-        marketBasis: marketBasisForCandidate(
-          candidate.comparable_key,
-          meta.sku_name,
-          marketStats,
-          poolConditionMap.get(candidate.pid) ?? null,
-          referencePrices,
-          v7SiblingPresence,
-          marketStatsPerSource,
-          meta.marketplaceSource,
-        ),
+        marketBasis,
         velocityBasis: velocityBasisForCandidate(candidate.comparable_key, velocityStats, readinessMap),
         lastVerifiedAt: liveVerifiedAt,
         freshSeconds,

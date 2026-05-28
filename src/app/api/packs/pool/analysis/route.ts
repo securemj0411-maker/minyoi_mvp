@@ -6,7 +6,7 @@ import {
   fetchLatestMarketVelocity,
   fetchReferencePrices,
   fetchV7SiblingPresence,
-  marketBasisForCandidate,
+  marketBasisForCandidateWithLiveSourceFallback,
   velocityBasisForCandidate,
 } from "@/lib/pack-open";
 import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
@@ -126,8 +126,8 @@ async function loadAnalysis(pid: number): Promise<Analysis> {
   const marketplaceSource = normalizeMarketplaceSource(raw?.source ?? raw?.seller_source);
 
   // marketStats (필수) 비었으면 marketBasis null — UI 가 "시세 확인중" 표시
-  const marketBasis = marketStats.size > 0
-    ? marketBasisForCandidate(
+  const marketBasis = comparableKey
+    ? await marketBasisForCandidateWithLiveSourceFallback(
         comparableKey,
         raw?.sku_name ?? raw?.name ?? "",
         marketStats,
@@ -136,6 +136,7 @@ async function loadAnalysis(pid: number): Promise<Analysis> {
         v7SiblingPresence,
         marketStatsPerSource,
         marketplaceSource,
+        pid,
       )
     : null;
 

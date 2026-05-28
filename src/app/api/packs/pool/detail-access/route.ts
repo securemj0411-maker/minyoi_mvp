@@ -6,9 +6,17 @@ import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
+import {
+  fetchLatestMarketStats,
+  fetchLatestMarketStatsPerSource,
+  fetchReferencePrices,
+  fetchV7SiblingPresence,
+  marketBasisForCandidateWithLiveSourceFallback,
+} from "@/lib/pack-open";
 import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
 import { classifyListing } from "@/lib/pipeline";
 import { decodePoolAccessToken } from "@/lib/pool-access-token";
+import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { detectSoldOut, describeSignals, isSoldOut, soldOutTextHits } from "@/lib/sold-out";
@@ -172,6 +180,40 @@ async function loadExactPoolItem(pid: number) {
     conditionConfidence,
     conditionFlags,
     conditionChips,
+  };
+}
+
+async function recomputeExactPoolItemProfit(item: ExactPoolItem | null): Promise<ExactPoolItem | null> {
+  if (!item?.comparableKey) return item;
+  const [marketStats, marketStatsPerSource, referencePrices, v7SiblingPresence] = await Promise.all([
+    fetchLatestMarketStats([item.comparableKey]),
+    fetchLatestMarketStatsPerSource([item.comparableKey]),
+    fetchReferencePrices([item.comparableKey]),
+    fetchV7SiblingPresence([item.comparableKey]),
+  ]);
+  const marketBasis = await marketBasisForCandidateWithLiveSourceFallback(
+    item.comparableKey,
+    item.skuName ?? item.name ?? "",
+    marketStats,
+    item.conditionClass ?? null,
+    referencePrices,
+    v7SiblingPresence,
+    marketStatsPerSource,
+    item.marketplaceSource,
+    item.pid,
+  );
+  const profit = expectedProfitFromMarketPrice({
+    buyPrice: item.price,
+    marketPrice: marketBasis.medianPrice,
+    buyShipping: item.freeShipping ? 0 : 3500,
+    marketplaceSource: item.marketplaceSource,
+  });
+  if (!profit) return item;
+  return {
+    ...item,
+    skuMedian: marketBasis.medianPrice ?? item.skuMedian,
+    expectedProfitMin: profit.min,
+    expectedProfitMax: profit.max,
   };
 }
 
@@ -446,7 +488,7 @@ export async function POST(req: Request) {
   //   sold 가 아닌 active 매물이라도 시세 갱신으로 expected_profit_max 가 0 이하면
   //   사용자한테 손해 매물 노출 금지. invalidate → recovery-worker (매 1분) 가 시세 회복 시 자동 ready 복귀.
   //   사용자 frustration: "차익 마이너스인데 모달에 '판매완료' 헤더가 떠서 헷갈렸음".
-  const verifiedItem = liveVerify.item;
+  const verifiedItem = await recomputeExactPoolItemProfit(liveVerify.item) ?? liveVerify.item;
   if (Number(verifiedItem.expectedProfitMax ?? 0) <= 0) {
     await invalidateReadyPoolItem(verifiedItem.pid, "profit_negative");
     return NextResponse.json(
@@ -483,6 +525,6 @@ export async function POST(req: Request) {
     freeUsed: access.freeUsed,
     freeLimit: access.freeLimit,
     unlimited: access.unlimited ?? false,
-    item: liveVerify.item,
+    item: verifiedItem,
   });
 }

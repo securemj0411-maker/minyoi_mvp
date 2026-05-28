@@ -10,7 +10,7 @@ import {
   fetchReferencePrices,
   fetchV7SiblingPresence,
   loadRevealListingDetail,
-  marketBasisForCandidate,
+  marketBasisForCandidateWithLiveSourceFallback,
   velocityBasisForCandidate,
 } from "@/lib/pack-open";
 import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
@@ -119,8 +119,8 @@ async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
   const v7SiblingPresence = unwrap(results[6], "v7SiblingPresence", new Map());
   const marketplaceSource = normalizeMarketplaceSource(raw?.source ?? raw?.seller_source);
 
-  const marketBasis = marketStats.size > 0
-    ? marketBasisForCandidate(
+  const marketBasis = comparableKey
+    ? await marketBasisForCandidateWithLiveSourceFallback(
         comparableKey,
         raw?.sku_name ?? raw?.name ?? "",
         marketStats,
@@ -129,6 +129,7 @@ async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
         v7SiblingPresence,
         marketStatsPerSource,
         marketplaceSource,
+        pid,
       )
     : null;
 
