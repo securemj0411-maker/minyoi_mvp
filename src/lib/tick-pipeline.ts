@@ -2570,7 +2570,7 @@ const MARKET_STATS_PAGE_SIZE = 1000;
 async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
   // Wave 132: num_comment 추가 (시세 sample 분석 시 활용 가능).
   // Wave 217 (2026-05-19): bunjang_condition_label 추가.
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment,qty,description_hash,bunjang_condition_label";
+  const columns = "pid,source,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,last_seen_at,source_updated_at,num_comment,qty,description_hash,bunjang_condition_label";
   const lookbackHours = Math.max(
     1,
     Math.min(168, Number(process.env.PIPELINE_MARKET_STATS_LOOKBACK_HOURS ?? DEFAULT_MARKET_STATS_LOOKBACK_HOURS) || DEFAULT_MARKET_STATS_LOOKBACK_HOURS),
@@ -2597,7 +2597,7 @@ async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<
   if (unique.length === 0) return [];
   // Wave 132: num_comment 추가.
   // Wave 217 (2026-05-19): bunjang_condition_label 추가.
-  const columns = "pid,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,num_comment,qty,description_hash,bunjang_condition_label";
+  const columns = "pid,source,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,listing_state,sale_status,last_seen_at,source_updated_at,num_comment,qty,description_hash,bunjang_condition_label";
   const rows: ScorableRawRow[] = [];
   for (const chunk of chunkArray(unique, PARSED_PID_READ_CHUNK_SIZE)) {
     const remaining = limit - rows.length;
@@ -3666,6 +3666,34 @@ async function loadFraudGroupHashes(): Promise<Set<string>> {
 // Wave 225 (2026-05-19) 사용자 결정 C: "2d<1 OR 7d<3" 결합 — 둘 중 하나만 못 채워도 차단.
 //   누적 빈도 (7d≥3) + 최근 회전 빈도 (2d≥1) 둘 다 충족해야 통과.
 //   사용자 reveal 직후 다음 매물 답답함 차단.
+// Wave 796 (2026-05-27): 당근 source 표본 부족 — sku 당 당근 매물 < 3 차단용.
+//   owner 정책: 당근은 안전결제 X 직거래라 시세 정확도 ↑ 필요.
+async function loadDaangnVolumeBySku(): Promise<Map<string, number>> {
+  try {
+    const since7dIso = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+    const all: Array<{ sku_id: string }> = [];
+    let offset = 0;
+    const PAGE = 1000;
+    while (offset < 10000) {
+      const url = `${tableUrl("mvp_raw_listings")}?select=sku_id&source=eq.daangn&listing_state=eq.active&first_seen_at=gte.${encodeURIComponent(since7dIso)}&sku_id=not.is.null&order=first_seen_at.desc&limit=${PAGE}&offset=${offset}`;
+      const res = await restFetch(url, { headers: serviceHeaders() });
+      const rows = (await res.json()) as Array<{ sku_id: string }>;
+      all.push(...rows);
+      if (rows.length < PAGE) break;
+      offset += PAGE;
+    }
+    const counts = new Map<string, number>();
+    for (const r of all) {
+      if (!r.sku_id) continue;
+      counts.set(r.sku_id, (counts.get(r.sku_id) ?? 0) + 1);
+    }
+    return counts;
+  } catch (err) {
+    console.warn("loadDaangnVolumeBySku failed (non-fatal)", err);
+    return new Map();
+  }
+}
+
 async function loadLowVolumeSkuIds(): Promise<Set<string>> {
   try {
     const since7dIso = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
@@ -5924,6 +5952,98 @@ const QUERY_CADENCE_EVAL_COOLDOWN_MS = 60 * 60_000; // 1시간
 const PAYLOAD_RETENTION_COOLDOWN_MS = 24 * 60 * 60_000; // 1일
 const PAYLOAD_RETENTION_DAYS = 90;
 const PAYLOAD_RETENTION_BATCH_LIMIT = 50_000;
+const CRON_EXECUTION_STALE_RUNNING_MINUTES = 10;
+const POOL_RAW_RESIDUE_CLEANUP_LIMIT = 2_000;
+
+async function releaseStaleCronExecutionRows(): Promise<number> {
+  const now = new Date();
+  const cutoff = new Date(now.getTime() - CRON_EXECUTION_STALE_RUNNING_MINUTES * 60_000).toISOString();
+  try {
+    const res = await restFetch(
+      `${tableUrl("mvp_cron_executions")}?select=id&status=eq.running&started_at=lt.${encodeURIComponent(cutoff)}`,
+      {
+        method: "PATCH",
+        headers: { ...serviceHeaders(), Prefer: "return=representation" },
+        body: jsonBody({
+          status: "released",
+          finished_at: now.toISOString(),
+          detail: {
+            reason: "housekeeper_stale_running_cleanup",
+            stale_after_minutes: CRON_EXECUTION_STALE_RUNNING_MINUTES,
+          },
+        }),
+      },
+    );
+    if (!res.ok) return 0;
+    const rows = (await res.json().catch(() => [])) as Array<{ id: number }>;
+    return rows.length;
+  } catch (err) {
+    console.error("[housekeeper] stale cron execution cleanup failed", err);
+    return 0;
+  }
+}
+
+async function invalidateRawNotScorablePoolResidues(limit = POOL_RAW_RESIDUE_CLEANUP_LIMIT): Promise<number> {
+  const res = await restFetch(
+    `${tableUrl("mvp_candidate_pool")}?select=pid&status=in.(ready,reserved)&order=updated_at.asc&limit=${Math.max(1, Math.min(limit, 5_000))}`,
+    { headers: serviceHeaders() },
+  );
+  const poolRows = (await res.json()) as Array<{ pid: number | string }>;
+  const pids = poolRows.map((row) => Number(row.pid)).filter(Number.isFinite);
+  if (pids.length === 0) return 0;
+
+  const invalidations: Array<{ pid: number; reason: string }> = [];
+  for (const chunk of chunkArray(pids, REST_WRITE_CHUNK_SIZE)) {
+    const rawRes = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,query,raw_json,pool_eligible,detail_status,listing_state,listing_type,listing_type_override,sku_id&pid=in.(${chunk.join(",")})`,
+      { headers: serviceHeaders() },
+    );
+    const rawRows = (await rawRes.json()) as Array<{
+      pid: number | string;
+      source: string | null;
+      query: string | null;
+      raw_json: Record<string, unknown> | null;
+      pool_eligible: boolean | null;
+      detail_status: string | null;
+      listing_state: string | null;
+      listing_type: string | null;
+      listing_type_override: string | null;
+      sku_id: string | null;
+    }>;
+    const rawByPid = new Map(rawRows.map((row) => [Number(row.pid), row]));
+    for (const pid of chunk) {
+      const raw = rawByPid.get(pid);
+      if (!raw) {
+        invalidations.push({ pid, reason: "raw_missing_residue" });
+        continue;
+      }
+      if (!isRawPublicPoolEligible(raw)) {
+        invalidations.push({ pid, reason: "pool_eligible_false_residue" });
+        continue;
+      }
+      const normalListing = raw.listing_type === "normal" || raw.listing_type_override === "normal";
+      if (raw.listing_state !== "active") {
+        invalidations.push({ pid, reason: `lifecycle_state_${raw.listing_state ?? "unknown"}_residue` });
+      } else if (raw.detail_status !== "done") {
+        invalidations.push({ pid, reason: "raw_detail_not_done_residue" });
+      } else if (!normalListing) {
+        invalidations.push({ pid, reason: "raw_listing_type_not_normal_residue" });
+      } else if (!raw.sku_id) {
+        invalidations.push({ pid, reason: "wave230_sku_id_null_stale" });
+      }
+    }
+  }
+
+  if (invalidations.length === 0) return 0;
+  await invalidatePoolEntries(invalidations);
+  const skuNullPids = invalidations
+    .filter((entry) => entry.reason === "wave230_sku_id_null_stale")
+    .map((entry) => entry.pid);
+  if (skuNullPids.length > 0) {
+    await patchRowsByIds("mvp_raw_listings", skuNullPids, { score_dirty: true }, REST_WRITE_CHUNK_SIZE);
+  }
+  return invalidations.length;
+}
 
 // P2-2: observation payload 90일 retention 게이트. mvp_cron_locks 테이블을 marker로 재활용해
 // 마지막 sweep 시각을 멀티 인스턴스 안전하게 공유한다(lease_until = 다음 실행 가능 시각).
@@ -5996,6 +6116,26 @@ async function shouldRunCadenceEvaluator(): Promise<boolean> {
 export async function housekeeperStage(): Promise<StageStats> {
   const stats = emptyStats();
   const now = new Date().toISOString();
+
+  const staleCronExecutionsReleased = await releaseStaleCronExecutionRows();
+  if (staleCronExecutionsReleased > 0) {
+    stats.timingsMs = {
+      ...(stats.timingsMs ?? {}),
+      stale_cron_executions_released: staleCronExecutionsReleased,
+    };
+  }
+
+  try {
+    const rawResiduesInvalidated = await invalidateRawNotScorablePoolResidues();
+    if (rawResiduesInvalidated > 0) {
+      stats.timingsMs = {
+        ...(stats.timingsMs ?? {}),
+        raw_not_scorable_pool_residues_invalidated: rawResiduesInvalidated,
+      };
+    }
+  } catch (err) {
+    console.error("[housekeeper] raw pool residue cleanup failed", err);
+  }
 
   const expiredPoolRes = await restFetch(
     `${tableUrl("mvp_candidate_pool")}?select=pid,exposure_count,max_exposure&status=eq.reserved&reserved_until=lt.${encodeURIComponent(now)}&limit=200`,
@@ -6530,7 +6670,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
   // Wave 138b: 다중 ID 사기 그룹 hash set (같은 description + 다른 셀러 2+).
   // Wave 224 (2026-05-19): SKU 별 7d 매물 수 < 3 차단 — 사용자 정책 "매물 받쳐주는 거만".
   //   sparse SKU (LV variant / Yeezy colorway / 한정 Jordan / Hoka 모델 등) pool 진입 차단.
-  const [existingPoolSellerCounts, fraudGroupHashes, lowVolumeSkuIds] = await Promise.all([
+  const [existingPoolSellerCounts, fraudGroupHashes, lowVolumeSkuIds, daangnVolumeBySku] = await Promise.all([
     loadExistingPoolSellerCounts().catch((err) => {
       console.warn("loadExistingPoolSellerCounts failed (non-fatal)", err);
       return new Map<string, number>();
@@ -6542,6 +6682,10 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     loadLowVolumeSkuIds().catch((err) => {
       console.warn("loadLowVolumeSkuIds failed (non-fatal)", err);
       return new Set<string>();
+    }),
+    loadDaangnVolumeBySku().catch((err) => {
+      console.warn("loadDaangnVolumeBySku failed (non-fatal)", err);
+      return new Map<string, number>();
     }),
   ]);
 
@@ -6556,6 +6700,7 @@ export async function scoreStage(deadlineMs: number): Promise<StageStats> {
     existingPoolSellerCounts,
     fraudGroupHashes,
     lowVolumeSkuIds,
+    daangnVolumeBySku,
   });
   const poolBuildPids = poolBuild.entries
     .map((entry) => Number(entry.pid))

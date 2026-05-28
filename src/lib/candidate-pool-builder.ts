@@ -383,6 +383,10 @@ export function buildCandidatePoolRows(input: {
   //   sparse SKU (Yeezy V2 colorway / LV variant / Hoka Clifton 10 등) pool 진입 차단.
   //   tick-pipeline 가 사전 SQL 집계 후 전달.
   lowVolumeSkuIds?: Set<string>;
+  // Wave 796 (2026-05-27): 당근 source 한정 — 같은 sku 의 당근 표본 < 3 차단.
+  //   owner 정책: 당근은 안전결제 X 직거래라 시세 신뢰도 ↑ 필요.
+  //   전체 sku volume (lowVolumeSkuIds) 와 별도 — 당근 매물에 더 엄격한 기준.
+  daangnVolumeBySku?: Map<string, number>;
   // Wave 502 (2026-05-21): pool 입장 직전 parser freshness gate.
   // parsed row가 최신 parser가 아니면 stale comparable_key가 ready로 재진입할 수 있다.
   latestParserVersionByCategory?: Partial<Record<Sku["category"], string>>;
@@ -424,6 +428,17 @@ export function buildCandidatePoolRows(input: {
       skipped += 1;
       invalidations.push({ pid, reason: "sku_low_volume_below_2d1_or_7d3" });
       continue;
+    }
+    // Wave 796 (2026-05-27): 당근 source 매물 — 같은 sku 당근 표본 < 3 차단.
+    //   owner 정책: 당근 안전결제 X + 직거래라 시세 정확도 최우선.
+    //   전체 표본 충분해도 당근 매물끼리 비교군 < 3 이면 시세 신뢰 부족.
+    if (row.source === 'daangn' && row.skuId && input.daangnVolumeBySku) {
+      const daangnVol = input.daangnVolumeBySku.get(row.skuId) ?? 0;
+      if (daangnVol < 3) {
+        skipped += 1;
+        invalidations.push({ pid, reason: "daangn_volume_below_3" });
+        continue;
+      }
     }
 
     // 2026-05-15: 200만원 이상 매물 풀 차단 (정책).
