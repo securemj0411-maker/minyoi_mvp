@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import daangnSearchRegionSeedsRaw from "@/lib/generated/daangn-search-region-seeds.json";
 
 export const DAANGN_SOURCE_ID = "daangn" as const;
 export const DAANGN_BASE_URL = "https://www.daangn.com";
@@ -44,6 +45,8 @@ export type DaangnRegionSeed = {
   name: string;
   id: string;
 };
+
+export const DAANGN_SEARCH_REGION_SEEDS = daangnSearchRegionSeedsRaw as DaangnRegionSeed[];
 
 export type DaangnCategorySeed = {
   name: string;
@@ -1062,7 +1065,7 @@ export async function probeDaangnPublicSource(options: DaangnProbeOptions = {}):
   const staleBoostedDays = options.staleBoostedDays ?? 21;
   const delayMs = options.delayMs ?? 650;
   const timeoutMs = options.timeoutMs ?? 10_000;
-  const regions = options.regions?.length ? options.regions : DEFAULT_DAANGN_REGION_SEEDS;
+  const regions = options.regions?.length ? options.regions : DAANGN_SEARCH_REGION_SEEDS;
   const categories = options.categories?.length ? options.categories : DAANGN_FASHION_CATEGORIES;
   const queries = options.queries?.length ? options.queries : DEFAULT_DAANGN_FASHION_QUERY_SEEDS;
   const maxCombos = Math.max(0, options.maxCombos ?? 18);

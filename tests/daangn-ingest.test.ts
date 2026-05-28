@@ -16,6 +16,7 @@ import {
   selectDaangnRegionShard,
 } from "../src/lib/daangn-ingest";
 import {
+  DAANGN_SEARCH_REGION_SEEDS,
   DAANGN_FASHION_CATEGORIES,
   DEFAULT_DAANGN_FASHION_QUERY_SEEDS,
   DEFAULT_DAANGN_REGION_SEEDS,
@@ -25,6 +26,23 @@ import {
   type DaangnDetailArticle,
   type DaangnSearchArticle,
 } from "../src/lib/daangn";
+
+describe("Daangn search region seeds", () => {
+  it("uses leaf dong/eup/myeon ids instead of gu/city representative ids", () => {
+    const ids = new Set(DAANGN_SEARCH_REGION_SEEDS.map((seed) => seed.id));
+    assert.ok(DAANGN_SEARCH_REGION_SEEDS.length > DEFAULT_DAANGN_REGION_SEEDS.length * 20);
+    assert.equal(ids.has("324"), false, "동작구 gu id resolves only to representative 사당동");
+    assert.equal(ids.has("381"), false, "강남구 gu id resolves only to representative 역삼동");
+    assert.equal(ids.has("362"), false, "서초구 gu id resolves only to representative 서초동");
+    assert.ok(ids.has("6091"), "사당동 leaf seed present");
+    assert.ok(ids.has("6092"), "상도1동 leaf seed present");
+    assert.ok(ids.has("6093"), "상도동 leaf seed present");
+    assert.ok(ids.has("6032"), "대치동 leaf seed present");
+    assert.ok(ids.has("6034"), "hidden 강남구 sibling 삼성동 seed present");
+    assert.ok(ids.has("6030"), "hidden 강남구 sibling 개포동 seed present");
+    assert.ok(ids.has("6127"), "방배동 leaf seed present");
+  });
+});
 
 function makeArticle(overrides: Partial<DaangnSearchArticle> = {}): DaangnSearchArticle {
   return {

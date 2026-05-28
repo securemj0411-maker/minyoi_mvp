@@ -30,6 +30,7 @@ import {
   DAANGN_BASE_URL,
   DAANGN_FASHION_CATEGORIES,
   DAANGN_SOURCE_ID,
+  DAANGN_SEARCH_REGION_SEEDS,
   DEFAULT_DAANGN_FASHION_QUERY_SEEDS,
   DEFAULT_DAANGN_REGION_SEEDS,
   buildDaangnSearchUrl,
@@ -1452,8 +1453,12 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   const tIngestStart = Date.now();
 
   // Region 기반 ingest (Phase 6g — 6e 전국 검색 가설 폐기).
+  // Wave 914 (2026-05-29): Daangn gu/city ids resolve to one representative dong
+  // (e.g. 동작구→사당동, 강남구→역삼동). Runtime ingest must use leaf dong/eup/myeon
+  // region ids discovered from Daangn's own region links, while DEFAULT_DAANGN_REGION_SEEDS
+  // stays available for home-region fallback and operator context.
   //   options.regions 으로 override 가능 (테스트/실험용).
-  const allRegions = options.regions ?? DEFAULT_DAANGN_REGION_SEEDS;
+  const allRegions = options.regions ?? DAANGN_SEARCH_REGION_SEEDS;
   const regions = selectDaangnRegionShard(allRegions, regionShardCount, regionShardIndex);
 
   // Phase 6i: Region firehose 모드 default ON.

@@ -1,7 +1,7 @@
 // Wave 773 (2026-05-27): Kakao reverse geocode 결과 → Daangn region seed 매핑.
 //   사용자가 "서울특별시 서초구 서초동" 거주자면 Daangn 매물 region 중 같은 시도 매물 우선.
 //   매핑 방법:
-//     1. region_parents.json (Wave 772) 에서 user's full_path 와 정확히 매칭되는 region_id 찾기.
+//     1. region_parents.json (Wave 914) 에서 user's full_path 와 정확히 매칭되는 region_id 찾기.
 //     2. 없으면 DEFAULT_DAANGN_REGION_SEEDS 에서 시군구 seed 를 찾되, 표시 full_path 는 Kakao 원문 유지.
 //   중요: 같은 구의 "첫 번째 동"으로 대체하면 상도1동 → 사당동처럼 사용자 확인값이 바뀐다.
 
@@ -24,7 +24,7 @@ export function matchDaangnRegionByPath(fullPath: string): DaangnRegionMatch | n
   const path = normalizeRegionPath(fullPath);
   const parts = path.split(" ").filter(Boolean);
 
-  // 1. 정확 동·읍·면 매칭 (Wave 772 JSON map)
+  // 1. 정확 동·읍·면 매칭 (Wave 914 leaf JSON map)
   for (const [id, mappedPath] of Object.entries(REGION_PARENTS)) {
     if (normalizeRegionPath(mappedPath) === path) {
       // 동 이름 추출 (마지막 word)
@@ -75,13 +75,13 @@ function findAreaSeed(parts: string[]) {
 }
 
 /**
- * 검색용: 270 region seed list (시군구 단위) + region_parents.json (동 단위) 합쳐서 dropdown options.
+ * 검색용: leaf region map + legacy area seed list 를 합쳐서 dropdown options.
  */
 export function listAllDaangnRegions(): DaangnRegionMatch[] {
   const seedSet = new Set<string>();
   const out: DaangnRegionMatch[] = [];
 
-  // region_parents.json 에 있는 동 단위 (218개) — 가장 자세함.
+  // region_parents.json 에 있는 동·읍·면 단위 — 가장 자세함.
   for (const [id, mappedPath] of Object.entries(REGION_PARENTS)) {
     const dongName = mappedPath.split(" ").pop() ?? "";
     out.push({

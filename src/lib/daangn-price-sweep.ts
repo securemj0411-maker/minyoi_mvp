@@ -16,6 +16,7 @@ import {
 import {
   DAANGN_BASE_URL,
   DAANGN_SOURCE_ID,
+  DAANGN_SEARCH_REGION_SEEDS,
   DEFAULT_DAANGN_REGION_SEEDS,
   buildDaangnSearchUrl,
   daangnInternalPid,
@@ -739,7 +740,8 @@ export async function runDaangnPriceSweep(options: DaangnPriceSweepOptions = {})
   const dryRun = options.dryRun ?? false;
   const targetSamples = toPositiveInt(options.targetSamples, DEFAULT_TARGET_SAMPLES, 1, 50);
   const maxSkus = toPositiveInt(options.maxSkus, DEFAULT_MAX_SKUS, 1, 500);
-  const maxRegions = toPositiveInt(options.maxRegions, DEFAULT_MAX_REGIONS, 1, DEFAULT_DAANGN_REGION_SEEDS.length);
+  const searchRegionSeeds = DAANGN_SEARCH_REGION_SEEDS.length > 0 ? DAANGN_SEARCH_REGION_SEEDS : DEFAULT_DAANGN_REGION_SEEDS;
+  const maxRegions = toPositiveInt(options.maxRegions, DEFAULT_MAX_REGIONS, 1, searchRegionSeeds.length);
   const maxSearchCombos = toPositiveInt(options.maxSearchCombos, DEFAULT_MAX_SEARCH_COMBOS, 0, 2000);
   const maxCategoryCombos = toPositiveInt(options.maxCategoryCombos, DEFAULT_MAX_CATEGORY_COMBOS, 0, 2000);
   const maxDetailFetches = toPositiveInt(options.maxDetailFetches, DEFAULT_MAX_DETAIL_FETCHES, 0, 1000);
@@ -747,7 +749,7 @@ export async function runDaangnPriceSweep(options: DaangnPriceSweepOptions = {})
   const detailConcurrency = toPositiveInt(options.detailConcurrency, DEFAULT_DETAIL_CONCURRENCY, 1, 50);
   const requestDelayMs = toPositiveInt(options.requestDelayMs, DEFAULT_REQUEST_DELAY_MS, 0, 30_000);
   const abortOnBlockedCombo = options.abortOnBlockedCombo ?? true;
-  const regionRotationOffset = toPositiveInt(options.regionRotationOffset, 0, 0, DEFAULT_DAANGN_REGION_SEEDS.length - 1);
+  const regionRotationOffset = toPositiveInt(options.regionRotationOffset, 0, 0, searchRegionSeeds.length - 1);
   const timeoutMs = toPositiveInt(options.timeoutMs, DEFAULT_TIMEOUT_MS, 1000, 30_000);
 
   if (mode === "off") {
@@ -806,12 +808,12 @@ export async function runDaangnPriceSweep(options: DaangnPriceSweepOptions = {})
   const rotationSeed = Math.floor((options.now?.getTime() ?? Date.now()) / (30 * 60_000));
   const targets = buildTargets(readySkus, counts, pressureBySku, targetSamples, maxSkus, rotationSeed);
   const targetMap = new Map(targets.map((target) => [target.sku.id, target]));
-  const regionOffset = maxRegions >= DEFAULT_DAANGN_REGION_SEEDS.length
+  const regionOffset = maxRegions >= searchRegionSeeds.length
     ? 0
-    : ((rotationSeed * maxRegions) + regionRotationOffset) % DEFAULT_DAANGN_REGION_SEEDS.length;
+    : ((rotationSeed * maxRegions) + regionRotationOffset) % searchRegionSeeds.length;
   const rotatedRegions = [
-    ...DEFAULT_DAANGN_REGION_SEEDS.slice(regionOffset),
-    ...DEFAULT_DAANGN_REGION_SEEDS.slice(0, regionOffset),
+    ...searchRegionSeeds.slice(regionOffset),
+    ...searchRegionSeeds.slice(0, regionOffset),
   ];
   const regions = rotatedRegions.slice(0, maxRegions);
   const { searchCombos, categoryCombos } = buildSweepCombos(targets, regions, maxSearchCombos, maxCategoryCombos);
