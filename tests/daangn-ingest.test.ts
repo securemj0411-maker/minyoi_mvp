@@ -41,6 +41,8 @@ describe("Daangn search region seeds", () => {
     assert.ok(ids.has("6034"), "hidden 강남구 sibling 삼성동 seed present");
     assert.ok(ids.has("6030"), "hidden 강남구 sibling 개포동 seed present");
     assert.ok(ids.has("6127"), "방배동 leaf seed present");
+    assert.ok(ids.has("1243"), "세종 조치원읍 seed present");
+    assert.ok(ids.has("4153"), "세종 종촌동 seed present");
   });
 });
 
