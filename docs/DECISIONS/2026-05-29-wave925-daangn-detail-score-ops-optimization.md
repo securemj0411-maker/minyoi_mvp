@@ -54,7 +54,28 @@ Indexes prepared for:
 - Daangn active SKU + `first_seen_at`
 - candidate pool ready/invalidated time-window stats
 
-Important: migration file was created but not applied to production in this wave. Applying indexes on the enlarged raw table should be done intentionally because it can add DB load while building.
+Initial note: migration file was created first, then production indexes were applied manually with `CREATE INDEX CONCURRENTLY` one by one after checking table size and existing indexes.
+
+Production table check before apply:
+
+- `mvp_raw_listings`: about `678k` estimated rows / `1674 MB`
+- `mvp_candidate_pool`: about `9k` estimated rows / `5312 kB`
+- none of the eight prepared indexes existed yet
+
+Production apply result:
+
+| index | result | duration |
+| --- | --- | --- |
+| `mvp_raw_active_sku_first_seen_idx` | ok | 21.0s |
+| `mvp_raw_daangn_active_sku_first_seen_idx` | ok | 21.1s |
+| `mvp_raw_daangn_last_seen_idx` | ok | 20.6s |
+| `mvp_raw_daangn_first_seen_idx` | ok | 20.0s |
+| `mvp_raw_daangn_created_at_idx` | ok | 23.3s |
+| `mvp_raw_daangn_region_last_seen_idx` | ok | 19.7s |
+| `mvp_candidate_pool_ready_added_idx` | ok | 0.1s |
+| `mvp_candidate_pool_invalidated_updated_idx` | ok | 0.1s |
+
+The migration remains in repo so future schema deploys have the same index definitions; because indexes already exist, the migration's `if not exists` statements should be no-ops if applied later.
 
 ## Verification
 
@@ -73,7 +94,6 @@ Known build warnings remain unrelated:
 
 ## Deferred
 
-- Production DB index application. Need explicit deploy/apply timing because raw table is large.
 - Post-apply measurement of:
   - Daangn detail worker A/B/C actual runs
   - `daangn_manner_temperature_missing` invalidation drop
@@ -98,3 +118,15 @@ Fix:
 - Allow `daangn_detail_worker_c` for `CRON_PROJECT_ROLE=daangn_c`.
 
 Expected effect: the previous 3-shard detail worker change can actually run across all A/B/C projects instead of silently staying A-only.
+
+Post-fix verification:
+
+- A shard: `daangn_detail_worker_a`, shard `0/3`, `selected=100`, `patched=99`, `blocked=false`.
+- B shard: `daangn_detail_worker_b`, shard `1/3`, `selected=100`, `patched=88`, `blocked=false`.
+- C shard: `daangn_detail_worker_c`, shard `2/3`, `selected=100`, `patched=100`, `blocked=false`.
+- Index existence verified after production apply; all eight indexes exist.
+- Current ready pool after the fix/checkpoint:
+  - Daangn `942`
+  - Bunjang `865`
+  - Joongna `112`
+  - last 1h ready additions: Daangn `144`, Bunjang `3`, Joongna `1`
