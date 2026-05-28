@@ -53,6 +53,26 @@ describe("earphone condition evidence shadow parser", () => {
     assert.ok(!result.signals.includes("audio_output_issue"));
   });
 
+  it("음질/소리 문제 없음 표현은 audio issue로 오탐하지 않는다", () => {
+    assert.ok(!signals("에어팟 맥스 8핀", "음질이나 문제 전혀 없습니다.").includes("audio_output_issue"));
+    assert.ok(!signals("에어팟 3세대 풀박스", "외관하자 거의 없고 음질 문제 아예 없습니다.").includes("audio_output_issue"));
+    assert.ok(!signals("갤럭시 버즈 라이브", "음질 좋고 깨끗합니다.").includes("audio_output_issue"));
+  });
+
+  it("노캔 잘됨/문제없음 표현은 ANC issue로 오탐하지 않는다", () => {
+    const result = parseEarphoneConditionEvidence({
+      title: "애플 에어팟 프로 1세대",
+      description: "노이즈캔슬링 잘되고 풀충전하면 오래가요. 사용시에 문제없고 생활기스만 있습니다.",
+    });
+
+    assert.ok(!result.signals.includes("anc_or_transparency_issue"));
+  });
+
+  it("깨끗한 상태 표현은 physical damage로 오탐하지 않는다", () => {
+    assert.ok(!signals("에어팟 프로2 풀박스", "외관 상태 깨끗하고 생활미세기스 약간 있습니다.").includes("physical_damage"));
+    assert.ok(!signals("에어팟 4세대", "본체와 충전 케이스 모두 깨끗한 상태에요.").includes("physical_damage"));
+  });
+
   it("한쪽 유닛 분실은 single_side_unit으로 남긴다", () => {
     assert.ok(signals("에어팟 프로 2", "왼쪽 잃어버려서 없습니다. 오른쪽만 사용 가능.").includes("single_side_unit"));
   });
