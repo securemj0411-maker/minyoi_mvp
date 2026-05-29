@@ -3540,6 +3540,7 @@ function sourceWorkerFailureMinFailed(mode: string) {
 
 function workerFailureAlerts(
   workerBreakdown: Map<string, { total: number; failed: number; collected: number; enriched: number }>,
+  recoveryByMode: Map<string, { latestStatus: string; successStreak: number }> = new Map(),
 ): OperationalAlert[] {
   const labels: Record<string, string> = {
     tick: "Tick",
@@ -3561,6 +3562,8 @@ function workerFailureAlerts(
           ? "warning"
           : null;
       if (!severity) return null;
+      const recovery = recoveryByMode.get(mode);
+      if (recovery?.latestStatus === "succeeded" && recovery.successStreak >= 2) return null;
       return {
         key: `${mode}_failure_rate_${severity}`,
         severity: severity as "critical" | "warning",
@@ -3577,6 +3580,25 @@ function workerFailureAlerts(
       const severityOrder = { critical: 0, warning: 1 };
       return severityOrder[a.severity] - severityOrder[b.severity] || b.failureRate - a.failureRate;
     });
+}
+
+function workerRecoveryByMode(rows: CollectRunHealthRow[]) {
+  const result = new Map<string, { latestStatus: string; successStreak: number }>();
+  for (const row of rows) {
+    const mode = runMode(row);
+    if (!mode || result.has(mode)) continue;
+    result.set(mode, { latestStatus: row.status, successStreak: 0 });
+  }
+  for (const [mode, state] of result.entries()) {
+    let streak = 0;
+    for (const row of rows) {
+      if (runMode(row) !== mode) continue;
+      if (row.status !== "succeeded") break;
+      streak += 1;
+    }
+    state.successStreak = streak;
+  }
+  return result;
 }
 
 function previousOperationalAlerts(previous: SourceHealthRow | null): OperationalAlert[] {
@@ -3830,7 +3852,8 @@ export async function sourceHealthStage(): Promise<StageStats> {
     dominantSearchFailureMode,
     workerBreakdown,
   });
-  const operationalAlerts = workerFailureAlerts(workerBreakdown);
+  const recoveryByMode = workerRecoveryByMode(rows);
+  const operationalAlerts = workerFailureAlerts(workerBreakdown, recoveryByMode);
   const hysteresis = applySourceHealthHysteresis(proposed, previous);
   const now = new Date().toISOString();
   const notification = await notifyOperationalAlerts({

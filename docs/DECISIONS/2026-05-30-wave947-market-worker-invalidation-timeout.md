@@ -94,6 +94,16 @@ Decision:
 
 This keeps the worker alive immediately and gives Postgres the right index for the hot path once the migration is applied.
 
+## Follow-up: recovered-worker alert suppression
+
+Source health still showed a `market_worker_failure_rate_critical` operational alert after the worker had recovered, because the 120-minute health window retained old failures.
+
+Decision:
+
+- Keep the 120-minute source-health window for status hysteresis.
+- Suppress worker failure alerts when the latest runs for that worker have recovered with at least two consecutive successes.
+- This removes stale alert noise while still leaving real recurring failures visible.
+
 ## Deferred
 
 - If single-key rescue still leaves a permanent pending-key tail, add per-key attempt/error tracking or a stale-key quarantine policy.
