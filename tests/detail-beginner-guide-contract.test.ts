@@ -293,8 +293,21 @@ test("market source API trims price outliers before returning display comparable
   assert.match(route, /trimmed\.removed <= 0/);
   assert.match(route, /minAllowed/);
   assert.match(route, /maxAllowed/);
-  assert.match(route, /const displayRows = trimComparableOutlierRows\(safeRows\)/);
+  assert.match(route, /const displayRows = trimComparableDisplayRows\(dedupedBySeller, displayMarketBasis\)/);
   assert.match(route, /comparables = displayRows\.map/);
+});
+
+test("market source API uses hard condition chips for visible comparison proof", () => {
+  const route = source("src/app/api/listings/[pid]/market-source/route.ts");
+
+  assert.match(route, /hardSplitChipSignature, shouldUseExactHardChipComparison/);
+  assert.match(route, /const targetConditionChips = mergeConditionDisplayChips/);
+  assert.match(route, /const targetHardChipSignature = hardSplitChipSignature\(targetConditionChips\)/);
+  assert.match(route, /const hardSignatureByPid = new Map<number, string>/);
+  assert.match(route, /const exactHardChipGate = targetHardChipSignature/);
+  assert.match(route, /shouldUseExactHardChipComparison/);
+  assert.match(route, /if \(!targetHardChipSignature && rowHardSignature\)/);
+  assert.match(route, /targetHardChipSignature && exactHardChipGate\?\.ok && rowHardSignature !== targetHardChipSignature/);
 });
 
 test("AirPods Max does not inherit generic earphone battery or counterfeit prompts", () => {

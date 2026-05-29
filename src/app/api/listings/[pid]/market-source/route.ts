@@ -15,6 +15,7 @@ import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
 import { mergeConditionDisplayChips } from "@/lib/condition-display";
+import { hardSplitChipSignature, shouldUseExactHardChipComparison } from "@/lib/condition-chip-policy";
 import { madTrim } from "@/lib/market-math";
 
 export const runtime = "nodejs";
@@ -156,6 +157,11 @@ export async function GET(
     //   본 매물 parsed_json.clothing_product_type 와 같은 type 만 표시. null/type_unknown 이면 필터 안 함 (보수).
     const targetParsedJson = (parsed?.parsed_json as Record<string, unknown> | null) ?? null;
     const targetProductType = (targetParsedJson?.clothing_product_type as string | null) ?? null;
+    const ourGrade = (targetParsedJson?.condition_grade as { chips?: string[] } | null) ?? null;
+    const targetParsedJsonNotes = targetParsedJson?.condition_notes as string[] | undefined;
+    const targetConditionNotes = (parsed?.condition_notes as string[] | null | undefined) ?? targetParsedJsonNotes ?? null;
+    const targetConditionChips = mergeConditionDisplayChips(ourGrade?.chips ?? null, targetConditionNotes);
+    const targetHardChipSignature = hardSplitChipSignature(targetConditionChips);
 
     const ourMarketplaceSource = normalizeMarketplaceSource((raw?.source as string | null) ?? (raw?.seller_source as string | null));
 
@@ -262,6 +268,10 @@ export async function GET(
         }
         const riskByPid = new Map(analysisRows.map((r) => [Number(r.pid), Number(r.risk_hits ?? 0)]));
         const excludeByPid = new Map<number, boolean>();
+        const hardSignatureByPid = new Map<number, string>();
+        for (const p of parsedRowsForCond) {
+          hardSignatureByPid.set(Number(p.pid), hardSplitChipSignature(gradingByPid.get(Number(p.pid))?.chips ?? []));
+        }
         const strictConditionSampleCount = conditionClass == null
           ? 0
           : parsedRowsForCond.filter((p) => p.condition_class === conditionClass).length;
@@ -319,6 +329,26 @@ export async function GET(
             continue;
           }
           excludeByPid.set(Number(p.pid), false);
+        }
+        const baseAllowedParsedRows = parsedRowsForCond.filter((p) => excludeByPid.get(Number(p.pid)) !== true);
+        const exactHardChipGate = targetHardChipSignature
+          ? shouldUseExactHardChipComparison({
+            sameConditionSamples: baseAllowedParsedRows.length,
+            sameHardChipSamples: baseAllowedParsedRows.filter((p) => hardSignatureByPid.get(Number(p.pid)) === targetHardChipSignature).length,
+          })
+          : null;
+        for (const p of baseAllowedParsedRows) {
+          const rowPid = Number(p.pid);
+          const rowHardSignature = hardSignatureByPid.get(rowPid) ?? "";
+          // Definite defect/lock/parts-only chips should not be visible proof for a clean target.
+          if (!targetHardChipSignature && rowHardSignature) {
+            excludeByPid.set(rowPid, true);
+            continue;
+          }
+          // If the hard-chip slice has enough density, keep the visible proof in that exact slice.
+          if (targetHardChipSignature && exactHardChipGate?.ok && rowHardSignature !== targetHardChipSignature) {
+            excludeByPid.set(rowPid, true);
+          }
         }
         const safeRows = rawRows.filter((r) => {
           const pid = Number(r.pid);
@@ -405,11 +435,6 @@ export async function GET(
     } : null;
 
     const ourListingUrl = listingUrlForSource(pid, raw?.url as string | null, ourMarketplaceSource);
-
-    // Wave 714d (2026-05-23): 본 매물 grading + chips (신발/의류).
-    const ourGrade = (targetParsedJson?.condition_grade as { chips?: string[] } | null) ?? null;
-    const targetParsedJsonNotes = targetParsedJson?.condition_notes as string[] | undefined;
-    const targetConditionNotes = (parsed?.condition_notes as string[] | null | undefined) ?? targetParsedJsonNotes ?? null;
     return NextResponse.json({
       ourListing: {
         pid,
@@ -425,7 +450,7 @@ export async function GET(
         conditionCluster: (parsed?.condition_cluster as string | null) ?? null,
         conditionConfidence: (parsed?.condition_confidence as number | null) ?? null,
         conditionFlags: (parsed?.condition_flags as Record<string, unknown> | null) ?? null,
-        conditionChips: mergeConditionDisplayChips(ourGrade?.chips ?? null, targetConditionNotes),
+        conditionChips: targetConditionChips,
         displayMarketPrice: displayMarketBasis?.medianPrice ?? null,
         marketPriceSource: displayMarketBasis?.priceSource ?? "market",
         marketPriceLabel: displayMarketBasis?.priceSource === "reference"
