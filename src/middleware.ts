@@ -17,6 +17,7 @@ const DAANGN_WORKER_ONLY_CRON_PATHS: Record<string, Set<string>> = {
   ]),
   daangn_c: new Set([
     "/api/cron/daangn-worker-c",
+    "/api/cron/score-worker-c",
     "/api/cron/daangn-detail-worker",
   ]),
 };
