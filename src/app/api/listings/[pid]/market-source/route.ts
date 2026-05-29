@@ -14,6 +14,7 @@ import { checkRateLimit, clientIpKey } from "@/lib/rate-limit";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
+import { mergeConditionDisplayChips } from "@/lib/condition-display";
 import { madTrim } from "@/lib/market-math";
 
 export const runtime = "nodejs";
@@ -124,7 +125,7 @@ export async function GET(
         // Wave 130 (2026-05-16): condition_class 추가 — 시세 stats를 매칭 condition으로 조회.
         // Wave 251.4 (2026-05-19): parsed_json 추가 — clothing_product_type 비교군 필터용.
         // Wave 714d (2026-05-23): 신발/의류 5-tier grading column 추가 — UI chip 노출용.
-        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class,parsed_json,condition_tier,condition_cluster,condition_confidence,condition_flags&pid=eq.${pid}`,
+        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class,condition_notes,parsed_json,condition_tier,condition_cluster,condition_confidence,condition_flags&pid=eq.${pid}`,
         { headers: serviceHeaders() },
       ),
       restFetch(
@@ -224,7 +225,7 @@ export async function GET(
           ),
           restFetch(
             // Wave 714d (2026-05-23): 비교군 sample 에도 5-tier grading + chips 노출.
-            `${tableUrl("mvp_listing_parsed")}?select=pid,parsed_json,condition_class,condition_tier,condition_cluster,condition_confidence,condition_flags&pid=in.(${sameKeyPids.join(",")})`,
+            `${tableUrl("mvp_listing_parsed")}?select=pid,parsed_json,condition_class,condition_notes,condition_tier,condition_cluster,condition_confidence,condition_flags&pid=in.(${sameKeyPids.join(",")})`,
             { headers: serviceHeaders() },
           ),
         ]);
@@ -234,6 +235,7 @@ export async function GET(
           pid: number;
           parsed_json: Record<string, unknown> | null;
           condition_class: string | null;
+          condition_notes?: string[] | null;
           condition_tier?: string | null;
           condition_cluster?: string | null;
           condition_confidence?: number | null;
@@ -249,12 +251,13 @@ export async function GET(
         }>();
         for (const p of parsedRowsForCond) {
           const grade = (p.parsed_json?.condition_grade as { chips?: string[] } | null) ?? null;
+          const parsedJsonNotes = p.parsed_json?.condition_notes as string[] | undefined;
           gradingByPid.set(Number(p.pid), {
             tier: p.condition_tier ?? null,
             cluster: p.condition_cluster ?? null,
             confidence: p.condition_confidence ?? null,
             flags: p.condition_flags ?? null,
-            chips: grade?.chips ?? null,
+            chips: mergeConditionDisplayChips(grade?.chips ?? null, p.condition_notes ?? parsedJsonNotes ?? null),
           });
         }
         const riskByPid = new Map(analysisRows.map((r) => [Number(r.pid), Number(r.risk_hits ?? 0)]));
@@ -271,7 +274,8 @@ export async function GET(
         // Wave 896: 같은 상태 표본이 5개 이상 있으면 condition_class null 옛 row도 제외한다.
         //   "SSS급" 같은 제목이 null로 남아 target worn 라벨을 달고 보이는 신뢰 손상을 막는다.
         for (const p of parsedRowsForCond) {
-          const notes = (p.parsed_json?.condition_notes as string[] | undefined) ?? [];
+          const parsedJsonNotes = p.parsed_json?.condition_notes as string[] | undefined;
+          const notes = p.condition_notes ?? parsedJsonNotes ?? [];
           if (COMPARABLE_EXCLUDE_NOTES.some((n) => notes.includes(n))) {
             excludeByPid.set(Number(p.pid), true);
             continue;
@@ -404,6 +408,8 @@ export async function GET(
 
     // Wave 714d (2026-05-23): 본 매물 grading + chips (신발/의류).
     const ourGrade = (targetParsedJson?.condition_grade as { chips?: string[] } | null) ?? null;
+    const targetParsedJsonNotes = targetParsedJson?.condition_notes as string[] | undefined;
+    const targetConditionNotes = (parsed?.condition_notes as string[] | null | undefined) ?? targetParsedJsonNotes ?? null;
     return NextResponse.json({
       ourListing: {
         pid,
@@ -419,7 +425,7 @@ export async function GET(
         conditionCluster: (parsed?.condition_cluster as string | null) ?? null,
         conditionConfidence: (parsed?.condition_confidence as number | null) ?? null,
         conditionFlags: (parsed?.condition_flags as Record<string, unknown> | null) ?? null,
-        conditionChips: ourGrade?.chips ?? null,
+        conditionChips: mergeConditionDisplayChips(ourGrade?.chips ?? null, targetConditionNotes),
         displayMarketPrice: displayMarketBasis?.medianPrice ?? null,
         marketPriceSource: displayMarketBasis?.priceSource ?? "market",
         marketPriceLabel: displayMarketBasis?.priceSource === "reference"

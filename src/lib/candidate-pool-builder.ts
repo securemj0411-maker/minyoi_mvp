@@ -161,6 +161,7 @@ export type PoolParsedInput = {
   parse_confidence: number | null;
   needs_review: boolean | null;
   parsed_json?: Record<string, unknown> | null;
+  condition_notes?: string[] | null;
   // Wave 130 (2026-05-16): condition_class — pool entry에 박아서 시세/profit 계산 시 조회.
   condition_class?: string | null;
 };
@@ -656,7 +657,9 @@ export function buildCandidatePoolRows(input: {
     // 진짜 풀 차단해야 할 것:
     //   - multi_device_bundle (양쪽 카테고리 어느 쪽과도 비교 불가)
     //   - display_defect / screen_replaced / faceid_issue (사용자가 사면 명확한 손해)
-    const preCheckNotes = (parsed?.parsed_json?.condition_notes as string[] | undefined) ?? [];
+    const parsedJsonNotes = (parsed?.parsed_json?.condition_notes as string[] | undefined) ?? [];
+    const columnNotes = parsed?.condition_notes ?? [];
+    const preCheckNotes = [...new Set([...columnNotes, ...parsedJsonNotes])];
     // 2026-05-17 v46 cleanup: POOL_BLOCK_NOTES 가 condition-policy.ts 단일 source 로 옮김 (drift 차단).
     // 정책: FLAWED 중 "사용자 손해 명확" 5종 subset. 나머지 FLAWED 는 시세 sample 차단 자체로 score 0 → 자연 차단.
     const noteHit = POOL_BLOCK_NOTES.find((n) => preCheckNotes.includes(n));
