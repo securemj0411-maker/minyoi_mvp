@@ -53,4 +53,27 @@ describe("condition display chips", () => {
       ["condition:camera_lens_damage"],
     );
   });
+
+  it("fashion historical sweep condition_notes를 사용자 노출 chip key로 변환한다", () => {
+    assert.deepEqual(
+      conditionNoteDisplayChips([
+        "shoe_upper_structural_damage",
+        "shoe_hygiene_warning",
+        "bag_stain_or_discoloration",
+        "bag_lining_damage",
+        "bag_leather_damage",
+        "bag_handle_worn",
+        "bag_corner_worn",
+      ]),
+      [
+        "condition:shoe_upper_damage",
+        "condition:fashion_hygiene_warning",
+        "condition:fashion_stain_or_discoloration",
+        "condition:bag_lining_damage",
+        "condition:bag_leather_damage",
+        "condition:bag_handle_worn",
+        "condition:bag_corner_worn",
+      ],
+    );
+  });
 });

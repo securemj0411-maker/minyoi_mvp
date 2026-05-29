@@ -13,6 +13,10 @@ describe("condition chip policy taxonomy", () => {
     assert.equal(classifyConditionChip("condition:display_defect"), "hard_split");
     assert.equal(classifyConditionChip("condition:repair_or_defect_signal"), "soft_adjustment");
     assert.equal(classifyConditionChip("condition:fashion_stain_or_discoloration"), "soft_adjustment");
+    assert.equal(classifyConditionChip("condition:fashion_hygiene_warning"), "soft_adjustment");
+    assert.equal(classifyConditionChip("condition:shoe_upper_damage"), "hard_split");
+    assert.equal(classifyConditionChip("condition:bag_lining_damage"), "hard_split");
+    assert.equal(classifyConditionChip("condition:bag_handle_worn"), "soft_adjustment");
     assert.equal(classifyConditionChip("wear:unworn"), "premium_signal");
     assert.equal(classifyConditionChip("unknown:future_chip"), "neutral");
   });

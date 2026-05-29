@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { skuById } from "@/lib/catalog";
+import { skuById, type Sku } from "@/lib/catalog";
 import { parseListingOptions } from "@/lib/option-parser";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
@@ -18,9 +18,12 @@ const LOW_SIGNAL_NOTES = new Set([
 	  "shoe_sole_crumbling",
 	  "shoe_hydrolysis",
 	  "shoe_stain_or_discoloration",
+  "shoe_hygiene_warning",
+  "shoe_upper_structural_damage",
 	  "shoe_insole_missing",
   "shoe_heel_worn_severe",
   "shoe_sole_separation",
+  "bag_stain_or_discoloration",
   "bag_lining_damage",
   "bag_leather_damage",
   "bag_handle_worn",
@@ -158,6 +161,22 @@ async function fetchParsedRows(pids: number[]) {
   return rows;
 }
 
+async function fetchParsedCategoryRows(category: string, limit: number, pageSize: number, orderBy: string | null) {
+  const rows: ParsedRow[] = [];
+  const safePageSize = Math.max(50, Math.min(1000, pageSize));
+  const select = "pid,parser_version,category,comparable_key,condition_class,condition_tier";
+  const orderClause = orderBy ? `&order=${encodeURIComponent(orderBy)}` : "";
+  for (let offset = 0; rows.length < limit; offset += safePageSize) {
+    const pageLimit = Math.min(safePageSize, limit - rows.length);
+    const page = await fetchJson<ParsedRow>(
+      `${tableUrl("mvp_listing_parsed")}?select=${select}&category=eq.${encodeURIComponent(category)}${orderClause}&limit=${pageLimit}&offset=${offset}`,
+    );
+    rows.push(...page.map((row) => ({ ...row, parsed_json: null })));
+    if (page.length < pageLimit) break;
+  }
+  return rows;
+}
+
 function norm(text: string) {
   return text
     .normalize("NFKC")
@@ -172,18 +191,20 @@ function hasNegated(text: string, tokenPattern: string) {
 }
 
 function isDisclaimer(text: string) {
-  return /중고\s*(?:거래|상품?|제품|의류)?\s*특성상|빈티지\s*특성상|미처\s*발견하지\s*못한|발견하지\s*못한\s*(?:오염|얼룩|기스)|미세한\s*(?:오염|얼룩|기스|사용감).{0,18}(?:있을\s*수|있을수)|사진에서\s*확인|예민하신\s*분/.test(text);
+  return /중고\s*(?:거래|상품?|제품|의류)?\s*특성상|빈티지\s*특성상|미처\s*발견(?:하지\s*)?못한|발견\s*못한\s*(?:하자|오염|얼룩|기스|이염)|미세한\s*(?:오염|얼룩|기스|사용감).{0,18}(?:있을\s*수|있을수)|하자\s*,?\s*이염.{0,24}(?:사진|확인)|사진에서\s*확인|예민하신\s*분/.test(text);
 }
 
 function learnedFashionFlags(rawText: string, category: string | null | undefined) {
   const text = norm(rawText);
   const flags: string[] = [];
   const disclaimer = isDisclaimer(text);
+  const packageDamageOnly = /(?:박스|속포장지|포장지|더스트백|쇼핑백|가방).{0,24}(?:찢|터짐|터진|뜯|튿|깨짐|깨진)|(?:찢|터짐|터진|뜯|튿|깨짐|깨진).{0,24}(?:박스|속포장지|포장지|더스트백|쇼핑백|가방)/.test(text);
+  const packageStainOnly = /(?:박스|속포장지|포장지).{0,18}(?:오염|얼룩|이염|변색|황변)|(?:오염|얼룩|이염|변색|황변).{0,18}(?:박스|속포장지|포장지)|(?:오염|얼룩|이염|변색|황변)\s*(?:도\s*)?아니|변색\s*위험/.test(text);
 
-  if (!hasNegated(text, "(?:찢어짐|찢김|구멍|터짐|해짐|헤짐|뜯김|봉제|박음질|수선|보강)") && /찢어(?:짐|졌|진)|찢김|구멍\s*(?:있|있음|남|나|작)|터짐|뜯김|뜯어짐|봉제\s*(?:풀|터|뜯)|박음질\s*(?:풀|터|뜯)|수선\s*(?:필요|해야|요망)|보강\s*(?:필요|해야)/.test(text)) {
+  if (!packageDamageOnly && !hasNegated(text, "(?:찢어진|찢어짐|찢김|구멍|터짐|터진|해짐|헤짐|뜯김|뜯어짐|튿어짐|튿어진|깨짐|봉제|박음질|수선|보강)") && /찢어(?:짐|졌|진)|찢김|구멍\s*(?:있|있음|남|나|작)|터짐|터진|뜯김|뜯어짐|튿어짐|튿어진|깨짐|봉제\s*(?:풀|터|뜯)|박음질\s*(?:풀|터|뜯)|수선\s*(?:필요|해야|요망)|보강\s*(?:필요|해야)/.test(text)) {
     flags.push("learned_structural_damage");
   }
-  if (!hasNegated(text, "(?:이염|오염|얼룩|생활오염|황변|변색|색\\s*바램|색바램|색\\s*빠짐)") && !disclaimer && /이염|오염\s*(?:있|심|많|살짝|조금)|생활\s*오염|얼룩\s*(?:있|심|많|살짝|조금|크)|황변|변색|색\s*바램|색바램|색\s*빠짐/.test(text)) {
+  if (!packageStainOnly && !hasNegated(text, "(?:이염|오염|얼룩|생활오염|황변|변색|색\\s*바램|색바램|색\\s*빠짐)") && !disclaimer && /이염|오염\s*(?:있|심|많|살짝|조금)|생활\s*오염|얼룩\s*(?:있|심|많|살짝|조금|크)|황변|변색|색\s*바램|색바램|색\s*빠짐/.test(text)) {
     flags.push("learned_stain_or_discoloration");
   }
   if (!hasNegated(text, "(?:곰팡이|냄새|악취|담배)") && /곰팡이|악취|냄새\s*(?:있|남|심)|담배\s*냄새/.test(text)) {
@@ -260,17 +281,16 @@ function summarize(pool: PoolRow[], rawByPid: Map<number, RawRow>, parsedByPid: 
     const currentSku = raw.sku_id ? skuById(raw.sku_id) ?? null : null;
     const category = currentSku?.category ?? poolRow.category;
     if (!FASHION_CATEGORIES.has(category ?? "")) continue;
-    const current = currentSku
-      ? parseListingOptions({
-          title: raw.name ?? "",
-          description: raw.description_preview ?? "",
-          skuId: currentSku.id,
-          skuName: currentSku.modelName,
-          category: currentSku.category,
-          bunjangConditionLabel: raw.bunjang_condition_label,
-          defaultProductType: currentSku.defaultProductType ?? null,
-        })
-      : null;
+    const parseCategory = (currentSku?.category ?? category) as Sku["category"];
+    const current = parseListingOptions({
+      title: raw.name ?? "",
+      description: raw.description_preview ?? "",
+      skuId: currentSku?.id ?? raw.sku_id,
+      skuName: currentSku?.modelName ?? raw.sku_name,
+      category: parseCategory,
+      bunjangConditionLabel: raw.bunjang_condition_label,
+      defaultProductType: currentSku?.defaultProductType ?? null,
+    });
     const text = `${raw.name ?? ""}\n${raw.description_preview ?? ""}`;
     const learnedFlags = learnedFashionFlags(text, category);
     const currentTier = tierFromCurrentParse(current);
@@ -357,12 +377,36 @@ async function main() {
 
   const categories = arg("categories", "shoe,clothing,bag").split(",").map((item) => item.trim()).filter((item) => FASHION_CATEGORIES.has(item));
   const statuses = arg("statuses", "ready,reserved");
+  const scope = arg("scope", "pool");
   const limit = Number(arg("limit", "5000"));
-  const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,status,category,comparable_key,expected_profit_min,expected_profit_max,last_verified_at&category=in.(${categories.join(",")})&status=in.(${statuses})`;
-  const poolRows = await fetchAll<PoolRow>(poolUrl, limit, "last_verified_at.desc.nullslast");
+  const perCategoryLimit = Number(arg("per-category-limit", String(limit)));
+  const pageSize = Number(arg("page-size", "500"));
+  const parsedOrder = arg("order", "parsed_at.desc.nullslast");
+  let parsedSeedRows: ParsedRow[] | null = null;
+  const poolRows = scope === "parsed"
+    ? await (async () => {
+        const perCategoryRows: ParsedRow[] = [];
+        for (const category of categories) {
+          perCategoryRows.push(...await fetchParsedCategoryRows(category, perCategoryLimit, pageSize, parsedOrder || null));
+        }
+        parsedSeedRows = perCategoryRows;
+        return perCategoryRows.map((row): PoolRow => ({
+          pid: Number(row.pid),
+          status: "parsed",
+          category: row.category,
+          comparable_key: row.comparable_key,
+          expected_profit_min: null,
+          expected_profit_max: null,
+          last_verified_at: null,
+        }));
+      })()
+    : await (async () => {
+        const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,status,category,comparable_key,expected_profit_min,expected_profit_max,last_verified_at&category=in.(${categories.join(",")})&status=in.(${statuses})`;
+        return fetchAll<PoolRow>(poolUrl, limit, "last_verified_at.desc.nullslast");
+      })();
   const pids = poolRows.map((row) => Number(row.pid)).filter(Number.isFinite);
   const rawRows = await fetchRawRows(pids);
-  const parsedRows = await fetchParsedRows(pids);
+  const parsedRows = parsedSeedRows ?? await fetchParsedRows(pids);
   const rawByPid = new Map(rawRows.map((row) => [Number(row.pid), row]));
   const parsedByPid = new Map(parsedRows.map((row) => [Number(row.pid), row]));
   const findings = summarize(poolRows, rawByPid, parsedByPid);
@@ -371,7 +415,7 @@ async function main() {
 
   const report = {
     generatedAt: new Date().toISOString(),
-    scope: { categories, statuses, limit },
+    scope: { categories, statuses, scope, limit, perCategoryLimit: scope === "parsed" ? perCategoryLimit : null, pageSize: scope === "parsed" ? pageSize : null },
     totals: {
       poolRows: poolRows.length,
       rawRows: rawRows.length,

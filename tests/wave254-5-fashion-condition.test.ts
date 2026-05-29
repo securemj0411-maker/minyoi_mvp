@@ -611,6 +611,37 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
 	      assert.ok(stain.conditionNotes.includes("cosmetic_wear"),
 	        `cosmetic_wear 없음: ${stain.conditionNotes.join(",")}`);
 
+	      const yellowing = conditionFromTextFashion("신발장 보관하다 황변이 생김", "shoe");
+	      assert.ok(yellowing.conditionNotes.includes("shoe_stain_or_discoloration"),
+	        `황변 생김 shoe_stain_or_discoloration 없음: ${yellowing.conditionNotes.join(",")}`);
+
+	      for (const text of [
+	        "신발끈 오염 살짝잇음",
+	        "앞코 부분에 얼룩 조금 있는 편입니다",
+	        "새제품 이지만 밑창 부분이 살짝 변색되어있어요",
+	        "스웨이드 재질 특성 상 얼룩 조금 있음",
+	        "고무로 인한 검은 이염은 존재합니다",
+	        "패브릭소재특성상 이염이 생깁니다.",
+	        "보관하면서 변색이 온 듯 하나 세탁 맡기면 제거 가능하다 합니다.",
+	        "1회 착용 이염 사진 참고해주세요!",
+	        "마지막 사진 참고해주세요 (각각 이염, 스티커떨어짐, 사이즈 헐떡거려서 낡음)",
+	      ]) {
+	        const { conditionNotes } = conditionFromTextFashion(text, "shoe");
+	        assert.ok(conditionNotes.includes("shoe_stain_or_discoloration"),
+	          `shoe_stain_or_discoloration 없음 (${text}): ${conditionNotes.join(",")}`);
+	      }
+
+	      const boxStain = conditionFromTextFashion("박스만 변색이 좀 있고 신발은 완전 신품입니다", "shoe");
+	      assert.ok(!boxStain.conditionNotes.includes("shoe_stain_or_discoloration"),
+	        `박스 변색을 신발 오염으로 잘못 잡음: ${boxStain.conditionNotes.join(",")}`);
+	      const notStain = conditionFromTextFashion("이건 이염도 아니고 제조과정 문제 같아요", "shoe");
+	      assert.ok(!notStain.conditionNotes.includes("shoe_stain_or_discoloration"),
+	        `이염도 아니고 negation 실패: ${notStain.conditionNotes.join(",")}`);
+
+	      const hygiene = conditionFromTextFashion("가죽냄새 외에 악취(발냄새)가 조금 있습니다", "shoe");
+	      assert.ok(hygiene.conditionNotes.includes("shoe_hygiene_warning"),
+	        `shoe_hygiene_warning 없음: ${hygiene.conditionNotes.join(",")}`);
+
 	      const result = parseListingOptions({
 	        title: "[300]뉴발란스 992 메이드 인 USA 그레이",
 	        description: "한두번 신다가 신발장 보관했습니다. 데님이랑 접하는 곳 이염 있습니다. 박스랑 신발택 그대로 있습니다.",
@@ -624,6 +655,120 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
 	      assert.equal(grade?.tier, "D", `grade=${JSON.stringify(grade)}`);
 	      assert.ok(grade?.chips?.includes("damage:major"),
 	        `damage:major chip 없음: ${JSON.stringify(grade?.chips)}`);
+	    });
+	  });
+
+	  describe("Wave 960 — historical parsed fashion condition sweep regressions", () => {
+	    it("신발 앞/갑피 찢김과 수선 가능 표현은 structural damage로 잡는다", () => {
+	      const result = parseListingOptions({
+	        title: "루이비통 뮬 슬리퍼",
+	        description: "앞에 찢김이 있는데 이건 수선 가능하다고 합니다. 그외 상태 좋아요.",
+	        skuId: "shoe-louis-vuitton-trainer",
+	        skuName: "Louis Vuitton LV Trainer",
+	        category: "shoe",
+	      });
+	      assert.ok(result.conditionNotes.includes("shoe_upper_structural_damage"),
+	        `shoe_upper_structural_damage 없음: ${result.conditionNotes.join(",")}`);
+	      assert.ok(result.conditionNotes.includes("repair_or_defect_signal"),
+	        `repair_or_defect_signal 없음: ${result.conditionNotes.join(",")}`);
+	      assert.equal(result.conditionClass, "flawed");
+	    });
+
+	    it("신발 당근식 찢김/뜯어짐 표현은 structural damage로 잡고 박스 하자는 제외한다", () => {
+	      for (const text of [
+	        "왼쪽신발 새끼발가락에 조금 찢어진거랑 밑창보강 하시는거를 추천드립니다",
+	        "찢어진부분이 있어요",
+	        "사놓고 두번신었는데 옆에가 살짝 찢어져버렸어요",
+	        "측면에 조금 찢어졌습니다 그래도 깨끗하고 착용하는데 문제 없습니다",
+	        "마지막사진보시면 뜯어짐있습니다",
+	        "왼쪽안쪽 0.5미리정도 튿어져서 복원해놓았습니다",
+	        "뒷축깨짐 쪼금 있습니다",
+	        "왼쪽 뒷꿈치 걸이부분 뜯어짐 있으나 착용 문제 없습니다",
+	      ]) {
+	        const { conditionNotes } = conditionFromTextFashion(text, "shoe");
+	        assert.ok(conditionNotes.includes("shoe_upper_structural_damage"),
+	          `shoe_upper_structural_damage 없음 (${text}): ${conditionNotes.join(",")}`);
+	      }
+
+	      const boxOnly = conditionFromTextFashion("새상품이고 박스 살짝 찢어진 부분 있습니다", "shoe");
+	      assert.ok(!boxOnly.conditionNotes.includes("shoe_upper_structural_damage"),
+	        `박스 하자를 신발 하자로 잘못 잡음: ${boxOnly.conditionNotes.join(",")}`);
+	      const noDamage = conditionFromTextFashion("찢어진대나 하자 없습니다", "shoe");
+	      assert.ok(!noDamage.conditionNotes.includes("shoe_upper_structural_damage"),
+	        `하자 없음 negation 실패: ${noDamage.conditionNotes.join(",")}`);
+	    });
+
+	    it("신발 AS 안내 문구만으로는 수선/하자 신호를 만들지 않는다", () => {
+	      const { conditionNotes } = conditionFromTextFashion(
+	        "새제품 시착도 안함. 유상 AS 수선 맡길 때 필요해서 보증서 같이 드려요.",
+	        "shoe",
+	      );
+	      assert.ok(!conditionNotes.includes("shoe_upper_structural_damage"),
+	        `AS 안내를 갑피 하자로 잘못 잡음: ${conditionNotes.join(",")}`);
+	      assert.ok(!conditionNotes.includes("repair_or_defect_signal"),
+	        `AS 안내를 수선 필요로 잘못 잡음: ${conditionNotes.join(",")}`);
+	    });
+
+	    it("의류 커피 이염같다/목택이염 표현은 stain chip으로 잡는다", () => {
+	      for (const text of [
+	        "사진상 커피 이염같은데 세탁은 안해봤어요.",
+	        "카라는 깨끗한 편이고 목택이염 조금 있습니다.",
+	        "사이즈 W28 L30 미세 이염 존재합니다.",
+	      ]) {
+	        const { conditionNotes } = conditionFromTextFashion(text, "clothing");
+	        assert.ok(conditionNotes.includes("clothing_stain"),
+	          `clothing_stain 없음 (${text}): ${conditionNotes.join(",")}`);
+	        assert.ok(conditionNotes.includes("cosmetic_wear"),
+	          `cosmetic_wear 없음 (${text}): ${conditionNotes.join(",")}`);
+	      }
+	    });
+
+	    it("의류 안감 튿어짐은 structural damage로 잡는다", () => {
+	      const { conditionNotes } = conditionFromTextFashion(
+	        "제품 상태는 양호하지만 안감 아랫부분에 튿어짐이 있습니다.",
+	        "clothing",
+	      );
+	      assert.ok(conditionNotes.includes("clothing_structural_damage"),
+	        `clothing_structural_damage 없음: ${conditionNotes.join(",")}`);
+	      assert.ok(conditionNotes.includes("repair_or_defect_signal"),
+	        `repair_or_defect_signal 없음: ${conditionNotes.join(",")}`);
+	    });
+
+	    it("의류 로고 부분의 약한 벗겨짐도 print damage로 잡는다", () => {
+	      const { conditionNotes } = conditionFromTextFashion(
+	        "전체적으로 상태 좋지만 로고 부분에 약간의 벗겨짐 있습니다.",
+	        "clothing",
+	      );
+	      assert.ok(conditionNotes.includes("clothing_print_cracked"),
+	        `clothing_print_cracked 없음: ${conditionNotes.join(",")}`);
+	    });
+
+	    it("가방 안감/내부/이너백 얼룩과 태닝은 stain/discoloration으로 잡는다", () => {
+	      for (const text of [
+	        "이너백에 오염 조금 있습니다. 외관은 깨끗해요.",
+	        "안감에 얼룩 있음.",
+	        "사용감 적으나 내부 약간 노랗게 이염 있습니다.",
+	        "태닝 진행된 상태이고 물 얼룩이 조금 있습니다.",
+	        "각 모서리랑 앞판은 빈티지 가죽특성상 색바램은 조금 있습니다.",
+	      ]) {
+	        const { conditionNotes } = conditionFromTextFashion(text, "bag");
+	        assert.ok(conditionNotes.includes("bag_stain_or_discoloration"),
+	          `bag_stain_or_discoloration 없음 (${text}): ${conditionNotes.join(",")}`);
+	        assert.ok(conditionNotes.includes("cosmetic_wear"),
+	          `cosmetic_wear 없음 (${text}): ${conditionNotes.join(",")}`);
+	      }
+	    });
+
+	    it("가방 오타성 벚겨짐과 핸들 찢김도 감가 신호로 잡는다", () => {
+	      const peeling = conditionFromTextFashion("코팅 벚겨짐 조금 있고 내부 약간 노랗게 이염 있습니다.", "bag");
+	      assert.ok(peeling.conditionNotes.includes("bag_leather_damage"),
+	        `bag_leather_damage 없음: ${peeling.conditionNotes.join(",")}`);
+	      assert.ok(peeling.conditionNotes.includes("bag_stain_or_discoloration"),
+	        `bag_stain_or_discoloration 없음: ${peeling.conditionNotes.join(",")}`);
+
+	      const handle = conditionFromTextFashion("발렌시아가 백 핸들부분 미세한 찢김 있음.", "bag");
+	      assert.ok(handle.conditionNotes.includes("bag_handle_worn"),
+	        `bag_handle_worn 없음: ${handle.conditionNotes.join(",")}`);
 	    });
 	  });
 
