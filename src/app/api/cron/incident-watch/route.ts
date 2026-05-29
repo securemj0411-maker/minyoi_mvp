@@ -12,6 +12,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { checkCronAuth } from "@/lib/cron-auth";
 import { mergeConditionDisplayChips } from "@/lib/condition-display";
+import { POOL_BLOCK_NOTES } from "@/lib/condition-policy";
 import { cronProjectRoleSkip } from "@/lib/cron-guard";
 import { normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { reportCriticalIncident } from "@/lib/operational-notifier";
@@ -38,6 +39,7 @@ const POOL_READY_THRESHOLD = 100;
 // 검수 응답 SLA — 24h.
 const REVIEW_SLA_HOURS = 24;
 const CONDITION_HAIRCUT_POOL_AUDIT_LIMIT = 5000;
+const SUPABASE_REST_PAGE_SIZE = 1000;
 
 type IncidentCheckResult = {
   ok: boolean;
@@ -50,6 +52,12 @@ type PoolAuditRow = {
   category: string | null;
   condition_class: string | null;
   expected_profit_max: number | null;
+};
+
+type PoolBlockNoteAuditRow = {
+  pid: number;
+  status: string | null;
+  category: string | null;
 };
 
 type ListingAuditRow = {
@@ -197,6 +205,10 @@ function positiveNumber(value: unknown) {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
 async function fetchAuditByPid<T>(table: string, select: string, pids: number[]) {
   const rows: T[] = [];
   for (const part of chunk([...new Set(pids)], 400)) {
@@ -209,12 +221,86 @@ async function fetchAuditByPid<T>(table: string, select: string, pids: number[])
   return rows;
 }
 
+async function fetchPoolAuditRows<T>(select: string, limit = CONDITION_HAIRCUT_POOL_AUDIT_LIMIT) {
+  const rows: T[] = [];
+  for (let offset = 0; rows.length < limit; offset += SUPABASE_REST_PAGE_SIZE) {
+    const take = Math.min(SUPABASE_REST_PAGE_SIZE, limit - rows.length);
+    const res = await restFetch(
+      `${tableUrl("mvp_candidate_pool")}?select=${select}&status=in.(ready,reserved)&order=updated_at.desc&limit=${take}&offset=${offset}`,
+      { headers: serviceHeaders() },
+    );
+    const page = (await res.json()) as T[];
+    rows.push(...page);
+    if (page.length < take) break;
+  }
+  return rows;
+}
+
+function parsedConditionNotes(row: ParsedAuditRow | undefined) {
+  return [
+    ...stringArray(row?.condition_notes),
+    ...stringArray(row?.parsed_json?.condition_notes),
+  ].filter((note, index, arr) => arr.indexOf(note) === index);
+}
+
+async function checkPoolBlockNoteResidue(): Promise<IncidentCheckResult> {
+  const poolRows = await fetchPoolAuditRows<PoolBlockNoteAuditRow>("pid,status,category");
+  const pids = poolRows.map((row) => Number(row.pid)).filter(Number.isFinite);
+  if (pids.length === 0) return { ok: true, detail: "pool block-note residue: pool empty" };
+
+  const [listings, parsedRows] = await Promise.all([
+    fetchAuditByPid<ListingAuditRow>("mvp_listings", "pid,name,price", pids),
+    fetchAuditByPid<ParsedAuditRow>("mvp_listing_parsed", "pid,condition_class,condition_tier,condition_notes,parsed_json", pids),
+  ]);
+  const listingByPid = new Map(listings.map((row) => [Number(row.pid), row]));
+  const parsedByPid = new Map(parsedRows.map((row) => [Number(row.pid), row]));
+  const blockNoteSet = new Set<string>(POOL_BLOCK_NOTES);
+  const samples: Array<Record<string, unknown>> = [];
+  let residueRows = 0;
+
+  for (const pool of poolRows) {
+    const pid = Number(pool.pid);
+    const parsed = parsedByPid.get(pid);
+    const notes = parsedConditionNotes(parsed);
+    const hits = notes.filter((note) => blockNoteSet.has(note));
+    if (hits.length === 0) continue;
+    residueRows += 1;
+    if (samples.length < 8) {
+      const listing = listingByPid.get(pid);
+      samples.push({
+        pid,
+        status: pool.status,
+        category: pool.category,
+        title: String(listing?.name ?? "").slice(0, 80),
+        price: listing?.price ?? null,
+        conditionClass: parsed?.condition_class ?? null,
+        conditionTier: parsed?.condition_tier ?? null,
+        blockNotes: hits,
+      });
+    }
+  }
+
+  if (residueRows > 0) {
+    return {
+      ok: false,
+      detail: `pool block-note residue — ready/reserved ${residueRows}건`,
+      context: {
+        auditedPoolRows: poolRows.length,
+        residueRows,
+        samples,
+      },
+    };
+  }
+
+  return {
+    ok: true,
+    detail: "pool block-note residue 정상 — 0건",
+    context: { auditedPoolRows: poolRows.length },
+  };
+}
+
 async function checkConditionHaircutStalePool(): Promise<IncidentCheckResult> {
-  const poolRes = await restFetch(
-    `${tableUrl("mvp_candidate_pool")}?select=pid,category,condition_class,expected_profit_max&status=in.(ready,reserved)&order=updated_at.desc&limit=${CONDITION_HAIRCUT_POOL_AUDIT_LIMIT}`,
-    { headers: serviceHeaders() },
-  );
-  const poolRows = (await poolRes.json()) as PoolAuditRow[];
+  const poolRows = await fetchPoolAuditRows<PoolAuditRow>("pid,category,condition_class,expected_profit_max");
   const pids = poolRows.map((row) => Number(row.pid)).filter(Number.isFinite);
   if (pids.length === 0) return { ok: true, detail: "condition haircut audit: pool empty" };
 
@@ -334,6 +420,7 @@ export async function GET(req: NextRequest) {
     checkDailyBackup(),
     checkPoolReady(),
     checkReviewSla(),
+    checkPoolBlockNoteResidue(),
     checkConditionHaircutStalePool(),
   ]);
 
@@ -342,7 +429,8 @@ export async function GET(req: NextRequest) {
     { name: "daily_backup_exists",    severity: "critical", res: results[1] },
     { name: "pool_ready_count",       severity: "warning",  res: results[2] },
     { name: "review_sla_24h",         severity: "warning",  res: results[3] },
-    { name: "condition_haircut_stale_pool", severity: "warning", res: results[4] },
+    { name: "pool_block_note_residue", severity: "warning", res: results[4] },
+    { name: "condition_haircut_stale_pool", severity: "warning", res: results[5] },
   ] as const;
 
   const summary = checks.map(({ name, severity, res }) => {

@@ -506,8 +506,8 @@ const CHIP_BADGES: Record<ChipBadgeKey, { label: string; type: "positive" | "neg
   "damage:major": { label: "심각 하자", type: "negative" },
   "damage:repair_pos": { label: "수선/사이즈 맞춤", type: "positive" },
   // shoe extras
-  "shoe:extra_laces": { label: "여분끈", type: "positive" },
-  "shoe:insole_changed": { label: "깔창 교체", type: "neutral" },
+  "extra:extra_laces": { label: "여분끈", type: "positive" },
+  "extra:insole_changed": { label: "깔창 교체", type: "neutral" },
   "shoe:washed": { label: "세탁 통과", type: "negative" },
   // clothing extras
   "extra:collab": { label: "콜라보/한정", type: "positive" },
@@ -515,6 +515,10 @@ const CHIP_BADGES: Record<ChipBadgeKey, { label: string; type: "positive" | "neg
   "extra:x10_score": { label: "X/10 점수", type: "neutral" },
   "extra:charms": { label: "지비츠 포함", type: "positive" },
 };
+
+export function conditionChipDisplayLabel(chip: string): string | null {
+  return CHIP_BADGES[chip]?.label ?? null;
+}
 
 export function ConditionTierChip({
   tier,
