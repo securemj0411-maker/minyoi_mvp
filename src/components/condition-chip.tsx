@@ -443,6 +443,7 @@ const CHIP_BADGES: Record<ChipBadgeKey, { label: string; type: "positive" | "neg
   "condition:screen_replaced": { label: "액정 교체/수리", type: "negative" },
   "condition:faceid_issue": { label: "Face ID 이상", type: "negative" },
   "condition:camera_issue": { label: "카메라 이상", type: "negative" },
+  "condition:camera_lens_damage": { label: "카메라 렌즈 손상", type: "negative" },
   "condition:sim_or_carrier_issue": { label: "유심/통신 이슈", type: "negative" },
   "condition:water_damage": { label: "침수 의심", type: "negative" },
   "condition:locked_or_lost_signal": { label: "잠금/분실 위험", type: "negative" },

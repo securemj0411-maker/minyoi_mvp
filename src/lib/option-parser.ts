@@ -66,6 +66,7 @@ export const FLAWED_NOTES = [
   "screen_replaced",
   "faceid_issue",
   "camera_issue",
+  "camera_lens_damage",
   "sim_or_carrier_issue",
   "water_damage",
   "locked_or_lost_signal",
@@ -228,7 +229,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v64";  // Wave 937: tablet/smartwatch condition deepsweep negation + defect chips
+export const PARSER_VERSION = "option-parser-v65";  // Wave 938: camera lens/glass damage split from generic camera issue
 
 // Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
 //   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
@@ -1223,6 +1224,8 @@ function conditionFromText(
     .replace(/(?:파손|깨짐|고장).{0,12}(?:동의|면책).{0,18}(?:택배|배송)|(?:택배|배송).{0,18}(?:파손|깨짐|고장).{0,12}(?:동의|면책|우려|위험)/g, " ")
     .replace(/(?:시계줄|워치\s*줄|줄|스트랩|밴드).{0,28}(?:교체|길이\s*조정\s*불가|조정\s*불가|줄임|줄여)/g, " ")
     .replace(/(?:충전기|충전\s*기|충전독|충전\s*독|충전케이블|충전\s*케이블|케이블).{0,16}(?:없|없음|없습니다|분실|미포함|제외)/g, " ")
+    .replace(/(?:카메라|렌즈).{0,28}(?:기스|흠집|찍힘|깨짐|깨진|깨져|파손|크랙|금|멍|문제|이상|불량).{0,14}(?:없|없음|없습니다|없어요|없이|아님|아닙니다|x)/g, " ")
+    .replace(/카메라\s*보호\s*필름|카메라보호필름|렌즈\s*보호\s*필름|렌즈보호필름|카메라\s*섬\s*주변.{0,16}(?:생활\s*기스|기스\s*정도|미세\s*기스)/g, " ")
     .replace(/침수(?:폰)?\s*(?:없|없음|없습니다|아님|취급하지|취급\s*안)|침수.{0,12}(?:이력|내역).{0,12}(?:없|없음|없습니다|전혀\s*없)/g, " ")
     .replace(/분실.{0,8}도난.{0,20}(?:취급하지|취급\s*안)|(?:분실|도난).{0,12}(?:없|없음|없습니다|취급하지|취급\s*안)/g, " ")
     .replace(/(?:깨짐|기스|스크래치).{0,12}(?:없|없음|없습니다|없고)/g, " ")
@@ -1482,8 +1485,10 @@ function conditionFromText(
   // 사용자 #159 매물 description "사용감 적음" — 셀러 명시적 부정인데 cosmetic_wear 박힘 → worn 분류 잘못.
   // 사용자 정책: "사용감 적음/없음" 은 정상 (cosmetic_wear 박지 X). "사용감 있음/많음/심함" 만 worn 신호.
   const noUseFeeling = /사용감\s*(?:(?:거의|전혀)\s*)?(?:적음|적은|없음|없|없는|매우\s*적|아주\s*적|덜|미세)/i.test(lower);
+  const noCosmeticWear = /(?:기스|스크래치|찍힘|흠집).{0,16}(?:없|없음|없습니다|없어요|없이|아님|아닙니다|x)|(?:기스|스크래치|찍힘|흠집).{0,8}(?:및|과|와).{0,12}(?:파손|깨짐).{0,12}(?:없|없음|없습니다|없어요|없이|아님|아닙니다|x)/.test(lower);
   const hasUseFeeling = !noUseFeeling && /사용감/.test(lower);
-  const hasOtherWear = /기스|스크래치|찍힘|생활기스|흠집/.test(lower);
+  const explicitCosmeticWear = /(?:생활\s*)?(?:기스|스크래치|찍힘|흠집).{0,16}(?:있|있음|많|심|크|깊|약간|살짝|좀|나|보임|보여|보이는|보입니다|발견)|(?:있|있음|많|심|큰|깊은|약간|살짝|좀).{0,16}(?:기스|스크래치|찍힘|흠집)/.test(lower);
+  const hasOtherWear = explicitCosmeticWear || (!noCosmeticWear && /기스|스크래치|찍힘|생활기스|흠집/.test(lower));
   if (hasUseFeeling || hasOtherWear) add("cosmetic_wear", -0.1);
   // 2026-05-17 (사용자 코멘트 id 146 pid 408047887): "하자는 채팅주시면 알려드리겠습니다 (없는수준)" false positive.
   // 셀러가 "하자 없음" 명시했는데 "하자" 단어만 잡고 flawed 분류 잘못. mitigator 추가 — 다른 negative 신호 (display/faceid/water 등) 와 같은 패턴.
@@ -1527,6 +1532,10 @@ function conditionFromText(
   const noFaceIdIssue = /(페이스\s*아이디|face\s*id|faceid).{0,30}(문제\s*(?:없|없음|없고|없습니다)|정상|잘\s*됨|작동)|기능에\s*아무\s*문제\s*없/.test(lower);
   if (!noFaceIdIssue && /(페이스\s*아이디|face\s*id|faceid).{0,20}(안됨|불가|고장|불량|문제|수리)|(?:안됨|불가|고장|불량|문제|수리).{0,20}(페이스\s*아이디|face\s*id|faceid)/.test(lower)) add("faceid_issue", -0.25);
   if (/(카메라|전면|후면).{0,20}(안됨|불가|고장|불량|흔들림|초점\s*불량|초점불량)|(?:안됨|불가|고장|불량|흔들림|초점\s*불량|초점불량).{0,20}(카메라|전면|후면)/.test(lower)) add("camera_issue", -0.2);
+  const noCameraLensDamage = /(?:카메라|렌즈).{0,28}(?:기스|흠집|찍힘|깨짐|깨진|깨져|파손|크랙|금|멍|문제|이상|불량).{0,14}(?:없|없음|없습니다|없어요|없이|아님|아닙니다|x)|(?:카메라|렌즈).{0,18}(?:정상|문제\s*없|이상\s*없|잘\s*(?:됨|됩니다|작동)|무음)|카메라\s*보호\s*필름|카메라보호필름|렌즈\s*보호\s*필름|렌즈보호필름|카메라\s*섬\s*주변.{0,16}(?:생활\s*기스|기스\s*정도|미세\s*기스)/.test(lower);
+  if (!noCameraLensDamage && /(?:카메라\s*(?:렌즈|유리|커버|보호\s*유리|보호유리)|카메라렌즈|렌즈\s*(?:유리|커버|부)?|렌즈부).{0,24}(?:깨졌|깨져|깨진|깨짐|깨져서|파손|크랙|금\s*갔|금\s*감|금이\s*갔|금이\s*감|큰\s*흠집|흠집\s*(?:크|심|깊)|찍힘\s*(?:크|심)|멍\s*\d*\s*개|멍\s*(?:있|있음|생|보))|(?:깨졌|깨져|깨진|깨짐|깨져서|파손|크랙|금\s*갔|금\s*감|금이\s*갔|금이\s*감|큰\s*흠집|흠집\s*(?:크|심|깊)|찍힘\s*(?:크|심)|멍\s*\d*\s*개|멍\s*(?:있|있음|생|보)).{0,24}(?:카메라\s*(?:렌즈|유리|커버|보호\s*유리|보호유리)|카메라렌즈|렌즈\s*(?:유리|커버|부)?|렌즈부)|(?:카메라|렌즈).{0,18}멍.{0,16}(?:있|있음|나|보|생|\d+\s*개)|(?:카메라|렌즈).{0,20}(?:커버|유리).{0,20}(?:크게|큰|심한|깊은).{0,12}(?:흠집|기스|찍힘)/.test(lower)) {
+    add("camera_lens_damage", -0.25);
+  }
   if (/(유심|sim).{0,20}(인식\s*불|인식불|안됨|불가|락)|(?:인식\s*불|인식불|안됨|불가|락).{0,20}(유심|sim)/.test(lower)) add("sim_or_carrier_issue", -0.2);
   const noWaterDamage = /침수(?:폰)?\s*(?:없|없음|없습니다|아님|일절\s*취급하지|취급하지\s*않|취급하지|취급\s*안)|침수.{0,12}(?:이력|내역).{0,12}(?:없|없음|없습니다|전혀\s*없)|(?:고객\s*부주의|본인\s*과실|단순\s*변심).{0,30}(?:파손|침수|충격).{0,30}(?:교환|환불|반품).{0,12}불가|침수\s*라벨\s*(?:정상|깨끗)/.test(lower);
   if (!noWaterDamage && /침수|물\s*들어|물먹|물\s*먹/.test(lower)) add("water_damage", -0.35);
@@ -2148,6 +2157,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       screen_replaced_or_repaired: "screen_replaced",
       faceid_or_biometric_issue: "faceid_issue",
       camera_issue: "camera_issue",
+      camera_lens_or_glass_damage: "camera_lens_damage",
       speaker_or_mic_issue: "repair_or_defect_signal",
       charging_or_sensor_issue: "device_charging_or_sensor_issue",
       account_or_activation_lock: "locked_or_lost_signal",
@@ -2404,6 +2414,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     "display_defect",
     "device_body_damage",
     "foldable_hinge_damage",
+    "camera_lens_damage",
     "screen_replaced",
     "faceid_issue",
     "parts_only",

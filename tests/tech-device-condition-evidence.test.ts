@@ -336,6 +336,60 @@ describe("tech device condition evidence parser", () => {
     assert.ok(!signals("아이폰 16 일본판", "기능 문제 없어요. 일본 아이폰이라 카메라 기본 무음이에요.").includes("camera_issue"));
   });
 
+  it("카메라 렌즈/유리 손상은 기능 이상과 별도 하드 신호로 잡는다", () => {
+    const crackedLens = parseListingOptions({
+      category: "smartphone",
+      title: "아이폰 15 블랙",
+      description: "기능 문제 없어요. 카메라 렌즈 깨짐 있습니다.",
+      skuId: "iphone-15",
+      skuName: "iPhone 15",
+    });
+    const coverScratch = parseListingOptions({
+      category: "smartphone",
+      title: "갤럭시 S23 울트라",
+      description: "액정 오른쪽 하단 약간 깨짐과 카메라 커버 부분에 크게 흠집이 있습니다.",
+      skuId: "galaxy-s23-ultra",
+      skuName: "Galaxy S23 Ultra",
+    });
+    const cameraBruise = parseListingOptions({
+      category: "smartphone",
+      title: "아이폰 13 프로",
+      description: "카메라 멍 2개 정도 있음. 촬영은 가능하지만 사진 확인 필요합니다.",
+      skuId: "iphone-13-pro",
+      skuName: "iPhone 13 Pro",
+    });
+
+    assert.equal(crackedLens.conditionClass, "flawed");
+    assert.ok((crackedLens.parsedJson.tech_device_condition_signals as string[]).includes("camera_lens_or_glass_damage"));
+    assert.ok(crackedLens.conditionNotes.includes("camera_lens_damage"));
+    assert.ok(coverScratch.conditionNotes.includes("camera_lens_damage"));
+    assert.ok(cameraBruise.conditionNotes.includes("camera_lens_damage"));
+  });
+
+  it("카메라 정상/보호필름/카메라섬 생활기스는 렌즈 손상으로 오탐하지 않는다", () => {
+    const noDamage = parseListingOptions({
+      category: "smartphone",
+      title: "아이폰 15 옐로",
+      description: "액정, 카메라 기스및 파손 없습니다. 카메라보호필름, 풀케이스 착용해서 깨끗합니다.",
+    });
+    const normalCamera = parseListingOptions({
+      category: "smartphone",
+      title: "아이폰 15 프로",
+      description: "찍힘, 깨짐, 기스 X. 카메라 이상, 수리 이력 X. 배터리 효율 84%",
+    });
+    const cameraIslandWear = parseListingOptions({
+      category: "smartphone",
+      title: "아이폰 13 프로",
+      description: "기스나 깨짐 1도 없는 A급 모델이구요. 카메라섬 주변에 생활기스 정도 있습니다.",
+    });
+
+    assert.ok(!noDamage.conditionNotes.includes("camera_lens_damage"));
+    assert.equal(noDamage.conditionClass, "clean");
+    assert.ok(!normalCamera.conditionNotes.includes("camera_lens_damage"));
+    assert.ok(!cameraIslandWear.conditionNotes.includes("camera_lens_damage"));
+    assert.ok(!signals("아이폰 15", "카메라보호필름 부착되어 있습니다.").includes("camera_lens_or_glass_damage"));
+  });
+
   it("사설 수리는 hard, 공식 리퍼는 positive로 분리한다", () => {
     const unofficial = parseTechDeviceConditionEvidence({
       title: "아이폰 15",

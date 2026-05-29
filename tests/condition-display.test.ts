@@ -46,4 +46,11 @@ describe("condition display chips", () => {
       ["condition:device_charging_or_sensor_issue"],
     );
   });
+
+  it("휴대폰 카메라 렌즈 손상 condition_notes를 사용자 노출 chip key로 변환한다", () => {
+    assert.deepEqual(
+      conditionNoteDisplayChips(["camera_lens_damage"]),
+      ["condition:camera_lens_damage"],
+    );
+  });
 });

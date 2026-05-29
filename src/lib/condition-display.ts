@@ -9,6 +9,7 @@ const CONDITION_NOTE_CHIP_BY_NOTE: Record<string, string> = {
   screen_replaced: "condition:screen_replaced",
   faceid_issue: "condition:faceid_issue",
   camera_issue: "condition:camera_issue",
+  camera_lens_damage: "condition:camera_lens_damage",
   sim_or_carrier_issue: "condition:sim_or_carrier_issue",
   water_damage: "condition:water_damage",
   locked_or_lost_signal: "condition:locked_or_lost_signal",

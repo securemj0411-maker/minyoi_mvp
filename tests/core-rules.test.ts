@@ -1369,6 +1369,32 @@ test("smartphone clean negations do not trigger structural damage gates", () => 
   assert.ok(!parsed.conditionNotes.includes("foldable_hinge_damage"));
 });
 
+test("smartphone camera lens damage is excluded while clean camera wording stays normal", () => {
+  assert.equal(
+    classifyListing("아이폰 15 블랙", "기능 문제 없어요. 카메라 렌즈 깨짐", 480_000).listingType,
+    "damaged",
+  );
+  assert.notEqual(
+    classifyListing("아이폰 15 옐로", "액정, 카메라 기스및 파손 없습니다. 카메라보호필름 부착.", 580_000).listingType,
+    "damaged",
+  );
+  assert.notEqual(
+    classifyListing("아이폰 13 프로", "카메라섬 주변에 생활기스 정도 있습니다. 기능 정상.", 440_000).listingType,
+    "damaged",
+  );
+
+  const parsed = parseListingOptions({
+    category: "smartphone",
+    skuId: "iphone-15",
+    skuName: "iPhone 15",
+    title: "아이폰 15 블랙",
+    description: "기능 문제 없어요. 카메라 렌즈 깨짐",
+  });
+  assert.equal(parsed.conditionClass, "flawed");
+  assert.ok(parsed.conditionNotes.includes("camera_lens_damage"));
+  assert.ok(parsed.needsReview);
+});
+
 test("description-level buying intent is excluded without blocking purchase-history wording", () => {
   assert.equal(
     classifyListing(

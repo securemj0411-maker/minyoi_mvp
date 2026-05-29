@@ -1,4 +1,4 @@
-export const TECH_DEVICE_CONDITION_EVIDENCE_VERSION = "tech-device-condition-evidence-v2";
+export const TECH_DEVICE_CONDITION_EVIDENCE_VERSION = "tech-device-condition-evidence-v3";
 
 export type TechDeviceConditionSignal =
   | "display_panel_issue"
@@ -8,6 +8,7 @@ export type TechDeviceConditionSignal =
   | "screen_replaced_or_repaired"
   | "faceid_or_biometric_issue"
   | "camera_issue"
+  | "camera_lens_or_glass_damage"
   | "speaker_or_mic_issue"
   | "charging_or_sensor_issue"
   | "account_or_activation_lock"
@@ -140,6 +141,10 @@ const STRUCTURAL_FRAME_DAMAGE =
 const HINGE_SURFACE = "(?:힌지|흰지|접히는\\s*부분|접는\\s*부분|가운데|내부\\s*액정|내부액정|안쪽\\s*액정)";
 const HINGE_DAMAGE =
   "(?:검은\\s*(?:색\\s*)?(?:점|반점)|검은점|흑점|반점|주름|멍|세로줄|가로줄|줄\\s*감|액정\\s*불빛|화면\\s*나가|화면나가|불량|파손|크랙|벌어짐|들뜸|안\\s*펴|안펴|안\\s*접|안접|유격|헐거)";
+const CAMERA_LENS_SURFACE =
+  "(?:카메라\\s*(?:렌즈|유리|커버|보호\\s*유리|보호유리)|카메라렌즈|렌즈\\s*(?:유리|커버|부)?|렌즈부)";
+const CAMERA_LENS_DAMAGE =
+  "(?:깨졌|깨져|깨진|깨짐|깨져서|파손|크랙|금\\s*갔|금\\s*감|금이\\s*갔|금이\\s*감|큰\\s*흠집|흠집\\s*(?:크|심|깊)|찍힘\\s*(?:크|심)|멍\\s*\\d*\\s*개|멍\\s*(?:있|있음|생|보))";
 
 function re(source: string) {
   return new RegExp(source);
@@ -296,12 +301,28 @@ export function parseTechDeviceConditionEvidence(input: {
 
   const cameraNegated = hasAny(sources, [
     /(?:카메라|전면|후면|초점).{0,24}(?:정상|문제\s*없|이상\s*없|잘\s*(?:됨|됩니다|작동)|무음)|(?:기능|전기능|모든\s*기능).{0,18}(?:정상|문제\s*없|이상\s*없|이상무)/,
+    /(?:카메라|전면|후면|초점).{0,24}(?:이상|문제|불량|고장).{0,12}(?:없|없음|없습니다|없어요|없이|아님|아닙니다|x)/,
     /(?:문제|하자).{0,8}(?:없|없는|없음|없습니다|없어요)|(?:기능|전기능|모든\s*기능).{0,30}(?:문제|하자).{0,8}(?:없|없는|없음|없습니다|없어요)/,
   ]);
   if (!cameraNegated) {
     add("camera_issue", "block_candidate", 0.88, firstEvidence(sources, [
       /(?:카메라|전면|후면).{0,24}(?:안\s*됨|안됨|불가|고장|불량|흔들림|초점\s*불량|초점불량|먹통|문제)/,
       /(?:안\s*됨|안됨|불가|고장|불량|흔들림|초점\s*불량|초점불량|먹통).{0,24}(?:카메라|전면|후면)/,
+    ]));
+  }
+
+  const cameraLensDamageNegated = hasAny(sources, [
+    /(?:카메라|렌즈).{0,28}(?:기스|흠집|찍힘|깨짐|깨진|깨져|파손|크랙|금|멍|문제|이상|불량).{0,14}(?:없|없음|없습니다|없어요|없이|아님|아닙니다|x)/,
+    /(?:카메라|렌즈).{0,18}(?:정상|문제\s*없|이상\s*없|잘\s*(?:됨|됩니다|작동)|무음)/,
+    /카메라\s*보호\s*필름|카메라보호필름|렌즈\s*보호\s*필름|렌즈보호필름/,
+    /카메라\s*섬\s*주변.{0,16}(?:생활\s*기스|기스\s*정도|미세\s*기스)/,
+  ]);
+  if (!cameraLensDamageNegated) {
+    add("camera_lens_or_glass_damage", "block_candidate", 0.88, firstEvidence(sources, [
+      re(`${CAMERA_LENS_SURFACE}.{0,24}${CAMERA_LENS_DAMAGE}`),
+      re(`${CAMERA_LENS_DAMAGE}.{0,24}${CAMERA_LENS_SURFACE}`),
+      /(?:카메라|렌즈).{0,18}멍.{0,16}(?:있|있음|나|보|생|\d+\s*개)/,
+      /(?:카메라|렌즈).{0,20}(?:커버|유리).{0,20}(?:크게|큰|심한|깊은).{0,12}(?:흠집|기스|찍힘)/,
     ]));
   }
 

@@ -22,6 +22,8 @@ export const POOL_BLOCK_NOTES = [
   // foldable hinge/inner-panel defects are not cosmetic discounts; pool must not surface them.
   "device_body_damage",
   "foldable_hinge_damage",
+  // Wave 938 (2026-05-29): smartphone camera lens/glass crack is not a mere cosmetic wear.
+  "camera_lens_damage",
   "screen_replaced",
   "faceid_issue",
   "parts_only",

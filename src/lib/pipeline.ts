@@ -438,6 +438,20 @@ function damagedHits(title: string, desc: string): string[] {
       hits.push("foldable_hinge_damage");
     }
   }
+  const cameraLensDamageNegation =
+    /(?:카메라|렌즈).{0,28}(?:기스|흠집|찍힘|깨짐|깨진|깨져|파손|크랙|금|멍|문제|이상|불량).{0,14}(?:없|없음|없습니다|없어요|없이|아님|아닙니다|x)|(?:카메라|렌즈).{0,18}(?:정상|문제\s*없|이상\s*없|잘\s*(?:됨|됩니다|작동)|무음)|카메라\s*보호\s*필름|카메라보호필름|렌즈\s*보호\s*필름|렌즈보호필름|카메라\s*섬\s*주변.{0,16}(?:생활\s*기스|기스\s*정도|미세\s*기스)/.test(normalized);
+  if (!cameraLensDamageNegation) {
+    const cameraLensSurface = "(?:카메라\\s*(?:렌즈|유리|커버|보호\\s*유리|보호유리)|카메라렌즈|렌즈\\s*(?:유리|커버|부)?|렌즈부)";
+    const cameraLensDamage = "(?:깨졌|깨져|깨진|깨짐|깨져서|파손|크랙|금\\s*갔|금\\s*감|금이\\s*갔|금이\\s*감|큰\\s*흠집|흠집\\s*(?:크|심|깊)|찍힘\\s*(?:크|심)|멍\\s*\\d*\\s*개|멍\\s*(?:있|있음|생|보))";
+    if (
+      new RegExp(`${cameraLensSurface}.{0,24}${cameraLensDamage}`).test(normalized) ||
+      new RegExp(`${cameraLensDamage}.{0,24}${cameraLensSurface}`).test(normalized) ||
+      /(?:카메라|렌즈).{0,18}멍.{0,16}(?:있|있음|나|보|생|\d+\s*개)/.test(normalized) ||
+      /(?:카메라|렌즈).{0,20}(?:커버|유리).{0,20}(?:크게|큰|심한|깊은).{0,12}(?:흠집|기스|찍힘)/.test(normalized)
+    ) {
+      hits.push("camera_lens_damage");
+    }
+  }
 
   // 2026-05-17 (사용자 5-iteration #4): "하자" negation context 대폭 확장.
   // 정상 매물 표현 false positive: "하자는 생활기스" / "하자나 오염없" / "심각한 하자 없" / "큰 하자 없" / "하자 사용감 없" 등.
