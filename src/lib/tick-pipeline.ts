@@ -339,6 +339,7 @@ const RAW_EXISTING_READ_CHUNK_SIZE = 500;
 const POOL_PID_READ_CHUNK_SIZE = 500;
 const REST_WRITE_CHUNK_SIZE = 50;
 const SCORE_DIRTY_CLEAR_CHUNK_SIZE = 200;
+const SCORE_DIRTY_MARK_CHUNK_SIZE = 300;
 const RAW_TOUCH_WRITE_CHUNK_SIZE = 400;
 const SELLER_WRITE_CHUNK_SIZE = 200;
 // Keep seller_uid=in.(...) URLs under common proxy/request-line limits.
@@ -2507,21 +2508,43 @@ async function clearUnscorableScoreDirty(limit: number): Promise<number> {
   return total;
 }
 
-async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Promise<number> {
-  if (!(await rawScoreDirtySchemaAvailable())) return 0;
-  const unique = [...new Set(comparableKeys.filter(Boolean))];
+type ScoreDirtyMarkResult = {
+  candidateRows: number;
+  markedRows: number;
+};
+
+async function markScoreDirtyIfClean(pids: number[]): Promise<number> {
+  const unique = [...new Set(pids.filter(Number.isFinite))];
   if (unique.length === 0) return 0;
+  let marked = 0;
+  for (const chunk of chunkArray(unique, SCORE_DIRTY_MARK_CHUNK_SIZE)) {
+    const res = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid&pid=in.(${chunk.join(",")})&score_dirty=eq.false`,
+      {
+        method: "PATCH",
+        headers: serviceHeaders("return=representation"),
+        body: jsonBody({ score_dirty: true }),
+      },
+    );
+    const rows = (await res.json()) as Array<{ pid: number | string | null }>;
+    marked += rows.length;
+  }
+  return marked;
+}
+
+async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Promise<ScoreDirtyMarkResult> {
+  if (!(await rawScoreDirtySchemaAvailable())) return { candidateRows: 0, markedRows: 0 };
+  const unique = [...new Set(comparableKeys.filter(Boolean))];
+  if (unique.length === 0) return { candidateRows: 0, markedRows: 0 };
   // comparable_key를 가진 parsed pid를 모은 뒤 raw_listings.score_dirty=true.
   const parsedByPid = await loadParsedRowsByComparableKeys(unique, 5000, {
     includeParsedJson: false,
     maxRowsPerKeyChunk: marketInvalidationParsedRowsPerKeyChunk(),
   });
   const pids = [...parsedByPid.keys()];
-  if (pids.length === 0) return 0;
-  for (const chunk of chunkArray(pids, REST_WRITE_CHUNK_SIZE)) {
-    await patchRowsByIds("mvp_raw_listings", chunk, { score_dirty: true }, REST_WRITE_CHUNK_SIZE);
-  }
-  return pids.length;
+  if (pids.length === 0) return { candidateRows: 0, markedRows: 0 };
+  const markedRows = await markScoreDirtyIfClean(pids);
+  return { candidateRows: pids.length, markedRows };
 }
 
 // Wave 714c (2026-05-23): lane unblock 시 stale invalidated 매물 자동 재평가.
@@ -4590,7 +4613,7 @@ export async function marketStatsStage(): Promise<StageStats> {
   // 같은 매물이라도 trustedMedian이 바뀌면 priceGap/score가 달라지므로 dirty=true.
   const markedDirty = await markRawScoreDirtyByComparableKeys(recomputedKeys).catch((err) => {
     console.error("mark raw score dirty by comparable keys failed", err);
-    return 0;
+    return { candidateRows: 0, markedRows: 0 };
   });
   // Wave 714c (2026-05-23): lane unblock 시 stale invalidated 매물 자동 재평가.
   //   Wave 678/679 에서 4 의류 lane 풀어줬는데 candidate_pool 의 invalidated row 안 reset 발견.
@@ -4631,7 +4654,8 @@ export async function marketStatsStage(): Promise<StageStats> {
   stats.enriched = closedInvalidations;
   stats.timingsMs = {
     ...(stats.timingsMs ?? {}),
-    market_score_dirty_marked_rows: markedDirty,
+    market_score_dirty_candidate_rows: markedDirty.candidateRows,
+    market_score_dirty_marked_rows: markedDirty.markedRows,
     reveal_current_profit_updated: revealRecomputeStats.updated,
     reveal_current_profit_invalidated: revealRecomputeStats.invalidated,
   };
