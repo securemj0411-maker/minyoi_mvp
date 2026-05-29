@@ -11,6 +11,8 @@ import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-re
 const appDir = process.cwd();
 const reportsDir = path.join(appDir, "reports");
 const PATCH_CHUNK_SIZE = 80;
+const POOL_SCAN_LIMIT = 5000;
+const POOL_PAGE_SIZE = 1000;
 
 const DEFAULT_CATEGORIES = ["clothing", "shoe", "sport_golf", "game_console"];
 const TIER_CATEGORIES = new Set(["clothing", "shoe", "sport_golf", "game_console"]);
@@ -181,9 +183,14 @@ async function fetchParsedRows(pids: number[]) {
 }
 
 async function fetchPoolRows(categories: string[], statuses: string[], extraPids: number[]) {
-  const rows = await fetchJson<PoolRow>(
-    `${tableUrl("mvp_candidate_pool")}?select=pid,status,category,comparable_key,expected_profit_min,invalidated_reason&category=in.(${categories.join(",")})&status=in.(${statuses.join(",")})&order=expected_profit_min.desc&limit=5000`,
-  );
+  const rows: PoolRow[] = [];
+  const baseUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,status,category,comparable_key,expected_profit_min,invalidated_reason&category=in.(${categories.join(",")})&status=in.(${statuses.join(",")})&order=expected_profit_min.desc`;
+  for (let offset = 0; rows.length < POOL_SCAN_LIMIT; offset += POOL_PAGE_SIZE) {
+    const take = Math.min(POOL_PAGE_SIZE, POOL_SCAN_LIMIT - rows.length);
+    const page = await fetchJson<PoolRow>(`${baseUrl}&limit=${take}&offset=${offset}`);
+    rows.push(...page);
+    if (page.length < take) break;
+  }
   const missingExtra = extraPids.filter((pid) => !rows.some((row) => Number(row.pid) === pid));
   for (const part of chunk(missingExtra, 200)) {
     rows.push(...await fetchJson<PoolRow>(
