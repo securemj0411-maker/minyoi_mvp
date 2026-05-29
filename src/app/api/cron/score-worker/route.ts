@@ -40,6 +40,11 @@ function envIntAny(names: string[], fallback: number, min: number, max: number):
   return fallback;
 }
 
+function isAuxDaangnProject(): boolean {
+  const role = String(process.env.CRON_PROJECT_ROLE ?? "").trim().toLowerCase();
+  return role === "daangn_b" || role === "daangn_c";
+}
+
 function scoreWorkerBudgetMs() {
   return envInt("PIPELINE_SCORE_WORKER_BUDGET_MS", 55_000, 5_000, 55_000);
 }
@@ -64,7 +69,7 @@ function scoreCleanupDecision(req: NextRequest) {
 }
 
 function scoreStageOptions(cleanup: ReturnType<typeof scoreCleanupDecision>): ScoreStageOptions {
-  const shardCount = envIntAny(["PIPELINE_SCORE_DAANGN_SHARD_COUNT", "DAANGN_INGEST_REGION_SHARD_COUNT"], 1, 1, 20);
+  const shardCount = envIntAny(["PIPELINE_SCORE_DAANGN_SHARD_COUNT", "DAANGN_INGEST_REGION_SHARD_COUNT"], 3, 1, 20);
   const shardIndex = envIntAny(["PIPELINE_SCORE_DAANGN_SHARD_INDEX", "DAANGN_INGEST_REGION_SHARD_INDEX"], 0, 0, Math.max(0, shardCount - 1));
   return {
     lane: "a",
@@ -133,6 +138,17 @@ async function handleScoreWorker(req: NextRequest) {
 
   if (!authOk) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  if (isAuxDaangnProject()) {
+    return NextResponse.json({
+      ok: true,
+      started: false,
+      skipped: true,
+      mode: "score_worker",
+      reason: "aux_daangn_project_uses_dedicated_score_worker",
+      projectRole: process.env.CRON_PROJECT_ROLE ?? null,
+    });
   }
 
   const guard = await acquireCronGuardWithSourceHealth("score_worker", req);

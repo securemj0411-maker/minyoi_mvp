@@ -17,6 +17,10 @@
       "schedule": "* * * * *"
     },
     {
+      "path": "/api/cron/score-worker-c",
+      "schedule": "* * * * *"
+    },
+    {
       "path": "/api/cron/recovery-worker",
       "schedule": "* * * * *"
     },
