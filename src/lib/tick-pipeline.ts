@@ -350,7 +350,8 @@ const SKU_MEDIAN_UNAVAILABLE_MARKET_REFRESH_COOLDOWN_MS = 6 * 60 * 60 * 1000;
 const DEFAULT_SELLER_SEARCH_REFRESH_MS = 3 * 60 * 60 * 1000;
 const PARSED_PID_READ_CHUNK_SIZE = 300;
 const REST_KEY_READ_CHUNK_SIZE = 50;
-const DEFAULT_MARKET_INVALIDATION_PARSED_ROWS_PER_KEY_CHUNK = 1000;
+const DEFAULT_MARKET_INVALIDATION_KEY_CHUNK_SIZE = 10;
+const DEFAULT_MARKET_INVALIDATION_PARSED_ROWS_PER_KEY_CHUNK = 300;
 const TERMINAL_LISTING_STATES = new Set(["sold_confirmed", "disappeared", "archived"]);
 
 export type ScoreStageOptions = {
@@ -2776,7 +2777,9 @@ async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListing
 
 type ParsedKeyLoadOptions = {
   includeParsedJson?: boolean;
+  keyChunkSize?: number;
   maxRowsPerKeyChunk?: number;
+  onAttemptedKeys?: (keys: string[]) => void;
 };
 
 function parsedListingColumns(options: { includeParsedJson: boolean }) {
@@ -2788,8 +2791,17 @@ function marketInvalidationParsedRowsPerKeyChunk() {
   return boundedInt(
     process.env.PIPELINE_MARKET_INVALIDATION_PARSED_ROWS_PER_KEY_CHUNK ?? null,
     DEFAULT_MARKET_INVALIDATION_PARSED_ROWS_PER_KEY_CHUNK,
-    100,
+    50,
     5000,
+  );
+}
+
+function marketInvalidationKeyChunkSize() {
+  return boundedInt(
+    process.env.PIPELINE_MARKET_INVALIDATION_KEY_CHUNK_SIZE ?? null,
+    DEFAULT_MARKET_INVALIDATION_KEY_CHUNK_SIZE,
+    1,
+    REST_KEY_READ_CHUNK_SIZE,
   );
 }
 
@@ -2810,8 +2822,9 @@ async function loadParsedRowsByComparableKeys(
   const maxRowsPerKeyChunk = options.maxRowsPerKeyChunk == null
     ? Number.POSITIVE_INFINITY
     : Math.max(1, options.maxRowsPerKeyChunk);
+  const keyChunkSize = Math.max(1, Math.min(options.keyChunkSize ?? REST_KEY_READ_CHUNK_SIZE, REST_KEY_READ_CHUNK_SIZE));
   const rows: ParsedListingRow[] = [];
-  for (const chunk of chunkArray(unique, REST_KEY_READ_CHUNK_SIZE)) {
+  for (const chunk of chunkArray(unique, keyChunkSize)) {
     const remaining = limit - rows.length;
     if (remaining <= 0) break;
     const encoded = chunk.map((key) => encodeURIComponent(key)).join(",");
@@ -2822,6 +2835,7 @@ async function loadParsedRowsByComparableKeys(
       maxRows: Math.min(remaining, maxRowsPerKeyChunk),
       orderBy: "pid.asc",
     });
+    options.onAttemptedKeys?.(chunk);
     rows.push(...pageRows);
     if (rows.length >= limit) break;
   }
@@ -2839,8 +2853,9 @@ async function loadParsedRowsByShoeSizeSiblingKeys(
   const maxRowsPerKeyChunk = options.maxRowsPerKeyChunk == null
     ? Number.POSITIVE_INFINITY
     : Math.max(1, options.maxRowsPerKeyChunk);
+  const keyChunkSize = Math.max(1, Math.min(options.keyChunkSize ?? REST_KEY_READ_CHUNK_SIZE, REST_KEY_READ_CHUNK_SIZE));
   const rows: ParsedListingRow[] = [];
-  for (const pattern of patterns.slice(0, REST_KEY_READ_CHUNK_SIZE)) {
+  for (const pattern of patterns.slice(0, keyChunkSize)) {
     const remaining = limit - rows.length;
     if (remaining <= 0) break;
     const baseUrl = `${tableUrl("mvp_listing_parsed")}?select=${columns}&comparable_key=like.${encodeURIComponent(pattern)}&parse_confidence=gte.0.65&needs_review=eq.false`;
@@ -4553,19 +4568,27 @@ export async function marketStatsStage(): Promise<StageStats> {
     market_invalidation_claimed_clothing_keys: pendingPrefixCounts.clothing ?? 0,
   };
   const pendingKeys = new Set(pendingInvalidations.map((row) => row.comparable_key));
+  const attemptedPendingKeys = new Set<string>();
+  const invalidationKeyChunkSize = marketInvalidationKeyChunkSize();
   const invalidationRowsPerKeyChunk = marketInvalidationParsedRowsPerKeyChunk();
   stats.timingsMs = {
     ...(stats.timingsMs ?? {}),
+    market_invalidation_key_chunk_size: invalidationKeyChunkSize,
     market_invalidation_parsed_rows_per_key_chunk: invalidationRowsPerKeyChunk,
   };
   const invalidatedParsedByPid = await loadParsedRowsByComparableKeys([...pendingKeys], config.marketStatsLimit, {
     includeParsedJson: false,
+    keyChunkSize: invalidationKeyChunkSize,
     maxRowsPerKeyChunk: invalidationRowsPerKeyChunk,
+    onAttemptedKeys: (keys) => {
+      for (const key of keys) attemptedPendingKeys.add(key);
+    },
   });
   const remainingSiblingLimit = Math.max(0, config.marketStatsLimit - invalidatedParsedByPid.size);
   const siblingParsedByPid = remainingSiblingLimit > 0
     ? await loadParsedRowsByShoeSizeSiblingKeys([...pendingKeys], remainingSiblingLimit, {
       includeParsedJson: false,
+      keyChunkSize: invalidationKeyChunkSize,
       maxRowsPerKeyChunk: Math.min(500, invalidationRowsPerKeyChunk),
     })
     : new Map<number, ParsedListingRow>();
@@ -4577,6 +4600,8 @@ export async function marketStatsStage(): Promise<StageStats> {
     ...(stats.timingsMs ?? {}),
     market_invalidation_parsed_rows: invalidatedParsedByPid.size,
     market_invalidation_sibling_rows: siblingParsedByPid.size,
+    market_invalidation_attempted_keys: attemptedPendingKeys.size,
+    market_invalidation_deferred_keys: Math.max(0, pendingKeys.size - attemptedPendingKeys.size),
   };
   if (pendingInvalidations.length > 0 && invalidatedPids.length === 0) {
     stats.queued = pendingInvalidations.length;
@@ -4607,7 +4632,9 @@ export async function marketStatsStage(): Promise<StageStats> {
   // close the invalidation even if no row survived the active/sold/disappeared filters.
   // Otherwise low-sample or now-ineligible comparable_keys stay pending forever and make
   // the market queue look permanently backlogged.
-  const completedInvalidationKeys = pendingInvalidations.length > 0 ? [...pendingKeys] : recomputedKeys;
+  const completedInvalidationKeys = pendingInvalidations.length > 0
+    ? [...new Set([...attemptedPendingKeys, ...recomputedKeys])]
+    : recomputedKeys;
   const closedInvalidations = await markMarketInvalidationsDone(completedInvalidationKeys);
   // P0-5: 시세가 갱신된 comparable_key의 raw_listings는 score를 재계산해야 한다.
   // 같은 매물이라도 trustedMedian이 바뀌면 priceGap/score가 달라지므로 dirty=true.

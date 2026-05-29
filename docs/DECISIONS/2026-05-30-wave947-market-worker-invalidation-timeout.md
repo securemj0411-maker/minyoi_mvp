@@ -60,6 +60,24 @@ Decision:
 
 This preserves event-driven rescoring semantics while reducing duplicate writes and noisy backlog churn.
 
+## Follow-up: smaller invalidation key chunks
+
+A later production run still hit Supabase statement timeout on the parsed-row GET, even after dropping
+`parsed_json`. The failing URL showed a 50-key `comparable_key in (...)` chunk.
+
+Decision:
+
+- Market invalidation parsed reads now use a default key chunk size of 10 instead of 50.
+- Per-key-chunk row cap defaults to 300 instead of 1,000.
+- The generic loader still defaults to 50-key chunks; this tighter setting is only for market invalidation.
+- Track attempted keys and do not mark unattempted pending invalidations as `done` when the global row cap stops the read early.
+- Added stage timings:
+  - `market_invalidation_key_chunk_size`
+  - `market_invalidation_attempted_keys`
+  - `market_invalidation_deferred_keys`
+
+Local REST probes against the current pending 500 keys showed 10-key chunks responding in roughly 60-200ms per chunk, while 50-key chunks had multi-second spikes and one production timeout.
+
 ## Deferred
 
 - If market-worker still spikes after this cap, consider a DB index optimized for the exact invalidation query:
