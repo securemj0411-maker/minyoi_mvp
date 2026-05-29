@@ -69,8 +69,8 @@ function scoreCleanupDecision(req: NextRequest) {
 }
 
 function scoreStageOptions(cleanup: ReturnType<typeof scoreCleanupDecision>): ScoreStageOptions {
-  const shardCount = envIntAny(["PIPELINE_SCORE_DAANGN_SHARD_COUNT", "DAANGN_INGEST_REGION_SHARD_COUNT"], 3, 1, 20);
-  const shardIndex = envIntAny(["PIPELINE_SCORE_DAANGN_SHARD_INDEX", "DAANGN_INGEST_REGION_SHARD_INDEX"], 0, 0, Math.max(0, shardCount - 1));
+  const shardCount = envIntAny(["PIPELINE_SCORE_DAANGN_SHARD_COUNT"], 3, 1, 20);
+  const shardIndex = envIntAny(["PIPELINE_SCORE_DAANGN_SHARD_INDEX"], 0, 0, Math.max(0, shardCount - 1));
   return {
     lane: "a",
     cleanup: cleanup.enabled,

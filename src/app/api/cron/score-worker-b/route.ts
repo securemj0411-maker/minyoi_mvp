@@ -38,8 +38,8 @@ function scoreWorkerBBudgetMs() {
 }
 
 function scoreStageOptions(): ScoreStageOptions {
-  const shardCount = envInt(["PIPELINE_SCORE_B_DAANGN_SHARD_COUNT", "PIPELINE_SCORE_DAANGN_SHARD_COUNT", "DAANGN_INGEST_B_REGION_SHARD_COUNT", "DAANGN_INGEST_REGION_SHARD_COUNT"], 3, 1, 20);
-  const shardIndex = envInt(["PIPELINE_SCORE_B_DAANGN_SHARD_INDEX", "DAANGN_INGEST_B_REGION_SHARD_INDEX"], 1, 0, Math.max(0, shardCount - 1));
+  const shardCount = envInt(["PIPELINE_SCORE_B_DAANGN_SHARD_COUNT", "PIPELINE_SCORE_DAANGN_SHARD_COUNT"], 3, 1, 20);
+  const shardIndex = envInt(["PIPELINE_SCORE_B_DAANGN_SHARD_INDEX"], 1, 0, Math.max(0, shardCount - 1));
   return {
     lane: "b",
     sourceFilter: "daangn",
