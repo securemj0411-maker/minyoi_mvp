@@ -80,6 +80,15 @@ describe("tech device condition evidence parser", () => {
     assert.ok(!result.signals.includes("display_panel_issue"));
   });
 
+  it("뒷면 검은 점/후면 생활기스는 화면 흑점으로 오탐하지 않는다", () => {
+    const result = parseTechDeviceConditionEvidence({
+      title: "아이패드 프로 12.9",
+      description: "액정은 필름 한 번도 뗀 적 없어서 깔끔합니다. 뒷면은 미세기스랑 검은 점같은 찍힘 기스가 살짝 있습니다.",
+    });
+
+    assert.ok(!result.signals.includes("display_panel_issue"));
+  });
+
   it("액정 깨진 곳 없이 깨끗하다는 표현은 display issue로 오탐하지 않는다", () => {
     assert.ok(!signals("아이폰 14", "액정은 필름 잘 붙여놔서 깨진 곳 없이 깨끗합니다.").includes("display_panel_issue"));
   });
@@ -111,6 +120,12 @@ describe("tech device condition evidence parser", () => {
     });
 
     assert.ok(result.hardBlockCandidates.includes("display_panel_issue"));
+  });
+
+  it("태블릿 붉은 반점과 내부 액정 나감은 display issue로 잡는다", () => {
+    assert.ok(signals("아이패드 미니 5", "검색 바탕에서만 붉은 반점이 보입니다.").includes("display_panel_issue"));
+    assert.ok(signals("갤럭시탭 S8 울트라", "액정이 나갔어요. 겉 액정이 아니라 안에 액정이 나갔고 갑자기 먹통입니다.").includes("display_panel_issue"));
+    assert.ok(signals("아이패드 에어 4", "화면 왼쪽하단에 흰색 색번짐이 있긴 합니다.").includes("display_panel_issue"));
   });
 
   it("폴더블 내부액정 주름/반점은 기능 정상 문구가 있어도 hard signal로 잡는다", () => {
@@ -156,9 +171,146 @@ describe("tech device condition evidence parser", () => {
     assert.ok(!result.signals.includes("speaker_or_mic_issue"));
   });
 
+  it("충전단자 고장과 주변광 센서 문제는 hard signal로 남긴다", () => {
+    const parsed = parseListingOptions({
+      category: "tablet",
+      title: "아이패드 10세대 블루",
+      description: "어제부터 충전이 안되는데 충전단자가 고장난 듯해요. 주변광 센서에도 문제가 있다고 하네요.",
+      skuId: "ipad-10th",
+      skuName: "iPad 10th gen",
+    });
+
+    assert.equal(parsed.conditionClass, "flawed");
+    assert.ok((parsed.parsedJson.tech_device_condition_signals as string[]).includes("charging_or_sensor_issue"));
+    assert.ok(parsed.conditionNotes.includes("device_charging_or_sensor_issue"));
+  });
+
+  it("충전기 없음/필름 금감은 충전·센서나 화면 하자로 오탐하지 않는다", () => {
+    const result = parseTechDeviceConditionEvidence({
+      title: "아이패드 7세대",
+      description: "액정은 멀쩡하고 필름에 금이 살짝 있습니다. 충전기는 없습니다.",
+    });
+
+    assert.ok(!result.signals.includes("charging_or_sensor_issue"));
+    assert.ok(!result.signals.includes("display_panel_issue"));
+  });
+
   it("수리내역 없음과 강화유리필름 교체는 액정 수리로 오탐하지 않는다", () => {
     assert.ok(!signals("아이폰13 A급 화이트", "수리내역없습니다 배터리성능86 모든기능이상없으며 하자없습니다").includes("screen_replaced_or_repaired"));
     assert.ok(!signals("아이폰15프로", "기변 직전 강화유리필름 교체해서 필름 교체할 필요 없습니다.").includes("screen_replaced_or_repaired"));
+  });
+
+  it("사설수리x/기능이상x는 사설수리 하자로 오탐하지 않는다", () => {
+    const parsed = parseListingOptions({
+      category: "smartwatch",
+      title: "애플워치10 46mm SSS급",
+      description: "사설수리x 기능이상x 모든기능정상 생활기스 거의 없는 최상급입니다.",
+      skuId: "apple-watch-series-10-46mm",
+      skuName: "Apple Watch Series 10 46mm",
+    });
+
+    assert.ok(!parsed.conditionNotes.includes("refurbished_or_repaired"));
+    assert.ok(!parsed.conditionNotes.includes("repair_or_defect_signal"));
+  });
+
+  it("사설 수리 내역 없음/수리 x/불량 없이 정상작동은 수리 하자로 오탐하지 않는다", () => {
+    const noHistory = parseListingOptions({
+      category: "smartwatch",
+      title: "애플워치 10",
+      description: "사설 수리 내역 없습니다. 배터리 95% 모든기능정상.",
+    });
+    const noRepair = parseListingOptions({
+      category: "smartwatch",
+      title: "애플워치 울트라2",
+      description: "태두리기스 액정깨끗. 수리 x 하자 x 모든기능정상.",
+    });
+    const noDefect = parseListingOptions({
+      category: "smartwatch",
+      title: "애플워치 시리즈 10",
+      description: "사설수리 절대 없이 100%로 사용했습니다. 시스템 불량/크라운 불량/디스플레이 불량 없이 모두 정상작동 됩니다.",
+    });
+
+    assert.ok(!noHistory.conditionNotes.includes("refurbished_or_repaired"));
+    assert.ok(!noRepair.conditionNotes.includes("screen_replaced"));
+    assert.ok(!noDefect.conditionNotes.includes("refurbished_or_repaired"));
+    assert.ok(!noDefect.conditionNotes.includes("display_defect"));
+  });
+
+  it("충전독/충전기 없음과 스트랩 조정 문구는 본체 기능 고장으로 오탐하지 않는다", () => {
+    const chargerMissing = parseListingOptions({
+      category: "smartwatch",
+      title: "갤럭시워치",
+      description: "충전독은 잃어버려서 없습니다. 기능에는 아무런 문제가 없습니다.",
+    });
+    const strapOnly = parseListingOptions({
+      category: "smartwatch",
+      title: "갤럭시 워치4",
+      description: "시계줄은 교체해서 쓰셔야 할 거 같아요. 제 손목 사이즈에 맞게 빼놔서 길이 조정 불가. 충전기도 함께 드려요.",
+    });
+
+    assert.ok(!chargerMissing.conditionNotes.includes("device_charging_or_sensor_issue"));
+    assert.ok(!strapOnly.conditionNotes.includes("repair_or_defect_signal"));
+  });
+
+  it("보호필름 깨짐/배송 파손 동의/자급제 가개통 무관 문구는 하자로 오탐하지 않는다", () => {
+    const filmOnly = parseListingOptions({
+      category: "smartwatch",
+      title: "갤럭시 워치6",
+      description: "액정 멀쩡하구요 사용하던 필름이 깨져있습니다.",
+    });
+    const shippingOnly = parseListingOptions({
+      category: "smartwatch",
+      title: "애플워치",
+      description: "파손 동의시 택배거래 가능하고 제품은 정상입니다.",
+    });
+    const unlockedRetail = parseListingOptions({
+      category: "smartwatch",
+      title: "갤럭시워치울트라",
+      description: "자급제라 가개통같은거 신경안쓰시고 사용가능해요.",
+    });
+
+    assert.ok(!filmOnly.conditionNotes.includes("display_defect"));
+    assert.ok(!shippingOnly.conditionNotes.includes("repair_or_defect_signal"));
+    assert.ok(!unlockedRetail.conditionNotes.includes("sim_or_carrier_issue"));
+  });
+
+  it("백화 없음/침수 취급하지 않음/모서리 파손 없음은 하자로 오탐하지 않는다", () => {
+    assert.ok(!signals("갤럭시 탭", "화면 백화현상 및 픽셀 깨짐 없습니다. 후면에 생활기스 정도는 있습니다.").includes("display_panel_issue"));
+    assert.ok(!signals("애플워치", "분실, 도난, 침수 취급하지 않습니다. 모든 기능 정상입니다.").includes("water_damage"));
+    assert.ok(!signals("아이패드", "모서리깔끔. 파손없음. 정상작동.").includes("body_or_back_glass_damage"));
+  });
+
+  it("필름 금/공기방울/워치줄 구멍/터치 오작동 X는 화면 하자로 오탐하지 않는다", () => {
+    assert.ok(!signals("갤럭시 탭", "액정 깨진 것 아니고 필름에 금이 간 건데 확인 필요하시면 필름 벗겨서 보여드려요.").includes("display_panel_issue"));
+    assert.ok(!signals("애플워치 울트라", "보호필름에 공기가 들어가서 화면깨진거처럼 보일 수 있는데 화면 깨지거나 흠 없습니다.").includes("display_panel_issue"));
+    assert.ok(!signals("갤럭시 워치6", "워치 줄에 살짝 구멍나있어요. 너무 커서 살짝 구멍뚫어서 사용했었어요.").includes("display_panel_issue"));
+    assert.ok(!signals("애플워치 울트라2", "화면기스, 터치 및 소프트웨어 오작동 X 상태 S급.").includes("touch_issue"));
+  });
+
+  it("판매점 고지문과 지문방지필름은 실제 결함으로 오탐하지 않는다", () => {
+    const shopPolicy = "잔상: 양호. 고객 부주의(파손/침수/충격)은 교환 불가입니다.";
+    assert.ok(!signals("갤럭시탭 S8", shopPolicy).includes("display_panel_issue"));
+    assert.ok(!signals("갤럭시탭 S8", shopPolicy).includes("water_damage"));
+    assert.ok(!signals("갤럭시탭 S8", shopPolicy).includes("body_or_back_glass_damage"));
+    assert.ok(!signals("아이패드 프로", "구성품은 박스, 지문방지필름, 케이스입니다. 기능상 하자 없음.").includes("faceid_or_biometric_issue"));
+    assert.ok(!signals("갤럭시 워치7", "화면에는 기스없어요 줄은 다른걸로 교체하셔도 됩니다.").includes("screen_replaced_or_repaired"));
+  });
+
+  it("모서리/하단부 깨짐은 일반 하자 언급이 아니라 본체 파손 신호로 잡는다", () => {
+    const parsed = parseListingOptions({
+      category: "tablet",
+      title: "아이패드 프로",
+      description: "오른쪽 하단 깨짐 있어서 저렴히 팔아요. 하단부 금가 있는데 화면은 잘 나옵니다.",
+    });
+
+    assert.equal(parsed.conditionClass, "flawed");
+    assert.ok(parsed.conditionNotes.includes("device_body_damage"));
+  });
+
+  it("활성화잠금과 휨 증상은 정상 작동 문구가 있어도 hard signal로 잡는다", () => {
+    assert.ok(signals("아이패드 미니", "전체적으로 깨끗합니다. 다만 활성화잠금으로 사용못하고 있습니다.").includes("account_or_activation_lock"));
+    assert.ok(signals("아이패드 7세대", "휨 증상이 있지만 기기 작동하는 데에는 문제 일절 없습니다.").includes("body_or_back_glass_damage"));
+    assert.ok(signals("갤럭시탭 S9 화면X", "화면은 들어오지않고 충전기 꽂으면 전원은 들어옵니다.").includes("display_panel_issue"));
   });
 
   it("화면 깨진 곳 없음은 display defect로 오탐하지 않는다", () => {
@@ -226,6 +378,11 @@ describe("tech device condition evidence parser", () => {
     });
 
     assert.ok(!result.hardBlockCandidates.includes("carrier_or_finance_risk"));
+  });
+
+  it("가개통/개통된 단말기 워치 LTE 제한은 carrier risk로 남긴다", () => {
+    assert.ok(signals("갤럭시워치 울트라", "개통된단말기입니다 LTE불가 블루투스 잡아서 사용하셔야됩니다").includes("carrier_or_finance_risk"));
+    assert.ok(signals("갤럭시워치8 울트라", "셀룰러사용 불가하고 블루투스로 사용가능 합니다 (가개통)").includes("carrier_or_finance_risk"));
   });
 
   it("확정기변 불가능은 carrier/finance risk로 남긴다", () => {

@@ -39,4 +39,11 @@ describe("condition display chips", () => {
       ],
     );
   });
+
+  it("태블릿/워치 충전·센서 condition_notes를 사용자 노출 chip key로 변환한다", () => {
+    assert.deepEqual(
+      conditionNoteDisplayChips(["device_charging_or_sensor_issue"]),
+      ["condition:device_charging_or_sensor_issue"],
+    );
+  });
 });

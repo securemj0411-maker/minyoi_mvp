@@ -72,6 +72,7 @@ export const FLAWED_NOTES = [
   "parts_only",
   "multi_device_bundle",
   "repair_or_defect_signal",
+  "device_charging_or_sensor_issue",
   "refurbished_or_repaired",
   "installment_risk",
   // Wave 204 (2026-05-18): buy-intent 매물 (구함/삽니다/매입) — 정상 거래 X (사용자 손해 명확).
@@ -227,7 +228,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v63";  // Wave 934: smartphone structural damage evidence gate (back glass / foldable hinge / black spot)
+export const PARSER_VERSION = "option-parser-v64";  // Wave 937: tablet/smartwatch condition deepsweep negation + defect chips
 
 // Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
 //   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
@@ -1210,8 +1211,20 @@ function conditionFromText(
   const compact = lower.replace(/\s+/g, "");
   const defectRiskText = lower
     .replace(/리퍼\s*(?:제품\s*)?(?:아님|아닙니다|아닌|아니고|아니며)/g, " ")
-    .replace(/(?:수리|교체)\s*(?:이력|내역)?\s*(?:없|없음|없습니다|없고|안함|안\s*함|한\s*적\s*없)/g, " ")
-    .replace(/(?:하자|불량|파손|깨짐)(?:이나|이나요|은|는|이|가)?\s*(?:전혀\s*)?(?:없|없음|없습니다|없고|없이|아님|아닙니다)/g, " ")
+    .replace(/(?:수리|교체)\s*(?:이력|내역)?\s*(?:없|없음|없습니다|없고|무|x|안함|안\s*함|한\s*적\s*없)/g, " ")
+    .replace(/(?:하자|불량|파손|깨짐)(?:이나|이나요|은|는|이|가)?\s*(?:전혀\s*)?(?:없|없음|없습니다|없고|없이|아님|아닙니다|x)/g, " ")
+    .replace(/(?:액정|화면|디스플레이).{0,18}(?:하자|문제|파손|깨짐|깨진\s*곳|불량|기스|손상).{0,12}(?:없|없음|없습니다|없이|아님|멀쩡|정상|깨끗)/g, " ")
+    .replace(/(?:액정|화면|디스플레이|스크린).{0,18}(?:깨진\s*것|깨진거|깨짐|파손).{0,16}(?:아니|아님|아닙|필름)|(?:깨진\s*것|깨진거|깨짐|파손).{0,12}(?:필름).{0,16}(?:액정\s*x|액정\s*아님|액정\s*아니)/g, " ")
+    .replace(/(?:화면|액정|디스플레이|스크린).{0,12}깨진\s*거\s*처럼.{0,40}(?:없|없음|없습니다|아님|아니)|(?:화면|액정|디스플레이|스크린).{0,20}깨지거나.{0,20}(?:없|없음|없습니다)/g, " ")
+    .replace(/(?:시스템|크라운|디스플레이|액정|화면)\s*불량\s*없이/g, " ")
+    .replace(/(?:문제|하자|기능\s*이상).{0,20}(?:교환|환불|보상|기간|정책)/g, " ")
+    .replace(/잔상을\s*제외|잔상\s*제외|잔상\s*[:：]?\s*(?:양호|정상)/g, " ")
+    .replace(/(?:고객\s*부주의|본인\s*과실|단순\s*변심|기능\s*문제가\s*아닌).{0,50}(?:파손|침수|충격|액정\s*나감|액정나감|꺼짐|멍).{0,50}(?:교환|환불|반품).{0,12}불가/g, " ")
+    .replace(/(?:파손|깨짐|고장).{0,12}(?:동의|면책).{0,18}(?:택배|배송)|(?:택배|배송).{0,18}(?:파손|깨짐|고장).{0,12}(?:동의|면책|우려|위험)/g, " ")
+    .replace(/(?:시계줄|워치\s*줄|줄|스트랩|밴드).{0,28}(?:교체|길이\s*조정\s*불가|조정\s*불가|줄임|줄여)/g, " ")
+    .replace(/(?:충전기|충전\s*기|충전독|충전\s*독|충전케이블|충전\s*케이블|케이블).{0,16}(?:없|없음|없습니다|분실|미포함|제외)/g, " ")
+    .replace(/침수(?:폰)?\s*(?:없|없음|없습니다|아님|취급하지|취급\s*안)|침수.{0,12}(?:이력|내역).{0,12}(?:없|없음|없습니다|전혀\s*없)/g, " ")
+    .replace(/분실.{0,8}도난.{0,20}(?:취급하지|취급\s*안)|(?:분실|도난).{0,12}(?:없|없음|없습니다|취급하지|취급\s*안)/g, " ")
     .replace(/(?:깨짐|기스|스크래치).{0,12}(?:없|없음|없습니다|없고)/g, " ")
     .replace(/(?:액정|디스플레이|화면)\s*(?:깨짐|파손|불량)\s*(?:없|없음|없습니다|없고)/g, " ")
     .replace(/무상\s*수리\s*가능/g, " ")
@@ -1479,7 +1492,7 @@ function conditionFromText(
   // - "정품 배터리 교체" — 셀러가 공식 정품 배터리로 교체 = 정상 (수리 의미 아님)
   // - "잔상이나 화면 하자 없" — 부정형 정상 표현
   // - "전기능 이상없" / "기능 문제 없" — 정상 작동 명시
-  const noRepairOrDefect = /\(\s*없는\s*수준\s*\)|하자.{0,20}(?:없|아닙|아님)|고장.{0,20}없|불량.{0,20}없|파손.{0,20}없|깨짐.{0,20}없|문제.{0,20}없|수리.{0,20}(?:없|이력\s*없|한\s*적\s*없)|교체.{0,20}(?:없|이력\s*없|한\s*적\s*없)|하자.{0,30}(?:제외|환불|책임\s*없)|원초적\s*하자|택배\s*취급(?:문제|상\s*문제)|택배취급문제|하자.{0,8}(?:있는\s*제품은\s*명시|있을\s*경우\s*환불|있는\s*경우)|하자나\s*오염\s*없|하자나\s*기스\s*없|하자\s*거의\s*없|하자\s*약간|하자\s*미세|심각한\s*하자\s*없|심각한\s*문제\s*없|정품\s*배터리\s*교체|정품배터리교체|배터리\s*(?:100\s*%|100%)\s*정품|잔상이나\s*(?:화면|디스플레이|액정)?\s*(?:하자|기스|손상).{0,8}없|전\s*기능\s*(?:이상|문제)\s*없|전기능\s*(?:이상|문제)\s*없|기능\s*(?:상\s*)?(?:이상|문제)\s*없|기능\s*문제\s*없|기능\s*정상|모든\s*기능\s*(?:정상|이상\s*없|문제\s*없)/.test(lower);
+  const noRepairOrDefect = /\(\s*없는\s*수준\s*\)|하자.{0,20}(?:없|아닙|아님|x)|고장.{0,20}없|불량.{0,20}(?:없|없이)|파손.{0,20}(?:없|동의|면책)|깨짐.{0,20}없|문제.{0,20}(?:없|환불)|수리.{0,20}(?:없|이력\s*없|내역\s*없|한\s*적\s*없|x|안\s*함|안함)|교체.{0,20}(?:없|이력\s*없|한\s*적\s*없)|하자.{0,30}(?:제외|환불|책임\s*없)|원초적\s*하자|택배\s*취급(?:문제|상\s*문제)|택배취급문제|하자.{0,8}(?:있는\s*제품은\s*명시|있을\s*경우\s*환불|있는\s*경우)|하자나\s*오염\s*없|하자나\s*기스\s*없|하자\s*거의\s*없|하자\s*약간|하자\s*미세|심각한\s*하자\s*없|심각한\s*문제\s*없|정품\s*배터리\s*교체|정품배터리교체|배터리\s*(?:100\s*%|100%)\s*정품|잔상이나\s*(?:화면|디스플레이|액정)?\s*(?:하자|기스|손상).{0,8}없|잔상을\s*제외|잔상\s*제외|전\s*기능\s*(?:이상|문제)\s*없|전기능\s*(?:이상|문제)\s*없|기능\s*(?:상\s*)?(?:이상|문제)\s*(?:없|없는)|기능\s*문제\s*없|기능\s*정상|모든\s*기능\s*(?:정상|이상\s*없|문제\s*없)|(?:사설|부분|일부|자가)\s*수리\s*(?:내역|이력)?\s*(?:없|없음|없습니다|x|무|없이|절대\s*없이|안\s*함|안함)|(?:사설수리|부분수리|일부수리|자가수리)\s*(?:내역|이력)?\s*(?:없|없음|없습니다|x|무|없이|절대\s*없이|안\s*함|안함)|(?:시계줄|워치\s*줄|줄|스트랩|밴드).{0,28}(?:교체|길이\s*조정\s*불가|조정\s*불가)|(?:문제|기능\s*이상).{0,20}(?:교환|환불|기간|정책)|(?:고객\s*부주의|본인\s*과실|단순\s*변심|기능\s*문제가\s*아닌).{0,50}(?:파손|침수|충격|액정\s*나감|액정나감|꺼짐|멍).{0,50}(?:교환|환불|반품).{0,12}불가/.test(lower);
   if (!noRepairOrDefect && /수리|교체|하자|고장|불량|파손|깨짐/.test(defectRiskText)) add("repair_or_defect_signal", -0.2);
   if (batteryHealth != null && batteryHealth < 85) add("low_battery_health", -0.15);
   if (cycles != null && cycles > 500) add("high_battery_cycles", -0.1);
@@ -1492,19 +1505,22 @@ function conditionFromText(
   //   - 공식 리퍼 (refurbished_factory) 신규 → FLAWED 아님 (정상 작동, 시세 sample 유지)
   //   - 사설/부분/일부/자가 수리 (refurbished_or_repaired) 유지 → FLAWED (실제 훼손 흔적)
   const notRefurbished = /리퍼\s*(?:제품\s*)?(?:아님|아닙니다|아닌|아니고|아니며)/.test(lower);
-  const isUnofficialOrPartialRepair = /(?:사설|부분|일부|자가)\s*수리|사설수리|부분수리|일부수리|자가수리/.test(lower);
+  const noUnofficialOrPartialRepair = /(?:사설|부분|일부|자가)\s*수리\s*(?:내역|이력)?\s*(?:없|없음|없습니다|x|무|없이|절대\s*없이|안\s*함|안함|한\s*적\s*없|한적\s*없)|(?:사설수리|부분수리|일부수리|자가수리)\s*(?:내역|이력)?\s*(?:없|없음|없습니다|x|무|없이|절대\s*없이|안\s*함|안함|한\s*적\s*없|한적\s*없)/.test(lower);
+  const isUnofficialOrPartialRepair = !noUnofficialOrPartialRepair && /(?:사설|부분|일부|자가)\s*수리|사설수리|부분수리|일부수리|자가수리/.test(lower);
   const isFactoryRefurbished = !notRefurbished
     && !isUnofficialOrPartialRepair
-    && /리퍼\s*(?:폰|제품|미개봉|박스|교체)?|리퍼폰/.test(lower);
+    && /(?:공식|애플|삼성)\s*리퍼|리퍼\s*(?:폰|제품|미개봉|박스|교체품)|리퍼폰/.test(lower);
   if (isUnofficialOrPartialRepair) {
     add("refurbished_or_repaired", -0.15); // FLAWED — 사설/부분/자가 수리 (훼손 흔적)
   } else if (isFactoryRefurbished) {
     add("refurbished_factory", -0.03); // 공식 리퍼 — 정상 작동, FLAWED 아님
   }
-  if (/(액정|디스플레이|화면).{0,16}(교체|수리)|(?:교체|수리).{0,16}(액정|디스플레이|화면)/.test(defectRiskText)) add("screen_replaced", -0.12);
+  const noScreenRepair = noRepairOrDefect
+    || /(?:수리|교체).{0,18}(?:없|없음|없습니다|무|x|안\s*함|안함)|(?:액정|디스플레이|화면).{0,18}(?:멀쩡|정상|깨끗)/.test(lower);
+  if (!noScreenRepair && /(액정|디스플레이|화면).{0,16}(교체|수리)|(?:교체|수리).{0,16}(액정|디스플레이|화면)/.test(defectRiskText)) add("screen_replaced", -0.12);
   // Wave 159i (2026-05-17 자율 사이클): "잔상이나 화면하자 없어요" 같은 부정형 정상 표현 보강.
-  const noDisplayDefect = /무잔상|잔상\s*(?:없|없음|없습니다|전혀\s*없)|번인\s*(?:없|없음|없습니다)|(?:화면|디스플레이|액정).{0,12}깨진\s*(?:곳|부분).{0,8}(?:없|없고|없음|없습니다)|잔상이나\s*(?:화면|디스플레이|액정)\s*(?:하자|기스|손상|문제).{0,8}없|잔상\s*,?\s*(?:파손|깨짐|기스|손상)\s*(?:,|및)?\s*(?:화면|디스플레이|액정)?\s*기스\s*없|잔상\s*,?\s*멍\s*없/.test(lower);
-  if (!noDisplayDefect && /잔상|번인|burn\s*in|녹조|흑점|멍|터치\s*불량|터치불량|액정\s*깨짐|화면\s*깨짐|디스플레이\s*깨짐|액정\s*파손|화면\s*파손|디스플레이\s*파손|노액|액정\s*나감|화면\s*나감/.test(lower)) add("display_defect", -0.25);
+  const noDisplayDefect = /무잔상|잔상\s*(?:없|없음|없습니다|전혀\s*없|없이|양호|정상)|잔상을\s*제외|잔상\s*제외|백화.{0,24}(?:없|없음|없습니다|전혀\s*없|없이)|번인\s*(?:없|없음|없습니다)|(?:화면|디스플레이|액정|스크린).{0,18}(?:깨진\s*(?:곳|부분)|깨진\s*것|깨진거|하자|문제|불량|파손|기스|손상).{0,16}(?:없|없고|없음|없습니다|없이|아님|아니|필름)|(?:깨진\s*것|깨진거|깨짐|파손).{0,12}(?:필름).{0,16}(?:액정\s*x|액정\s*아님|액정\s*아니)|(?:화면|액정|디스플레이|스크린).{0,12}깨진\s*거\s*처럼.{0,40}(?:없|없음|없습니다|아님|아니)|(?:화면|액정|디스플레이|스크린).{0,20}깨지거나.{0,20}(?:없|없음|없습니다)|(?:고객\s*부주의|본인\s*과실|기능\s*문제가\s*아닌).{0,50}(?:액정\s*나감|액정나감|꺼짐|멍).{0,50}(?:교환|환불|반품).{0,12}불가|(?:화면|디스플레이|액정|스크린).{0,12}(?:멀쩡|정상|깨끗).{0,30}(?:보호\s*)?(?:필름|강화\s*유리).{0,14}(?:깨짐|깨져|파손|크랙|기스|금)|잔상이나\s*(?:화면|디스플레이|액정)\s*(?:하자|기스|손상|문제).{0,8}없|잔상\s*,?\s*(?:파손|깨짐|기스|손상)\s*(?:,|및)?\s*(?:화면|디스플레이|액정)?\s*기스\s*없|잔상\s*,?\s*멍\s*없/.test(lower);
+  if (!noDisplayDefect && /잔상|번인|burn\s*in|녹조|흑점|색\s*번짐|색번짐|(?:액정|화면|디스플레이|스크린).{0,18}멍|멍.{0,18}(?:액정|화면|디스플레이|스크린)|터치\s*불량|터치불량|액정\s*깨짐|화면\s*깨짐|디스플레이\s*깨짐|스크린\s*깨짐|액정\s*파손|화면\s*파손|디스플레이\s*파손|스크린\s*파손|노액|액정\s*나감|화면\s*나감|디스플레이\s*나감|화면\s*x|화면.{0,12}들어오지\s*않|화면.{0,12}안\s*들어/.test(lower)) add("display_defect", -0.25);
   // 2026-05-15 Wave 117: 부품용/수리용/셀러용 매물은 일반 사용자가 사면 손해 (정상 사용 불가). 풀 차단 + 시세 sample 제외.
   // 리셀 업자 lane 신설 시 별도 builder가 다시 살림 (POOL_BLOCK_NOTES 라인 코멘트 참조).
   if (/부품\s*용|부품용|파트\s*만|리퍼\s*부품|단자\s*만|힌지\s*부품|수리\s*용|수리용|셀러\s*용|셀러용|업자\s*용|업자용|보상\s*판매용|보상판매용/.test(lower)) add("parts_only", -0.4);
@@ -1512,10 +1528,10 @@ function conditionFromText(
   if (!noFaceIdIssue && /(페이스\s*아이디|face\s*id|faceid).{0,20}(안됨|불가|고장|불량|문제|수리)|(?:안됨|불가|고장|불량|문제|수리).{0,20}(페이스\s*아이디|face\s*id|faceid)/.test(lower)) add("faceid_issue", -0.25);
   if (/(카메라|전면|후면).{0,20}(안됨|불가|고장|불량|흔들림|초점\s*불량|초점불량)|(?:안됨|불가|고장|불량|흔들림|초점\s*불량|초점불량).{0,20}(카메라|전면|후면)/.test(lower)) add("camera_issue", -0.2);
   if (/(유심|sim).{0,20}(인식\s*불|인식불|안됨|불가|락)|(?:인식\s*불|인식불|안됨|불가|락).{0,20}(유심|sim)/.test(lower)) add("sim_or_carrier_issue", -0.2);
-  const noWaterDamage = /침수(?:폰)?\s*(?:없|없음|없습니다|아님|일절\s*취급하지|취급하지\s*않)|침수\s*라벨\s*(?:정상|깨끗)/.test(lower);
+  const noWaterDamage = /침수(?:폰)?\s*(?:없|없음|없습니다|아님|일절\s*취급하지|취급하지\s*않|취급하지|취급\s*안)|침수.{0,12}(?:이력|내역).{0,12}(?:없|없음|없습니다|전혀\s*없)|(?:고객\s*부주의|본인\s*과실|단순\s*변심).{0,30}(?:파손|침수|충격).{0,30}(?:교환|환불|반품).{0,12}불가|침수\s*라벨\s*(?:정상|깨끗)/.test(lower);
   if (!noWaterDamage && /침수|물\s*들어|물먹|물\s*먹/.test(lower)) add("water_damage", -0.35);
-  const noLostOrLocked = /분실\s*도난\s*침수폰?\s*일절\s*취급하지|분실\s*(?:없|없음|신고\s*없)|도난\s*(?:없|없음)|분실.{0,8}도난.{0,16}검수\s*완료|정상\s*해지|정상해지|(?:아이클라우드|icloud).{0,16}(?:로그아웃|해제).{0,16}(?:완료|됨)|초기화\s*완료/.test(lower);
-  if (!noLostOrLocked && /분실|도난|락걸림|락\s*걸림|잠김|아이클라우드|icloud|초기화\s*불가|초기화불가/.test(lower)) add("locked_or_lost_signal", -0.4);
+  const noLostOrLocked = /분실\s*도난\s*침수폰?\s*일절\s*취급하지|분실.{0,8}도난.{0,20}(?:취급하지|취급\s*안)|분실\s*(?:없|없음|신고\s*없|취급하지)|도난\s*(?:없|없음|취급하지)|분실.{0,8}도난.{0,16}검수\s*완료|정상\s*해지|정상해지|(?:아이클라우드|icloud).{0,16}(?:로그아웃|해제).{0,16}(?:완료|됨)|초기화\s*완료/.test(lower);
+  if (!noLostOrLocked && /분실|도난|락걸림|락\s*걸림|잠김|잠금|활성화\s*잠금|활성화.{0,18}(?:해제\s*안|해제가\s*안|해제\s*불가)|아이클라우드|icloud|초기화\s*불가|초기화불가/.test(lower)) add("locked_or_lost_signal", -0.4);
   if (/선약|선택\s*약정|확정\s*기변|확정기변|정상\s*해지|정상해지/.test(lower)) add("carrier_status_disclosed", 0.03);
   if (/(할부|미납|요금).{0,12}(남|있|미납)|(?:남은|잔여).{0,8}할부/.test(compact)) add("installment_risk", -0.25);
 
@@ -2133,6 +2149,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       faceid_or_biometric_issue: "faceid_issue",
       camera_issue: "camera_issue",
       speaker_or_mic_issue: "repair_or_defect_signal",
+      charging_or_sensor_issue: "device_charging_or_sensor_issue",
       account_or_activation_lock: "locked_or_lost_signal",
       carrier_or_finance_risk: "sim_or_carrier_issue",
       water_damage: "water_damage",

@@ -9,6 +9,7 @@ export type TechDeviceConditionSignal =
   | "faceid_or_biometric_issue"
   | "camera_issue"
   | "speaker_or_mic_issue"
+  | "charging_or_sensor_issue"
   | "account_or_activation_lock"
   | "carrier_or_finance_risk"
   | "water_damage"
@@ -131,6 +132,7 @@ function parseCyclesFromText(allText: string) {
 const BACK_BODY_SURFACE =
   "(?:뒷판|뒤판|뒷면|후면\\s*유리|후면유리|백\\s*글라스|백글라스|후면)";
 const BODY_FRAME_SURFACE = "(?:프레임|테두리|하우징|외관)";
+const EDGE_SURFACE = "(?:모서리|코너|상단부|하단부|좌측\\s*하단|오른쪽\\s*하단|우측\\s*하단|왼쪽\\s*하단|상단|하단)";
 const STRONG_BREAKAGE =
   "(?:깨졌|깨져|깨진|깨짐|깨져서|깨져\\s*있|깨져있|파손|크랙|금\\s*갔|금\\s*감|금이\\s*갔|금이\\s*감)";
 const STRUCTURAL_FRAME_DAMAGE =
@@ -176,39 +178,68 @@ export function parseTechDeviceConditionEvidence(input: {
   ]));
 
   const displayNegated = hasAny(sources, [
-    /무잔상|잔상\s*(?:없|없음|없습니다|전혀\s*없)|번인\s*(?:없|없음|없습니다|전혀\s*없)|(?:액정|화면|디스플레이).{0,18}(?:하자|문제|파손|깨짐|깨진\s*곳|깨진곳|멍|흑점|검은\s*(?:색\s*)?(?:점|반점)|불량\s*화소|기스|손상).{0,12}(?:없|없음|없습니다|없이|아님)/,
+    /무잔상|잔상\s*(?:없|없음|없습니다|전혀\s*없|양호|정상)|잔상을\s*제외|잔상\s*제외|번인\s*(?:없|없음|없습니다|전혀\s*없)|(?:액정|화면|디스플레이).{0,18}(?:하자|문제|파손|깨짐|깨진\s*곳|깨진곳|멍|흑점|검은\s*(?:색\s*)?(?:점|반점)|불량\s*화소|불량|기스|손상).{0,12}(?:없|없음|없습니다|없이|아님)/,
+    /(?:잔상|백화|노화\s*증상).{0,24}(?:없|없음|없습니다|전혀\s*없|없이)/,
+    /(?:액정|화면|디스플레이|스크린).{0,18}(?:깨진\s*것|깨진거|깨짐|파손).{0,16}(?:아니|아님|아닙|필름)|(?:깨진\s*것|깨진거|깨짐|파손).{0,12}(?:필름).{0,16}(?:액정\s*x|액정\s*아님|액정\s*아니)/,
+    /(?:화면|액정|디스플레이|스크린).{0,12}깨진\s*거\s*처럼.{0,40}(?:없|없음|없습니다|아님|아니)|(?:화면|액정|디스플레이|스크린).{0,20}깨지거나.{0,20}(?:없|없음|없습니다)/,
+    /(?:고객\s*부주의|본인\s*과실|기능\s*문제가\s*아닌).{0,50}(?:액정\s*나감|액정나감|꺼짐|멍).{0,50}(?:교환|환불|반품).{0,12}불가/,
+    /(?:액정|화면|디스플레이|스크린).{0,12}(?:멀쩡|정상|깨끗).{0,30}(?:보호\s*)?(?:필름|강화\s*유리).{0,14}(?:깨짐|깨져|파손|크랙|기스|금)/,
   ]);
   const protectiveScreenOnly = /(?:보호\s*)?(?:필름|강화\s*유리).{0,14}(?:깨짐|파손|크랙|기스|금)/.test(allText)
-    && /(?:본체\s*)?(?:액정|화면|디스플레이).{0,12}정상/.test(allText);
-  const visibleDisplayIssue = firstEvidence(sources, [
-    /(?:검은\s*(?:색\s*)?(?:점|반점)|검은점|흑점|반점|불량\s*화소).{0,12}(?:있|생|보|발견|나타)|(?:있|생|보|발견|나타).{0,12}(?:검은\s*(?:색\s*)?(?:점|반점)|검은점|흑점|반점|불량\s*화소)/,
+    && /(?:본체\s*)?(?:액정|화면|디스플레이|스크린).{0,12}(?:정상|멀쩡|깨끗)/.test(allText);
+  const displaySurfaceHint = /액정|화면|디스플레이|스크린|패널|lcd|oled|내부|전면|바탕/;
+  const nonDisplaySurfaceHint = /뒷면|후면|뒷판|뒤판|백글라스|테두리|프레임|하우징/;
+  const removeNonDisplaySurfaceNoise = (evidence: Pick<TechDeviceConditionEvidence, "source" | "evidence"> | null) => {
+    if (!evidence) return null;
+    if (nonDisplaySurfaceHint.test(evidence.evidence) && !displaySurfaceHint.test(evidence.evidence)) return null;
+    return evidence;
+  };
+  const removeNegatedDisplayEvidence = (evidence: Pick<TechDeviceConditionEvidence, "source" | "evidence"> | null) => {
+    if (!evidence) return null;
+    if (/(?:하자|문제|파손|깨짐|불량|멍|흑점|잔상|번인|색\s*번짐|색번짐).{0,12}(?:없|없음|없습니다|없이|아님)/.test(evidence.evidence)) return null;
+    return evidence;
+  };
+  const visibleDisplayIssue = removeNegatedDisplayEvidence(removeNonDisplaySurfaceNoise(firstEvidence(sources, [
+    /(?:접으면|접을\s*때|접힌\s*상태).{0,24}(?:화면\s*나가|화면나가|꺼짐|안\s*나오|나오지\s*않|불량)/,
+    /(?:검은\s*(?:색\s*)?(?:점|반점)|검은점|흑점|붉은\s*(?:점|반점)|붉은점|반점|불량\s*화소).{0,12}(?:있|생|보|발견|나타)|(?:있|생|보|발견|나타).{0,12}(?:검은\s*(?:색\s*)?(?:점|반점)|검은점|흑점|붉은\s*(?:점|반점)|붉은점|반점|불량\s*화소)/,
     /멍.{0,8}(?:있|생|보|발견|나타)|(?:있|생|보|발견|나타).{0,8}멍/,
     /액정\s*불빛|불빛\s*나타/,
-    /(?:접으면|접을\s*때|접힌\s*상태).{0,24}(?:화면\s*나가|화면나가|꺼짐|안\s*나오|나오지\s*않|불량)/,
-  ]);
+    /(?:액정|화면|디스플레이|스크린).{0,18}(?:나감|나갔|나가|먹통|불량|색\s*번짐|색번짐)/,
+  ])));
   if (!displayNegated && !protectiveScreenOnly) {
-    add("display_panel_issue", "block_candidate", 0.9, firstEvidence(sources, [
-      /잔상|번인|burn\s*in|녹조|흑점|검은\s*(?:색\s*)?(?:점|반점)|검은점|반점|멍|흰\s*점|흰\s*영역|흰\s*스팟|데드\s*픽셀|dead\s*pixel|불량\s*화소|화면\s*황변|액정\s*황변|액정\s*불빛|불빛\s*나타/,
-      /(?:액정|화면|디스플레이|유리).{0,18}(?:깨짐|깨졌|깨진|깨져|파손|크랙|금\s*갔|나감|먹통|불량)/,
-      /(?:깨짐|깨졌|깨진|깨져|파손|크랙|금\s*갔|나감|먹통|불량).{0,18}(?:액정|화면|디스플레이|유리)/,
+    add("display_panel_issue", "block_candidate", 0.9, removeNonDisplaySurfaceNoise(firstEvidence(sources, [
       /(?:접으면|접을\s*때|접힌\s*상태).{0,24}(?:화면\s*나가|화면나가|꺼짐|안\s*나오|나오지\s*않|불량)/,
-    ]));
+      /잔상|번인|burn\s*in|녹조|흑점|검은\s*(?:색\s*)?(?:점|반점)|검은점|붉은\s*(?:점|반점)|붉은점|반점|(?:액정|화면|디스플레이|스크린).{0,18}멍|멍.{0,18}(?:액정|화면|디스플레이|스크린)|색\s*번짐|색번짐|흰\s*점|흰\s*영역|흰\s*스팟|데드\s*픽셀|dead\s*pixel|불량\s*화소|화면\s*황변|액정\s*황변|액정\s*불빛|불빛\s*나타|화면\s*x|화면.{0,12}들어오지\s*않|화면.{0,12}안\s*들어/,
+      /(?:액정|화면|디스플레이|스크린|유리).{0,18}(?:깨짐|깨졌|깨진|깨져|파손|크랙|금\s*갔|나감|나갔|나가|먹통|불량)/,
+      /(?:깨짐|깨졌|깨진|깨져|파손|크랙|금\s*갔|나감|나갔|나가|먹통|불량).{0,18}(?:액정|화면|디스플레이|스크린|유리)/,
+    ])));
   } else if (!protectiveScreenOnly && visibleDisplayIssue) {
     add("display_panel_issue", "block_candidate", 0.9, visibleDisplayIssue);
   }
 
   const bodyDamageNegated = hasAny(sources, [
+    /(?:파손|깨짐|고장).{0,12}(?:동의|면책).{0,18}(?:택배|배송)|(?:택배|배송).{0,18}(?:파손|깨짐|고장).{0,12}(?:동의|면책|우려|위험)/,
+    /(?:고객\s*부주의|본인\s*과실|단순\s*변심).{0,30}(?:파손|침수|충격).{0,30}(?:교환|환불|반품).{0,12}불가/,
     re(`${BACK_BODY_SURFACE}.{0,24}(?:깨끗|깔끔|정상|${STRONG_BREAKAGE}\\s*(?:없|없음|없습니다|없고|없이|아님|아닙니다)|기스\\s*(?:없|없음)|찍힘\\s*(?:없|없음))`),
     re(`(?:${STRONG_BREAKAGE}|기스|찍힘).{0,16}(?:없|없음|없습니다|없고|없이|아님|아닙니다).{0,18}${BACK_BODY_SURFACE}`),
-    re(`${BODY_FRAME_SURFACE}.{0,24}(?:깨끗|깔끔|정상|파손\\s*(?:없|없음)|크랙\\s*(?:없|없음)|유격\\s*(?:없|없음))`),
+    re(`${BODY_FRAME_SURFACE}.{0,30}(?:깨끗|깔끔|정상|파손\\s*(?:없|없음|전혀\\s*없)|찍힘.{0,12}파손.{0,12}(?:없|전혀\\s*없)|크랙\\s*(?:없|없음)|유격\\s*(?:없|없음))`),
+    re(`${EDGE_SURFACE}.{0,24}(?:깨끗|깔끔|정상|${STRONG_BREAKAGE}\\s*(?:없|없음|없습니다|없고|없이|아님|아닙니다)|찍힘\\s*(?:없|없음)|기스\\s*(?:없|없음)|파손\\s*(?:없|없음))`),
+    /휨.{0,12}(?:없|없음|없습니다|없이|아님)|휘어.{0,12}(?:없|없음|없습니다|있지\s*않)/,
   ]);
   if (!bodyDamageNegated) {
-    add("body_or_back_glass_damage", "block_candidate", 0.9, firstEvidence(sources, [
+    const bodyDamageEvidence = firstEvidence(sources, [
       re(`${BACK_BODY_SURFACE}.{0,20}${STRONG_BREAKAGE}`),
       re(`${STRONG_BREAKAGE}.{0,20}${BACK_BODY_SURFACE}`),
       re(`${BODY_FRAME_SURFACE}.{0,20}${STRUCTURAL_FRAME_DAMAGE}`),
       re(`${STRUCTURAL_FRAME_DAMAGE}.{0,20}${BODY_FRAME_SURFACE}`),
-    ]));
+      re(`${EDGE_SURFACE}.{0,16}${STRONG_BREAKAGE}`),
+      re(`${STRONG_BREAKAGE}.{0,16}${EDGE_SURFACE}`),
+      /휨\s*증상|휘어\s*있|휘었|휜\s*상태/,
+    ]);
+    const displayOnlyDamage = bodyDamageEvidence
+      && displaySurfaceHint.test(bodyDamageEvidence.evidence)
+      && !nonDisplaySurfaceHint.test(bodyDamageEvidence.evidence);
+    add("body_or_back_glass_damage", "block_candidate", 0.9, displayOnlyDamage ? null : bodyDamageEvidence);
   }
 
   const hingeDamageNegated = hasAny(sources, [
@@ -226,6 +257,8 @@ export function parseTechDeviceConditionEvidence(input: {
 
   const touchNegated = hasAny(sources, [
     /터치.{0,20}(?:정상|문제\s*없|이상\s*없|잘\s*(?:됨|됩니다|먹))/,
+    /터치.{0,24}(?:오작동|불량|문제).{0,8}(?:x|없|없음|없습니다|아님)/,
+    /(?:기능|기능적|기능적으로|전기능|모든\s*기능).{0,30}문제\s*(?:전혀|아예)?\s*없.{0,30}터치.{0,20}(?:반응\s*)?(?:완벽|정상|잘\s*됨|잘\s*됩니다)/,
   ]);
   if (!touchNegated) {
     add("touch_issue", "block_candidate", 0.9, firstEvidence(sources, [
@@ -236,7 +269,8 @@ export function parseTechDeviceConditionEvidence(input: {
 
   const protectiveFilmContext = /(?:보호\s*)?(?:필름|강화\s*유리).{0,12}(?:깨짐|파손|크랙|기스|금)/.test(allText);
   const screenRepairNegated = hasAny(sources, [
-    /(?:수리|교체|사설\s*수리|자가\s*수리).{0,18}(?:없|없음|없습니다|없고|무|안\s*함|안함)|(?:수리\s*내역|수리내역|수리\s*이력|수리이력).{0,12}(?:없|없음|없습니다|없고|무)/,
+    /(?:수리|교체|사설\s*수리|자가\s*수리).{0,18}(?:없|없음|없습니다|없고|무|x|안\s*함|안함)|(?:수리\s*내역|수리내역|수리\s*이력|수리이력).{0,12}(?:없|없음|없습니다|없고|무|x)/,
+    /(?:시계줄|워치\s*줄|줄|스트랩|밴드).{0,28}(?:교체|바꾸|변경)/,
   ]);
   const filmOrProtectorReplacementOnly =
     /(?:보호\s*)?(?:필름|강화\s*유리|강화유리|액정필름|유리필름).{0,18}(?:교체|붙|부착)/.test(allText)
@@ -251,12 +285,12 @@ export function parseTechDeviceConditionEvidence(input: {
   }
 
   const biometricNegated = hasAny(sources, [
-    /(?:페이스\s*아이디|faceid|터치\s*아이디|touchid|지문).{0,28}(?:정상|문제\s*없|이상\s*없|잘\s*(?:됨|됩니다|작동))/,
+    /(?:페이스\s*아이디|faceid|터치\s*아이디|touchid|지문(?!\s*방지)).{0,28}(?:정상|문제\s*없|이상\s*없|잘\s*(?:됨|됩니다|작동))/,
   ]);
   if (!biometricNegated) {
     add("faceid_or_biometric_issue", "block_candidate", 0.9, firstEvidence(sources, [
-      /(?:페이스\s*아이디|faceid|터치\s*아이디|touchid|지문).{0,24}(?:안\s*됨|안됨|불가|고장|불량|문제|수리|먹통)/,
-      /(?:안\s*됨|안됨|불가|고장|불량|문제|수리|먹통).{0,24}(?:페이스\s*아이디|faceid|터치\s*아이디|touchid|지문)/,
+      /(?:페이스\s*아이디|faceid|터치\s*아이디|touchid|지문(?!\s*방지)).{0,24}(?:안\s*됨|안됨|불가|고장|불량|문제|수리|먹통)/,
+      /(?:안\s*됨|안됨|불가|고장|불량|문제|수리|먹통).{0,24}(?:페이스\s*아이디|faceid|터치\s*아이디|touchid|지문(?!\s*방지))/,
     ]));
   }
 
@@ -282,6 +316,19 @@ export function parseTechDeviceConditionEvidence(input: {
     ]));
   }
 
+  const chargingOrSensorNegated = hasAny(sources, [
+    /(?:충전기|충전\s*기|충전독|충전\s*독|충전케이블|충전\s*케이블|케이블).{0,16}(?:없|없음|없습니다|분실|미포함|제외)/,
+    /(?:충전|충전\s*단자|충전단자|센서|주변광).{0,24}(?:정상|문제\s*없|이상\s*없|잘\s*(?:됨|됩니다|작동))/,
+    /(?:기능|기능적|기능적으로|전기능|모든\s*기능).{0,30}(?:정상|문제\s*없|이상\s*없|이상무)/,
+  ]);
+  if (!chargingOrSensorNegated) {
+    add("charging_or_sensor_issue", "block_candidate", 0.86, firstEvidence(sources, [
+      /(?:충전\s*단자|충전단자|충전\s*포트|충전포트|단자).{0,24}(?:고장|불량|문제|안\s*됨|안됨|안\s*되|인식\s*불|수리)/,
+      /충전(?!기|기없|기\s*없|케이블|어댑터|젠더|독|독은|독\s*은|dock)[^.\n]{0,24}(?:안\s*됨|안됨|안\s*되|불량|고장|문제|인식\s*불)/,
+      /(?:주변광|광\s*센서|광센서|센서).{0,24}(?:문제|불량|고장|안\s*됨|안됨|안\s*되)/,
+    ]));
+  }
+
   const unlockPositive = firstEvidence(sources, [
     /정상\s*해지|확정\s*기변|선택\s*약정\s*(?:가능|됨)|선약\s*(?:가능|됨)/,
     /(?:아이클라우드|icloud|구글\s*계정|삼성\s*계정).{0,18}(?:로그아웃|해제).{0,18}(?:완료|됨|했습니다)/,
@@ -297,18 +344,26 @@ export function parseTechDeviceConditionEvidence(input: {
     add("account_or_activation_lock", "block_candidate", 0.95, firstEvidence(sources, [
       /(?:아이클라우드|icloud|구글\s*계정|삼성\s*계정|계정).{0,24}(?:잠김|락|락걸림|해제\s*불가|초기화\s*불가|로그아웃\s*불가)/,
       /(?:잠김|락|락걸림|해제\s*불가|초기화\s*불가|로그아웃\s*불가).{0,24}(?:아이클라우드|icloud|구글\s*계정|삼성\s*계정|계정)/,
+      /활성화\s*잠금|활성화.{0,18}(?:해제\s*안|해제가\s*안|해제\s*불가|잠금|락)/,
       /분실폰|도난폰|분실\s*신고|도난\s*신고/,
     ]));
   }
 
-  add("carrier_or_finance_risk", "block_candidate", 0.85, firstEvidence(sources, [
-    /(?:할부|미납|요금).{0,16}(?:남|있|미납|잔여)|(?:남은|잔여).{0,10}할부/,
-    /(?:확정\s*기변|정상\s*해지|선택\s*약정|선약).{0,12}(?:불가|안\s*됨|안됨)/,
-    /(?:유심|sim).{0,20}(?:인식\s*불|인식불|안\s*됨|안됨|불가|락)/,
-  ]));
+  const carrierRiskNegated = hasAny(sources, [
+    /자급제.{0,24}가\s*개통\s*같은\s*거.{0,16}신경\s*안\s*쓰|가\s*개통\s*같은\s*거.{0,16}신경\s*안\s*쓰/,
+  ]);
+  if (!carrierRiskNegated) {
+    add("carrier_or_finance_risk", "block_candidate", 0.85, firstEvidence(sources, [
+      /(?:할부|미납|요금).{0,16}(?:남|있|미납|잔여)|(?:남은|잔여).{0,10}할부/,
+      /(?:확정\s*기변|정상\s*해지|선택\s*약정|선약).{0,12}(?:불가|안\s*됨|안됨)/,
+      /(?:유심|sim).{0,20}(?:인식\s*불|인식불|안\s*됨|안됨|불가|락)/,
+      /가\s*개통|가개통|개통된\s*단말기|개통된단말기|선약\s*불가|선택약정.{0,8}불가능/,
+    ]));
+  }
 
   const waterNegated = hasAny(sources, [
-    /침수(?:폰)?\s*(?:없|없음|없습니다|아님)|침수\s*라벨\s*(?:정상|깨끗)/,
+    /침수(?:폰)?\s*(?:없|없음|없습니다|아님|취급하지|취급\s*안)|침수.{0,12}(?:이력|내역).{0,12}(?:없|없음|없습니다|전혀\s*없)|침수\s*라벨\s*(?:정상|깨끗)/,
+    /(?:고객\s*부주의|본인\s*과실|단순\s*변심).{0,30}(?:파손|침수|충격).{0,30}(?:교환|환불|반품).{0,12}불가/,
   ]);
   if (!waterNegated) {
     add("water_damage", "block_candidate", 0.9, firstEvidence(sources, [
@@ -320,9 +375,14 @@ export function parseTechDeviceConditionEvidence(input: {
     /부품\s*용|부품용|파트\s*만|리퍼\s*부품|단자\s*만|힌지\s*부품|수리\s*용|수리용|셀러\s*용|셀러용|업자\s*용|업자용|보상\s*판매용|보상판매용/,
   ]));
 
-  add("unofficial_or_partial_repair", "block_candidate", 0.86, firstEvidence(sources, [
-    /(?:사설|부분|일부|자가)\s*수리|사설수리|부분수리|일부수리|자가수리/,
-  ]));
+  const unofficialRepairNegated = hasAny(sources, [
+    /(?:사설|부분|일부|자가)\s*수리\s*(?:내역|이력)?\s*(?:없|없음|없습니다|x|무|안\s*함|안함|없이|절대\s*없이|한\s*적\s*없|한적\s*없)|(?:사설수리|부분수리|일부수리|자가수리)\s*(?:내역|이력)?\s*(?:없|없음|없습니다|x|무|안\s*함|안함|없이|절대\s*없이|한\s*적\s*없|한적\s*없)/,
+  ]);
+  if (!unofficialRepairNegated) {
+    add("unofficial_or_partial_repair", "block_candidate", 0.86, firstEvidence(sources, [
+      /(?:사설|부분|일부|자가)\s*수리|사설수리|부분수리|일부수리|자가수리/,
+    ]));
+  }
 
   const batteryHealth = parsePercentFromText(allText, [
     /(?:배터리|성능|효율|배터리\s*성능|배터리\s*효율).{0,10}(\d{2,3})\s*%/,

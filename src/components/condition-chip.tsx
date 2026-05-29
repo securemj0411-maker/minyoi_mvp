@@ -448,6 +448,7 @@ const CHIP_BADGES: Record<ChipBadgeKey, { label: string; type: "positive" | "neg
   "condition:locked_or_lost_signal": { label: "잠금/분실 위험", type: "negative" },
   "condition:parts_only": { label: "부품용", type: "negative" },
   "condition:repair_or_defect_signal": { label: "하자/수리 언급", type: "negative" },
+  "condition:device_charging_or_sensor_issue": { label: "충전/센서 이상", type: "negative" },
   "condition:refurbished_or_repaired": { label: "사설수리/리퍼", type: "negative" },
   "condition:low_battery_health": { label: "배터리 낮음", type: "negative" },
   "condition:high_battery_cycles": { label: "사이클 많음", type: "negative" },

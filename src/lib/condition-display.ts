@@ -14,6 +14,7 @@ const CONDITION_NOTE_CHIP_BY_NOTE: Record<string, string> = {
   locked_or_lost_signal: "condition:locked_or_lost_signal",
   parts_only: "condition:parts_only",
   repair_or_defect_signal: "condition:repair_or_defect_signal",
+  device_charging_or_sensor_issue: "condition:device_charging_or_sensor_issue",
   refurbished_or_repaired: "condition:refurbished_or_repaired",
   single_side_only: "condition:earphone_single_side_unit",
   accessory_compatible_for_other_product: "condition:earphone_case_only",
