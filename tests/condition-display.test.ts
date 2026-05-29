@@ -21,4 +21,22 @@ describe("condition display chips", () => {
       ["condition:display_defect", "condition:cosmetic_wear", "wear:unworn"],
     );
   });
+
+  it("이어폰 하드 신호 condition_notes를 사용자 언어 chip key로 변환한다", () => {
+    assert.deepEqual(
+      conditionNoteDisplayChips([
+        "repair_or_defect_signal",
+        "earphone_audio_issue",
+        "earphone_anc_issue",
+        "single_side_only",
+        "earphone_single_side_unit",
+      ]),
+      [
+        "condition:repair_or_defect_signal",
+        "condition:earphone_audio_issue",
+        "condition:earphone_anc_issue",
+        "condition:earphone_single_side_unit",
+      ],
+    );
+  });
 });

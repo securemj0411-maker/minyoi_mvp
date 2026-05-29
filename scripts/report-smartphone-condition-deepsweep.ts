@@ -166,7 +166,7 @@ async function fetchRawRows(pids: number[]) {
 
 async function fetchParsedRows(pids: number[]) {
   const rows: ParsedRow[] = [];
-  const select = "pid,category,comparable_key,condition_class,condition_notes,parser_version,parsed_json";
+  const select = "pid,category,comparable_key,condition_class,condition_notes,parser_version";
   for (const part of chunk([...new Set(pids)], 400)) {
     rows.push(...await restJson<ParsedRow>(
       `${tableUrl("mvp_listing_parsed")}?select=${select}&pid=in.(${part.join(",")})&limit=${part.length}`,
@@ -175,14 +175,16 @@ async function fetchParsedRows(pids: number[]) {
   return rows;
 }
 
-async function fetchParsedCategoryRows(category: string, limit: number) {
+async function fetchParsedCategoryRows(category: string, limit: number, pageSize: number, order: string | null) {
   const rows: ParsedRow[] = [];
-  const select = "pid,category,comparable_key,condition_class,condition_notes,parser_version,parsed_json";
-  const pageSize = 1000;
-  for (let offset = 0; rows.length < limit; offset += pageSize) {
-    const take = Math.min(pageSize, limit - rows.length);
+  // Keep this select intentionally lean. Large categories time out if we sort and fetch parsed_json blobs.
+  const select = "pid,category,comparable_key,condition_class,condition_notes,parser_version";
+  const safePageSize = Math.max(50, Math.min(1000, pageSize));
+  const orderClause = order ? `&order=${encodeURIComponent(order)}` : "";
+  for (let offset = 0; rows.length < limit; offset += safePageSize) {
+    const take = Math.min(safePageSize, limit - rows.length);
     const page = await restJson<ParsedRow>(
-      `${tableUrl("mvp_listing_parsed")}?select=${select}&category=eq.${encodeURIComponent(category)}&order=pid.desc&limit=${take}&offset=${offset}`,
+      `${tableUrl("mvp_listing_parsed")}?select=${select}&category=eq.${encodeURIComponent(category)}${orderClause}&limit=${take}&offset=${offset}`,
     );
     rows.push(...page);
     if (page.length < take) break;
@@ -197,6 +199,8 @@ async function main() {
   const limit = Number(arg("limit", "3000"));
   const category = arg("category", "smartphone");
   const scope = arg("scope", "pool");
+  const pageSize = Number(arg("page-size", "250"));
+  const parsedOrder = arg("order", "");
   const allowedCategories = new Set([
     "earphone",
     "smartphone",
@@ -221,7 +225,7 @@ async function main() {
   let parsedSeedRows: ParsedRow[] | null = null;
   const poolRows = scope === "parsed"
     ? await (async () => {
-        parsedSeedRows = await fetchParsedCategoryRows(category, limit);
+        parsedSeedRows = await fetchParsedCategoryRows(category, limit, pageSize, parsedOrder || null);
         return parsedSeedRows.map((row): PoolRow => ({
           pid: Number(row.pid),
           status: "parsed",

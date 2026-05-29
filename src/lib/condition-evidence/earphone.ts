@@ -141,8 +141,8 @@ export function parseEarphoneConditionEvidence(input: {
   };
 
   const noAncVariantEvidence = firstEvidence(sources, [
-    /노캔\s*(?:x|없|아님|아니|ㄴㄴ|노노|미지원|안\s*되는|안되는|안\s*됨|안됨)/,
-    /노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)\s*(?:x|없|아님|아니|미지원|안\s*되는|안되는|안\s*됨|안됨)/,
+    /노캔(?:은|는|이|가)?\s*(?:x|없|아님|아니|ㄴㄴ|노노|미지원|안\s*되는|안되는|안\s*됨|안됨|안\s*됩|안됩)/,
+    /노이즈\s*(?:캔슬링|켄슬링|캐슬링|캔슬|켄슬)(?:은|는|이|가)?\s*(?:x|없|아님|아니|미지원|안\s*되는|안되는|안\s*됨|안됨|안\s*됩|안됩)/,
     /anc\s*(?:x|no|없|미지원)/,
     /비\s*노캔|비노캔/,
   ]);
@@ -155,35 +155,54 @@ export function parseEarphoneConditionEvidence(input: {
     /(?:정상|문제\s*없|이상\s*없).{0,24}(?:작동|페어링|연결|소리|음질|마이크|노캔|충전)/,
   ]));
 
-  add("single_side_unit", "block_candidate", 0.98, firstEvidence(titleOnly, [
+  const hasBothSideTitle = /(?:왼쪽|좌측|left|l\s*유닛).{0,14}(?:오른쪽|우측|right|r\s*유닛)|(?:오른쪽|우측|right|r\s*유닛).{0,14}(?:왼쪽|좌측|left|l\s*유닛)/.test(title.normalized);
+  const titleSingleSideEvidence = hasBothSideTitle ? null : firstEvidence(titleOnly, [
     /(?:^|[\s/[,(])(?:왼쪽(?:만)?|오른쪽(?:만)?|좌측(?:만)?|우측(?:만)?|왼유닛|오른유닛|left\s*only|right\s*only|l\s*유닛|r\s*유닛|한\s*쪽만|한쪽만)(?:[\s\]/,).]|$)/,
-  ]));
+  ]);
+  add("single_side_unit", "block_candidate", 0.98, titleSingleSideEvidence);
   add("single_side_unit", "block_candidate", 0.9, firstEvidence(sources, [
-    /(?:왼쪽|오른쪽|좌측|우측).{0,16}(?:잃어|분실|없|미포함|고장|불량)/,
-    /(?:잃어|분실|없|미포함).{0,16}(?:왼쪽|오른쪽|좌측|우측)/,
+    /(?:왼쪽|오른쪽|좌측|우측)(?!\s*(?:밑|아래|위|상단|하단|옆|부분|측면))(?:\s*(?:유닛|이어폰|이어버드))?\s*(?:은|는|이|가)?\s*(?:없|없는|없음|분실|잃어|미포함)/,
+    /(?:잃어|분실|미포함).{0,16}(?:왼쪽|오른쪽|좌측|우측|한쪽|유닛)\s*만/,
   ]));
 
-  add("charging_case_only", "block_candidate", 0.98, firstEvidence(sources, [
-    /(?:충전\s*)?케이스\s*(?:만|단품|판매|팝니다)/,
+  const chargingCaseOnlyEvidence = firstEvidence(sources, [
+    /충전\s*케이스\s*(?:만|단품|판매|팝니다)/,
+    /케이스\s*만(?!\s*없)(?:\s*(?:판매|팝니다|입니다|있|남|드림|드립니다))?|케이스\s*단품/,
     /유닛\s*(?:없|미포함|분실).{0,18}(?:충전\s*)?케이스/,
     /(?:충전\s*)?케이스.{0,18}유닛\s*(?:없|미포함|분실)/,
-  ]));
+  ]);
+  const hasProductBodyContext = /본체|헤드폰\s*본품|기기\s*단품/.test(allText);
+  if (!hasProductBodyContext || /유닛\s*(?:없|미포함|분실)|(?:없|미포함|분실).{0,18}유닛/.test(chargingCaseOnlyEvidence?.evidence ?? "")) {
+    add("charging_case_only", "block_candidate", 0.98, chargingCaseOnlyEvidence);
+  }
 
   const protectiveCaseEvidence = firstEvidence(titleOnly, [
     /보호\s*케이스|케이스\s*커버|실리콘\s*케이스|케이스티파이|case\s*cover/,
   ]);
   const hasChargingCaseContext = /충전\s*케이스|charging\s*case/.test(allText);
-  if (!hasChargingCaseContext) {
+  const productWithCaseBundleContext = /풀박|풀세트|본체|유닛|이어폰|포함/.test(title.normalized);
+  if (!hasChargingCaseContext && !productWithCaseBundleContext) {
     add("protective_case_only", "block_candidate", 0.9, protectiveCaseEvidence);
   }
 
-  const audioEvidence = firstEvidence(sources, [
-    /지지직|잡음|화이트\s*노이즈|소리.{0,18}(?:안\s*나|안나|안\s*들|작게\s*나|먹먹|끊|튀|깨짐|이상\s*있|문제\s*있|불량)|(?:한쪽|왼쪽|오른쪽).{0,18}(?:안\s*들|소리\s*안|소리\s*작)|음질.{0,16}(?:이상\s*있|문제\s*있|깨짐|먹먹|불량)/,
+  const jitterEvidence = firstEvidence(sources, [
+    /지지직|잡음|화이트\s*노이즈(?!\s*(?:캔슬|켄슬|캐슬))/,
+  ]);
+  const jitterNegated = hasAny(sources, [
+    /(?:지지직|잡음|화이트\s*노이즈)[^.\n]{0,18}(?:없|없음|없습니다|없어요|없습니당|아님|아닙니다|x|안\s*남|안남|않)/,
+    /(?:지지직|잡음|화이트\s*노이즈)[^.\n]{0,36}(?:전혀\s*)?(?:그런\s*)?문제\s*없/,
+  ]);
+  const audioEvidence = jitterEvidence ?? firstEvidence(sources, [
+    /지지직|잡음|화이트\s*노이즈(?!\s*(?:캔슬|켄슬|캐슬))|소리.{0,18}(?:안\s*나|안나|안\s*들|작게\s*나|먹먹|끊|튀|깨짐|이상\s*있|문제\s*있|불량)|(?:한쪽|왼쪽|오른쪽).{0,18}(?:안\s*들|소리\s*안|소리\s*작)|음질.{0,16}(?:이상\s*있|문제\s*있|깨짐|먹먹|불량)/,
   ]);
   const audioNegated = hasAny(sources, [
     /(?:소리|음질|스피커|좌우).{0,28}(?:이상\s*(?:없|전혀\s*없|아예\s*없)|문제\s*(?:없|전혀\s*없|아예\s*없)|정상|잘\s*(?:됨|됩니다|들|들립|나|납니다)|좋|깨끗)/,
+    /(?:지지직|잡음|화이트\s*노이즈)[^.\n]{0,18}(?:없|없음|없습니다|없어요|없습니당|아님|아닙니다|x|안\s*남|안남|않)/,
+    /(?:지지직|잡음|화이트\s*노이즈)[^.\n]{0,36}(?:전혀\s*)?(?:그런\s*)?문제\s*없/,
   ]);
-  if (!audioNegated) {
+  if (jitterEvidence && !jitterNegated) {
+    add("audio_output_issue", "block_candidate", 0.86, jitterEvidence);
+  } else if (!audioNegated) {
     add("audio_output_issue", "block_candidate", 0.86, audioEvidence);
   }
 
@@ -193,17 +212,18 @@ export function parseEarphoneConditionEvidence(input: {
   ]);
   const ancNegated = hasAny(sources, [
     /(?:노캔|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)|anc|주변음|투명\s*모드).{0,40}(?:정상|문제\s*(?:없|전혀\s*없|아예\s*없)|이상\s*(?:없|전혀\s*없|아예\s*없)|잘\s*(?:됨|됩니다|되|되고|작동))/,
+    /(?:노캔|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)|anc)\s*(?:o|ok|정상)/,
   ]);
-  if (!facts.some((fact) => fact.signal === "no_anc_variant") && !ancNegated) {
+  if (!facts.some((fact) => fact.signal === "no_anc_variant") && !ancNegated && !jitterNegated) {
     add("anc_or_transparency_issue", "block_candidate", 0.86, ancEvidence);
   }
 
   const micEvidence = firstEvidence(sources, [
-    /마이크.{0,24}(?:이상|불량|안\s*됨|안됨|문제|고장|먹통|소리\s*작|작동\s*안)/,
+    /마이크.{0,24}(?:이상|불량|안\s*됨|안됨|안\s*됩|안됩|문제|고장|먹통|소리\s*작|작동\s*안)/,
     /(?:통화|전화).{0,24}(?:불량|안\s*됨|안됨|문제|상대방.{0,8}안\s*들)/,
   ]);
   const micNegated = hasAny(sources, [
-    /(?:마이크|통화|전화).{0,20}(?:정상|문제\s*없|이상\s*없|잘\s*됨|잘\s*됩니다)/,
+    /(?:마이크|통화|전화).{0,20}(?:정상|문제\s*없|이상\s*없|이상무|잘\s*됨|잘\s*됩니다)/,
   ]);
   if (!micNegated) {
     add("mic_issue", "block_candidate", 0.88, micEvidence);
@@ -214,7 +234,8 @@ export function parseEarphoneConditionEvidence(input: {
     /(?:안\s*됨|안됨|불량|문제|끊김|끊겨|먹통|인식\s*불|불안정).{0,24}(?:페어링|연결|블루투스)/,
   ]);
   const pairingNegated = hasAny(sources, [
-    /(?:페어링|연결|블루투스).{0,20}(?:정상|문제\s*없|이상\s*없|잘\s*됨|잘\s*됩니다)/,
+    /(?:페어링|연결|블루투스).{0,20}(?:정상|문제\s*없|이상\s*없|잘\s*됨|잘\s*됩니(?:다|더))/,
+    /(?:페어링|연결|블루투스|기능|기기상|기계).{0,48}(?:관련\s*)?문제(?:는|가|도|될건|될\s*건)?\s*(?:하나도|일체|전혀|아무것도|크게)?\s*(?:없|x)/,
   ]);
   if (!pairingNegated) {
     add("pairing_or_connection_issue", "block_candidate", 0.88, pairingEvidence);
@@ -222,11 +243,12 @@ export function parseEarphoneConditionEvidence(input: {
 
   const batteryEvidence = firstEvidence(sources, [
     /배터리.{0,24}(?:빨리\s*닳|광탈|방전|오래\s*못|짧|효율\s*(?:낮|나쁨|안\s*좋))/,
-    /충전.{0,24}(?:안\s*됨|안됨|불량|문제|인식\s*불|안\s*되|느림)/,
+    /충전(?!기)[^.\n]{0,24}(?:안\s*됨|안됨|불량|문제|고장|되\s*지\s*않|인식\s*불|안\s*되|느림)/,
     /광탈|방전\s*(?:됨|됩니다|심|빠름)/,
   ]);
   const batteryNegated = hasAny(sources, [
     /(?:배터리|충전).{0,20}(?:정상|문제\s*없|이상\s*없|잘\s*됨|잘\s*됩니다|오래\s*감)/,
+    /(?:배터리|충전|기능|작동상).{0,48}(?:관련\s*)?문제(?:는|가|도|될건|될\s*건)?\s*(?:하나도|일체|전혀|아무것도|크게)?\s*(?:없|x)/,
   ]);
   if (!batteryNegated) {
     add("battery_degraded", "block_candidate", 0.82, batteryEvidence);
@@ -237,7 +259,7 @@ export function parseEarphoneConditionEvidence(input: {
     /(?:이어팁|쿠션|헤드밴드|케이블|충전|힌지|유닛|본체|케이스).{0,18}(?:깨졌|깨짐|깨진|깨져|파손|크랙|부러|찢어|안\s*닫|안닫)/,
   ]);
   const physicalNegated = hasAny(sources, [
-    /(?:깨짐|파손|크랙|찍힘|침수|수리|하자).{0,16}(?:없|없음|없습니다|아님)|(?:기스|스크래치).{0,12}(?:없|없음|없습니다)|(?:외관|본체|케이스|상태).{0,16}(?:깨끗|깔끔)|깨끗(?:하게|한|합니다)?/,
+    /파손\s*우려|(?:떨어(?:뜨|트)린\s*적|떨어(?:뜨|트)림).{0,18}(?:없|없음|없습니다|없어요|일절\s*없)|(?:깨짐|파손|크랙|찍힘|침수|수리|하자).{0,16}(?:없|없음|없습니다|아님)|(?:기스|스크래치).{0,12}(?:없|없음|없습니다)|(?:외관|본체|케이스|상태).{0,16}(?:깨끗|깔끔)|깨끗(?:하게|한|합니다)?/,
   ]);
   if (!physicalNegated) {
     add("physical_damage", "block_candidate", 0.86, physicalEvidence);

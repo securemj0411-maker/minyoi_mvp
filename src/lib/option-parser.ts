@@ -2080,6 +2080,41 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const earphoneConditionEvidence = category === "earphone"
     ? parseEarphoneConditionEvidence({ title, description })
     : null;
+  if (earphoneConditionEvidence) {
+    const addEarphoneGateNotes = (notes: string[], delta = -0.35) => {
+      let added = false;
+      for (const note of notes) {
+        if (!conditionNotes.includes(note)) {
+          conditionNotes.push(note);
+          added = true;
+        }
+      }
+      if (added) conditionScore += delta;
+    };
+    const hardSignalNoteMap: Partial<Record<string, string[]>> = {
+      single_side_unit: ["single_side_only", "earphone_single_side_unit"],
+      charging_case_only: ["parts_only", "earphone_case_only"],
+      protective_case_only: ["accessory_compatible_for_other_product", "earphone_case_only"],
+      audio_output_issue: ["repair_or_defect_signal", "earphone_audio_issue"],
+      anc_or_transparency_issue: ["repair_or_defect_signal", "earphone_anc_issue"],
+      mic_issue: ["repair_or_defect_signal", "earphone_mic_issue"],
+      pairing_or_connection_issue: ["repair_or_defect_signal", "earphone_pairing_issue"],
+      battery_degraded: ["repair_or_defect_signal", "earphone_battery_issue"],
+      physical_damage: ["repair_or_defect_signal", "earphone_physical_damage"],
+    };
+    for (const signal of earphoneConditionEvidence.hardBlockCandidates) {
+      const notes = hardSignalNoteMap[signal];
+      if (notes) addEarphoneGateNotes(notes);
+    }
+    const warningSignalNoteMap: Partial<Record<string, string[]>> = {
+      missing_parts: ["earphone_missing_parts"],
+      hygiene_or_stain: ["earphone_hygiene_warning"],
+    };
+    for (const signal of earphoneConditionEvidence.warningSignals) {
+      const notes = warningSignalNoteMap[signal];
+      if (notes) addEarphoneGateNotes(notes, -0.06);
+    }
+  }
   const techDeviceConditionEvidence = category === "smartphone" || category === "tablet" || category === "smartwatch"
     ? parseTechDeviceConditionEvidence({ title, description })
     : null;
