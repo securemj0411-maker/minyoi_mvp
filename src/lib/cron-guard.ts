@@ -63,13 +63,17 @@ async function logCronSkip(
   reason: CronGuardSkipReason,
   detail?: Record<string, string | number | null>,
 ): Promise<void> {
+  if (reason === "cooldown" && !envBool("CRON_GUARD_LOG_COOLDOWN_SKIPS", false)) return;
+
   try {
+    const now = new Date().toISOString();
     const body: Record<string, unknown> = {
       mode,
       owner,
       status: skipStatusOf(reason),
       skip_reason: reason,
-      finished_at: new Date().toISOString(),
+      started_at: now,
+      finished_at: now,
     };
     if (detail !== undefined) body.detail = detail;
     await restFetch(tableUrl("mvp_cron_executions"), {
