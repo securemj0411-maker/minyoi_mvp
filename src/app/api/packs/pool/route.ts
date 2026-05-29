@@ -72,8 +72,12 @@ function intEnv(name: string, fallback: number, min: number, max: number) {
 const DAANGN_NEARBY_REGION_LIMIT = intEnv("DAANGN_NEARBY_FEED_REGION_LIMIT", 260, 20, 900);
 const DAANGN_NEARBY_RADIUS_KM = intEnv("DAANGN_NEARBY_FEED_RADIUS_KM", 10, 1, 30);
 const DAANGN_NEARBY_RAW_LOOKUP_LIMIT = intEnv("DAANGN_NEARBY_FEED_RAW_LOOKUP_LIMIT", 4000, 100, 6000);
+const DAANGN_NEARBY_REGION_BATCH_SIZE = intEnv("DAANGN_NEARBY_FEED_REGION_BATCH_SIZE", 32, 8, 260);
+const DAANGN_NEARBY_REGION_BATCH_RAW_LIMIT = intEnv("DAANGN_NEARBY_FEED_REGION_BATCH_RAW_LIMIT", 1000, 100, 2000);
 const DAANGN_NEARBY_POOL_LOOKUP_LIMIT = intEnv("DAANGN_NEARBY_FEED_POOL_LOOKUP_LIMIT", 700, 50, 2000);
 const DAANGN_NEARBY_BOOST_LIMIT = intEnv("DAANGN_NEARBY_FEED_BOOST_LIMIT", 120, 10, 500);
+const DAANGN_NEARBY_CACHE_TTL_MS = intEnv("DAANGN_NEARBY_FEED_CACHE_TTL_MS", 45_000, 0, 300_000);
+const DAANGN_NEARBY_SLOW_LOG_MS = intEnv("DAANGN_NEARBY_FEED_SLOW_LOG_MS", 1_200, 100, 10_000);
 const DAANGN_SOURCE_QUOTA = intEnv("DAANGN_FEED_SOURCE_QUOTA", 18, 0, READY_SLOTS);
 const JOONGNA_SOURCE_QUOTA = intEnv("JOONGNA_FEED_SOURCE_QUOTA", 3, 0, READY_SLOTS);
 
@@ -134,6 +138,46 @@ type NearbyDaangnSourceRow = {
   listing_state: string | null;
   last_seen_at: string | null;
 };
+
+type NearbyDaangnPrefetchStats = {
+  enabled: boolean;
+  cacheHit: boolean;
+  elapsedMs: number;
+  regionCount: number;
+  regionBatches: number;
+  rawRows: number;
+  candidatePids: number;
+  readyRows: number;
+  returnedRows: number;
+  targetReady: number;
+  stoppedEarly: boolean;
+  reason?: string;
+};
+
+type NearbyDaangnPrefetchResult = {
+  rows: VisiblePoolRow[];
+  stats: NearbyDaangnPrefetchStats;
+};
+
+const EMPTY_NEARBY_DAANGN_STATS: NearbyDaangnPrefetchStats = {
+  enabled: false,
+  cacheHit: false,
+  elapsedMs: 0,
+  regionCount: 0,
+  regionBatches: 0,
+  rawRows: 0,
+  candidatePids: 0,
+  readyRows: 0,
+  returnedRows: 0,
+  targetReady: 0,
+  stoppedEarly: false,
+};
+
+const NEARBY_DAANGN_READY_CACHE = new Map<string, {
+  expiresAt: number;
+  rows: VisiblePoolRow[];
+  stats: NearbyDaangnPrefetchStats;
+}>();
 
 async function patchDaangnVisiblePoolTerminal(
   pid: number,
@@ -574,6 +618,7 @@ async function fetchRowsByPidChunks<T>(
 async function fetchReadyPoolRowsByPidChunks(
   pids: number[],
   headers: Record<string, string>,
+  stopAfterRows?: number,
 ): Promise<PoolRow[]> {
   const uniquePids = Array.from(new Set(pids)).filter((pid) => Number.isFinite(pid));
   if (uniquePids.length === 0) return [];
@@ -581,6 +626,18 @@ async function fetchReadyPoolRowsByPidChunks(
   const chunks: number[][] = [];
   for (let i = 0; i < uniquePids.length; i += PID_LOOKUP_CHUNK_SIZE) {
     chunks.push(uniquePids.slice(i, i + PID_LOOKUP_CHUNK_SIZE));
+  }
+  if (stopAfterRows != null && stopAfterRows > 0) {
+    const out: PoolRow[] = [];
+    for (const chunk of chunks) {
+      const res = await restFetch(
+        `${tableUrl("mvp_candidate_pool")}?select=${select}&status=eq.ready&pid=in.(${chunk.join(",")})&limit=${chunk.length + 50}`,
+        { headers },
+      );
+      out.push(...((await res.json()) as PoolRow[]));
+      if (out.length >= stopAfterRows) break;
+    }
+    return out;
   }
   const pages = await Promise.all(
     chunks.map(async (chunk) => {
@@ -599,59 +656,135 @@ async function loadNearbyDaangnReadyRows(
   options: {
     userHomeDaangnFullPath?: string | null;
     source?: "bunjang" | "joongna" | "daangn" | null;
+    sort?: "profit_desc" | "latest" | "price_asc" | "distance";
     excludePids?: number[];
   },
-): Promise<VisiblePoolRow[]> {
-  if (!options.userHomeDaangnFullPath || (options.source && options.source !== "daangn")) return [];
+): Promise<NearbyDaangnPrefetchResult> {
+  const startedAt = Date.now();
+  const disabledReason = !options.userHomeDaangnFullPath
+    ? "no_home_region"
+    : options.source && options.source !== "daangn"
+      ? "non_daangn_source"
+      : null;
+  if (disabledReason) {
+    return {
+      rows: [],
+      stats: { ...EMPTY_NEARBY_DAANGN_STATS, reason: disabledReason },
+    };
+  }
 
   const regionIds = nearbyDaangnRegionIds(
     options.userHomeDaangnFullPath,
     DAANGN_NEARBY_RADIUS_KM,
     DAANGN_NEARBY_REGION_LIMIT,
   );
-  if (regionIds.length === 0) return [];
+  const targetReady = options.source === "daangn" || options.sort === "distance"
+    ? PAGE_SIZE
+    : Math.min(READY_SLOTS, Math.max(1, DAANGN_SOURCE_QUOTA));
+  if (regionIds.length === 0) {
+    return {
+      rows: [],
+      stats: {
+        ...EMPTY_NEARBY_DAANGN_STATS,
+        enabled: true,
+        elapsedMs: Date.now() - startedAt,
+        targetReady,
+        reason: "no_nearby_regions",
+      },
+    };
+  }
+
+  const exclude = new Set(options.excludePids ?? []);
+  const cacheKey = [
+    options.userHomeDaangnFullPath,
+    options.source ?? "all",
+    options.sort ?? "profit_desc",
+    DAANGN_NEARBY_RADIUS_KM,
+    DAANGN_NEARBY_REGION_LIMIT,
+    DAANGN_NEARBY_REGION_BATCH_SIZE,
+  ].join("|");
+  const canUseCache = exclude.size === 0 && DAANGN_NEARBY_CACHE_TTL_MS > 0;
+  const cached = canUseCache ? NEARBY_DAANGN_READY_CACHE.get(cacheKey) : null;
+  if (cached && cached.expiresAt > Date.now()) {
+    const rows = cached.rows.slice(0, DAANGN_NEARBY_BOOST_LIMIT);
+    return {
+      rows,
+      stats: {
+        ...cached.stats,
+        cacheHit: true,
+        elapsedMs: Date.now() - startedAt,
+        returnedRows: rows.length,
+      },
+    };
+  }
 
   try {
-    const regionCsv = regionIds.map((id) => encodeURIComponent(id)).join(",");
-    const sourceRows = await fetchPaginatedJson<NearbyDaangnSourceRow>(
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,daangn_region_id,daangn_region_name,listing_state,last_seen_at&source=eq.daangn&listing_state=eq.active&detail_status=eq.done&daangn_region_id=in.(${regionCsv})&order=last_seen_at.desc`,
-      headers,
-      DAANGN_NEARBY_RAW_LOOKUP_LIMIT,
-    );
-    const exclude = new Set(options.excludePids ?? []);
+    const regionBatches: string[][] = [];
+    for (let i = 0; i < regionIds.length; i += DAANGN_NEARBY_REGION_BATCH_SIZE) {
+      regionBatches.push(regionIds.slice(i, i + DAANGN_NEARBY_REGION_BATCH_SIZE));
+    }
     const distanceByPid = new Map<number, DaangnDistanceSignal>();
     const lastSeenByPid = new Map<number, string | null>();
-    const orderedPids = sourceRows
-      .filter((row) => row.listing_state === "active" && !exclude.has(Number(row.pid)))
-      .map((row) => {
-        const distance = evaluateDaangnRegionDistance(
-          options.userHomeDaangnFullPath ?? null,
-          row.daangn_region_id,
-          row.daangn_region_name,
-        );
-        distanceByPid.set(Number(row.pid), distance);
-        lastSeenByPid.set(Number(row.pid), row.last_seen_at ?? null);
-        return { pid: Number(row.pid), distance };
-      })
-      .filter((entry) => Number.isFinite(entry.pid) && entry.distance.actionable)
-      .sort((a, b) => {
-        const rankDiff = (a.distance.rank ?? 4) - (b.distance.rank ?? 4);
-        if (rankDiff !== 0) return rankDiff;
-        const aDistance = a.distance.distanceKm ?? Number.POSITIVE_INFINITY;
-        const bDistance = b.distance.distanceKm ?? Number.POSITIVE_INFINITY;
-        if (aDistance !== bDistance) return aDistance - bDistance;
-        const aSeen = lastSeenByPid.get(a.pid) ? Date.parse(String(lastSeenByPid.get(a.pid))) : 0;
-        const bSeen = lastSeenByPid.get(b.pid) ? Date.parse(String(lastSeenByPid.get(b.pid))) : 0;
-        return bSeen - aSeen;
-      })
-      .map((entry) => entry.pid)
-      .slice(0, DAANGN_NEARBY_POOL_LOOKUP_LIMIT);
+    const readyByPid = new Map<number, PoolRow>();
+    const candidatePids = new Set<number>();
+    let rawRows = 0;
+    let usedBatches = 0;
 
-    const poolRows = await fetchReadyPoolRowsByPidChunks(orderedPids, headers);
-    const poolByPid = new Map(poolRows.map((row) => [row.pid, row]));
-    return orderedPids
-      .map((pid) => poolByPid.get(pid))
-      .filter((row): row is PoolRow => row != null)
+    for (const batch of regionBatches) {
+      if (rawRows >= DAANGN_NEARBY_RAW_LOOKUP_LIMIT) break;
+      const regionCsv = batch.map((id) => encodeURIComponent(id)).join(",");
+      const limit = Math.min(
+        DAANGN_NEARBY_REGION_BATCH_RAW_LIMIT,
+        DAANGN_NEARBY_RAW_LOOKUP_LIMIT - rawRows,
+      );
+      const sourceRes = await restFetch(
+        `${tableUrl("mvp_raw_listings")}?select=pid,source,daangn_region_id,daangn_region_name,listing_state,last_seen_at&source=eq.daangn&listing_state=eq.active&detail_status=eq.done&daangn_region_id=in.(${regionCsv})&order=last_seen_at.desc&limit=${limit}`,
+        { headers },
+      );
+      const sourceRows = (await sourceRes.json()) as NearbyDaangnSourceRow[];
+      usedBatches += 1;
+      rawRows += sourceRows.length;
+
+      const poolLookupLimit = Math.min(
+        DAANGN_NEARBY_POOL_LOOKUP_LIMIT,
+        Math.max(targetReady, targetReady * 25),
+      );
+      const orderedPids = sourceRows
+        .filter((row) => row.listing_state === "active" && !exclude.has(Number(row.pid)))
+        .map((row) => {
+          const pid = Number(row.pid);
+          const distance = evaluateDaangnRegionDistance(
+            options.userHomeDaangnFullPath ?? null,
+            row.daangn_region_id,
+            row.daangn_region_name,
+          );
+          distanceByPid.set(pid, distance);
+          lastSeenByPid.set(pid, row.last_seen_at ?? null);
+          return { pid, distance };
+        })
+        .filter((entry) => Number.isFinite(entry.pid) && entry.distance.actionable && !candidatePids.has(entry.pid))
+        .sort((a, b) => {
+          const rankDiff = (a.distance.rank ?? 4) - (b.distance.rank ?? 4);
+          if (rankDiff !== 0) return rankDiff;
+          const aDistance = a.distance.distanceKm ?? Number.POSITIVE_INFINITY;
+          const bDistance = b.distance.distanceKm ?? Number.POSITIVE_INFINITY;
+          if (aDistance !== bDistance) return aDistance - bDistance;
+          const aSeen = lastSeenByPid.get(a.pid) ? Date.parse(String(lastSeenByPid.get(a.pid))) : 0;
+          const bSeen = lastSeenByPid.get(b.pid) ? Date.parse(String(lastSeenByPid.get(b.pid))) : 0;
+          return bSeen - aSeen;
+        })
+        .map((entry) => entry.pid)
+        .slice(0, poolLookupLimit);
+
+      for (const pid of orderedPids) candidatePids.add(pid);
+      const poolRows = await fetchReadyPoolRowsByPidChunks(orderedPids, headers, targetReady - readyByPid.size);
+      for (const row of poolRows) readyByPid.set(row.pid, row);
+
+      if (readyByPid.size >= targetReady) break;
+      if (sourceRows.length < limit) continue;
+    }
+
+    const rows = Array.from(readyByPid.values())
       .sort((a, b) => {
         const aDistance = distanceByPid.get(a.pid);
         const bDistance = distanceByPid.get(b.pid);
@@ -664,9 +797,43 @@ async function loadNearbyDaangnReadyRows(
       })
       .slice(0, DAANGN_NEARBY_BOOST_LIMIT)
       .map((row) => ({ ...row, soldOut: false }));
+    const stats: NearbyDaangnPrefetchStats = {
+      enabled: true,
+      cacheHit: false,
+      elapsedMs: Date.now() - startedAt,
+      regionCount: regionIds.length,
+      regionBatches: usedBatches,
+      rawRows,
+      candidatePids: candidatePids.size,
+      readyRows: readyByPid.size,
+      returnedRows: rows.length,
+      targetReady,
+      stoppedEarly: readyByPid.size >= targetReady,
+    };
+    if (canUseCache) {
+      NEARBY_DAANGN_READY_CACHE.set(cacheKey, {
+        expiresAt: Date.now() + DAANGN_NEARBY_CACHE_TTL_MS,
+        rows,
+        stats,
+      });
+    }
+    if (stats.elapsedMs >= DAANGN_NEARBY_SLOW_LOG_MS || process.env.FEED_DEBUG_LOG === "1") {
+      console.info("[pool] nearby daangn prefetch", stats);
+    }
+    return { rows, stats };
   } catch (err) {
     console.warn("[pool] nearby daangn prefetch failed (non-fatal)", err instanceof Error ? err.message : String(err));
-    return [];
+    return {
+      rows: [],
+      stats: {
+        ...EMPTY_NEARBY_DAANGN_STATS,
+        enabled: true,
+        elapsedMs: Date.now() - startedAt,
+        regionCount: regionIds.length,
+        targetReady,
+        reason: "failed",
+      },
+    };
   }
 }
 
@@ -710,6 +877,7 @@ async function loadPool(
     condition_notes: string[] | null;
     parsed_json: Record<string, unknown> | null;
   }>;
+  nearbyDaangnStats: NearbyDaangnPrefetchStats;
 }> {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -733,11 +901,16 @@ async function loadPool(
   //   limit=1500 하나만 박으면 PostgREST 1000 cap 에 조용히 잘릴 수 있다.
   const readyBaseUrl =
     `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready${excludeClause}&${orderClause}`;
-  const [readyRowsPage, nearbyDaangnRows, soldOutRes] = await Promise.all([
-    fetchPaginatedJson<PoolRow>(readyBaseUrl, headers, FETCH_POOL_OVERFETCH),
+  const nearbyDaangnPrimary = Boolean(options.userHomeDaangnFullPath) && (options.source === "daangn" || options.sort === "distance");
+  const readyOverfetchLimit = nearbyDaangnPrimary
+    ? Math.min(FETCH_POOL_OVERFETCH, Math.max(READY_SLOTS * 4, options.readyCandidateLimit ?? READY_SLOTS))
+    : FETCH_POOL_OVERFETCH;
+  const [readyRowsPage, nearbyDaangnResult, soldOutRes] = await Promise.all([
+    fetchPaginatedJson<PoolRow>(readyBaseUrl, headers, readyOverfetchLimit),
     loadNearbyDaangnReadyRows(headers, {
       userHomeDaangnFullPath: options.userHomeDaangnFullPath,
       source: options.source,
+      sort: options.sort,
       excludePids: options.excludePids,
     }),
     restFetch(
@@ -746,7 +919,7 @@ async function loadPool(
     ),
   ]);
   const readyRowsRaw = mergePoolRowsPreferFirst(
-    nearbyDaangnRows,
+    nearbyDaangnResult.rows,
     readyRowsPage.map((r) => ({ ...r, soldOut: false })),
   );
   const soldOutRowsRaw = ((await soldOutRes.json()) as PoolRow[]).map((r) => ({ ...r, soldOut: true }));
@@ -907,7 +1080,7 @@ async function loadPool(
   //   기존: shuffle 으로 거리 ASC 정렬 (line 714-732, Wave 797) 결과 뒤집힘 → 사용자 피드 10km > 1km 보임.
   //   변경: diversifyByCategory 결과 순서 그대로 유지 (category quota + source quota + 거리 정렬 모두 처리됨).
   const pool = [...readyRows, ...soldOutRows];
-  if (pool.length === 0) return { pool: [], raws: [], metas: [], marketBands: new Map(), sourceMarketBands: new Map(), v7SiblingPresence: new Map(), velocitySignals: new Map(), parsedGradingRows: [] };
+  if (pool.length === 0) return { pool: [], raws: [], metas: [], marketBands: new Map(), sourceMarketBands: new Map(), v7SiblingPresence: new Map(), velocitySignals: new Map(), parsedGradingRows: [], nearbyDaangnStats: nearbyDaangnResult.stats };
 
   const pids = pool.map((r) => r.pid);
   // raws는 이미 rawByPid에 있음 — pool pids만 추출.
@@ -972,7 +1145,7 @@ async function loadPool(
   const filteredMetas = metas.filter((m) => !blockedPids.has(m.pid));
   const liveFiltered = await liveVerifyDaangnVisiblePool(filteredPool, filteredRaws, filteredMetas);
 
-  return { pool: liveFiltered.pool, raws: liveFiltered.raws, metas: liveFiltered.metas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, parsedGradingRows };
+  return { pool: liveFiltered.pool, raws: liveFiltered.raws, metas: liveFiltered.metas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, parsedGradingRows, nearbyDaangnStats: nearbyDaangnResult.stats };
 }
 
 function buildItems(
@@ -1296,7 +1469,7 @@ export async function GET(req: Request) {
     // 예산 필터가 있을 때 더 넓은 가격대로 조용히 fallback하지 않는다.
     // 15만원 이하를 보고 있는데 서버가 30/50만원 매물을 가져와도 프론트에서 다시 숨겨져
     // "새 매물 붙이는 중"만 길게 보이는 문제가 생긴다.
-    const { pool, raws, metas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, parsedGradingRows } = await loadPool(headers, {
+    const { pool, raws, metas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, parsedGradingRows, nearbyDaangnStats } = await loadPool(headers, {
       sort,
       source,
       priceMax,
@@ -1356,6 +1529,7 @@ export async function GET(req: Request) {
       total: responseItems.length,
       pageSize: PAGE_SIZE,
       freshLagHours: FRESH_LAG_HOURS,
+      debug: isAdminUser(auth.user) ? { nearbyDaangn: nearbyDaangnStats } : undefined,
       // Wave 382: 사용자 예산이 fallback됐는지 (사용자 안내용).
       appliedBudget,
     }, { headers: { "Cache-Control": "no-store" } });

@@ -1973,6 +1973,16 @@ export default function ExploreClient({
     if (budgetFilter !== "all") labels.push(budgetOption.label);
     return labels.join(" · ");
   }, [budgetFilter, budgetOption.label, scrapOnly, selectedCategories.size, source]);
+  const isDaangnFocusedView = source === "daangn" || sort === "distance";
+  const loadingCopy = isDaangnFocusedView
+    ? {
+        title: "근처 당근 매물부터 확인 중",
+        description: "내 동네와 가까운 ready 매물을 먼저 고르고 있어요.",
+      }
+    : {
+        title: "오늘 볼 만한 매물을 고르는 중",
+        description: "수익성, 상태, 거래 가능성을 같이 확인하고 있어요.",
+      };
 
   // PackRevealModal용 result wrapper (single card)
   const modalResult: RevealResult | null = useMemo(() => {
@@ -2491,31 +2501,44 @@ export default function ExploreClient({
 
       {/* 로딩 / 에러 / 매물 grid */}
       {loading ? (
-        <div className="-mx-3 divide-y divide-zinc-100 dark:divide-zinc-800 sm:mx-0 sm:grid sm:grid-cols-2 sm:divide-y-0 sm:gap-3 lg:grid-cols-3">
-          {/* Wave 370: 6 → 3 (모바일 viewport 잔해 줄임, 빠른 fade-in 체감) */}
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 px-3 py-4 sm:rounded-xl sm:border sm:border-zinc-200 sm:bg-white sm:p-3 dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40"
-            >
-              <div className="aspect-square animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800" />
-              <div className="min-w-0 space-y-2">
-                <div className="space-y-1">
-                  <div className="h-3 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
-                  <div className="h-3 w-3/4 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
-                </div>
-                <div className="flex items-baseline gap-1.5">
-                  <div className="h-5 w-20 animate-pulse rounded bg-blue-100 dark:bg-blue-950/40" />
-                  <div className="h-3 w-8 animate-pulse rounded-full bg-blue-50 dark:bg-blue-950/30" />
-                </div>
-                <div className="h-2.5 w-2/3 animate-pulse rounded bg-zinc-100 dark:bg-zinc-800/60" />
-                <div className="flex gap-1.5">
-                  <div className="h-2.5 w-12 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800/60" />
-                  <div className="h-2.5 w-14 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800/60" />
-                </div>
+        <div className="space-y-3">
+          <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 shadow-sm dark:border-blue-900/40 dark:bg-zinc-950/70">
+            <div className="flex items-center gap-3">
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300">
+                <SearchIcon className="h-4 w-4 animate-pulse" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-black text-zinc-950 dark:text-zinc-50">{loadingCopy.title}</p>
+                <p className="mt-0.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">{loadingCopy.description}</p>
               </div>
             </div>
-          ))}
+          </div>
+          <div className="-mx-3 divide-y divide-zinc-100 dark:divide-zinc-800 sm:mx-0 sm:grid sm:grid-cols-2 sm:divide-y-0 sm:gap-3 lg:grid-cols-3">
+            {/* Wave 370: 6 → 3 (모바일 viewport 잔해 줄임, 빠른 fade-in 체감) */}
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 px-3 py-4 sm:rounded-xl sm:border sm:border-zinc-200 sm:bg-white sm:p-3 dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40"
+              >
+                <div className="aspect-square animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800" />
+                <div className="min-w-0 space-y-2">
+                  <div className="space-y-1">
+                    <div className="h-3 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+                    <div className="h-3 w-3/4 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <div className="h-5 w-20 animate-pulse rounded bg-blue-100 dark:bg-blue-950/40" />
+                    <div className="h-3 w-8 animate-pulse rounded-full bg-blue-50 dark:bg-blue-950/30" />
+                  </div>
+                  <div className="h-2.5 w-2/3 animate-pulse rounded bg-zinc-100 dark:bg-zinc-800/60" />
+                  <div className="flex gap-1.5">
+                    <div className="h-2.5 w-12 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800/60" />
+                    <div className="h-2.5 w-14 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800/60" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : error ? (
         // Wave launch-39 (사용자 짚음): 빨간 rose 톤 → 부드러운 amber 톤. 사용자가 "위협적

@@ -15,14 +15,25 @@ The public `/me` feed was loading a profit-ordered candidate slice first and the
 - Increase the protected Daangn source quota for the first feed slice and let local Daangn quota bypass category caps, because direct-trade distance is more important than category diversity for this source.
 - When the user selects `가까운 순 (당근)`, request `sort=distance` from the server instead of only sorting the already-loaded client snapshot.
 - Preserve URL/source state on initial load by letting the feed request pass the current source filter to the server.
+- Follow-up speed fix:
+  - Query nearby Daangn regions in distance-ordered batches instead of fetching one broad latest-first 4000-row slice.
+  - Stop early once the first feed slice has enough ready Daangn rows.
+  - Reduce the broad profit-pool overfetch when Daangn distance/source is the primary view.
+  - Cache warm nearby rows briefly per home-region/source/sort key.
+  - Log structured nearby prefetch stats when slow or when `FEED_DEBUG_LOG=1`.
+  - Show a designed loading state while nearby Daangn candidates are being checked.
 
 ## Config
 
 - `DAANGN_NEARBY_FEED_RADIUS_KM` default `10`
 - `DAANGN_NEARBY_FEED_REGION_LIMIT` default `260`
 - `DAANGN_NEARBY_FEED_RAW_LOOKUP_LIMIT` default `4000`
+- `DAANGN_NEARBY_FEED_REGION_BATCH_SIZE` default `32`
+- `DAANGN_NEARBY_FEED_REGION_BATCH_RAW_LIMIT` default `1000`
 - `DAANGN_NEARBY_FEED_POOL_LOOKUP_LIMIT` default `700`
 - `DAANGN_NEARBY_FEED_BOOST_LIMIT` default `120`
+- `DAANGN_NEARBY_FEED_CACHE_TTL_MS` default `45000`
+- `DAANGN_NEARBY_FEED_SLOW_LOG_MS` default `1200`
 - `DAANGN_FEED_SOURCE_QUOTA` default `18`
 - `JOONGNA_FEED_SOURCE_QUOTA` default `3`
 
@@ -34,5 +45,4 @@ The public `/me` feed was loading a profit-ordered candidate slice first and the
 
 ## Deferred
 
-- Add API-level metrics for nearby Daangn prefetch hit count after production deploy.
 - Consider a dedicated materialized nearby-region lookup if feed traffic grows enough for route-time region resolution to matter.
