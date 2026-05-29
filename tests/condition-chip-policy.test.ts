@@ -11,6 +11,7 @@ import {
 describe("condition chip policy taxonomy", () => {
   it("hard/soft/premium chip을 비교 정책용으로 분류한다", () => {
     assert.equal(classifyConditionChip("condition:display_defect"), "hard_split");
+    assert.equal(classifyConditionChip("condition:repair_or_defect_signal"), "soft_adjustment");
     assert.equal(classifyConditionChip("condition:fashion_stain_or_discoloration"), "soft_adjustment");
     assert.equal(classifyConditionChip("wear:unworn"), "premium_signal");
     assert.equal(classifyConditionChip("unknown:future_chip"), "neutral");
@@ -22,6 +23,7 @@ describe("condition chip policy taxonomy", () => {
         "wear:unworn",
         "condition:camera_lens_damage",
         "condition:cosmetic_wear",
+        "condition:repair_or_defect_signal",
         "condition:display_defect",
       ]),
       "condition:camera_lens_damage|condition:display_defect",

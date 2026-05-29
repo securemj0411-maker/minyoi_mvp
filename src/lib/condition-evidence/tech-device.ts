@@ -456,7 +456,7 @@ export function parseTechDeviceConditionEvidence(input: {
   }
 
   const batteryHealth = parsePercentFromText(allText, [
-    /(?:배터리|성능|효율|배터리\s*성능|배터리\s*효율).{0,10}(\d{2,3})\s*%/,
+    /(?:배터리|성능|효율|배터리\s*성능|배터리\s*효율).{0,10}?(\d{2,3})\s*%/,
     /(\d{2,3})\s*%.{0,10}(?:배터리|성능|효율)/,
     /신품\s*대비.{0,10}(\d{2,3})\s*%?/,
   ]);
