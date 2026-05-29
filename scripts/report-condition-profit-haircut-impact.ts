@@ -10,7 +10,7 @@ import {
   safetyBufferForSource,
   sellingFeeForMarketPrice,
 } from "@/lib/profit";
-import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 const appDir = process.cwd();
 const reportsDir = path.join(appDir, "reports");
@@ -40,6 +40,11 @@ type RawRow = {
   seller_source: string | null;
 };
 
+type RawScoreDirtyRow = {
+  pid: number;
+  score_dirty: boolean | null;
+};
+
 type ParsedRow = {
   pid: number;
   condition_class: string | null;
@@ -65,6 +70,14 @@ async function loadEnvFile(filePath: string) {
 function arg(name: string, fallback: string) {
   const prefix = `--${name}=`;
   return process.argv.find((item) => item.startsWith(prefix))?.slice(prefix.length) ?? fallback;
+}
+
+function boolArg(name: string, fallback: boolean) {
+  const exact = `--${name}`;
+  const match = process.argv.find((item) => item === exact || item.startsWith(`${exact}=`));
+  if (!match) return fallback;
+  if (match === exact) return true;
+  return /^(1|true|yes|y)$/i.test(match.slice(exact.length + 1));
 }
 
 function chunk<T>(items: T[], size: number) {
@@ -103,6 +116,20 @@ async function fetchByPid<T>(table: string, select: string, pids: number[]) {
     ));
   }
   return rows;
+}
+
+async function markRawScoreDirty(pids: number[]) {
+  const unique = [...new Set(pids.map(Number).filter(Number.isFinite))];
+  let marked = 0;
+  for (const part of chunk(unique, 100)) {
+    await restFetch(`${tableUrl("mvp_raw_listings")}?pid=in.${inList(part)}`, {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: jsonBody({ score_dirty: true }),
+    });
+    marked += part.length;
+  }
+  return { markedRows: marked, markedPids: unique };
 }
 
 function positiveNumber(value: unknown) {
@@ -213,10 +240,39 @@ async function main() {
 
   const affectedRows = auditedRows.filter((row) => row.conditionAdjustment > 0);
   const wouldLosePositiveRows = affectedRows.filter((row) => row.wouldLosePositiveProfit);
+  const applyRequested = boolArg("apply", false);
+  const applyScopeRaw = arg("apply-scope", "drop_to_zero");
+  if (!["drop_to_zero", "affected"].includes(applyScopeRaw)) {
+    throw new Error(`Invalid --apply-scope=${applyScopeRaw}; expected drop_to_zero or affected`);
+  }
+  const applyScope = applyScopeRaw as "drop_to_zero" | "affected";
+  const applyLimit = Math.max(0, Math.floor(Number(arg("apply-limit", "50")) || 0));
+  const applyCandidates = (applyScope === "affected" ? affectedRows : wouldLosePositiveRows)
+    .slice()
+    .sort((a, b) => b.profitMaxDrop - a.profitMaxDrop);
+  const applyRows = applyCandidates.slice(0, applyLimit);
+  const applyResult = {
+    requested: applyRequested,
+    scope: applyScope,
+    limit: applyLimit,
+    candidateRows: applyCandidates.length,
+    plannedRows: applyRows.length,
+    markedRows: 0,
+    verifiedScoreDirtyRows: 0,
+    markedPids: [] as number[],
+  };
+  if (applyRequested && applyRows.length > 0) {
+    const result = await markRawScoreDirty(applyRows.map((row) => row.pid));
+    applyResult.markedRows = result.markedRows;
+    applyResult.markedPids = result.markedPids;
+    const verified = await fetchByPid<RawScoreDirtyRow>("mvp_raw_listings", "pid,score_dirty", result.markedPids);
+    applyResult.verifiedScoreDirtyRows = verified.filter((row) => row.score_dirty === true).length;
+  }
   const report = {
     generatedAt: new Date().toISOString(),
-    reportOnly: true,
-    mutation: false,
+    reportOnly: !applyRequested,
+    mutation: applyRequested,
+    apply: applyResult,
     scope: {
       statuses,
       limit,
@@ -252,6 +308,8 @@ async function main() {
     "# Condition Profit Haircut Impact",
     "",
     `Generated: ${report.generatedAt}`,
+    `Mutation: ${report.mutation ? `marked ${report.apply.markedRows} raw rows score_dirty=true` : "none (dry-run)"}`,
+    `Apply scope: ${report.apply.scope} · candidates ${report.apply.candidateRows} · planned ${report.apply.plannedRows} · limit ${report.apply.limit}`,
     "",
     "## Metrics",
     "",
@@ -286,6 +344,7 @@ async function main() {
   console.log(JSON.stringify({
     reportJson: "reports/condition-profit-haircut-impact-latest.json",
     reportMd: "reports/condition-profit-haircut-impact-latest.md",
+    apply: report.apply,
     metrics: report.metrics,
   }, null, 2));
 }
