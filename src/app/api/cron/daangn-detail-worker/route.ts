@@ -85,7 +85,8 @@ async function handleDaangnDetailWorker(req: NextRequest) {
   const dryRun = req.nextUrl.searchParams.get("dryRun") === "1" || envBool("DAANGN_DETAIL_WORKER_DRY_RUN", false);
   const limit = envInt("DAANGN_DETAIL_WORKER_LIMIT", shardCount > 1 ? 100 : 150, 1, 200);
   const budgetMs = envInt("DAANGN_DETAIL_WORKER_BUDGET_MS", 175_000, 5_000, 260_000);
-  const delayMs = envInt("DAANGN_DETAIL_WORKER_DELAY_MS", 350, 0, 10_000);
+  const concurrency = envInt("DAANGN_DETAIL_WORKER_CONCURRENCY", shardCount > 1 ? 2 : 1, 1, 3);
+  const delayMs = envInt("DAANGN_DETAIL_WORKER_DELAY_MS", concurrency > 1 ? 600 : 350, 0, 10_000);
   const timeoutMs = envInt("DAANGN_DETAIL_WORKER_TIMEOUT_MS", 8_000, 1_000, 30_000);
 
   const run = await startCollectRun({
@@ -99,6 +100,7 @@ async function handleDaangnDetailWorker(req: NextRequest) {
       budgetMs,
       delayMs,
       timeoutMs,
+      concurrency,
       shardCount,
       shardIndex,
       guardMode,
@@ -119,6 +121,7 @@ async function handleDaangnDetailWorker(req: NextRequest) {
       budgetMs,
       delayMs,
       timeoutMs,
+      concurrency,
       shardCount,
       shardIndex,
     });
@@ -146,6 +149,7 @@ async function handleDaangnDetailWorker(req: NextRequest) {
       marketInvalidationsQueued: result.marketInvalidationsQueued,
       shardCount: result.shardCount,
       shardIndex: result.shardIndex,
+      concurrency: result.concurrency,
       guardMode,
       durationMs: result.durationMs,
     });

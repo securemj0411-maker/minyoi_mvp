@@ -14,6 +14,7 @@ import {
   selectDaangnCombos,
   selectDaangnFirehoseCombos,
   selectDaangnRegionShard,
+  sameDaangnRawJson,
 } from "../src/lib/daangn-ingest";
 import {
   DAANGN_SEARCH_REGION_SEEDS,
@@ -229,6 +230,25 @@ describe("daangnUpsertPreflightLimit", () => {
   it("keeps zero caps disabled", () => {
     assert.equal(daangnUpsertPreflightLimit(0, 5000), 0);
     assert.equal(daangnUpsertPreflightLimit(500, 0), 0);
+  });
+});
+
+describe("sameDaangnRawJson", () => {
+  const base = {
+    source: "daangn",
+    externalId: "abc",
+    viewCount: 10,
+    imageCount: 3,
+    region: { dbId: "6092", name: "상도1동" },
+  };
+
+  it("ignores volatile viewCount changes for preflight skip", () => {
+    assert.equal(sameDaangnRawJson(base, { ...base, viewCount: 99 }), true);
+  });
+
+  it("still treats image count and region changes as meaningful", () => {
+    assert.equal(sameDaangnRawJson(base, { ...base, imageCount: 4 }), false);
+    assert.equal(sameDaangnRawJson(base, { ...base, region: { dbId: "6093", name: "상도동" } }), false);
   });
 });
 

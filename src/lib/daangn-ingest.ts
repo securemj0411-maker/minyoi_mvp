@@ -32,7 +32,6 @@ import {
   DAANGN_SOURCE_ID,
   DAANGN_SEARCH_REGION_SEEDS,
   DEFAULT_DAANGN_FASHION_QUERY_SEEDS,
-  DEFAULT_DAANGN_REGION_SEEDS,
   buildDaangnSearchUrl,
   daangnLifecycleFromStatus,
   daangnInternalPid,
@@ -553,7 +552,7 @@ type DaangnClassifyParseResult = {
 };
 
 const DAANGN_CLASSIFY_PARSE_CACHE_MAX = 20_000;
-let daangnClassifyParseCache = new Map<string, DaangnClassifyParseResult>();
+const daangnClassifyParseCache = new Map<string, DaangnClassifyParseResult>();
 
 export function hasDaangnDetailPayload(article: DaangnSearchArticle | DaangnDetailArticle): boolean {
   const detailUser = daangnDetailUser(article);
@@ -574,14 +573,15 @@ function sameInstant(a: string | null | undefined, b: string | null | undefined)
   return at === bt;
 }
 
-function sameDaangnRawJson(a: Record<string, unknown> | null | undefined, b: Record<string, unknown>): boolean {
+export function sameDaangnRawJson(a: Record<string, unknown> | null | undefined, b: Record<string, unknown>): boolean {
   if (!a) return false;
   const aRegion = (a.region && typeof a.region === "object") ? a.region as Record<string, unknown> : null;
   const bRegion = (b.region && typeof b.region === "object") ? b.region as Record<string, unknown> : null;
+  // viewCount drifts constantly and is not used for score/pool decisions; do
+  // not let it re-run the expensive SKU classifier for otherwise stable rows.
   return (
     a.source === b.source &&
     a.externalId === b.externalId &&
-    a.viewCount === b.viewCount &&
     Number(a.imageCount ?? 0) === Number(b.imageCount ?? 0) &&
     (aRegion?.dbId ?? null) === (bRegion?.dbId ?? null) &&
     (aRegion?.name ?? null) === (bRegion?.name ?? null)

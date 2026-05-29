@@ -6,6 +6,7 @@ export type DaangnDetailBackfillOptions = {
   limit?: number;
   timeoutMs?: number;
   delayMs?: number;
+  concurrency?: number;
   budgetMs?: number;
   shardCount?: number;
   shardIndex?: number;
@@ -29,6 +30,7 @@ export type DaangnDetailBackfillResult = {
   marketInvalidationsQueued: number;
   shardCount: number;
   shardIndex: number;
+  concurrency: number;
   durationMs: number;
 };
 
@@ -84,6 +86,22 @@ function boundedInt(value: number | undefined, fallback: number, min: number, ma
 async function sleep(ms: number) {
   if (ms <= 0) return;
   await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function mapWithConcurrency<T>(
+  items: readonly T[],
+  concurrency: number,
+  mapper: (item: T, index: number) => Promise<void>,
+) {
+  let nextIndex = 0;
+  const workerCount = Math.max(1, Math.min(concurrency, items.length));
+  await Promise.all(Array.from({ length: workerCount }, async () => {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex;
+      nextIndex += 1;
+      await mapper(items[currentIndex] as T, currentIndex);
+    }
+  }));
 }
 
 function chunkArray<T>(items: T[], size: number): T[][] {
@@ -362,6 +380,7 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
   const limit = boundedInt(options.limit, 150, 1, 200);
   const timeoutMs = boundedInt(options.timeoutMs, 8_000, 1_000, 30_000);
   const delayMs = boundedInt(options.delayMs, 350, 0, 10_000);
+  const concurrency = boundedInt(options.concurrency, 1, 1, 3);
   const budgetMs = boundedInt(options.budgetMs, 175_000, 5_000, 260_000);
   const shard = normalizeDetailShard(options.shardCount, options.shardIndex);
   const deadline = startedAt + budgetMs;
@@ -381,12 +400,25 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
   let skippedByBudget = 0;
   const marketRefreshPids: number[] = [];
   const successPatches: SuccessPatch[] = [];
+  let nextFetchStartAt = Date.now();
 
-  for (const candidate of candidates) {
+  const waitForFetchSlot = async () => {
+    if (concurrency <= 1 || delayMs <= 0) return;
+    const now = Date.now();
+    const waitMs = Math.max(0, nextFetchStartAt - now);
+    nextFetchStartAt = Math.max(nextFetchStartAt, now) + delayMs;
+    if (waitMs > 0) await sleep(waitMs);
+  };
+
+  const processCandidate = async (candidate: DetailCandidate) => {
+    if (blocked) return;
     if (Date.now() + timeoutMs + delayMs + finalizeReserveMs > deadline) {
       skippedByBudget += 1;
-      continue;
+      return;
     }
+
+    await waitForFetchSlot();
+    if (blocked) return;
 
     const fetchedDetail = await fetchDaangnText(candidate.url, timeoutMs).catch((err): null => {
       console.warn("daangn detail backfill fetch error", candidate.pid, err);
@@ -397,15 +429,15 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
     if (!fetchedDetail) {
       fetchFailed += 1;
       await patchDetailError(candidate, "daangn_detail_fetch_error", dryRun);
-      await sleep(delayMs);
-      continue;
+      if (concurrency <= 1) await sleep(delayMs);
+      return;
     }
 
     if (fetchedDetail.blockSignal.blocked) {
       blocked = true;
       blockedStatus = fetchedDetail.status;
       blockedReason = fetchedDetail.blockSignal.reason;
-      break;
+      return;
     }
 
     if (!fetchedDetail.ok) {
@@ -417,24 +449,24 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
       } else {
         await patchDetailError(candidate, `daangn_detail_http_${fetchedDetail.status}`, dryRun);
       }
-      await sleep(delayMs);
-      continue;
+      if (concurrency <= 1) await sleep(delayMs);
+      return;
     }
 
     const parsed = parseDaangnDetailHtml(fetchedDetail.body);
     if (!parsed) {
       parseFailed += 1;
       await patchDetailError(candidate, "daangn_detail_parse_failed", dryRun);
-      await sleep(delayMs);
-      continue;
+      if (concurrency <= 1) await sleep(delayMs);
+      return;
     }
 
     const mannerTemperature = parsed.user.score;
     if (mannerTemperature == null) {
       nullScore += 1;
       await patchDetailError(candidate, "daangn_manner_temperature_parse_null", dryRun);
-      await sleep(delayMs);
-      continue;
+      if (concurrency <= 1) await sleep(delayMs);
+      return;
     }
 
     successPatches.push({
@@ -443,7 +475,18 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
       reviewCount: parsed.user.reviewCount,
     });
     marketRefreshPids.push(candidate.pid);
-    await sleep(delayMs);
+    if (concurrency <= 1) await sleep(delayMs);
+  };
+
+  if (concurrency <= 1) {
+    for (const candidate of candidates) {
+      if (blocked) break;
+      await processCandidate(candidate);
+    }
+  } else {
+    await mapWithConcurrency(candidates, concurrency, async (candidate) => {
+      await processCandidate(candidate);
+    });
   }
 
   patched += await patchSuccesses(successPatches, dryRun);
@@ -467,6 +510,7 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
     marketInvalidationsQueued,
     shardCount: shard.count,
     shardIndex: shard.index,
+    concurrency,
     durationMs: Date.now() - startedAt,
   };
 }
