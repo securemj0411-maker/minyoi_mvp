@@ -50,6 +50,16 @@ Also added `last_seen_at` to the selected columns so the scorable row shape matc
 - `npm run build`
   - passed
 
+Production deploy verification:
+
+- A `minyoi-mvp` auto-deployed commit `44e1d33c`.
+- B `minyoi-mvp-atff` auto-deployed commit `44e1d33c`.
+- C `minyoi-mvp-daangn-c` does not auto-deploy from Git, so it was deployed from a clean detached worktree at `44e1d33c`.
+- Forced production score runs after deploy:
+  - A `/api/cron/score-worker?force=1&cleanup=0`: ok, `score_rows_loaded=100`, `score_load_rows=764ms`
+  - B `/api/cron/score-worker-b?force=1`: ok, `score_rows_loaded=90`, `score_load_rows=3262ms`
+  - C `/api/cron/score-worker-c?force=1`: ok, `score_rows_loaded=100`, `score_load_rows=2582ms`
+
 ## Deferred
 
 If A score worker failures continue after this deploy, next options are:
