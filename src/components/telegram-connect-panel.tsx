@@ -63,7 +63,10 @@ export default function TelegramConnectPanel() {
     setActionLoading(true);
     setError(null);
     try {
-      const r = await fetch("/api/me/telegram/start-verify", { method: "POST" });
+      const r = await fetch("/api/me/telegram/start-verify", {
+        method: "POST",
+        headers: { "x-minyoi-user-action": "1" },
+      });
       const data = (await r.json()) as StartVerifyResp & { error?: string };
       if (!r.ok) throw new Error(data.error ?? `${r.status}`);
       setVerify(data);
@@ -79,7 +82,10 @@ export default function TelegramConnectPanel() {
     setActionLoading(true);
     setError(null);
     try {
-      const r = await fetch("/api/me/telegram/disconnect", { method: "POST" });
+      const r = await fetch("/api/me/telegram/disconnect", {
+        method: "POST",
+        headers: { "x-minyoi-user-action": "1" },
+      });
       if (!r.ok) throw new Error(`${r.status}`);
       await refresh();
     } catch (err) {

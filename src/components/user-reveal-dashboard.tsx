@@ -602,6 +602,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
+        "x-minyoi-user-action": "1",
         "x-user-ref": userRef,
       },
       body: JSON.stringify(body),

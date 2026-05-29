@@ -10,6 +10,7 @@ import { planForKey, type PlanKey } from "@/lib/plan-config";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { notifyAdminTelegram } from "@/lib/telegram-notify";
+import { hasUserActionHeader } from "@/lib/user-action-guard";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
@@ -29,6 +30,9 @@ type Body = {
 export async function POST(req: NextRequest) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!hasUserActionHeader(req.headers)) {
+    return NextResponse.json({ error: "missing_user_action_header" }, { status: 403 });
+  }
 
   let body: Body;
   try { body = (await req.json()) as Body; } catch { return NextResponse.json({ error: "bad_body" }, { status: 400 }); }

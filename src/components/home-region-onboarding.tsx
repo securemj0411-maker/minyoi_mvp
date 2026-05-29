@@ -92,7 +92,7 @@ export function HomeRegionOnboarding() {
       }
       const res = await fetch("/api/user/home-region", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, "x-minyoi-user-action": "1" },
         body: JSON.stringify(payload),
       });
       const json = await res.json() as {

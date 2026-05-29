@@ -38,7 +38,7 @@ export default function AccountDeletePage() {
     try {
       const res = await fetch("/api/me/account/delete", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-minyoi-user-action": "1" },
         body: JSON.stringify({ confirm: confirmText }),
       });
       const data = (await res.json()) as { ok?: boolean; message?: string; error?: string };

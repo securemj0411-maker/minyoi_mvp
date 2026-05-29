@@ -188,6 +188,7 @@ export default function ProcessingClient() {
         cache: "no-store",
         headers: {
           "Content-Type": "application/json",
+          "x-minyoi-user-action": "1",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ planKey, depositorName: cleanName }),

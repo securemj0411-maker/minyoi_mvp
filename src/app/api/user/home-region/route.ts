@@ -7,6 +7,7 @@ import { reverseGeocode } from "@/lib/kakao-reverse-geocode";
 import { matchDaangnRegionByPath, listAllDaangnRegions } from "@/lib/daangn-region-matcher";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { hasUserActionHeader } from "@/lib/user-action-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,6 +49,9 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
+  if (!hasUserActionHeader(req.headers)) {
+    return NextResponse.json({ ok: false, error: "missing_user_action_header" }, { status: 403 });
+  }
 
   const body = (await req.json().catch(() => ({}))) as SetHomeRegionPayload;
 

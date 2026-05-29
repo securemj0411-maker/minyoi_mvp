@@ -2084,7 +2084,7 @@ export default function ExploreClient({
     try {
       const res = await fetch("/api/packs/pool/detail-access", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-minyoi-user-action": "1" },
         body: JSON.stringify(item.accessToken ? { accessToken: item.accessToken } : { pid: item.pid }),
         cache: "no-store",
       });

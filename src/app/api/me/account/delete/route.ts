@@ -7,6 +7,7 @@ import { isAdminUser } from "@/lib/auth-users";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { hasUserActionHeader } from "@/lib/user-action-guard";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
@@ -20,6 +21,9 @@ const REQUIRED_CONFIRM = "탈퇴";
 export async function POST(req: Request) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!hasUserActionHeader(req.headers)) {
+    return NextResponse.json({ error: "missing_user_action_header" }, { status: 403 });
+  }
 
   let body: { confirm?: string };
   try {

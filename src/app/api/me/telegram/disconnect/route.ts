@@ -5,6 +5,7 @@ import { isAdminUser } from "@/lib/auth-users";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { hasUserActionHeader } from "@/lib/user-action-guard";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
@@ -17,6 +18,9 @@ const RATE_LIMIT_WINDOW_SECONDS = 60;
 export async function POST(req: Request) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!hasUserActionHeader(req.headers)) {
+    return NextResponse.json({ error: "missing_user_action_header" }, { status: 403 });
+  }
 
   const userRef = userRefForAuthUser(auth.user.id);
   const now = new Date().toISOString();

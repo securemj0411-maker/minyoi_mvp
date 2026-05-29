@@ -23,6 +23,7 @@ import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { detectSoldOut, describeSignals, isSoldOut, soldOutTextHits } from "@/lib/sold-out";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
+import { hasUserActionHeader } from "@/lib/user-action-guard";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
@@ -592,6 +593,9 @@ async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAcce
 export async function POST(req: Request) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!hasUserActionHeader(req.headers)) {
+    return NextResponse.json({ error: "missing_user_action_header" }, { status: 403 });
+  }
 
   let body: unknown;
   try {
