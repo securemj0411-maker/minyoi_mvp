@@ -1,6 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import { isAdminUser } from "@/lib/auth-users";
-import { getUserCreditsReadOnly, spendUserCredits } from "@/lib/user-credits";
+import { getUserCreditsReadOnly, refundUserCredits, spendUserCredits } from "@/lib/user-credits";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 // Wave 766 (2026-05-26 사용자 결정): free rate-limit 폐기 → 가입 시 +2 크레딧 grant (FREE_CREDIT_GRANT=2) 로 통일.
@@ -185,23 +185,22 @@ export async function consumeDetailAccess(input: {
     };
   }
 
-  const mark = await markOpenedPid(bucketKey);
-  if (!mark.firstOpen) {
-    const creditBalance = await readCreditBalance(input.user, input.userRef);
-    return {
-      ok: true,
-      accessType: "already_opened",
-      alreadyOpened: true,
-      creditSpent: 0,
-      creditBalance,
-      freeUsed: freeUsedBefore,
-      freeLimit: FREE_DETAIL_ACCESS_LIMIT,
-    };
-  }
-
   try {
     const freeAccess = await consumeFreeDetailAccess(input.userRef);
     if (freeAccess.ok) {
+      const mark = await markOpenedPid(bucketKey);
+      if (!mark.firstOpen) {
+        const creditBalance = await readCreditBalance(input.user, input.userRef);
+        return {
+          ok: true,
+          accessType: "already_opened",
+          alreadyOpened: true,
+          creditSpent: 0,
+          creditBalance,
+          freeUsed: freeAccess.used,
+          freeLimit: FREE_DETAIL_ACCESS_LIMIT,
+        };
+      }
       const creditBalance = await readCreditBalance(input.user, input.userRef);
       return {
         ok: true,
@@ -214,6 +213,9 @@ export async function consumeDetailAccess(input: {
       };
     }
 
+    // Free quota is disabled in the current credit model. Spend before marking
+    // the pid as opened so a parallel request cannot treat a failed spend as
+    // "already opened" and leak exact detail data for a 0-credit account.
     const spend = await spendUserCredits({
       user: input.user,
       userRef: input.userRef,
@@ -227,13 +229,70 @@ export async function consumeDetailAccess(input: {
     });
 
     if (!spend.ok) {
-      await forgetOpenedPid(bucketKey);
+      if ((await loadRateLimitCount(bucketKey).catch(() => 0)) > 0) {
+        const creditBalance = await readCreditBalance(input.user, input.userRef);
+        return {
+          ok: true,
+          accessType: "already_opened",
+          alreadyOpened: true,
+          creditSpent: 0,
+          creditBalance,
+          freeUsed: freeAccess.used,
+          freeLimit: FREE_DETAIL_ACCESS_LIMIT,
+        };
+      }
       return {
         ok: false,
         status: 402,
         error: "insufficient_credits",
         message: "크레딧이 부족해요. 충전하면 상세보기를 계속 열 수 있어요.",
         creditBalance: Math.max(0, Number(spend.tokens ?? 0)),
+        freeUsed: freeAccess.used,
+        freeLimit: FREE_DETAIL_ACCESS_LIMIT,
+      };
+    }
+
+    const mark = await markOpenedPid(bucketKey).catch(async (err) => {
+      await refundUserCredits({
+        user: input.user,
+        userRef: input.userRef,
+        amount: 1,
+        metadata: {
+          source: "detail_access_mark_failed_refund",
+          pid: input.pid,
+        },
+      }).catch((refundErr) => {
+        console.error("[detail-access] mark failure refund failed", {
+          err: refundErr instanceof Error ? refundErr.message : String(refundErr),
+          userRef: input.userRef,
+          pid: input.pid,
+        });
+      });
+      throw err;
+    });
+    if (!mark.firstOpen) {
+      const refund = await refundUserCredits({
+        user: input.user,
+        userRef: input.userRef,
+        amount: 1,
+        metadata: {
+          source: "detail_access_duplicate_refund",
+          pid: input.pid,
+        },
+      }).catch((err) => {
+        console.error("[detail-access] duplicate spend refund failed", {
+          err: err instanceof Error ? err.message : String(err),
+          userRef: input.userRef,
+          pid: input.pid,
+        });
+        return null;
+      });
+      return {
+        ok: true,
+        accessType: "already_opened",
+        alreadyOpened: true,
+        creditSpent: 0,
+        creditBalance: refund?.tokens ?? spend.tokens,
         freeUsed: freeAccess.used,
         freeLimit: FREE_DETAIL_ACCESS_LIMIT,
       };

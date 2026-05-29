@@ -3195,12 +3195,10 @@ export default function ExploreClient({
                               </span>
                             </Link>
 
-                            {/* Wave launch-51 (사용자 짚음 "App Key 받아왔음"): 진짜 카카오 공유 박음.
-                                - Kakao SDK Share.sendDefault → 다이얼로그 표시
-                                - callback 호출 시 POST /api/packs/pool/share-bonus
-                                - server 가 24h 1회 제한 검증 + 통과 시 credits +1
-                                - 카카오는 webhook 없어 진짜 공유 검증 X — abuse 차단 = 24h 제한.
-                                NEXT_PUBLIC_KAKAO_JS_KEY env 필요 (Vercel 박음). 없으면 button disabled. */}
+                            {/* 카카오 공유 보너스.
+                                - Kakao SDK Share.sendDefault → Kakao webhook → 서버가 24h cooldown 검증 후 지급
+                                - /api/packs/pool/share-bonus POST 즉시 지급 경로는 abuse 표면이라 폐기
+                                NEXT_PUBLIC_KAKAO_JS_KEY env 필요. 없으면 button disabled. */}
                             <button
                               type="button"
                               disabled={kakaoShareLoading || !kakaoShareReady}
@@ -3219,7 +3217,7 @@ export default function ExploreClient({
                                     {kakaoShareCooldownHours > 0 ? "오늘은 이미 받았어요" : kakaoShareLoading ? "공유 처리 중..." : "카톡 공유하고 크레딧 받기"}
                                   </div>
                                   <div className={`mt-0.5 text-[11px] font-medium ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]/70" : "text-[#3b1e1e]/60"}`}>
-                                    {kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : "하루 1번, 공유 후 크레딧 1개 자동 지급"}
+                                    {kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : "하루 1번, 공유 후 크레딧 2개 자동 지급"}
                                   </div>
                                 </div>
                               </div>
