@@ -319,6 +319,17 @@ test("comparison rows expose condition chips as compact proof", () => {
   assert.match(modal, /\[&>span\]:text-\[9\.5px\]/);
 });
 
+test("detail cost basis exposes condition resale adjustment when applied", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+
+  assert.match(modal, /conditionResaleAdjustmentKrw/);
+  assert.match(modal, /conditionAdjustment/);
+  assert.match(modal, /label: "상태 보정"/);
+  assert.match(modal, /하자\/누락\/위생 chip 반영/);
+  assert.match(modal, /상태 보정 \$\{krw\(snapshot\.conditionAdjustment\)\}/);
+  assert.match(modal, /상태 보정 -\$\{krw\(snapshot\.conditionAdjustment\)\} 포함/);
+});
+
 test("AirPods Max does not inherit generic earphone battery or counterfeit prompts", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
   const brandDepth = source("src/lib/category-brand-depth.ts");

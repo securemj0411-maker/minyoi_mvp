@@ -33,6 +33,7 @@ import {
   RESELL_SHIPPING_FEE,
   SAFETY_BUFFER,
   SELLING_FEE_RATE,
+  conditionResaleAdjustmentKrw,
   expectedProfitFromMarketPrice,
   resellShippingFeeForSource,
   safetyBufferForSource,
@@ -1310,10 +1311,19 @@ function costAssuranceSnapshot(card: RevealCard) {
   const salePrice = salePriceLow == null || salePriceHigh == null
     ? null
     : Math.round((salePriceLow + salePriceHigh) / 2);
+  const conditionAdjustment = fallbackSalePrice == null || salePrice == null
+    ? 0
+    : conditionResaleAdjustmentKrw({
+      marketPrice: salePrice,
+      conditionChips: card.conditionChips,
+      conditionClass: card.marketBasis?.conditionClass ?? null,
+      conditionTier: card.conditionTier,
+    });
+  const adjustedSalePrice = salePrice == null ? null : Math.max(0, salePrice - conditionAdjustment);
   const salePriceLabel = salePriceLow == null || salePriceHigh == null
     ? "시세 확인 중"
     : krwRange(Math.min(salePriceLow, salePriceHigh), Math.max(salePriceLow, salePriceHigh));
-  const sellingFee = salePrice == null ? null : sellingFeeForMarketPrice(salePrice, card.marketplaceSource);
+  const sellingFee = adjustedSalePrice == null ? null : sellingFeeForMarketPrice(adjustedSalePrice, card.marketplaceSource);
   const resellShippingFee = resellShippingFeeForSource(card.marketplaceSource);
   const safetyBuffer = safetyBufferForSource(card.marketplaceSource);
   const shippingLabel = safety.shipping.label;
@@ -1324,8 +1334,10 @@ function costAssuranceSnapshot(card: RevealCard) {
 
   return {
     salePrice,
+    adjustedSalePrice,
     salePriceLabel,
     sellingFee,
+    conditionAdjustment,
     resellShippingFee,
     safetyBuffer,
     buyerCostLabel,
@@ -4250,6 +4262,13 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
       value: isDaangn ? "0원" : snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} · ${krw(snapshot.sellingFee)}`,
       note: isDaangn ? "당근 직거래 재판매 기준" : "셀러가 부담 (시세 대비 차감)",
     },
+    ...(snapshot.conditionAdjustment > 0
+      ? [{
+        label: "상태 보정",
+        value: `-${krw(snapshot.conditionAdjustment)}`,
+        note: "하자/누락/위생 chip 반영",
+      }]
+      : []),
     { label: "재배송비", value: krw(snapshot.resellShippingFee), note: isDaangn ? "직거래 재판매 가정" : "재판매 발송 시" },
     isDaangn
       ? { label: "직거래 리스크", value: "별도 확인", note: "네고·이동·거래 불발 가능성" }
@@ -4277,8 +4296,8 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
     : "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200";
   const profitFormula = snapshot.salePrice != null
     ? isDaangn
-      ? `수익 기준 시세 ${snapshot.salePriceLabel} − 매입 ${snapshot.buyerCostLabel}`
-      : `수익 기준 시세 ${snapshot.salePriceLabel} − 매입 ${snapshot.buyerCostLabel} − 비용`
+      ? `수익 기준 시세 ${snapshot.salePriceLabel}${snapshot.conditionAdjustment > 0 ? ` − 상태 보정 ${krw(snapshot.conditionAdjustment)}` : ""} − 매입 ${snapshot.buyerCostLabel}`
+      : `수익 기준 시세 ${snapshot.salePriceLabel}${snapshot.conditionAdjustment > 0 ? ` − 상태 보정 ${krw(snapshot.conditionAdjustment)}` : ""} − 매입 ${snapshot.buyerCostLabel} − 비용`
     : `매입 ${snapshot.buyerCostLabel} − 비용 확인`;
 
   return (
@@ -5486,9 +5505,11 @@ function BeginnerGuideBuyCostVisual({ card }: { card: RevealCard }) {
             {snapshot.confidenceLabel}
           </span>
           <span className="text-right tabular-nums">
-            {isDaangn
-              ? `당근 수수료 ${sellingFeeLabel} · 직거래 기준`
-              : `수수료 ${sellingFeeLabel} · 재배송·버퍼 +${krw(snapshot.resellShippingFee + snapshot.safetyBuffer)}`}
+            {snapshot.conditionAdjustment > 0
+              ? `상태 보정 -${krw(snapshot.conditionAdjustment)} 포함`
+              : isDaangn
+                ? `당근 수수료 ${sellingFeeLabel} · 직거래 기준`
+                : `수수료 ${sellingFeeLabel} · 재배송·버퍼 +${krw(snapshot.resellShippingFee + snapshot.safetyBuffer)}`}
           </span>
         </div>
       </div>
