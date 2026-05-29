@@ -522,16 +522,74 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
       assert.ok(conditionNotes.includes("clothing_print_cracked"));
     });
 
-    it("얼룩 negation '얼룩 없음'", () => {
-      const { conditionNotes } = conditionFromTextFashion(
-        "폴로 셔츠 얼룩 없습니다 깨끗",
-        "clothing",
-      );
-      assert.ok(!conditionNotes.includes("clothing_stain"));
-    });
+	    it("얼룩 negation '얼룩 없음'", () => {
+	      const { conditionNotes } = conditionFromTextFashion(
+	        "폴로 셔츠 얼룩 없습니다 깨끗",
+	        "clothing",
+	      );
+	      assert.ok(!conditionNotes.includes("clothing_stain"));
+	    });
 
-    it("clothing integration — conditionNotes 채워짐 + flawed demote", () => {
-      const result = parseListingOptions({
+	    it("ready sweep: 살짝/미세/작은 오염 변형은 clothing_stain + worn signal", () => {
+	      for (const text of [
+	        "4번째 사진에 살짝 오염있지만 크게 표시나진 않아요",
+	        "미세 오염 있는데 티는 안나요.",
+	        "뒷면 작은 오염 있습니다.",
+	      ]) {
+	        const { conditionNotes } = conditionFromTextFashion(text, "clothing");
+	        assert.ok(conditionNotes.includes("clothing_stain"),
+	          `clothing_stain 없음 (${text}): ${conditionNotes.join(",")}`);
+	        assert.ok(conditionNotes.includes("cosmetic_wear"),
+	          `cosmetic_wear 없음 (${text}): ${conditionNotes.join(",")}`);
+	      }
+	    });
+
+	    it("ready sweep: 색 바램없고/늘어남 심하지 않음/오염 및 하자 없음은 negation", () => {
+	      const fading = conditionFromTextFashion("색 바램없고 카라 깨끗해요", "clothing");
+	      assert.ok(!fading.conditionNotes.includes("clothing_fading"),
+	        `색 바램없고 false positive: ${fading.conditionNotes.join(",")}`);
+
+	      const stretch = conditionFromTextFashion("목 늘어남 심하지 않음 큰 오염 및 하자 없음", "clothing");
+	      assert.ok(!stretch.conditionNotes.includes("clothing_stretched"),
+	        `늘어남 심하지 않음 false positive: ${stretch.conditionNotes.join(",")}`);
+	      assert.ok(!stretch.conditionNotes.includes("clothing_stain"),
+	        `오염 및 하자 없음 false positive: ${stretch.conditionNotes.join(",")}`);
+	      assert.ok(!stretch.conditionNotes.includes("repair_or_defect_signal"),
+	        `하자 없음 false positive: ${stretch.conditionNotes.join(",")}`);
+	    });
+
+	    it("ready sweep integration: 의류 미세 오염은 A/S급이 아니라 C급 damage chip", () => {
+	      const result = parseListingOptions({
+	        title: "스투시 베이직 백로고 반팔 블랙 L",
+	        description: "상태 좋고 미세 오염 있는데 티는 안나요.",
+	        skuId: "clothing-stussy-basic-tee",
+	        skuName: "Stussy Tee",
+	        category: "clothing",
+	      });
+	      const grade = result.parsedJson.condition_grade as { tier?: string; chips?: string[] } | undefined;
+	      assert.equal(result.conditionClass, "worn",
+	        `conditionClass=${result.conditionClass}, notes=${result.conditionNotes.join(",")}`);
+	      assert.equal(grade?.tier, "C", `grade=${JSON.stringify(grade)}`);
+	      assert.ok(grade?.chips?.includes("damage:minor"),
+	        `damage:minor chip 없음: ${JSON.stringify(grade?.chips)}`);
+	    });
+
+	    it("ready sweep integration: 색 바램없고는 grade damage로 떨어뜨리지 않음", () => {
+	      const result = parseListingOptions({
+	        title: "폴로 랄프로렌 셔츠",
+	        description: "색 바램없고 카라 깨끗해요",
+	        skuId: "clothing-polo-oxford-shirt",
+	        skuName: "Polo Oxford Shirt",
+	        category: "clothing",
+	      });
+	      const grade = result.parsedJson.condition_grade as { tier?: string; chips?: string[] } | undefined;
+	      assert.notEqual(grade?.tier, "D", `색 바램없고가 D로 떨어짐: ${JSON.stringify(grade)}`);
+	      assert.ok(!grade?.chips?.includes("damage:major"),
+	        `damage:major false positive: ${JSON.stringify(grade?.chips)}`);
+	    });
+
+	    it("clothing integration — conditionNotes 채워짐 + flawed demote", () => {
+	      const result = parseListingOptions({
         title: "스투시 후드 새상품",
         description: "보풀 있어요 색바램 있음",
         skuId: "clothing-stussy-hoodie",
@@ -541,9 +599,33 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
       assert.ok(result.conditionNotes.length > 0,
         `clothing conditionNotes 비어있음: ${JSON.stringify(result.conditionNotes)}`);
       assert.ok(result.conditionNotes.includes("clothing_pilling"));
-      assert.ok(result.conditionNotes.includes("clothing_fading"));
-    });
-  });
+	      assert.ok(result.conditionNotes.includes("clothing_fading"));
+	    });
+	  });
+
+	  describe("Wave 948 — fashion condition deepsweep real phrases", () => {
+	    it("신발 약간의 얼룩/이염 변형은 condition note + grade damage로 반영", () => {
+	      const stain = conditionFromTextFashion("뒷쪽 약간의 얼룩있어 저렴하게팝니다", "shoe");
+	      assert.ok(stain.conditionNotes.includes("shoe_stain_or_discoloration"),
+	        `shoe_stain_or_discoloration 없음: ${stain.conditionNotes.join(",")}`);
+	      assert.ok(stain.conditionNotes.includes("cosmetic_wear"),
+	        `cosmetic_wear 없음: ${stain.conditionNotes.join(",")}`);
+
+	      const result = parseListingOptions({
+	        title: "[300]뉴발란스 992 메이드 인 USA 그레이",
+	        description: "한두번 신다가 신발장 보관했습니다. 데님이랑 접하는 곳 이염 있습니다. 박스랑 신발택 그대로 있습니다.",
+	        skuId: "shoe-newbalance-992",
+	        skuName: "NB 992",
+	        category: "shoe",
+	      });
+	      const grade = result.parsedJson.condition_grade as { tier?: string; chips?: string[] } | undefined;
+	      assert.equal(result.conditionClass, "worn",
+	        `conditionClass=${result.conditionClass}, notes=${result.conditionNotes.join(",")}`);
+	      assert.equal(grade?.tier, "D", `grade=${JSON.stringify(grade)}`);
+	      assert.ok(grade?.chips?.includes("damage:major"),
+	        `damage:major chip 없음: ${JSON.stringify(grade?.chips)}`);
+	    });
+	  });
 
   describe("worst-of merge — tier vs fashion notes", () => {
     it("tier=clean + fashion=flawed → flawed (lower wins)", () => {

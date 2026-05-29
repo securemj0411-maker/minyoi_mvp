@@ -32,6 +32,20 @@ const CONDITION_NOTE_CHIP_BY_NOTE: Record<string, string> = {
   low_battery_health: "condition:low_battery_health",
   high_battery_cycles: "condition:high_battery_cycles",
   cosmetic_wear: "condition:cosmetic_wear",
+  shoe_stain_or_discoloration: "condition:fashion_stain_or_discoloration",
+  shoe_sole_crumbling: "condition:shoe_sole_damage",
+  shoe_hydrolysis: "condition:shoe_sole_damage",
+  shoe_heel_worn_severe: "condition:shoe_sole_damage",
+  shoe_sole_separation: "condition:shoe_sole_damage",
+  shoe_insole_missing: "condition:shoe_insole_missing",
+  clothing_stain: "condition:fashion_stain_or_discoloration",
+  clothing_fading: "condition:clothing_fading",
+  clothing_stretched: "condition:clothing_stretched",
+  clothing_pilling: "condition:clothing_pilling",
+  clothing_structural_damage: "condition:clothing_structural_damage",
+  clothing_seam_damage: "condition:clothing_structural_damage",
+  clothing_slit_damage: "condition:clothing_structural_damage",
+  clothing_print_cracked: "condition:clothing_print_cracked",
 };
 
 function asStringArray(value: unknown): string[] {

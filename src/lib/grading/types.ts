@@ -159,7 +159,7 @@ export interface ConditionGrade {
    * 한 listing 에 여러 chip 동시 보유 가능 (axis 5개 × 각 1 chip = 최대 5~6).
    *
    * 사용자 요구: "이식성 강하게 정규화" + "동시에 여러 chip" + "/me 페이지 상세보기 chip".
-   * 이번 wave 는 **positive chip 만** (negative 는 다음 세션).
+   * Wave 948부터 damage:minor/major 도 표시해 C/D 등급의 실제 이유를 숨기지 않는다.
    * 한국어 라벨/색상 mapping: `grading/chips.ts:CHIP_LABELS`.
    */
   chips: string[];

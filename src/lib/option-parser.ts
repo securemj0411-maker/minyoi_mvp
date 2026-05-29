@@ -1646,8 +1646,8 @@ export function conditionFromTextFashion(
     score += delta;
   };
 
-  // 2) shoe-specific signals — Wave 254.5 step 1.
-  if (category === "shoe") {
+	  // 2) shoe-specific signals — Wave 254.5 step 1.
+	  if (category === "shoe") {
     // 솔 가루 — 미드솔/아웃솔 부서짐 (가수분해 직전). flawed 명확.
     const noSoleCrumbling = /솔\s*가루\s*(?:없|없음|아님)/.test(lower);
     if (!noSoleCrumbling && /솔\s*가루|미드솔\s*가루|아웃솔\s*가루|솔\s*부서|미드솔\s*부서|솔\s*먼지\s*떨어/.test(lower)) {
@@ -1673,14 +1673,25 @@ export function conditionFromTextFashion(
     if (/굽창\s*마모\s*심|뒷굽\s*다\s*닳|뒷굽\s*완전\s*닳|굽\s*완전\s*마모|아웃솔\s*마모\s*심|밑창\s*완전\s*닳/.test(lower)) {
       add("shoe_heel_worn_severe", -0.15);
     }
-    // 밑창 분리/벗겨짐 — parseConditionTier reject ("밑창 벗겨") 보강.
-    if (/밑창\s*분리|밑창\s*벗겨|밑창\s*떨어진|솔\s*분리|솔\s*떨어진|본드로?\s*붙여/.test(lower)) {
-      add("shoe_sole_separation", -0.25);
-      if (!notes.includes("repair_or_defect_signal")) {
-        notes.push("repair_or_defect_signal");
-      }
-    }
-  }
+	    // 밑창 분리/벗겨짐 — parseConditionTier reject ("밑창 벗겨") 보강.
+	    if (/밑창\s*분리|밑창\s*벗겨|밑창\s*떨어진|솔\s*분리|솔\s*떨어진|본드로?\s*붙여/.test(lower)) {
+	      add("shoe_sole_separation", -0.25);
+	      if (!notes.includes("repair_or_defect_signal")) {
+	        notes.push("repair_or_defect_signal");
+	      }
+	    }
+	    // 오염/이염/얼룩 — 신발 ready sweep 에서 "약간의 얼룩있어", "이염 있습니다" 변형 누락 발견.
+	    const noShoeStain = /(?:오염|얼룩|이염)(?:\s*및\s*(?:하자|데미지))?\s*(?:없|없음|없습니다|없어요|없고|없이|아님|깨끗|하나\s*없|전혀\s*없)|(?:오염|얼룩|이염)\s*외(?:에|로)?\s*(?:깨끗|없|괜찮)/.test(lower);
+	    if (
+	      !noShoeStain &&
+	      /(?:살짝|약간|미세|작은|소량|부분적?)?\s*(?:오염|얼룩|이염)(?:이|가|은|는)?\s*(?:있|있음|있습니다|있어요|있지만|있어|있네요|보임|보입니다|남아|자국|흔적)|(?:약간의|미세한|작은)\s*(?:오염|얼룩|이염)/.test(lower)
+	    ) {
+	      add("shoe_stain_or_discoloration", -0.12);
+	      if (!notes.includes("cosmetic_wear")) {
+	        notes.push("cosmetic_wear");
+	      }
+	    }
+	  }
 
   // 3) bag-specific signals — Wave 254.5 step 2 (2026-05-20).
   //    사용자 list: 내피 끈적 / 가죽 까짐 / 손잡이 마모 / 코너 닳음 (+ 페인팅 벗겨짐).
@@ -1730,15 +1741,22 @@ export function conditionFromTextFashion(
     if (!noPilling && /보풀\s*(?:있|많|심)|보풀이?\s*(?:있|많|심)|필링/.test(lower)) {
       add("clothing_pilling", -0.1);
     }
-    // 색바램/변색/탈색 — 자외선/세탁.
-    const noFading = /색바램\s*(?:없|없음|아님)|변색\s*(?:없|없음|아님)/.test(lower);
-    if (!noFading && /색\s*바램|색바램|탈색|변색|색\s*빠짐|색이?\s*빠|페이딩\s*심/.test(lower)) {
-      add("clothing_fading", -0.15);
-    }
-    // 늘어남/처짐 — 니트/티 흔함.
-    if (/늘어남|늘어진|넥\s*늘어|밑단\s*늘어|소매\s*늘어|핏\s*변형|처짐|쳐짐\s*있/.test(lower)) {
-      add("clothing_stretched", -0.12);
-    }
+	    // 색바램/변색/탈색 — 자외선/세탁.
+	    const noFading = /(?:색\s*바램|색바램|변색|탈색|색\s*빠짐|색이?\s*빠짐?)\s*(?:없|없음|없습니다|없어요|없고|없이|아님|깨끗|전혀\s*없)/.test(lower);
+	    if (!noFading && /색\s*바램|색바램|탈색|변색|색\s*빠짐|색이?\s*빠|페이딩\s*심/.test(lower)) {
+	      add("clothing_fading", -0.15);
+	      if (!notes.includes("cosmetic_wear")) {
+	        notes.push("cosmetic_wear");
+	      }
+	    }
+	    // 늘어남/처짐 — 니트/티 흔함.
+	    const noStretch = /(?:늘어남|늘어진|넥\s*늘어|목\s*늘어|밑단\s*늘어|소매\s*늘어|핏\s*변형|처짐|쳐짐)\s*(?:없|없음|없습니다|없어요|없고|없이|아님|심하지\s*않|심한\s*편\s*아님|크지\s*않)|(?:늘어남|늘어짐)\s*외(?:에|로)?\s*(?:깨끗|없|괜찮)/.test(lower);
+	    if (!noStretch && /늘어남|늘어진|넥\s*늘어|목\s*늘어|밑단\s*늘어|소매\s*늘어|핏\s*변형|처짐|쳐짐\s*있/.test(lower)) {
+	      add("clothing_stretched", -0.12);
+	      if (!notes.includes("cosmetic_wear")) {
+	        notes.push("cosmetic_wear");
+	      }
+	    }
     // 봉제 풀림/터짐/뜯어짐 — 수선 필요.
     if (/봉제\s*(?:풀|터|뜯|벌어)|솔기\s*(?:풀|터|뜯|벌어)|박음질\s*(?:풀|터|뜯)|시접\s*(?:풀|터)/.test(lower)) {
       add("clothing_seam_damage", -0.15);
@@ -1767,12 +1785,18 @@ export function conditionFromTextFashion(
     if (/인쇄\s*(?:갈라|벗겨|박리)|프린팅\s*(?:갈라|벗겨|박리|찢어)|프린트\s*(?:갈라|벗겨|박리|찢어)|로고\s*(?:갈라|벗겨|박리)/.test(lower)) {
       add("clothing_print_cracked", -0.1);
     }
-    // 얼룩 — clothing 만 (shoe 는 c_grade 의 얼룩 패턴 있음).
-    const noStain = /얼룩\s*(?:없|없음|아님|깨끗|하나\s*없)/.test(lower);
-    if (!noStain && /얼룩\s*(?:심|많|있|크)|얼룩이?\s*(?:심|많|있|크)|이염\s*심/.test(lower)) {
-      add("clothing_stain", -0.12);
-    }
-  }
+	    // 얼룩 — clothing 만 (shoe 는 c_grade 의 얼룩 패턴 있음).
+	    const noStain = /(?:오염|얼룩|이염|생활\s*오염)(?:\s*및\s*(?:하자|데미지))?\s*(?:없|없음|없습니다|없어요|없고|없이|아님|깨끗|하나\s*없|전혀\s*없)|(?:오염|얼룩|이염)\s*외(?:에|로)?\s*(?:깨끗|없|괜찮)/.test(lower);
+	    if (
+	      !noStain &&
+	      /(?:살짝|약간|미세|작은|소량|부분적?)?\s*(?:오염|얼룩|이염|생활\s*오염)(?:이|가|은|는)?\s*(?:있|있음|있습니다|있어요|있지만|있어|있네요|보임|보입니다|남아|자국|흔적|심|많|크)|(?:약간의|미세한|작은)\s*(?:오염|얼룩|이염)/.test(lower)
+	    ) {
+	      add("clothing_stain", -0.12);
+	      if (!notes.includes("cosmetic_wear")) {
+	        notes.push("cosmetic_wear");
+	      }
+	    }
+	  }
 
   return {
     conditionScore: cap01(score),

@@ -10,9 +10,8 @@
 // - DB 에 `condition_chips text[]` 로 정규화 저장 → 어디서든 query/filter 가능
 // - UI 라벨/색상 은 별도 mapping (CHIP_LABELS) — runtime 변환
 //
-// 이번 wave는 **positive chip 만** (사용자 결정: negative chip 은 다음 세션).
-// → 하자/이염/구멍/빈티지/구제/used 등 negative 매칭은 chip 박지 X.
-//   단 tier (D/C) 에 자동 반영되어 UI 에 등급으로 표시됨.
+// Wave 948 (2026-05-30): condition deepsweep 후 damage chip 도 표시.
+// → "오염/이염/얼룩" 같은 하자 근거가 tier 로만 숨어 있으면 사용자가 왜 C/D인지 모름.
 
 import type { AxisLabels, ClothingAxisLabels } from "./types";
 
@@ -25,6 +24,8 @@ export type ChipKey =
   | "auth:kream"
   | "auth:store"
   | "auth:musinsa"
+  | "damage:minor"
+  | "damage:major"
   // ── 신발 only ──────────────────────────────────────
   | "box:full"
   | "box:box_included"
@@ -43,8 +44,8 @@ export type ChipKey =
 /** UI 표시용 한국어 라벨 + chip 유형 (색상 분기에 사용). */
 export interface ChipLabel {
   ko: string;
-  /** positive=긍정 (green/blue), auth=정품 anchor (blue), special=특수 (gold/purple) */
-  type: "positive" | "auth" | "special";
+  /** positive=긍정 (green/blue), auth=정품 anchor (blue), special=특수 (gold/purple), negative=하자 */
+  type: "positive" | "auth" | "special" | "negative";
   /** 신발/의류/공통 */
   category: "shoe" | "clothing" | "both";
 }
@@ -59,6 +60,10 @@ export const CHIP_LABELS: Record<ChipKey, ChipLabel> = {
   "auth:kream": { ko: "KREAM 인증", type: "auth", category: "both" },
   "auth:store": { ko: "매장 구매", type: "auth", category: "both" },
   "auth:musinsa": { ko: "무신사 구매", type: "auth", category: "both" },
+
+  // 공통 하자
+  "damage:minor": { ko: "경미 하자", type: "negative", category: "both" },
+  "damage:major": { ko: "심각 하자", type: "negative", category: "both" },
 
   // 신발 박스/구성품
   "box:full": { ko: "풀구성", type: "positive", category: "shoe" },
@@ -87,7 +92,7 @@ export const CHIP_LABELS: Record<ChipKey, ChipLabel> = {
 
 /**
  * 신발 axis 라벨 → chip key array.
- * positive 만 (negative 는 다음 세션).
+ * 사용자 노출 chip. Wave 948부터 damage:minor/major도 포함.
  */
 export function chipsFromShoeAxes(axes: AxisLabels): ChipKey[] {
   const chips: ChipKey[] = [];
@@ -106,6 +111,10 @@ export function chipsFromShoeAxes(axes: AxisLabels): ChipKey[] {
   if (axes.auth === "kream") chips.push("auth:kream");
   else if (axes.auth === "store") chips.push("auth:store");
   else if (axes.auth === "musinsa") chips.push("auth:musinsa");
+
+  // D — 하자
+  if (axes.damage === "minor") chips.push("damage:minor");
+  else if (axes.damage === "major") chips.push("damage:major");
 
   // E — 신발 특화 (extra_laces / insole_changed)
   if (axes.shoe === "extra_laces") chips.push("extra:extra_laces");
@@ -139,6 +148,8 @@ export function chipsFromClothingAxes(axes: ClothingAxisLabels): ChipKey[] {
 
   // D — repair_pos (의류 only positive damage)
   if (axes.damage === "repair_pos") chips.push("damage:repair_pos");
+  else if (axes.damage === "minor") chips.push("damage:minor");
+  else if (axes.damage === "major") chips.push("damage:major");
 
   // E — 의류 특화 (collab / self_grade — x10_score 는 negative 라 skip)
   if (axes.extra === "collab") chips.push("extra:collab");
