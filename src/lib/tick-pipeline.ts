@@ -3373,7 +3373,7 @@ function sourceWorkerFailureStatus(
     const bucket = workerBreakdown.get(mode);
     if (!bucket || bucket.failed === 0 || bucket.total === 0) continue;
     const rate = bucket.failed / bucket.total;
-    if (bucket.total >= 3 && rate >= 0.5) {
+    if (bucket.total >= 3 && bucket.failed >= sourceWorkerFailureMinFailed(mode) && rate >= 0.5) {
       return { status: "unhealthy" as const, reason: `${mode}_failure_rate_high` };
     }
   }
@@ -3381,11 +3381,18 @@ function sourceWorkerFailureStatus(
     const bucket = workerBreakdown.get(mode);
     if (!bucket || bucket.failed === 0 || bucket.total === 0) continue;
     const rate = bucket.failed / bucket.total;
-    if (bucket.total >= 2 && rate >= 0.2) {
+    if (bucket.total >= 2 && bucket.failed >= sourceWorkerFailureMinFailed(mode) && rate >= 0.2) {
       return { status: "degraded" as const, reason: `${mode}_failure_rate_elevated` };
     }
   }
   return null;
+}
+
+function sourceWorkerFailureMinFailed(mode: string) {
+  // Deep crawl runs hourly and is a coverage sweep. Two stale failures can linger
+  // in the 120m health window after the runtime fix has already recovered, so
+  // require a third miss before it drives source status or noisy ops alerts.
+  return mode === "deep_crawl" ? 3 : 1;
 }
 
 function workerFailureAlerts(
@@ -3404,9 +3411,10 @@ function workerFailureAlerts(
   return [...workerBreakdown.entries()]
     .map(([mode, bucket]) => {
       const failureRate = bucket.total === 0 ? 0 : bucket.failed / bucket.total;
-      const severity = bucket.total >= 3 && failureRate >= 0.2
+      const minFailed = sourceWorkerFailureMinFailed(mode);
+      const severity = bucket.failed >= minFailed && bucket.total >= 3 && failureRate >= 0.2
         ? "critical"
-        : bucket.total >= 3 && failureRate >= 0.05
+        : bucket.failed >= minFailed && bucket.total >= 3 && failureRate >= 0.05
           ? "warning"
           : null;
       if (!severity) return null;

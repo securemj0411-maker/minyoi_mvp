@@ -43,6 +43,12 @@ This better matches the current A/B/C cron volume without schema changes.
 
 Require at least 2 runs before `sourceWorkerFailureStatus()` can propose degraded status for a worker. A single failed low-cadence run can still appear as an operational warning, but should not by itself flip source status.
 
+Follow-up after production verification:
+
+- Deep-crawl is hourly and coverage-oriented.
+- Two stale failures from the old deployment stayed in the 120-minute source-health window even after the fixed deployment succeeded in 30s.
+- Therefore deep-crawl now needs 3 failed runs before it drives source status or operational worker alerts. Faster workers keep the normal threshold.
+
 ## Verification
 
 - `npx eslint src/lib/tick-pipeline.ts src/lib/pipeline-config.ts tests/query-cadence-balance.test.ts`
