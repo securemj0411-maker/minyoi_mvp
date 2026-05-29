@@ -126,6 +126,14 @@ describe("tech device condition evidence parser", () => {
     assert.ok(signals("아이패드 미니 5", "검색 바탕에서만 붉은 반점이 보입니다.").includes("display_panel_issue"));
     assert.ok(signals("갤럭시탭 S8 울트라", "액정이 나갔어요. 겉 액정이 아니라 안에 액정이 나갔고 갑자기 먹통입니다.").includes("display_panel_issue"));
     assert.ok(signals("아이패드 에어 4", "화면 왼쪽하단에 흰색 색번짐이 있긴 합니다.").includes("display_panel_issue"));
+    assert.ok(signals("아이패드 프로", "액정 약간 파손 말고는 큰 하자 없고 기능이상도 없습니다.").includes("display_panel_issue"));
+    assert.ok(signals("아이패드 프로 m4", "사진에서 보이는 것처럼 화면 깨져있습니다. 그 이외에 하자는 절대 없어요.").includes("display_panel_issue"));
+    assert.ok(signals("아이폰 SE3", "사이드 액정 조금 깨진 것 빼고는 문제 없습니다.").includes("display_panel_issue"));
+    assert.ok(signals("갤럭시 S24 플러스", "전면부 하단 액정이 살짝 깨진것 말고는 이상없습니다.").includes("display_panel_issue"));
+    assert.ok(signals("갤럭시 Z플립5", "특이사항은 화면왼쪽 멍입니다. 사용하는데 문제없었습니다.").includes("display_panel_issue"));
+    assert.ok(signals("아이패드 미니2", "잘 되다가도 화면이 흐려지는 현상이 있어요.").includes("display_panel_issue"));
+    assert.ok(signals("애플워치 SE2", "액정 깨짐 외에는 사용하는데 전혀 문제 없습니다.").includes("display_panel_issue"));
+    assert.ok(!signals("갤럭시 S23", "화면흐림도 전혀 없어요. 액정 깨짐없어요.").includes("display_panel_issue"));
   });
 
   it("폴더블 내부액정 주름/반점은 기능 정상 문구가 있어도 hard signal로 잡는다", () => {
@@ -160,6 +168,10 @@ describe("tech device condition evidence parser", () => {
 
     assert.ok(result.signals.includes("normal_function_positive"));
     assert.ok(!result.signals.includes("speaker_or_mic_issue"));
+    assert.ok(!signals("JBL 플립6 블랙", "외관만 좀 기스 있고 그 외엔 문제 없이 노래도 잘 나오고 다 정상적입니다. 소리 크고 음질 좋습니다.").includes("speaker_or_mic_issue"));
+    assert.ok(!signals("Jbl flip6", "스피커 사용할때 지장되는 하자없고 외관상에 있는 하자밖에 없습니다. 소리 진짜 문제1도없어요").includes("speaker_or_mic_issue"));
+    assert.ok(!signals("jbl boombox 2", "약간 스크레치가 있는데 음질이나 소리에는 문제가 없어요").includes("speaker_or_mic_issue"));
+    assert.ok(!signals("Jbl flip 6", "전원 충전 소리 음질 문제 일절 없구요. 소리 빵빵하게 엄청 잘나옵니다.").includes("charging_or_sensor_issue"));
   });
 
   it("스피커 제품 설명의 30시간 이상 재생은 speaker issue로 오탐하지 않는다", () => {
@@ -169,6 +181,26 @@ describe("tech device condition evidence parser", () => {
     });
 
     assert.ok(!result.signals.includes("speaker_or_mic_issue"));
+  });
+
+  it("액션캠 거래 정책/대화 문구/사진 먼지는 기기 하자로 오탐하지 않는다", () => {
+    assert.ok(!signals(
+      "고프로 MAX 360",
+      "고프로 MAX 360도 카메라 세트입니다. 청량리역 거래 가능. 교환, 환불, 당일 약속 파토 불가. 고프로 MAX 360도 카메라 액션캠 맥스 링크 참고.",
+    ).includes("camera_issue"));
+    assert.ok(!signals(
+      "고프로 히어로 13 블랙 판매",
+      "개봉후 액정필름 부착후 다시 봉인. 직거래만 가능합니다. 이상한 소리하면 답 안하고 차단합니다.",
+    ).includes("speaker_or_mic_issue"));
+    assert.ok(!signals(
+      "DJI 오즈모 나노 128GB",
+      "본체(액정부착), 카메라, 마운트 구성입니다. 정상작동하고 상태 아주 좋습니다. 사진에있는 흰점은 먼지입니다.",
+    ).includes("display_panel_issue"));
+  });
+
+  it("카메라/스피커 실제 기능 불량은 액션캠에서도 hard signal로 남긴다", () => {
+    assert.ok(signals("고프로 히어로", "후면 카메라 촬영 불가라 싸게 팝니다.").includes("camera_issue"));
+    assert.ok(signals("블루투스 스피커", "스피커 소리 잡음 있고 지지직거립니다.").includes("speaker_or_mic_issue"));
   });
 
   it("충전단자 고장과 주변광 센서 문제는 hard signal로 남긴다", () => {
@@ -198,6 +230,7 @@ describe("tech device condition evidence parser", () => {
   it("수리내역 없음과 강화유리필름 교체는 액정 수리로 오탐하지 않는다", () => {
     assert.ok(!signals("아이폰13 A급 화이트", "수리내역없습니다 배터리성능86 모든기능이상없으며 하자없습니다").includes("screen_replaced_or_repaired"));
     assert.ok(!signals("아이폰15프로", "기변 직전 강화유리필름 교체해서 필름 교체할 필요 없습니다.").includes("screen_replaced_or_repaired"));
+    assert.ok(signals("갤럭시 Z플립5", "액정 교체 한 번 했고 깨진 부분 없습니다. 잘 접히고 상태 좋습니다.").includes("screen_replaced_or_repaired"));
   });
 
   it("사설수리x/기능이상x는 사설수리 하자로 오탐하지 않는다", () => {
@@ -319,8 +352,14 @@ describe("tech device condition evidence parser", () => {
       title: "아이폰13미니128gb",
       description: "화면 깨진곳없고 필름 붙혀져 있습니다. 전면,후면 카메라와 버튼 다 눌리고 이상없습니다.",
     });
+    const filmCracked = parseListingOptions({
+      category: "smartphone",
+      title: "아이폰16e 128GB",
+      description: "사진에 보이는 화면 깨짐같은 건 필름 붙이다가 필름이 깨진거예요. 구매하실 때 필름 벗겨서 다시 보여드릴게요.",
+    });
 
     assert.ok(!parsed.conditionNotes.includes("display_defect"));
+    assert.ok(!filmCracked.conditionNotes.includes("display_defect"));
   });
 
   it("카메라도 문제 없다는 문맥은 camera issue로 오탐하지 않는다", () => {

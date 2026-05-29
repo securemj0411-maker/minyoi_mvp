@@ -1,4 +1,4 @@
-export const TECH_DEVICE_CONDITION_EVIDENCE_VERSION = "tech-device-condition-evidence-v4";
+export const TECH_DEVICE_CONDITION_EVIDENCE_VERSION = "tech-device-condition-evidence-v7";
 
 export type TechDeviceConditionSignal =
   | "display_panel_issue"
@@ -201,15 +201,25 @@ export function parseTechDeviceConditionEvidence(input: {
   };
   const removeNegatedDisplayEvidence = (evidence: Pick<TechDeviceConditionEvidence, "source" | "evidence"> | null) => {
     if (!evidence) return null;
-    if (/(?:하자|문제|파손|깨짐|불량|멍|흑점|잔상|번인|색\s*번짐|색번짐).{0,12}(?:없|없음|없습니다|없이|아님)/.test(evidence.evidence)) return null;
     if (/크랙\s*버전|크랙버전|crack\s*version/.test(evidence.evidence)) return null;
+    const explicitDisplayDamage =
+      /(?:액정|화면|디스플레이|스크린|패널|lcd|oled).{0,24}(?:깨졌|깨져\s*있|깨져있|깨진\s*것|깨진것|깨짐|파손|크랙|금\s*갔|금이\s*갔).{0,16}(?:있|있음|있습니다|있어요|는데|말고|빼고|외에는|그\s*외|그외|그\s*이외)|(?:액정|화면|디스플레이|스크린|패널|lcd|oled).{0,24}(?:살짝|약간|조금).{0,10}(?:깨진|깨진\s*것|깨진것|깨짐|파손)|(?:액정|화면|디스플레이|스크린|패널|lcd|oled).{0,18}(?:멍|멍자국|흐림|흐려|뿌연|뿌옇).{0,16}(?:있|있음|있습니다|있어요|입니다|이에요|생|보|발견|나타|현상|때|빼고)/.test(evidence.evidence);
+    if (explicitDisplayDamage) return evidence;
+    if (/(?:액정|화면|디스플레이|스크린|패널|lcd|oled).{0,16}(?:멍|멍자국|흐림|흐려|뿌연|뿌옇).{0,12}(?:없|없음|없습니다|없이|전혀\s*없|아님|아닙)/.test(evidence.evidence)) return null;
+    if (/(?:하자|문제|파손|깨짐|불량|멍|흑점|잔상|번인|색\s*번짐|색번짐).{0,12}(?:없|없음|없습니다|없이|아님)/.test(evidence.evidence)) return null;
+    if (/(?:깨진\s*(?:곳|부분)?|깨진거|깨짐|파손|깨지거나).{0,18}(?:없|없음|없습니다|없이|아니|아님|아닙|필름|흠\s*없)/.test(evidence.evidence)) return null;
+    if (/(?:깨진\s*것|깨진거|깨짐|파손).{0,18}(?:아니|아님|아닙|필름)|(?:보호\s*)?(?:필름|강화\s*유리|유리\s*필름).{0,18}(?:깨진|깨짐|금).{0,24}(?:액정|화면|디스플레이|스크린).{0,14}(?:아니|아님|아닙|문제\s*없|정상)/.test(evidence.evidence)) return null;
+    if (/(?:액정|화면|디스플레이|스크린).{0,14}(?:멀쩡|정상|깨끗).{0,30}(?:보호\s*)?(?:필름|강화\s*유리|유리\s*필름).{0,16}(?:깨져|깨진|깨짐|금)/.test(evidence.evidence)) return null;
+    if (/(?:화면|액정|디스플레이|스크린).{0,18}깨짐\s*같은.{0,24}(?:필름|아니)|(?:화면|액정|디스플레이|스크린).{0,18}깨진\s*거\s*처럼.{0,30}(?:필름|아니|없)/.test(evidence.evidence)) return null;
     if (/(?:측면|모서리|프레임|테두리).{0,24}(?:이\s*가\s*나가|이가나가)/.test(evidence.evidence)) return null;
+    if (/흰\s*점.{0,16}(?:먼지|빛|반사)|(?:먼지|빛|반사).{0,16}흰\s*점/.test(evidence.evidence)) return null;
     return evidence;
   };
   const visibleDisplayIssue = removeNegatedDisplayEvidence(removeNonDisplaySurfaceNoise(firstEvidence(sources, [
     /(?:접으면|접을\s*때|접힌\s*상태).{0,24}(?:화면\s*나가|화면나가|꺼짐|안\s*나오|나오지\s*않|불량)/,
-    /(?:검은\s*(?:색\s*)?(?:점|반점)|검은점|흑점|붉은\s*(?:점|반점)|붉은점|반점|불량\s*화소).{0,12}(?:있|생|보|발견|나타)|(?:있|생|보|발견|나타).{0,12}(?:검은\s*(?:색\s*)?(?:점|반점)|검은점|흑점|붉은\s*(?:점|반점)|붉은점|반점|불량\s*화소)/,
-    /멍.{0,8}(?:있|생|보|발견|나타)|(?:있|생|보|발견|나타).{0,8}멍/,
+    /(?:액정|화면|디스플레이|스크린|패널|lcd|oled).{0,24}(?:살짝\s*|약간\s*|조금\s*)?(?:깨졌|깨져|깨진\s*것|깨진것|깨짐|파손|크랙|금\s*갔|금이\s*갔)(?:.{0,12}(?:있|있음|있습니다|있어요|는데|말고|빼고|이외))?/,
+    /(?:액정|화면|디스플레이|스크린|패널|lcd|oled).{0,18}(?:멍|멍자국|흐림|흐려|뿌연|뿌옇).{0,16}(?:있|있음|있습니다|있어요|입니다|이에요|생|보|발견|나타|현상|때|빼고)|(?:검은\s*(?:색\s*)?(?:점|반점)|검은점|흑점|붉은\s*(?:점|반점)|붉은점|반점|불량\s*화소).{0,12}(?:있|생|보|발견|나타)|(?:있|생|보|발견|나타).{0,12}(?:검은\s*(?:색\s*)?(?:점|반점)|검은점|흑점|붉은\s*(?:점|반점)|붉은점|반점|불량\s*화소)/,
+    /멍(?:자국)?.{0,8}(?:있|있음|입니다|이에요|생|보|발견|나타)|(?:있|생|보|발견|나타).{0,8}멍/,
     /액정\s*불빛|불빛\s*나타/,
     /(?:액정|화면|디스플레이|스크린|패널).{0,18}(?:나감|나갔|나가|먹통|불량|색\s*번짐|색번짐)/,
   ])));
@@ -217,6 +227,7 @@ export function parseTechDeviceConditionEvidence(input: {
     add("display_panel_issue", "block_candidate", 0.9, removeNegatedDisplayEvidence(removeNonDisplaySurfaceNoise(firstEvidence(sources, [
       /(?:접으면|접을\s*때|접힌\s*상태).{0,24}(?:화면\s*나가|화면나가|꺼짐|안\s*나오|나오지\s*않|불량)/,
       /잔상|번인|burn\s*in|녹조|흑점|검은\s*(?:색\s*)?(?:점|반점)|검은점|붉은\s*(?:점|반점)|붉은점|반점|(?:액정|화면|디스플레이|스크린|패널).{0,18}멍|멍.{0,18}(?:액정|화면|디스플레이|스크린|패널)|색\s*번짐|색번짐|흰\s*점|흰\s*영역|흰\s*스팟|데드\s*픽셀|dead\s*pixel|불량\s*화소|화면\s*황변|액정\s*황변|액정\s*불빛|불빛\s*나타|화면\s*x|화면.{0,12}들어오지\s*않|화면.{0,12}안\s*들어/,
+      /(?:액정|화면|디스플레이|스크린|패널|lcd|oled).{0,18}(?:흐림|흐려|뿌연|뿌옇).{0,16}(?:현상|있|때|나타|보)/,
       /(?:액정|화면|디스플레이|스크린|유리|패널).{0,18}(?:깨짐|깨졌|깨진|깨져|파손|크랙|금\s*갔|나감|나갔|나가|먹통|불량)/,
       /(?:깨짐|깨졌|깨진|깨져|파손|크랙|금\s*갔|나감|나갔|나가|먹통|불량).{0,18}(?:액정|화면|디스플레이|스크린|유리|패널)/,
     ]))));
@@ -281,7 +292,7 @@ export function parseTechDeviceConditionEvidence(input: {
 
   const protectiveFilmContext = /(?:보호\s*)?(?:필름|강화\s*유리).{0,12}(?:깨짐|파손|크랙|기스|금)/.test(allText);
   const screenRepairNegated = hasAny(sources, [
-    /(?:수리|교체|사설\s*수리|자가\s*수리).{0,18}(?:없|없음|없습니다|없고|무|x|안\s*함|안함)|(?:수리\s*내역|수리내역|수리\s*이력|수리이력).{0,12}(?:없|없음|없습니다|없고|무|x)/,
+    /(?:수리|교체|사설\s*수리|자가\s*수리)\s*(?:이력|내역)?\s*(?:없|없음|없습니다|없고|무|x|안\s*함|안함|한\s*적\s*없|한적\s*없)|(?:수리\s*내역|수리내역|수리\s*이력|수리이력).{0,12}(?:없|없음|없습니다|없고|무|x)/,
     /(?:공식|애플\s*스토어|애플스토어|공식\s*센터|서비스\s*센터).{0,30}(?:배터리|키캡|키보드).{0,20}교체.{0,36}(?:화면|액정|디스플레이|스크린).{0,20}(?:잘\s*나오|정상|깨끗|기스\s*없)/,
     /(?:시계줄|워치\s*줄|줄|스트랩|밴드).{0,28}(?:교체|바꾸|변경)/,
   ]);
@@ -313,11 +324,17 @@ export function parseTechDeviceConditionEvidence(input: {
     /(?:카메라|전면|후면|초점).{0,24}(?:이상|문제|불량|고장).{0,12}(?:없|없음|없습니다|없어요|없이|아님|아닙니다|x)/,
     /(?:문제|하자).{0,8}(?:없|없는|없음|없습니다|없어요)|(?:기능|전기능|모든\s*기능).{0,30}(?:문제|하자).{0,8}(?:없|없는|없음|없습니다|없어요)/,
   ]);
+  const removeTradePolicyCameraEvidence = (evidence: Pick<TechDeviceConditionEvidence, "source" | "evidence"> | null) => {
+    if (!evidence) return null;
+    const policyOnly = /(?:교환|환불|반품|약속|파토|네고|거래).{0,16}불가|불가.{0,16}(?:교환|환불|반품|약속|파토|네고|거래)/.test(evidence.evidence);
+    const explicitCameraFailure = /(?:카메라|전면|후면|초점).{0,24}(?:안\s*됨|안됨|사용\s*불가|촬영\s*불가|고장|불량|흔들림|초점\s*불량|초점불량|먹통|문제)|(?:안\s*됨|안됨|사용\s*불가|촬영\s*불가|고장|불량|흔들림|초점\s*불량|초점불량|먹통|문제).{0,24}(?:카메라|전면|후면|초점)/.test(evidence.evidence);
+    return policyOnly && !explicitCameraFailure ? null : evidence;
+  };
   if (!cameraNegated) {
-    add("camera_issue", "block_candidate", 0.88, firstEvidence(sources, [
-      /(?:카메라|전면|후면).{0,24}(?:안\s*됨|안됨|불가|고장|불량|흔들림|초점\s*불량|초점불량|먹통|문제)/,
-      /(?:안\s*됨|안됨|불가|고장|불량|흔들림|초점\s*불량|초점불량|먹통).{0,24}(?:카메라|전면|후면)/,
-    ]));
+    add("camera_issue", "block_candidate", 0.88, removeTradePolicyCameraEvidence(firstEvidence(sources, [
+      /(?:카메라|전면|후면).{0,24}(?:안\s*됨|안됨|사용\s*불가|촬영\s*불가|고장|불량|흔들림|초점\s*불량|초점불량|먹통|문제)/,
+      /(?:안\s*됨|안됨|사용\s*불가|촬영\s*불가|고장|불량|흔들림|초점\s*불량|초점불량|먹통).{0,24}(?:카메라|전면|후면)/,
+    ])));
   }
 
   const cameraLensDamageNegated = hasAny(sources, [
@@ -336,20 +353,26 @@ export function parseTechDeviceConditionEvidence(input: {
   }
 
   const audioNegated = hasAny(sources, [
-    /(?:스피커|마이크|통화|소리|음성).{0,24}(?:정상|문제\s*없|이상\s*없|이상무|잘\s*(?:됨|됩니다|들|들림|작동))|(?:기능|전기능|모든\s*기능).{0,18}(?:정상|문제\s*없|이상\s*없|이상무)/,
+    /(?:스피커|마이크|통화|소리|음성|노래|음질).{0,30}(?:정상|문제(?:가|는)?\s*(?:일절\s*|전혀\s*|아예\s*|\d*\s*도\s*)?(?:없|없이)|이상\s*없|이상무|하자\s*없|잘\s*(?:됨|됩니다|들|들림|나오|나옵|작동)|좋|깨끗)|(?:기능|전기능|모든\s*기능).{0,18}(?:정상|문제\s*없|이상\s*없|이상무)/,
+    /(?:문제(?:가|는)?\s*(?:일절\s*|전혀\s*|아예\s*|\d*\s*도\s*)?(?:없|없이)|하자\s*없).{0,30}(?:스피커|마이크|통화|소리|음성|노래|음질)|(?:스피커|마이크|통화|소리|음성|노래|음질).{0,30}(?:문제(?:가|는)?\s*(?:일절\s*|전혀\s*|아예\s*|\d*\s*도\s*)?(?:없|없이)|하자\s*없)/,
   ]);
+  const removeConversationAudioEvidence = (evidence: Pick<TechDeviceConditionEvidence, "source" | "evidence"> | null) => {
+    if (!evidence) return null;
+    if (/이상한\s*소리(?:하면|하시면|하실|하는).{0,28}(?:답|차단|문의|연락|거래)/.test(evidence.evidence)) return null;
+    return evidence;
+  };
   if (!audioNegated) {
-    add("speaker_or_mic_issue", "block_candidate", 0.82, firstEvidence(sources, [
+    add("speaker_or_mic_issue", "block_candidate", 0.82, removeConversationAudioEvidence(firstEvidence(sources, [
       /(?:스피커|마이크|통화|소리|음성).{0,24}(?:안\s*됨|안됨|불량|고장|문제|먹통|잡음|지지직)/,
       /(?:소리|음성|통화).{0,12}이상|이상한\s*(?:소리|음성)|(?:스피커|마이크).{0,8}이상\s*(?:있|있음|발생|생김|납니다|나요)/,
       /(?:스피커|마이크|소리|음성).{0,24}(?:찢어지|찢어지는|잡음|지지직)|(?:찢어지|찢어지는|잡음|지지직).{0,24}(?:스피커|마이크|소리|음성)/,
       /(?:안\s*됨|안됨|불량|고장|문제|먹통|잡음|지지직).{0,24}(?:스피커|마이크|통화|소리|음성)/,
-    ]));
+    ])));
   }
 
   const chargingOrSensorNegated = hasAny(sources, [
     /(?:충전기|충전\s*기|충전독|충전\s*독|충전케이블|충전\s*케이블|케이블).{0,16}(?:없|없음|없습니다|분실|미포함|제외)/,
-    /(?:충전|충전\s*단자|충전단자|센서|주변광).{0,24}(?:정상|문제\s*없|이상\s*없|잘\s*(?:됨|됩니다|작동))/,
+    /(?:전원|충전|충전\s*단자|충전단자|센서|주변광).{0,30}(?:정상|문제(?:가|는)?\s*(?:일절\s*|전혀\s*|아예\s*)?(?:없|없이)|이상\s*없|잘\s*(?:됨|됩니다|작동))/,
     /(?:썬더볼트|thunderbolt|usb).{0,16}(?:단자|포트).{0,16}(?:\d+\s*개|지원|가능|있|구성)|(?:단자|포트).{0,12}\d+\s*개/,
     /(?:기능|기능적|기능적으로|전기능|모든\s*기능).{0,30}(?:정상|문제\s*없|이상\s*없|이상무)/,
   ]);
