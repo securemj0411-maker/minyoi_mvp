@@ -60,6 +60,15 @@ Require at least 2 runs before `sourceWorkerFailureStatus()` can propose degrade
   - `detail_decision_items=200`
   - `build_detail_decisions=46.7s`
 - Based on that still-high CPU cost, cap was tightened to `120` with rotating-tail selection.
+- Production manual run after the final cap (`120`) on deployment `f493308e`:
+  - `runId=ac4860a2-1150-4919-bef0-9270ae98fe31`
+  - duration: `30.0s`
+  - `detail_refresh_items=169`
+  - `detail_decision_items=120`
+  - `deep_detail_triage_deferred_rows=49`
+  - `deep_detail_triage_priority_rows=72`
+  - `deep_detail_triage_rotated_rows=48`
+  - `build_detail_decisions=20.8s`
 
 ## Watch After Deploy
 
