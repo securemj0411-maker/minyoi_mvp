@@ -528,7 +528,7 @@ export function ConditionTierChip({
   const style = TIER_STYLES[tier];
   if (!style) {
     return (
-      <span className="rounded-full bg-zinc-200 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400">
+      <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-[11px] font-bold text-zinc-700 ring-1 ring-zinc-300 dark:bg-zinc-700 dark:text-zinc-300 dark:ring-zinc-600">
         {tier}
       </span>
     );
@@ -536,7 +536,7 @@ export function ConditionTierChip({
   const displayLabel = variant === "friendly" ? style.friendlyLabel : style.label;
   return (
     <span className="relative inline-flex items-center gap-1">
-      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${style.bg} ${style.text}`}>
+      <span className={`rounded-full px-2.5 py-1 text-[11px] font-black shadow-sm ring-1 ring-black/5 dark:ring-white/10 ${style.bg} ${style.text}`}>
         {displayLabel}
       </span>
       {showHelp && (
@@ -605,15 +605,15 @@ export function ConditionChipsList({
         if (!badge) return null;
         const colorClass =
           badge.type === "positive"
-            ? "bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
+            ? "bg-blue-50 text-blue-800 ring-blue-200 dark:bg-blue-900/35 dark:text-blue-100 dark:ring-blue-800/60"
             : badge.type === "negative"
-              ? "bg-rose-50 text-rose-800 dark:bg-rose-900/30 dark:text-rose-200"
-              : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
+              ? "bg-rose-50 text-rose-800 ring-rose-200 dark:bg-rose-900/40 dark:text-rose-100 dark:ring-rose-800/70"
+              : "bg-zinc-100 text-zinc-700 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700";
         return (
           <span
             key={chip}
             title={chip}
-            className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${colorClass}`}
+            className={`rounded-full px-2 py-1 text-[11px] font-bold leading-none shadow-sm ring-1 ${colorClass}`}
           >
             {badge.label}
           </span>
