@@ -4,6 +4,7 @@ import path from "node:path";
 import { summarizeConditionChips } from "@/lib/condition-chip-policy";
 import { mergeConditionDisplayChips } from "@/lib/condition-display";
 import { normalizeMarketplaceSource } from "@/lib/marketplace-source";
+import { bandFromProfit } from "@/lib/pool-policy.mjs";
 import {
   conditionResaleAdjustmentKrw,
   resellShippingFeeForSource,
@@ -28,6 +29,12 @@ type PoolStatusRow = {
   pid: number;
   status: string | null;
   invalidated_reason: string | null;
+};
+
+type PoolProfitRow = {
+  pid: number;
+  expected_profit_min: number | null;
+  expected_profit_max: number | null;
 };
 
 type ListingRow = {
@@ -158,6 +165,40 @@ async function invalidateCandidatePoolRows(pids: number[], reason: string) {
   return { invalidatedRows: invalidated, invalidatedPids: unique, reason: reason.slice(0, 120) };
 }
 
+async function patchCandidatePoolProfits(rows: Array<{
+  pid: number;
+  category: string | null;
+  newProfitMin: number;
+  newProfitMax: number;
+}>) {
+  const uniqueByPid = new Map<number, {
+    pid: number;
+    category: string | null;
+    newProfitMin: number;
+    newProfitMax: number;
+  }>();
+  for (const row of rows) {
+    const pid = Number(row.pid);
+    if (!Number.isFinite(pid)) continue;
+    uniqueByPid.set(pid, { ...row, pid });
+  }
+  const updatedAt = new Date().toISOString();
+  for (const row of uniqueByPid.values()) {
+    const band = bandFromProfit(row.newProfitMin, row.newProfitMax, row.category);
+    await restFetch(`${tableUrl("mvp_candidate_pool")}?pid=eq.${row.pid}&status=in.(ready,reserved)`, {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: jsonBody({
+        expected_profit_min: row.newProfitMin,
+        expected_profit_max: row.newProfitMax,
+        ...(band == null ? {} : { profit_band: band }),
+        updated_at: updatedAt,
+      }),
+    });
+  }
+  return { patchedRows: uniqueByPid.size, patchedPids: [...uniqueByPid.keys()] };
+}
+
 function positiveNumber(value: unknown) {
   const n = Number(value);
   return Number.isFinite(n) && n > 0 ? n : null;
@@ -266,21 +307,38 @@ async function main() {
 
   const affectedRows = auditedRows.filter((row) => row.conditionAdjustment > 0);
   const wouldLosePositiveRows = affectedRows.filter((row) => row.wouldLosePositiveProfit);
+  const stalePoolProfitRows = affectedRows.filter((row) => row.newProfitMax > 0 && row.poolExpectedProfitMax > row.newProfitMax);
   const applyRequested = boolArg("apply", false);
   const applyScopeRaw = arg("apply-scope", "drop_to_zero");
-  if (!["drop_to_zero", "affected"].includes(applyScopeRaw)) {
-    throw new Error(`Invalid --apply-scope=${applyScopeRaw}; expected drop_to_zero or affected`);
+  if (!["drop_to_zero", "affected", "stale_profit"].includes(applyScopeRaw)) {
+    throw new Error(`Invalid --apply-scope=${applyScopeRaw}; expected drop_to_zero, affected, or stale_profit`);
   }
-  const applyScope = applyScopeRaw as "drop_to_zero" | "affected";
+  const applyScope = applyScopeRaw as "drop_to_zero" | "affected" | "stale_profit";
   const applyActionRaw = arg("apply-action", "score_dirty");
-  if (!["score_dirty", "invalidate_pool"].includes(applyActionRaw)) {
-    throw new Error(`Invalid --apply-action=${applyActionRaw}; expected score_dirty or invalidate_pool`);
+  if (!["score_dirty", "invalidate_pool", "patch_profit"].includes(applyActionRaw)) {
+    throw new Error(`Invalid --apply-action=${applyActionRaw}; expected score_dirty, invalidate_pool, or patch_profit`);
   }
-  const applyAction = applyActionRaw as "score_dirty" | "invalidate_pool";
+  const applyAction = applyActionRaw as "score_dirty" | "invalidate_pool" | "patch_profit";
+  if (applyAction === "invalidate_pool" && applyScope !== "drop_to_zero") {
+    throw new Error("--apply-action=invalidate_pool is only allowed with --apply-scope=drop_to_zero");
+  }
+  if (applyAction === "patch_profit" && applyScope !== "stale_profit") {
+    throw new Error("--apply-action=patch_profit is only allowed with --apply-scope=stale_profit");
+  }
   const applyLimit = Math.max(0, Math.floor(Number(arg("apply-limit", "50")) || 0));
-  const applyCandidates = (applyScope === "affected" ? affectedRows : wouldLosePositiveRows)
+  const applyCandidates = (
+    applyScope === "affected"
+      ? affectedRows
+      : applyScope === "stale_profit"
+        ? stalePoolProfitRows
+        : wouldLosePositiveRows
+  )
     .slice()
-    .sort((a, b) => b.profitMaxDrop - a.profitMaxDrop);
+    .sort((a, b) => (
+      applyScope === "stale_profit"
+        ? (b.poolExpectedProfitMax - b.newProfitMax) - (a.poolExpectedProfitMax - a.newProfitMax)
+        : b.profitMaxDrop - a.profitMaxDrop
+    ));
   const applyRows = applyCandidates.slice(0, applyLimit);
   const applyResult = {
     requested: applyRequested,
@@ -294,6 +352,8 @@ async function main() {
     invalidatedRows: 0,
     verifiedInvalidatedRows: 0,
     invalidatedReason: null as string | null,
+    patchedRows: 0,
+    verifiedPatchedRows: 0,
     markedPids: [] as number[],
   };
   if (applyRequested && applyRows.length > 0) {
@@ -304,7 +364,7 @@ async function main() {
       applyResult.markedPids = result.markedPids;
       const verified = await fetchByPid<RawScoreDirtyRow>("mvp_raw_listings", "pid,score_dirty", result.markedPids);
       applyResult.verifiedScoreDirtyRows = verified.filter((row) => row.score_dirty === true).length;
-    } else {
+    } else if (applyAction === "invalidate_pool") {
       const reason = "condition_haircut_profit_not_positive";
       const result = await invalidateCandidatePoolRows(targetPids, reason);
       applyResult.invalidatedRows = result.invalidatedRows;
@@ -314,6 +374,22 @@ async function main() {
       applyResult.verifiedInvalidatedRows = verified.filter((row) => (
         row.status === "invalidated" && row.invalidated_reason === result.reason
       )).length;
+    } else {
+      const result = await patchCandidatePoolProfits(applyRows);
+      applyResult.patchedRows = result.patchedRows;
+      applyResult.markedPids = result.patchedPids;
+      const expectedByPid = new Map(applyRows.map((row) => [row.pid, row]));
+      const verified = await fetchByPid<PoolProfitRow>(
+        "mvp_candidate_pool",
+        "pid,expected_profit_min,expected_profit_max",
+        result.patchedPids,
+      );
+      applyResult.verifiedPatchedRows = verified.filter((row) => {
+        const expected = expectedByPid.get(Number(row.pid));
+        return expected
+          && Number(row.expected_profit_min ?? NaN) === expected.newProfitMin
+          && Number(row.expected_profit_max ?? NaN) === expected.newProfitMax;
+      }).length;
     }
   }
   const report = {
@@ -332,6 +408,18 @@ async function main() {
       affectedRate: pct(affectedRows.length, auditedRows.length),
       wouldLosePositiveProfitRows: wouldLosePositiveRows.length,
       wouldLosePositiveProfitRate: pct(wouldLosePositiveRows.length, auditedRows.length),
+      stalePoolProfitRows: stalePoolProfitRows.length,
+      stalePoolProfitRate: pct(stalePoolProfitRows.length, auditedRows.length),
+      totalPoolProfitOverstatement: stalePoolProfitRows.reduce(
+        (sum, row) => sum + Math.max(0, row.poolExpectedProfitMax - row.newProfitMax),
+        0,
+      ),
+      avgPoolProfitOverstatement: stalePoolProfitRows.length === 0
+        ? 0
+        : Math.round(stalePoolProfitRows.reduce(
+          (sum, row) => sum + Math.max(0, row.poolExpectedProfitMax - row.newProfitMax),
+          0,
+        ) / stalePoolProfitRows.length),
       totalProfitMaxDrop: affectedRows.reduce((sum, row) => sum + row.profitMaxDrop, 0),
       avgProfitMaxDropAffected: affectedRows.length === 0
         ? 0
@@ -349,6 +437,9 @@ async function main() {
     wouldLosePositiveProfitSamples: wouldLosePositiveRows
       .sort((a, b) => b.profitMaxDrop - a.profitMaxDrop)
       .slice(0, 50),
+    stalePoolProfitSamples: stalePoolProfitRows
+      .sort((a, b) => (b.poolExpectedProfitMax - b.newProfitMax) - (a.poolExpectedProfitMax - a.newProfitMax))
+      .slice(0, 50),
   };
 
   await writeFile(path.join(reportsDir, "condition-profit-haircut-impact-latest.json"), `${JSON.stringify(report, null, 2)}\n`);
@@ -358,7 +449,7 @@ async function main() {
     `Generated: ${report.generatedAt}`,
     `Mutation: ${report.mutation ? report.apply.action : "none (dry-run)"}`,
     `Apply scope: ${report.apply.scope} · candidates ${report.apply.candidateRows} · planned ${report.apply.plannedRows} · limit ${report.apply.limit}`,
-    `Apply result: score_dirty ${report.apply.markedRows}/${report.apply.verifiedScoreDirtyRows} · invalidated ${report.apply.invalidatedRows}/${report.apply.verifiedInvalidatedRows}`,
+    `Apply result: score_dirty ${report.apply.markedRows}/${report.apply.verifiedScoreDirtyRows} · invalidated ${report.apply.invalidatedRows}/${report.apply.verifiedInvalidatedRows} · patched ${report.apply.patchedRows}/${report.apply.verifiedPatchedRows}`,
     "",
     "## Metrics",
     "",
@@ -383,6 +474,22 @@ async function main() {
         row.conditionAdjustment,
         row.oldProfitMax,
         row.newProfitMax,
+        row.softAdjustment.join(", "),
+        row.title.slice(0, 70),
+      ]),
+    ),
+    "",
+    "## Stale Pool Profit Samples",
+    "",
+    mdTable(
+      ["pid", "source", "category", "poolMax", "newMax", "over", "chips", "title"],
+      report.stalePoolProfitSamples.slice(0, 20).map((row) => [
+        row.pid,
+        row.source,
+        row.category,
+        row.poolExpectedProfitMax,
+        row.newProfitMax,
+        Math.max(0, row.poolExpectedProfitMax - row.newProfitMax),
         row.softAdjustment.join(", "),
         row.title.slice(0, 70),
       ]),
