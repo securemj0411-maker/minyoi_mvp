@@ -287,6 +287,14 @@ function productTypeFromParsedJson(category: string | null | undefined, parsedJs
   return null;
 }
 
+function hasUnknownShoeCondition(parsed: ReturnType<typeof parseWithSku>) {
+  if (!parsed) return true;
+  const grade = parsed.parsedJson?.condition_grade as { tier?: string | null } | null | undefined;
+  const gradeTier = typeof grade?.tier === "string" ? grade.tier.toUpperCase() : null;
+  if (gradeTier) return gradeTier === "UNKNOWN";
+  return parsed.comparableKey?.split("|").includes("unknown_condition") ?? true;
+}
+
 function fashionKeywordHit(text: string) {
   return /신발|운동화|스니커|스니커즈|부츠|샌들|슬리퍼|로퍼|슈즈|러닝화|등산화|트레킹화|축구화|풋살화|자켓|재킷|패딩|코트|후드|맨투맨|티셔츠|셔츠|바지|팬츠|쇼츠|청바지|데님|니트|가디건|모자|볼캡|벨트|지갑|가방|백팩|토트|숄더|크로스백|파우치|jacket|hoodie|shirt|pants|shorts|sneaker|shoe|boots|sandal|bag|backpack|tote|wallet/i.test(text);
 }
@@ -352,7 +360,7 @@ function makeSweepCase(row: RawRow, parsed: ParsedRow | undefined, pool: PoolRow
   }
   if (rawCategory === "shoe" && rawReparse?.parsedJson?.shoe_product_type_from_shoe_default === true) flags.push("shoe_product_type_defaulted_to_sneaker");
   if (rawCategory === "shoe" && rawReparse?.parsedJson?.shoe_size_mm == null) flags.push("shoe_unknown_size");
-  if (rawCategory === "shoe" && rawReparse?.parsedJson?.shoe_condition_tier == null) flags.push("shoe_unknown_condition");
+  if (rawCategory === "shoe" && hasUnknownShoeCondition(rawReparse)) flags.push("shoe_unknown_condition");
   if (productTypeFromParsedJson(parsed?.category, parsed?.parsed_json) === "type_unknown") flags.push("db_product_type_unknown");
 
   return {
