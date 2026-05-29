@@ -1,4 +1,4 @@
-export const EARPHONE_CONDITION_EVIDENCE_VERSION = "earphone-condition-evidence-v1";
+export const EARPHONE_CONDITION_EVIDENCE_VERSION = "earphone-condition-evidence-v2";
 
 export type EarphoneConditionSignal =
   | "single_side_unit"
@@ -113,6 +113,7 @@ function hasFullSizeHeadphoneContext(allText: string) {
 export function parseEarphoneConditionEvidence(input: {
   title: string;
   description?: string | null;
+  model?: string | null;
 }): EarphoneConditionEvidenceResult {
   const title = sourceOf("title", input.title ?? "");
   const description = sourceOf("description", input.description ?? "");
@@ -121,6 +122,11 @@ export function parseEarphoneConditionEvidence(input: {
   const allText = `${title.normalized} ${description.normalized}`.trim();
   const allCompact = allText.replace(/\s+/g, "");
   const fullSizeHeadphone = hasFullSizeHeadphoneContext(allText);
+  const noAncCapableModel = input.model === "airpods_2" || input.model === "airpods_3" || input.model === "airpods_4";
+  const noAncCapableTitle =
+    /(?:에어팟|airpods).{0,12}(?:4세대|4\s*세대|4th|에어팟4|airpods\s*4)/i.test(allText) &&
+    !/(?:프로|pro|맥스|max)/i.test(allText);
+  const canTreatNoAncAsVariant = noAncCapableModel || noAncCapableTitle;
   const facts: EarphoneConditionEvidence[] = [];
 
   const add = (
@@ -146,7 +152,7 @@ export function parseEarphoneConditionEvidence(input: {
     /anc\s*(?:x|no|없|미지원)/,
     /비\s*노캔|비노캔/,
   ]);
-  if (noAncVariantEvidence || /노캔(?:안되는|안돼|없는|x|ㄴㄴ|노노|미지원)|노이즈캔슬링(?:안되는|안돼)|ancx/.test(allCompact)) {
+  if (canTreatNoAncAsVariant && (noAncVariantEvidence || /노캔(?:안되는|안돼|없는|x|ㄴㄴ|노노|미지원)|노이즈캔슬링(?:안되는|안돼)|ancx/.test(allCompact))) {
     add("no_anc_variant", "variant", 0.95, noAncVariantEvidence ?? { source: "description", evidence: "no_anc compact signal" });
   }
 
@@ -186,19 +192,19 @@ export function parseEarphoneConditionEvidence(input: {
   }
 
   const jitterEvidence = firstEvidence(sources, [
-    /지지직|잡음|화이트\s*노이즈(?!\s*(?:캔슬|켄슬|캐슬))/,
+    /지지직|지직|찌직|찌지직|잡음|화이트\s*노이즈(?!\s*(?:캔슬|켄슬|캐슬))/,
   ]);
   const jitterNegated = hasAny(sources, [
-    /(?:지지직|잡음|화이트\s*노이즈)[^.\n]{0,18}(?:없|없음|없습니다|없어요|없습니당|아님|아닙니다|x|안\s*남|안남|않)/,
-    /(?:지지직|잡음|화이트\s*노이즈)[^.\n]{0,36}(?:전혀\s*)?(?:그런\s*)?문제\s*없/,
+    /(?:지지직|지직|찌직|찌지직|잡음|화이트\s*노이즈)[^.\n]{0,18}(?:없(?!이)|없음|없습니다|없어요|없습니당|아님|아닙니다|x|안\s*남|안남|않)/,
+    /(?:지지직|지직|찌직|찌지직|잡음|화이트\s*노이즈)[^.\n]{0,36}(?:전혀\s*)?(?:그런\s*)?문제\s*없/,
   ]);
   const audioEvidence = jitterEvidence ?? firstEvidence(sources, [
-    /지지직|잡음|화이트\s*노이즈(?!\s*(?:캔슬|켄슬|캐슬))|소리.{0,18}(?:안\s*나|안나|안\s*들|작게\s*나|먹먹|끊|튀|깨짐|이상\s*있|문제\s*있|불량)|(?:한쪽|왼쪽|오른쪽).{0,18}(?:안\s*들|소리\s*안|소리\s*작)|음질.{0,16}(?:이상\s*있|문제\s*있|깨짐|먹먹|불량)/,
+    /지지직|지직|찌직|찌지직|잡음|화이트\s*노이즈(?!\s*(?:캔슬|켄슬|캐슬))|소리.{0,18}(?:안\s*나|안나|안\s*들|작게\s*나|먹먹|끊|튀|깨짐|이상\s*있|문제\s*있|불량)|(?:한쪽|왼쪽|오른쪽).{0,18}(?:안\s*들|소리\s*안|소리\s*작)|음질.{0,16}(?:이상\s*있|문제\s*있|깨짐|먹먹|불량)/,
   ]);
   const audioNegated = hasAny(sources, [
     /(?:소리|음질|스피커|좌우).{0,28}(?:이상\s*(?:없|전혀\s*없|아예\s*없)|문제\s*(?:없|전혀\s*없|아예\s*없)|정상|잘\s*(?:됨|됩니다|들|들립|나|납니다)|좋|깨끗)/,
-    /(?:지지직|잡음|화이트\s*노이즈)[^.\n]{0,18}(?:없|없음|없습니다|없어요|없습니당|아님|아닙니다|x|안\s*남|안남|않)/,
-    /(?:지지직|잡음|화이트\s*노이즈)[^.\n]{0,36}(?:전혀\s*)?(?:그런\s*)?문제\s*없/,
+    /(?:지지직|지직|찌직|찌지직|잡음|화이트\s*노이즈)[^.\n]{0,18}(?:없(?!이)|없음|없습니다|없어요|없습니당|아님|아닙니다|x|안\s*남|안남|않)/,
+    /(?:지지직|지직|찌직|찌지직|잡음|화이트\s*노이즈)[^.\n]{0,36}(?:전혀\s*)?(?:그런\s*)?문제\s*없/,
   ]);
   if (jitterEvidence && !jitterNegated) {
     add("audio_output_issue", "block_candidate", 0.86, jitterEvidence);
@@ -207,20 +213,23 @@ export function parseEarphoneConditionEvidence(input: {
   }
 
   const ancEvidence = firstEvidence(sources, [
-    /(?:노캔|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)|anc|주변음|투명\s*모드).{0,28}(?:불량|고장|문제\s*있|이상\s*있|안\s*됨|안됨|작동\s*안|지지직|잡음|먹통)/,
-    /(?:불량|고장|문제\s*있|이상\s*있|안\s*됨|안됨|작동\s*안|지지직|잡음|먹통).{0,28}(?:노캔|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)|anc|주변음|투명\s*모드)/,
+    /(?:노캔|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)|anc|주변음|투명\s*모드).{0,28}(?:불량|고장|문제\s*있|이상\s*있|안\s*됨|안됨|안\s*됩|안됩|안\s*됩니다|안됩니다|작동\s*안|지지직|지직|찌직|잡음|먹통)/,
+    /(?:불량|고장|문제\s*있|이상\s*있|작동\s*안|지지직|지직|찌직|잡음|먹통).{0,28}(?:노캔|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)|anc|주변음|투명\s*모드)/,
+    /(?:주변음\s*허용|주변음|투명\s*모드|노캔|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)|anc).{0,36}(?:통화|전화).{0,12}(?:안\s*됨|안됨|안\s*됩|안됩|안\s*됩니다|안됩니다)/,
   ]);
   const ancNegated = hasAny(sources, [
     /(?:노캔|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)|anc|주변음|투명\s*모드).{0,40}(?:정상|문제\s*(?:없|전혀\s*없|아예\s*없)|이상\s*(?:없|전혀\s*없|아예\s*없)|잘\s*(?:됨|됩니다|되|되고|작동))/,
     /(?:노캔|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)|anc)\s*(?:o|ok|정상)/,
   ]);
-  if (!facts.some((fact) => fact.signal === "no_anc_variant") && !ancNegated && !jitterNegated) {
+  const ancExplicitBroken = Boolean(ancEvidence && /불량|고장|안\s*됨|안됨|안\s*됩|안됩|안\s*됩니다|안됩니다|작동\s*안|지지직|지직|찌직|잡음|먹통/.test(ancEvidence.evidence));
+  const ancTransactionContext = Boolean(ancEvidence && /(?:바로\s*)?구매\s*안\s*됩|결제\s*안\s*됩|환불\s*안\s*됩|거래\s*안\s*됩|네고\s*안\s*됩/.test(ancEvidence.evidence));
+  if (!ancTransactionContext && !facts.some((fact) => fact.signal === "no_anc_variant") && ((ancExplicitBroken && !(ancNegated && jitterNegated)) || (!ancNegated && !jitterNegated))) {
     add("anc_or_transparency_issue", "block_candidate", 0.86, ancEvidence);
   }
 
   const micEvidence = firstEvidence(sources, [
     /마이크.{0,24}(?:이상|불량|안\s*됨|안됨|안\s*됩|안됩|문제|고장|먹통|소리\s*작|작동\s*안)/,
-    /(?:통화|전화).{0,24}(?:불량|안\s*됨|안됨|문제|상대방.{0,8}안\s*들)/,
+    /(?:통화|전화).{0,24}(?:불량|안\s*됨|안됨|안\s*됩|안됩|안\s*됩니다|안됩니다|문제|상대방.{0,8}안\s*들)/,
   ]);
   const micNegated = hasAny(sources, [
     /(?:마이크|통화|전화).{0,20}(?:정상|문제\s*없|이상\s*없|이상무|잘\s*됨|잘\s*됩니다)/,
@@ -229,15 +238,26 @@ export function parseEarphoneConditionEvidence(input: {
     add("mic_issue", "block_candidate", 0.88, micEvidence);
   }
 
-  const pairingEvidence = firstEvidence(sources, [
-    /(?:페어링|연결|블루투스).{0,24}(?:안\s*됨|안됨|불량|문제|끊김|끊겨|먹통|인식\s*불|불안정)/,
-    /(?:안\s*됨|안됨|불량|문제|끊김|끊겨|먹통|인식\s*불|불안정).{0,24}(?:페어링|연결|블루투스)/,
+  const connectionDropEvidence = firstEvidence(sources, [
+    /(?:통화|전화|음악|사용|연결|블루투스).{0,28}(?:끊김|끊기|끊기는|끊겨|끊어짐|끊어\s*짐)/,
+    /(?:끊김|끊기|끊기는|끊겨|끊어짐|끊어\s*짐).{0,28}(?:통화|전화|음악|사용|연결|블루투스)/,
+  ]);
+  const connectionDropExcepted = hasAny(sources, [
+    /(?:끊김|끊기|끊기는|끊겨|끊어짐|끊어\s*짐).{0,18}(?:빼고|제외|말고)/,
+  ]);
+  const connectionDropNegated = !connectionDropExcepted && hasAny(sources, [
+    /(?:연결|블루투스|통화|전화).{0,24}(?:끊김|끊기|끊기는|끊겨|끊어짐|끊어\s*짐).{0,14}(?:없|없음|없습니다|없어요|아님|아닙니다|전혀\s*없|문제\s*없)/,
+    /(?:끊김|끊기|끊기는|끊겨|끊어짐|끊어\s*짐).{0,14}(?:없|없음|없습니다|없어요|아님|아닙니다|전혀\s*없|문제\s*없)/,
+  ]);
+  const pairingEvidence = connectionDropEvidence ?? firstEvidence(sources, [
+    /(?:페어링|연결|블루투스).{0,24}(?:안\s*됨|안됨|불량|문제|끊김|끊기|끊기는|끊겨|끊어짐|먹통|인식\s*불|불안정)/,
+    /(?:안\s*됨|안됨|불량|문제|끊김|끊기|끊기는|끊겨|끊어짐|먹통|인식\s*불|불안정).{0,24}(?:페어링|연결|블루투스)/,
   ]);
   const pairingNegated = hasAny(sources, [
     /(?:페어링|연결|블루투스).{0,20}(?:정상|문제\s*없|이상\s*없|잘\s*됨|잘\s*됩니(?:다|더))/,
     /(?:페어링|연결|블루투스|기능|기기상|기계).{0,48}(?:관련\s*)?문제(?:는|가|도|될건|될\s*건)?\s*(?:하나도|일체|전혀|아무것도|크게)?\s*(?:없|x)/,
   ]);
-  if (!pairingNegated) {
+  if ((connectionDropEvidence && !connectionDropNegated) || (!connectionDropEvidence && !pairingNegated)) {
     add("pairing_or_connection_issue", "block_candidate", 0.88, pairingEvidence);
   }
 

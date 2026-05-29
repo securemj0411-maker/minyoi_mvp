@@ -443,4 +443,109 @@ describe("earphone condition evidence shadow parser", () => {
     assert.equal(parsed.parsedJson.earphone_condition_evidence, null);
     assert.equal(parsed.parsedJson.earphone_condition_policy, null);
   });
+
+  it("통화 중 연결 끊김은 문제 없음 후행 문구가 있어도 hard signal로 잡는다", () => {
+    const parsed = parseListingOptions({
+      category: "earphone",
+      skuId: "airpods-2",
+      title: "애플 에어팟 2세대",
+      description: "통화할때 가끔 연결이 끊기는거 빼고는 문제 없습니다.",
+    });
+
+    assert.equal(parsed.conditionClass, "flawed");
+    assert.ok(parsed.conditionNotes.includes("earphone_pairing_issue"), JSON.stringify(parsed.conditionNotes));
+  });
+
+  it("지지직 거림 뒤의 '노이즈 캔슬링 없이'는 잡음 negation이 아니다", () => {
+    const evidence = parseEarphoneConditionEvidence({
+      title: "에어팟 프로1세대 판매합니다",
+      description: "노이즈 캔슬링 및 전화 시, 지지직 거림. 노이즈 캔슬링 없이 노래 듣기용으로 적합합니다.",
+    });
+    const parsed = parseListingOptions({
+      category: "earphone",
+      skuId: "airpods-pro-1",
+      title: "에어팟 프로1세대 판매합니다",
+      description: "노이즈 캔슬링 및 전화 시, 지지직 거림. 노이즈 캔슬링 없이 노래 듣기용으로 적합합니다.",
+    });
+
+    assert.ok(evidence.hardBlockCandidates.includes("audio_output_issue"), JSON.stringify(evidence));
+    assert.equal(parsed.conditionClass, "flawed");
+    assert.ok(parsed.conditionNotes.includes("earphone_audio_issue"), JSON.stringify(parsed.conditionNotes));
+  });
+
+  it("정상 연결/끊김 없음 문구는 페어링 하자로 보지 않는다", () => {
+    const parsed = parseListingOptions({
+      category: "earphone",
+      skuId: "sony-wh-1000xm5",
+      title: "소니 WH-1000XM5 헤드폰",
+      description: "블루투스 연결 정상이고 끊김 없습니다. 노캔 정상, 소리 문제 없습니다.",
+    });
+
+    assert.ok(!parsed.conditionNotes.includes("earphone_pairing_issue"), JSON.stringify(parsed.conditionNotes));
+    assert.notEqual(parsed.conditionClass, "flawed");
+  });
+
+  it("AirPods Pro의 노캔/주변음/통화 안됨은 no-ANC 변형이 아니라 하자다", () => {
+    const parsed = parseListingOptions({
+      category: "earphone",
+      skuId: "airpods-pro-1",
+      title: "에어팟프로1세대 팝니다.",
+      description: "주변음허용, 노이즈캔슬링, 통화 안됩니다. 끔 모드로 노래만 듣는거는 이상없습니다.",
+    });
+
+    assert.equal(parsed.conditionClass, "flawed");
+    assert.ok(parsed.conditionNotes.includes("earphone_anc_issue"), JSON.stringify(parsed.conditionNotes));
+    assert.ok(parsed.conditionNotes.includes("earphone_mic_issue"), JSON.stringify(parsed.conditionNotes));
+  });
+
+  it("지직 축약형은 잡음 하자로 잡고, 지직거림 없음은 정상으로 둔다", () => {
+    const defective = parseListingOptions({
+      category: "earphone",
+      skuId: "airpods-pro-1",
+      title: "에어팟 프로 1세대",
+      description: "살짝 지직 거려용. 쓰는데 엄청 차이는 없어요.",
+    });
+    const clean = parseListingOptions({
+      category: "earphone",
+      skuId: "airpods-pro-1",
+      title: "에어팟 프로 1세대",
+      description: "노캔 잘됩니다. 지직거림 없습니다. 버튼 잘 눌러집니다.",
+    });
+
+    assert.equal(defective.conditionClass, "flawed");
+    assert.ok(defective.conditionNotes.includes("earphone_audio_issue"), JSON.stringify(defective.conditionNotes));
+    assert.ok(!clean.conditionNotes.includes("earphone_audio_issue"), JSON.stringify(clean.conditionNotes));
+    assert.notEqual(clean.conditionClass, "flawed");
+  });
+
+  it("AirPods 4 노캔 안되는 모델은 하자가 아니라 no-ANC 변형이다", () => {
+    const parsed = parseListingOptions({
+      category: "earphone",
+      skuId: "airpods-4-anc",
+      title: "에어팟 4세대 노캔 안 됨 급처",
+      description: "노이즈 캔슬링 안되는 모델이니 꼭 확인 부탁드려요.",
+    });
+
+    assert.ok(!parsed.conditionNotes.includes("earphone_anc_issue"), JSON.stringify(parsed.conditionNotes));
+    assert.notEqual(parsed.conditionClass, "flawed");
+    assert.equal(parsed.model, "airpods_4");
+  });
+
+  it("환불/구매 안됩니다 문구와 노캔 정상 문구를 섞어도 ANC 하자로 보지 않는다", () => {
+    const workingAnc = parseListingOptions({
+      category: "earphone",
+      skuId: "airpods-4",
+      title: "에어팟4세대 싸게팝니다",
+      description: "정상적으로 들립니다. 하자 없습니다. 환불 안됩니다. 노이즈캔슬링 됩니다.",
+    });
+    const saleContext = parseListingOptions({
+      category: "earphone",
+      skuId: "airpods-4-anc",
+      title: "에어팟4세대 미개봉 기본/노캔",
+      description: "기본모델 17만 판매중. 노캔모델 22만 판매중. 노캔은 바로구매안됩니다.",
+    });
+
+    assert.ok(!workingAnc.conditionNotes.includes("earphone_anc_issue"), JSON.stringify(workingAnc.conditionNotes));
+    assert.ok(!saleContext.conditionNotes.includes("earphone_anc_issue"), JSON.stringify(saleContext.conditionNotes));
+  });
 });

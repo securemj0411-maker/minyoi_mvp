@@ -2113,7 +2113,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   let conditionScore = conditionResult.conditionScore;
   const conditionNotes = [...conditionResult.conditionNotes];
   const earphoneConditionEvidence = category === "earphone"
-    ? parseEarphoneConditionEvidence({ title, description })
+    ? parseEarphoneConditionEvidence({ title, description, model })
     : null;
   if (earphoneConditionEvidence) {
     const addEarphoneGateNotes = (notes: string[], delta = -0.35) => {
