@@ -102,6 +102,7 @@ Decision:
 
 - Keep the 120-minute source-health window for status hysteresis.
 - Suppress worker failure alerts when the latest runs for that worker have recovered with at least two consecutive successes.
+- Ignore currently `running` rows when computing recovery streaks; a worker that just started is not a fresh failure.
 - This removes stale alert noise while still leaving real recurring failures visible.
 
 ## Deferred

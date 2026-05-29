@@ -3587,12 +3587,14 @@ function workerRecoveryByMode(rows: CollectRunHealthRow[]) {
   for (const row of rows) {
     const mode = runMode(row);
     if (!mode || result.has(mode)) continue;
+    if (row.status === "running") continue;
     result.set(mode, { latestStatus: row.status, successStreak: 0 });
   }
   for (const [mode, state] of result.entries()) {
     let streak = 0;
     for (const row of rows) {
       if (runMode(row) !== mode) continue;
+      if (row.status === "running") continue;
       if (row.status !== "succeeded") break;
       streak += 1;
     }
