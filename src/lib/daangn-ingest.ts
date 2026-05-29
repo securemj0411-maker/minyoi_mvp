@@ -143,10 +143,14 @@ export type DaangnIngestResult = {
     regions: DaangnRegionYieldStat[];
     topCatalogHint: DaangnRegionYieldStat[];
     zeroCatalogHintRegions: number;
+    totalRegions?: number;
+    loggedRegions?: number;
   };
   categoryYieldStats?: {
     pairs: DaangnCategoryYieldStat[];
     topCatalogHint: DaangnCategoryYieldStat[];
+    totalPairs?: number;
+    loggedPairs?: number;
   };
   ongoing: number;
   crawlAllowedOngoing: number;
@@ -1383,6 +1387,12 @@ function countDaangnArticlesBySourceRegionCategory(
   return out;
 }
 
+function daangnYieldStatsLimit(name: string, fallback: number, min: number, max: number): number {
+  const parsed = Number.parseInt(process.env[name] ?? "", 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
 function buildDaangnRegionYieldStats(input: {
   selectedRegions: DaangnRegionSeed[];
   sourceRegionByHref: Map<string, DaangnRegionSeed>;
@@ -1421,10 +1431,14 @@ function buildDaangnRegionYieldStats(input: {
     b.fetched - a.fetched ||
     a.regionName.localeCompare(b.regionName, "ko")
   ));
+  const logLimit = daangnYieldStatsLimit("DAANGN_INGEST_REGION_YIELD_STATS_LIMIT", 120, 20, 500);
+  const loggedRegions = regions.slice(0, logLimit);
   return {
-    regions,
-    topCatalogHint: regions.slice(0, 20),
+    regions: loggedRegions,
+    topCatalogHint: regions.slice(0, Math.min(20, logLimit)),
     zeroCatalogHintRegions: regions.filter((region) => region.catalogHint === 0).length,
+    totalRegions: regions.length,
+    loggedRegions: loggedRegions.length,
   };
 }
 
@@ -1477,9 +1491,13 @@ function buildDaangnCategoryYieldStats(input: {
     b.fetched - a.fetched ||
     a.sourceRegionName.localeCompare(b.sourceRegionName, "ko")
   ));
+  const logLimit = daangnYieldStatsLimit("DAANGN_INGEST_CATEGORY_YIELD_STATS_LIMIT", 80, 20, 300);
+  const loggedPairs = pairs.slice(0, logLimit);
   return {
-    pairs: pairs.slice(0, 120),
-    topCatalogHint: pairs.slice(0, 40),
+    pairs: loggedPairs,
+    topCatalogHint: pairs.slice(0, Math.min(40, logLimit)),
+    totalPairs: pairs.length,
+    loggedPairs: loggedPairs.length,
   };
 }
 
