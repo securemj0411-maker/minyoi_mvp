@@ -2186,12 +2186,12 @@ async function loadScorableRows(limit: number, options: ScoreStageOptions = {}):
   const scoreDirtyAvailable = await rawScoreDirtySchemaAvailable();
   // Wave 132: num_comment 추가 — candidate-pool-builder가 >= 8 차단.
   // Wave 217 (2026-05-19): bunjang_condition_label 추가 — parseFashionMobility 가 metadata 활용.
-  const baseColumns = "pid,source,query,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,detail_status,listing_type,listing_type_override,listing_state,sale_status,num_comment,qty,description_hash,bunjang_condition_label,raw_json,daangn_manner_temperature";
+  const baseColumns = "pid,source,query,name,price,num_faved,free_shipping,url,description_preview,shop_review_rating,shop_review_count,trade_data,trades_data,image_url_template,image_count,thumbnail_url,sku_id,sku_name,detail_status,listing_type,listing_type_override,listing_state,sale_status,num_comment,qty,description_hash,bunjang_condition_label,raw_json,daangn_manner_temperature,last_seen_at";
   const columns = scoreDirtyAvailable ? `${baseColumns},pool_eligible` : baseColumns;
   const dirtyFilter = scoreDirtyAvailable ? "&score_dirty=eq.true" : "";
   const sourceFilter = options.sourceFilter ? `&source=eq.${options.sourceFilter}` : "";
   const baseFilter = `${dirtyFilter}${sourceFilter}`;
-  const scorableBaseFilter = `${dirtyFilter}${sourceFilter}&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active&or=(listing_type.eq.normal,listing_type_override.eq.normal)`;
+  const scorableBaseFilter = `${dirtyFilter}${sourceFilter}&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active`;
   const buildUrl = (extraFilter: string, rowLimit: number) =>
     `${tableUrl("mvp_raw_listings")}?select=${columns}${baseFilter}${extraFilter}&order=last_seen_at.desc&limit=${rowLimit}`;
   const buildDirtyScorableUrl = (extraFilter: string, rowLimit: number) =>
@@ -2217,8 +2217,16 @@ async function loadScorableRows(limit: number, options: ScoreStageOptions = {}):
       // Daangn firehose can leave many dirty search-only rows. Push the cheap
       // scorable predicates into Postgres so the worker does not sort/fetch
       // rows that JS will immediately throw away.
-      const dirtyRes = await restFetch(buildDirtyScorableUrl(extraFilter, scanLimit), { headers: serviceHeaders() });
-      collect((await dirtyRes.json()) as ScorableRawRow[]);
+      //
+      // Keep listing_type and listing_type_override as two narrow predicates
+      // instead of one PostgREST OR. Under Daangn backlog pressure the OR path
+      // has intermittently hit statement_timeout on the primary score worker,
+      // while each typed predicate stays index-friendly and cheap.
+      for (const listingTypeFilter of ["&listing_type=eq.normal", "&listing_type_override=eq.normal"]) {
+        if (rows.length >= rowLimit) break;
+        const dirtyRes = await restFetch(buildDirtyScorableUrl(`${extraFilter}${listingTypeFilter}`, scanLimit), { headers: serviceHeaders() });
+        collect((await dirtyRes.json()) as ScorableRawRow[]);
+      }
     } else {
       const normalRes = await restFetch(buildUrl(`${extraFilter}&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active&listing_type=eq.normal`, rowLimit), { headers: serviceHeaders() });
       collect((await normalRes.json()) as ScorableRawRow[]);
