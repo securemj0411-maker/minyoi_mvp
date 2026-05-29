@@ -58,6 +58,24 @@ async function fetchJson(pathname, fallback = []) {
   return res.json();
 }
 
+async function fetchJsonPaged(pathname, {
+  pageSize = 1000,
+  maxRows = 30000,
+  fallback = [],
+} = {}) {
+  const clean = pathname.replace(/([?&])(limit|offset)=\d+/g, "").replace(/[?&]$/, "");
+  const joiner = clean.includes("?") ? "&" : "?";
+  const out = [];
+  for (let offset = 0; out.length < maxRows; offset += pageSize) {
+    const limit = Math.min(pageSize, maxRows - out.length);
+    const rows = await fetchJson(`${clean}${joiner}limit=${limit}&offset=${offset}`, fallback);
+    if (!Array.isArray(rows) || rows.length === 0) break;
+    out.push(...rows);
+    if (rows.length < limit) break;
+  }
+  return out;
+}
+
 function n(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -183,14 +201,17 @@ const [
   fetchJson(
     `/mvp_reveal_feedback?select=feedback_type,created_at,updated_at&updated_at=gte.${encodeURIComponent(cutoffIso)}&limit=5000`,
   ),
-  fetchJson(
-    "/mvp_candidate_pool?select=profit_band,status,category,confidence,expected_profit_min,expected_profit_max&limit=20000",
+  fetchJsonPaged(
+    "/mvp_candidate_pool?select=profit_band,status,category,confidence,expected_profit_min,expected_profit_max",
+    { maxRows: 50000 },
   ),
-  fetchJson(
-    "/mvp_detail_queue?select=status,attempts,created_at,updated_at&limit=20000",
+  fetchJsonPaged(
+    "/mvp_detail_queue?select=status,attempts,created_at,updated_at",
+    { maxRows: 50000 },
   ),
-  fetchJson(
-    "/mvp_market_key_invalidation?select=status,event_count,priority,last_event_at&limit=20000",
+  fetchJsonPaged(
+    "/mvp_market_key_invalidation?select=status,event_count,priority,last_event_at",
+    { maxRows: 50000 },
   ),
 ]);
 

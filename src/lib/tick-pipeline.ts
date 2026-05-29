@@ -4007,9 +4007,12 @@ async function loadDaangnVolumeBySku(targetSkuIds?: Iterable<string>): Promise<M
     const since7dIso = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
     const all: Array<{ sku_id: string }> = [];
     const PAGE = 1000;
+    const hasExplicitTargets = targetSkuIds != null;
     const target = Array.from(new Set(Array.from(targetSkuIds ?? [])
       .map((id) => String(id ?? "").trim())
       .filter(Boolean)));
+
+    if (hasExplicitTargets && target.length === 0) return new Map();
 
     if (target.length > 0) {
       // Wave 904 (2026-05-28): exact target-SKU volume for the current score batch.
@@ -4073,12 +4076,15 @@ async function loadLowVolumeSkuIds(targetSkuIds?: Iterable<string>): Promise<Set
   try {
     const since7dIso = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
     const since2dMs = Date.now() - 2 * 24 * 3600 * 1000;
+    const hasExplicitTargets = targetSkuIds != null;
     const target = Array.from(new Set(Array.from(targetSkuIds ?? [])
       .map((id) => String(id ?? "").trim())
       .filter(Boolean)));
     const maxRows = Number(process.env.PIPELINE_LOW_VOLUME_MAX_ROWS ?? 1_000);
     const all: Array<{ sku_id: string; first_seen_at: string }> = [];
     const PAGE = 1000;
+
+    if (hasExplicitTargets && target.length === 0) return new Set();
 
     if (target.length > 0) {
       // Wave 904: exact batch-SKU counts avoid the global maxRows window
