@@ -2385,6 +2385,27 @@ async function clearScoreDirty(pids: number[]): Promise<void> {
   }
 }
 
+async function loadScoreDirtyPidsByFilter(filter: string, limit: number): Promise<number[]> {
+  const rowLimit = Math.max(1, Math.min(limit, 1000));
+  const res = await restFetch(
+    `${tableUrl("mvp_raw_listings")}?select=pid&score_dirty=eq.true${filter}&order=last_seen_at.desc&limit=${rowLimit}`,
+    { headers: serviceHeaders() },
+  );
+  const rows = (await res.json()) as Array<{ pid: number | string | null }>;
+  return rows.map((row) => Number(row.pid)).filter(Number.isFinite);
+}
+
+async function clearScoreDirtyByFilter(reason: string, filter: string, limit: number): Promise<number> {
+  try {
+    const pids = await loadScoreDirtyPidsByFilter(filter, limit);
+    await clearScoreDirty(pids);
+    return pids.length;
+  } catch (err) {
+    console.warn(`clear score_dirty failed for ${reason} (non-fatal)`, err);
+    return 0;
+  }
+}
+
 async function clearNonScorableScoreDirty(limit: number): Promise<number> {
   if (!(await rawScoreDirtySchemaAvailable())) return 0;
   const rowLimit = Math.max(1, Math.min(limit, 1000));
@@ -2413,35 +2434,32 @@ async function clearNonScorableScoreDirty(limit: number): Promise<number> {
 async function clearUnscorableScoreDirty(limit: number): Promise<number> {
   if (!(await rawScoreDirtySchemaAvailable())) return 0;
   const rowLimit = Math.max(1, Math.min(limit, 2000));
-  try {
-    const res = await restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,detail_status,listing_type,listing_type_override,sku_id,listing_state&score_dirty=eq.true&order=last_seen_at.desc&limit=${rowLimit}`,
-      { headers: serviceHeaders() },
-    );
-    const rows = (await res.json()) as Array<{
-      pid: number | string | null;
-      detail_status: string | null;
-      listing_type: string | null;
-      listing_type_override: string | null;
-      sku_id: string | null;
-      listing_state: string | null;
-    }>;
-    const pids = rows
-      .filter((row) => !isScorableRawCandidate({
-        detail_status: row.detail_status ?? "",
-        sku_id: row.sku_id,
-        listing_state: row.listing_state ?? "",
-        listing_type: row.listing_type ?? "",
-        listing_type_override: row.listing_type_override,
-      }))
-      .map((row) => Number(row.pid))
-      .filter(Number.isFinite);
-    await clearScoreDirty(pids);
-    return pids.length;
-  } catch (err) {
-    console.warn("clear unscorable score_dirty failed (non-fatal)", err);
-    return 0;
+  const specs: Array<{ reason: string; filter: string; limit: number }> = [
+    { reason: "detail_null", filter: "&detail_status=is.null", limit: 350 },
+    { reason: "detail_not_done", filter: "&detail_status=neq.done", limit: 500 },
+    { reason: "sku_null", filter: "&detail_status=eq.done&sku_id=is.null", limit: 500 },
+    { reason: "state_null", filter: "&detail_status=eq.done&sku_id=not.is.null&listing_state=is.null", limit: 250 },
+    { reason: "state_not_active", filter: "&detail_status=eq.done&sku_id=not.is.null&listing_state=neq.active", limit: 500 },
+    { reason: "type_null", filter: "&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active&listing_type=is.null&listing_type_override=is.null", limit: 250 },
+    { reason: "type_not_normal", filter: "&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active&listing_type=neq.normal&listing_type_override=is.null", limit: 500 },
+    { reason: "override_not_normal", filter: "&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active&listing_type=neq.normal&listing_type_override=not.is.null&listing_type_override=neq.normal", limit: 350 },
+  ];
+  const breakdown = new Map<string, number>();
+  let total = 0;
+  for (const spec of specs) {
+    const remaining = rowLimit - total;
+    if (remaining <= 0) break;
+    const cleared = await clearScoreDirtyByFilter(spec.reason, spec.filter, Math.min(spec.limit, remaining));
+    if (cleared > 0) breakdown.set(spec.reason, cleared);
+    total += cleared;
   }
+  if (total > 0) {
+    console.info("[score-cleanup] cleared unscorable score_dirty rows", {
+      total,
+      ...Object.fromEntries(breakdown),
+    });
+  }
+  return total;
 }
 
 async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Promise<number> {
