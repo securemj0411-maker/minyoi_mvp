@@ -11,8 +11,16 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { checkCronAuth } from "@/lib/cron-auth";
+import { mergeConditionDisplayChips } from "@/lib/condition-display";
 import { cronProjectRoleSkip } from "@/lib/cron-guard";
+import { normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { reportCriticalIncident } from "@/lib/operational-notifier";
+import {
+  conditionResaleAdjustmentKrw,
+  resellShippingFeeForSource,
+  safetyBufferForSource,
+  sellingFeeForMarketPrice,
+} from "@/lib/profit";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 // Wave 193 (2026-05-17): dedup — 같은 사고 24h 안 한 번만 알림 + 회복 시 1회 알림.
@@ -29,6 +37,44 @@ const MARKET_ROW_THRESHOLD_RATIO = 0.5;
 const POOL_READY_THRESHOLD = 100;
 // 검수 응답 SLA — 24h.
 const REVIEW_SLA_HOURS = 24;
+const CONDITION_HAIRCUT_POOL_AUDIT_LIMIT = 5000;
+
+type IncidentCheckResult = {
+  ok: boolean;
+  detail: string;
+  context?: Record<string, unknown>;
+};
+
+type PoolAuditRow = {
+  pid: number;
+  category: string | null;
+  condition_class: string | null;
+  expected_profit_max: number | null;
+};
+
+type ListingAuditRow = {
+  pid: number;
+  name: string | null;
+  price: number | null;
+  sku_median: number | null;
+  shipping_fee: number | null;
+  shipping_fee_general: number | null;
+  estimated_buy_cost: number | null;
+};
+
+type RawAuditRow = {
+  pid: number;
+  source: string | null;
+  seller_source: string | null;
+};
+
+type ParsedAuditRow = {
+  pid: number;
+  condition_class: string | null;
+  condition_tier: string | null;
+  condition_notes: string[] | null;
+  parsed_json: Record<string, unknown> | null;
+};
 
 function yesterdayDate(): string {
   const d = new Date();
@@ -136,6 +182,141 @@ async function checkReviewSla(): Promise<{ ok: boolean; detail: string; context?
   return { ok: true, detail: "검수 SLA 정상 (24h 초과 pending 없음)" };
 }
 
+function chunk<T>(items: T[], size: number) {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
+
+function inList(values: Array<number | string>) {
+  return `(${values.join(",")})`;
+}
+
+function positiveNumber(value: unknown) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+async function fetchAuditByPid<T>(table: string, select: string, pids: number[]) {
+  const rows: T[] = [];
+  for (const part of chunk([...new Set(pids)], 400)) {
+    const res = await restFetch(
+      `${tableUrl(table)}?select=${select}&pid=in.${inList(part)}&limit=${part.length}`,
+      { headers: serviceHeaders() },
+    );
+    rows.push(...((await res.json()) as T[]));
+  }
+  return rows;
+}
+
+async function checkConditionHaircutStalePool(): Promise<IncidentCheckResult> {
+  const poolRes = await restFetch(
+    `${tableUrl("mvp_candidate_pool")}?select=pid,category,condition_class,expected_profit_max&status=in.(ready,reserved)&order=updated_at.desc&limit=${CONDITION_HAIRCUT_POOL_AUDIT_LIMIT}`,
+    { headers: serviceHeaders() },
+  );
+  const poolRows = (await poolRes.json()) as PoolAuditRow[];
+  const pids = poolRows.map((row) => Number(row.pid)).filter(Number.isFinite);
+  if (pids.length === 0) return { ok: true, detail: "condition haircut audit: pool empty" };
+
+  const [listings, raws, parsedRows] = await Promise.all([
+    fetchAuditByPid<ListingAuditRow>(
+      "mvp_listings",
+      "pid,name,price,sku_median,shipping_fee,shipping_fee_general,estimated_buy_cost",
+      pids,
+    ),
+    fetchAuditByPid<RawAuditRow>("mvp_raw_listings", "pid,source,seller_source", pids),
+    fetchAuditByPid<ParsedAuditRow>("mvp_listing_parsed", "pid,condition_class,condition_tier,condition_notes,parsed_json", pids),
+  ]);
+
+  const listingByPid = new Map(listings.map((row) => [Number(row.pid), row]));
+  const rawByPid = new Map(raws.map((row) => [Number(row.pid), row]));
+  const parsedByPid = new Map(parsedRows.map((row) => [Number(row.pid), row]));
+  let affectedRows = 0;
+  let dropToZeroRows = 0;
+  let staleProfitRows = 0;
+  let totalPoolProfitOverstatement = 0;
+  const samples: Array<Record<string, unknown>> = [];
+
+  for (const pool of poolRows) {
+    const pid = Number(pool.pid);
+    const listing = listingByPid.get(pid);
+    const raw = rawByPid.get(pid);
+    const parsed = parsedByPid.get(pid);
+    const marketPrice = positiveNumber(listing?.sku_median);
+    const buyPrice = positiveNumber(listing?.price);
+    if (marketPrice == null || buyPrice == null) continue;
+
+    const grade = (parsed?.parsed_json?.condition_grade as { chips?: string[]; tier?: string } | null) ?? null;
+    const parsedJsonNotes = parsed?.parsed_json?.condition_notes as string[] | undefined;
+    const conditionChips = mergeConditionDisplayChips(
+      grade?.chips ?? null,
+      parsed?.condition_notes ?? parsedJsonNotes ?? null,
+    ) ?? [];
+    const conditionAdjustment = conditionResaleAdjustmentKrw({
+      marketPrice,
+      conditionChips,
+      conditionClass: pool.condition_class ?? parsed?.condition_class ?? null,
+      conditionTier: parsed?.condition_tier ?? grade?.tier ?? null,
+    });
+    if (conditionAdjustment <= 0) continue;
+
+    affectedRows += 1;
+    const source = normalizeMarketplaceSource(raw?.source ?? raw?.seller_source ?? null);
+    const shippingFee = Number(listing?.shipping_fee ?? 0);
+    const generalShipping = listing?.shipping_fee_general == null ? shippingFee : Number(listing.shipping_fee_general ?? 0);
+    const buyMin = positiveNumber(listing?.estimated_buy_cost) ?? buyPrice + shippingFee;
+    const buyMax = buyPrice + Math.max(0, generalShipping);
+    const adjustedMarketPrice = Math.max(0, marketPrice - conditionAdjustment);
+    const sellFee = sellingFeeForMarketPrice(adjustedMarketPrice, source);
+    const resellShipping = resellShippingFeeForSource(source);
+    const safetyBuffer = safetyBufferForSource(source);
+    const newProfitMax = Math.max(0, Math.round(adjustedMarketPrice - buyMin - sellFee - resellShipping - safetyBuffer));
+    const newProfitMin = Math.max(0, Math.round(adjustedMarketPrice - buyMax - sellFee - resellShipping - safetyBuffer));
+    const poolProfitMax = Number(pool.expected_profit_max ?? 0);
+    const overstatement = Math.max(0, poolProfitMax - newProfitMax);
+
+    if (poolProfitMax > 0 && newProfitMax <= 0) dropToZeroRows += 1;
+    if (newProfitMax > 0 && overstatement > 0) {
+      staleProfitRows += 1;
+      totalPoolProfitOverstatement += overstatement;
+    }
+    if ((overstatement > 0 || (poolProfitMax > 0 && newProfitMax <= 0)) && samples.length < 8) {
+      samples.push({
+        pid,
+        source,
+        category: pool.category,
+        title: String(listing?.name ?? "").slice(0, 80),
+        poolProfitMax,
+        newProfitMin,
+        newProfitMax,
+        overstatement,
+        conditionAdjustment,
+      });
+    }
+  }
+
+  if (dropToZeroRows > 0 || staleProfitRows > 0) {
+    return {
+      ok: false,
+      detail: `상태 보정 stale pool — 수익 0 전환 ${dropToZeroRows}건, 수익 과대표시 ${staleProfitRows}건`,
+      context: {
+        auditedPoolRows: poolRows.length,
+        affectedRows,
+        dropToZeroRows,
+        staleProfitRows,
+        totalPoolProfitOverstatement,
+        samples,
+      },
+    };
+  }
+
+  return {
+    ok: true,
+    detail: `상태 보정 pool 정상 — 영향 ${affectedRows}건, stale 0건`,
+    context: { auditedPoolRows: poolRows.length, affectedRows },
+  };
+}
+
 export async function POST(req: NextRequest) {
   return GET(req);
 }
@@ -153,6 +334,7 @@ export async function GET(req: NextRequest) {
     checkDailyBackup(),
     checkPoolReady(),
     checkReviewSla(),
+    checkConditionHaircutStalePool(),
   ]);
 
   const checks = [
@@ -160,6 +342,7 @@ export async function GET(req: NextRequest) {
     { name: "daily_backup_exists",    severity: "critical", res: results[1] },
     { name: "pool_ready_count",       severity: "warning",  res: results[2] },
     { name: "review_sla_24h",         severity: "warning",  res: results[3] },
+    { name: "condition_haircut_stale_pool", severity: "warning", res: results[4] },
   ] as const;
 
   const summary = checks.map(({ name, severity, res }) => {
