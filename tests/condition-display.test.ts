@@ -60,6 +60,7 @@ describe("condition display chips", () => {
         "shoe_upper_structural_damage",
         "shoe_hygiene_warning",
         "bag_stain_or_discoloration",
+        "bag_hygiene_warning",
         "bag_lining_damage",
         "bag_leather_damage",
         "bag_handle_worn",

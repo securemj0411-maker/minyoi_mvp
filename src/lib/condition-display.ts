@@ -33,6 +33,7 @@ const CONDITION_NOTE_CHIP_BY_NOTE: Record<string, string> = {
   high_battery_cycles: "condition:high_battery_cycles",
   cosmetic_wear: "condition:cosmetic_wear",
   bag_stain_or_discoloration: "condition:fashion_stain_or_discoloration",
+  bag_hygiene_warning: "condition:fashion_hygiene_warning",
   bag_lining_damage: "condition:bag_lining_damage",
   bag_leather_damage: "condition:bag_leather_damage",
   bag_handle_worn: "condition:bag_handle_worn",

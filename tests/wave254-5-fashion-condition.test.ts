@@ -714,6 +714,15 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
 	        "사진상 커피 이염같은데 세탁은 안해봤어요.",
 	        "카라는 깨끗한 편이고 목택이염 조금 있습니다.",
 	        "사이즈 W28 L30 미세 이염 존재합니다.",
+	        "옅은 이염 가슴, 팔쪽에 조금 있습니다.",
+	        "생활이염 조금 있어요.",
+	        "허벅지 연한이염 사진참조.",
+	        "4번째 사진 이염 참고해주세요.",
+	        "생활 오염 엉덩이 부분에 살짝 있습니다.",
+	        "이염 좀 있어서 싸게 팝니다.",
+	        "오염으로 상대방 구매거절 상품입니다.",
+	        "전면부 약간 오염으로 저렴하게 올립니다.",
+	        "미세 이염을 제외한 깔끔한 컨디션입니다.",
 	      ]) {
 	        const { conditionNotes } = conditionFromTextFashion(text, "clothing");
 	        assert.ok(conditionNotes.includes("clothing_stain"),
@@ -723,15 +732,18 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
 	      }
 	    });
 
-	    it("의류 안감 튿어짐은 structural damage로 잡는다", () => {
-	      const { conditionNotes } = conditionFromTextFashion(
+	    it("의류 안감 튿어짐/터진곳/올풀림은 structural damage로 잡는다", () => {
+	      for (const text of [
 	        "제품 상태는 양호하지만 안감 아랫부분에 튿어짐이 있습니다.",
-	        "clothing",
-	      );
-	      assert.ok(conditionNotes.includes("clothing_structural_damage"),
-	        `clothing_structural_damage 없음: ${conditionNotes.join(",")}`);
-	      assert.ok(conditionNotes.includes("repair_or_defect_signal"),
-	        `repair_or_defect_signal 없음: ${conditionNotes.join(",")}`);
+	        "가슴쪽 주머니 아래 터진곳있습니다. 다시 박음질만 하시면 됩니다.",
+	        "이염 및 미세구멍, 올풀림 등 있어서 확인 필요합니다.",
+	      ]) {
+	        const { conditionNotes } = conditionFromTextFashion(text, "clothing");
+	        assert.ok(conditionNotes.includes("clothing_structural_damage"),
+	          `clothing_structural_damage 없음 (${text}): ${conditionNotes.join(",")}`);
+	        assert.ok(conditionNotes.includes("repair_or_defect_signal"),
+	          `repair_or_defect_signal 없음 (${text}): ${conditionNotes.join(",")}`);
+	      }
 	    });
 
 	    it("의류 로고 부분의 약한 벗겨짐도 print damage로 잡는다", () => {
@@ -750,6 +762,20 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
 	        "사용감 적으나 내부 약간 노랗게 이염 있습니다.",
 	        "태닝 진행된 상태이고 물 얼룩이 조금 있습니다.",
 	        "각 모서리랑 앞판은 빈티지 가죽특성상 색바램은 조금 있습니다.",
+	        "화장품등 이염이 느껴져서 싸게 올립니다.",
+	        "생활 이염 다소 있습니다.",
+	        "바닥에 이염 좀 있는데 사진 확인해주세요.",
+	        "내부에 펜 자국이 많아요.",
+	        "볼펜잉크자욱.이염.부분데미지 있습니다.",
+	        "자크부분이 살짝변색되서 저렴하게 판매합니다.",
+	        "손잡이 등 손떼 탄 부분 일부 있으며 이염부분은 사진 확인해 보세요.",
+	        "화이트라 생활오염정도 있습니다.",
+	        "오염도 많고 지퍼 부분 색바램도 있습니다.",
+	        "살짝 이염이 보이는거 같아 싸게 팝니다.",
+	        "이염이 좀 있지만 데일리로 들기 좋습니다.",
+	        "화이트라 이염은 좀 있어요.",
+	        "보관 관리를 잘 못해서 변색들이 존재해요.",
+	        "9, 10번 사진에서 이염상태 확인하시면 됩니다.",
 	      ]) {
 	        const { conditionNotes } = conditionFromTextFashion(text, "bag");
 	        assert.ok(conditionNotes.includes("bag_stain_or_discoloration"),
@@ -759,7 +785,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
 	      }
 	    });
 
-	    it("가방 오타성 벚겨짐과 핸들 찢김도 감가 신호로 잡는다", () => {
+	    it("가방 오타성 벚겨짐과 핸들/스트랩/그물 하자도 감가 신호로 잡는다", () => {
 	      const peeling = conditionFromTextFashion("코팅 벚겨짐 조금 있고 내부 약간 노랗게 이염 있습니다.", "bag");
 	      assert.ok(peeling.conditionNotes.includes("bag_leather_damage"),
 	        `bag_leather_damage 없음: ${peeling.conditionNotes.join(",")}`);
@@ -769,6 +795,46 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
 	      const handle = conditionFromTextFashion("발렌시아가 백 핸들부분 미세한 찢김 있음.", "bag");
 	      assert.ok(handle.conditionNotes.includes("bag_handle_worn"),
 	        `bag_handle_worn 없음: ${handle.conditionNotes.join(",")}`);
+
+	      for (const text of [
+	        "옆 그물에 볼펜을 넣고 다녔더니 튿어짐이있네요.",
+	        "스트랩끈 끝부분 수선해야되나 수선가능함.",
+	        "똑딱이 하나 빠짐 있어요.",
+	        "크로스 끈 분실, 이염 사진 참고.",
+	        "어깨끈 부분으로 한땀 올풀림 있습니다.",
+	      ]) {
+	        const { conditionNotes } = conditionFromTextFashion(text, "bag");
+	        assert.ok(conditionNotes.includes("bag_handle_worn"),
+	          `bag_handle_worn 없음 (${text}): ${conditionNotes.join(",")}`);
+	      }
+
+	      for (const text of [
+	        "클러치 바닥이 좀 헤졌어요.",
+	        "가죽 뜯김이 있어 확인 필요합니다.",
+	        "상부 테두리 데미지와 손상 있으니 사진 확인 바랍니다.",
+	      ]) {
+	        const { conditionNotes } = conditionFromTextFashion(text, "bag");
+	        assert.ok(conditionNotes.includes("bag_leather_damage"),
+	          `bag_leather_damage 없음 (${text}): ${conditionNotes.join(",")}`);
+	      }
+	    });
+
+	    it("가방 보관 냄새는 hygiene chip으로 잡는다", () => {
+	      const { conditionNotes } = conditionFromTextFashion("외부 얼룩, 내부 보관 냄새 있습니다.", "bag");
+	      assert.ok(conditionNotes.includes("bag_stain_or_discoloration"),
+	        `bag_stain_or_discoloration 없음: ${conditionNotes.join(",")}`);
+	      assert.ok(conditionNotes.includes("bag_hygiene_warning"),
+	        `bag_hygiene_warning 없음: ${conditionNotes.join(",")}`);
+	    });
+
+	    it("가방 소재 장점/부자재 하자는 본품 오염으로 과탐지하지 않는다", () => {
+	      const durable = conditionFromTextFashion("PVC 코팅 캔버스 소재라 생활오염과 스크래치에 강한 편입니다.", "bag");
+	      assert.ok(!durable.conditionNotes.includes("bag_stain_or_discoloration"),
+	        `소재 장점을 오염으로 잘못 잡음: ${durable.conditionNotes.join(",")}`);
+
+	      const reflection = conditionFromTextFashion("색바램 아닌 빛 반사입니다.", "bag");
+	      assert.ok(!reflection.conditionNotes.includes("bag_stain_or_discoloration"),
+	        `빛 반사를 색바램으로 잘못 잡음: ${reflection.conditionNotes.join(",")}`);
 	    });
 	  });
 

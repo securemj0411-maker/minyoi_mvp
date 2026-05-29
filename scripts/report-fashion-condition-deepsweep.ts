@@ -15,15 +15,16 @@ const HIGH_TIERS = new Set(["s_grade", "a_grade"]);
 const HIGH_CLASSES = new Set(["mint", "unopened", "clean"]);
 const LOW_SIGNAL_NOTES = new Set([
   "repair_or_defect_signal",
-	  "shoe_sole_crumbling",
-	  "shoe_hydrolysis",
-	  "shoe_stain_or_discoloration",
+  "shoe_sole_crumbling",
+  "shoe_hydrolysis",
+  "shoe_stain_or_discoloration",
   "shoe_hygiene_warning",
   "shoe_upper_structural_damage",
-	  "shoe_insole_missing",
+  "shoe_insole_missing",
   "shoe_heel_worn_severe",
   "shoe_sole_separation",
   "bag_stain_or_discoloration",
+  "bag_hygiene_warning",
   "bag_lining_damage",
   "bag_leather_damage",
   "bag_handle_worn",
@@ -191,20 +192,21 @@ function hasNegated(text: string, tokenPattern: string) {
 }
 
 function isDisclaimer(text: string) {
-  return /중고\s*(?:거래|상품?|제품|의류)?\s*특성상|빈티지\s*특성상|미처\s*발견(?:하지\s*)?못한|발견\s*못한\s*(?:하자|오염|얼룩|기스|이염)|미세한\s*(?:오염|얼룩|기스|사용감).{0,18}(?:있을\s*수|있을수)|하자\s*,?\s*이염.{0,24}(?:사진|확인)|사진에서\s*확인|예민하신\s*분/.test(text);
+  return /중고\s*(?:거래|상품?|제품|의류)?\s*특성상|빈티지\s*특성상|미처\s*발견(?:하지\s*)?못한|발견\s*못한\s*(?:하자|오염|얼룩|기스|이염)|(?:오염|이염|얼룩|올튐|뜯김|하자).{0,30}(?:있을\s*수|있을수)|미세한\s*(?:하자|오염|얼룩|기스|사용감).{0,24}(?:반품|환불|있을\s*수|있을수)|작은\s*(?:오염|하자).{0,24}(?:반품|환불)|하자\s*,?\s*이염.{0,24}(?:사진|확인)|사진에서\s*확인|예민하신\s*분/.test(text);
 }
 
 function learnedFashionFlags(rawText: string, category: string | null | undefined) {
   const text = norm(rawText);
   const flags: string[] = [];
   const disclaimer = isDisclaimer(text);
-  const packageDamageOnly = /(?:박스|속포장지|포장지|더스트백|쇼핑백|가방).{0,24}(?:찢|터짐|터진|뜯|튿|깨짐|깨진)|(?:찢|터짐|터진|뜯|튿|깨짐|깨진).{0,24}(?:박스|속포장지|포장지|더스트백|쇼핑백|가방)/.test(text);
-  const packageStainOnly = /(?:박스|속포장지|포장지).{0,18}(?:오염|얼룩|이염|변색|황변)|(?:오염|얼룩|이염|변색|황변).{0,18}(?:박스|속포장지|포장지)|(?:오염|얼룩|이염|변색|황변)\s*(?:도\s*)?아니|변색\s*위험/.test(text);
+  const gradeTableOnly = /(?:상품|제품)?\s*등급\s*표|상태\s*등급|n\s*[-+]?\s*s?.{0,90}(?:상품|제품)?\s*등급|n\s*[-+]?\s*s?\s*[:：].{0,320}b\s*[:：]|상태\s*:\s*[a-z+-]+.{0,260}b\s*[:：]/.test(text);
+  const packageDamageOnly = /(?:박스|속포장지|포장지|더스트백|쇼핑백|가방).{0,44}(?:찢|터짐|터진|뜯|튿|깨짐|깨진)|(?:찢|터짐|터진|뜯|튿|깨짐|깨진).{0,44}(?:박스|속포장지|포장지|더스트백|쇼핑백|가방)|찢어졌을\s*때/.test(text);
+  const packageStainOnly = /(?:박스|속포장지|포장지).{0,18}(?:오염|얼룩|이염|변색|황변)|(?:오염|얼룩|이염|변색|황변).{0,18}(?:박스|속포장지|포장지)|(?:오염|얼룩|이염|변색|황변)\s*(?:도\s*)?아니|(?:오염|얼룩|이염|변색|황변).{0,10}(?:예방|방지)|(?:오염|스크래치).{0,12}강한|(?:색\s*바램|색바램)\s*아닌|변색\s*위험/.test(text);
 
-  if (!packageDamageOnly && !hasNegated(text, "(?:찢어진|찢어짐|찢김|구멍|터짐|터진|해짐|헤짐|뜯김|뜯어짐|튿어짐|튿어진|깨짐|봉제|박음질|수선|보강)") && /찢어(?:짐|졌|진)|찢김|구멍\s*(?:있|있음|남|나|작)|터짐|터진|뜯김|뜯어짐|튿어짐|튿어진|깨짐|봉제\s*(?:풀|터|뜯)|박음질\s*(?:풀|터|뜯)|수선\s*(?:필요|해야|요망)|보강\s*(?:필요|해야)/.test(text)) {
+  if (!gradeTableOnly && !packageDamageOnly && !hasNegated(text, "(?:찢어진|찢어짐|찢김|구멍|터짐|터진|해짐|헤짐|뜯김|뜯어짐|튿어짐|튿어진|깨짐|봉제|박음질|수선|보강)") && /찢어(?:짐|졌|진)|찢김|구멍\s*(?:있|있음|남|나|작)|터짐|터진|뜯김|뜯어짐|튿어짐|튿어진|깨짐|봉제\s*(?:풀|터|뜯)|박음질\s*(?:풀|터|뜯)|수선\s*(?:필요|해야|요망)|보강\s*(?:필요|해야)/.test(text)) {
     flags.push("learned_structural_damage");
   }
-  if (!packageStainOnly && !hasNegated(text, "(?:이염|오염|얼룩|생활오염|황변|변색|색\\s*바램|색바램|색\\s*빠짐)") && !disclaimer && /이염|오염\s*(?:있|심|많|살짝|조금)|생활\s*오염|얼룩\s*(?:있|심|많|살짝|조금|크)|황변|변색|색\s*바램|색바램|색\s*빠짐/.test(text)) {
+  if (!gradeTableOnly && !packageStainOnly && !hasNegated(text, "(?:이염|오염|얼룩|생활오염|황변|변색|색\\s*바램|색바램|색\\s*빠짐)") && !disclaimer && /이염|오염\s*(?:있|심|많|살짝|조금|도\s*많|으로)|생활\s*오염|생활오염|얼룩\s*(?:있|심|많|살짝|조금|크)|황변|변색|색\s*바램|색바램|색\s*빠짐/.test(text)) {
     flags.push("learned_stain_or_discoloration");
   }
   if (!hasNegated(text, "(?:곰팡이|냄새|악취|담배)") && /곰팡이|악취|냄새\s*(?:있|남|심)|담배\s*냄새/.test(text)) {
@@ -236,10 +238,10 @@ function learnedFashionFlags(rawText: string, category: string | null | undefine
     if (!hasNegated(text, "(?:내피|안감|라이닝)") && /내피\s*(?:끈적|끈쩍|녹|벗겨|찢어|오염\s*심)|안감\s*(?:끈적|녹|벗겨|찢어)|라이닝\s*(?:끈적|녹|벗겨)/.test(text)) {
       flags.push("learned_bag_lining_damage");
     }
-    if (!hasNegated(text, "(?:가죽|레더|코팅)") && /가죽\s*(?:까짐|벗겨|갈라짐|찢어|크랙|박리)|레더\s*(?:까짐|벗겨|갈라|크랙)|코팅\s*(?:벗겨|박리|들뜸)/.test(text)) {
+    if (!hasNegated(text, "(?:가죽|레더|코팅)") && /가죽\s*(?:까짐|벗겨|갈라짐|찢어|뜯김|뜯어짐|헤짐|해짐|크랙|박리)|레더\s*(?:까짐|벗겨|갈라|뜯|헤짐|해짐|크랙)|코팅\s*(?:벗겨|박리|들뜸)|바닥(?:이|은|는)?\s*(?:좀\s*)?(?:헤졌|헤짐|해짐)/.test(text)) {
       flags.push("learned_bag_leather_damage");
     }
-    if (!hasNegated(text, "(?:손잡이|핸들|스트랩|모서리|코너|페인팅|도장|페인트)") && /손잡이\s*(?:마모|닳|끊어|늘어|찢어|벗겨)|핸들\s*(?:마모|닳|끊어|늘어)|스트랩\s*(?:끊어|찢어|벗겨)|모서리\s*(?:닳|벗겨|까짐|마모)|코너\s*(?:닳|벗겨|까짐|마모)|페인팅\s*(?:벗겨|박리|들뜸)|도장\s*(?:벗겨|박리|들뜸)|페인트\s*(?:벗겨|박리)/.test(text)) {
+    if (!hasNegated(text, "(?:손잡이|핸들|스트랩|어깨끈|크로스\\s*끈|끈|모서리|코너|페인팅|도장|페인트|똑딱이)") && /손잡이\s*(?:마모|닳|끊어|늘어|찢어|벗겨)|핸들\s*(?:마모|닳|끊어|늘어)|(?:스트랩|어깨끈|크로스\s*끈|끈).{0,18}(?:끊어|찢어|벗겨|수선\s*(?:필요|해야|가능)|분실|없음|빠짐)|똑딱이.{0,10}(?:빠짐|빠져|분실)|(?:그물|망사).{0,18}(?:튿어짐|튿어진|뜯김|뜯어짐|찢어)|모서리\s*(?:닳|벗겨|까짐|마모)|코너\s*(?:닳|벗겨|까짐|마모)|페인팅\s*(?:벗겨|박리|들뜸)|도장\s*(?:벗겨|박리|들뜸)|페인트\s*(?:벗겨|박리)/.test(text)) {
       flags.push("learned_bag_edge_handle_damage");
     }
   }
@@ -269,6 +271,17 @@ function countBy<T>(rows: T[], keyFn: (row: T) => string | null | undefined) {
     out[key] = (out[key] ?? 0) + 1;
   }
   return Object.fromEntries(Object.entries(out).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])));
+}
+
+function uniqueByPid(rows: Finding[]) {
+  const seen = new Set<number>();
+  const out: Finding[] = [];
+  for (const row of rows) {
+    if (seen.has(row.pid)) continue;
+    seen.add(row.pid);
+    out.push(row);
+  }
+  return out;
 }
 
 function summarize(pool: PoolRow[], rawByPid: Map<number, RawRow>, parsedByPid: Map<number, ParsedRow>) {
@@ -342,6 +355,8 @@ function renderMarkdown(report: {
   byFlag: Record<string, number>;
   byCategory: Record<string, number>;
   bySource: Record<string, number>;
+  gapSamples: Finding[];
+  suspiciousSamples: Finding[];
   samples: Finding[];
 }) {
   const lines = [
@@ -363,6 +378,19 @@ function renderMarkdown(report: {
     "",
     "## Samples",
   ];
+  if (report.gapSamples.length > 0) {
+    lines.push("", "## Gap Samples");
+    for (const item of report.gapSamples.slice(0, 120)) {
+      lines.push(`- pid ${item.pid}: ${item.title} / ${item.source} / ${item.category} / current=${item.currentClass}:${item.currentTier} / notes=${item.currentNotes.join(",") || "-"} / learned=${item.learnedFlags.join(",") || "-"} / text=${item.text.replace(/\s+/g, " ").slice(0, 180)}`);
+    }
+  }
+  if (report.suspiciousSamples.length > 0) {
+    lines.push("", "## Suspicious High-Grade Samples");
+    for (const item of report.suspiciousSamples.slice(0, 120)) {
+      lines.push(`- pid ${item.pid}: ${item.title} / ${item.source} / ${item.category} / stored=${item.storedClass}:${item.storedTier} / current=${item.currentClass}:${item.currentTier} / notes=${item.currentNotes.join(",") || "-"} / learned=${item.learnedFlags.join(",") || "-"} / text=${item.text.replace(/\s+/g, " ").slice(0, 180)}`);
+    }
+  }
+  lines.push("", "## First Findings");
   for (const item of report.samples.slice(0, 120)) {
     lines.push(`- pid ${item.pid}: ${item.title} / ${item.source} / ${item.category} / stored=${item.storedClass}:${item.storedTier} / current=${item.currentClass}:${item.currentTier} / notes=${item.currentNotes.join(",") || "-"} / flags=${item.flags.join(",")}`);
   }
@@ -427,6 +455,8 @@ async function main() {
     byFlag: Object.fromEntries(Object.entries(byFlag).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))),
     byCategory: countBy(findings, (row) => row.category),
     bySource: countBy(findings, (row) => row.source),
+    gapSamples: uniqueByPid(findings.filter((item) => item.flags.includes("learned_signal_without_current_note"))).slice(0, 200),
+    suspiciousSamples: uniqueByPid(findings.filter((item) => item.flags.includes("suspicious_high_grade_condition_miss"))).slice(0, 200),
     samples: findings.slice(0, 400),
   };
 
