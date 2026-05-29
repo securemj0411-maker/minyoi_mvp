@@ -310,6 +310,15 @@ test("market source API uses hard condition chips for visible comparison proof",
   assert.match(route, /targetHardChipSignature && exactHardChipGate\?\.ok && rowHardSignature !== targetHardChipSignature/);
 });
 
+test("comparison rows expose condition chips as compact proof", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+
+  assert.match(modal, /conditionChips\?: string\[\] \| null/);
+  assert.match(modal, /mode === "detailed" && item\.conditionChips && item\.conditionChips\.length > 0/);
+  assert.match(modal, /<ConditionChipsList\s+chips=\{item\.conditionChips\}\s+max=\{2\}/);
+  assert.match(modal, /\[&>span\]:text-\[9\.5px\]/);
+});
+
 test("AirPods Max does not inherit generic earphone battery or counterfeit prompts", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
   const brandDepth = source("src/lib/category-brand-depth.ts");

@@ -2661,6 +2661,7 @@ type ComparableListing = {
   // API(/api/listings/[pid]/market-source) 가 이미 부여하고 있음.
   conditionTier?: string | null;
   conditionClass?: string | null;
+  conditionChips?: string[] | null;
 };
 
 function isSameSourceComparableForCard(card: RevealCard, item: ComparableListing) {
@@ -2899,6 +2900,13 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                               </span>
                             ) : null}
                           </div>
+                        ) : null}
+                        {mode === "detailed" && item.conditionChips && item.conditionChips.length > 0 ? (
+                          <ConditionChipsList
+                            chips={item.conditionChips}
+                            max={2}
+                            className="mt-1.5 [&>span]:px-1.5 [&>span]:py-0.5 [&>span]:text-[9.5px]"
+                          />
                         ) : null}
                       </div>
                       <div className="shrink-0 text-right">
@@ -5361,6 +5369,13 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
                           <div className="mt-0.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500">
                             {sourceLabel ?? ""}{sourceLabel && seenLabel ? " · " : ""}{seenLabel ?? ""}
                           </div>
+                        ) : null}
+                        {item.conditionChips && item.conditionChips.length > 0 ? (
+                          <ConditionChipsList
+                            chips={item.conditionChips}
+                            max={2}
+                            className="mt-1 [&>span]:px-1.5 [&>span]:py-0.5 [&>span]:text-[9.5px]"
+                          />
                         ) : null}
                       </div>
                       <div className="shrink-0 text-right">
