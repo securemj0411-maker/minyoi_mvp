@@ -74,3 +74,17 @@ Expected effect:
 - Daangn ready count and `daangn_manner_temperature_missing` invalidations.
 
 If block signals appear, set `DAANGN_DETAIL_WORKER_CONCURRENCY=1` or raise `DAANGN_DETAIL_WORKER_DELAY_MS`.
+
+## Post-deploy Verification
+
+- A/B Git deployments updated automatically after push.
+- C project was deployed from a clean detached worktree at commit `8e5025b4` to avoid uploading unrelated dirty local files.
+- Manual C detail run:
+  - route: `/api/cron/daangn-detail-worker?manual=wave942`
+  - guard: `daangn_detail_worker_c`
+  - selected/fetched/patched: `100 / 100 / 98`
+  - blocked: `false`
+  - skippedByBudget: `0`
+  - concurrency: `2`
+  - duration: `64.0s`
+- Previous C runs before this deploy were around `127-134s`, so paced overlap roughly halved the C shard duration in the first live check.
