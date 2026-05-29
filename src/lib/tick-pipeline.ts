@@ -2345,12 +2345,18 @@ async function loadDirtyPoolScorableRows(
     for (const listingTypeFilter of ["&listing_type=eq.normal", "&listing_type_override=eq.normal"]) {
       const nextRemaining = rowLimit - rows.length;
       if (nextRemaining <= 0) break;
-      const res = await restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=${columns}${baseFilter}${listingTypeFilter}&pid=in.(${chunk.join(",")})&limit=${Math.min(nextRemaining, chunk.length)}`,
-        { headers: serviceHeaders() },
-      );
-      if (!res.ok) continue;
-      const batch = (await res.json()) as ScorableRawRow[];
+      let batch: ScorableRawRow[] = [];
+      try {
+        const res = await restFetch(
+          `${tableUrl("mvp_raw_listings")}?select=${columns}${baseFilter}${listingTypeFilter}&pid=in.(${chunk.join(",")})&limit=${Math.min(nextRemaining, chunk.length)}`,
+          { headers: serviceHeaders() },
+        );
+        if (!res.ok) continue;
+        batch = (await res.json()) as ScorableRawRow[];
+      } catch (err) {
+        console.warn("loadDirtyPoolScorableRows raw listing chunk fetch failed (non-fatal)", err);
+        continue;
+      }
       for (const row of batch) {
         const pid = Number(row.pid);
         if (!Number.isFinite(pid) || seen.has(pid)) continue;
