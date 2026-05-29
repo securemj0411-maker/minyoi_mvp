@@ -515,6 +515,7 @@ export type PipelineRuntimeConfig = {
   marketStatsLimit: number;
   deepCrawlMaxPage: number;
   deepCrawlQueryLimit: number;
+  deepCrawlDetailTriageLimit: number;
   sellerSearchRefreshMs: number;
   rawTouchCoalesceActiveSeenOnly: boolean;
   rawTouchCoalesceActiveSeenOnlyDryRun: boolean;
@@ -645,6 +646,10 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     // Deep crawl ignores cadence by design, so a full catalog-sized query list can otherwise
     // hit the 90s route ceiling during post-processing. Rotate a bounded window each run.
     deepCrawlQueryLimit: envInt("PIPELINE_DEEP_CRAWL_QUERY_LIMIT", 40, 10, 1000),
+    // Deep crawl is for coverage, not same-run scoring. Title triage can dominate runtime
+    // when an old page yields hundreds of unseen rows, so cap that CPU-heavy pass and let
+    // later fresh/detail cycles pick up deferred rows naturally.
+    deepCrawlDetailTriageLimit: envInt("PIPELINE_DEEP_CRAWL_DETAIL_TRIAGE_LIMIT", 200, 50, 2000),
     sellerSearchRefreshMs: envInt("PIPELINE_SELLER_SEARCH_REFRESH_MS", 3 * 60 * 60 * 1000, 10 * 60 * 1000, 24 * 60 * 60 * 1000),
     rawTouchCoalesceActiveSeenOnly: envBool("RAW_TOUCH_COALESCE_ACTIVE_SEEN_ONLY", false),
     rawTouchCoalesceActiveSeenOnlyDryRun: envBool("RAW_TOUCH_COALESCE_ACTIVE_SEEN_ONLY_DRY_RUN", false),

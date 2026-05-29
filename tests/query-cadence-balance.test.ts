@@ -50,7 +50,9 @@ test("deep crawl rotates a bounded query window instead of scanning the full cat
 });
 
 test("deep crawl default query window keeps serverless post-processing below the route ceiling", () => {
-  assert.equal(loadPipelineRuntimeConfig().deepCrawlQueryLimit, 40);
+  const config = loadPipelineRuntimeConfig();
+  assert.equal(config.deepCrawlQueryLimit, 40);
+  assert.equal(config.deepCrawlDetailTriageLimit, 200);
 });
 
 test("newer public categories are inferable from comparable keys for pack diversity", () => {

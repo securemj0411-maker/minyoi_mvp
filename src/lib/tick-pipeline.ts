@@ -442,6 +442,21 @@ const SKIP_DETAIL_DECISION: DetailQueueDecision = {
   purpose: "skip",
 };
 
+const DEFERRED_DETAIL_TRIAGE_DECISION: DetailQueueDecision = {
+  queue: false,
+  reason: "deferred_deep_crawl_triage_budget",
+  priority: 0,
+  listingType: "unknown",
+  skuId: null,
+  skuName: null,
+  purpose: "skip",
+};
+
+const NON_PERSISTED_DETAIL_SKIP_REASONS = new Set([
+  "search_only_update",
+  "deferred_deep_crawl_triage_budget",
+]);
+
 function chunkArray<T>(items: T[], size: number): T[][] {
   const chunks: T[][] = [];
   for (let i = 0; i < items.length; i += size) {
@@ -1040,7 +1055,7 @@ function detailQueueDecision(item: SearchItem, existing: RawListingRow | undefin
 }
 
 function titleTriageSkipPatch(decision: DetailQueueDecision | undefined) {
-  if (!decision || decision.queue || decision.reason === "search_only_update") return null;
+  if (!decision || decision.queue || NON_PERSISTED_DETAIL_SKIP_REASONS.has(decision.reason)) return null;
   return {
     detail_status: "skipped",
     detail_error: `${TITLE_TRIAGE_SKIP_VERSION}:${decision.reason}`,
@@ -1357,9 +1372,29 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
   const now = new Date().toISOString();
   const detailRefreshItems = items.filter((item) => needsDetailRefresh(item, existing.get(Number(item.pid))));
   timingsMs.detail_refresh_items = detailRefreshItems.length;
-  const detailDecisions = timedSearchBlock(timingsMs, "build_detail_decisions", () => new Map(
-    detailRefreshItems.map((item) => [item.pid, detailQueueDecision(item, existing.get(Number(item.pid)))])
-  ));
+  const detailDecisionItems = timedSearchBlock(timingsMs, "select_detail_decision_items", () => {
+    if (mode !== "deep" || detailRefreshItems.length <= config.deepCrawlDetailTriageLimit) {
+      return detailRefreshItems;
+    }
+    return [...detailRefreshItems]
+      .sort((a, b) => b.numFaved - a.numFaved || a.price - b.price)
+      .slice(0, config.deepCrawlDetailTriageLimit);
+  });
+  timingsMs.detail_decision_items = detailDecisionItems.length;
+  if (mode === "deep") {
+    timingsMs.deep_detail_triage_limit = config.deepCrawlDetailTriageLimit;
+    timingsMs.deep_detail_triage_deferred_rows = Math.max(0, detailRefreshItems.length - detailDecisionItems.length);
+  }
+  const detailDecisions = timedSearchBlock(timingsMs, "build_detail_decisions", () => {
+    const decisions = new Map(detailDecisionItems.map((item) => [item.pid, detailQueueDecision(item, existing.get(Number(item.pid)))]));
+    if (mode === "deep" && detailDecisionItems.length < detailRefreshItems.length) {
+      const selectedPids = new Set(detailDecisionItems.map((item) => item.pid));
+      for (const item of detailRefreshItems) {
+        if (!selectedPids.has(item.pid)) decisions.set(item.pid, DEFERRED_DETAIL_TRIAGE_DECISION);
+      }
+    }
+    return decisions;
+  });
   const statePatches = timedSearchBlock(timingsMs, "build_state_patches", () => new Map(
     items.map((item) => [item.pid, searchListingStatePatch(existing.get(Number(item.pid)))])
   ));
@@ -3297,7 +3332,8 @@ function numberField(value: unknown, key: string) {
 async function loadRecentCollectRuns(windowMinutes: number): Promise<CollectRunHealthRow[]> {
   const cutoff = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
   const columns = "status,collected_count,enriched_count,stage_stats,request_meta,started_at";
-  const url = `${tableUrl("mvp_collect_runs")}?select=${columns}&started_at=gte.${encodeURIComponent(cutoff)}&order=started_at.desc&limit=200`;
+  const limit = boundedInt(process.env.PIPELINE_SOURCE_HEALTH_RUN_LIMIT ?? null, 600, 200, 2000);
+  const url = `${tableUrl("mvp_collect_runs")}?select=${columns}&started_at=gte.${encodeURIComponent(cutoff)}&order=started_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
   return (await res.json()) as CollectRunHealthRow[];
 }
@@ -3338,7 +3374,7 @@ function sourceWorkerFailureStatus(
     const bucket = workerBreakdown.get(mode);
     if (!bucket || bucket.failed === 0 || bucket.total === 0) continue;
     const rate = bucket.failed / bucket.total;
-    if (rate >= 0.2) {
+    if (bucket.total >= 2 && rate >= 0.2) {
       return { status: "degraded" as const, reason: `${mode}_failure_rate_elevated` };
     }
   }
