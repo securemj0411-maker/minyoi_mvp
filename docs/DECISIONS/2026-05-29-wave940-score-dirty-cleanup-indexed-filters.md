@@ -31,6 +31,11 @@
 - Increase only the `score_dirty=false` pid patch chunk from 50 to 200.
   - The general REST write chunk remains 50.
   - Cleanup patches are tiny `pid=in.(...)` updates, so 200 keeps URL size reasonable while cutting 1000-row cleanup from 20 PATCH requests to 5.
+- Add production partial indexes for the slow cleanup residues:
+  - `detail_status <> 'done'`
+  - `detail_status = 'done' AND sku_id IS NULL`
+  - `detail_status = 'done' AND sku_id IS NOT NULL AND listing_state <> 'active'`
+  - `detail_status = 'done' AND sku_id IS NOT NULL AND listing_state = 'active' AND listing_type <> 'normal' AND listing_type_override IS NULL`
 
 ## Rationale
 
@@ -59,10 +64,23 @@
 - Production post-deploy score-worker logs:
   - A/B/C score runs succeeded.
   - A cleanup-enabled run cleared 1000 unscorable dirty rows and still completed, but cleanup took ~22s before the chunk-size optimization.
+- Follow-up predicate timing showed the real slow filters:
+  - `sku_null` at limit 500 timed out at ~8s
+  - `state_not_active` at limit 500 took ~5.9s
+  - `type_not_normal` at limit 500 timed out at ~8s
+  - so code-only batching is insufficient without DB partial indexes.
+- Applied the four partial indexes directly to production via a temporary `/tmp` Node `pg` client because:
+  - local `psql` is unavailable
+  - Supabase CLI `db push` is unsafe in this repo right now: remote migration history contains many versions missing locally
+  - migration file is still committed for source-of-truth/history
+- Post-index predicate timing, same REST filters:
+  - `detail_not_done` limit 500: ~179ms
+  - `sku_null` limit 500: ~165ms
+  - `state_not_active` limit 500: ~151ms
+  - `type_not_normal` limit 500: ~141ms
 
 ## Deferred
 
-- If `type_not_normal` becomes a recurring long tail, add a partial DB index dedicated to `score_dirty=true AND detail_status='done' AND sku_id IS NOT NULL AND listing_state='active' AND listing_type <> 'normal' AND listing_type_override IS NULL`.
 - Do not add a DB-side cleanup RPC yet because the current code fix can deploy without a Supabase migration and avoids exposing new database functions.
 - Continue watching A/B/C score-worker logs for:
   - `score_cleanup_clear_unscorable`
