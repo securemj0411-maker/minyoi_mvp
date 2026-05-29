@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+import { signAdminAction } from "@/lib/admin-action-token";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { notifyAdminTelegram } from "@/lib/telegram-notify";
@@ -132,8 +133,10 @@ export async function POST(req: NextRequest) {
 
     // 운영자 텔레그램 알림 — 승인 / 거절 link.
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://minyoi-mvp.vercel.app";
-    const approveLink = `${baseUrl}/api/admin/feedback/decide?id=${feedbackId}&decision=approve`;
-    const rejectLink = `${baseUrl}/api/admin/feedback/decide?id=${feedbackId}&decision=reject`;
+    const approveToken = signAdminAction("feedback", feedbackId, "approve");
+    const rejectToken = signAdminAction("feedback", feedbackId, "reject");
+    const approveLink = `${baseUrl}/api/admin/feedback/decide?id=${feedbackId}&decision=approve&token=${encodeURIComponent(approveToken)}`;
+    const rejectLink = `${baseUrl}/api/admin/feedback/decide?id=${feedbackId}&decision=reject&token=${encodeURIComponent(rejectToken)}`;
     const escapedMessage = message.length > 200 ? `${message.slice(0, 200)}...` : message;
     const pidLine = pidValid ? `• 매물 ID: \`${pidValid}\`` : "• 매물: 전역 피드백 (매물 없음)";
     // Wave launch-107: sold_out 이면 즉시 풀 제외 표기 추가.

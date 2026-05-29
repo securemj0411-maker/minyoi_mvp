@@ -106,6 +106,7 @@ export default function ManualDepositPanel() {
       const res = await fetch(`/api/admin/manual-deposit/decide?id=${id}&decision=${decision}`, {
         method: "POST",
         cache: "no-store",
+        headers: { "x-minyoi-admin-action": "1" },
       });
       // decide endpoint 는 HTML 응답. status 만 확인.
       if (!res.ok) {

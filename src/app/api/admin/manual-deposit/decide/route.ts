@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+import { hasAdminActionHeader, verifyAdminActionToken } from "@/lib/admin-action-token";
 import { isAdminUser } from "@/lib/auth-users";
 import { grantManualDeposit, rejectManualDeposit, type ManualDepositRequest } from "@/lib/manual-deposit-grant";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -62,16 +63,31 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const idRaw = url.searchParams.get("id");
   const decisionRaw = url.searchParams.get("decision");
+  const token = url.searchParams.get("token");
+  const id = Number(idRaw);
+  if (!Number.isFinite(id) || id <= 0) return NextResponse.json({ error: "invalid_id" }, { status: 400 });
+  if (decisionRaw !== "approve" && decisionRaw !== "reject") {
+    return NextResponse.json({ error: "invalid_decision" }, { status: 400 });
+  }
+  if (!verifyAdminActionToken("manual_deposit", id, decisionRaw, token)) {
+    return new NextResponse(actionGuardHtml(), { status: 403, headers: { "content-type": "text/html; charset=utf-8" } });
+  }
+  return handle(req, decisionRaw, id);
+}
+
+export async function POST(req: NextRequest) {
+  if (!hasAdminActionHeader(req.headers)) {
+    return NextResponse.json({ error: "missing_admin_action_header" }, { status: 403 });
+  }
+  const url = new URL(req.url);
+  const idRaw = url.searchParams.get("id");
+  const decisionRaw = url.searchParams.get("decision");
   const id = Number(idRaw);
   if (!Number.isFinite(id) || id <= 0) return NextResponse.json({ error: "invalid_id" }, { status: 400 });
   if (decisionRaw !== "approve" && decisionRaw !== "reject") {
     return NextResponse.json({ error: "invalid_decision" }, { status: 400 });
   }
   return handle(req, decisionRaw, id);
-}
-
-export async function POST(req: NextRequest) {
-  return GET(req);
 }
 
 function htmlShell(title: string, body: string): string {
@@ -84,6 +100,10 @@ function loginPromptHtml(returnUrl: string): string {
 
 function forbiddenHtml(): string {
   return htmlShell("권한 없음", `<h1>권한 없음</h1><p>운영자 계정이 아니에요.</p>`);
+}
+
+function actionGuardHtml(): string {
+  return htmlShell("보안 확인 필요", `<h1>보안 확인 필요</h1><p>이전 링크이거나 유효하지 않은 승인 링크예요.<br/>관리자 페이지에서 다시 처리해주세요.</p>`);
 }
 
 function resultHtml(title: string, message: string): string {

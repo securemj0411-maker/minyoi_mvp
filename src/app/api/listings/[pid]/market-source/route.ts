@@ -2,17 +2,22 @@
 // 사용자 매물 (reveal 됐던 매물) 대상으로 시세 산정의 근거 매물 list + 통계 반환.
 // 목적: 사용자가 매물 검증 시 "이 시세가 어떤 매물 기준으로 계산됐는지" 확인 가능하게.
 //
-// 2026-05-15 update: auth/권한 체크 제거. 베타 풀 페이지(/peek-pool-7f3kz9)에서도 호출 가능.
-// pid 알면 누구나 접근. 의도된 변경 (시세 투명성).
+// 2026-05-30 update: paywall 강화. pid 기반 공개 접근은 원본 링크/비교 매물 URL 우회
+// 표면이므로 상세 접근권이 있는 사용자 또는 운영자/베타만 호출 가능.
 // 2026-05-16: rate limit 추가. pid enumeration abuse 차단. IP 기반 60 req / 60s.
 
 import { NextResponse } from "next/server";
+import { isAdminUser } from "@/lib/auth-users";
+import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { fetchLatestMarketStats, fetchLatestMarketStatsPerSource, fetchReferencePrices, fetchV7SiblingPresence, marketBasisForCandidate } from "@/lib/pack-open";
 import type { RevealMarketBasis } from "@/lib/pack-open";
 import { isDaangnMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { checkRateLimit, clientIpKey } from "@/lib/rate-limit";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { hasDetailAccess } from "@/lib/detail-access";
+import { userRefForAuthUser } from "@/lib/user-ref";
 import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
 import { mergeConditionDisplayChips } from "@/lib/condition-display";
 import { hardSplitChipSignature, shouldUseExactHardChipComparison } from "@/lib/condition-chip-policy";
@@ -96,8 +101,6 @@ export async function GET(
   req: Request,
   { params }: { params: Promise<{ pid: string }> },
 ) {
-  // 2026-05-15: auth/권한 체크 제거. 베타 풀 페이지(/peek-pool-7f3kz9)에서도
-  // 시세 근거 보기 가능하도록 public read-only. pid 알면 누구나 접근.
   const { pid: pidStr } = await params;
   const pid = Number(pidStr);
   if (!Number.isFinite(pid)) return NextResponse.json({ error: "invalid pid" }, { status: 400 });
@@ -112,6 +115,18 @@ export async function GET(
     return NextResponse.json(
       { error: "rate_limited", retryAfter: rate.retryAfterSeconds },
       { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } },
+    );
+  }
+
+  const auth = await requireSupabaseUser(req);
+  if (!auth.ok) return NextResponse.json({ error: "auth_required" }, { status: auth.status });
+  const userRef = userRefForAuthUser(auth.user.id);
+  const unlimited = isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
+  const allowed = await hasDetailAccess({ user: auth.user, userRef, pid, unlimited });
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "detail_access_required", message: "상세보기 접근 권한이 필요해요." },
+      { status: 403 },
     );
   }
 

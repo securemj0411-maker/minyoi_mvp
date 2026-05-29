@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+import { hasAdminActionHeader, verifyAdminActionToken } from "@/lib/admin-action-token";
 import { isAdminUser } from "@/lib/auth-users";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -64,7 +65,7 @@ async function handle(req: NextRequest, decision: "approve" | "reject", id: numb
     if (!grantRes.ok) {
       const text = await grantRes.text().catch(() => "");
       console.error("[feedback/decide] grant failed", { status: grantRes.status, body: text.slice(0, 200) });
-      return new NextResponse(resultHtml("크레딧 지급 실패", text.slice(0, 200)), { headers: { "content-type": "text/html; charset=utf-8" } });
+      return new NextResponse(resultHtml("크레딧 지급 실패", "보상 지급 중 오류가 발생했어요. 서버 로그를 확인해주세요."), { headers: { "content-type": "text/html; charset=utf-8" } });
     }
     const grantRows = (await grantRes.json()) as Array<{ balance?: number }>;
     const newBalance = grantRows[0]?.balance ?? null;
@@ -170,11 +171,25 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const id = Number(url.searchParams.get("id"));
   const decision = url.searchParams.get("decision");
+  const token = url.searchParams.get("token");
+  if (!Number.isFinite(id) || id <= 0) return NextResponse.json({ error: "invalid_id" }, { status: 400 });
+  if (decision !== "approve" && decision !== "reject") return NextResponse.json({ error: "invalid_decision" }, { status: 400 });
+  if (!verifyAdminActionToken("feedback", id, decision, token)) {
+    return new NextResponse(actionGuardHtml(), { status: 403, headers: { "content-type": "text/html; charset=utf-8" } });
+  }
+  return handle(req, decision, id);
+}
+export async function POST(req: NextRequest) {
+  if (!hasAdminActionHeader(req.headers)) {
+    return NextResponse.json({ error: "missing_admin_action_header" }, { status: 403 });
+  }
+  const url = new URL(req.url);
+  const id = Number(url.searchParams.get("id"));
+  const decision = url.searchParams.get("decision");
   if (!Number.isFinite(id) || id <= 0) return NextResponse.json({ error: "invalid_id" }, { status: 400 });
   if (decision !== "approve" && decision !== "reject") return NextResponse.json({ error: "invalid_decision" }, { status: 400 });
   return handle(req, decision, id);
 }
-export async function POST(req: NextRequest) { return GET(req); }
 
 function htmlShell(title: string, body: string): string {
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>${title}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,"Pretendard Variable",sans-serif;background:#0a0a0a;color:#fafafa;margin:0;padding:24px;display:flex;align-items:center;justify-content:center;min-height:100vh}main{max-width:420px;width:100%;background:#18181b;border:1px solid #27272a;border-radius:8px;padding:32px;text-align:center;font-family:"SFMono-Regular",Consolas,monospace}h1{font-size:18px;font-weight:900;margin:0 0 12px;color:#fbbf24;letter-spacing:0.04em}p{font-size:13px;color:#a1a1aa;line-height:1.6;margin:0}a{color:#fbbf24;font-weight:800;text-decoration:none}</style></head><body><main>${body}</main></body></html>`;
@@ -183,6 +198,9 @@ function loginHtml(returnUrl: string): string {
   return htmlShell("LOGIN", `<h1>LOGIN REQUIRED</h1><p>운영자 계정으로 로그인 후 다시 클릭해주세요.<br/><a href="/login?next=${encodeURIComponent(returnUrl)}">로그인</a></p>`);
 }
 function forbiddenHtml(): string { return htmlShell("FORBIDDEN", `<h1>FORBIDDEN</h1><p>운영자 계정이 아니에요.</p>`); }
+function actionGuardHtml(): string {
+  return htmlShell("SECURITY CHECK", `<h1>SECURITY CHECK</h1><p>이전 링크이거나 유효하지 않은 승인 링크예요.<br/>관리자 페이지에서 다시 처리해주세요.</p>`);
+}
 function resultHtml(title: string, message: string): string {
   return htmlShell(title, `<h1>${title}</h1><p>${message.replace(/</g, "&lt;")}</p>`);
 }

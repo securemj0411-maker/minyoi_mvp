@@ -20,7 +20,7 @@
 //   3. Authorization header (admin key) 검증 — 위조 webhook 차단
 
 import { NextRequest, NextResponse } from "next/server";
-import { restFetch, jsonBody, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { restFetch, jsonBody, rpcUrl, serviceHeaders } from "@/lib/supabase-rest";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,9 +34,12 @@ const COOLDOWN_HOURS = 24;
 //   가격: 1크레딧 ≈ 495원 (popular 기준). 2크레딧 = 990원. 30일 max = 29,700원/유저.
 const BONUS_AMOUNT = 2;
 
-type CreditsRow = {
-  user_ref: string;
-  balance: number;
+type ClaimShareBonusRow = {
+  ok: boolean;
+  granted: boolean;
+  user_ref: string | null;
+  balance: number | null;
+  error: string | null;
   last_share_bonus_at: string | null;
 };
 
@@ -64,8 +67,12 @@ async function handleWebhook(req: NextRequest, payload: WebhookPayload): Promise
     userAgent: req.headers.get("user-agent"),
   });
 
-  // 1. Authorization 검증 (admin key 있을 때만 — env 없으면 skip)
+  // 1. Authorization 검증. production 에서 admin key 가 없으면 보상 지급 자체를 막는다.
   const adminKey = process.env.KAKAO_ADMIN_KEY;
+  if (!adminKey && process.env.NODE_ENV === "production") {
+    console.error("[kakao-share-webhook] KAKAO_ADMIN_KEY missing in production");
+    return NextResponse.json({ ok: false, error: "auth_unconfigured" });
+  }
   if (adminKey) {
     const authHeader = req.headers.get("authorization") ?? "";
     const expected = `KakaoAK ${adminKey}`;
@@ -90,86 +97,50 @@ async function handleWebhook(req: NextRequest, payload: WebhookPayload): Promise
     return NextResponse.json({ ok: false, error: "memo_chat_excluded" });
   }
 
-  // 4. 24h cooldown + 보상 지급
+  // 4. 24h cooldown + 보상 지급 (DB RPC 안에서 원자 처리)
   try {
     const headers = serviceHeaders();
-    const res = await restFetch(
-      `${tableUrl("mvp_user_credits")}?select=user_ref,balance,last_share_bonus_at&auth_user_id=eq.${encodeURIComponent(userId)}&limit=1`,
-      { headers },
-    );
-    if (!res.ok) {
-      console.error("[kakao-share-webhook] user fetch failed", { status: res.status });
-      return NextResponse.json({ ok: false, error: "user_fetch_failed" });
-    }
-    const rows = (await res.json()) as CreditsRow[];
-    const current = rows[0];
-    if (!current) {
-      console.warn("[kakao-share-webhook] user not found", { userId });
-      return NextResponse.json({ ok: false, error: "user_not_found" });
-    }
-
-    if (current.last_share_bonus_at) {
-      const last = Date.parse(current.last_share_bonus_at);
-      const hoursSince = (Date.now() - last) / (60 * 60 * 1000);
-      if (Number.isFinite(hoursSince) && hoursSince < COOLDOWN_HOURS) {
-        console.log("[kakao-share-webhook] cooldown skipped", {
-          userId,
-          hoursSince: hoursSince.toFixed(1),
-        });
-        return NextResponse.json({ ok: false, error: "cooldown" });
-      }
-    }
-
-    const newBalance = current.balance + BONUS_AMOUNT;
-    const now = new Date().toISOString();
-
-    const upsertRes = await restFetch(
-      `${tableUrl("mvp_user_credits")}?user_ref=eq.${encodeURIComponent(current.user_ref)}`,
+    const claimRes = await restFetch(
+      rpcUrl("claim_mvp_kakao_share_bonus"),
       {
-        method: "PATCH",
-        headers: { ...headers, Prefer: "return=minimal" },
+        method: "POST",
+        headers,
         body: jsonBody({
-          balance: newBalance,
-          last_share_bonus_at: now,
-          updated_at: now,
+          p_auth_user_id: userId,
+          p_amount: BONUS_AMOUNT,
+          p_chat_type: chatType,
+          p_hash_chat_id: hashChatId,
+          p_cooldown_hours: COOLDOWN_HOURS,
         }),
       },
     );
-    if (!upsertRes.ok) {
-      console.error("[kakao-share-webhook] credit update failed", { status: upsertRes.status });
-      return NextResponse.json({ ok: false, error: "update_failed" });
+    if (!claimRes.ok) {
+      const text = await claimRes.text().catch(() => "");
+      console.error("[kakao-share-webhook] claim rpc failed", { status: claimRes.status, body: text.slice(0, 200) });
+      return NextResponse.json({ ok: false, error: "claim_failed" });
     }
+    const rows = (await claimRes.json()) as ClaimShareBonusRow[];
+    const claim = rows[0];
 
-    // ledger 기록 (audit)
-    try {
-      await restFetch(`${tableUrl("mvp_credit_ledger")}`, {
-        method: "POST",
-        headers: { ...headers, Prefer: "return=minimal" },
-        body: jsonBody([{
-          user_ref: current.user_ref,
-          auth_user_id: userId,
-          event_type: "kakao_share_webhook",
-          amount: BONUS_AMOUNT,
-          balance_after: newBalance,
-          metadata: {
-            source: "kakao_webhook",
-            chat_type: chatType,
-            hash_chat_id: hashChatId,
-          },
-          created_at: now,
-        }]),
-      });
-    } catch (err) {
-      console.warn("[kakao-share-webhook] ledger insert threw", err instanceof Error ? err.message : String(err));
+    if (!claim?.ok || !claim.granted) {
+      if (claim?.error === "cooldown") {
+        console.log("[kakao-share-webhook] cooldown skipped", {
+          userId,
+          lastShareBonusAt: claim.last_share_bonus_at,
+        });
+      } else {
+        console.warn("[kakao-share-webhook] claim skipped", { userId, error: claim?.error ?? "empty_response" });
+      }
+      return NextResponse.json({ ok: false, error: claim?.error ?? "claim_skipped" });
     }
 
     console.log("[kakao-share-webhook] bonus granted", {
       userId,
       chatType,
-      newBalance,
-      previousBalance: current.balance,
+      newBalance: claim.balance,
+      userRef: claim.user_ref,
     });
-    return NextResponse.json({ ok: true, balance: newBalance });
+    return NextResponse.json({ ok: true, balance: claim.balance });
   } catch (err) {
     console.error("[kakao-share-webhook] failed", err instanceof Error ? err.message : String(err));
     return NextResponse.json({ ok: false, error: "internal_error" });

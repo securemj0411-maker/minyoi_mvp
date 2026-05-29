@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+import { signAdminAction } from "@/lib/admin-action-token";
 import { planForKey, type PlanKey } from "@/lib/plan-config";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -151,8 +152,10 @@ export async function POST(req: NextRequest) {
 
     // 운영자 텔레그램 알림. fail 해도 신청 자체는 OK (자동 승인으로 fallback).
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://minyoi-mvp.vercel.app";
-    const approveLink = `${baseUrl}/api/admin/manual-deposit/decide?id=${requestId}&decision=approve`;
-    const rejectLink = `${baseUrl}/api/admin/manual-deposit/decide?id=${requestId}&decision=reject`;
+    const approveToken = signAdminAction("manual_deposit", requestId, "approve");
+    const rejectToken = signAdminAction("manual_deposit", requestId, "reject");
+    const approveLink = `${baseUrl}/api/admin/manual-deposit/decide?id=${requestId}&decision=approve&token=${encodeURIComponent(approveToken)}`;
+    const rejectLink = `${baseUrl}/api/admin/manual-deposit/decide?id=${requestId}&decision=reject&token=${encodeURIComponent(rejectToken)}`;
     const msg = [
       "💰 *충전 신청* (3분 안에 결정 / 안 누르면 자동 지급)",
       "",

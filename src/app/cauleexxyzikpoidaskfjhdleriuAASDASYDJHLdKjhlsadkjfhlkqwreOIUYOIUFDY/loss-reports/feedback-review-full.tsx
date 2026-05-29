@@ -82,7 +82,11 @@ export default function FeedbackReviewFull() {
     setPendingIds((p) => new Set(p).add(id));
     setError(null); setNotice(null);
     try {
-      const res = await fetch(`/api/admin/feedback/decide?id=${id}&decision=${decision}`, { method: "POST", cache: "no-store" });
+      const res = await fetch(`/api/admin/feedback/decide?id=${id}&decision=${decision}`, {
+        method: "POST",
+        cache: "no-store",
+        headers: { "x-minyoi-admin-action": "1" },
+      });
       if (!res.ok) { setError(`${decision === "approve" ? "승인" : "거절"} 실패 (${res.status})`); return; }
       setNotice(`피드백 #${id} ${decision === "approve" ? "승인 + 보상 지급" : "거절"} 완료`);
       void refresh();
