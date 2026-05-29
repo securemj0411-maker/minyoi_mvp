@@ -1020,10 +1020,12 @@ test("Wave 872 clothing tail audit blocks shoe styling bait and routes LEAF Alph
   const leafAlpha = ruleMatch("아크테릭스 리프 알파 LT 자켓");
   assert.equal(leafAlpha?.id, "clothing-arcteryx-leaf");
   assert.equal(evaluatePoolGate({ sku: leafAlpha, category: leafAlpha?.category ?? null }).canEnterPool, true);
+  const alphaSv = ruleMatch("아크테릭스 알파 SV 자켓");
   assert.equal(
-    ruleMatch("아크테릭스 알파 SV 자켓")?.id,
-    "clothing-arcteryx-alpha",
+    alphaSv?.id,
+    "clothing-arcteryx-alpha-sv",
   );
+  assert.equal(evaluatePoolGate({ sku: alphaSv, category: alphaSv?.category ?? null }).canEnterPool, true);
 });
 
 test("fashion reference-only wording does not poison premium clothing lanes", () => {

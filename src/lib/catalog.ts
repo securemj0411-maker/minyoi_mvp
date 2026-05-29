@@ -14863,6 +14863,14 @@ function directSpecificMatch(text: string): Sku | null {
   const normalizedWithoutHashtags = normalize(rawWithoutHashtags);
   if (
     /(?:뉴발란스|뉴발|new\s*balance|newbalance|\bnb\b)/i.test(normalizedWithoutHashtags) &&
+    /(?:오라리|auralee)/i.test(normalizedWithoutHashtags) &&
+    /(?:1906\s*r|1906r|990\s*v4|990v4|xc\s*-?\s*72|xc72|wrpd|475|운동화|스니커즈|신발|슈즈|sneaker|shoes?)/i.test(normalizedWithoutHashtags) &&
+    !/(?:러닝\s*캡|러닝캡|모자|볼캡|캡|hat|cap|beanie|비니)/i.test(normalizedWithoutHashtags)
+  ) {
+    return skuById("shoe-newbalance-auralee-collab") ?? null;
+  }
+  if (
+    /(?:뉴발란스|뉴발|new\s*balance|newbalance|\bnb\b)/i.test(normalizedWithoutHashtags) &&
     /(?:에임\s*레온\s*도르|에임레온도르|에메레온도르|aime\s*leon\s*dore|aimé\s*leon\s*dore|\bald\b)/i.test(normalizedWithoutHashtags) &&
     !/(?:조\s*프레(?:시|쉬)굿즈|joe\s*freshgoods|자운드|jjjjound|jound|kith|키스|오라리|auralee|카사블랑카|casablanca|러닝캡|모자|cap)/i.test(normalizedWithoutHashtags)
   ) {

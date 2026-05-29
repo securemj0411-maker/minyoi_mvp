@@ -1040,7 +1040,10 @@ export const LANE_READINESS: LaneReadinessMap = {
   // Wave 218 (2026-05-19): Arc'teryx 모델별 narrow 5개 — 가격대 X 3-5 (Beta 600K vs Squamish 190K)
   arcteryx_beta: { status: "ready", label: "Arc'teryx Beta (generic)", note: "Wave 805: explicit SL/LT/AR rows split into sub-line lanes; generic Beta only stays here." },
   arcteryx_gamma: { status: "ready", label: "Arc'teryx Gamma (MX/SL/LT)", note: "Wave 218 softshell" },
-  arcteryx_alpha: { status: "ready", label: "Arc'teryx Alpha (SV/AR/FL)", note: "Wave 218 등반/expedition" },
+  arcteryx_alpha: { status: "ready", label: "Arc'teryx Alpha (generic)", note: "Wave 949: SV/AR/LT explicit rows now route to exact ready lanes; generic Alpha keeps sub-line 미명시 rows only." },
+  arcteryx_alpha_sv: { status: "ready", label: "Arc'teryx Alpha SV", note: "Wave 949: Wave 765 split lane promoted; flagship SV is separate from generic Alpha/AR/LT." },
+  arcteryx_alpha_ar: { status: "ready", label: "Arc'teryx Alpha AR", note: "Wave 949: Wave 765 split lane promoted; AR is separate from SV/LT/generic Alpha." },
+  arcteryx_alpha_lt: { status: "ready", label: "Arc'teryx Alpha LT", note: "Wave 949: Wave 765 split lane promoted; LT is separate from SV/AR/generic Alpha." },
   arcteryx_atom: { status: "blocked", label: "Arc'teryx Atom (generic)", note: "Wave 812: generic Atom still mixes hoody/non-hood and unspecified sub-line samples. Keep exact LT Hoody/Jacket, SL, AR/Heavyweight lanes ready only." },
   arcteryx_atom_lt_hoody: { status: "ready", label: "Arc'teryx Atom LT Hoody", note: "Wave 805: hooded LT only; non-hood/jacket and SL/AR held separately." },
   arcteryx_atom_lt_jacket: { status: "ready", label: "Arc'teryx Atom LT Jacket", note: "Wave 805: non-hood LT jacket only; hoody and SL/AR separated." },
