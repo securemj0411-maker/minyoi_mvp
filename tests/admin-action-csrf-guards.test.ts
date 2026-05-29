@@ -70,6 +70,7 @@ test("high-risk admin mutation APIs require the same-origin action header", () =
     "src/app/api/admin/users/delete/route.ts",
     "src/app/api/admin/beta-tester/route.ts",
     "src/app/api/admin/listing-type-override/route.ts",
+    "src/app/api/admin/loss-reports/route.ts",
     "src/app/api/admin/learning-queue/[id]/approve/route.ts",
     "src/app/api/admin/learning-queue/[id]/reject/route.ts",
   ];

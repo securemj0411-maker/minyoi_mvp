@@ -3,6 +3,7 @@
 // PATCH: 신고 status + 응답 메시지 update. resolved 전환 시 승인 보상 토큰을 원자적으로 지급.
 
 import { NextResponse, type NextRequest } from "next/server";
+import { hasAdminActionHeader } from "@/lib/admin-action-token";
 import { isAdminUser } from "@/lib/auth-users";
 import { restFetch, rpcUrl, serviceHeaders, tableUrl, jsonBody } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -124,6 +125,9 @@ export async function PATCH(req: NextRequest) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   if (!isAdminUser(auth.user)) return NextResponse.json({ error: "admin only" }, { status: 403 });
+  if (!hasAdminActionHeader(req.headers)) {
+    return NextResponse.json({ error: "missing_admin_action_header" }, { status: 403 });
+  }
 
   let body: unknown;
   try { body = await req.json(); }
