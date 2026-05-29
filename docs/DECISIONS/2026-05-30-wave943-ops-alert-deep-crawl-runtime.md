@@ -22,7 +22,12 @@ The alert source said `bunjang` because the source-health row is still keyed as 
 
 ### 1. Cap deep-crawl title triage
 
-Deep-crawl is a coverage sweep, not a same-run scoring worker. Keep raw collection/upsert behavior, but cap CPU-heavy title triage to the highest-signal 200 rows by favorites/price.
+Deep-crawl is a coverage sweep, not a same-run scoring worker. Keep raw collection/upsert behavior, but cap CPU-heavy title triage to 120 rows.
+
+Selection is hybrid:
+
+- 60% highest-signal rows by favorites/price.
+- 40% rotating tail rows, so deep pages do not permanently starve lower-favorite listings.
 
 Deferred rows are not persisted as `title_triage_skip`, so later fresh/detail cycles can still pick them up naturally.
 
@@ -48,6 +53,13 @@ Require at least 2 runs before `sourceWorkerFailureStatus()` can propose degrade
   - 6 pass, 0 fail
 - `npm run build`
   - passed
+- Production manual run after the first cap (`200`) succeeded instead of timing out:
+  - `runId=6650f28e-8146-42f5-814f-9d3c685a6f84`
+  - duration: `60.5s`
+  - `detail_refresh_items=369`
+  - `detail_decision_items=200`
+  - `build_detail_decisions=46.7s`
+- Based on that still-high CPU cost, cap was tightened to `120` with rotating-tail selection.
 
 ## Watch After Deploy
 
@@ -55,4 +67,3 @@ Require at least 2 runs before `sourceWorkerFailureStatus()` can propose degrade
 - `stage_stats.stages.search.timingsMs.build_detail_decisions` should drop on large deep-crawl pages.
 - Source-health worker breakdown should include a fuller 120-minute sample.
 - Continue watching A `score_worker` statement timeout. If it persists after the parser clamp and cleanup indexes, the next fix should be a DB-side scorable-claim RPC or a more specific partial index for `source + listing_type + score_dirty + last_seen_at`.
-

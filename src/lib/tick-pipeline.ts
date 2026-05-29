@@ -1376,9 +1376,16 @@ export async function searchStage(deadlineMs: number, options: SearchStageOption
     if (mode !== "deep" || detailRefreshItems.length <= config.deepCrawlDetailTriageLimit) {
       return detailRefreshItems;
     }
-    return [...detailRefreshItems]
-      .sort((a, b) => b.numFaved - a.numFaved || a.price - b.price)
-      .slice(0, config.deepCrawlDetailTriageLimit);
+    const sorted = [...detailRefreshItems].sort((a, b) => b.numFaved - a.numFaved || a.price - b.price);
+    const priorityCount = Math.min(sorted.length, Math.ceil(config.deepCrawlDetailTriageLimit * 0.6));
+    const priorityItems = sorted.slice(0, priorityCount);
+    const tailLimit = Math.max(0, config.deepCrawlDetailTriageLimit - priorityItems.length);
+    const rotatedTail = tailLimit > 0
+      ? rotatedDeepQueryWindow(sorted.slice(priorityCount), tailLimit).items
+      : [];
+    timingsMs.deep_detail_triage_priority_rows = priorityItems.length;
+    timingsMs.deep_detail_triage_rotated_rows = rotatedTail.length;
+    return [...priorityItems, ...rotatedTail];
   });
   timingsMs.detail_decision_items = detailDecisionItems.length;
   if (mode === "deep") {

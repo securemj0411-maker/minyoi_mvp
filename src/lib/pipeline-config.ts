@@ -649,7 +649,7 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     // Deep crawl is for coverage, not same-run scoring. Title triage can dominate runtime
     // when an old page yields hundreds of unseen rows, so cap that CPU-heavy pass and let
     // later fresh/detail cycles pick up deferred rows naturally.
-    deepCrawlDetailTriageLimit: envInt("PIPELINE_DEEP_CRAWL_DETAIL_TRIAGE_LIMIT", 200, 50, 2000),
+    deepCrawlDetailTriageLimit: envInt("PIPELINE_DEEP_CRAWL_DETAIL_TRIAGE_LIMIT", 120, 50, 2000),
     sellerSearchRefreshMs: envInt("PIPELINE_SELLER_SEARCH_REFRESH_MS", 3 * 60 * 60 * 1000, 10 * 60 * 1000, 24 * 60 * 60 * 1000),
     rawTouchCoalesceActiveSeenOnly: envBool("RAW_TOUCH_COALESCE_ACTIVE_SEEN_ONLY", false),
     rawTouchCoalesceActiveSeenOnlyDryRun: envBool("RAW_TOUCH_COALESCE_ACTIVE_SEEN_ONLY_DRY_RUN", false),
