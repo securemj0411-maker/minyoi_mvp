@@ -170,7 +170,7 @@ export type CronGuardSkipped = {
 
 const DEFAULT_COOLDOWN_MS: Record<CronWorkerMode, number> = {
   tick: 60_000,
-  detail_worker: 60_000,
+  detail_worker: 50_000,
   deep_crawl: 10 * 60_000,
   market_worker: 8 * 60_000,
   pool_warmer: 5 * 60_000,
@@ -183,10 +183,10 @@ const DEFAULT_COOLDOWN_MS: Record<CronWorkerMode, number> = {
   hotdeal_worker: 60_000,
   reference_price_refresh: 60 * 60_000,
   joongna_worker: 5 * 60_000,
-  score_worker: 60_000,
-  score_worker_b: 60_000,
-  score_worker_c: 60_000,
-  recovery_worker: 60_000,
+  score_worker: 50_000,
+  score_worker_b: 50_000,
+  score_worker_c: 50_000,
+  recovery_worker: 50_000,
   daangn_worker: 4 * 60_000,
   daangn_worker_b: 4 * 60_000,
   daangn_worker_c: 4 * 60_000,
