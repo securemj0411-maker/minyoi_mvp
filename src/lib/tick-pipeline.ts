@@ -203,7 +203,8 @@ type ParsedListingRow = {
   //   launch-78 후속 — 라벨/비교군 UI 외에 시세 자체도 tier-aware.
   condition_tier: string | null;
   needs_review: boolean | null;
-  parsed_json: Record<string, unknown> | null;
+  condition_notes?: string[] | null;
+  parsed_json?: Record<string, unknown> | null;
 };
 
 type MarketKeyInvalidationEvent = {
@@ -348,6 +349,7 @@ const SKU_MEDIAN_UNAVAILABLE_MARKET_REFRESH_COOLDOWN_MS = 6 * 60 * 60 * 1000;
 const DEFAULT_SELLER_SEARCH_REFRESH_MS = 3 * 60 * 60 * 1000;
 const PARSED_PID_READ_CHUNK_SIZE = 300;
 const REST_KEY_READ_CHUNK_SIZE = 50;
+const DEFAULT_MARKET_INVALIDATION_PARSED_ROWS_PER_KEY_CHUNK = 1000;
 const TERMINAL_LISTING_STATES = new Set(["sold_confirmed", "disappeared", "archived"]);
 
 export type ScoreStageOptions = {
@@ -2510,7 +2512,10 @@ async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Prom
   const unique = [...new Set(comparableKeys.filter(Boolean))];
   if (unique.length === 0) return 0;
   // comparable_key를 가진 parsed pid를 모은 뒤 raw_listings.score_dirty=true.
-  const parsedByPid = await loadParsedRowsByComparableKeys(unique, 5000);
+  const parsedByPid = await loadParsedRowsByComparableKeys(unique, 5000, {
+    includeParsedJson: false,
+    maxRowsPerKeyChunk: marketInvalidationParsedRowsPerKeyChunk(),
+  });
   const pids = [...parsedByPid.keys()];
   if (pids.length === 0) return 0;
   for (const chunk of chunkArray(pids, REST_WRITE_CHUNK_SIZE)) {
@@ -2736,7 +2741,7 @@ async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListing
   const unique = [...new Set(pids.filter(Number.isFinite))];
   if (unique.length === 0) return new Map();
   // Wave 130: condition_class 컬럼 fetch — 시세 산정 grouping key.
-  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,condition_class,condition_tier,needs_review,parsed_json";
+  const columns = parsedListingColumns({ includeParsedJson: true });
   const rows: ParsedListingRow[] = [];
   for (const chunk of chunkArray(unique, REST_READ_CHUNK_SIZE)) {
     const url = `${tableUrl("mvp_listing_parsed")}?select=${columns}&pid=in.(${chunk.join(",")})`;
@@ -2746,7 +2751,30 @@ async function loadParsedRows(pids: number[]): Promise<Map<number, ParsedListing
   return new Map(rows.map((row) => [row.pid, row]));
 }
 
-async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: number): Promise<Map<number, ParsedListingRow>> {
+type ParsedKeyLoadOptions = {
+  includeParsedJson?: boolean;
+  maxRowsPerKeyChunk?: number;
+};
+
+function parsedListingColumns(options: { includeParsedJson: boolean }) {
+  const base = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,condition_class,condition_tier,needs_review,condition_notes";
+  return options.includeParsedJson ? `${base},parsed_json` : base;
+}
+
+function marketInvalidationParsedRowsPerKeyChunk() {
+  return boundedInt(
+    process.env.PIPELINE_MARKET_INVALIDATION_PARSED_ROWS_PER_KEY_CHUNK ?? null,
+    DEFAULT_MARKET_INVALIDATION_PARSED_ROWS_PER_KEY_CHUNK,
+    100,
+    5000,
+  );
+}
+
+async function loadParsedRowsByComparableKeys(
+  comparableKeys: string[],
+  limit: number,
+  options: ParsedKeyLoadOptions = {},
+): Promise<Map<number, ParsedListingRow>> {
   const unique = [...new Set(comparableKeys.filter(Boolean))].slice(0, limit);
   if (unique.length === 0) return new Map();
   // Wave 130: condition_class 컬럼 fetch — 시세 산정 grouping key.
@@ -2755,14 +2783,20 @@ async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: n
   //   default row cap (≈1000) 으로 silent truncation. 50 key chunk × 100 = 5000
   //   limit 박아도 실제 1000 row 만 반환 → 12,736 stale 영역 1 chain 의 root cause.
   //   fix: `restFetchAll` 의 offset pagination 으로 cap 우회.
-  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,condition_class,condition_tier,needs_review,parsed_json";
+  const columns = parsedListingColumns({ includeParsedJson: options.includeParsedJson ?? true });
+  const maxRowsPerKeyChunk = options.maxRowsPerKeyChunk == null
+    ? Number.POSITIVE_INFINITY
+    : Math.max(1, options.maxRowsPerKeyChunk);
   const rows: ParsedListingRow[] = [];
   for (const chunk of chunkArray(unique, REST_KEY_READ_CHUNK_SIZE)) {
+    const remaining = limit - rows.length;
+    if (remaining <= 0) break;
     const encoded = chunk.map((key) => encodeURIComponent(key)).join(",");
     const baseUrl = `${tableUrl("mvp_listing_parsed")}?select=${columns}&comparable_key=in.(${encoded})&parse_confidence=gte.0.65&needs_review=eq.false`;
-    // maxRows = limit (caller 가 명시한 cap 존중). orderBy=pid.asc (PK 일관성).
+    // maxRows = remaining cap. Market invalidation callers can also cap each
+    // key chunk, so one hot SKU family cannot consume the whole worker budget.
     const pageRows = await restFetchAll<ParsedListingRow>(baseUrl, {
-      maxRows: limit,
+      maxRows: Math.min(remaining, maxRowsPerKeyChunk),
       orderBy: "pid.asc",
     });
     rows.push(...pageRows);
@@ -2771,15 +2805,24 @@ async function loadParsedRowsByComparableKeys(comparableKeys: string[], limit: n
   return new Map(rows.slice(0, limit).map((row) => [row.pid, row]));
 }
 
-async function loadParsedRowsByShoeSizeSiblingKeys(comparableKeys: string[], limit: number): Promise<Map<number, ParsedListingRow>> {
+async function loadParsedRowsByShoeSizeSiblingKeys(
+  comparableKeys: string[],
+  limit: number,
+  options: ParsedKeyLoadOptions = {},
+): Promise<Map<number, ParsedListingRow>> {
   const patterns = [...new Set(comparableKeys.map(shoeSizeSiblingLikePattern).filter((key): key is string => Boolean(key)))];
   if (patterns.length === 0 || limit <= 0) return new Map();
-  const columns = "pid,parser_version,category,comparable_key,parse_confidence,condition_score,condition_class,condition_tier,needs_review,parsed_json";
+  const columns = parsedListingColumns({ includeParsedJson: options.includeParsedJson ?? true });
+  const maxRowsPerKeyChunk = options.maxRowsPerKeyChunk == null
+    ? Number.POSITIVE_INFINITY
+    : Math.max(1, options.maxRowsPerKeyChunk);
   const rows: ParsedListingRow[] = [];
   for (const pattern of patterns.slice(0, REST_KEY_READ_CHUNK_SIZE)) {
+    const remaining = limit - rows.length;
+    if (remaining <= 0) break;
     const baseUrl = `${tableUrl("mvp_listing_parsed")}?select=${columns}&comparable_key=like.${encodeURIComponent(pattern)}&parse_confidence=gte.0.65&needs_review=eq.false`;
     const pageRows = await restFetchAll<ParsedListingRow>(baseUrl, {
-      maxRows: Math.max(0, limit - rows.length),
+      maxRows: Math.min(remaining, maxRowsPerKeyChunk),
       orderBy: "pid.asc",
     });
     rows.push(...pageRows);
@@ -2916,6 +2959,7 @@ async function ensureParsedRows(rows: ScorableRawRow[], parsedByPid: Map<number,
       // Wave 722 / Stage 5: condition_tier — shoe/clothing parser가 채움. 시세 grouping key (tier-aware).
       condition_tier: (row.condition_tier as string | null) ?? null,
       needs_review: (row.needs_review as boolean | null) ?? null,
+      condition_notes: Array.isArray(row.condition_notes) ? row.condition_notes as string[] : null,
       parsed_json: (row.parsed_json as Record<string, unknown> | null) ?? null,
     });
   }
@@ -4123,7 +4167,9 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     // Wave 719 (2026-05-23): 카테고리별 outlier 차단 — 정상 시세 5-10배 매물은 시세 산정 제외.
     if (isPriceOutlierForSku(row.price, row.sku_id)) continue;
 
-    const conditionNotes = (parsed.parsed_json?.condition_notes as string[] | undefined) ?? [];
+    const conditionNotes = parsed.condition_notes
+      ?? (parsed.parsed_json?.condition_notes as string[] | undefined)
+      ?? [];
     // Wave 130: flawed class (손상/문제 매물) 시세 산정 차단 — 현재 정책 유지.
     // condition_class column이 채워져 있으면 그대로, 아니면 condition_notes에서 즉시 derive.
     const conditionClass = parsed.condition_class ?? extractConditionClass(conditionNotes);
@@ -4484,15 +4530,31 @@ export async function marketStatsStage(): Promise<StageStats> {
     market_invalidation_claimed_clothing_keys: pendingPrefixCounts.clothing ?? 0,
   };
   const pendingKeys = new Set(pendingInvalidations.map((row) => row.comparable_key));
-  const invalidatedParsedByPid = await loadParsedRowsByComparableKeys([...pendingKeys], config.marketStatsLimit);
+  const invalidationRowsPerKeyChunk = marketInvalidationParsedRowsPerKeyChunk();
+  stats.timingsMs = {
+    ...(stats.timingsMs ?? {}),
+    market_invalidation_parsed_rows_per_key_chunk: invalidationRowsPerKeyChunk,
+  };
+  const invalidatedParsedByPid = await loadParsedRowsByComparableKeys([...pendingKeys], config.marketStatsLimit, {
+    includeParsedJson: false,
+    maxRowsPerKeyChunk: invalidationRowsPerKeyChunk,
+  });
   const remainingSiblingLimit = Math.max(0, config.marketStatsLimit - invalidatedParsedByPid.size);
   const siblingParsedByPid = remainingSiblingLimit > 0
-    ? await loadParsedRowsByShoeSizeSiblingKeys([...pendingKeys], remainingSiblingLimit)
+    ? await loadParsedRowsByShoeSizeSiblingKeys([...pendingKeys], remainingSiblingLimit, {
+      includeParsedJson: false,
+      maxRowsPerKeyChunk: Math.min(500, invalidationRowsPerKeyChunk),
+    })
     : new Map<number, ParsedListingRow>();
   for (const [pid, parsed] of siblingParsedByPid.entries()) {
     if (!invalidatedParsedByPid.has(pid)) invalidatedParsedByPid.set(pid, parsed);
   }
   const invalidatedPids = [...invalidatedParsedByPid.keys()];
+  stats.timingsMs = {
+    ...(stats.timingsMs ?? {}),
+    market_invalidation_parsed_rows: invalidatedParsedByPid.size,
+    market_invalidation_sibling_rows: siblingParsedByPid.size,
+  };
   if (pendingInvalidations.length > 0 && invalidatedPids.length === 0) {
     stats.queued = pendingInvalidations.length;
     stats.enriched = await markMarketInvalidationsDone([...pendingKeys]);
