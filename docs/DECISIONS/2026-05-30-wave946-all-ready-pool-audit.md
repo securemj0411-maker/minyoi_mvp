@@ -113,6 +113,26 @@ condition deepsweep pool report를 갱신하면서 smartphone/tablet/smartwatch 
 - candidate rows: 0
 - invalidate/reclassify/reject/refresh rows: 0
 
+푸시 직후 terminal raw sync를 한 번 더 돌렸고, 그 사이 새로 raw terminal 상태로 바뀌었지만 pool에 남은 당근 row를 추가 정리했다.
+
+- post-push terminal dry-run 1:
+  - scanned pool rows: 3,858
+  - terminal raw pool rows: 9
+  - source: daangn 9
+  - listing_state: disappeared 6, sold_confirmed 3
+  - categories: smartphone 8, shoe 1
+- apply 1: invalidated 9 with `wave946_final_terminal_postpush_sync`
+- immediate postcheck:
+  - scanned pool rows: 3,849
+  - terminal raw pool rows: 2
+  - source: daangn 2
+  - listing_state: disappeared 1, sold_confirmed 1
+  - categories: earphone 1, smartphone 1
+- apply 2: invalidated 2 with `wave946_final_terminal_postpush_sync2`
+- final terminal postcheck:
+  - scanned pool rows: 3,847
+  - terminal raw pool rows: 0
+
 ## Deferred
 
 - "모든 제품의 상태 언어패턴이 완전 학습됨"을 의미하지는 않는다. 이번 wave는 exposed pool cleanup이고, 다음 deep work는 카테고리별 의미 패턴/AI 상태 증거 품질을 계속 늘리는 것이다.
@@ -136,3 +156,8 @@ condition deepsweep pool report를 갱신하면서 smartphone/tablet/smartwatch 
 - `npx tsx scripts/report-smartphone-condition-deepsweep.ts --category=smartwatch --scope=pool --limit=3000`
 - Direct Supabase REST shoe product-type audit for ready/reserved shoe pool
 - `npx tsx scripts/apply-cross-category-current-reparse-cleanup.ts --categories=smartphone,tablet,smartwatch,laptop,monitor,speaker,camera,desktop,home_appliance,small_appliance,drone,earphone,shoe,clothing,bag,sport_golf,game_console,lego --statuses=ready,reserved --reason=wave946_final_all_category_postcheck`
+- `node scripts/sync-terminal-raw-pool.mjs --reason=wave946_final_terminal_postpush_check`
+- `node scripts/sync-terminal-raw-pool.mjs --reason=wave946_final_terminal_postpush_sync --apply`
+- `node scripts/sync-terminal-raw-pool.mjs --reason=wave946_final_terminal_postpush_postcheck`
+- `node scripts/sync-terminal-raw-pool.mjs --reason=wave946_final_terminal_postpush_sync2 --apply`
+- `node scripts/sync-terminal-raw-pool.mjs --reason=wave946_final_terminal_postpush_postcheck2`
