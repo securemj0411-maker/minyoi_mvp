@@ -4620,6 +4620,8 @@ function BeginnerGuideProductVisual({ card }: { card: RevealCard }) {
   const condition = card.marketBasis?.conditionClass
     ? conditionFriendlyText(card.marketBasis.conditionClass)
     : marketConditionLabel(card);
+  const comparableKey = card.marketBasis?.comparableKey ?? null;
+  const conditionCategory = comparableKey?.startsWith("clothing|") ? "clothing" : "shoe";
 
   // 2026-05-26 (사용자 짚음 "사진 카드 두 겹 + 사진 작음"):
   //   기존: 외부 베이지 wrapper(#f3ede3) + 내부 흰 카드(rounded shadow) 두 겹.
@@ -4660,13 +4662,53 @@ function BeginnerGuideProductVisual({ card }: { card: RevealCard }) {
           </span>
         </div>
       )}
-      <div className="absolute bottom-3 left-3 flex max-w-[calc(100%-24px)] flex-wrap items-center gap-1.5">
-        <span className="rounded-full bg-white/96 px-3 py-1 text-[11px] font-black tabular-nums text-zinc-950 shadow-sm backdrop-blur dark:bg-zinc-900/95 dark:text-zinc-100">
-          매입 {krw(card.price)}
-        </span>
-        <span className="rounded-full bg-white/96 px-3 py-1 text-[11px] font-black text-[#4d6654] shadow-sm backdrop-blur dark:bg-zinc-900/95 dark:text-zinc-300">
-          {condition}
-        </span>
+      <div className="absolute bottom-3 left-3 flex max-w-[calc(100%-24px)] flex-col items-start gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="rounded-full bg-white/96 px-3 py-1 text-[11px] font-black tabular-nums text-zinc-950 shadow-sm backdrop-blur dark:bg-zinc-900/95 dark:text-zinc-100">
+            매입 {krw(card.price)}
+          </span>
+          <span className="rounded-full bg-white/96 px-3 py-1 text-[11px] font-black text-[#4d6654] shadow-sm backdrop-blur dark:bg-zinc-900/95 dark:text-zinc-300">
+            {condition}
+          </span>
+          {card.conditionTier ? (
+            <ConditionTierChip
+              tier={card.conditionTier}
+              category={conditionCategory}
+            />
+          ) : null}
+        </div>
+        {card.conditionChips && card.conditionChips.length > 0 ? (
+          <ConditionChipsList
+            chips={card.conditionChips}
+            max={3}
+            className="rounded-full bg-white/90 px-1.5 py-1 shadow-sm backdrop-blur dark:bg-zinc-950/80"
+          />
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function BeginnerGuideConditionChipRow({ card }: { card: RevealCard }) {
+  if (!card.conditionTier && (!card.conditionChips || card.conditionChips.length === 0)) return null;
+  const comparableKey = card.marketBasis?.comparableKey ?? null;
+  const conditionCategory = comparableKey?.startsWith("clothing|") ? "clothing" : "shoe";
+  return (
+    <div className="mt-3 rounded-[18px] bg-zinc-50 px-3 py-2.5 ring-1 ring-zinc-100 dark:bg-zinc-950/50 dark:ring-zinc-800">
+      <div className="mb-1.5 text-[10px] font-black uppercase tracking-[0.10em] text-zinc-400">
+        판매글 기준
+      </div>
+      <div className="flex flex-wrap items-center gap-1.5">
+        {card.conditionTier ? (
+          <ConditionTierChip
+            tier={card.conditionTier}
+            showHelp
+            category={conditionCategory}
+          />
+        ) : null}
+        {card.conditionChips && card.conditionChips.length > 0 ? (
+          <ConditionChipsList chips={card.conditionChips} max={5} />
+        ) : null}
       </div>
     </div>
   );
@@ -5972,6 +6014,7 @@ function BeginnerGuideWalkthrough({
             <h2 className={`${isSummary ? "mt-7 max-w-[280px]" : "mt-3"} break-keep text-[24px] font-black leading-[1.16] text-[#172019] dark:text-zinc-50 sm:text-[28px]`}>
               {highlightMetricsInText(step.title)}
             </h2>
+            {step.tone === "trust" ? <BeginnerGuideConditionChipRow card={card} /> : null}
             {step.tone === "trust" ? (
               <BeginnerGuideTrustBody card={card} fallback={step.body} />
             ) : step.tone === "market" ? (
