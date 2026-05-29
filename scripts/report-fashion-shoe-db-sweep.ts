@@ -92,9 +92,9 @@ type SweepCase = {
 };
 
 const EXPECTED_PARSER_BY_CATEGORY: Record<FashionCategory, string> = {
-  shoe: "wave92-shoe-v11",
-  clothing: "wave216-clothing-v13",
-  bag: "wave92-bag-v11",
+  shoe: "wave92-shoe-v41",
+  clothing: "wave216-clothing-v52",
+  bag: "wave92-bag-v24",
 };
 
 async function loadEnvFile(filePath: string) {
@@ -190,16 +190,39 @@ function parsedSelect() {
 
 async function fetchRecentFashionSkuRaw(sinceIso: string, limit: number, skuFilterCsv = "") {
   const skuIds = skuFilterCsv.split(",").map((item) => item.trim()).filter(Boolean);
-  const filter = skuIds.length > 0
-    ? `sku_id=in.(${skuIds.map(encodeURIComponent).join(",")})`
-    : "or=(sku_id.like.shoe-%2A,sku_id.like.clothing-%2A,sku_id.like.bag-%2A)";
-  const url = `${tableUrl("mvp_raw_listings")}?select=${rawSelect()}&${filter}&detail_status=eq.done&last_seen_at=gte.${encodeURIComponent(sinceIso)}`;
-  return fetchAll<RawRow>(url, limit, "last_seen_at.desc");
+  if (skuIds.length > 0) {
+    const url = `${tableUrl("mvp_raw_listings")}?select=${rawSelect()}&sku_id=in.(${skuIds.map(encodeURIComponent).join(",")})&detail_status=eq.done&last_seen_at=gte.${encodeURIComponent(sinceIso)}`;
+    return fetchAll<RawRow>(url, limit, "last_seen_at.desc");
+  }
+
+  // Splitting the prefix scan avoids a heavy PostgREST OR query that can hit
+  // statement_timeout on production-sized raw listings.
+  const prefixes = ["shoe-", "clothing-", "bag-"];
+  const perPrefixLimit = Math.ceil(limit / prefixes.length);
+  const rows: RawRow[] = [];
+  for (const prefix of prefixes) {
+    const url = `${tableUrl("mvp_raw_listings")}?select=${rawSelect()}&sku_id=like.${encodeURIComponent(`${prefix}*`)}&detail_status=eq.done&last_seen_at=gte.${encodeURIComponent(sinceIso)}`;
+    rows.push(...await fetchAll<RawRow>(url, perPrefixLimit, "last_seen_at.desc"));
+  }
+  return rows
+    .sort((a, b) => String(b.last_seen_at ?? "").localeCompare(String(a.last_seen_at ?? "")))
+    .slice(0, limit);
 }
 
 async function fetchRecentNullSkuRaw(sinceIso: string, limit: number) {
+  if (limit <= 0) return [];
   const url = `${tableUrl("mvp_raw_listings")}?select=${rawSelect()}&sku_id=is.null&detail_status=eq.done&last_seen_at=gte.${encodeURIComponent(sinceIso)}`;
   return fetchAll<RawRow>(url, limit, "last_seen_at.desc");
+}
+
+async function fetchRawByPid(pids: number[]) {
+  const rows: RawRow[] = [];
+  for (const part of chunk([...new Set(pids)], 200)) {
+    rows.push(...await fetchJson<RawRow>(
+      `${tableUrl("mvp_raw_listings")}?select=${rawSelect()}&pid=in.(${part.join(",")})&limit=${part.length}`,
+    ));
+  }
+  return rows;
 }
 
 async function fetchParsedByPid(pids: number[]) {
@@ -210,6 +233,14 @@ async function fetchParsedByPid(pids: number[]) {
     ));
   }
   return rows;
+}
+
+async function fetchFashionPoolRows(limit: number, statusesCsv: string) {
+  const statuses = statusesCsv.split(",").map((item) => item.trim()).filter(Boolean);
+  const statusFilter = statuses.length > 0 ? statuses.join(",") : "ready,reserved";
+  const select = "pid,status,category,comparable_key,profit_band,expected_profit_min,expected_profit_max,last_verified_at";
+  const url = `${tableUrl("mvp_candidate_pool")}?select=${select}&category=in.(shoe,clothing,bag)&status=in.(${statusFilter})`;
+  return fetchAll<PoolRow>(url, limit, "last_verified_at.desc.nullslast");
 }
 
 async function fetchPoolByPid(pids: number[]) {
@@ -499,14 +530,30 @@ async function main() {
   const rawLimit = Number(arg("raw-limit", "30000"));
   const nullLimit = Number(arg("null-limit", "8000"));
   const skuFilter = arg("sku-filter", "");
+  const scopeMode = arg("scope", "raw");
+  const poolStatuses = arg("pool-statuses", "ready,reserved");
   const sinceIso = hoursAgo(windowHours);
 
-  console.error(`[fashion-sweep] fetching raw fashion SKU rows since ${sinceIso} limit=${rawLimit}${skuFilter ? ` sku-filter=${skuFilter}` : ""}`);
-  const rawRows = await fetchRecentFashionSkuRaw(sinceIso, rawLimit, skuFilter);
-  console.error(`[fashion-sweep] raw rows=${rawRows.length}; fetching parsed rows`);
-  const parsedRows = await fetchParsedByPid(rawRows.map((r) => Number(r.pid)));
-  console.error(`[fashion-sweep] parsed rows=${parsedRows.length}; fetching pool rows`);
-  const poolRows = await fetchPoolByPid(rawRows.map((r) => Number(r.pid)));
+  let rawRows: RawRow[];
+  let parsedRows: ParsedRow[];
+  let poolRows: PoolRow[];
+  if (scopeMode === "pool") {
+    console.error(`[fashion-sweep] fetching candidate_pool fashion rows statuses=${poolStatuses} limit=${rawLimit}`);
+    poolRows = await fetchFashionPoolRows(rawLimit, poolStatuses);
+    const pids = poolRows.map((row) => Number(row.pid)).filter((pid) => Number.isFinite(pid));
+    console.error(`[fashion-sweep] pool rows=${poolRows.length}; fetching raw + parsed rows by pid`);
+    [rawRows, parsedRows] = await Promise.all([
+      fetchRawByPid(pids),
+      fetchParsedByPid(pids),
+    ]);
+  } else {
+    console.error(`[fashion-sweep] fetching raw fashion SKU rows since ${sinceIso} limit=${rawLimit}${skuFilter ? ` sku-filter=${skuFilter}` : ""}`);
+    rawRows = await fetchRecentFashionSkuRaw(sinceIso, rawLimit, skuFilter);
+    console.error(`[fashion-sweep] raw rows=${rawRows.length}; fetching parsed rows`);
+    parsedRows = await fetchParsedByPid(rawRows.map((r) => Number(r.pid)));
+    console.error(`[fashion-sweep] parsed rows=${parsedRows.length}; fetching pool rows`);
+    poolRows = await fetchPoolByPid(rawRows.map((r) => Number(r.pid)));
+  }
   console.error(`[fashion-sweep] pool rows=${poolRows.length}; replaying current catalog/parser`);
   const parsedByPid = new Map(parsedRows.map((row) => [Number(row.pid), row]));
   const poolByPid = new Map(poolRows.map((row) => [Number(row.pid), row]));
@@ -577,6 +624,8 @@ async function main() {
     scope: {
       windowHours,
       sinceIso,
+      scopeMode,
+      poolStatuses: scopeMode === "pool" ? poolStatuses : null,
       rawFashionSkuRows: rawRows.length,
       parsedRows: parsedRows.length,
       poolRows: poolRows.length,
@@ -614,25 +663,60 @@ async function main() {
   await writeFile(jsonPath, `${JSON.stringify(report, null, 2)}\n`);
   await writeFile(mdPath, buildMarkdown(report));
 
-  const decisionPath = path.join(decisionDir, "2026-05-20-wave405-fashion-shoe-db-sweep.md");
+  const decisionFile = arg("decision-log", "2026-05-29-wave929-fashion-condition-db-sweep.md");
+  const decisionPath = path.join(decisionDir, decisionFile);
+  const topMismatchFlags = topEntries(report.mismatchFlags, 12);
+  const highSignalSamples = report.prioritySamples.slice(0, 12);
   const decision = [
-    "# 2026-05-20 Wave 405 - Fashion/Shoe DB Sweep",
+    "# Wave 929 — Fashion/Shoe/Bag condition DB sweep",
+    "",
+    "Date: 2026-05-29",
     "",
     "## Decision",
-    "- Ran a read-only DB sweep focused on fashion raw SKU drift, parser-version drift, product-type unknowns, and comparable-key contamination.",
+    "- Ran a read-only DB sweep focused on fashion raw SKU drift, current parser-version drift, product-type unknowns, and comparable-key contamination.",
     "- Treat `mvp_raw_listings.sku_id` drift as the first-class risk because market sample reparsing currently trusts stored raw SKU IDs.",
+    "- Added `--scope=pool` so the operator-facing ready/reserved pool can be audited without the broad raw-listing scan timing out on production-sized clothing rows.",
+    "- Do not overwrite old Wave 405 decision logs from this script anymore; every new run should write a dated wave log.",
+    "",
+    "## Scope",
+    `- scope: ${String(report.scope.scopeMode)}${report.scope.poolStatuses ? ` (${String(report.scope.poolStatuses)})` : ""}`,
+    `- raw/parsed/pool rows: ${report.scope.rawFashionSkuRows}/${report.scope.parsedRows}/${report.scope.poolRows}`,
+    `- windowHours: ${report.scope.windowHours}`,
+    "",
+    "## Expected parser versions",
+    `- shoe: ${EXPECTED_PARSER_BY_CATEGORY.shoe}`,
+    `- clothing: ${EXPECTED_PARSER_BY_CATEGORY.clothing}`,
+    `- bag: ${EXPECTED_PARSER_BY_CATEGORY.bag}`,
     "",
     "## Findings Snapshot",
     `- raw SKU rejected by current catalog: ${report.summary.rawSkuRejectedByCurrentCatalog}`,
     `- raw SKU differs from current catalog: ${report.summary.rawSkuDiffersFromCurrentCatalog}`,
     `- DB-clean rows that current catalog rejects: ${report.summary.dbCleanButCurrentCatalogRejects}`,
     `- pool exposed with catalog/parser drift: ${report.summary.poolExposedWithDrift}`,
+    `- parsed stale version: ${report.summary.parsedStaleVersion}`,
+    `- shoe unknown condition: ${report.summary.shoeUnknownCondition}`,
+    `- shoe defaulted to sneaker: ${report.summary.shoeDefaultedToSneaker}`,
     `- flagged comparable groups: ${report.summary.flaggedComparableGroups}`,
     `- null SKU rows that would match current catalog now: ${report.summary.nullSkuWouldMatchNow}`,
+    "",
+    "## Top Flags",
+    ...topMismatchFlags.map((item) => `- ${item.key}: ${item.count}`),
+    "",
+    "## Top Raw SKU Drift",
+    ...report.topRawSkuMismatch.slice(0, 10).map((item) => `- ${item.key}: ${item.count}`),
+    "",
+    "## High-Signal Samples",
+    ...highSignalSamples.map((sample) => `- pid ${sample.pid}: ${sample.title} / raw=${sample.rawSkuId} / current=${sample.currentRuleSkuId} / dbKey=${sample.dbKey} / currentKey=${sample.currentRuleKey} / pool=${sample.poolStatus ?? "none"} / flags=${sample.flags.join(",")}`),
+    "",
+    "## Read",
+    "- Production ready/reserved fashion rows are on the latest parser versions, so this is not an old-parser deploy lag issue.",
+    "- The next operational risk is smaller and more concrete: the ready/reserved pool still contains rows whose stored comparable key or raw SKU no longer matches the current parser/catalog result.",
+    "- `shoe_unknown_condition` and `shoe_product_type_defaulted_to_sneaker` are signal-quality audit queues, not automatic invalidation criteria yet.",
     "",
     "## Deferred",
     "- No DB mutation in this wave. If confirmed, next step is a no-write reclassification plan for stale fashion `sku_id` rows, then a capped apply/backfill.",
     "- Catalog/parser patches should be driven by the top flagged samples rather than broad hand edits.",
+    "- Pool gate or mass invalidation remains deferred until the report is reviewed.",
     "",
     "## Artifacts",
     `- \`reports/${reportBaseName}.json\``,
