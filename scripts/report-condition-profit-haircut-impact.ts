@@ -24,6 +24,12 @@ type PoolRow = {
   expected_profit_max: number | null;
 };
 
+type PoolStatusRow = {
+  pid: number;
+  status: string | null;
+  invalidated_reason: string | null;
+};
+
 type ListingRow = {
   pid: number;
   name: string | null;
@@ -130,6 +136,26 @@ async function markRawScoreDirty(pids: number[]) {
     marked += part.length;
   }
   return { markedRows: marked, markedPids: unique };
+}
+
+async function invalidateCandidatePoolRows(pids: number[], reason: string) {
+  const unique = [...new Set(pids.map(Number).filter(Number.isFinite))];
+  const updatedAt = new Date().toISOString();
+  let invalidated = 0;
+  for (const part of chunk(unique, 50)) {
+    await restFetch(`${tableUrl("mvp_candidate_pool")}?pid=in.${inList(part)}&status=in.(ready,reserved)`, {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: jsonBody({
+        status: "invalidated",
+        invalidated_reason: reason.slice(0, 120),
+        reserved_until: null,
+        updated_at: updatedAt,
+      }),
+    });
+    invalidated += part.length;
+  }
+  return { invalidatedRows: invalidated, invalidatedPids: unique, reason: reason.slice(0, 120) };
 }
 
 function positiveNumber(value: unknown) {
@@ -246,6 +272,11 @@ async function main() {
     throw new Error(`Invalid --apply-scope=${applyScopeRaw}; expected drop_to_zero or affected`);
   }
   const applyScope = applyScopeRaw as "drop_to_zero" | "affected";
+  const applyActionRaw = arg("apply-action", "score_dirty");
+  if (!["score_dirty", "invalidate_pool"].includes(applyActionRaw)) {
+    throw new Error(`Invalid --apply-action=${applyActionRaw}; expected score_dirty or invalidate_pool`);
+  }
+  const applyAction = applyActionRaw as "score_dirty" | "invalidate_pool";
   const applyLimit = Math.max(0, Math.floor(Number(arg("apply-limit", "50")) || 0));
   const applyCandidates = (applyScope === "affected" ? affectedRows : wouldLosePositiveRows)
     .slice()
@@ -253,20 +284,37 @@ async function main() {
   const applyRows = applyCandidates.slice(0, applyLimit);
   const applyResult = {
     requested: applyRequested,
+    action: applyAction,
     scope: applyScope,
     limit: applyLimit,
     candidateRows: applyCandidates.length,
     plannedRows: applyRows.length,
     markedRows: 0,
     verifiedScoreDirtyRows: 0,
+    invalidatedRows: 0,
+    verifiedInvalidatedRows: 0,
+    invalidatedReason: null as string | null,
     markedPids: [] as number[],
   };
   if (applyRequested && applyRows.length > 0) {
-    const result = await markRawScoreDirty(applyRows.map((row) => row.pid));
-    applyResult.markedRows = result.markedRows;
-    applyResult.markedPids = result.markedPids;
-    const verified = await fetchByPid<RawScoreDirtyRow>("mvp_raw_listings", "pid,score_dirty", result.markedPids);
-    applyResult.verifiedScoreDirtyRows = verified.filter((row) => row.score_dirty === true).length;
+    const targetPids = applyRows.map((row) => row.pid);
+    if (applyAction === "score_dirty") {
+      const result = await markRawScoreDirty(targetPids);
+      applyResult.markedRows = result.markedRows;
+      applyResult.markedPids = result.markedPids;
+      const verified = await fetchByPid<RawScoreDirtyRow>("mvp_raw_listings", "pid,score_dirty", result.markedPids);
+      applyResult.verifiedScoreDirtyRows = verified.filter((row) => row.score_dirty === true).length;
+    } else {
+      const reason = "condition_haircut_profit_not_positive";
+      const result = await invalidateCandidatePoolRows(targetPids, reason);
+      applyResult.invalidatedRows = result.invalidatedRows;
+      applyResult.markedPids = result.invalidatedPids;
+      applyResult.invalidatedReason = result.reason;
+      const verified = await fetchByPid<PoolStatusRow>("mvp_candidate_pool", "pid,status,invalidated_reason", result.invalidatedPids);
+      applyResult.verifiedInvalidatedRows = verified.filter((row) => (
+        row.status === "invalidated" && row.invalidated_reason === result.reason
+      )).length;
+    }
   }
   const report = {
     generatedAt: new Date().toISOString(),
@@ -308,8 +356,9 @@ async function main() {
     "# Condition Profit Haircut Impact",
     "",
     `Generated: ${report.generatedAt}`,
-    `Mutation: ${report.mutation ? `marked ${report.apply.markedRows} raw rows score_dirty=true` : "none (dry-run)"}`,
+    `Mutation: ${report.mutation ? report.apply.action : "none (dry-run)"}`,
     `Apply scope: ${report.apply.scope} · candidates ${report.apply.candidateRows} · planned ${report.apply.plannedRows} · limit ${report.apply.limit}`,
+    `Apply result: score_dirty ${report.apply.markedRows}/${report.apply.verifiedScoreDirtyRows} · invalidated ${report.apply.invalidatedRows}/${report.apply.verifiedInvalidatedRows}`,
     "",
     "## Metrics",
     "",
