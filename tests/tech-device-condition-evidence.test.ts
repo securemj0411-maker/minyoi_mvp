@@ -135,6 +135,15 @@ describe("tech device condition evidence parser", () => {
     assert.ok(!result.signals.includes("speaker_or_mic_issue"));
   });
 
+  it("스피커 제품 설명의 30시간 이상 재생은 speaker issue로 오탐하지 않는다", () => {
+    const result = parseTechDeviceConditionEvidence({
+      title: "마샬 엠버튼 II 블루투스 스피커",
+      description: "30시간 이상 재생 가능한 휴대용 스피커입니다. 사운드 좋고 정상 작동합니다.",
+    });
+
+    assert.ok(!result.signals.includes("speaker_or_mic_issue"));
+  });
+
   it("일본판 카메라 무음은 camera issue로 오탐하지 않는다", () => {
     assert.ok(!signals("아이폰 16 일본판", "기능 문제 없어요. 일본 아이폰이라 카메라 기본 무음이에요.").includes("camera_issue"));
   });

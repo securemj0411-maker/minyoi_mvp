@@ -38,6 +38,21 @@ Report: `reports/smartphone-condition-deepsweep-latest.json`
 
 `conditionStillNormal`은 현재 DB에 저장된 예전 parsed row 기준이다. `PARSER_VERSION`을 v63으로 올렸으므로 배포 후 reparse/drift path가 돌면 해당 row들은 새 condition gate를 타게 된다.
 
+## Follow-up Sweep
+
+같은 진단 렌즈를 `tablet`, `smartwatch`, `laptop`, `monitor`, `camera`, `speaker`, `desktop`, `home_appliance`, `small_appliance`, `drone`, `earphone`에 확장했다.
+
+- `tablet`: missedByCurrentEvidence 0. 남은 1건은 Touch ID 불량으로 현재 evidence가 이미 hard candidate 처리.
+- `smartwatch`: candidateRows 0.
+- `laptop`, `monitor`, `camera`, `desktop`, `home_appliance`, `small_appliance`, `drone`: candidateRows 0.
+- `speaker`: 처음에는 `스피커 ... 30시간 이상 재생`의 `이상`을 audio issue로 오탐. `speaker_or_mic_issue`의 bare `이상` 매칭을 제거하고 `소리 이상/이상한 소리/스피커 이상 있음`만 잡도록 수정. 재측정 candidateRows 0.
+- `earphone`: missedByCurrentEvidence 0. 실제 hard candidates 9건은 earphone `pool_gate_v1`이 이미 잡는 케이스였고, DB에 남아 있는 `conditionStillNormal`은 stale parsed row 기준이다.
+
+Parser drift path:
+
+- `tick`의 `parserDriftStage`가 parser_version mismatch를 category별로 최대 3000개씩 `score_dirty=true`로 만든다.
+- 따라서 v63 배포 후 stale parsed rows는 자동 reparse/pool invalidation 경로를 탄다.
+
 ## Deferred
 
 - AI L2로 “문제 살짝 있는데 큰 문제는 없음” 같은 애매한 기능 결함을 판정하는 작업은 보류했다. 이번 wave는 명확한 구조 손상/디스플레이 결함만 deterministic gate로 반영했다.

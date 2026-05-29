@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { parseEarphoneConditionEvidence } from "@/lib/condition-evidence/earphone";
 import { parseTechDeviceConditionEvidence } from "@/lib/condition-evidence/tech-device";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
@@ -54,7 +55,7 @@ const DAMAGE_PATTERNS = [
   },
   {
     key: "functional_component_issue",
-    pattern: /(?:스피커|마이크|통화|진동|버튼|볼륨|전원|충전|충전단자|유심|sim|와이파이|wifi|블루투스).{0,20}(?:불량|고장|안\s*됨|안됨|불가|문제|이상|먹통|인식\s*불|인식불)|(?:불량|고장|안\s*됨|안됨|불가|문제|이상|먹통|인식\s*불|인식불).{0,20}(?:스피커|마이크|통화|진동|버튼|볼륨|전원|충전|충전단자|유심|sim|와이파이|wifi|블루투스)/,
+    pattern: /(?:스피커|마이크|통화|진동|버튼|볼륨|전원|충전단자|유심|sim|와이파이|wifi|블루투스).{0,20}(?:불량|고장|안\s*됨|안됨|불가|문제|먹통|인식\s*불|인식불)|(?:충전).{0,14}(?:불량|고장|안\s*됨|안됨|문제|먹통)|(?:소리|음성|통화).{0,12}이상|이상한\s*(?:소리|음성)|(?:스피커|마이크).{0,8}이상\s*(?:있|있음|발생|생김|납니다|나요)|(?:불량|고장|안\s*됨|안됨|불가|문제|먹통|인식\s*불|인식불).{0,20}(?:스피커|마이크|통화|진동|버튼|볼륨|전원|충전|충전단자|유심|sim|와이파이|wifi|블루투스)/,
   },
 ] as const;
 
@@ -111,7 +112,7 @@ function negatedDamageContext(text: string, key: string) {
     return /(?:카메라|렌즈).{0,18}(?:정상|문제없|이상없|잘됨|잘됩니다|무음)/.test(compact);
   }
   if (key === "functional_component_issue") {
-    return /(?:스피커|마이크|통화|진동|버튼|볼륨|전원|충전|유심|와이파이|블루투스).{0,28}(?:정상|문제없|문제는없|큰문제는없|이상없|이상전혀없|전혀없|이상무|잘됨|잘됩니다|잘되는상태)|(?:기능|전기능|모든기능).{0,18}(?:완벽하게작동|정상|문제없|이상없|전혀없|잘됨)|(?:모든문제|큰문제|문제).{0,8}(?:없|없음|없습니다|없어요)/.test(compact);
+    return /네고불가|교환불가|환불불가|택배거래희망|이상x|(?:스피커|마이크|통화|진동|버튼|볼륨|전원|충전|유심|와이파이|블루투스|소리|연결|작동).{0,28}(?:정상|문제없|문제는없|큰문제는없|이상없|이상전혀없|전혀없|이상무|잘됨|잘됩니다|잘되는상태)|(?:기능|전기능|모든기능).{0,18}(?:완벽하게작동|정상|문제없|이상없|전혀없|잘됨)|(?:모든문제|큰문제|문제|하자).{0,8}(?:없|없음|없습니다|없어요|없는)/.test(compact);
   }
   return /(파손|깨짐|깨진|크랙|금|고장|불량|하자|문제|멍|반점|흑점|검은점|잔상|번인).{0,16}(없|없음|없습니다|없이|아님|아닙니다|정상|깨끗|깔끔)/.test(compact);
 }
@@ -170,8 +171,27 @@ async function main() {
   await mkdir(reportsDir, { recursive: true });
 
   const limit = Number(arg("limit", "3000"));
+  const category = arg("category", "smartphone");
+  const allowedCategories = new Set([
+    "earphone",
+    "smartphone",
+    "tablet",
+    "smartwatch",
+    "laptop",
+    "monitor",
+    "speaker",
+    "camera",
+    "desktop",
+    "home_appliance",
+    "small_appliance",
+    "drone",
+  ]);
+  if (!allowedCategories.has(category)) {
+    throw new Error(`Unsupported category "${category}". Use one of: ${[...allowedCategories].join(", ")}`);
+  }
+  const reportBaseName = `${category}-condition-deepsweep-latest`;
   const poolRows = await restJson<PoolRow>(
-    `${tableUrl("mvp_candidate_pool")}?select=pid,status,category,condition_class,comparable_key,expected_profit_max,last_verified_at&category=eq.smartphone&status=in.(ready,reserved)&order=last_verified_at.desc.nullslast&limit=${limit}`,
+    `${tableUrl("mvp_candidate_pool")}?select=pid,status,category,condition_class,comparable_key,expected_profit_max,last_verified_at&category=eq.${category}&status=in.(ready,reserved)&order=last_verified_at.desc.nullslast&limit=${limit}`,
   );
   const pids = poolRows.map((row) => Number(row.pid)).filter((pid) => Number.isFinite(pid));
   const [rawRows, parsedRows] = await Promise.all([fetchRawRows(pids), fetchParsedRows(pids)]);
@@ -183,7 +203,9 @@ async function main() {
     const parsed = parsedByPid.get(Number(pool.pid));
     const title = raw?.name ?? "";
     const description = raw?.description_preview ?? "";
-    const evidence = parseTechDeviceConditionEvidence({ title, description });
+    const evidence = category === "earphone"
+      ? parseEarphoneConditionEvidence({ title, description })
+      : parseTechDeviceConditionEvidence({ title, description });
     const learnedTags = learnedDamageTags(title, description);
     return {
       pid: Number(pool.pid),
@@ -214,7 +236,7 @@ async function main() {
     generatedAt: new Date().toISOString(),
     reportOnly: true,
     scope: {
-      category: "smartphone",
+      category,
       statuses: ["ready", "reserved"],
       limit,
       poolRows: poolRows.length,
@@ -230,14 +252,14 @@ async function main() {
     samples: candidateRows.slice(0, 80),
   };
 
-  await writeFile(path.join(reportsDir, "smartphone-condition-deepsweep-latest.json"), `${JSON.stringify(report, null, 2)}\n`);
+  await writeFile(path.join(reportsDir, `${reportBaseName}.json`), `${JSON.stringify(report, null, 2)}\n`);
 
   const md = [
-    "# Smartphone Condition Deep Sweep",
+    `# ${category} Condition Deep Sweep`,
     "",
     `Generated: ${report.generatedAt}`,
     "",
-    "No-write report over ready/reserved smartphone pool rows. Compares current tech evidence parser against broader learned Korean defect phrases.",
+    `No-write report over ready/reserved ${category} pool rows. Compares current tech evidence parser against broader learned Korean defect phrases.`,
     "",
     "## Metrics",
     "",
@@ -263,14 +285,14 @@ async function main() {
     ),
     "",
   ].join("\n");
-  await writeFile(path.join(reportsDir, "smartphone-condition-deepsweep-latest.md"), `${md}\n`);
+  await writeFile(path.join(reportsDir, `${reportBaseName}.md`), `${md}\n`);
 
   console.log(JSON.stringify({
     generatedAt: report.generatedAt,
     metrics: report.metrics,
     patternCounts: report.patternCounts,
-    reportJson: "reports/smartphone-condition-deepsweep-latest.json",
-    reportMd: "reports/smartphone-condition-deepsweep-latest.md",
+    reportJson: `reports/${reportBaseName}.json`,
+    reportMd: `reports/${reportBaseName}.md`,
   }, null, 2));
 }
 
