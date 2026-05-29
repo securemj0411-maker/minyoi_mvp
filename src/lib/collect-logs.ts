@@ -190,10 +190,43 @@ async function patchRun(id: string, payload: Record<string, unknown>): Promise<v
   }
 }
 
+function envInt(name: string, fallback: number, min: number, max: number): number {
+  const parsed = Number.parseInt(process.env[name] ?? "", 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
+async function acquireStaleCollectRunMarkerLease(): Promise<boolean | null> {
+  const base = restUrl();
+  const h = headers();
+  if (!base || !h) return null;
+  const leaseSeconds = envInt("COLLECT_RUN_STALE_MARK_LEASE_SECONDS", 60, 10, 10 * 60);
+  try {
+    const res = await fetch(`${base}/rpc/try_acquire_mvp_cron_lock`, {
+      method: "POST",
+      headers: h,
+      body: JSON.stringify({
+        p_mode: "collect_runs_stale_marker",
+        p_owner: "collect_logs",
+        p_lease_seconds: leaseSeconds,
+      }),
+      signal: AbortSignal.timeout(3_000),
+    });
+    if (!res.ok) return null;
+    const rows = (await res.json().catch(() => [])) as Array<{ acquired?: boolean | null }>;
+    return rows[0]?.acquired === true;
+  } catch {
+    return null;
+  }
+}
+
 export async function markStaleCollectRuns(maxAgeMinutes = 3): Promise<number> {
   const nowMs = Date.now();
-  if (nowMs - lastStaleMarkAttemptAt < 60_000) return 0;
+  const localCooldownMs = envInt("COLLECT_RUN_STALE_MARK_LOCAL_COOLDOWN_MS", 60_000, 0, 10 * 60_000);
+  if (nowMs - lastStaleMarkAttemptAt < localCooldownMs) return 0;
   lastStaleMarkAttemptAt = nowMs;
+  const leaseAcquired = await acquireStaleCollectRunMarkerLease();
+  if (leaseAcquired === false) return 0;
   const base = restUrl();
   const h = headers("return=representation");
   if (!base || !h) return 0;
@@ -215,6 +248,10 @@ export async function markStaleCollectRuns(maxAgeMinutes = 3): Promise<number> {
   if (!res?.ok) return 0;
   const rows = (await res.json().catch(() => [])) as Array<{ id?: string }>;
   return rows.length;
+}
+
+export function resetCollectRunStaleMarkerForTests() {
+  lastStaleMarkAttemptAt = 0;
 }
 
 // 2026-05-16: 4개 cron route (compliance-retention, housekeeper-ai-cache-prune,
