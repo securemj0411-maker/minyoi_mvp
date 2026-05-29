@@ -114,7 +114,7 @@ export default function LearningQueueAdmin() {
     try {
       const res = await fetch(`/api/admin/learning-queue/${id}/approve`, {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", "x-minyoi-admin-action": "1" },
         body: JSON.stringify({ patchType: "mustNotContain" }),
       });
       const json = await res.json();
@@ -134,7 +134,7 @@ export default function LearningQueueAdmin() {
     try {
       const res = await fetch(`/api/admin/learning-queue/${id}/reject`, {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", "x-minyoi-admin-action": "1" },
         body: JSON.stringify({ reason }),
       });
       const json = await res.json();

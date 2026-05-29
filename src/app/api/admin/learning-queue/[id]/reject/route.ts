@@ -9,6 +9,7 @@
 //      → 같은 reject 한 패턴 다시 큐에 안 들어옴.
 
 import { NextResponse, type NextRequest } from "next/server";
+import { hasAdminActionHeader } from "@/lib/admin-action-token";
 import { isAdminUser } from "@/lib/auth-users";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -23,6 +24,9 @@ export async function POST(
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   if (!isAdminUser(auth.user)) return NextResponse.json({ error: "admin only" }, { status: 403 });
+  if (!hasAdminActionHeader(req.headers)) {
+    return NextResponse.json({ error: "missing_admin_action_header" }, { status: 403 });
+  }
   const adminEmail = auth.user.email ?? auth.user.id;
 
   const { id: idRaw } = await ctx.params;

@@ -107,7 +107,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
     setError(null); setNotice(null); markPending(row.authUserId, true);
     try {
       const res = await fetch("/api/admin/credits/grant", {
-        method: "POST", headers: { "content-type": "application/json" },
+        method: "POST", headers: { "content-type": "application/json", "x-minyoi-admin-action": "1" },
         body: JSON.stringify({ authUserId: row.authUserId, amount, note: "operator members drawer" }),
       });
       const data = (await res.json()) as { ok?: boolean; balance?: number; error?: string };
@@ -125,7 +125,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
     setError(null); setNotice(null); markPending(row.authUserId, true);
     try {
       const res = await fetch("/api/admin/credits/revoke", {
-        method: "POST", headers: { "content-type": "application/json" },
+        method: "POST", headers: { "content-type": "application/json", "x-minyoi-admin-action": "1" },
         body: JSON.stringify({ authUserId: row.authUserId, amount, note: "operator members drawer" }),
       });
       const data = (await res.json()) as { ok?: boolean; balance?: number; error?: string };
@@ -150,7 +150,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
     setError(null); setNotice(null); markPending(row.authUserId, true);
     try {
       const res = await fetch("/api/admin/user/block", {
-        method: "POST", headers: { "content-type": "application/json" },
+        method: "POST", headers: { "content-type": "application/json", "x-minyoi-admin-action": "1" },
         body: JSON.stringify({ authUserId: row.authUserId, blocked: blocking, reason }),
       });
       const data = (await res.json()) as { ok?: boolean; blockedAt?: string | null; error?: string };
@@ -170,7 +170,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
     setError(null); setNotice(null); setDeleteInProgress(true);
     try {
       const res = await fetch("/api/admin/users/delete", {
-        method: "POST", headers: { "content-type": "application/json" },
+        method: "POST", headers: { "content-type": "application/json", "x-minyoi-admin-action": "1" },
         body: JSON.stringify({ authUserIds: ids }),
       });
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean; deleted?: number; total?: number; error?: string; message?: string };

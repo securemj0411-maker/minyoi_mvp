@@ -3,6 +3,7 @@
 // tick-pipeline scoreStage가 (listing_type=normal OR override=normal) 조건으로 fetch.
 
 import { NextResponse, type NextRequest } from "next/server";
+import { hasAdminActionHeader } from "@/lib/admin-action-token";
 import { isAdminUser } from "@/lib/auth-users";
 import { ruleMatch } from "@/lib/catalog";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -27,6 +28,9 @@ export async function POST(req: NextRequest) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   if (!isAdminUser(auth.user)) return NextResponse.json({ error: "admin only" }, { status: 403 });
+  if (!hasAdminActionHeader(req.headers)) {
+    return NextResponse.json({ error: "missing_admin_action_header" }, { status: 403 });
+  }
   const adminEmail = auth.user.email ?? auth.user.id;
 
   let body: { pid?: number; override?: string | null; reason?: string };

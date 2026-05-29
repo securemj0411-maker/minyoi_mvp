@@ -61,3 +61,28 @@ test("feedback approval errors do not echo raw Supabase responses into HTML", ()
   assert.match(feedbackDecide, /보상 지급 중 오류가 발생했어요\. 서버 로그를 확인해주세요\./);
   assert.doesNotMatch(feedbackDecide, /resultHtml\("크레딧 지급 실패", text\.slice\(0, 200\)\)/);
 });
+
+test("high-risk admin mutation APIs require the same-origin action header", () => {
+  const routePaths = [
+    "src/app/api/admin/credits/grant/route.ts",
+    "src/app/api/admin/credits/revoke/route.ts",
+    "src/app/api/admin/user/block/route.ts",
+    "src/app/api/admin/users/delete/route.ts",
+    "src/app/api/admin/beta-tester/route.ts",
+    "src/app/api/admin/listing-type-override/route.ts",
+    "src/app/api/admin/learning-queue/[id]/approve/route.ts",
+    "src/app/api/admin/learning-queue/[id]/reject/route.ts",
+  ];
+  for (const routePath of routePaths) {
+    const route = source(routePath);
+    assert.match(route, /hasAdminActionHeader\(req\.headers\)/, routePath);
+    assert.match(route, /missing_admin_action_header/, routePath);
+  }
+
+  const membersTable = source("src/app/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY/members-table.tsx");
+  const classificationBrowser = source("src/components/admin-classification-browser.tsx");
+  const learningQueue = source("src/components/learning-queue-admin.tsx");
+  for (const client of [membersTable, classificationBrowser, learningQueue]) {
+    assert.match(client, /"x-minyoi-admin-action": "1"/);
+  }
+});

@@ -2,6 +2,7 @@
 //   차단 사용자는 manual-deposit POST 에서 거부 + 향후 다른 결제 path 도 거부.
 
 import { NextResponse, type NextRequest } from "next/server";
+import { hasAdminActionHeader } from "@/lib/admin-action-token";
 import { isAdminUser } from "@/lib/auth-users";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -14,6 +15,9 @@ export async function POST(req: NextRequest) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   if (!isAdminUser(auth.user)) return NextResponse.json({ error: "admin only" }, { status: 403 });
+  if (!hasAdminActionHeader(req.headers)) {
+    return NextResponse.json({ error: "missing_admin_action_header" }, { status: 403 });
+  }
 
   let payload: Record<string, unknown>;
   try { payload = (await req.json()) as Record<string, unknown>; } catch { return NextResponse.json({ error: "invalid json" }, { status: 400 }); }

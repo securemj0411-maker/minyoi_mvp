@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+import { hasAdminActionHeader } from "@/lib/admin-action-token";
 import { isAdminUser } from "@/lib/auth-users";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -26,6 +27,9 @@ export async function POST(req: NextRequest) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   if (!isAdminUser(auth.user)) return NextResponse.json({ error: "admin only" }, { status: 403 });
+  if (!hasAdminActionHeader(req.headers)) {
+    return NextResponse.json({ error: "missing_admin_action_header" }, { status: 403 });
+  }
 
   let body: { authUserIds?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "bad_body" }, { status: 400 }); }

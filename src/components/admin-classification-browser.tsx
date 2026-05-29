@@ -112,7 +112,7 @@ export default function AdminClassificationBrowser() {
     try {
       const r = await fetch("/api/admin/listing-type-override", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", "x-minyoi-admin-action": "1" },
         body: JSON.stringify({ pid, override, reason }),
       });
       if (!r.ok) {

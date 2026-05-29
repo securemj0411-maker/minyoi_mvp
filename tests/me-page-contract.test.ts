@@ -448,23 +448,19 @@ test("/me seek-more modal starts with personalization and hides duplicate safety
   assert.doesNotMatch(workspace, /프로필을 고르고 세부 조건은 슬라이더로 조정합니다/);
 });
 
-test("pack open applies seek-more filters on the actual reveal path", () => {
-  const workspace = source("src/components/recommendation-workspace.tsx");
+test("legacy pack open route is disabled so it cannot bypass per-detail credits", () => {
   const openRoute = source("src/app/api/packs/open/route.ts");
-  const packOpen = source("src/lib/pack-open.ts");
+  const welcomeRoute = source("src/app/api/packs/welcome/route.ts");
 
-  assert.match(workspace, /categories: advancedFilters\.categories/);
-  assert.match(workspace, /setLastRequest\(\{ pack, requestedCards, tokenCost, filters: filters \?\? null \}\)/);
-  assert.match(workspace, /openPack\(lastRequest\.pack, lastRequest\.requestedCards, lastRequest\.filters\)/);
-  assert.match(openRoute, /const filters = parseFilters\(payload\)/);
-  assert.match(openRoute, /filters,\s*\n\s*tokensSpent/);
-  assert.match(packOpen, /function candidateMatchesOpenFilters/);
-  assert.match(packOpen, /const MIN_ADVANCED_PRICE_MAX_MANWON = 15/);
-  assert.match(packOpen, /Math\.max\(MIN_ADVANCED_PRICE_MAX_MANWON, rawPriceMaxManwon\)/);
-  assert.match(packOpen, /meta\.price\) > criteria\.maxPriceKrw/);
-  assert.match(packOpen, /candidate\.expected_profit_min\) < criteria\.minProfitKrw/);
-  assert.match(packOpen, /candidate\.confidence\) < criteria\.minConfidence/);
-  assert.match(packOpen, /criteria\.categories\.has\(category\)/);
+  assert.match(openRoute, /legacy_pack_open_disabled/);
+  assert.match(openRoute, /1 detail = 1/);
+  assert.match(openRoute, /status: 410/);
+  assert.doesNotMatch(openRoute, /openPack\(/);
+  assert.doesNotMatch(openRoute, /consumeDailyQuota/);
+
+  assert.match(welcomeRoute, /legacy_welcome_pack_disabled/);
+  assert.match(welcomeRoute, /status: 410/);
+  assert.doesNotMatch(welcomeRoute, /openPack\(/);
 });
 
 test("reveal feedback is scoped by feedback type so reports do not overwrite user state", () => {

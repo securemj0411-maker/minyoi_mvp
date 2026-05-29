@@ -183,7 +183,7 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
 
   // Wave 343: welcome flow 폐기 — /me history view가 ExploreClient (freemium 30개 풀)로 통합.
   // 신규 가입자도 진입 즉시 30개 풀 봄 → welcome 4개 reserve 불필요.
-  // /api/packs/welcome endpoint와 mvp_welcome_grants 테이블은 유지 (히스토리). 단 호출 X.
+  // /api/packs/welcome endpoint는 tombstone(410)으로만 유지. mvp_welcome_grants 테이블은 히스토리 보존.
 
   // Wave 90: IntersectionObserver(스크롤 추적) 제거 — 각 view 단독 mount라 의미 X
 

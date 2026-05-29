@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+import { isAdminUser } from "@/lib/auth-users";
+import { isBetaTesterAuthId } from "@/lib/beta-tester";
+import { hasDetailAccess } from "@/lib/detail-access";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
@@ -6,6 +9,7 @@ import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
 import { decodePoolAccessToken } from "@/lib/pool-access-token";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
+import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,11 +44,23 @@ export async function POST(req: Request) {
   if (!Number.isSafeInteger(pid) || pid <= 0) {
     return NextResponse.json({ ok: false, error: "invalid_pid" }, { status: 400 });
   }
+  if (accessToken && tokenPid == null) {
+    return NextResponse.json({ ok: false, error: "invalid_access_token" }, { status: 400 });
+  }
 
-  // 2026-05-26: ready 검사 + daangn 매물 분기 순서 조정.
-  //   기존: ready 검사 fail 시 즉시 404 → daangn 매물 (pool 0건) 다 차단 → UI "동네 정보 없음".
-  //   변경: raw_listings 먼저 조회. daangn 매물이면 ready 무관 region 반환 (auth user 이므로 안전).
-  //         다른 source 는 ready 검사 통과해야 다음 단계.
+  // Pre-open direct-only 확인은 feed 가 발급한 signed accessToken 으로만 허용한다.
+  // pid fallback 은 이미 상세를 연 사용자/운영자 호환용으로 좁혀서 임의 pid 위치 조회를 막는다.
+  if (!tokenPid) {
+    const userRef = userRefForAuthUser(auth.user.id);
+    const unlimited = isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
+    const allowed = await hasDetailAccess({ user: auth.user, userRef, pid, unlimited });
+    if (!allowed) {
+      return NextResponse.json({ ok: false, error: "detail_access_required" }, { status: 403 });
+    }
+  }
+
+  // 2026-05-26: raw_listings 먼저 조회. daangn 은 stored region 만으로 응답 가능.
+  // 2026-05-30: 단순 로그인만으로 임의 pid 위치를 훑을 수 없게 accessToken/detail access 선검사.
   const rows = await restFetch(
     `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,description_preview,raw_json,daangn_region_id,daangn_region_name&pid=eq.${pid}&limit=1`,
     { headers: serviceHeaders() },
@@ -63,10 +79,8 @@ export async function POST(req: Request) {
   //   UI 측 결과 동일 ("동네 정보 없음" fallback). 다만 error log noise 제거.
   if (!row) return NextResponse.json({ ok: true, location: null, source: "not_found" });
 
-  // 2026-05-26 v2: ready 검사 완전 제거.
-  //   원인: 피드 노출 시점엔 ready 였던 매물이 cron tick 사이 invalidated/spent 되면
-  //         endpoint 호출 시 ready 검사 fail → 404. 사용자가 본 매물 표시 못 함.
-  //   auth user 통과한 다음이라 보안 영향 X. row 존재만 검증.
+  // ready 검사는 accessToken/detail access 선검사로 대체한다.
+  // feed 에서 본 직거래 매물은 token 으로 열리고, pid fallback 은 이미 상세를 연 경우만 통과한다.
   const marketplaceSource = normalizeMarketplaceSource(row.source ?? row.seller_source);
 
   // Wave 772 (2026-05-27): region_id → "{시도} {시군구} {동}" full path resolve.

@@ -2,6 +2,7 @@
 // 권한 부여 내용은 별도 (이따 정의 예정).
 
 import { NextResponse } from "next/server";
+import { hasAdminActionHeader } from "@/lib/admin-action-token";
 import { isAdminUser } from "@/lib/auth-users";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -13,6 +14,9 @@ export async function POST(req: Request) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   if (!isAdminUser(auth.user)) return NextResponse.json({ error: "admin only" }, { status: 403 });
+  if (!hasAdminActionHeader(req.headers)) {
+    return NextResponse.json({ error: "missing_admin_action_header" }, { status: 403 });
+  }
 
   let body: { authUserId?: string; isBetaTester?: boolean };
   try {

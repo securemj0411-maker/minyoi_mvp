@@ -58,3 +58,25 @@ test("market-source proof API requires paid detail access before returning URLs"
   assert.match(route, /listingUrl: ourListingUrl/);
   assert.doesNotMatch(route, /pid 알면 누구나 접근/);
 });
+
+test("direct trade location API does not expose arbitrary pid locations to any logged-in user", () => {
+  const route = source("src/app/api/packs/pool/direct-location/route.ts");
+
+  assert.match(route, /const tokenPid = accessToken \? decodePoolAccessToken\(accessToken\) : null/);
+  assert.match(route, /invalid_access_token/);
+  assert.match(route, /hasDetailAccess\(\{ user: auth\.user, userRef, pid, unlimited \}\)/);
+  assert.match(route, /detail_access_required/);
+  assert.match(route, /Pre-open direct-only 확인은 feed 가 발급한 signed accessToken 으로만 허용/);
+});
+
+test("legacy pack endpoints are tombstoned and cannot reveal exact listings", () => {
+  const openRoute = source("src/app/api/packs/open/route.ts");
+  const welcomeRoute = source("src/app/api/packs/welcome/route.ts");
+
+  assert.match(openRoute, /legacy_pack_open_disabled/);
+  assert.match(openRoute, /status: 410/);
+  assert.doesNotMatch(openRoute, /openPack\(/);
+  assert.match(welcomeRoute, /legacy_welcome_pack_disabled/);
+  assert.match(welcomeRoute, /status: 410/);
+  assert.doesNotMatch(welcomeRoute, /openPack\(/);
+});

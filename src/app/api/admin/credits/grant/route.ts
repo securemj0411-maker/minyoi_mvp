@@ -2,6 +2,7 @@
 // 기존 credit RPC를 재사용해서 row 생성/잔액 증가/원장 기록을 모두 service_role 경로에서 처리한다.
 
 import { NextResponse, type NextRequest } from "next/server";
+import { hasAdminActionHeader } from "@/lib/admin-action-token";
 import { isAdminUser } from "@/lib/auth-users";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -28,6 +29,9 @@ export async function POST(req: NextRequest) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   if (!isAdminUser(auth.user)) return NextResponse.json({ error: "admin only" }, { status: 403 });
+  if (!hasAdminActionHeader(req.headers)) {
+    return NextResponse.json({ error: "missing_admin_action_header" }, { status: 403 });
+  }
 
   let payload: Record<string, unknown>;
   try {
