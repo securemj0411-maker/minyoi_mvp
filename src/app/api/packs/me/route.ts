@@ -23,7 +23,7 @@ import { mergeConditionDisplayChips } from "@/lib/condition-display";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { detectSoldOut, describeSignals, isSoldOut, soldOutTextHits } from "@/lib/sold-out";
-import { safetyBufferForSource, sellingFeeForMarketPrice, resellShippingFeeForSource } from "@/lib/profit";
+import { conditionResaleAdjustmentKrw, safetyBufferForSource, sellingFeeForMarketPrice, resellShippingFeeForSource } from "@/lib/profit";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -375,6 +375,11 @@ function currentNetProfitFromMarketPrice(
   cost: ListingCostRow | undefined,
   marketPrice: number | null | undefined,
   marketplaceSource?: string | null,
+  condition?: {
+    conditionChips?: string[] | null;
+    conditionClass?: string | null;
+    conditionTier?: string | null;
+  },
 ) {
   if (!raw) return null;
   const market = positiveNumber(marketPrice);
@@ -387,13 +392,21 @@ function currentNetProfitFromMarketPrice(
     : nonNegativeNumber(cost.shipping_fee_general);
   const estimatedBuyCost = positiveNumber(cost?.estimated_buy_cost) ?? price + shippingFee;
   const buyCostMax = price + generalShippingFee;
-  const sellFee = sellingFeeForMarketPrice(market, marketplaceSource);
+  const conditionAdjustment = conditionResaleAdjustmentKrw({
+    marketPrice: market,
+    conditionChips: condition?.conditionChips ?? null,
+    conditionClass: condition?.conditionClass ?? null,
+    conditionTier: condition?.conditionTier ?? null,
+  });
+  const adjustedMarket = Math.max(0, market - conditionAdjustment);
+  if (adjustedMarket <= 0) return null;
+  const sellFee = sellingFeeForMarketPrice(adjustedMarket, marketplaceSource);
   const resellShippingFee = resellShippingFeeForSource(marketplaceSource);
   const safetyBuffer = safetyBufferForSource(marketplaceSource);
 
   return {
-    min: Math.round(market - buyCostMax - sellFee - resellShippingFee - safetyBuffer),
-    max: Math.round(market - estimatedBuyCost - sellFee - resellShippingFee - safetyBuffer),
+    min: Math.round(adjustedMarket - buyCostMax - sellFee - resellShippingFee - safetyBuffer),
+    max: Math.round(adjustedMarket - estimatedBuyCost - sellFee - resellShippingFee - safetyBuffer),
   };
 }
 
@@ -902,7 +915,12 @@ export async function GET(req: Request) {
       const dbCurrentProfitMax = reveal.current_profit_max ?? null;
       const dbMarketInvalidatedAt = reveal.market_invalidated_at ?? null;
       const fallbackMedian = computedMarketBasis?.medianPrice ?? null;
-      const currentNetProfit = currentNetProfitFromMarketPrice(raw, listingCost, fallbackMedian, marketplaceSource);
+      const grading = gradingByPid.get(Number(reveal.pid));
+      const currentNetProfit = currentNetProfitFromMarketPrice(raw, listingCost, fallbackMedian, marketplaceSource, {
+        conditionChips: grading?.chips ?? null,
+        conditionClass: conditionClassByPid.get(Number(reveal.pid)) ?? null,
+        conditionTier: grading?.tier ?? null,
+      });
       const daangnMarketBasisMissing = isDaangnMarketplaceSource(marketplaceSource)
         && (!computedMarketBasis?.medianPrice || (computedMarketBasis.sampleCount ?? 0) < 3);
       const marketGapKrw = daangnMarketBasisMissing ? 0 : (currentNetProfit?.min ?? dbCurrentProfitMin);
@@ -971,11 +989,11 @@ export async function GET(req: Request) {
         // Wave 182 Phase 3 (2026-05-17): option_base_assumed — "기본 옵션 가정" UI badge.
         optionBaseAssumed: optionBaseAssumedByPid.get(Number(reveal.pid)) ?? null,
         // Wave 714d (2026-05-23): 신발/의류 5-tier grading + chips.
-        conditionTier: gradingByPid.get(Number(reveal.pid))?.tier ?? null,
-        conditionCluster: gradingByPid.get(Number(reveal.pid))?.cluster ?? null,
-        conditionConfidence: gradingByPid.get(Number(reveal.pid))?.confidence ?? null,
-        conditionFlags: gradingByPid.get(Number(reveal.pid))?.flags ?? null,
-        conditionChips: gradingByPid.get(Number(reveal.pid))?.chips ?? null,
+        conditionTier: grading?.tier ?? null,
+        conditionCluster: grading?.cluster ?? null,
+        conditionConfidence: grading?.confidence ?? null,
+        conditionFlags: grading?.flags ?? null,
+        conditionChips: grading?.chips ?? null,
         // Wave 213 (2026-05-18): 실시간 순현재차익 min/max.
         marketGapKrw,
         marketGapKrwMax,

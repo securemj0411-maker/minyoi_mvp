@@ -13,8 +13,9 @@ import {
   poolMaxExposure,
   poolSkipReason,
 } from "@/lib/pool-policy.mjs";
-import { safetyBufferForSource, sellingFeeForMarketPrice, resellShippingFeeForSource } from "@/lib/profit";
+import { conditionResaleAdjustmentKrw, safetyBufferForSource, sellingFeeForMarketPrice, resellShippingFeeForSource } from "@/lib/profit";
 import { POOL_BLOCK_NOTES } from "@/lib/condition-policy";
+import { mergeConditionDisplayChips } from "@/lib/condition-display";
 
 // 2026-05-15 (사용자 코멘트 pid 400051960): 풀 진입 가격 상한.
 // "200만원 이상은 안 하기로 했는데 왜 나옴" 정책 결정 반영.
@@ -660,6 +661,8 @@ export function buildCandidatePoolRows(input: {
     const parsedJsonNotes = (parsed?.parsed_json?.condition_notes as string[] | undefined) ?? [];
     const columnNotes = parsed?.condition_notes ?? [];
     const preCheckNotes = [...new Set([...columnNotes, ...parsedJsonNotes])];
+    const conditionGrade = (parsed?.parsed_json?.condition_grade as { chips?: string[]; tier?: string } | null) ?? null;
+    const conditionChips = mergeConditionDisplayChips(conditionGrade?.chips ?? null, preCheckNotes);
     // 2026-05-17 v46 cleanup: POOL_BLOCK_NOTES 가 condition-policy.ts 단일 source 로 옮김 (drift 차단).
     // 정책: FLAWED 중 "사용자 손해 명확" 5종 subset. 나머지 FLAWED 는 시세 sample 차단 자체로 score 0 → 자연 차단.
     const noteHit = POOL_BLOCK_NOTES.find((n) => preCheckNotes.includes(n));
@@ -740,13 +743,20 @@ export function buildCandidatePoolRows(input: {
     // Daangn은 직거래 재판매 기준이라 판매 수수료/재배송비를 0원으로 본다.
     // 이전에는 모든 source에 번개장터식 3.5% + 재배송비 3,500원을 빼서
     // Daangn 저마진 후보가 ready 진입 전에 과차단됐다.
-    const sellFee = sellingFeeForMarketPrice(row.skuMedian, row.source);
     const resellShippingFee = resellShippingFeeForSource(row.source);
     const safetyBuffer = safetyBufferForSource(row.source);
+    const conditionAdjustment = conditionResaleAdjustmentKrw({
+      marketPrice: row.skuMedian,
+      conditionChips,
+      conditionClass: parsed?.condition_class ?? null,
+      conditionTier: conditionGrade?.tier ?? null,
+    });
+    const adjustedSkuMedian = Math.max(0, row.skuMedian - conditionAdjustment);
+    const sellFee = sellingFeeForMarketPrice(adjustedSkuMedian, row.source);
     const buyMax = row.price + (row.shippingFeeGeneral ?? row.shippingFee);
     const buyMin = row.estimatedBuyCost;
-    const profitMax = Math.max(0, row.skuMedian - buyMin - sellFee - resellShippingFee - safetyBuffer);
-    const profitMin = Math.max(0, row.skuMedian - buyMax - sellFee - resellShippingFee - safetyBuffer);
+    const profitMax = Math.max(0, adjustedSkuMedian - buyMin - sellFee - resellShippingFee - safetyBuffer);
+    const profitMin = Math.max(0, adjustedSkuMedian - buyMax - sellFee - resellShippingFee - safetyBuffer);
     // Wave 755 (2026-05-24): category 전달 → clothing/shoe/bag 10K threshold (일반인 친화).
     // Wave 907 (2026-05-28): band threshold는 이미 1원이라, 새 invalidation reason은
     // old `profit_below_pack_band` 대신 실제 의미(비용 반영 후 순익 없음)를 기록한다.

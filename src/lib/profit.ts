@@ -1,4 +1,5 @@
 import type { CandidateBand, CandidateSignal, CashoutHint, ListingCandidate } from "@/lib/types";
+import { summarizeConditionChips } from "@/lib/condition-chip-policy";
 
 export const SELLING_FEE_RATE = 0.035;
 export const RESELL_SHIPPING_FEE = 3500;
@@ -23,24 +24,83 @@ export function safetyBufferForSource(marketplaceSource?: string | null) {
   return isDaangnSource(marketplaceSource) ? 0 : SAFETY_BUFFER;
 }
 
+const SOFT_CONDITION_RESALE_ADJUSTMENTS: Record<string, {
+  rate: number;
+  min: number;
+  max: number;
+  skipConditionClasses?: readonly string[];
+}> = {
+  "condition:low_battery_health": { rate: 0.06, min: 8_000, max: 35_000, skipConditionClasses: ["low_batt"] },
+  "condition:high_battery_cycles": { rate: 0.05, min: 6_000, max: 25_000, skipConditionClasses: ["low_batt"] },
+  "condition:cosmetic_wear": { rate: 0.03, min: 3_000, max: 15_000, skipConditionClasses: ["worn"] },
+  "condition:repair_or_defect_signal": { rate: 0.06, min: 8_000, max: 30_000 },
+  "condition:earphone_missing_parts": { rate: 0.04, min: 5_000, max: 20_000 },
+  "condition:earphone_hygiene_warning": { rate: 0.03, min: 3_000, max: 12_000 },
+  "condition:fashion_stain_or_discoloration": { rate: 0.08, min: 5_000, max: 35_000 },
+  "condition:fashion_hygiene_warning": { rate: 0.05, min: 4_000, max: 20_000 },
+  "condition:bag_handle_worn": { rate: 0.06, min: 5_000, max: 30_000 },
+  "condition:bag_corner_worn": { rate: 0.06, min: 5_000, max: 30_000 },
+  "condition:shoe_insole_missing": { rate: 0.04, min: 3_000, max: 12_000 },
+  "condition:clothing_fading": { rate: 0.06, min: 4_000, max: 25_000 },
+  "condition:clothing_stretched": { rate: 0.06, min: 4_000, max: 25_000 },
+  "condition:clothing_pilling": { rate: 0.04, min: 3_000, max: 15_000 },
+  "damage:minor": { rate: 0.06, min: 5_000, max: 25_000 },
+};
+
+export function conditionResaleAdjustmentKrw(input: {
+  marketPrice: number | null | undefined;
+  conditionChips?: unknown;
+  conditionClass?: string | null;
+  conditionTier?: string | null;
+}) {
+  const marketPrice = Number(input.marketPrice ?? 0);
+  if (!Number.isFinite(marketPrice) || marketPrice <= 0) return 0;
+  const softChips = summarizeConditionChips(input.conditionChips).softAdjustment;
+  if (softChips.length === 0) return 0;
+
+  let total = 0;
+  for (const chip of softChips) {
+    const policy = SOFT_CONDITION_RESALE_ADJUSTMENTS[chip];
+    if (!policy) continue;
+    if (input.conditionClass && policy.skipConditionClasses?.includes(input.conditionClass)) continue;
+    const rateAmount = Math.round(marketPrice * policy.rate);
+    total += Math.min(policy.max, Math.max(policy.min, rateAmount));
+  }
+
+  const cap = Math.min(50_000, Math.round(marketPrice * 0.2));
+  return Math.max(0, Math.min(cap, total));
+}
+
 export function expectedProfitFromMarketPrice(input: {
   buyPrice: number;
   marketPrice: number | null | undefined;
   buyShipping: number;
   marketplaceSource?: string | null;
+  conditionChips?: unknown;
+  conditionClass?: string | null;
+  conditionTier?: string | null;
 }) {
   const marketPrice = Number(input.marketPrice ?? 0);
   const buyPrice = Number(input.buyPrice ?? 0);
   if (!Number.isFinite(marketPrice) || marketPrice <= 0 || !Number.isFinite(buyPrice) || buyPrice <= 0) return null;
-  const sellFee = sellingFeeForMarketPrice(marketPrice, input.marketplaceSource);
+  const conditionAdjustment = conditionResaleAdjustmentKrw({
+    marketPrice,
+    conditionChips: input.conditionChips,
+    conditionClass: input.conditionClass,
+    conditionTier: input.conditionTier,
+  });
+  const adjustedMarketPrice = Math.max(0, marketPrice - conditionAdjustment);
+  if (adjustedMarketPrice <= 0) return null;
+  const sellFee = sellingFeeForMarketPrice(adjustedMarketPrice, input.marketplaceSource);
   const resellShipping = resellShippingFeeForSource(input.marketplaceSource);
   const safetyBuffer = safetyBufferForSource(input.marketplaceSource);
   return {
-    min: Math.max(0, Math.round(marketPrice - (buyPrice + input.buyShipping) - sellFee - resellShipping - safetyBuffer)),
-    max: Math.max(0, Math.round(marketPrice - buyPrice - sellFee - resellShipping - safetyBuffer)),
+    min: Math.max(0, Math.round(adjustedMarketPrice - (buyPrice + input.buyShipping) - sellFee - resellShipping - safetyBuffer)),
+    max: Math.max(0, Math.round(adjustedMarketPrice - buyPrice - sellFee - resellShipping - safetyBuffer)),
     sellFee,
     resellShipping,
     safetyBuffer,
+    conditionAdjustment,
   };
 }
 const FATAL_LISTING_KEYWORDS = [

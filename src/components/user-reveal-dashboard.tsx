@@ -235,6 +235,9 @@ function recomputeCurrentProfitFromMarketBasis(item: RevealItem, marketBasis: Re
     marketPrice: market,
     buyShipping: assumedBuyShipping,
     marketplaceSource: item.marketplaceSource,
+    conditionChips: item.conditionChips,
+    conditionClass: item.marketBasis?.conditionClass ?? null,
+    conditionTier: item.conditionTier,
   });
 }
 

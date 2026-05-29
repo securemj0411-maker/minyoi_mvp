@@ -1259,11 +1259,15 @@ function buildItems(
       let recomputedProfitMin = row.expected_profit_min;
       let recomputedProfitMax = row.expected_profit_max;
       if (skuMedianFinal && skuMedianFinal > 0 && Number.isFinite(raw.price) && raw.price > 0) {
+        const grading = gradingByPid.get(row.pid);
         const profit = expectedProfitFromMarketPrice({
           buyPrice: raw.price,
           marketPrice: skuMedianFinal,
           buyShipping: assumedBuyShipping,
           marketplaceSource,
+          conditionChips: grading?.chips ?? null,
+          conditionClass: row.condition_class ?? null,
+          conditionTier: grading?.tier ?? null,
         });
         recomputedProfitMax = profit?.max ?? recomputedProfitMax;
         recomputedProfitMin = profit?.min ?? recomputedProfitMin;

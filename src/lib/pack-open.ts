@@ -2259,11 +2259,15 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
           perSourceMarketStats: marketStatsPerSource,
         },
       );
+      const conditionGrading = gradingMap.get(candidate.pid);
       const sourceAwareProfit = expectedProfitFromMarketPrice({
         buyPrice: meta.price,
         marketPrice: marketBasis.medianPrice,
         buyShipping: savedDetail?.freeShipping ? 0 : 3500,
         marketplaceSource: meta.marketplaceSource,
+        conditionChips: conditionGrading?.chips ?? null,
+        conditionClass: poolConditionMap.get(candidate.pid) ?? null,
+        conditionTier: conditionGrading?.tier ?? null,
       });
       const daangnMarketBasisMissing = isDaangnMarketplaceSource(meta.marketplaceSource)
         && (!marketBasis.medianPrice || !marketBasis.sourceSampleUsed || marketBasis.sampleCount < MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE);
@@ -2301,11 +2305,11 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         // Wave 182 Phase 3 (2026-05-17): option_base_assumed — "기본 옵션 가정" UI badge.
         optionBaseAssumed: optionBaseAssumedMap.get(candidate.pid) ?? null,
         // Wave 714d (2026-05-23): 신발/의류 5-tier grading + chips (쉬운모드 LastVerifiedAtBadge).
-        conditionTier: gradingMap.get(candidate.pid)?.tier ?? null,
-        conditionCluster: gradingMap.get(candidate.pid)?.cluster ?? null,
-        conditionConfidence: gradingMap.get(candidate.pid)?.confidence ?? null,
-        conditionFlags: gradingMap.get(candidate.pid)?.flags ?? null,
-        conditionChips: gradingMap.get(candidate.pid)?.chips ?? null,
+        conditionTier: conditionGrading?.tier ?? null,
+        conditionCluster: conditionGrading?.cluster ?? null,
+        conditionConfidence: conditionGrading?.confidence ?? null,
+        conditionFlags: conditionGrading?.flags ?? null,
+        conditionChips: conditionGrading?.chips ?? null,
       });
       if (candidate.comparable_key) seenComparableKeys.add(candidate.comparable_key);
       if (meta.sku_id) seenSkuIds.add(meta.sku_id);

@@ -218,7 +218,7 @@ function buyerShippingForPoolItem(item: Pick<PoolItem, "freeShipping" | "transac
 function recomputePoolProfit(
   price: number,
   marketPrice: number | null | undefined,
-  item: Pick<PoolItem, "freeShipping" | "transactionMode" | "shippingAssumption" | "marketplaceSource">,
+  item: Pick<PoolItem, "freeShipping" | "transactionMode" | "shippingAssumption" | "marketplaceSource" | "conditionChips" | "conditionClass" | "conditionTier">,
 ) {
   if (!marketPrice || marketPrice <= 0 || !price || price <= 0) return null;
   const buyShipping = buyerShippingForPoolItem(item);
@@ -227,6 +227,9 @@ function recomputePoolProfit(
     marketPrice,
     buyShipping,
     marketplaceSource: item.marketplaceSource,
+    conditionChips: item.conditionChips,
+    conditionClass: item.conditionClass,
+    conditionTier: item.conditionTier,
   });
 }
 
@@ -2269,6 +2272,9 @@ export default function ExploreClient({
               transactionMode: prev.savedDetail?.transactionMode ?? null,
               shippingAssumption: prev.savedDetail?.shippingAssumption ?? null,
               marketplaceSource: prev.marketplaceSource ?? null,
+              conditionChips: prev.conditionChips ?? null,
+              conditionClass: prev.marketBasis?.conditionClass ?? null,
+              conditionTier: prev.conditionTier ?? null,
             });
             const strictSourceMissing = marketBasis?.sourceFallbackUsed === true && marketBasis.medianPrice == null;
             return {

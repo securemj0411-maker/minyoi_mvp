@@ -370,6 +370,9 @@ function sourceAwareProfitAverage(card: RevealCard, marketplaceSource?: string |
     marketPrice,
     buyShipping: safety.shipping.buyerShippingHigh,
     marketplaceSource: marketplaceSource ?? card.marketplaceSource ?? null,
+    conditionChips: card.conditionChips,
+    conditionClass: card.marketBasis?.conditionClass ?? null,
+    conditionTier: card.conditionTier,
   });
   if (!profit) return expectedProfitAverage(card);
   return Math.round((profit.min + profit.max) / 2);

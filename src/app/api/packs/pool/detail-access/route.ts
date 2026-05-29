@@ -264,6 +264,9 @@ async function recomputeExactPoolItemProfit(item: ExactPoolItem | null): Promise
     marketPrice: marketBasis.medianPrice,
     buyShipping: item.freeShipping ? 0 : 3500,
     marketplaceSource: item.marketplaceSource,
+    conditionChips: item.conditionChips,
+    conditionClass: item.conditionClass,
+    conditionTier: item.conditionTier,
   });
   if (!profit) return item;
   return {
