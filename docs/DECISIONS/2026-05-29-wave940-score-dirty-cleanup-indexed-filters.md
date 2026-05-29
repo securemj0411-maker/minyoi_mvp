@@ -28,6 +28,9 @@
 - Keep the cleanup non-fatal: a failed reason logs a warning and does not fail the score-worker.
 - Keep total per-run cleanup capped at the existing `rowLimit` to avoid turning score-worker into a background vacuum.
 - Add structured console info when rows are cleared so production logs show which residue is actually draining.
+- Increase only the `score_dirty=false` pid patch chunk from 50 to 200.
+  - The general REST write chunk remains 50.
+  - Cleanup patches are tiny `pid=in.(...)` updates, so 200 keeps URL size reasonable while cutting 1000-row cleanup from 20 PATCH requests to 5.
 
 ## Rationale
 
@@ -50,6 +53,12 @@
 - Production Supabase REST smoke test for each new cleanup predicate:
   - all predicates returned `ok=true`
   - observed latencies were small except `type_not_normal` at ~1.4s for `limit=1`, still within worker budget.
+- Tried direct `PATCH + filter + limit` as a more aggressive optimization.
+  - Rejected: `order=last_seen_at` on PATCH returned a PostgREST/SQL column error, and no-order PATCH hit statement timeout.
+  - Keep the pid-select + pid-patch path for correctness.
+- Production post-deploy score-worker logs:
+  - A/B/C score runs succeeded.
+  - A cleanup-enabled run cleared 1000 unscorable dirty rows and still completed, but cleanup took ~22s before the chunk-size optimization.
 
 ## Deferred
 

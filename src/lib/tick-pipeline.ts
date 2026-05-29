@@ -337,6 +337,7 @@ const REST_READ_CHUNK_SIZE = 25;
 const RAW_EXISTING_READ_CHUNK_SIZE = 500;
 const POOL_PID_READ_CHUNK_SIZE = 500;
 const REST_WRITE_CHUNK_SIZE = 50;
+const SCORE_DIRTY_CLEAR_CHUNK_SIZE = 200;
 const RAW_TOUCH_WRITE_CHUNK_SIZE = 400;
 const SELLER_WRITE_CHUNK_SIZE = 200;
 // Keep seller_uid=in.(...) URLs under common proxy/request-line limits.
@@ -2380,8 +2381,8 @@ async function clearScoreDirty(pids: number[]): Promise<void> {
   if (!(await rawScoreDirtySchemaAvailable())) return;
   const unique = [...new Set(pids.filter(Number.isFinite))];
   if (unique.length === 0) return;
-  for (const chunk of chunkArray(unique, REST_WRITE_CHUNK_SIZE)) {
-    await patchRowsByIds("mvp_raw_listings", chunk, { score_dirty: false }, REST_WRITE_CHUNK_SIZE);
+  for (const chunk of chunkArray(unique, SCORE_DIRTY_CLEAR_CHUNK_SIZE)) {
+    await patchRowsByIds("mvp_raw_listings", chunk, { score_dirty: false }, SCORE_DIRTY_CLEAR_CHUNK_SIZE);
   }
 }
 
