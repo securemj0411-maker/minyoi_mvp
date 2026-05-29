@@ -63,6 +63,12 @@ type ParsedRow = {
   parser_version: string | null;
 };
 
+type SuccessPatch = {
+  pid: number;
+  mannerTemperature: number;
+  reviewCount: number | null;
+};
+
 const PARSED_READ_CHUNK_SIZE = 250;
 
 type DetailShard = {
@@ -197,6 +203,42 @@ async function patchSuccess(candidate: DetailCandidate, mannerTemperature: numbe
   });
 }
 
+async function patchSuccesses(rows: SuccessPatch[], dryRun: boolean): Promise<number> {
+  if (dryRun || rows.length === 0) return rows.length;
+  const payload = rows.map((row) => ({
+    pid: row.pid,
+    manner_temperature: row.mannerTemperature,
+    review_count: row.reviewCount,
+  }));
+
+  try {
+    const res = await restFetch(rpcUrl("patch_mvp_daangn_detail_backfill_successes"), {
+      method: "POST",
+      headers: serviceHeaders(),
+      body: jsonBody({ p_rows: payload }),
+    });
+    const patched = await res.json();
+    return Number.isFinite(Number(patched)) ? Number(patched) : rows.length;
+  } catch (err) {
+    console.warn("daangn detail backfill batch success patch failed", {
+      count: rows.length,
+      error: err instanceof Error ? err.message.slice(0, 300) : String(err).slice(0, 300),
+    });
+  }
+
+  let patched = 0;
+  for (const row of rows) {
+    await patchSuccess(
+      { pid: row.pid, url: "", sourceKind: "raw_pending" },
+      row.mannerTemperature,
+      row.reviewCount,
+      dryRun,
+    );
+    patched += 1;
+  }
+  return patched;
+}
+
 async function patchGone(candidate: DetailCandidate, status: number, dryRun: boolean) {
   if (dryRun) return;
   const nowIso = new Date().toISOString();
@@ -323,6 +365,7 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
   const budgetMs = boundedInt(options.budgetMs, 175_000, 5_000, 260_000);
   const shard = normalizeDetailShard(options.shardCount, options.shardIndex);
   const deadline = startedAt + budgetMs;
+  const finalizeReserveMs = 10_000;
 
   const candidates = await loadCandidates(limit, shard);
 
@@ -337,9 +380,10 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
   let blockedReason: string | null = null;
   let skippedByBudget = 0;
   const marketRefreshPids: number[] = [];
+  const successPatches: SuccessPatch[] = [];
 
   for (const candidate of candidates) {
-    if (Date.now() + timeoutMs + delayMs > deadline) {
+    if (Date.now() + timeoutMs + delayMs + finalizeReserveMs > deadline) {
       skippedByBudget += 1;
       continue;
     }
@@ -393,12 +437,16 @@ export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptio
       continue;
     }
 
-    await patchSuccess(candidate, mannerTemperature, parsed.user.reviewCount, dryRun);
-    patched += 1;
+    successPatches.push({
+      pid: candidate.pid,
+      mannerTemperature,
+      reviewCount: parsed.user.reviewCount,
+    });
     marketRefreshPids.push(candidate.pid);
     await sleep(delayMs);
   }
 
+  patched += await patchSuccesses(successPatches, dryRun);
   const marketInvalidationsQueued = await enqueueMarketInvalidations(marketRefreshPids, dryRun);
 
   return {
