@@ -14,6 +14,7 @@ import {
   fetchV7SiblingPresence,
   marketBasisForCandidate,
 } from "@/lib/pack-open";
+import { mergeConditionDisplayChips } from "@/lib/condition-display";
 import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
 import { classifyListing } from "@/lib/pipeline";
 import { decodePoolAccessToken } from "@/lib/pool-access-token";
@@ -124,7 +125,7 @@ async function loadExactPoolItem(pid: number) {
     }>>),
     // Wave 714n (2026-05-23): 신발/의류 5-tier grading + chips fetch — 매물 클릭 시 모달 path 의 진짜 source.
     restFetch(
-      `${tableUrl("mvp_listing_parsed")}?select=pid,condition_tier,condition_cluster,condition_confidence,condition_flags,parsed_json&pid=eq.${pid}&limit=1`,
+      `${tableUrl("mvp_listing_parsed")}?select=pid,condition_tier,condition_cluster,condition_confidence,condition_flags,condition_notes,parsed_json&pid=eq.${pid}&limit=1`,
       { headers },
     ).then((res) => res.json() as Promise<Array<{
       pid: number;
@@ -132,6 +133,7 @@ async function loadExactPoolItem(pid: number) {
       condition_cluster: string | null;
       condition_confidence: number | null;
       condition_flags: Record<string, unknown> | null;
+      condition_notes: string[] | null;
       parsed_json: Record<string, unknown> | null;
     }>>),
   ]);
@@ -153,7 +155,8 @@ async function loadExactPoolItem(pid: number) {
   const conditionCluster = parsed?.condition_cluster ?? grade?.cluster ?? null;
   const conditionConfidence = parsed?.condition_confidence ?? grade?.confidence ?? null;
   const conditionFlags = parsed?.condition_flags ?? grade?.flags ?? null;
-  const conditionChips = grade?.chips ?? null;
+  const parsedJsonNotes = parsed?.parsed_json?.condition_notes as string[] | undefined;
+  const conditionChips = mergeConditionDisplayChips(grade?.chips ?? null, parsed?.condition_notes ?? parsedJsonNotes ?? null);
   const marketplaceSource = normalizeMarketplaceSource(meta?.source ?? meta?.seller_source);
   const facts = marketplaceFactsFromRawJson({
     marketplaceSource,
