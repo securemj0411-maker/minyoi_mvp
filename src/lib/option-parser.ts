@@ -229,7 +229,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v69";  // Wave 941: visible display damage guard
+export const PARSER_VERSION = "option-parser-v70";  // Wave 942: visible display damage false-positive guard
 
 // Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
 //   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
@@ -1591,7 +1591,12 @@ function conditionFromText(
   //    예: "앞유리 조금 금갔어요 근데 방수기능 됩니다" → 셀러 정상 강조, 실제 flawed.
   const visibleGlassBreakage = "(?:깨졌|깨져|깨진|깨짐|파손|크랙|금\\s*갔|금\\s*감|금이\\s*갔|금이\\s*감)";
   const visibleDamageWithFunctional = !noDisplayDefect
-    && new RegExp(`(?:유리|액정|화면).{0,8}${visibleGlassBreakage}|크랙\\s*있|금\\s*갔|금\\s*있`).test(lower)
+    && new RegExp(
+      `(?:유리|액정|화면|디스플레이|스크린).{0,8}${visibleGlassBreakage}` +
+      "|크랙\\s*있" +
+      "|금\\s*이\\s*(?:갔|감|있)" +
+      "|(?:유리|액정|화면|디스플레이|스크린).{0,12}금\\s*(?:갔|감|있)",
+    ).test(lower)
     && /(?:정상|이상\s*없|잘\s*됨|작동|기능)/.test(lower);
   if (visibleDamageWithFunctional) {
     add("display_defect", -0.15); // 셀러 우호 표현이라도 visible damage는 flawed로

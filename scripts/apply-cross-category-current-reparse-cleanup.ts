@@ -4,6 +4,7 @@ import path from "node:path";
 import { evaluatePoolGate } from "@/lib/candidate-pool-builder";
 import { ruleMatch, type Sku } from "@/lib/catalog";
 import { loadCategoryReadinessMap, loadLaneReadinessMap } from "@/lib/category-readiness";
+import { POOL_BLOCK_NOTES } from "@/lib/condition-policy";
 import { parseListingOptions, toParsedListingRow } from "@/lib/option-parser";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
@@ -13,6 +14,17 @@ const PATCH_CHUNK_SIZE = 80;
 
 const DEFAULT_CATEGORIES = ["clothing", "shoe", "sport_golf", "game_console"];
 const TIER_CATEGORIES = new Set(["clothing", "shoe", "sport_golf", "game_console"]);
+const EARPHONE_POOL_BLOCK_SIGNALS = new Set([
+  "audio_output_issue",
+  "anc_or_transparency_issue",
+  "mic_issue",
+  "pairing_or_connection_issue",
+  "battery_degraded",
+  "physical_damage",
+  "single_side_unit",
+  "charging_case_only",
+  "protective_case_only",
+]);
 
 type PoolRow = {
   pid: number;
@@ -121,6 +133,31 @@ function summarizeBy(items: Candidate[], selector: (item: Candidate) => string |
     out[key] = (out[key] ?? 0) + 1;
   }
   return Object.fromEntries(Object.entries(out).sort((a, b) => b[1] - a[1]));
+}
+
+function currentParsedPoolBlockReason(category: string | null | undefined, row: Record<string, unknown> | null) {
+  const parsedJson = row?.parsed_json as Record<string, unknown> | null | undefined;
+  const notes = parsedJson?.condition_notes;
+  if (Array.isArray(notes)) {
+    const noteHit = POOL_BLOCK_NOTES.find((note) => notes.includes(note));
+    if (noteHit) return `condition_note_${noteHit}`;
+  }
+
+  if (category === "earphone") {
+    const policy = parsedJson?.earphone_condition_policy as {
+      mode?: unknown;
+      hard_block_candidates?: unknown;
+    } | null | undefined;
+    const candidates = Array.isArray(policy?.hard_block_candidates)
+      ? policy.hard_block_candidates
+      : [];
+    const hit = candidates.find(
+      (signal): signal is string => typeof signal === "string" && EARPHONE_POOL_BLOCK_SIGNALS.has(signal),
+    );
+    if (policy?.mode === "pool_gate_v1" && hit) return `earphone_condition_${hit}`;
+  }
+
+  return null;
 }
 
 async function fetchRawRows(pids: number[]) {
@@ -285,6 +322,8 @@ async function main() {
     if (currentRow && oldParsed?.comparable_key !== currentKey) reasons.push("parsed_key_drift");
     if (currentRow && pool.comparable_key !== currentKey) reasons.push("pool_key_drift");
     if (currentRow && oldParsed?.condition_class !== currentRow.condition_class) reasons.push("condition_class_drift");
+    const poolBlockReason = currentParsedPoolBlockReason(currentSku?.category ?? pool.category, currentRow);
+    if (poolBlockReason) reasons.push(`current_pool_block_${poolBlockReason}`);
     if (
       currentRow &&
       TIER_CATEGORIES.has(currentSku?.category ?? oldParsed?.category ?? pool.category ?? "") &&
@@ -306,6 +345,7 @@ async function main() {
       item === "pool_key_drift" ||
       item === "condition_tier_drift" ||
       item === "condition_tier_missing" ||
+      item.startsWith("current_pool_block_") ||
       item.startsWith("gate_blocked_")
     );
 
