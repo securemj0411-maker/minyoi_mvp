@@ -229,7 +229,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v70";  // Wave 942: visible display damage false-positive guard
+export const PARSER_VERSION = "option-parser-v71";  // Wave 946: carrier-risk negation and negotiation-noise guard
 
 // Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
 //   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
@@ -1544,7 +1544,7 @@ function conditionFromText(
   if (/(유심|sim).{0,20}(인식\s*불|인식불|안됨|불가|락)|(?:인식\s*불|인식불|안됨|불가|락).{0,20}(유심|sim)/.test(lower)) add("sim_or_carrier_issue", -0.2);
   const noWaterDamage = /침수(?:폰)?\s*(?:없|없음|없습니다|아님|일절\s*취급하지|취급하지\s*않|취급하지|취급\s*안)|침수.{0,12}(?:이력|내역).{0,12}(?:없|없음|없습니다|전혀\s*없)|(?:고객\s*부주의|본인\s*과실|단순\s*변심).{0,30}(?:파손|침수|충격).{0,30}(?:교환|환불|반품).{0,12}불가|침수\s*라벨\s*(?:정상|깨끗)/.test(lower);
   if (!noWaterDamage && /침수|물\s*들어|물먹|물\s*먹/.test(lower)) add("water_damage", -0.35);
-  const noLostOrLocked = /분실\s*도난\s*침수폰?\s*일절\s*취급하지|분실.{0,8}도난.{0,20}(?:취급하지|취급\s*안)|분실\s*(?:없|없음|신고\s*없|취급하지)|도난\s*(?:없|없음|취급하지)|분실.{0,8}도난.{0,16}검수\s*완료|정상\s*해지|정상해지|(?:아이클라우드|icloud).{0,16}(?:로그아웃|해제).{0,16}(?:완료|됨)|초기화\s*완료/.test(lower);
+  const noLostOrLocked = /분실\s*도난\s*침수폰?\s*일절\s*취급하지|분실.{0,8}도난.{0,20}(?:취급하지|취급\s*안)|분실\s*(?:없|없음|신고\s*없|취급하지)|도난\s*(?:없|없음|취급하지)|분실.{0,8}도난.{0,16}검수\s*완료|정상\s*해지|정상해지|(?:아이클라우드|icloud).{0,16}(?:로그아웃|해제).{0,16}(?:완료|됨)|초기화\s*완료|(?:완전히\s*)?잠금\s*해제(?:된|되어|완료|상태)|언락(?:폰|된|완료)|unlocked/.test(lower);
   if (!noLostOrLocked && /분실|도난|락걸림|락\s*걸림|잠김|잠금|활성화\s*잠금|활성화.{0,18}(?:해제\s*안|해제가\s*안|해제\s*불가)|아이클라우드|icloud|초기화\s*불가|초기화불가/.test(lower)) add("locked_or_lost_signal", -0.4);
   if (/선약|선택\s*약정|확정\s*기변|확정기변|정상\s*해지|정상해지/.test(lower)) add("carrier_status_disclosed", 0.03);
   if (/(할부|미납|요금).{0,12}(남|있|미납)|(?:남은|잔여).{0,8}할부/.test(compact)) add("installment_risk", -0.25);

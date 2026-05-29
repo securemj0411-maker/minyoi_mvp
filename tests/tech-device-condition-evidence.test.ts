@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { parseTechDeviceConditionEvidence } from "@/lib/condition-evidence/tech-device";
+import { POOL_BLOCK_NOTES } from "@/lib/condition-policy";
 import { parseListingOptions } from "@/lib/option-parser";
 
 function signals(title: string, description = "") {
@@ -305,6 +306,63 @@ describe("tech device condition evidence parser", () => {
     assert.ok(!filmOnly.conditionNotes.includes("display_defect"));
     assert.ok(!shippingOnly.conditionNotes.includes("repair_or_defect_signal"));
     assert.ok(!unlockedRetail.conditionNotes.includes("sim_or_carrier_issue"));
+  });
+
+  it("정상해지 + 네고불가/자급제 경고 문구는 통신사 리스크로 오탐하지 않는다", () => {
+    const noDiscount = parseListingOptions({
+      category: "smartphone",
+      title: "갤럭시S25울트라 실버블루 1테라 자급제 정상해지",
+      description: "기기단품. 외관 질문 X. 새폰급! 정상해지. 네고불가",
+    });
+    const retailWarning = parseListingOptions({
+      category: "smartphone",
+      title: "갤럭시S26울트라 512 자급제 미개봉 새제품",
+      description: "자급제 제품이라 선택약정 확정기변 가능하며 사용중인 유심 꽂아서 바로 쓰시면 됩니다. 가개통 유심기변 폰 사셔서 사기 당하지 마시고 자급제로 구매하세요.",
+    });
+    const openedCarrierInfo = parseListingOptions({
+      category: "smartphone",
+      title: "s25울트라 512gb",
+      description: "개통통신사 SKT. 개통일 25년 2월 26일. 모든 유심 사용 가능. 액정 기스 같은 건 없고 테두리 사용감만 있어요.",
+    });
+    const unlockedPhone = parseListingOptions({
+      category: "smartphone",
+      title: "갤럭시 S24+ 512GB",
+      description: "완전히 잠금 해제된 상태로 모든 통신사의 유심 카드를 사용할 수 있습니다. 가격은 최종가이며 협상 불가입니다.",
+    });
+
+    assert.ok(!noDiscount.conditionNotes.includes("sim_or_carrier_issue"), JSON.stringify(noDiscount.conditionNotes));
+    assert.ok(!retailWarning.conditionNotes.includes("sim_or_carrier_issue"), JSON.stringify(retailWarning.conditionNotes));
+    assert.ok(!openedCarrierInfo.conditionNotes.includes("sim_or_carrier_issue"), JSON.stringify(openedCarrierInfo.conditionNotes));
+    assert.ok(!unlockedPhone.conditionNotes.includes("locked_or_lost_signal"), JSON.stringify(unlockedPhone.conditionNotes));
+  });
+
+  it("진짜 가개통/확정기변 불가 매물은 통신사 리스크로 유지한다", () => {
+    const activationOnly = parseListingOptions({
+      category: "smartphone",
+      title: "s26플러스 512기가 블랙 단순개봉 새제품",
+      description: "새제품 가개통입니다. 유심기변으로 쓰시면 됩니다.",
+    });
+    const cannotTransfer = parseListingOptions({
+      category: "smartphone",
+      title: "아이폰 17 프로 실버 256 미개봉 판매합니다.",
+      description: "유심기변용 통신사(LG) 미개봉입니다. 확정기변 불가능합니다. 확인 후에 구매주세요!",
+    });
+
+    assert.ok(activationOnly.conditionNotes.includes("sim_or_carrier_issue"), JSON.stringify(activationOnly.conditionNotes));
+    assert.ok(cannotTransfer.conditionNotes.includes("sim_or_carrier_issue"), JSON.stringify(cannotTransfer.conditionNotes));
+  });
+
+  it("통신사/할부/기능 hard blocker는 pool 차단 note에 포함된다", () => {
+    for (const note of [
+      "sim_or_carrier_issue",
+      "locked_or_lost_signal",
+      "installment_risk",
+      "water_damage",
+      "camera_issue",
+      "device_charging_or_sensor_issue",
+    ]) {
+      assert.ok((POOL_BLOCK_NOTES as readonly string[]).includes(note), `${note} must block ready pool entry`);
+    }
   });
 
   it("백화 없음/침수 취급하지 않음/모서리 파손 없음은 하자로 오탐하지 않는다", () => {

@@ -1,4 +1,4 @@
-export const TECH_DEVICE_CONDITION_EVIDENCE_VERSION = "tech-device-condition-evidence-v7";
+export const TECH_DEVICE_CONDITION_EVIDENCE_VERSION = "tech-device-condition-evidence-v8";
 
 export type TechDeviceConditionSignal =
   | "display_panel_issue"
@@ -77,6 +77,17 @@ function sourceOf(source: TechDeviceConditionEvidence["source"], raw: string): T
     normalized,
     compact: normalized.replace(/\s+/g, ""),
   };
+}
+
+function mapSourceText(sources: TextSource[], transform: (text: string) => string): TextSource[] {
+  return sources.map((item) => {
+    const normalized = transform(item.normalized).replace(/\s+/g, " ").trim();
+    return {
+      source: item.source,
+      normalized,
+      compact: normalized.replace(/\s+/g, ""),
+    };
+  });
 }
 
 function snippet(text: string, match: RegExpExecArray) {
@@ -394,6 +405,7 @@ export function parseTechDeviceConditionEvidence(input: {
   const lockNegated = hasAny(sources, [
     /분실\s*(?:없|없음|신고\s*없)|도난\s*(?:없|없음)|분실.{0,8}도난.{0,16}검수\s*완료|정상\s*해지|확정\s*기변|초기화\s*완료/,
     /(?:아이클라우드|icloud|구글\s*계정|삼성\s*계정).{0,18}(?:로그아웃|해제).{0,18}(?:완료|됨|했습니다)/,
+    /(?:완전히\s*)?잠금\s*해제(?:된|되어|완료|상태)|언락(?:폰|된|완료)|unlocked/,
   ]);
   if (!lockNegated) {
     add("account_or_activation_lock", "block_candidate", 0.95, firstEvidence(sources, [
@@ -406,13 +418,17 @@ export function parseTechDeviceConditionEvidence(input: {
 
   const carrierRiskNegated = hasAny(sources, [
     /자급제.{0,24}가\s*개통\s*같은\s*거.{0,16}신경\s*안\s*쓰|가\s*개통\s*같은\s*거.{0,16}신경\s*안\s*쓰/,
+    /(?:(?:^|[^가-힣])가\s*개통|가개통|유심\s*기변|유심기변).{0,28}(?:사기\s*당하지|피하|주의).{0,32}(?:자급제|정상\s*해지|확정\s*기변)|(?:자급제|정상\s*해지|확정\s*기변).{0,48}(?:(?:^|[^가-힣])가\s*개통|가개통|유심\s*기변|유심기변).{0,28}(?:사기\s*당하지|피하|주의)/,
   ]);
+  const carrierRiskSources = mapSourceText(sources, (text) =>
+    text.replace(/(?:네고|가격|금액|에눌)\s*(?:불가|사절|안\s*됨|안됨|x)|(?:불가|사절)\s*(?:네고|가격|금액|에눌)/g, " "),
+  );
   if (!carrierRiskNegated) {
-    add("carrier_or_finance_risk", "block_candidate", 0.85, firstEvidence(sources, [
+    add("carrier_or_finance_risk", "block_candidate", 0.85, firstEvidence(carrierRiskSources, [
       /(?:할부|미납|요금).{0,16}(?:남|있|미납|잔여)|(?:남은|잔여).{0,10}할부/,
       /(?:확정\s*기변|정상\s*해지|선택\s*약정|선약).{0,12}(?:불가|안\s*됨|안됨)/,
       /(?:유심|sim).{0,20}(?:인식\s*불|인식불|안\s*됨|안됨|불가|락)/,
-      /가\s*개통|가개통|개통된\s*단말기|개통된단말기|선약\s*불가|선택약정.{0,8}불가능/,
+      /(?:^|[^가-힣])가\s*개통|가개통|개통된\s*단말기|개통된단말기|선약\s*불가|선택약정.{0,8}불가능/,
     ]));
   }
 

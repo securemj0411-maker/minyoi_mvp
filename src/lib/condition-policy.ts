@@ -6,15 +6,14 @@
 //
 // 정책:
 // - FLAWED_NOTES: parser 가 flawed 분류하는 신호 (option-parser.ts:56 export — 13종)
-// - POOL_BLOCK_NOTES ⊂ FLAWED_NOTES — pool 진입 차단 (사용자 손해 명확 5종)
+// - POOL_BLOCK_NOTES ⊂ FLAWED_NOTES — pool 진입 차단 (사용자 손해 명확 신호)
 // - COMPARABLE_EXCLUDE_NOTES ⊃ POOL_BLOCK_NOTES — 비교군 UI 제외 (pool block + premium/noise tier 별도 grouping)
 
 import { FLAWED_NOTES } from "@/lib/option-parser";
 
-// Pool 진입 차단 5종 — FLAWED 중 "사용자가 사면 명확한 손해" subset.
-// 나머지 FLAWED (water_damage, camera_issue, sim_or_carrier_issue, locked_or_lost_signal,
-// repair_or_defect_signal, refurbished_or_repaired, installment_risk) 은 condition_class=flawed
-// 자체로 시세 sample 차단되어 풀 진입 score 0 → 자연 차단.
+// Pool 진입 차단 — FLAWED 중 "사용자가 사면 명확한 손해" 신호.
+// Wave 946: condition_class=flawed 만으로 자연 차단될 거라는 가정이 당근 ready 풀에서 깨짐
+// (가개통/유심기변/확정기변 불가 매물이 ready 잔존). 객관적 hard blocker는 note 단에서 직접 차단.
 export const POOL_BLOCK_NOTES = [
   "multi_device_bundle",
   "display_defect",
@@ -24,6 +23,13 @@ export const POOL_BLOCK_NOTES = [
   "foldable_hinge_damage",
   // Wave 938 (2026-05-29): smartphone camera lens/glass crack is not a mere cosmetic wear.
   "camera_lens_damage",
+  "camera_issue",
+  "sim_or_carrier_issue",
+  "water_damage",
+  "locked_or_lost_signal",
+  "device_charging_or_sensor_issue",
+  "refurbished_or_repaired",
+  "installment_risk",
   "screen_replaced",
   "faceid_issue",
   "parts_only",
