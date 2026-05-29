@@ -47,7 +47,10 @@ async function handle(req: NextRequest, decision: "approve" | "reject", id: numb
       `${request.depositor_name} 회원에게 ${request.amount.toLocaleString("ko-KR")} 크레딧 지급 완료 (잔액 ${result.newBalance?.toLocaleString("ko-KR")})`,
     ), { headers: { "content-type": "text/html; charset=utf-8" } });
   } else {
-    await rejectManualDeposit(request);
+    const result = await rejectManualDeposit(request);
+    if (!result.ok) {
+      return new NextResponse(resultHtml("이미 처리됨", `신청 #${id} 는 방금 다른 경로에서 처리됐어요.`), { headers: { "content-type": "text/html; charset=utf-8" } });
+    }
     return new NextResponse(resultHtml(
       "❌ 거절 완료",
       `${request.depositor_name} 회원 신청 #${id} 거절됨. 크레딧 지급 X.`,
