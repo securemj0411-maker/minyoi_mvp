@@ -179,6 +179,15 @@ describe("earphone condition evidence shadow parser", () => {
     assert.ok(!result.signals.includes("single_side_unit"));
   });
 
+  it("케이스 상태 설명의 '생활기스 제외'는 구성품 누락으로 보지 않는다", () => {
+    const result = parseEarphoneConditionEvidence({
+      title: "에어팟 프로 2세대 c타입",
+      description: "양쪽 유닛 상태는 SS급입니다. 케이스 상태는 생활기스를 제외하고 하자없이 아주 좋습니다.",
+    });
+
+    assert.ok(!result.signals.includes("missing_parts"));
+  });
+
   it("지지직거리지 않음/노캔O는 기능 하자로 오탐하지 않는다", () => {
     const result = parseEarphoneConditionEvidence({
       title: "에어팟 프로 1세대 8핀",
