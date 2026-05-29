@@ -2494,7 +2494,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     batteryCycles,
     carrier: finalCarrier,
     connectivity: finalConnectivity,
-    conditionScore,
+    conditionScore: cap01(conditionScore),
     conditionNotes,
     conditionClass: finalConditionClass,
     parseConfidence,
