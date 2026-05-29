@@ -416,6 +416,30 @@ describe("tech device condition evidence parser", () => {
     assert.ok(!result.hardBlockCandidates.includes("low_battery_health"));
   });
 
+  it("노트북 신품대비 배터리 퍼센트도 low_batt로 해석한다", () => {
+    const parsed = parseListingOptions({
+      category: "laptop",
+      title: "애플 맥북에어 2020년 13인치",
+      description: "2020년 9월 제조, 배터리 사이클337, 신품대비 79%",
+    });
+
+    assert.equal(parsed.batteryHealth, 79);
+    assert.equal(parsed.conditionClass, "low_batt");
+    assert.ok(parsed.conditionNotes.includes("low_battery_health"));
+  });
+
+  it("노트북 배터리 서비스 권장은 low_batt 경고로 연결한다", () => {
+    const parsed = parseListingOptions({
+      category: "laptop",
+      title: "2019 맥북 프로 15인치",
+      description: "배터리는 서비스 권장됨 표시가 뜨지만, 전원선만 연결하시고 사용하시면 됩니다.",
+    });
+
+    assert.equal(parsed.conditionClass, "low_batt");
+    assert.ok(parsed.conditionNotes.includes("low_battery_health"));
+    assert.ok((parsed.parsedJson.tech_device_condition_signals as string[]).includes("battery_service_needed"));
+  });
+
   it("할부 미납과 유심 인식 불가는 carrier/finance risk로 남긴다", () => {
     const result = parseTechDeviceConditionEvidence({
       title: "갤럭시 S23",
@@ -475,6 +499,81 @@ describe("tech device condition evidence parser", () => {
     assert.ok((phone.parsedJson.tech_device_condition_signals as string[]).includes("carrier_or_finance_risk"));
     assert.ok((tablet.parsedJson.tech_device_condition_signals as string[]).includes("unlocked_reset_positive"));
     assert.ok((watch.parsedJson.tech_device_condition_signals as string[]).includes("low_battery_health"));
+  });
+
+  it("노트북 패널/프레임/충전/스피커 결함은 condition gate로 flawed 처리한다", () => {
+    const panel = parseListingOptions({
+      category: "laptop",
+      title: "MacBook Pro 2020 인텔코어",
+      description: "흠집 많음 스크래치 많고 디스플레이 패널 오른쪽 및 깨짐 있음. 그 외 정상 작동함.",
+    });
+    const frame = parseListingOptions({
+      category: "laptop",
+      title: "맥북 프로 13인치",
+      description: "외관 사용감 다수 있음. 프레임 일부 파손. 화면은 쓸만함.",
+    });
+    const charging = parseListingOptions({
+      category: "laptop",
+      title: "맥북 에어",
+      description: "배터리는 147사이클이지만 충전이 안되어 전원 꽂고 사용 해야 합니다.",
+    });
+    const speaker = parseListingOptions({
+      category: "laptop",
+      title: "맥북프로 17인치",
+      description: "왼쪽스피커소리가 찢어지는 소리가 납니다.",
+    });
+
+    assert.equal(panel.conditionClass, "flawed");
+    assert.ok(panel.conditionNotes.includes("display_defect"));
+    assert.ok((panel.parsedJson.tech_device_condition_signals as string[]).includes("display_panel_issue"));
+    assert.equal(frame.conditionClass, "flawed");
+    assert.ok(frame.conditionNotes.includes("device_body_damage"));
+    assert.equal(charging.conditionClass, "flawed");
+    assert.ok(charging.conditionNotes.includes("device_charging_or_sensor_issue"));
+    assert.equal(speaker.conditionClass, "flawed");
+    assert.ok(speaker.conditionNotes.includes("repair_or_defect_signal"));
+  });
+
+  it("노트북 정상 스펙/설명은 tech condition defect로 오탐하지 않는다", () => {
+    const portNormal = parseListingOptions({
+      category: "laptop",
+      title: "맥북 프로 13 i7",
+      description: "썬더볼트단자 4개. 기능과 성능에는 아무 문제도없고 터치바 잘됩니다.",
+    });
+    const touchBarNormal = parseListingOptions({
+      category: "laptop",
+      title: "맥북프로 M1",
+      description: "외부 찍힘 A급. 터치바 : A급 사용한 적 없음. 키보드 상태 A급.",
+    });
+    const fingerprintNormal = parseListingOptions({
+      category: "laptop",
+      title: "맥북 M4pro 48GB",
+      description: "깨끗이 써서 외관상 문제없는 걸로 확인했으며 키보드 지문은 닦아서 드릴게요.",
+    });
+    const softwareCrackNormal = parseListingOptions({
+      category: "laptop",
+      title: "맥북프로 2020",
+      description: "그 외에 터치바, 음량, 디스플레이 모두 정상으로 작동합니다. 크랙버전이지만 포토샵 설치되어 있습니다.",
+    });
+    const ramSpecNormal = parseListingOptions({
+      category: "laptop",
+      title: "[미개봉] APPLE 맥북프로16 M4맥스",
+      description: "미개봉 새상품입니다. [구성] 램: 48GB/램 교체: 불가능/용량: 1TB/전원: USB-PD",
+    });
+    const officialBatteryNormal = parseListingOptions({
+      category: "laptop",
+      title: "맥북 프로 i9 16인치",
+      description: "공식애플스토어에서 배터리, 키캡 교체했다고 들었습니다. 화면은 잘 나오고 기스 없습니다.",
+    });
+
+    for (const parsed of [portNormal, touchBarNormal, fingerprintNormal, softwareCrackNormal, ramSpecNormal, officialBatteryNormal]) {
+      assert.ok(!parsed.conditionNotes.includes("display_defect"), JSON.stringify(parsed.conditionNotes));
+      assert.ok(!parsed.conditionNotes.includes("device_charging_or_sensor_issue"), JSON.stringify(parsed.conditionNotes));
+      assert.ok(!parsed.conditionNotes.includes("faceid_issue"), JSON.stringify(parsed.conditionNotes));
+      assert.ok(!parsed.conditionNotes.includes("screen_replaced"), JSON.stringify(parsed.conditionNotes));
+      assert.ok(!parsed.conditionNotes.includes("repair_or_defect_signal"), JSON.stringify(parsed.conditionNotes));
+      assert.notEqual(parsed.conditionClass, "flawed", JSON.stringify(parsed.conditionNotes));
+    }
   });
 
   it("hard tech evidence는 parseListingOptions condition_notes로 연결된다", () => {

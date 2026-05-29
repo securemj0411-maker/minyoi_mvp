@@ -229,7 +229,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v65";  // Wave 938: camera lens/glass damage split from generic camera issue
+export const PARSER_VERSION = "option-parser-v66";  // Wave 939: laptop tech condition gate + laptop spec false-positive cleanup
 
 // Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
 //   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
@@ -904,6 +904,7 @@ function parseBatteryHealth(text: string) {
   const match = firstMatch(lower, [
     /(?:배터리\s*)?(?:효율|성능)\s*[:：]?\s*(100|9[0-9]|8[0-9]|7[0-9])\s*%?/,
     /(?:배효)\s*[:：]?\s*(100|9[0-9]|8[0-9]|7[0-9])\s*%?/,
+    /신품\s*대비\s*(100|9[0-9]|8[0-9]|7[0-9])\s*%?/,
   ]);
   return match ? Number(match[1]) : null;
 }
@@ -1224,6 +1225,9 @@ function conditionFromText(
     .replace(/(?:파손|깨짐|고장).{0,12}(?:동의|면책).{0,18}(?:택배|배송)|(?:택배|배송).{0,18}(?:파손|깨짐|고장).{0,12}(?:동의|면책|우려|위험)/g, " ")
     .replace(/(?:시계줄|워치\s*줄|줄|스트랩|밴드).{0,28}(?:교체|길이\s*조정\s*불가|조정\s*불가|줄임|줄여)/g, " ")
     .replace(/(?:충전기|충전\s*기|충전독|충전\s*독|충전케이블|충전\s*케이블|케이블).{0,16}(?:없|없음|없습니다|분실|미포함|제외)/g, " ")
+    .replace(/(?:램|ram|메모리).{0,16}교체.{0,10}불가능/g, " ")
+    .replace(/크랙\s*버전|크랙버전|crack\s*version/g, " ")
+    .replace(/(?:공식|애플\s*스토어|애플스토어|공식\s*센터|서비스\s*센터).{0,30}(?:배터리|키캡|키보드).{0,20}교체/g, " ")
     .replace(/(?:카메라|렌즈).{0,28}(?:기스|흠집|찍힘|깨짐|깨진|깨져|파손|크랙|금|멍|문제|이상|불량).{0,14}(?:없|없음|없습니다|없어요|없이|아님|아닙니다|x)/g, " ")
     .replace(/카메라\s*보호\s*필름|카메라보호필름|렌즈\s*보호\s*필름|렌즈보호필름|카메라\s*섬\s*주변.{0,16}(?:생활\s*기스|기스\s*정도|미세\s*기스)/g, " ")
     .replace(/침수(?:폰)?\s*(?:없|없음|없습니다|아님|취급하지|취급\s*안)|침수.{0,12}(?:이력|내역).{0,12}(?:없|없음|없습니다|전혀\s*없)/g, " ")
@@ -1497,7 +1501,7 @@ function conditionFromText(
   // - "정품 배터리 교체" — 셀러가 공식 정품 배터리로 교체 = 정상 (수리 의미 아님)
   // - "잔상이나 화면 하자 없" — 부정형 정상 표현
   // - "전기능 이상없" / "기능 문제 없" — 정상 작동 명시
-  const noRepairOrDefect = /\(\s*없는\s*수준\s*\)|하자.{0,20}(?:없|아닙|아님|x)|고장.{0,20}없|불량.{0,20}(?:없|없이)|파손.{0,20}(?:없|동의|면책)|깨짐.{0,20}없|문제.{0,20}(?:없|환불)|수리.{0,20}(?:없|이력\s*없|내역\s*없|한\s*적\s*없|x|안\s*함|안함)|교체.{0,20}(?:없|이력\s*없|한\s*적\s*없)|하자.{0,30}(?:제외|환불|책임\s*없)|원초적\s*하자|택배\s*취급(?:문제|상\s*문제)|택배취급문제|하자.{0,8}(?:있는\s*제품은\s*명시|있을\s*경우\s*환불|있는\s*경우)|하자나\s*오염\s*없|하자나\s*기스\s*없|하자\s*거의\s*없|하자\s*약간|하자\s*미세|심각한\s*하자\s*없|심각한\s*문제\s*없|정품\s*배터리\s*교체|정품배터리교체|배터리\s*(?:100\s*%|100%)\s*정품|잔상이나\s*(?:화면|디스플레이|액정)?\s*(?:하자|기스|손상).{0,8}없|잔상을\s*제외|잔상\s*제외|전\s*기능\s*(?:이상|문제)\s*없|전기능\s*(?:이상|문제)\s*없|기능\s*(?:상\s*)?(?:이상|문제)\s*(?:없|없는)|기능\s*문제\s*없|기능\s*정상|모든\s*기능\s*(?:정상|이상\s*없|문제\s*없)|(?:사설|부분|일부|자가)\s*수리\s*(?:내역|이력)?\s*(?:없|없음|없습니다|x|무|없이|절대\s*없이|안\s*함|안함)|(?:사설수리|부분수리|일부수리|자가수리)\s*(?:내역|이력)?\s*(?:없|없음|없습니다|x|무|없이|절대\s*없이|안\s*함|안함)|(?:시계줄|워치\s*줄|줄|스트랩|밴드).{0,28}(?:교체|길이\s*조정\s*불가|조정\s*불가)|(?:문제|기능\s*이상).{0,20}(?:교환|환불|기간|정책)|(?:고객\s*부주의|본인\s*과실|단순\s*변심|기능\s*문제가\s*아닌).{0,50}(?:파손|침수|충격|액정\s*나감|액정나감|꺼짐|멍).{0,50}(?:교환|환불|반품).{0,12}불가/.test(lower);
+  const noRepairOrDefect = /\(\s*없는\s*수준\s*\)|하자.{0,20}(?:없|아닙|아님|x)|고장.{0,20}없|불량.{0,20}(?:없|없이)|파손.{0,20}(?:없|동의|면책)|깨짐.{0,20}없|문제.{0,20}(?:없|환불)|수리.{0,20}(?:없|이력\s*(?:당연히|전혀|아예)?\s*없|내역\s*(?:당연히|전혀|아예)?\s*없|한\s*적\s*없|x|안\s*함|안함)|교체.{0,20}(?:없|이력\s*없|한\s*적\s*없)|하자.{0,30}(?:제외|환불|책임\s*없)|원초적\s*하자|택배\s*취급(?:문제|상\s*문제)|택배취급문제|하자.{0,8}(?:있는\s*제품은\s*명시|있을\s*경우\s*환불|있는\s*경우)|하자나\s*오염\s*없|하자나\s*기스\s*없|하자\s*거의\s*없|하자\s*약간|하자\s*미세|심각한\s*하자\s*없|심각한\s*문제\s*없|정품\s*배터리\s*교체|정품배터리교체|(?:공식|애플\s*스토어|애플스토어|공식\s*센터|서비스\s*센터).{0,30}(?:배터리|키캡|키보드).{0,20}교체|배터리\s*(?:100\s*%|100%)\s*정품|잔상이나\s*(?:화면|디스플레이|액정)?\s*(?:하자|기스|손상).{0,8}없|잔상을\s*제외|잔상\s*제외|전\s*기능\s*(?:이상|문제)\s*없|전기능\s*(?:이상|문제)\s*없|기능\s*(?:상\s*)?(?:이상|문제)\s*(?:없|없는)|기능\s*문제\s*없|기능\s*정상|모든\s*기능\s*(?:정상|이상\s*없|문제\s*없)|(?:사설|부분|일부|자가)\s*수리\s*(?:내역|이력)?\s*(?:당연히|전혀|아예)?\s*(?:없|없음|없습니다|x|무|없이|절대\s*없이|안\s*함|안함)|(?:사설수리|부분수리|일부수리|자가수리)\s*(?:내역|이력)?\s*(?:당연히|전혀|아예)?\s*(?:없|없음|없습니다|x|무|없이|절대\s*없이|안\s*함|안함)|(?:시계줄|워치\s*줄|줄|스트랩|밴드).{0,28}(?:교체|길이\s*조정\s*불가|조정\s*불가)|(?:문제|기능\s*이상).{0,20}(?:교환|환불|기간|정책)|(?:고객\s*부주의|본인\s*과실|단순\s*변심|기능\s*문제가\s*아닌).{0,50}(?:파손|침수|충격|액정\s*나감|액정나감|꺼짐|멍).{0,50}(?:교환|환불|반품).{0,12}불가/.test(lower);
   if (!noRepairOrDefect && /수리|교체|하자|고장|불량|파손|깨짐/.test(defectRiskText)) add("repair_or_defect_signal", -0.2);
   if (batteryHealth != null && batteryHealth < 85) add("low_battery_health", -0.15);
   if (cycles != null && cycles > 500) add("high_battery_cycles", -0.1);
@@ -1510,7 +1514,7 @@ function conditionFromText(
   //   - 공식 리퍼 (refurbished_factory) 신규 → FLAWED 아님 (정상 작동, 시세 sample 유지)
   //   - 사설/부분/일부/자가 수리 (refurbished_or_repaired) 유지 → FLAWED (실제 훼손 흔적)
   const notRefurbished = /리퍼\s*(?:제품\s*)?(?:아님|아닙니다|아닌|아니고|아니며)/.test(lower);
-  const noUnofficialOrPartialRepair = /(?:사설|부분|일부|자가)\s*수리\s*(?:내역|이력)?\s*(?:없|없음|없습니다|x|무|없이|절대\s*없이|안\s*함|안함|한\s*적\s*없|한적\s*없)|(?:사설수리|부분수리|일부수리|자가수리)\s*(?:내역|이력)?\s*(?:없|없음|없습니다|x|무|없이|절대\s*없이|안\s*함|안함|한\s*적\s*없|한적\s*없)/.test(lower);
+  const noUnofficialOrPartialRepair = /(?:사설|부분|일부|자가)\s*수리\s*(?:내역|이력)?\s*(?:당연히|전혀|아예)?\s*(?:없|없음|없습니다|x|무|없이|절대\s*없이|안\s*함|안함|한\s*적\s*없|한적\s*없)|(?:사설수리|부분수리|일부수리|자가수리)\s*(?:내역|이력)?\s*(?:당연히|전혀|아예)?\s*(?:없|없음|없습니다|x|무|없이|절대\s*없이|안\s*함|안함|한\s*적\s*없|한적\s*없)/.test(lower);
   const isUnofficialOrPartialRepair = !noUnofficialOrPartialRepair && /(?:사설|부분|일부|자가)\s*수리|사설수리|부분수리|일부수리|자가수리/.test(lower);
   const isFactoryRefurbished = !notRefurbished
     && !isUnofficialOrPartialRepair
@@ -2140,7 +2144,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       if (notes) addEarphoneGateNotes(notes, -0.06);
     }
   }
-  const techDeviceConditionEvidence = category === "smartphone" || category === "tablet" || category === "smartwatch"
+  const techDeviceConditionEvidence = category === "smartphone" || category === "tablet" || category === "smartwatch" || category === "laptop"
     ? parseTechDeviceConditionEvidence({ title, description })
     : null;
   if (techDeviceConditionEvidence) {
@@ -2169,6 +2173,18 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
     for (const signal of hardSignals) {
       const note = hardSignalNoteMap[signal];
       if (note) addTechGateNote(note);
+    }
+    const warningSignalNoteMap: Record<string, string> = {
+      battery_service_needed: "low_battery_health",
+      low_battery_health: "low_battery_health",
+      high_battery_cycles: "high_battery_cycles",
+    };
+    for (const signal of techDeviceConditionEvidence.warningSignals) {
+      const note = warningSignalNoteMap[signal];
+      if (note && !conditionNotes.includes(note)) {
+        conditionNotes.push(note);
+        conditionScore += -0.08;
+      }
     }
   }
   const tabletBundlePriceReview = category === "tablet" && hasTabletBundlePriceReview(text);
