@@ -18,6 +18,10 @@ import { FLAWED_NOTES } from "@/lib/option-parser";
 export const POOL_BLOCK_NOTES = [
   "multi_device_bundle",
   "display_defect",
+  // Wave 934 (2026-05-29): smartphone/tablet structural damage. Back glass, rear panel,
+  // foldable hinge/inner-panel defects are not cosmetic discounts; pool must not surface them.
+  "device_body_damage",
+  "foldable_hinge_damage",
   "screen_replaced",
   "faceid_issue",
   "parts_only",

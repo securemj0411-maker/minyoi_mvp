@@ -403,6 +403,41 @@ function damagedHits(title: string, desc: string): string[] {
     return true;
   });
   const compactText = nrm(text).replace(/\s+/g, "");
+  const backSurface = "(?:뒷판|뒤판|뒷면|후면\\s*유리|후면유리|백\\s*글라스|백글라스|후면)";
+  const bodySurface = "(?:프레임|테두리|하우징|외관)";
+  const strongBreakage = "(?:깨졌|깨져|깨진|깨짐|깨져서|깨져\\s*있|깨져있|파손|크랙|금\\s*갔|금\\s*감|금이\\s*갔|금이\\s*감)";
+  const structuralFrameDamage = "(?:찌그러|휘어|함몰|벌어짐|들뜸|파손|크랙|금\\s*갔|금이\\s*갔)";
+  const hingeSurface = "(?:힌지|흰지|접히는\\s*부분|접는\\s*부분|가운데|내부\\s*액정|내부액정|안쪽\\s*액정)";
+  const hingeDamage = "(?:검은\\s*(?:색\\s*)?(?:점|반점)|검은점|흑점|반점|멍|세로줄|가로줄|줄\\s*감|액정\\s*불빛|화면\\s*나가|화면나가|불량|파손|크랙|벌어짐|들뜸|안\\s*펴|안펴|안\\s*접|안접|유격|헐거)";
+  const structuralNegation = new RegExp(
+    `${backSurface}.{0,24}(?:깨끗|깔끔|정상|${strongBreakage}\\s*(?:없|없음|없습니다|없고|없이|아님|아닙니다)|기스\\s*(?:없|없음)|찍힘\\s*(?:없|없음))|` +
+    `(?:${strongBreakage}|기스|찍힘).{0,16}(?:없|없음|없습니다|없고|없이|아님|아닙니다).{0,18}${backSurface}|` +
+    `${bodySurface}.{0,24}(?:깨끗|깔끔|정상|파손\\s*(?:없|없음)|크랙\\s*(?:없|없음)|유격\\s*(?:없|없음))`,
+  );
+  if (!structuralNegation.test(normalized)) {
+    if (
+      new RegExp(`${backSurface}.{0,20}${strongBreakage}`).test(normalized) ||
+      new RegExp(`${strongBreakage}.{0,20}${backSurface}`).test(normalized) ||
+      new RegExp(`${bodySurface}.{0,20}${structuralFrameDamage}`).test(normalized) ||
+      new RegExp(`${structuralFrameDamage}.{0,20}${bodySurface}`).test(normalized)
+    ) {
+      hits.push("device_body_damage");
+    }
+  }
+  const hingeNegation = new RegExp(
+    `${hingeSurface}.{0,28}(?:정상|문제\\s*없|이상\\s*없|깨끗|깔끔|유격\\s*없|벌어짐\\s*없|반점\\s*없|검은\\s*(?:색\\s*)?(?:점|반점)\\s*없)|` +
+    `(?:정상|문제\\s*없|이상\\s*없|깨끗|깔끔).{0,16}${hingeSurface}`,
+  );
+  if (!hingeNegation.test(normalized)) {
+    if (
+      new RegExp(`${hingeSurface}.{0,28}${hingeDamage}`).test(normalized) ||
+      new RegExp(`${hingeDamage}.{0,28}${hingeSurface}`).test(normalized) ||
+      /(?:접으면|접을\s*때|접힌\s*상태).{0,24}(?:화면\s*나가|화면나가|꺼짐|안\s*나오|나오지\s*않|불량)/.test(normalized) ||
+      /(?:내부\s*액정|내부액정|안쪽\s*액정|메인\s*액정).{0,24}(?:하부|고무|베젤).{0,16}(?:없|없음|떨어짐|분리)/.test(normalized)
+    ) {
+      hits.push("foldable_hinge_damage");
+    }
+  }
 
   // 2026-05-17 (사용자 5-iteration #4): "하자" negation context 대폭 확장.
   // 정상 매물 표현 false positive: "하자는 생활기스" / "하자나 오염없" / "심각한 하자 없" / "큰 하자 없" / "하자 사용감 없" 등.

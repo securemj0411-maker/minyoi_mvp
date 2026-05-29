@@ -1331,6 +1331,44 @@ test("smartphone repair parts and buying posts are excluded before scoring", () 
   );
 });
 
+test("smartphone structural damage descriptions are excluded before scoring", () => {
+  const title = "갤럭시 z플립5 256기가";
+  const description = "가운데 힌지부분 검은색 반점이 있고 뒷판 깨져있습니다";
+
+  assert.equal(classifyListing(title, description, 180_000).listingType, "damaged");
+
+  const parsed = parseListingOptions({
+    category: "smartphone",
+    skuId: "galaxy-z-flip-5",
+    skuName: "Galaxy Z Flip 5",
+    title,
+    description,
+  });
+  assert.equal(parsed.conditionClass, "flawed");
+  assert.ok(parsed.conditionNotes.includes("device_body_damage"));
+  assert.ok(parsed.conditionNotes.includes("foldable_hinge_damage"));
+  assert.ok(parsed.needsReview);
+});
+
+test("smartphone clean negations do not trigger structural damage gates", () => {
+  const description = "액정 깨끗합니다. 후면 깨끗합니다. 카메라 무음이고 스피커 이상 없습니다.";
+  assert.notEqual(
+    classifyListing("아이폰 16 일본판", description, 900_000).listingType,
+    "damaged",
+  );
+
+  const parsed = parseListingOptions({
+    category: "smartphone",
+    skuId: "iphone-16",
+    skuName: "iPhone 16",
+    title: "아이폰 16 일본판",
+    description,
+  });
+  assert.notEqual(parsed.conditionClass, "flawed");
+  assert.ok(!parsed.conditionNotes.includes("device_body_damage"));
+  assert.ok(!parsed.conditionNotes.includes("foldable_hinge_damage"));
+});
+
 test("description-level buying intent is excluded without blocking purchase-history wording", () => {
   assert.equal(
     classifyListing(

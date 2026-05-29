@@ -61,6 +61,8 @@ export type ConditionClass =
 // 2026-05-17 v46 cleanup: export — condition-policy.ts 가 POOL_BLOCK_NOTES subset 검증에 사용.
 export const FLAWED_NOTES = [
   "display_defect",
+  "device_body_damage",
+  "foldable_hinge_damage",
   "screen_replaced",
   "faceid_issue",
   "camera_issue",
@@ -225,7 +227,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v62";  // Wave 885: broad SKU modelName parenthetical/em-dash 토큰 폭주 차단 (Seiko/Dyson/Golf comparable_key 정리)
+export const PARSER_VERSION = "option-parser-v63";  // Wave 934: smartphone structural damage evidence gate (back glass / foldable hinge / black spot)
 
 // Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
 //   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
@@ -1557,8 +1559,9 @@ function conditionFromText(
   // 4) flawed 강화 — "정상 작동" + "유리 깨짐/금/액정 깨짐" 동시 매칭.
   //    옛 패턴은 "깨짐 없음" negation은 잡지만, 셀러가 "깨졌지만 정상" 같이 양립 표현 미잡음.
   //    예: "앞유리 조금 금갔어요 근데 방수기능 됩니다" → 셀러 정상 강조, 실제 flawed.
-  const visibleDamageWithFunctional = /(?:유리\s*(?:깨|금|크랙)|액정\s*(?:깨|금|크랙)|화면\s*(?:깨|금|크랙)|크랙\s*있|금\s*갔|금\s*있).{0,40}(?:정상|이상\s*없|잘\s*됨|작동|기능)/.test(lower) ||
-    /(?:정상\s*작동|이상\s*없).{0,40}(?:유리\s*(?:깨|금|크랙)|액정\s*(?:깨|금|크랙)|화면\s*(?:깨|금|크랙)|크랙\s*있|금\s*갔|금\s*있)/.test(lower);
+  const visibleGlassBreakage = "(?:깨졌|깨져|깨진|깨짐|파손|크랙|금\\s*갔|금\\s*감|금이\\s*갔|금이\\s*감)";
+  const visibleDamageWithFunctional = new RegExp(`(?:유리|액정|화면).{0,8}${visibleGlassBreakage}|크랙\\s*있|금\\s*갔|금\\s*있`).test(lower)
+    && /(?:정상|이상\s*없|잘\s*됨|작동|기능)/.test(lower);
   if (visibleDamageWithFunctional) {
     add("display_defect", -0.15); // 셀러 우호 표현이라도 visible damage는 flawed로
   }
@@ -2070,13 +2073,31 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const monitorShape = category === "monitor"
     ? (parseMonitorShape(title) ?? parseMonitorShape(text) ?? monitorModelHint?.monitorShape ?? null)
     : null;
-  const { conditionScore, conditionNotes } = conditionFromText(text, batteryHealth, batteryCycles, category);
+  const conditionResult = conditionFromText(text, batteryHealth, batteryCycles, category);
+  let conditionScore = conditionResult.conditionScore;
+  const conditionNotes = [...conditionResult.conditionNotes];
   const earphoneConditionEvidence = category === "earphone"
     ? parseEarphoneConditionEvidence({ title, description })
     : null;
   const techDeviceConditionEvidence = category === "smartphone" || category === "tablet" || category === "smartwatch"
     ? parseTechDeviceConditionEvidence({ title, description })
     : null;
+  if (techDeviceConditionEvidence) {
+    const hardSignals = new Set(techDeviceConditionEvidence.hardBlockCandidates);
+    const addTechGateNote = (note: string, delta = -0.35) => {
+      if (!conditionNotes.includes(note)) conditionNotes.push(note);
+      conditionScore += delta;
+    };
+    if (hardSignals.has("display_panel_issue") && !conditionNotes.includes("display_defect")) {
+      addTechGateNote("display_defect");
+    }
+    if (hardSignals.has("body_or_back_glass_damage")) {
+      addTechGateNote("device_body_damage");
+    }
+    if (hardSignals.has("foldable_hinge_or_inner_damage")) {
+      addTechGateNote("foldable_hinge_damage");
+    }
+  }
   const tabletBundlePriceReview = category === "tablet" && hasTabletBundlePriceReview(text);
   // Wave 90: tablet generation을 comparableParts에 전달 (세대별 시세 분리)
   const tabletGeneration = category === "tablet" ? parseTabletGeneration(text, model) : null;
@@ -2318,6 +2339,8 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const poolBlockConditionNote = conditionNotes.some((note) => [
     "multi_device_bundle",
     "display_defect",
+    "device_body_damage",
+    "foldable_hinge_damage",
     "screen_replaced",
     "faceid_issue",
     "parts_only",
@@ -2442,7 +2465,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       tech_device_condition_signals: techDeviceConditionEvidence?.signals ?? null,
       tech_device_condition_policy: techDeviceConditionEvidence ? {
         version: techDeviceConditionEvidence.version,
-        mode: "shadow_only",
+        mode: "condition_gate_v1",
         hard_block_candidates: techDeviceConditionEvidence.hardBlockCandidates,
         warning_signals: techDeviceConditionEvidence.warningSignals,
         positive_signals: techDeviceConditionEvidence.positiveSignals,

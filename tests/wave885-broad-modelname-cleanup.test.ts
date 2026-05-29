@@ -15,8 +15,8 @@ function parse(opts: { title: string; skuId: string; skuName: string; category: 
   });
 }
 
-test("Wave 885: PARSER_VERSION bumped to v62", () => {
-  assert.equal(PARSER_VERSION, "option-parser-v62");
+test("Wave 934: PARSER_VERSION bumped to v63", () => {
+  assert.equal(PARSER_VERSION, "option-parser-v63");
 });
 
 test("Wave 885: Seiko broad catch-all does not leak 미박힘 placeholder into comparable_key", () => {

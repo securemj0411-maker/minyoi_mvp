@@ -84,6 +84,47 @@ describe("tech device condition evidence parser", () => {
     assert.ok(!signals("아이폰 14", "액정은 필름 잘 붙여놔서 깨진 곳 없이 깨끗합니다.").includes("display_panel_issue"));
   });
 
+  it("후면유리/뒷판 파손은 생활기스가 아니라 구조 손상 hard signal로 잡는다", () => {
+    const result = parseTechDeviceConditionEvidence({
+      title: "아이폰 13 미니 128GB",
+      description: "찍힘 있고 뒷면깨져서 싸게 올려요.",
+    });
+
+    assert.ok(result.hardBlockCandidates.includes("body_or_back_glass_damage"));
+  });
+
+  it("폴더블 힌지 검은 반점과 접으면 화면 나감은 hard signal로 잡는다", () => {
+    const result = parseTechDeviceConditionEvidence({
+      title: "갤럭시 z플립5 256기가",
+      description: "가운데 힌지부분 검은색 반점이 있고 뒷판 깨져있습니다. 접으면 화면 나가요.",
+    });
+
+    assert.ok(result.hardBlockCandidates.includes("display_panel_issue"));
+    assert.ok(result.hardBlockCandidates.includes("body_or_back_glass_damage"));
+    assert.ok(result.hardBlockCandidates.includes("foldable_hinge_or_inner_damage"));
+  });
+
+  it("무잔상 문구가 있어도 내부 LCD 멍/검은점이 있으면 display issue로 잡는다", () => {
+    const result = parseTechDeviceConditionEvidence({
+      title: "갤럭시Z플립5 256GB",
+      description: "잔상 유무 무. 터치 카메라 기능 이상 없어요. 내부 LCD 멍 있어요.",
+    });
+
+    assert.ok(result.hardBlockCandidates.includes("display_panel_issue"));
+  });
+
+  it("액정/후면 깨끗, 카메라 무음, 스피커 이상 없음은 손상으로 오탐하지 않는다", () => {
+    const result = parseTechDeviceConditionEvidence({
+      title: "아이폰 16 일본판",
+      description: "액정 깨끗합니다. 후면도 깨끗합니다. 일본판이라 카메라 무음이고 스피커 이상 없습니다.",
+    });
+
+    assert.ok(!result.hardBlockCandidates.includes("display_panel_issue"));
+    assert.ok(!result.hardBlockCandidates.includes("body_or_back_glass_damage"));
+    assert.ok(!result.hardBlockCandidates.includes("camera_issue"));
+    assert.ok(!result.hardBlockCandidates.includes("speaker_or_mic_issue"));
+  });
+
   it("스피커 기능 이상무는 speaker/mic issue로 오탐하지 않는다", () => {
     const result = parseTechDeviceConditionEvidence({
       title: "갤럭시 z폴드5",
@@ -151,7 +192,7 @@ describe("tech device condition evidence parser", () => {
     assert.ok(result.hardBlockCandidates.includes("carrier_or_finance_risk"));
   });
 
-  it("parseListingOptions는 smartphone/tablet/smartwatch parsedJson에 shadow evidence를 저장한다", () => {
+  it("parseListingOptions는 smartphone/tablet/smartwatch parsedJson에 condition-gate evidence를 저장한다", () => {
     const phone = parseListingOptions({
       category: "smartphone",
       title: "아이폰 17 프로",
@@ -174,7 +215,7 @@ describe("tech device condition evidence parser", () => {
       skuName: "Apple Watch Series 8",
     });
 
-    assert.equal((phone.parsedJson.tech_device_condition_policy as { mode?: string } | null)?.mode, "shadow_only");
+    assert.equal((phone.parsedJson.tech_device_condition_policy as { mode?: string } | null)?.mode, "condition_gate_v1");
     assert.ok((phone.parsedJson.tech_device_condition_signals as string[]).includes("carrier_or_finance_risk"));
     assert.ok((tablet.parsedJson.tech_device_condition_signals as string[]).includes("unlocked_reset_positive"));
     assert.ok((watch.parsedJson.tech_device_condition_signals as string[]).includes("low_battery_health"));
