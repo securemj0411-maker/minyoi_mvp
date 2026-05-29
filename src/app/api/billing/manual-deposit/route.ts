@@ -16,6 +16,9 @@ export const dynamic = "force-dynamic";
 
 const AUTO_APPROVE_WINDOW_MS = 3 * 60 * 1000; // 3분
 const RATE_LIMIT_WINDOW_MS = 30 * 60 * 1000; // 30분 — 같은 사용자 재신청 방지
+const MANUAL_DEPOSIT_SUCCESS_WINDOW_MS = 24 * 60 * 60 * 1000; // 24시간 — 자동지급 반복 악용 차단
+const MANUAL_DEPOSIT_REJECTED_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 입금 미확인 후 반복 신청 차단
+const SUPPORT_OPEN_KAKAO_URL = "https://open.kakao.com/o/g6prauwi";
 
 type Body = {
   planKey?: string;
@@ -82,6 +85,38 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const recentSuccessCutoff = new Date(Date.now() - MANUAL_DEPOSIT_SUCCESS_WINDOW_MS).toISOString();
+    const recentSuccessRes = await restFetch(
+      `${tableUrl("mvp_manual_deposit_requests")}?select=id,status,created_at&auth_user_id=eq.${authUserId}&status=in.(approved,auto_approved)&created_at=gte.${encodeURIComponent(recentSuccessCutoff)}&order=created_at.desc&limit=1`,
+      { headers: serviceHeaders() },
+    );
+    if (recentSuccessRes.ok) {
+      const rows = (await recentSuccessRes.json()) as Array<{ id: number; status: string; created_at: string }>;
+      if (rows.length > 0) {
+        return NextResponse.json({
+          error: "manual_deposit_daily_cap",
+          message: "오늘 계좌이체 충전 신청은 이미 처리됐어요. 추가 충전이 필요하면 고객센터 오픈카톡으로 연락해주세요.",
+          supportUrl: SUPPORT_OPEN_KAKAO_URL,
+        }, { status: 429 });
+      }
+    }
+
+    const rejectedCutoff = new Date(Date.now() - MANUAL_DEPOSIT_REJECTED_COOLDOWN_MS).toISOString();
+    const recentRejectedRes = await restFetch(
+      `${tableUrl("mvp_manual_deposit_requests")}?select=id,status,created_at&auth_user_id=eq.${authUserId}&status=eq.rejected&created_at=gte.${encodeURIComponent(rejectedCutoff)}&order=created_at.desc&limit=1`,
+      { headers: serviceHeaders() },
+    );
+    if (recentRejectedRes.ok) {
+      const rows = (await recentRejectedRes.json()) as Array<{ id: number; status: string; created_at: string }>;
+      if (rows.length > 0) {
+        return NextResponse.json({
+          error: "manual_deposit_recent_reject",
+          message: "최근 입금 확인이 어려웠던 신청이 있어요. 추가 충전은 고객센터 오픈카톡으로 연락해주세요.",
+          supportUrl: SUPPORT_OPEN_KAKAO_URL,
+        }, { status: 429 });
+      }
+    }
+
     // 신청 row 생성. 3분 후 auto-approve scheduled.
     const nowIso = new Date().toISOString();
     const scheduledIso = new Date(Date.now() + AUTO_APPROVE_WINDOW_MS).toISOString();
@@ -108,7 +143,7 @@ export async function POST(req: NextRequest) {
       console.error("[manual-deposit] request insert failed", { status: insertRes.status, body: errText.slice(0, 200) });
       return NextResponse.json({
         error: "request_failed",
-        message: `신청을 처리하지 못했어요: ${errText.slice(0, 120)}`,
+        message: "충전 신청을 처리하지 못했어요. 잠시 후 다시 시도해주세요.",
       }, { status: 500 });
     }
     const insertedRows = (await insertRes.json()) as Array<{ id: number }>;
@@ -141,7 +176,7 @@ export async function POST(req: NextRequest) {
     console.error("[manual-deposit] endpoint error", err instanceof Error ? err.message : String(err));
     return NextResponse.json({
       error: "deposit_failed",
-      message: `처리 중 오류가 발생했어요: ${err instanceof Error ? err.message.slice(0, 160) : "unknown"}`,
+      message: "처리 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.",
     }, { status: 500 });
   }
 }

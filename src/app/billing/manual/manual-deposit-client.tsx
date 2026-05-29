@@ -58,6 +58,7 @@ export default function ManualDepositClient() {
 
   const [stage, setStage] = useState<Stage>("ready");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorSupportUrl, setErrorSupportUrl] = useState<string | null>(null);
   const [copyOk, setCopyOk] = useState(false);
   const [authReady, setAuthReady] = useState<"loading" | "authed" | "guest">("loading");
   // Wave 775 (2026-05-27): user state 추가 — displayNameForUser 로 카톡 닉네임 자동 추출.
@@ -179,6 +180,7 @@ export default function ManualDepositClient() {
 
   async function handleConfirm() {
     setErrorMessage(null);
+    setErrorSupportUrl(null);
     // Wave 775 (2026-05-27): depositorName 자동 — 카톡 닉네임 (displayNameForUser).
     //   user_metadata.nickname → name → full_name → email split 순.
     const cleanName = autoDepositorName.trim().slice(0, 40);
@@ -199,11 +201,12 @@ export default function ManualDepositClient() {
         },
         body: JSON.stringify({ planKey, depositorName: cleanName }),
       });
-      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; message?: string };
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; message?: string; supportUrl?: string };
       if (!res.ok || !data.ok) {
         // 사용자 결정: rate limit 메시지 — "30분 뒤" 표시 X. 일반 안내.
         const friendly = data.message ?? "충전 신청을 처리하지 못했어요. 잠시 후 다시 시도해주세요.";
         setErrorMessage(friendly);
+        setErrorSupportUrl(typeof data.supportUrl === "string" ? data.supportUrl : null);
         setStage("error");
         return;
       }
@@ -319,7 +322,7 @@ export default function ManualDepositClient() {
             카카오페이로 송금하기
           </button>
           <p className="mt-2 break-keep text-[11px] font-medium leading-4 text-zinc-500 dark:text-zinc-400">
-            토스/카카오페이가 송금 화면을 자동으로 열어줘요. 다른 은행을 쓰시면 위 계좌번호 복사 후 본인 은행 앱에서 송금하고 아래 "입금 완료" 를 눌러주세요.
+            토스/카카오페이가 송금 화면을 자동으로 열어줘요. 다른 은행을 쓰시면 위 계좌번호 복사 후 본인 은행 앱에서 송금하고 아래 입금 완료를 눌러주세요.
           </p>
 
           {/* Wave 775 (2026-05-27): 입금자명 input 제거 + 카톡 닉네임 자동 안내.
@@ -330,7 +333,7 @@ export default function ManualDepositClient() {
               <div className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">입금자명 (자동)</div>
               <div className="mt-0.5 text-[14px] font-black text-zinc-950 dark:text-zinc-50">{autoDepositorName}</div>
               <p className="mt-1.5 break-keep text-[10.5px] font-medium leading-4 text-zinc-500 dark:text-zinc-400">
-                송금하실 때 은행 앱의 <b>"받는 분에게 표시"</b> 항목에 같은 이름을 적어주시면 빠르게 매칭돼요.
+                송금하실 때 은행 앱의 <b>받는 분에게 표시</b> 항목에 같은 이름을 적어주시면 빠르게 매칭돼요.
               </p>
             </div>
           ) : null}
@@ -363,7 +366,19 @@ export default function ManualDepositClient() {
             </p>
           ) : null}
           {errorMessage ? (
-            <p className="mt-2 text-center text-[12px] font-bold text-rose-600 dark:text-rose-400">{errorMessage}</p>
+            <div className="mt-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-center text-[12px] font-bold text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
+              <p>{errorMessage}</p>
+              {errorSupportUrl ? (
+                <a
+                  href={errorSupportUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 inline-flex text-[#3182f6] underline underline-offset-2 dark:text-blue-300"
+                >
+                  고객센터 오픈카톡 열기
+                </a>
+              ) : null}
+            </div>
           ) : null}
         </section>
 

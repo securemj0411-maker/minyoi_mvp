@@ -54,6 +54,7 @@ export default function ProcessingClient() {
 
   const [stage, setStage] = useState<Stage>("ready");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorSupportUrl, setErrorSupportUrl] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState<"loading" | "authed" | "guest">("loading");
   const [user, setUser] = useState<User | null>(null);
   const [requestId, setRequestId] = useState<number | null>(null);
@@ -172,6 +173,7 @@ export default function ProcessingClient() {
 
   async function handleConfirm() {
     setErrorMessage(null);
+    setErrorSupportUrl(null);
     const cleanName = autoDepositorName.trim().slice(0, 40);
     if (cleanName.length < 1) {
       setErrorMessage("로그인이 필요해요. 다시 로그인 후 시도해주세요.");
@@ -194,12 +196,14 @@ export default function ProcessingClient() {
         ok?: boolean;
         error?: string;
         message?: string;
+        supportUrl?: string;
         requestId?: number;
         etaSeconds?: number;
       };
       if (!res.ok || !data.ok) {
         const friendly = data.message ?? "충전 신청을 처리하지 못했어요. 잠시 후 다시 시도해주세요.";
         setErrorMessage(friendly);
+        setErrorSupportUrl(typeof data.supportUrl === "string" ? data.supportUrl : null);
         setStage("error");
         return;
       }
@@ -266,7 +270,7 @@ export default function ProcessingClient() {
               <>
                 <div className="text-[13px] font-black text-zinc-950 dark:text-zinc-50">토스 앱이 열렸나요?</div>
                 <p className="mt-1.5 break-keep text-[12px] font-medium leading-5 text-zinc-600 dark:text-zinc-300">
-                  토스 송금 화면에서 <b>"받는 분에게 표시"</b> 항목을 카톡 닉네임으로 바꿔주시면 매칭이 빨라요.
+                  토스 송금 화면에서 <b>받는 분에게 표시</b> 항목을 카톡 닉네임으로 바꿔주시면 매칭이 빨라요.
                   아래 입금자명과 같은 이름이면 자동 확인돼요.
                 </p>
               </>
@@ -325,7 +329,17 @@ export default function ProcessingClient() {
 
             {errorMessage ? (
               <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-[12px] font-bold text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
-                {errorMessage}
+                <p>{errorMessage}</p>
+                {errorSupportUrl ? (
+                  <a
+                    href={errorSupportUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-1 inline-flex text-[#3182f6] underline underline-offset-2 dark:text-blue-300"
+                  >
+                    고객센터 오픈카톡 열기
+                  </a>
+                ) : null}
               </div>
             ) : null}
 
