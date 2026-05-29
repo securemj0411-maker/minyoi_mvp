@@ -78,8 +78,23 @@ Decision:
 
 Local REST probes against the current pending 500 keys showed 10-key chunks responding in roughly 60-200ms per chunk, while 50-key chunks had multi-second spikes and one production timeout.
 
+## Follow-up: hot-key rescue and partial index
+
+After the 10-key chunk deploy, one production run succeeded and a later run still timed out on an AirPods-heavy parsed-row GET. That means the issue is not only URL/chunk size; some high-volume comparable keys need either a narrower fallback or an index matching the market invalidation query shape.
+
+Decision:
+
+- `loadParsedRowsByComparableKeys` now retries a failed multi-key chunk one key at a time.
+- If a single key still times out, the key is logged/deferred instead of failing the whole `market_worker` run.
+- Market invalidation records `rescued` and `failed` key counts in stage timings.
+- Added migration `20260529170352_market_invalidation_parsed_hotpath_index.sql`:
+  - partial covering index on `(comparable_key, pid)`
+  - predicate `needs_review is false and parse_confidence >= 0.65`
+  - covers the selected parser/condition columns
+
+This keeps the worker alive immediately and gives Postgres the right index for the hot path once the migration is applied.
+
 ## Deferred
 
-- If market-worker still spikes after this cap, consider a DB index optimized for the exact invalidation query:
-  `(comparable_key, needs_review, parse_confidence desc, pid)`.
+- If single-key rescue still leaves a permanent pending-key tail, add per-key attempt/error tracking or a stale-key quarantine policy.
 - A deeper refactor could compute invalidation rows from recent `mvp_raw_listings` first, then join parsed PIDs, so stale historical rows are not considered at all.

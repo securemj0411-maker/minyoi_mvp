@@ -352,6 +352,7 @@ const PARSED_PID_READ_CHUNK_SIZE = 300;
 const REST_KEY_READ_CHUNK_SIZE = 50;
 const DEFAULT_MARKET_INVALIDATION_KEY_CHUNK_SIZE = 10;
 const DEFAULT_MARKET_INVALIDATION_PARSED_ROWS_PER_KEY_CHUNK = 300;
+const DEFAULT_MARKET_INVALIDATION_RESCUE_ROWS_PER_KEY = 80;
 const TERMINAL_LISTING_STATES = new Set(["sold_confirmed", "disappeared", "archived"]);
 
 export type ScoreStageOptions = {
@@ -2780,6 +2781,9 @@ type ParsedKeyLoadOptions = {
   keyChunkSize?: number;
   maxRowsPerKeyChunk?: number;
   onAttemptedKeys?: (keys: string[]) => void;
+  onFailedKeys?: (keys: string[], err: unknown) => void;
+  onRescuedKeys?: (keys: string[]) => void;
+  rescueRowsPerKey?: number;
 };
 
 function parsedListingColumns(options: { includeParsedJson: boolean }) {
@@ -2805,6 +2809,28 @@ function marketInvalidationKeyChunkSize() {
   );
 }
 
+function marketInvalidationRescueRowsPerKey() {
+  return boundedInt(
+    process.env.PIPELINE_MARKET_INVALIDATION_RESCUE_ROWS_PER_KEY ?? null,
+    DEFAULT_MARKET_INVALIDATION_RESCUE_ROWS_PER_KEY,
+    10,
+    DEFAULT_MARKET_INVALIDATION_PARSED_ROWS_PER_KEY_CHUNK,
+  );
+}
+
+async function loadParsedRowsForComparableKeyChunk(input: {
+  keys: string[];
+  columns: string;
+  maxRows: number;
+}) {
+  const encoded = input.keys.map((key) => encodeURIComponent(key)).join(",");
+  const baseUrl = `${tableUrl("mvp_listing_parsed")}?select=${input.columns}&comparable_key=in.(${encoded})&parse_confidence=gte.0.65&needs_review=eq.false`;
+  return restFetchAll<ParsedListingRow>(baseUrl, {
+    maxRows: input.maxRows,
+    orderBy: "pid.asc",
+  });
+}
+
 async function loadParsedRowsByComparableKeys(
   comparableKeys: string[],
   limit: number,
@@ -2823,20 +2849,55 @@ async function loadParsedRowsByComparableKeys(
     ? Number.POSITIVE_INFINITY
     : Math.max(1, options.maxRowsPerKeyChunk);
   const keyChunkSize = Math.max(1, Math.min(options.keyChunkSize ?? REST_KEY_READ_CHUNK_SIZE, REST_KEY_READ_CHUNK_SIZE));
+  const rescueRowsPerKey = Math.max(1, Math.min(options.rescueRowsPerKey ?? maxRowsPerKeyChunk, maxRowsPerKeyChunk));
   const rows: ParsedListingRow[] = [];
   for (const chunk of chunkArray(unique, keyChunkSize)) {
     const remaining = limit - rows.length;
     if (remaining <= 0) break;
-    const encoded = chunk.map((key) => encodeURIComponent(key)).join(",");
-    const baseUrl = `${tableUrl("mvp_listing_parsed")}?select=${columns}&comparable_key=in.(${encoded})&parse_confidence=gte.0.65&needs_review=eq.false`;
-    // maxRows = remaining cap. Market invalidation callers can also cap each
-    // key chunk, so one hot SKU family cannot consume the whole worker budget.
-    const pageRows = await restFetchAll<ParsedListingRow>(baseUrl, {
-      maxRows: Math.min(remaining, maxRowsPerKeyChunk),
-      orderBy: "pid.asc",
-    });
-    options.onAttemptedKeys?.(chunk);
-    rows.push(...pageRows);
+    try {
+      // maxRows = remaining cap. Market invalidation callers can also cap each
+      // key chunk, so one hot SKU family cannot consume the whole worker budget.
+      const pageRows = await loadParsedRowsForComparableKeyChunk({
+        keys: chunk,
+        columns,
+        maxRows: Math.min(remaining, maxRowsPerKeyChunk),
+      });
+      options.onAttemptedKeys?.(chunk);
+      rows.push(...pageRows);
+    } catch (err) {
+      if (chunk.length <= 1) {
+        options.onFailedKeys?.(chunk, err);
+        console.warn("parsed rows by comparable_key failed; deferring key", {
+          key: chunk[0] ?? null,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        continue;
+      }
+      console.warn("parsed rows by comparable_key chunk failed; retrying per key", {
+        keyCount: chunk.length,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      for (const key of chunk) {
+        const perKeyRemaining = limit - rows.length;
+        if (perKeyRemaining <= 0) break;
+        try {
+          const pageRows = await loadParsedRowsForComparableKeyChunk({
+            keys: [key],
+            columns,
+            maxRows: Math.min(perKeyRemaining, rescueRowsPerKey),
+          });
+          options.onAttemptedKeys?.([key]);
+          options.onRescuedKeys?.([key]);
+          rows.push(...pageRows);
+        } catch (singleErr) {
+          options.onFailedKeys?.([key], singleErr);
+          console.warn("parsed rows by comparable_key rescue failed; deferring key", {
+            key,
+            error: singleErr instanceof Error ? singleErr.message : String(singleErr),
+          });
+        }
+      }
+    }
     if (rows.length >= limit) break;
   }
   return new Map(rows.slice(0, limit).map((row) => [row.pid, row]));
@@ -4569,19 +4630,30 @@ export async function marketStatsStage(): Promise<StageStats> {
   };
   const pendingKeys = new Set(pendingInvalidations.map((row) => row.comparable_key));
   const attemptedPendingKeys = new Set<string>();
+  const rescuedPendingKeys = new Set<string>();
+  const failedPendingKeys = new Set<string>();
   const invalidationKeyChunkSize = marketInvalidationKeyChunkSize();
   const invalidationRowsPerKeyChunk = marketInvalidationParsedRowsPerKeyChunk();
+  const invalidationRescueRowsPerKey = marketInvalidationRescueRowsPerKey();
   stats.timingsMs = {
     ...(stats.timingsMs ?? {}),
     market_invalidation_key_chunk_size: invalidationKeyChunkSize,
     market_invalidation_parsed_rows_per_key_chunk: invalidationRowsPerKeyChunk,
+    market_invalidation_rescue_rows_per_key: invalidationRescueRowsPerKey,
   };
   const invalidatedParsedByPid = await loadParsedRowsByComparableKeys([...pendingKeys], config.marketStatsLimit, {
     includeParsedJson: false,
     keyChunkSize: invalidationKeyChunkSize,
     maxRowsPerKeyChunk: invalidationRowsPerKeyChunk,
+    rescueRowsPerKey: invalidationRescueRowsPerKey,
     onAttemptedKeys: (keys) => {
       for (const key of keys) attemptedPendingKeys.add(key);
+    },
+    onRescuedKeys: (keys) => {
+      for (const key of keys) rescuedPendingKeys.add(key);
+    },
+    onFailedKeys: (keys) => {
+      for (const key of keys) failedPendingKeys.add(key);
     },
   });
   const remainingSiblingLimit = Math.max(0, config.marketStatsLimit - invalidatedParsedByPid.size);
@@ -4602,6 +4674,8 @@ export async function marketStatsStage(): Promise<StageStats> {
     market_invalidation_sibling_rows: siblingParsedByPid.size,
     market_invalidation_attempted_keys: attemptedPendingKeys.size,
     market_invalidation_deferred_keys: Math.max(0, pendingKeys.size - attemptedPendingKeys.size),
+    market_invalidation_rescued_keys: rescuedPendingKeys.size,
+    market_invalidation_failed_keys: failedPendingKeys.size,
   };
   if (pendingInvalidations.length > 0 && invalidatedPids.length === 0) {
     stats.queued = pendingInvalidations.length;
