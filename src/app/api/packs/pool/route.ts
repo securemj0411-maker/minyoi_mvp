@@ -8,6 +8,7 @@ import { evaluateDaangnRegionDistance, type DaangnDistanceSignal } from "@/lib/d
 import { loadUserHomeRegion } from "@/lib/user-home-region-loader";
 import { loadSkuImageMap, resolveGenericImage } from "@/lib/sku-images";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
+import { mergeConditionDisplayChips } from "@/lib/condition-display";
 import { isDaangnMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { createPoolAccessToken, decodePoolAccessToken, syntheticPidForPoolToken } from "@/lib/pool-access-token";
 import { localizeProductLineLabel } from "@/lib/product-line-display";
@@ -567,6 +568,7 @@ async function loadPool(
     condition_cluster: string | null;
     condition_confidence: number | null;
     condition_flags: Record<string, unknown> | null;
+    condition_notes: string[] | null;
     parsed_json: Record<string, unknown> | null;
   }>;
 }> {
@@ -778,7 +780,7 @@ async function loadPool(
     loadVelocitySignalsForPool(headers, comparableKeys),
     // Wave 714k (2026-05-23): 신발/의류 5-tier grading + chips column fetch.
     restFetch(
-      `${tableUrl("mvp_listing_parsed")}?select=pid,condition_tier,condition_cluster,condition_confidence,condition_flags,parsed_json&pid=in.(${pids.join(",")})`,
+      `${tableUrl("mvp_listing_parsed")}?select=pid,condition_tier,condition_cluster,condition_confidence,condition_flags,condition_notes,parsed_json&pid=in.(${pids.join(",")})`,
       { headers },
     ),
   ]);
@@ -790,6 +792,7 @@ async function loadPool(
     condition_cluster: string | null;
     condition_confidence: number | null;
     condition_flags: Record<string, unknown> | null;
+    condition_notes: string[] | null;
     parsed_json: Record<string, unknown> | null;
   }>;
 
@@ -840,6 +843,7 @@ function buildItems(
     condition_cluster: string | null;
     condition_confidence: number | null;
     condition_flags: Record<string, unknown> | null;
+    condition_notes: string[] | null;
     parsed_json: Record<string, unknown> | null;
   }> = [],
   skuImageMap: Map<string, string> = new Map(),
@@ -858,12 +862,13 @@ function buildItems(
       flags?: Record<string, unknown>;
       chips?: string[];
     } | null) ?? null;
+    const parsedJsonNotes = row.parsed_json?.condition_notes as string[] | undefined;
     gradingByPid.set(Number(row.pid), {
       tier: row.condition_tier ?? grade?.tier ?? null,
       cluster: row.condition_cluster ?? grade?.cluster ?? null,
       confidence: row.condition_confidence ?? grade?.confidence ?? null,
       flags: row.condition_flags ?? grade?.flags ?? null,
-      chips: grade?.chips ?? null,
+      chips: mergeConditionDisplayChips(grade?.chips ?? null, row.condition_notes ?? parsedJsonNotes ?? null),
     });
   }
   return pool

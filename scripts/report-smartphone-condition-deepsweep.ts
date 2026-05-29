@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { parseEarphoneConditionEvidence } from "@/lib/condition-evidence/earphone";
 import { parseTechDeviceConditionEvidence } from "@/lib/condition-evidence/tech-device";
+import { parseListingOptions } from "@/lib/option-parser";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 const appDir = process.cwd();
@@ -25,16 +26,24 @@ type RawRow = {
   price: number | null;
   source: string | null;
   seller_source: string | null;
+  sku_id: string | null;
+  sku_name: string | null;
+  bunjang_condition_label: string | null;
   url: string | null;
   last_seen_at: string | null;
 };
 
 type ParsedRow = {
   pid: number;
+  category: string | null;
+  comparable_key: string | null;
   condition_class: string | null;
   condition_notes: string[] | null;
+  parser_version?: string | null;
   parsed_json: Record<string, unknown> | null;
 };
+
+type ParseCategory = Parameters<typeof parseListingOptions>[0]["category"];
 
 const DAMAGE_PATTERNS = [
   {
@@ -146,7 +155,7 @@ function mdTable(headers: string[], rows: unknown[][]) {
 
 async function fetchRawRows(pids: number[]) {
   const rows: RawRow[] = [];
-  const select = "pid,name,description_preview,price,source,seller_source,url,last_seen_at";
+  const select = "pid,name,description_preview,price,source,seller_source,sku_id,sku_name,bunjang_condition_label,url,last_seen_at";
   for (const part of chunk([...new Set(pids)], 400)) {
     rows.push(...await restJson<RawRow>(
       `${tableUrl("mvp_raw_listings")}?select=${select}&pid=in.(${part.join(",")})&limit=${part.length}`,
@@ -157,11 +166,26 @@ async function fetchRawRows(pids: number[]) {
 
 async function fetchParsedRows(pids: number[]) {
   const rows: ParsedRow[] = [];
-  const select = "pid,condition_class,condition_notes,parsed_json";
+  const select = "pid,category,comparable_key,condition_class,condition_notes,parser_version,parsed_json";
   for (const part of chunk([...new Set(pids)], 400)) {
     rows.push(...await restJson<ParsedRow>(
       `${tableUrl("mvp_listing_parsed")}?select=${select}&pid=in.(${part.join(",")})&limit=${part.length}`,
     ));
+  }
+  return rows;
+}
+
+async function fetchParsedCategoryRows(category: string, limit: number) {
+  const rows: ParsedRow[] = [];
+  const select = "pid,category,comparable_key,condition_class,condition_notes,parser_version,parsed_json";
+  const pageSize = 1000;
+  for (let offset = 0; rows.length < limit; offset += pageSize) {
+    const take = Math.min(pageSize, limit - rows.length);
+    const page = await restJson<ParsedRow>(
+      `${tableUrl("mvp_listing_parsed")}?select=${select}&category=eq.${encodeURIComponent(category)}&order=pid.desc&limit=${take}&offset=${offset}`,
+    );
+    rows.push(...page);
+    if (page.length < take) break;
   }
   return rows;
 }
@@ -172,6 +196,7 @@ async function main() {
 
   const limit = Number(arg("limit", "3000"));
   const category = arg("category", "smartphone");
+  const scope = arg("scope", "pool");
   const allowedCategories = new Set([
     "earphone",
     "smartphone",
@@ -189,12 +214,32 @@ async function main() {
   if (!allowedCategories.has(category)) {
     throw new Error(`Unsupported category "${category}". Use one of: ${[...allowedCategories].join(", ")}`);
   }
-  const reportBaseName = `${category}-condition-deepsweep-latest`;
-  const poolRows = await restJson<PoolRow>(
-    `${tableUrl("mvp_candidate_pool")}?select=pid,status,category,condition_class,comparable_key,expected_profit_max,last_verified_at&category=eq.${category}&status=in.(ready,reserved)&order=last_verified_at.desc.nullslast&limit=${limit}`,
-  );
+  if (!["pool", "parsed"].includes(scope)) {
+    throw new Error(`Unsupported scope "${scope}". Use "pool" or "parsed".`);
+  }
+  const reportBaseName = `${category}-condition-deepsweep-${scope}-latest`;
+  let parsedSeedRows: ParsedRow[] | null = null;
+  const poolRows = scope === "parsed"
+    ? await (async () => {
+        parsedSeedRows = await fetchParsedCategoryRows(category, limit);
+        return parsedSeedRows.map((row): PoolRow => ({
+          pid: Number(row.pid),
+          status: "parsed",
+          category: row.category ?? category,
+          comparable_key: row.comparable_key ?? null,
+          expected_profit_max: null,
+          condition_class: row.condition_class ?? null,
+          last_verified_at: null,
+        }));
+      })()
+    : await restJson<PoolRow>(
+        `${tableUrl("mvp_candidate_pool")}?select=pid,status,category,condition_class,comparable_key,expected_profit_max,last_verified_at&category=eq.${category}&status=in.(ready,reserved)&order=last_verified_at.desc.nullslast&limit=${limit}`,
+      );
   const pids = poolRows.map((row) => Number(row.pid)).filter((pid) => Number.isFinite(pid));
-  const [rawRows, parsedRows] = await Promise.all([fetchRawRows(pids), fetchParsedRows(pids)]);
+  const [rawRows, parsedRows] = await Promise.all([
+    fetchRawRows(pids),
+    parsedSeedRows ? Promise.resolve(parsedSeedRows) : fetchParsedRows(pids),
+  ]);
   const rawByPid = new Map(rawRows.map((row) => [Number(row.pid), row]));
   const parsedByPid = new Map(parsedRows.map((row) => [Number(row.pid), row]));
 
@@ -206,6 +251,14 @@ async function main() {
     const evidence = category === "earphone"
       ? parseEarphoneConditionEvidence({ title, description })
       : parseTechDeviceConditionEvidence({ title, description });
+    const reparsed = parseListingOptions({
+      title,
+      description,
+      skuId: raw?.sku_id ?? null,
+      skuName: raw?.sku_name ?? null,
+      category: category as ParseCategory,
+      bunjangConditionLabel: raw?.bunjang_condition_label ?? null,
+    });
     const learnedTags = learnedDamageTags(title, description);
     return {
       pid: Number(pool.pid),
@@ -218,6 +271,9 @@ async function main() {
       expectedProfitMax: pool.expected_profit_max,
       currentConditionClass: parsed?.condition_class ?? pool.condition_class,
       currentConditionNotes: parsed?.condition_notes ?? [],
+      parserVersion: parsed?.parser_version ?? null,
+      reparsedConditionClass: reparsed.conditionClass,
+      reparsedConditionNotes: reparsed.conditionNotes,
       currentHardCandidates: evidence.hardBlockCandidates,
       learnedTags,
       url: raw?.url ?? null,
@@ -226,7 +282,8 @@ async function main() {
 
   const candidateRows = analyzed.filter((row) => row.currentHardCandidates.length > 0 || row.learnedTags.length > 0);
   const missedByCurrentEvidence = candidateRows.filter((row) => row.currentHardCandidates.length === 0 && row.learnedTags.length > 0);
-  const conditionStillNormal = candidateRows.filter((row) => row.currentConditionClass !== "flawed");
+  const storedConditionStillNormal = candidateRows.filter((row) => row.currentConditionClass !== "flawed");
+  const reparsedConditionStillNormal = candidateRows.filter((row) => row.reparsedConditionClass !== "flawed");
   const patternCounts = countBy(
     candidateRows.flatMap((row) => [...row.learnedTags, ...row.currentHardCandidates.map((signal) => `current:${signal}`)]),
     (key) => key,
@@ -237,14 +294,18 @@ async function main() {
     reportOnly: true,
     scope: {
       category,
-      statuses: ["ready", "reserved"],
+      mode: scope,
+      statuses: scope === "pool" ? ["ready", "reserved"] : ["parsed"],
       limit,
       poolRows: poolRows.length,
+      analyzedRows: analyzed.length,
     },
     metrics: {
+      analyzedRows: analyzed.length,
       candidateRows: candidateRows.length,
       missedByCurrentEvidence: missedByCurrentEvidence.length,
-      conditionStillNormal: conditionStillNormal.length,
+      storedConditionStillNormal: storedConditionStillNormal.length,
+      reparsedConditionStillNormal: reparsedConditionStillNormal.length,
     },
     patternCounts,
     bySource: countBy(candidateRows, (row) => row.source),
@@ -259,7 +320,7 @@ async function main() {
     "",
     `Generated: ${report.generatedAt}`,
     "",
-    `No-write report over ready/reserved ${category} pool rows. Compares current tech evidence parser against broader learned Korean defect phrases.`,
+    `No-write report over ${scope === "pool" ? "ready/reserved pool" : "mvp_listing_parsed"} ${category} rows. Compares current parser/evidence against broader learned Korean defect phrases.`,
     "",
     "## Metrics",
     "",
@@ -276,7 +337,7 @@ async function main() {
       report.missedSamples.slice(0, 25).map((row) => [
         row.pid,
         row.source,
-        row.currentConditionClass,
+        `${row.currentConditionClass} -> ${row.reparsedConditionClass}`,
         row.title,
         row.price,
         row.learnedTags.join(", "),

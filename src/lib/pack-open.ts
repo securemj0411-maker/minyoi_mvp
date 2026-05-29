@@ -2,6 +2,7 @@ import { fetchDetail } from "@/lib/bunjang";
 import { CATALOG } from "@/lib/catalog";
 import { categoryFromComparableKey, loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { pickByConditionFallback } from "@/lib/condition-fallback";
+import { mergeConditionDisplayChips } from "@/lib/condition-display";
 import { fetchDaangnLiveState } from "@/lib/daangn";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import {
@@ -777,7 +778,7 @@ export async function fetchGradingByPids(pids: number[]): Promise<Map<number, Gr
   const map = new Map<number, GradingInfo>();
   try {
     const res = await callSupabase(
-      `/mvp_listing_parsed?select=pid,condition_tier,condition_cluster,condition_confidence,condition_flags,parsed_json&pid=in.(${unique.join(",")})`,
+      `/mvp_listing_parsed?select=pid,condition_tier,condition_cluster,condition_confidence,condition_flags,condition_notes,parsed_json&pid=in.(${unique.join(",")})`,
       { headers: authHeaders() },
     );
     const payload = await res.json().catch(() => null);
@@ -788,17 +789,19 @@ export async function fetchGradingByPids(pids: number[]): Promise<Map<number, Gr
           condition_cluster: string | null;
           condition_confidence: number | null;
           condition_flags: Record<string, unknown> | null;
+          condition_notes: string[] | null;
           parsed_json: Record<string, unknown> | null;
         }>)
       : [];
     for (const row of rows) {
       const grade = (row.parsed_json?.condition_grade as { chips?: string[] } | null) ?? null;
+      const parsedJsonNotes = row.parsed_json?.condition_notes as string[] | undefined;
       map.set(Number(row.pid), {
         tier: row.condition_tier ?? null,
         cluster: row.condition_cluster ?? null,
         confidence: row.condition_confidence ?? null,
         flags: row.condition_flags ?? null,
-        chips: grade?.chips ?? null,
+        chips: mergeConditionDisplayChips(grade?.chips ?? null, row.condition_notes ?? parsedJsonNotes ?? null),
       });
     }
   } catch (err) {

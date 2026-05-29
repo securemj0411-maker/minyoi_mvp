@@ -436,6 +436,22 @@ type ChipBadgeKey = string;
 
 /** Wave 714 chip key → 한국어 라벨 + 색상 mapping. */
 const CHIP_BADGES: Record<ChipBadgeKey, { label: string; type: "positive" | "negative" | "neutral" }> = {
+  // tech/device condition_notes -> 사용자 언어 chip
+  "condition:display_defect": { label: "액정/화면 이상", type: "negative" },
+  "condition:device_body_damage": { label: "뒷판/프레임 파손", type: "negative" },
+  "condition:foldable_hinge_damage": { label: "힌지/내부액정 이상", type: "negative" },
+  "condition:screen_replaced": { label: "액정 교체/수리", type: "negative" },
+  "condition:faceid_issue": { label: "Face ID 이상", type: "negative" },
+  "condition:camera_issue": { label: "카메라 이상", type: "negative" },
+  "condition:sim_or_carrier_issue": { label: "유심/통신 이슈", type: "negative" },
+  "condition:water_damage": { label: "침수 의심", type: "negative" },
+  "condition:locked_or_lost_signal": { label: "잠금/분실 위험", type: "negative" },
+  "condition:parts_only": { label: "부품용", type: "negative" },
+  "condition:repair_or_defect_signal": { label: "하자/수리 언급", type: "negative" },
+  "condition:refurbished_or_repaired": { label: "사설수리/리퍼", type: "negative" },
+  "condition:low_battery_health": { label: "배터리 낮음", type: "negative" },
+  "condition:high_battery_cycles": { label: "사이클 많음", type: "negative" },
+  "condition:cosmetic_wear": { label: "생활흠집/사용감", type: "neutral" },
   // wear
   "wear:unworn": { label: "미시착", type: "positive" },
   "wear:worn_1to2": { label: "실착 1-2회", type: "positive" },

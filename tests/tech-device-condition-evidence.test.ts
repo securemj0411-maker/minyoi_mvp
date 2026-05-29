@@ -113,6 +113,18 @@ describe("tech device condition evidence parser", () => {
     assert.ok(result.hardBlockCandidates.includes("display_panel_issue"));
   });
 
+  it("폴더블 내부액정 주름/반점은 기능 정상 문구가 있어도 hard signal로 잡는다", () => {
+    const parsed = parseListingOptions({
+      category: "smartphone",
+      title: "갤럭시 Z 플립5 민트 256GB",
+      description: "외부액정은 터치 잘 되고 잘나옵니다. 내부액정은 주름이 좀 지고 반점이 있는데, 터치랑 화면은 잘 됩니다.",
+    });
+
+    assert.equal(parsed.conditionClass, "flawed");
+    assert.ok(parsed.conditionNotes.includes("display_defect"));
+    assert.ok(parsed.conditionNotes.includes("foldable_hinge_damage"));
+  });
+
   it("액정/후면 깨끗, 카메라 무음, 스피커 이상 없음은 손상으로 오탐하지 않는다", () => {
     const result = parseTechDeviceConditionEvidence({
       title: "아이폰 16 일본판",
@@ -142,6 +154,30 @@ describe("tech device condition evidence parser", () => {
     });
 
     assert.ok(!result.signals.includes("speaker_or_mic_issue"));
+  });
+
+  it("수리내역 없음과 강화유리필름 교체는 액정 수리로 오탐하지 않는다", () => {
+    assert.ok(!signals("아이폰13 A급 화이트", "수리내역없습니다 배터리성능86 모든기능이상없으며 하자없습니다").includes("screen_replaced_or_repaired"));
+    assert.ok(!signals("아이폰15프로", "기변 직전 강화유리필름 교체해서 필름 교체할 필요 없습니다.").includes("screen_replaced_or_repaired"));
+  });
+
+  it("화면 깨진 곳 없음은 display defect로 오탐하지 않는다", () => {
+    const parsed = parseListingOptions({
+      category: "smartphone",
+      title: "아이폰13미니128gb",
+      description: "화면 깨진곳없고 필름 붙혀져 있습니다. 전면,후면 카메라와 버튼 다 눌리고 이상없습니다.",
+    });
+
+    assert.ok(!parsed.conditionNotes.includes("display_defect"));
+  });
+
+  it("카메라도 문제 없다는 문맥은 camera issue로 오탐하지 않는다", () => {
+    const result = parseTechDeviceConditionEvidence({
+      title: "갤럭시 s24 울트라",
+      description: "액정도 기스없습니다. 카메라도 그렇구요. 문제하나 없는 폰입니다.",
+    });
+
+    assert.ok(!result.signals.includes("camera_issue"));
   });
 
   it("일본판 카메라 무음은 camera issue로 오탐하지 않는다", () => {
@@ -228,6 +264,17 @@ describe("tech device condition evidence parser", () => {
     assert.ok((phone.parsedJson.tech_device_condition_signals as string[]).includes("carrier_or_finance_risk"));
     assert.ok((tablet.parsedJson.tech_device_condition_signals as string[]).includes("unlocked_reset_positive"));
     assert.ok((watch.parsedJson.tech_device_condition_signals as string[]).includes("low_battery_health"));
+  });
+
+  it("hard tech evidence는 parseListingOptions condition_notes로 연결된다", () => {
+    const parsed = parseListingOptions({
+      category: "smartphone",
+      title: "삼성 갤럭시 Z 플립 3 블랙",
+      description: "녹색 라인이 있고 액정 화면 오른쪽 상단 검정색으로 되어있어서 그쪽 부분 터치안됨",
+    });
+
+    assert.equal(parsed.conditionClass, "flawed");
+    assert.ok(parsed.conditionNotes.includes("display_defect"));
   });
 
   it("다른 카테고리 parsedJson에는 tech device shadow evidence를 박지 않는다", () => {

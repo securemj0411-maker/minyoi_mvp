@@ -19,6 +19,7 @@ import {
 } from "@/lib/pack-open";
 import type { RevealMarketBasis, RevealVelocityBasis } from "@/lib/pack-open";
 import { loadCategoryReadinessMap } from "@/lib/category-readiness";
+import { mergeConditionDisplayChips } from "@/lib/condition-display";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { detectSoldOut, describeSignals, isSoldOut, soldOutTextHits } from "@/lib/sold-out";
@@ -161,6 +162,13 @@ type ListingCostRow = {
 type ParsedRow = {
   pid: number;
   comparable_key: string | null;
+  condition_class?: string | null;
+  condition_notes?: string[] | null;
+  parsed_json?: Record<string, unknown> | null;
+  condition_tier?: string | null;
+  condition_cluster?: string | null;
+  condition_confidence?: number | null;
+  condition_flags?: Record<string, unknown> | null;
 };
 
 type FeedbackRow = {
@@ -740,7 +748,7 @@ export async function GET(req: Request) {
       // Wave 130 (2026-05-16): condition_class 추가 — 매물별 condition에 맞는 시세 표시.
       // Wave 182 Phase 3 (2026-05-17): parsed_json 추가 — option_base_assumed UI badge 표시.
       // Wave 714d (2026-05-23): 신발/의류 5-tier grading column 추가 — /me 피드 카드 등급 + chips.
-      `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class,parsed_json,condition_tier,condition_cluster,condition_confidence,condition_flags&pid=in.(${pidList})`,
+      `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class,condition_notes,parsed_json,condition_tier,condition_cluster,condition_confidence,condition_flags&pid=in.(${pidList})`,
     ),
   ]);
 
@@ -780,6 +788,7 @@ export async function GET(req: Request) {
       condition_cluster?: string | null;
       condition_confidence?: number | null;
       condition_flags?: Record<string, unknown> | null;
+      condition_notes?: string[] | null;
       parsed_json?: Record<string, unknown> | null;
     };
     // Wave 714k+ (2026-05-23): PostgREST schema cache 못 잡을 시 fallback to parsed_json.condition_grade.
@@ -790,12 +799,13 @@ export async function GET(req: Request) {
       flags?: Record<string, unknown>;
       chips?: string[];
     } | null) ?? null;
+    const parsedJsonNotes = r.parsed_json?.condition_notes as string[] | undefined;
     gradingByPid.set(Number(row.pid), {
       tier: r.condition_tier ?? grade?.tier ?? null,
       cluster: r.condition_cluster ?? grade?.cluster ?? null,
       confidence: r.condition_confidence ?? grade?.confidence ?? null,
       flags: r.condition_flags ?? grade?.flags ?? null,
-      chips: grade?.chips ?? null,
+      chips: mergeConditionDisplayChips(grade?.chips ?? null, r.condition_notes ?? parsedJsonNotes ?? null),
     });
   }
   // Wave 182 Phase 3 (2026-05-17): option_base_assumed by pid — "기본 옵션 가정" UI badge.

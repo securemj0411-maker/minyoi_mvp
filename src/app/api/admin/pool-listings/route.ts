@@ -6,6 +6,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isAdminUser } from "@/lib/auth-users";
 import { loadMarketBandsForKeys, loadV7SiblingPresence, resolveSkuMedianForDisplay } from "@/lib/band-aware-median";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
+import { mergeConditionDisplayChips } from "@/lib/condition-display";
 import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
 import { marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
 import { listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
@@ -403,7 +404,7 @@ export async function GET(req: NextRequest) {
         // Wave 182 Phase 3 (2026-05-17): parsed_json 추가 — option_base_assumed UI 표시.
         // Wave 190: score_flags 제거 — mvp_listing_analysis 가 정식 location.
         // Wave 714d (2026-05-23): 신발/의류 5-tier grading column 추가 — admin pool 카드 등급 + chips.
-        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class,parsed_json,condition_tier,condition_cluster,condition_confidence,condition_flags&pid=in.(${pidsCsv})`,
+        `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,parse_confidence,needs_review,condition_class,condition_notes,parsed_json,condition_tier,condition_cluster,condition_confidence,condition_flags&pid=in.(${pidsCsv})`,
         { headers: serviceHeaders() },
       ),
       // Wave 190 (2026-05-17): score_flags 정식 fetch — mvp_listing_analysis 에서.
@@ -590,7 +591,8 @@ export async function GET(req: NextRequest) {
         conditionChips: (() => {
           const pj = p.parsed_json as Record<string, unknown> | null | undefined;
           const grade = pj?.condition_grade as { chips?: string[] } | null | undefined;
-          return grade?.chips ?? null;
+          const parsedJsonNotes = pj?.condition_notes as string[] | undefined;
+          return mergeConditionDisplayChips(grade?.chips ?? null, (p.condition_notes as string[] | null) ?? parsedJsonNotes ?? null);
         })(),
         // Wave 187: L6 Liquidity 곡선 입력 — comparable_key 별 velocity + price 분포 (latest row).
         velocityP25Hours: velocity?.p25Hours ?? null,

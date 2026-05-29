@@ -1,0 +1,24 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+
+import { conditionNoteDisplayChips, mergeConditionDisplayChips } from "@/lib/condition-display";
+
+describe("condition display chips", () => {
+  it("휴대폰 구조 손상 condition_notes를 사용자 노출 chip key로 변환한다", () => {
+    assert.deepEqual(
+      conditionNoteDisplayChips(["device_body_damage", "foldable_hinge_damage", "display_defect"]),
+      [
+        "condition:device_body_damage",
+        "condition:foldable_hinge_damage",
+        "condition:display_defect",
+      ],
+    );
+  });
+
+  it("기존 신발/의류 grade chip과 전자기기 condition note chip을 중복 없이 합친다", () => {
+    assert.deepEqual(
+      mergeConditionDisplayChips(["wear:unworn", "condition:display_defect"], ["display_defect", "cosmetic_wear"]),
+      ["condition:display_defect", "condition:cosmetic_wear", "wear:unworn"],
+    );
+  });
+});

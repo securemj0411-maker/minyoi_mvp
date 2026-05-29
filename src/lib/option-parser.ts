@@ -1503,7 +1503,7 @@ function conditionFromText(
   }
   if (/(액정|디스플레이|화면).{0,16}(교체|수리)|(?:교체|수리).{0,16}(액정|디스플레이|화면)/.test(defectRiskText)) add("screen_replaced", -0.12);
   // Wave 159i (2026-05-17 자율 사이클): "잔상이나 화면하자 없어요" 같은 부정형 정상 표현 보강.
-  const noDisplayDefect = /무잔상|잔상\s*(?:없|없음|없습니다|전혀\s*없)|번인\s*(?:없|없음|없습니다)|잔상이나\s*(?:화면|디스플레이|액정)\s*(?:하자|기스|손상|문제).{0,8}없|잔상\s*,?\s*(?:파손|깨짐|기스|손상)\s*(?:,|및)?\s*(?:화면|디스플레이|액정)?\s*기스\s*없|잔상\s*,?\s*멍\s*없/.test(lower);
+  const noDisplayDefect = /무잔상|잔상\s*(?:없|없음|없습니다|전혀\s*없)|번인\s*(?:없|없음|없습니다)|(?:화면|디스플레이|액정).{0,12}깨진\s*(?:곳|부분).{0,8}(?:없|없고|없음|없습니다)|잔상이나\s*(?:화면|디스플레이|액정)\s*(?:하자|기스|손상|문제).{0,8}없|잔상\s*,?\s*(?:파손|깨짐|기스|손상)\s*(?:,|및)?\s*(?:화면|디스플레이|액정)?\s*기스\s*없|잔상\s*,?\s*멍\s*없/.test(lower);
   if (!noDisplayDefect && /잔상|번인|burn\s*in|녹조|흑점|멍|터치\s*불량|터치불량|액정\s*깨짐|화면\s*깨짐|디스플레이\s*깨짐|액정\s*파손|화면\s*파손|디스플레이\s*파손|노액|액정\s*나감|화면\s*나감/.test(lower)) add("display_defect", -0.25);
   // 2026-05-15 Wave 117: 부품용/수리용/셀러용 매물은 일반 사용자가 사면 손해 (정상 사용 불가). 풀 차단 + 시세 sample 제외.
   // 리셀 업자 lane 신설 시 별도 builder가 다시 살림 (POOL_BLOCK_NOTES 라인 코멘트 참조).
@@ -1560,7 +1560,8 @@ function conditionFromText(
   //    옛 패턴은 "깨짐 없음" negation은 잡지만, 셀러가 "깨졌지만 정상" 같이 양립 표현 미잡음.
   //    예: "앞유리 조금 금갔어요 근데 방수기능 됩니다" → 셀러 정상 강조, 실제 flawed.
   const visibleGlassBreakage = "(?:깨졌|깨져|깨진|깨짐|파손|크랙|금\\s*갔|금\\s*감|금이\\s*갔|금이\\s*감)";
-  const visibleDamageWithFunctional = new RegExp(`(?:유리|액정|화면).{0,8}${visibleGlassBreakage}|크랙\\s*있|금\\s*갔|금\\s*있`).test(lower)
+  const visibleDamageWithFunctional = !noDisplayDefect
+    && new RegExp(`(?:유리|액정|화면).{0,8}${visibleGlassBreakage}|크랙\\s*있|금\\s*갔|금\\s*있`).test(lower)
     && /(?:정상|이상\s*없|잘\s*됨|작동|기능)/.test(lower);
   if (visibleDamageWithFunctional) {
     add("display_defect", -0.15); // 셀러 우호 표현이라도 visible damage는 flawed로
@@ -2088,14 +2089,24 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       if (!conditionNotes.includes(note)) conditionNotes.push(note);
       conditionScore += delta;
     };
-    if (hardSignals.has("display_panel_issue") && !conditionNotes.includes("display_defect")) {
-      addTechGateNote("display_defect");
-    }
-    if (hardSignals.has("body_or_back_glass_damage")) {
-      addTechGateNote("device_body_damage");
-    }
-    if (hardSignals.has("foldable_hinge_or_inner_damage")) {
-      addTechGateNote("foldable_hinge_damage");
+    const hardSignalNoteMap: Record<string, string> = {
+      display_panel_issue: "display_defect",
+      body_or_back_glass_damage: "device_body_damage",
+      foldable_hinge_or_inner_damage: "foldable_hinge_damage",
+      touch_issue: "display_defect",
+      screen_replaced_or_repaired: "screen_replaced",
+      faceid_or_biometric_issue: "faceid_issue",
+      camera_issue: "camera_issue",
+      speaker_or_mic_issue: "repair_or_defect_signal",
+      account_or_activation_lock: "locked_or_lost_signal",
+      carrier_or_finance_risk: "sim_or_carrier_issue",
+      water_damage: "water_damage",
+      parts_or_repair_only: "parts_only",
+      unofficial_or_partial_repair: "refurbished_or_repaired",
+    };
+    for (const signal of hardSignals) {
+      const note = hardSignalNoteMap[signal];
+      if (note) addTechGateNote(note);
     }
   }
   const tabletBundlePriceReview = category === "tablet" && hasTabletBundlePriceReview(text);

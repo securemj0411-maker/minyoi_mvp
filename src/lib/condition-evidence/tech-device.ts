@@ -137,7 +137,7 @@ const STRUCTURAL_FRAME_DAMAGE =
   "(?:찌그러|휘어|함몰|벌어짐|들뜸|파손|크랙|금\\s*갔|금이\\s*갔)";
 const HINGE_SURFACE = "(?:힌지|흰지|접히는\\s*부분|접는\\s*부분|가운데|내부\\s*액정|내부액정|안쪽\\s*액정)";
 const HINGE_DAMAGE =
-  "(?:검은\\s*(?:색\\s*)?(?:점|반점)|검은점|흑점|반점|멍|세로줄|가로줄|줄\\s*감|액정\\s*불빛|화면\\s*나가|화면나가|불량|파손|크랙|벌어짐|들뜸|안\\s*펴|안펴|안\\s*접|안접|유격|헐거)";
+  "(?:검은\\s*(?:색\\s*)?(?:점|반점)|검은점|흑점|반점|주름|멍|세로줄|가로줄|줄\\s*감|액정\\s*불빛|화면\\s*나가|화면나가|불량|파손|크랙|벌어짐|들뜸|안\\s*펴|안펴|안\\s*접|안접|유격|헐거)";
 
 function re(source: string) {
   return new RegExp(source);
@@ -181,14 +181,14 @@ export function parseTechDeviceConditionEvidence(input: {
   const protectiveScreenOnly = /(?:보호\s*)?(?:필름|강화\s*유리).{0,14}(?:깨짐|파손|크랙|기스|금)/.test(allText)
     && /(?:본체\s*)?(?:액정|화면|디스플레이).{0,12}정상/.test(allText);
   const visibleDisplayIssue = firstEvidence(sources, [
-    /(?:검은\s*(?:색\s*)?(?:점|반점)|검은점|흑점|불량\s*화소).{0,12}(?:있|생|보|발견|나타)|(?:있|생|보|발견|나타).{0,12}(?:검은\s*(?:색\s*)?(?:점|반점)|검은점|흑점|불량\s*화소)/,
+    /(?:검은\s*(?:색\s*)?(?:점|반점)|검은점|흑점|반점|불량\s*화소).{0,12}(?:있|생|보|발견|나타)|(?:있|생|보|발견|나타).{0,12}(?:검은\s*(?:색\s*)?(?:점|반점)|검은점|흑점|반점|불량\s*화소)/,
     /멍.{0,8}(?:있|생|보|발견|나타)|(?:있|생|보|발견|나타).{0,8}멍/,
     /액정\s*불빛|불빛\s*나타/,
     /(?:접으면|접을\s*때|접힌\s*상태).{0,24}(?:화면\s*나가|화면나가|꺼짐|안\s*나오|나오지\s*않|불량)/,
   ]);
   if (!displayNegated && !protectiveScreenOnly) {
     add("display_panel_issue", "block_candidate", 0.9, firstEvidence(sources, [
-      /잔상|번인|burn\s*in|녹조|흑점|검은\s*(?:색\s*)?(?:점|반점)|검은점|멍|흰\s*점|흰\s*영역|흰\s*스팟|데드\s*픽셀|dead\s*pixel|불량\s*화소|화면\s*황변|액정\s*황변|액정\s*불빛|불빛\s*나타/,
+      /잔상|번인|burn\s*in|녹조|흑점|검은\s*(?:색\s*)?(?:점|반점)|검은점|반점|멍|흰\s*점|흰\s*영역|흰\s*스팟|데드\s*픽셀|dead\s*pixel|불량\s*화소|화면\s*황변|액정\s*황변|액정\s*불빛|불빛\s*나타/,
       /(?:액정|화면|디스플레이|유리).{0,18}(?:깨짐|깨졌|깨진|깨져|파손|크랙|금\s*갔|나감|먹통|불량)/,
       /(?:깨짐|깨졌|깨진|깨져|파손|크랙|금\s*갔|나감|먹통|불량).{0,18}(?:액정|화면|디스플레이|유리)/,
       /(?:접으면|접을\s*때|접힌\s*상태).{0,24}(?:화면\s*나가|화면나가|꺼짐|안\s*나오|나오지\s*않|불량)/,
@@ -235,7 +235,15 @@ export function parseTechDeviceConditionEvidence(input: {
   }
 
   const protectiveFilmContext = /(?:보호\s*)?(?:필름|강화\s*유리).{0,12}(?:깨짐|파손|크랙|기스|금)/.test(allText);
-  if (!protectiveFilmContext) {
+  const screenRepairNegated = hasAny(sources, [
+    /(?:수리|교체|사설\s*수리|자가\s*수리).{0,18}(?:없|없음|없습니다|없고|무|안\s*함|안함)|(?:수리\s*내역|수리내역|수리\s*이력|수리이력).{0,12}(?:없|없음|없습니다|없고|무)/,
+  ]);
+  const filmOrProtectorReplacementOnly =
+    /(?:보호\s*)?(?:필름|강화\s*유리|강화유리|액정필름|유리필름).{0,18}(?:교체|붙|부착)/.test(allText)
+    && !/(?:액정|화면|디스플레이|패널|유리).{0,18}(?:사설\s*)?(?:교체|수리)/.test(
+      allText.replace(/(?:보호\s*)?(?:필름|강화\s*유리|강화유리|액정필름|유리필름).{0,24}(?:교체|붙|부착)/g, ""),
+    );
+  if (!protectiveFilmContext && !screenRepairNegated && !filmOrProtectorReplacementOnly) {
     add("screen_replaced_or_repaired", "block_candidate", 0.88, firstEvidence(sources, [
       /(?:액정|화면|디스플레이|유리).{0,18}(?:교체|수리|사설\s*수리|자가\s*수리)/,
       /(?:교체|수리|사설\s*수리|자가\s*수리).{0,18}(?:액정|화면|디스플레이|유리)/,
@@ -254,6 +262,7 @@ export function parseTechDeviceConditionEvidence(input: {
 
   const cameraNegated = hasAny(sources, [
     /(?:카메라|전면|후면|초점).{0,24}(?:정상|문제\s*없|이상\s*없|잘\s*(?:됨|됩니다|작동)|무음)|(?:기능|전기능|모든\s*기능).{0,18}(?:정상|문제\s*없|이상\s*없|이상무)/,
+    /(?:문제|하자).{0,8}(?:없|없는|없음|없습니다|없어요)|(?:기능|전기능|모든\s*기능).{0,30}(?:문제|하자).{0,8}(?:없|없는|없음|없습니다|없어요)/,
   ]);
   if (!cameraNegated) {
     add("camera_issue", "block_candidate", 0.88, firstEvidence(sources, [
