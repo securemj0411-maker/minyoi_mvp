@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   evaluateDaangnRegionDistance,
+  nearbyDaangnRegionIds,
   resolveDaangnGeoByPath,
 } from "@/lib/daangn-region-distance";
 
@@ -44,6 +45,22 @@ test("Daangn distance resolves Sangdo 1-dong to its exact centroid", () => {
   assert.ok(geo);
   assert.equal(geo.id, "6092");
   assert.equal(geo.name, "상도1동");
+});
+
+test("Daangn nearby region list includes adjacent dong ids for feed prefetch", () => {
+  const ids = nearbyDaangnRegionIds(SANGDO_1, 6, 80);
+
+  assert.ok(ids.includes("6092")); // 상도1동
+  assert.ok(ids.includes("6091")); // 사당동
+  assert.ok(ids.includes("331")); // 흑석동 parent id
+  assert.ok(!ids.includes("3813")); // 제주 한림읍
+});
+
+test("Daangn distance keeps parent-only Heukseok dong ids actionable", () => {
+  const signal = evaluateDaangnRegionDistance("서울특별시 동작구 흑석동", "331", "흑석동");
+
+  assert.equal(signal.actionable, true);
+  assert.notEqual(signal.bucket, "too_far");
 });
 
 test("Daangn distance does not show a far label before the user sets a home region", () => {

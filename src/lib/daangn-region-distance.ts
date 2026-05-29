@@ -5,6 +5,7 @@
 // confirmed home region and the listing region centroid.
 
 import regionGeoRaw from "@/lib/generated/daangn-region-geo.json";
+import regionParentsRaw from "@/lib/generated/daangn-region-parents.json";
 import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
 
 export type DaangnRegionGeo = {
@@ -31,6 +32,8 @@ export type DaangnDistanceSignal = {
 };
 
 const REGION_GEO = regionGeoRaw as Record<string, DaangnRegionGeo>;
+const REGION_PARENT_PATHS = regionParentsRaw as Record<string, string>;
+const NEARBY_REGION_ID_CACHE = new Map<string, string[]>();
 
 const GEO_BY_PATH = new Map<string, DaangnRegionGeo>();
 for (const geo of Object.values(REGION_GEO)) {
@@ -120,6 +123,74 @@ export function resolveDaangnGeoByPath(path: string | null | undefined): DaangnR
   }
 
   return null;
+}
+
+export type DaangnRegionDistanceEntry = DaangnRegionGeo & {
+  distanceKm: number;
+};
+
+export function listDaangnRegionsByDistance(
+  userFullPath: string | null | undefined,
+  maxKm = REACHABLE_KM,
+  limit = Number.POSITIVE_INFINITY,
+): DaangnRegionDistanceEntry[] {
+  const userGeo = resolveDaangnGeoByPath(userFullPath);
+  if (!userGeo) return [];
+
+  return Object.values(REGION_GEO)
+    .map((geo) => {
+      const distance = distanceKm(userGeo, geo);
+      return distance == null ? null : { ...geo, distanceKm: Number(distance.toFixed(1)) };
+    })
+    .filter((entry): entry is DaangnRegionDistanceEntry => entry != null && entry.distanceKm <= maxKm)
+    .sort((a, b) => {
+      if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
+      return a.fullPath.localeCompare(b.fullPath, "ko");
+    })
+    .slice(0, Math.max(0, limit));
+}
+
+export function nearbyDaangnRegionIds(
+  userFullPath: string | null | undefined,
+  maxKm = REACHABLE_KM,
+  limit = Number.POSITIVE_INFINITY,
+): string[] {
+  const cacheKey = `${normalizeRegionPath(userFullPath)}|${maxKm}|${limit}`;
+  const cached = NEARBY_REGION_ID_CACHE.get(cacheKey);
+  if (cached) return [...cached];
+
+  const userGeo = resolveDaangnGeoByPath(userFullPath);
+  if (!userGeo) return [];
+
+  const entries: Array<{ id: string; distanceKm: number; path: string }> = [];
+  const seen = new Set<string>();
+  for (const geo of listDaangnRegionsByDistance(userFullPath, maxKm)) {
+    entries.push({ id: geo.id, distanceKm: geo.distanceKm, path: geo.fullPath });
+    seen.add(geo.id);
+  }
+
+  // Raw Daangn rows often store parent/administrative ids (for example 흑석동=331)
+  // while generated geo rows may store Daangn search ids. Include parent ids by
+  // resolving their path to the nearest known centroid, otherwise nearby dong
+  // listings can be invisible to feed prefetch.
+  for (const [id, path] of Object.entries(REGION_PARENT_PATHS)) {
+    if (seen.has(id)) continue;
+    const geo = resolveDaangnGeoByPath(path);
+    const distance = distanceKm(userGeo, geo);
+    if (distance == null || distance > maxKm) continue;
+    entries.push({ id, distanceKm: Number(distance.toFixed(1)), path });
+    seen.add(id);
+  }
+
+  const ids = entries
+    .sort((a, b) => {
+      if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
+      return a.path.localeCompare(b.path, "ko");
+    })
+    .slice(0, Math.max(0, limit))
+    .map((entry) => entry.id);
+  NEARBY_REGION_ID_CACHE.set(cacheKey, ids);
+  return [...ids];
 }
 
 export function resolveDaangnGeo(

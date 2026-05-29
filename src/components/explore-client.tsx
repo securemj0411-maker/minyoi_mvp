@@ -450,6 +450,7 @@ type BudgetFilterOption = "all" | "150000" | "300000" | "500000";
 type LoadPoolOptions = {
   autoScrollNew?: boolean;
   serverSource?: SourceOption | null;
+  serverSort?: SortOption | null;
 };
 
 const SOURCE_OPTIONS: Array<{ value: SourceOption; label: string }> = [
@@ -1591,7 +1592,7 @@ export default function ExploreClient({
   });
   const [sort, setSort] = useState<SortOption>(() => {
     const raw = searchParams.get("sort");
-    return raw === "latest" || raw === "price_asc" ? raw : "profit_desc";
+    return raw === "latest" || raw === "price_asc" || raw === "distance" ? raw : "profit_desc";
   });
   const [source, setSource] = useState<SourceOption>(() => {
     const raw = searchParams.get("source");
@@ -1606,6 +1607,14 @@ export default function ExploreClient({
   const categoryScrollRef = useRef<HTMLDivElement | null>(null);
   const [canScrollCategoriesPrev, setCanScrollCategoriesPrev] = useState(false);
   const [canScrollCategoriesNext, setCanScrollCategoriesNext] = useState(false);
+  const sortRef = useRef(sort);
+  const sourceRef = useRef(source);
+  useEffect(() => {
+    sortRef.current = sort;
+  }, [sort]);
+  useEffect(() => {
+    sourceRef.current = source;
+  }, [source]);
 
   const updateBudgetFilter = useCallback((value: BudgetFilterOption) => {
     setBudgetFilter(value);
@@ -1803,8 +1812,10 @@ export default function ExploreClient({
     try {
       const params = new URLSearchParams();
       if (refresh) params.set("refresh", "1");
-      const serverSource = options?.serverSource ?? "all";
+      const serverSource = options?.serverSource ?? sourceRef.current;
       if (serverSource !== "all") params.set("source", serverSource);
+      const serverSort = options?.serverSort ?? (sortRef.current === "distance" ? "distance" : null);
+      if (serverSort === "distance") params.set("sort", "distance");
       const budgetParam = budgetApiParam(budgetFilter);
       if (budgetParam) params.set("budget", budgetParam);
       // Wave 391: refresh 시 이미 본 pids 전달 → 백엔드가 제외하고 다른 매물 fetch.
@@ -1932,6 +1943,22 @@ export default function ExploreClient({
         const aTime = a.lastVerifiedAt ? Date.parse(a.lastVerifiedAt) : 0;
         const bTime = b.lastVerifiedAt ? Date.parse(b.lastVerifiedAt) : 0;
         return bTime - aTime;
+      });
+    }
+    if (sort === "distance") {
+      return [...budgetFiltered].sort((a, b) => {
+        const aDaangn = poolItemSource(a) === "daangn";
+        const bDaangn = poolItemSource(b) === "daangn";
+        if (aDaangn !== bDaangn) return aDaangn ? -1 : 1;
+        if (aDaangn && bDaangn) {
+          const aRank = a.daangnDistanceRank ?? 4;
+          const bRank = b.daangnDistanceRank ?? 4;
+          if (aRank !== bRank) return aRank - bRank;
+          const aDistance = a.daangnDistanceKm ?? Number.POSITIVE_INFINITY;
+          const bDistance = b.daangnDistanceKm ?? Number.POSITIVE_INFINITY;
+          if (aDistance !== bDistance) return aDistance - bDistance;
+        }
+        return b.expectedProfitMax - a.expectedProfitMax;
       });
     }
     return budgetFiltered;
@@ -2418,8 +2445,20 @@ export default function ExploreClient({
           <select
             value={source}
             onChange={(e) => {
-              setSource(e.target.value as SourceOption);
+              const nextSource = e.target.value as SourceOption;
+              setSource(nextSource);
               setScrapOnly(false);
+              if (nextSource === "daangn") {
+                void loadPool(false, {
+                  serverSource: "daangn",
+                  serverSort: sortRef.current === "distance" ? "distance" : null,
+                });
+              } else if (source === "daangn") {
+                void loadPool(false, {
+                  serverSource: nextSource,
+                  serverSort: sortRef.current === "distance" ? "distance" : null,
+                });
+              }
             }}
             className="min-w-0 rounded-lg border border-zinc-200 bg-white px-2 py-2 text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300 sm:w-auto sm:shrink-0 sm:rounded-md sm:py-1 sm:text-[10px] sm:font-medium"
           >
@@ -2429,7 +2468,17 @@ export default function ExploreClient({
           </select>
           <select
             value={sort}
-            onChange={(e) => setSort(e.target.value as SortOption)}
+            onChange={(e) => {
+              const nextSort = e.target.value as SortOption;
+              const wasDistance = sortRef.current === "distance";
+              setSort(nextSort);
+              setScrapOnly(false);
+              if (nextSort === "distance") {
+                void loadPool(false, { serverSource: source, serverSort: "distance" });
+              } else if (wasDistance) {
+                void loadPool(false, { serverSource: source, serverSort: null });
+              }
+            }}
             className="min-w-0 rounded-lg border border-zinc-200 bg-white px-2 py-2 text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300 sm:w-auto sm:shrink-0 sm:rounded-md sm:py-1 sm:text-[10px] sm:font-medium"
           >
             <option value="profit_desc">차익순</option>

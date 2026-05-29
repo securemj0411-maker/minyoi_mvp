@@ -4,7 +4,7 @@ import { loadV7SiblingPresence, type V7SiblingPresenceMap } from "@/lib/band-awa
 import { pickByConditionFallback } from "@/lib/condition-fallback";
 import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
 import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
-import { evaluateDaangnRegionDistance, type DaangnDistanceSignal } from "@/lib/daangn-region-distance";
+import { evaluateDaangnRegionDistance, nearbyDaangnRegionIds, type DaangnDistanceSignal } from "@/lib/daangn-region-distance";
 import { loadUserHomeRegion } from "@/lib/user-home-region-loader";
 import { loadSkuImageMap, resolveGenericImage } from "@/lib/sku-images";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
@@ -61,6 +61,22 @@ const PID_LOOKUP_CHUNK_SIZE = 400;
 const REFRESH_READY_CANDIDATE_LIMIT = 500;
 const DAANGN_POOL_LIVE_VERIFY_CONCURRENCY = 8;
 
+function intEnv(name: string, fallback: number, min: number, max: number) {
+  const raw = Number(process.env[name]);
+  if (!Number.isFinite(raw)) return fallback;
+  return Math.min(max, Math.max(min, Math.trunc(raw)));
+}
+
+// Daangn is local-first. The profit-ordered pool query can miss nearby dong rows,
+// so we prefetch ready candidates by nearby Daangn region ids before diversification.
+const DAANGN_NEARBY_REGION_LIMIT = intEnv("DAANGN_NEARBY_FEED_REGION_LIMIT", 260, 20, 900);
+const DAANGN_NEARBY_RADIUS_KM = intEnv("DAANGN_NEARBY_FEED_RADIUS_KM", 10, 1, 30);
+const DAANGN_NEARBY_RAW_LOOKUP_LIMIT = intEnv("DAANGN_NEARBY_FEED_RAW_LOOKUP_LIMIT", 4000, 100, 6000);
+const DAANGN_NEARBY_POOL_LOOKUP_LIMIT = intEnv("DAANGN_NEARBY_FEED_POOL_LOOKUP_LIMIT", 700, 50, 2000);
+const DAANGN_NEARBY_BOOST_LIMIT = intEnv("DAANGN_NEARBY_FEED_BOOST_LIMIT", 120, 10, 500);
+const DAANGN_SOURCE_QUOTA = intEnv("DAANGN_FEED_SOURCE_QUOTA", 18, 0, READY_SLOTS);
+const JOONGNA_SOURCE_QUOTA = intEnv("JOONGNA_FEED_SOURCE_QUOTA", 3, 0, READY_SLOTS);
+
 type PoolRow = {
   pid: number;
   expected_profit_min: number;
@@ -72,6 +88,8 @@ type PoolRow = {
   comparable_key: string | null;
   last_verified_at: string;
 };
+
+type VisiblePoolRow = PoolRow & { soldOut: boolean };
 
 type RawRow = {
   pid: number;
@@ -106,6 +124,15 @@ type RawListingMeta = {
   // candidate_pool.status=ready 가드만으로는 lifecycle cron lag 시 sold_confirmed/disappeared 노출 가능.
   listing_state: string | null;
   detail_status: string | null;
+};
+
+type NearbyDaangnSourceRow = {
+  pid: number;
+  source: string | null;
+  daangn_region_id: string | null;
+  daangn_region_name: string | null;
+  listing_state: string | null;
+  last_seen_at: string | null;
 };
 
 async function patchDaangnVisiblePoolTerminal(
@@ -544,6 +571,118 @@ async function fetchRowsByPidChunks<T>(
   return pages.flat();
 }
 
+async function fetchReadyPoolRowsByPidChunks(
+  pids: number[],
+  headers: Record<string, string>,
+): Promise<PoolRow[]> {
+  const uniquePids = Array.from(new Set(pids)).filter((pid) => Number.isFinite(pid));
+  if (uniquePids.length === 0) return [];
+  const select = "pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at";
+  const chunks: number[][] = [];
+  for (let i = 0; i < uniquePids.length; i += PID_LOOKUP_CHUNK_SIZE) {
+    chunks.push(uniquePids.slice(i, i + PID_LOOKUP_CHUNK_SIZE));
+  }
+  const pages = await Promise.all(
+    chunks.map(async (chunk) => {
+      const res = await restFetch(
+        `${tableUrl("mvp_candidate_pool")}?select=${select}&status=eq.ready&pid=in.(${chunk.join(",")})&limit=${chunk.length + 50}`,
+        { headers },
+      );
+      return (await res.json()) as PoolRow[];
+    }),
+  );
+  return pages.flat();
+}
+
+async function loadNearbyDaangnReadyRows(
+  headers: Record<string, string>,
+  options: {
+    userHomeDaangnFullPath?: string | null;
+    source?: "bunjang" | "joongna" | "daangn" | null;
+    excludePids?: number[];
+  },
+): Promise<VisiblePoolRow[]> {
+  if (!options.userHomeDaangnFullPath || (options.source && options.source !== "daangn")) return [];
+
+  const regionIds = nearbyDaangnRegionIds(
+    options.userHomeDaangnFullPath,
+    DAANGN_NEARBY_RADIUS_KM,
+    DAANGN_NEARBY_REGION_LIMIT,
+  );
+  if (regionIds.length === 0) return [];
+
+  try {
+    const regionCsv = regionIds.map((id) => encodeURIComponent(id)).join(",");
+    const sourceRows = await fetchPaginatedJson<NearbyDaangnSourceRow>(
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,daangn_region_id,daangn_region_name,listing_state,last_seen_at&source=eq.daangn&listing_state=eq.active&detail_status=eq.done&daangn_region_id=in.(${regionCsv})&order=last_seen_at.desc`,
+      headers,
+      DAANGN_NEARBY_RAW_LOOKUP_LIMIT,
+    );
+    const exclude = new Set(options.excludePids ?? []);
+    const distanceByPid = new Map<number, DaangnDistanceSignal>();
+    const lastSeenByPid = new Map<number, string | null>();
+    const orderedPids = sourceRows
+      .filter((row) => row.listing_state === "active" && !exclude.has(Number(row.pid)))
+      .map((row) => {
+        const distance = evaluateDaangnRegionDistance(
+          options.userHomeDaangnFullPath ?? null,
+          row.daangn_region_id,
+          row.daangn_region_name,
+        );
+        distanceByPid.set(Number(row.pid), distance);
+        lastSeenByPid.set(Number(row.pid), row.last_seen_at ?? null);
+        return { pid: Number(row.pid), distance };
+      })
+      .filter((entry) => Number.isFinite(entry.pid) && entry.distance.actionable)
+      .sort((a, b) => {
+        const rankDiff = (a.distance.rank ?? 4) - (b.distance.rank ?? 4);
+        if (rankDiff !== 0) return rankDiff;
+        const aDistance = a.distance.distanceKm ?? Number.POSITIVE_INFINITY;
+        const bDistance = b.distance.distanceKm ?? Number.POSITIVE_INFINITY;
+        if (aDistance !== bDistance) return aDistance - bDistance;
+        const aSeen = lastSeenByPid.get(a.pid) ? Date.parse(String(lastSeenByPid.get(a.pid))) : 0;
+        const bSeen = lastSeenByPid.get(b.pid) ? Date.parse(String(lastSeenByPid.get(b.pid))) : 0;
+        return bSeen - aSeen;
+      })
+      .map((entry) => entry.pid)
+      .slice(0, DAANGN_NEARBY_POOL_LOOKUP_LIMIT);
+
+    const poolRows = await fetchReadyPoolRowsByPidChunks(orderedPids, headers);
+    const poolByPid = new Map(poolRows.map((row) => [row.pid, row]));
+    return orderedPids
+      .map((pid) => poolByPid.get(pid))
+      .filter((row): row is PoolRow => row != null)
+      .sort((a, b) => {
+        const aDistance = distanceByPid.get(a.pid);
+        const bDistance = distanceByPid.get(b.pid);
+        const rankDiff = (aDistance?.rank ?? 4) - (bDistance?.rank ?? 4);
+        if (rankDiff !== 0) return rankDiff;
+        const aKm = aDistance?.distanceKm ?? Number.POSITIVE_INFINITY;
+        const bKm = bDistance?.distanceKm ?? Number.POSITIVE_INFINITY;
+        if (aKm !== bKm) return aKm - bKm;
+        return (b.expected_profit_max ?? 0) - (a.expected_profit_max ?? 0);
+      })
+      .slice(0, DAANGN_NEARBY_BOOST_LIMIT)
+      .map((row) => ({ ...row, soldOut: false }));
+  } catch (err) {
+    console.warn("[pool] nearby daangn prefetch failed (non-fatal)", err instanceof Error ? err.message : String(err));
+    return [];
+  }
+}
+
+function mergePoolRowsPreferFirst(...groups: VisiblePoolRow[][]): VisiblePoolRow[] {
+  const out: VisiblePoolRow[] = [];
+  const seen = new Set<number>();
+  for (const group of groups) {
+    for (const row of group) {
+      if (seen.has(row.pid)) continue;
+      out.push(row);
+      seen.add(row.pid);
+    }
+  }
+  return out;
+}
+
 async function loadPool(
   headers: Record<string, string>,
   options: {
@@ -594,14 +733,22 @@ async function loadPool(
   //   limit=1500 하나만 박으면 PostgREST 1000 cap 에 조용히 잘릴 수 있다.
   const readyBaseUrl =
     `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready${excludeClause}&${orderClause}`;
-  const [readyRowsPage, soldOutRes] = await Promise.all([
+  const [readyRowsPage, nearbyDaangnRows, soldOutRes] = await Promise.all([
     fetchPaginatedJson<PoolRow>(readyBaseUrl, headers, FETCH_POOL_OVERFETCH),
+    loadNearbyDaangnReadyRows(headers, {
+      userHomeDaangnFullPath: options.userHomeDaangnFullPath,
+      source: options.source,
+      excludePids: options.excludePids,
+    }),
     restFetch(
       `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}${excludeClause}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS * 4}`,
       { headers },
     ),
   ]);
-  const readyRowsRaw = readyRowsPage.map((r) => ({ ...r, soldOut: false }));
+  const readyRowsRaw = mergePoolRowsPreferFirst(
+    nearbyDaangnRows,
+    readyRowsPage.map((r) => ({ ...r, soldOut: false })),
+  );
   const soldOutRowsRaw = ((await soldOutRes.json()) as PoolRow[]).map((r) => ({ ...r, soldOut: true }));
 
   // Wave 388: 모든 candidate pid의 raw mvp_listings fetch (다양화/budget filter 전).
@@ -688,19 +835,19 @@ async function loadPool(
 
   // Wave 346: 카테고리 다양화 — budget filter 통과 매물 안에서만.
   // Wave 886.3 (2026-05-27): source 다양화 추가.
-  // Wave 895 (2026-05-28): 당근은 "가까운 곳에서 바로 사는" 접근성이 핵심이라 첫 ready 25개 중
-  //   거의 절반을 보호한다. 중고나라는 보조 source로 최소 노출만 유지하고, 나머지는 차익순.
-  const SOURCE_QUOTA: Record<string, number> = { daangn: 12, joongna: 3 };
+  // Wave 953 (2026-05-30): 당근은 위치가 핵심이라 첫 화면 대부분을 근거리 후보로 보호한다.
+  //   카테고리 다양화보다 "내 동네에서 살 수 있음"이 먼저인 source.
+  const SOURCE_QUOTA: Record<string, number> = { daangn: DAANGN_SOURCE_QUOTA, joongna: JOONGNA_SOURCE_QUOTA };
   function diversifyByCategory(rows: (PoolRow & { soldOut: boolean })[], maxRows: number) {
     const perCategory = new Map<string, number>();
     const perSource = new Map<string, number>();
     const picked = new Set<number>();
     const out: (PoolRow & { soldOut: boolean })[] = [];
 
-    const tryAdd = (row: PoolRow & { soldOut: boolean }): boolean => {
+    const tryAdd = (row: PoolRow & { soldOut: boolean }, addOptions: { ignoreCategoryCap?: boolean } = {}): boolean => {
       if (picked.has(row.pid)) return false;
       const cat = row.category ?? "unknown";
-      if ((perCategory.get(cat) ?? 0) >= MAX_PER_CATEGORY) return false;
+      if (!addOptions.ignoreCategoryCap && (perCategory.get(cat) ?? 0) >= MAX_PER_CATEGORY) return false;
       out.push(row);
       picked.add(row.pid);
       perCategory.set(cat, (perCategory.get(cat) ?? 0) + 1);
@@ -728,7 +875,7 @@ async function loadPool(
           if (out.length >= maxRows) break;
           if ((perSource.get(src) ?? 0) >= quota) break;
           if ((sourceByPid.get(row.pid) ?? null) !== src) continue;
-          tryAdd(row);
+          tryAdd(row, { ignoreCategoryCap: src === "daangn" && Boolean(options.userHomeDaangnFullPath) });
         }
       }
     }
