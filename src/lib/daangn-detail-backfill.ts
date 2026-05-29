@@ -260,7 +260,34 @@ async function enqueueMarketInvalidations(pids: number[], dryRun: boolean): Prom
     if (!byKey.has(key)) byKey.set(key, row);
   }
 
-  let queued = 0;
+  const events = [...byKey.values()].map((row) => ({
+    comparable_key: row.comparable_key,
+    reason: "daangn_detail_backfill",
+    priority: 92,
+    affected_pid: row.pid,
+    old_comparable_key: row.comparable_key,
+    new_comparable_key: row.comparable_key,
+    parser_version: row.parser_version,
+    event_count: 1,
+  }));
+  if (events.length === 0) return 0;
+
+  try {
+    const res = await restFetch(rpcUrl("enqueue_mvp_market_key_invalidations"), {
+      method: "POST",
+      headers: serviceHeaders(),
+      body: jsonBody({ p_events: events }),
+    });
+    const queued = await res.json();
+    return Number.isFinite(Number(queued)) ? Number(queued) : events.length;
+  } catch (err) {
+    console.warn("daangn detail backfill batch invalidation enqueue failed", {
+      count: events.length,
+      error: err instanceof Error ? err.message.slice(0, 300) : String(err).slice(0, 300),
+    });
+  }
+
+  let fallbackQueued = 0;
   for (const row of byKey.values()) {
     try {
       await restFetch(rpcUrl("enqueue_mvp_market_key_invalidation"), {
@@ -276,7 +303,7 @@ async function enqueueMarketInvalidations(pids: number[], dryRun: boolean): Prom
           p_parser_version: row.parser_version,
         }),
       });
-      queued += 1;
+      fallbackQueued += 1;
     } catch (err) {
       console.warn("daangn detail backfill invalidation enqueue failed", {
         comparableKey: row.comparable_key,
@@ -284,7 +311,7 @@ async function enqueueMarketInvalidations(pids: number[], dryRun: boolean): Prom
       });
     }
   }
-  return queued;
+  return fallbackQueued;
 }
 
 export async function runDaangnDetailBackfill(options: DaangnDetailBackfillOptions = {}): Promise<DaangnDetailBackfillResult> {
