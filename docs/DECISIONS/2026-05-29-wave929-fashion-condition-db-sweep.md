@@ -10,7 +10,7 @@ Date: 2026-05-29
 
 ## Scope
 - scope: pool (ready,reserved)
-- raw/parsed/pool rows: 1548/1548/1548
+- raw/parsed/pool rows: 1549/1549/1549
 - windowHours: 168
 
 ## Expected parser versions
@@ -27,6 +27,7 @@ Date: 2026-05-29
 - shoe unknown condition: 118
 - shoe defaulted to sneaker: 92
 - flagged comparable groups: 25
+- pool drift plan rows: 27
 - null SKU rows that would match current catalog now: 0
 
 ## Top Flags
@@ -61,6 +62,28 @@ Date: 2026-05-29
 - pid 397695730: 몽클레르 마야 쇼트 다운 자켓 / raw=clothing-moncler-maya / current=clothing-moncler-maya / dbKey=clothing|moncler_maya|down_jacket|a_grade / currentKey=clothing|moncler_maya|down_jacket|b_grade / pool=ready / flags=db_key_differs_from_raw_reparse,db_key_differs_from_current_catalog_reparse,db_clean_but_current_catalog_changes_key,pool_exposed_with_catalog_or_parser_drift
 - pid 288127680: 반스 올드스쿨 그린애쉬 민트 - 240  VANS oldskool / raw=shoe-vans-old-skool / current=shoe-vans-old-skool / dbKey=shoe|old_skool|sneaker|b_grade / currentKey=shoe|old_skool|sneaker|a_grade / pool=ready / flags=db_key_differs_from_raw_reparse,db_key_differs_from_current_catalog_reparse,db_clean_but_current_catalog_changes_key,pool_exposed_with_catalog_or_parser_drift
 - pid 375116228: [250] 나이키 (W) 에어맥스1 CMFT PRM TAPE / raw=shoe-nike-airmax-1 / current=shoe-nike-airmax-1 / dbKey=shoe|airmax_1|sneaker|b_grade / currentKey=shoe|airmax_1|sneaker|a_grade / pool=ready / flags=db_key_differs_from_raw_reparse,db_key_differs_from_current_catalog_reparse,db_clean_but_current_catalog_changes_key,pool_exposed_with_catalog_or_parser_drift
+
+## Pool Drift Plan
+- pid 406381391: action=refresh_raw_sku_reparse_pool / raw=shoe-mizuno-alpha / current=shoe-mizuno-alpha-japan / dbKey=shoe|alpha|sneaker|a_grade / currentKey=shoe|alpha_japan|sneaker|a_grade / pool=ready
+- pid 399833030: action=refresh_raw_sku_reparse_pool / raw=shoe-mizuno-alpha / current=shoe-mizuno-alpha-3 / dbKey=shoe|alpha|football_tf|a_grade / currentKey=shoe|alpha_3|football_tf|a_grade / pool=ready
+- pid 376500974: action=refresh_raw_sku_reparse_pool / raw=shoe-mizuno-alpha / current=shoe-mizuno-alpha-2 / dbKey=shoe|alpha|football_tf|a_grade / currentKey=shoe|alpha_2|football_tf|a_grade / pool=ready
+- pid 406187149: action=refresh_raw_sku_reparse_pool / raw=shoe-mizuno-alpha / current=shoe-mizuno-alpha-2 / dbKey=shoe|alpha|football_shoe|b_grade / currentKey=shoe|alpha_2|football_shoe|b_grade / pool=ready
+- pid 403210609: action=refresh_raw_sku_reparse_pool / raw=clothing-thombrowne-apparel-broad / current=clothing-thombrowne-sweat-hoodie / dbKey=clothing|thombrowne_sweat_hoodie|crewneck|b_grade / currentKey=clothing|thombrowne_sweat_hoodie|crewneck|b_grade / pool=ready
+- pid 408242158: action=refresh_raw_sku_reparse_pool / raw=clothing-thombrowne-apparel-broad / current=clothing-thombrowne-cardigan / dbKey=clothing|thombrowne_cardigan|cardigan|a_grade / currentKey=clothing|thombrowne_cardigan|cardigan|a_grade / pool=ready
+- pid 407270400: action=refresh_raw_sku_reparse_pool / raw=clothing-polo-apparel-broad / current=clothing-polo-vintage / dbKey=clothing|polo_vintage|shirt|reject / currentKey=clothing|polo_vintage|shirt|reject / pool=ready
+- pid 407480020: action=refresh_raw_sku_reparse_pool / raw=clothing-polo-chiefkeef-stadium / current=clothing-polo-chiefkeef-modern / dbKey=clothing|polo_chiefkeef_modern|polo_shirt|b_grade / currentKey=clothing|polo_chiefkeef_modern|polo_shirt|b_grade / pool=ready
+- pid 410157096: action=refresh_parsed_key_rebuild_pool / raw=shoe-clot-adidas-superstar / current=shoe-clot-adidas-superstar / dbKey=shoe|adidas_superstar|sneaker|a_grade / currentKey=shoe|adidas_superstar|sneaker|s_grade / pool=ready
+- pid 410228291: action=refresh_parsed_key_rebuild_pool / raw=shoe-adidas-samba-wales-bonner / current=shoe-adidas-samba-wales-bonner / dbKey=shoe|samba_wales_bonner|sneaker|a_grade / currentKey=shoe|samba_wales_bonner|sneaker|s_grade / pool=ready
+- pid 394099132: action=refresh_parsed_key_rebuild_pool / raw=shoe-asics-cecilie-bahnsen-collab / current=shoe-asics-cecilie-bahnsen-collab / dbKey=shoe|asics_cecilie_bahnsen_collab|sneaker|b_grade / currentKey=shoe|asics_cecilie_bahnsen_collab|sneaker|a_grade / pool=ready
+- pid 408988269: action=refresh_parsed_key_rebuild_pool / raw=shoe-nike-airmax-95 / current=shoe-nike-airmax-95 / dbKey=shoe|airmax_95|sneaker|a_grade|with_box / currentKey=shoe|airmax_95|sneaker|s_grade|with_box / pool=ready
+- pid 358117074: action=refresh_parsed_key_rebuild_pool / raw=shoe-fog-fear-of-god-self / current=shoe-fog-fear-of-god-self / dbKey=shoe|fear_of_god_self|sneaker|a_grade / currentKey=shoe|fear_of_god_self|sneaker|s_grade / pool=ready
+- pid 405305859: action=refresh_parsed_key_rebuild_pool / raw=shoe-nike-levis-collab / current=shoe-nike-levis-collab / dbKey=shoe|nike_levis_collab|sneaker|b_grade / currentKey=shoe|nike_levis_collab|sneaker|a_grade / pool=ready
+- pid 188467560: action=refresh_parsed_key_rebuild_pool / raw=shoe-stussy-nike-collab / current=shoe-stussy-nike-collab / dbKey=shoe|stussy_nike_collab|sneaker|a_grade / currentKey=shoe|stussy_nike_collab|sneaker|s_grade / pool=ready
+- pid 387518782: action=refresh_parsed_key_rebuild_pool / raw=shoe-adidas-samba-sporty-rich / current=shoe-adidas-samba-sporty-rich / dbKey=shoe|samba_sporty_rich|sneaker|a_grade / currentKey=shoe|samba_sporty_rich|sneaker|s_grade / pool=ready
+- pid 397695730: action=refresh_parsed_key_rebuild_pool / raw=clothing-moncler-maya / current=clothing-moncler-maya / dbKey=clothing|moncler_maya|down_jacket|a_grade / currentKey=clothing|moncler_maya|down_jacket|b_grade / pool=ready
+- pid 288127680: action=refresh_parsed_key_rebuild_pool / raw=shoe-vans-old-skool / current=shoe-vans-old-skool / dbKey=shoe|old_skool|sneaker|b_grade / currentKey=shoe|old_skool|sneaker|a_grade / pool=ready
+- pid 375116228: action=refresh_parsed_key_rebuild_pool / raw=shoe-nike-airmax-1 / current=shoe-nike-airmax-1 / dbKey=shoe|airmax_1|sneaker|b_grade / currentKey=shoe|airmax_1|sneaker|a_grade / pool=ready
+- pid 338372380: action=refresh_parsed_key_rebuild_pool / raw=shoe-hoka-mach / current=shoe-hoka-mach / dbKey=shoe|mach|sneaker|a_grade / currentKey=shoe|mach|sneaker|s_grade / pool=ready
 
 ## Read
 - Production ready/reserved fashion rows are on the latest parser versions, so this is not an old-parser deploy lag issue.

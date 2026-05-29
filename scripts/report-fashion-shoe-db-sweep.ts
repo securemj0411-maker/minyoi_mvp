@@ -452,6 +452,54 @@ function buildGroupFindings(cases: SweepCase[]) {
     .slice(0, 25);
 }
 
+function driftAction(item: SweepCase) {
+  if (item.mismatchFlags.includes("raw_sku_rejected_by_current_catalog")) {
+    return "hold_raw_sku_then_reparse";
+  }
+  if (item.mismatchFlags.includes("raw_sku_differs_from_current_catalog")) {
+    return "refresh_raw_sku_reparse_pool";
+  }
+  if (item.mismatchFlags.includes("db_clean_but_current_catalog_changes_key")) {
+    return "refresh_parsed_key_rebuild_pool";
+  }
+  if (item.mismatchFlags.includes("parsed_stale_version")) {
+    return "rerun_parser_rebuild_pool";
+  }
+  return "review_signal_only";
+}
+
+function buildPoolDriftPlan(cases: SweepCase[]) {
+  return cases
+    .filter((item) =>
+      (item.poolStatus === "ready" || item.poolStatus === "reserved") &&
+      item.mismatchFlags.includes("pool_exposed_with_catalog_or_parser_drift")
+    )
+    .map((item) => ({
+      pid: item.pid,
+      title: item.title,
+      price: item.price,
+      status: item.poolStatus,
+      rawSkuId: item.rawSkuId,
+      currentRuleSkuId: item.currentRuleSkuId,
+      dbKey: item.dbKey,
+      currentRuleKey: item.currentRuleKey,
+      dbNeedsReview: item.dbNeedsReview,
+      currentRuleNeedsReview: item.currentRuleNeedsReview,
+      listingState: item.listingState,
+      lastSeenAt: item.lastSeenAt,
+      action: driftAction(item),
+      flags: [...new Set([...item.mismatchFlags, ...item.categoryConflictFlags])],
+    }))
+    .sort((a, b) => {
+      const weight = (item: { action: string; flags: string[] }) =>
+        (item.action === "hold_raw_sku_then_reparse" ? 40 : 0) +
+        (item.action === "refresh_raw_sku_reparse_pool" ? 30 : 0) +
+        (item.action === "refresh_parsed_key_rebuild_pool" ? 20 : 0) +
+        item.flags.length;
+      return weight(b) - weight(a);
+    });
+}
+
 function buildMarkdown(report: {
   generatedAt: string;
   scope: Record<string, unknown>;
@@ -462,6 +510,7 @@ function buildMarkdown(report: {
   categoryConflictFlags: Record<string, number>;
   topRawSkuMismatch: Array<{ key: string; count: number }>;
   flaggedGroups: ReturnType<typeof buildGroupFindings>;
+  poolDriftPlan: ReturnType<typeof buildPoolDriftPlan>;
   prioritySamples: ReturnType<typeof summarizeSamples>;
   nullSkuWouldMatch: Array<Record<string, unknown>>;
   nullSkuCoverageHoles: Array<Record<string, unknown>>;
@@ -491,6 +540,11 @@ function buildMarkdown(report: {
   lines.push("");
   lines.push("## Top Raw SKU Mismatch");
   for (const item of report.topRawSkuMismatch.slice(0, 20)) lines.push(`- ${item.key}: ${item.count}`);
+  lines.push("");
+  lines.push("## Pool Drift Plan");
+  for (const sample of report.poolDriftPlan.slice(0, 40)) {
+    lines.push(`- pid ${sample.pid}: ${sample.title} / action=${sample.action} / raw=${sample.rawSkuId} / current=${sample.currentRuleSkuId} / dbKey=${sample.dbKey} / currentKey=${sample.currentRuleKey} / pool=${sample.status} / flags=${sample.flags.join(",")}`);
+  }
   lines.push("");
   lines.push("## Flagged Comparable Groups");
   for (const group of report.flaggedGroups.slice(0, 12)) {
@@ -574,6 +628,7 @@ async function main() {
   }
 
   const flaggedGroups = buildGroupFindings(cases);
+  const poolDriftPlan = buildPoolDriftPlan(cases);
   console.error(`[fashion-sweep] cases=${cases.length}; flagged groups=${flaggedGroups.length}; fetching null sku rows`);
   const priorityCases = cases
     .filter((item) =>
@@ -643,6 +698,7 @@ async function main() {
       shoeUnknownCondition: mismatchFlags.shoe_unknown_condition ?? 0,
       dbProductTypeUnknown: mismatchFlags.db_product_type_unknown ?? 0,
       flaggedComparableGroups: flaggedGroups.length,
+      poolDriftPlanRows: poolDriftPlan.length,
       nullSkuWouldMatchNow: nullSkuWouldMatch.length,
       nullSkuFashionCoverageHoles: nullSkuCoverageHoles.length,
     },
@@ -652,6 +708,7 @@ async function main() {
     categoryConflictFlags: categoryConflictFlagsMap,
     topRawSkuMismatch: topEntries(rawSkuMismatchMap, 40),
     flaggedGroups,
+    poolDriftPlan,
     prioritySamples: summarizeSamples(priorityCases, 40),
     nullSkuWouldMatch: nullSkuWouldMatch.slice(0, 80),
     nullSkuCoverageHoles: nullSkuCoverageHoles.slice(0, 80),
@@ -697,6 +754,7 @@ async function main() {
     `- shoe unknown condition: ${report.summary.shoeUnknownCondition}`,
     `- shoe defaulted to sneaker: ${report.summary.shoeDefaultedToSneaker}`,
     `- flagged comparable groups: ${report.summary.flaggedComparableGroups}`,
+    `- pool drift plan rows: ${report.summary.poolDriftPlanRows}`,
     `- null SKU rows that would match current catalog now: ${report.summary.nullSkuWouldMatchNow}`,
     "",
     "## Top Flags",
@@ -707,6 +765,9 @@ async function main() {
     "",
     "## High-Signal Samples",
     ...highSignalSamples.map((sample) => `- pid ${sample.pid}: ${sample.title} / raw=${sample.rawSkuId} / current=${sample.currentRuleSkuId} / dbKey=${sample.dbKey} / currentKey=${sample.currentRuleKey} / pool=${sample.poolStatus ?? "none"} / flags=${sample.flags.join(",")}`),
+    "",
+    "## Pool Drift Plan",
+    ...report.poolDriftPlan.slice(0, 20).map((sample) => `- pid ${sample.pid}: action=${sample.action} / raw=${sample.rawSkuId} / current=${sample.currentRuleSkuId} / dbKey=${sample.dbKey} / currentKey=${sample.currentRuleKey} / pool=${sample.status}`),
     "",
     "## Read",
     "- Production ready/reserved fashion rows are on the latest parser versions, so this is not an old-parser deploy lag issue.",
