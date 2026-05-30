@@ -90,7 +90,7 @@
     },
     {
       "path": "/api/cron/sync-market-velocity",
-      "schedule": "30 18 * * *"
+      "schedule": "15 */6 * * *"
     },
     {
       "path": "/api/cron/incident-watch",
