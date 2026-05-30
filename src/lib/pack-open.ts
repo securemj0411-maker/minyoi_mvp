@@ -1285,9 +1285,17 @@ export function marketBasisForCandidate(
     };
   }
   const byCondition = comparableKey ? marketStats.get(comparableKey) : undefined;
+  // Wave 886.16b (2026-05-27): fashion (shoe/clothing) 시세는 tier 단위 (Wave 763/803i 정책).
+  //   comparable_key 가 "shoe|" / "clothing|" 시작이면 conditionClass 무시 (빈 문자열).
+  //   효과: pickByConditionFallback 에서 byCondition.get("") 우선 시도. 없으면
+  //   fallback chain "" → "normal" 박은 큰 sample 매칭. mint/clean outlier 회피.
+  //   사용자 보고: Polo 시세 101K (cc=mint, sample 3) vs 비교매물 median 58K — 본 매물 cc=mint 박혀 outlier 잡힘.
+  //   modified 박은 게 root cause fix — lookup/market-source/pack-open 모두 자동 적용.
+  const isFashionKey = typeof comparableKey === "string" && (comparableKey.startsWith("shoe|") || comparableKey.startsWith("clothing|"));
+  const effectiveConditionClass = isFashionKey ? "" : conditionClass;
   const { row: mixedStat, conditionClass: mixedCondition, fallbackUsed: mixedFallbackUsed } = selectMarketRowByCondition(
     byCondition,
-    conditionClass,
+    effectiveConditionClass,
   );
   const listingSource = sourceOptions?.listingSource ? normalizeMarketplaceSource(sourceOptions.listingSource) : null;
   const sourceByCondition = comparableKey && listingSource
@@ -1297,7 +1305,7 @@ export function marketBasisForCandidate(
     row: sourceStatCandidate,
     conditionClass: sourceCondition,
     fallbackUsed: sourceConditionFallbackUsed,
-  } = selectMarketRowByCondition(sourceByCondition, conditionClass);
+  } = selectMarketRowByCondition(sourceByCondition, effectiveConditionClass);
   const sourceStatUsable = sourceStatCandidate != null
     && marketRowActiveSoldSampleCount(sourceStatCandidate) >= MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE;
   // Wave 887: 당근 매물은 당근 sample 이 충분하면 상세/쉬운모드 기준 시세도 당근 기준으로 표시한다.
@@ -1343,7 +1351,7 @@ export function marketBasisForCandidate(
   const {
     row: daangnChannelStat,
     fallbackUsed: daangnChannelFallbackUsed,
-  } = selectMarketRowByCondition(daangnByCondition, conditionClass);
+  } = selectMarketRowByCondition(daangnByCondition, effectiveConditionClass);
   const daangnChannelUsable = daangnChannelStat != null
     && marketRowActiveSoldSampleCount(daangnChannelStat) >= MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE;
   const resaleChannels: ResaleChannelBasis[] = [
