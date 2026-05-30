@@ -62,6 +62,7 @@ type LookupResponse = {
     thumbnail_url: string | null;
     listing_state: string;
     first_seen_at: string;
+    last_seen_at: string | null;
   }>;
   priceDaily: Array<{
     date: string;
@@ -715,6 +716,12 @@ export default function LookupClient() {
                               {sourceLabel(c.source)}
                             </span>
                             <span className="text-zinc-400">{timeAgo(c.first_seen_at)}</span>
+                            {/* Wave 806: last_seen 1일 이상이면 stale 경고 (sweep cron 지연 인지) */}
+                            {c.last_seen_at && Date.now() - new Date(c.last_seen_at).getTime() > 24 * 60 * 60 * 1000 ? (
+                              <span className="rounded bg-amber-50 px-1.5 py-0 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
+                                {Math.floor((Date.now() - new Date(c.last_seen_at).getTime()) / (24 * 60 * 60 * 1000))}일 전 확인
+                              </span>
+                            ) : null}
                           </div>
                           <div className="mt-0.5 line-clamp-1 break-all text-[12px] font-bold text-zinc-900 dark:text-zinc-100">
                             {c.name}

@@ -412,10 +412,15 @@ async function runLookup(
     thumbnail_url: string | null;
     listing_state: string;
     first_seen_at: string;
+    last_seen_at: string | null;
   }> = [];
   if (compPids.length > 0) {
+    // Wave 806 (2026-05-30): stale 차단 — last_seen_at 3일 이상이면 진짜 sold 가능성 ↑
+    //   (daangn sweep cron throughput 부족으로 active 매물 49% 가 3~7일 stale).
+    //   listing_state=active + last_seen_at > 3d 둘 다 박아 stale-leak 차단.
+    const staleCutoffIso = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
     const compListRes = await restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,source,thumbnail_url,listing_state,first_seen_at&pid=in.(${compPids.join(",")})&listing_state=eq.active&order=first_seen_at.desc&limit=12`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,source,thumbnail_url,listing_state,first_seen_at,last_seen_at&pid=in.(${compPids.join(",")})&listing_state=eq.active&last_seen_at=gte.${encodeURIComponent(staleCutoffIso)}&order=first_seen_at.desc&limit=12`,
       { headers },
     );
     comparableListings = (await compListRes.json()) as typeof comparableListings;
