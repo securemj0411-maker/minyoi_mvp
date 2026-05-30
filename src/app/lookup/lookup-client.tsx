@@ -37,6 +37,11 @@ type LookupResponse = {
   };
   comparableKey: string;
   conditionClass: string | null;
+  conditionTier: string | null;
+  conditionCluster: string | null;
+  conditionConfidence: number | null;
+  conditionChips: string[];
+  conditionFlags: Record<string, unknown> | null;
   category: string | null;
   marketBasis: {
     medianPrice: number | null;
@@ -67,6 +72,22 @@ type LookupResponse = {
     p75_price: number | null;
     active_sample_count: number;
   }>;
+  velocity: {
+    confidence: string | null;
+    observedSoldSampleCount: number;
+    activeSampleCount: number;
+    sold24hCount: number;
+    sold7dCount: number;
+    medianHoursToSold: number | null;
+    p25HoursToSold: number | null;
+    p75HoursToSold: number | null;
+  } | null;
+  poolStatus: {
+    status: string;
+    invalidatedReason: string | null;
+    score: number | null;
+    registeredJustNow: boolean;
+  } | null;
 };
 
 type ErrorResponse = {
@@ -89,6 +110,50 @@ function sourceLabel(src: string | null | undefined): string {
   if (src.toLowerCase().includes("joongna")) return "중고나라";
   if (src.toLowerCase().includes("daangn")) return "당근마켓";
   return src;
+}
+
+// Wave 802: condition tier 색상 + 라벨
+function tierStyle(tier: string | null): { label: string; bg: string; text: string } | null {
+  if (!tier) return null;
+  const t = tier.toUpperCase();
+  const styles: Record<string, { label: string; bg: string; text: string }> = {
+    S: { label: "S급 (최상)", bg: "bg-blue-100 dark:bg-blue-950/40", text: "text-blue-700 dark:text-blue-300" },
+    A: { label: "A급 (양호)", bg: "bg-emerald-100 dark:bg-emerald-950/40", text: "text-emerald-700 dark:text-emerald-300" },
+    B: { label: "B급 (보통)", bg: "bg-zinc-100 dark:bg-zinc-800", text: "text-zinc-700 dark:text-zinc-300" },
+    C: { label: "C급 (사용감)", bg: "bg-amber-100 dark:bg-amber-950/40", text: "text-amber-800 dark:text-amber-300" },
+    D: { label: "D급 (하자)", bg: "bg-rose-100 dark:bg-rose-950/40", text: "text-rose-700 dark:text-rose-300" },
+  };
+  return styles[t] ?? { label: tier, bg: "bg-zinc-100 dark:bg-zinc-800", text: "text-zinc-700 dark:text-zinc-300" };
+}
+
+// Wave 802: condition_class 한글 라벨
+function conditionClassLabel(cls: string | null): string {
+  if (!cls) return "미분류";
+  const map: Record<string, string> = {
+    clean: "깨끗",
+    mint: "민트",
+    unopened: "미개봉",
+    used: "사용감",
+    damaged: "하자",
+    unknown: "미분류",
+  };
+  return map[cls] ?? cls;
+}
+
+// Wave 802: 회전주기 사람 친화적 포맷
+function formatHours(hours: number | null): string {
+  if (hours == null || !Number.isFinite(hours) || hours <= 0) return "—";
+  if (hours < 24) return `${Math.round(hours)}시간`;
+  const days = hours / 24;
+  if (days < 14) return `${days.toFixed(1)}일`;
+  return `${Math.round(days)}일`;
+}
+
+// Wave 802: pool status 한글 라벨
+function poolStatusLabel(status: string): { label: string; tone: "good" | "warn" | "neutral" } {
+  if (status === "ready") return { label: "추천 매물로 등록됨", tone: "good" };
+  if (status === "invalidated") return { label: "추천 풀에 포함 안 됨", tone: "warn" };
+  return { label: status, tone: "neutral" };
 }
 
 function timeAgo(iso: string): string {
@@ -470,12 +535,141 @@ export default function LookupClient() {
                   수수료 {krw(result.profit.sellFee)} + 재배송 {krw(result.profit.resellShipping)} + 안전버퍼 5,000원 차감 후 순익이에요.
                 </p>
               ) : null}
-              {result.conditionClass ? (
-                <p className="mt-1 text-[10.5px] font-bold text-zinc-400">
-                  같은 상태 (등급 {result.conditionClass}) 매물끼리만 비교
-                </p>
-              ) : null}
             </section>
+
+            {/* Wave 802: 상품 상태 (등급/조건/chip) */}
+            <section className="mt-3 rounded-[16px] border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="text-[12px] font-black text-zinc-500 dark:text-zinc-400">상품 상태</div>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                {result.conditionTier ? (
+                  (() => {
+                    const s = tierStyle(result.conditionTier);
+                    return s ? (
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-black ${s.bg} ${s.text}`}>
+                        <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-white/70 text-[9px] font-black dark:bg-zinc-900/60">
+                          {result.conditionTier.toUpperCase()}
+                        </span>
+                        {s.label}
+                      </span>
+                    ) : null;
+                  })()
+                ) : null}
+                {result.conditionClass ? (
+                  <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                    {conditionClassLabel(result.conditionClass)}
+                  </span>
+                ) : null}
+                {result.conditionConfidence != null ? (
+                  <span className="text-[10.5px] font-bold text-zinc-400 dark:text-zinc-500">
+                    신뢰도 {Math.round(result.conditionConfidence * 100)}%
+                  </span>
+                ) : null}
+              </div>
+              {result.conditionChips && result.conditionChips.length > 0 ? (
+                <div className="mt-2.5">
+                  <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-500">분석 시그널</div>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {result.conditionChips.map((chip) => (
+                      <span
+                        key={chip}
+                        className="rounded-md bg-blue-50 px-2 py-0.5 text-[10.5px] font-bold text-[#3182f6] dark:bg-blue-950/30 dark:text-blue-300"
+                      >
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+              {result.conditionFlags && Object.values(result.conditionFlags).some(Boolean) ? (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {Object.entries(result.conditionFlags)
+                    .filter(([, v]) => Boolean(v))
+                    .map(([k]) => (
+                      <span key={k} className="rounded-md bg-violet-50 px-2 py-0.5 text-[10px] font-bold text-violet-700 dark:bg-violet-950/30 dark:text-violet-300">
+                        ⚑ {k}
+                      </span>
+                    ))}
+                </div>
+              ) : null}
+              <p className="mt-2.5 text-[10.5px] font-medium leading-4 text-zinc-400 dark:text-zinc-500">
+                비교 매물은 같은 등급·같은 상태로만 골라요 (가격 비교 정확도 ↑).
+              </p>
+            </section>
+
+            {/* Wave 802: 시세 회전주기 (얼마 만에 팔리는지) */}
+            {result.velocity ? (
+              <section className="mt-3 rounded-[16px] border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                <div className="flex items-center justify-between">
+                  <div className="text-[12px] font-black text-zinc-500 dark:text-zinc-400">시세 회전주기</div>
+                  {result.velocity.confidence ? (
+                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                      {result.velocity.confidence}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="rounded-xl bg-emerald-50 p-2.5 dark:bg-emerald-950/24">
+                    <div className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300">24시간 내 판매</div>
+                    <div className="mt-0.5 text-[15px] font-black text-emerald-800 dark:text-emerald-200">{result.velocity.sold24hCount}건</div>
+                  </div>
+                  <div className="rounded-xl bg-blue-50 p-2.5 dark:bg-blue-950/24">
+                    <div className="text-[10px] font-bold text-[#3182f6] dark:text-blue-300">7일 내 판매</div>
+                    <div className="mt-0.5 text-[15px] font-black text-zinc-900 dark:text-zinc-100">{result.velocity.sold7dCount}건</div>
+                  </div>
+                </div>
+                <div className="mt-2.5 grid grid-cols-3 gap-2">
+                  <div className="rounded-lg bg-zinc-50 p-2 dark:bg-zinc-950/50">
+                    <div className="text-[10px] font-bold text-zinc-500">중앙값</div>
+                    <div className="mt-0.5 text-[12px] font-black text-zinc-900 dark:text-zinc-100">{formatHours(result.velocity.medianHoursToSold)}</div>
+                  </div>
+                  <div className="rounded-lg bg-zinc-50 p-2 dark:bg-zinc-950/50">
+                    <div className="text-[10px] font-bold text-zinc-500">빠른 25%</div>
+                    <div className="mt-0.5 text-[12px] font-black text-zinc-900 dark:text-zinc-100">{formatHours(result.velocity.p25HoursToSold)}</div>
+                  </div>
+                  <div className="rounded-lg bg-zinc-50 p-2 dark:bg-zinc-950/50">
+                    <div className="text-[10px] font-bold text-zinc-500">느린 25%</div>
+                    <div className="mt-0.5 text-[12px] font-black text-zinc-900 dark:text-zinc-100">{formatHours(result.velocity.p75HoursToSold)}</div>
+                  </div>
+                </div>
+                <p className="mt-2 text-[10.5px] font-medium leading-4 text-zinc-400 dark:text-zinc-500">
+                  같은 등급 매물 기준으로 등록 → 판매까지 평균 얼마 걸리는지에요.
+                </p>
+              </section>
+            ) : null}
+
+            {/* Wave 802: pool status (추천 풀 등록 여부) */}
+            {result.poolStatus ? (
+              (() => {
+                const s = poolStatusLabel(result.poolStatus.status);
+                const toneClass =
+                  s.tone === "good"
+                    ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900/40 dark:bg-emerald-950/24"
+                    : s.tone === "warn"
+                      ? "border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/24"
+                      : "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900";
+                const titleClass =
+                  s.tone === "good" ? "text-emerald-800 dark:text-emerald-200"
+                    : s.tone === "warn" ? "text-amber-800 dark:text-amber-200"
+                      : "text-zinc-700 dark:text-zinc-300";
+                return (
+                  <section className={`mt-3 rounded-[16px] border p-3 ${toneClass}`}>
+                    <div className={`text-[12.5px] font-black ${titleClass}`}>
+                      {result.poolStatus.registeredJustNow ? "✓ 추천 풀에 방금 등록됐어요" : s.label}
+                    </div>
+                    {result.poolStatus.invalidatedReason ? (
+                      <p className="mt-1 break-keep text-[10.5px] font-bold leading-4 text-amber-700 dark:text-amber-300">
+                        사유: <span className="font-mono">{result.poolStatus.invalidatedReason}</span>
+                      </p>
+                    ) : null}
+                    {result.poolStatus.registeredJustNow ? (
+                      <p className="mt-1 break-keep text-[10.5px] font-medium leading-4 text-emerald-700 dark:text-emerald-300">
+                        다른 회원도 추천 피드에서 이 매물을 볼 수 있어요.
+                      </p>
+                    ) : null}
+                  </section>
+                );
+              })()
+            ) : null}
 
             {/* 시세 그래프 */}
             {chartSvg ? (

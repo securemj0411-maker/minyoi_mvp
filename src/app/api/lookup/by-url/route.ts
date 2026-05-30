@@ -8,6 +8,7 @@ import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/sup
 import {
   fetchLatestMarketStats,
   fetchLatestMarketStatsPerSource,
+  fetchLatestMarketVelocity,
   fetchReferencePrices,
   fetchV7SiblingPresence,
   marketBasisForCandidate,
@@ -124,6 +125,17 @@ type ParsedRow = {
   comparable_key: string | null;
   condition_class: string | null;
   category: string | null;
+  condition_tier: string | null;
+  condition_cluster: string | null;
+  condition_confidence: number | string | null;
+  condition_chips: string[] | null;
+  condition_flags: Record<string, unknown> | null;
+};
+
+type PoolStatusRow = {
+  status: string;
+  invalidated_reason: string | null;
+  score: number | string | null;
 };
 
 /**
@@ -304,16 +316,21 @@ async function runLookup(
   const raw = rawRows[0];
   const pid = raw.pid;
 
-  // Parsed (comparable_key + condition_class)
+  // Parsed (comparable_key + condition_class + tier/chips)
   setStep("fetch_parsed");
   const parsedRes = await restFetch(
-    `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class,category&pid=eq.${pid}&limit=1`,
+    `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class,category,condition_tier,condition_cluster,condition_confidence,condition_chips,condition_flags&pid=eq.${pid}&limit=1`,
     { headers },
   );
   const parsedRows = (await parsedRes.json()) as ParsedRow[];
   const parsedRow = parsedRows[0] ?? null;
   const comparableKey = parsedRow?.comparable_key ?? null;
   const conditionClass = parsedRow?.condition_class ?? null;
+  const conditionTier = parsedRow?.condition_tier ?? null;
+  const conditionCluster = parsedRow?.condition_cluster ?? null;
+  const conditionConfidence = parsedRow?.condition_confidence != null ? Number(parsedRow.condition_confidence) : null;
+  const conditionChips = Array.isArray(parsedRow?.condition_chips) ? parsedRow.condition_chips : [];
+  const conditionFlags = parsedRow?.condition_flags ?? null;
 
   if (!comparableKey) {
     return NextResponse.json(
@@ -332,14 +349,22 @@ async function runLookup(
     );
   }
 
-  // marketBasis + reference + v7
+  // marketBasis + reference + v7 + velocity (회전주기) + pool status
   setStep("fetch_market_stats");
-  const [marketStatsResult, marketStatsPerSourceResult, referencePricesResult, v7Result] = await Promise.all([
+  const [marketStatsResult, marketStatsPerSourceResult, referencePricesResult, v7Result, velocityResult, poolStatusRes] = await Promise.all([
     fetchLatestMarketStats([comparableKey]),
     fetchLatestMarketStatsPerSource([comparableKey]),
     fetchReferencePrices([comparableKey]),
     fetchV7SiblingPresence([comparableKey]),
+    fetchLatestMarketVelocity([comparableKey]),
+    restFetch(
+      `${tableUrl("mvp_candidate_pool")}?select=status,invalidated_reason,score&pid=eq.${pid}&limit=1`,
+      { headers },
+    ),
   ]);
+  const velocityRow = velocityResult.get(comparableKey) ?? null;
+  const poolStatusRows = (await poolStatusRes.json()) as PoolStatusRow[];
+  const poolStatus = poolStatusRows[0] ?? null;
 
   setStep("compute_market_basis");
   const marketplaceSource = normalizeMarketplaceSource(raw.source ?? null);
@@ -418,6 +443,41 @@ async function runLookup(
     priceDaily = ((await dailyRes.json()) as typeof priceDaily).reverse();
   }
 
+  // Wave 802: pool 자동 등록 — 본 매물이 mvp_candidate_pool 에 없으면 ready 로 insert.
+  //   기존 invalidated row 는 건드리지 않음 (cron 의 invalidation reason 존중).
+  //   profit 양수일 때만 등록 (음수면 사용자한테도 비추천이므로 skip).
+  setStep("register_to_pool");
+  let registeredToPool = false;
+  if (!poolStatus && profit && profit.min > 0 && marketBasis.medianPrice) {
+    try {
+      const insertRes = await restFetch(tableUrl("mvp_candidate_pool"), {
+        method: "POST",
+        headers: { ...serviceHeaders(), Prefer: "resolution=ignore-duplicates,return=minimal" },
+        body: JSON.stringify({
+          pid,
+          profit_band: 0,
+          expected_profit_min: profit.min,
+          expected_profit_max: profit.max,
+          score: 0,
+          confidence: 0.5,
+          comparable_key: comparableKey,
+          status: "ready",
+          exposure_count: 0,
+          max_exposure: 3,
+          last_verified_at: new Date().toISOString(),
+          added_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          category: parsedRow?.category ?? null,
+          condition_class: conditionClass ?? "unknown",
+        }),
+      });
+      if (insertRes.ok || insertRes.status === 201) registeredToPool = true;
+    } catch (err) {
+      // best-effort — pool insert 실패해도 lookup 결과는 그대로 반환.
+      console.warn("[lookup] pool register failed:", err instanceof Error ? err.message : err);
+    }
+  }
+
   // Wave 799b: 크레딧 차감 — 모든 데이터 fetch 성공 후 (404/202 시 무료)
   setStep("charge_credit");
   const charge = await chargeLookupCredit(user, userRef);
@@ -462,10 +522,37 @@ async function runLookup(
     },
     comparableKey,
     conditionClass,
+    conditionTier,
+    conditionCluster,
+    conditionConfidence,
+    conditionChips,
+    conditionFlags,
     category: parsedRow?.category ?? null,
     marketBasis,
     profit,
     comparableListings,
     priceDaily,
+    velocity: velocityRow
+      ? {
+          confidence: velocityRow.confidence,
+          observedSoldSampleCount: Number(velocityRow.observed_sold_sample_count ?? 0),
+          activeSampleCount: Number(velocityRow.active_sample_count ?? 0),
+          sold24hCount: Number(velocityRow.sold_24h_count ?? 0),
+          sold7dCount: Number(velocityRow.sold_7d_count ?? 0),
+          medianHoursToSold: velocityRow.median_hours_to_sold,
+          p25HoursToSold: velocityRow.p25_hours_to_sold,
+          p75HoursToSold: velocityRow.p75_hours_to_sold,
+        }
+      : null,
+    poolStatus: poolStatus
+      ? {
+          status: poolStatus.status,
+          invalidatedReason: poolStatus.invalidated_reason,
+          score: poolStatus.score != null ? Number(poolStatus.score) : null,
+          registeredJustNow: false,
+        }
+      : registeredToPool
+        ? { status: "ready", invalidatedReason: null, score: null, registeredJustNow: true }
+        : null,
   });
 }
