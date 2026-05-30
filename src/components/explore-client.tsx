@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import CreditIcon from "@/components/credit-icon";
+import ReferralBanner from "@/components/referral-banner";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, HourglassIcon, BookmarkIcon } from "@/components/icons";
 import { BrandLogo } from "@/components/brand-logo";
@@ -2353,6 +2354,10 @@ export default function ExploreClient({
           onDismiss={dismissFirstFeedOnboarding}
         />
       ) : null}
+
+      {/* Wave 805 (2026-05-30): 피드 상단 referral banner — 3일 dismiss cooldown.
+          노출 위치 = 피드 진입 시 가장 자주 보는 surface → referral 인지/진입 ↑. */}
+      <ReferralBanner />
 
       {/* Wave 383+393: 6h lag 제거 + 사이트 핵심 가치 (band-aware 비교) 강조. */}
       <div className="mb-2 hidden rounded-xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40 sm:block">

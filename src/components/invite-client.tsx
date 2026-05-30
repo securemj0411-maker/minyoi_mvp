@@ -79,12 +79,13 @@ export default function InviteClient() {
         return;
       }
       // Wave 741 (2026-05-24): sendDefault 복원. 친구 초대 카피 + "지금 바로가기" CTA.
+      // Wave 805 (2026-05-30): 카피 강화 — 보상 명시 + value (₩2,900 가치 5크레딧) + 시인성 ↑.
       const imageUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/new_balance.jpeg`;
       kakao.Share.sendDefault({
         objectType: "feed",
         content: {
-          title: "득템잡이 — 친구 초대 5크레딧",
-          description: "시세보다 싼 중고 매물 알려드려요. 이 링크로 가입하면 둘 다 5크레딧 받아요 🎁",
+          title: "🎁 친구가 5크레딧 보냈어요 — 득템잡이",
+          description: "중고 매물 시세 AI 비교 — 같은 상태 끼리만 비교해서 진짜 싼 매물 잡아드려요. 이 링크로 가입하면 5크레딧 (₩2,900 가치) 즉시 받기.",
           imageUrl,
           link: {
             mobileWebUrl: shareUrl,
@@ -93,7 +94,7 @@ export default function InviteClient() {
         },
         buttons: [
           {
-            title: "지금 바로가기",
+            title: "5크레딧 받고 시작하기",
             link: {
               mobileWebUrl: shareUrl,
               webUrl: shareUrl,
