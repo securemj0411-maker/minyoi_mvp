@@ -32,6 +32,7 @@ import {
 } from "@/lib/daangn";
 import {
   inferDaangnShipping,
+  selectDaangnRegionShard,
   upsertDaangnRawListings,
   type DaangnIngestCombo,
   type DaangnIngestDetailRecord,
@@ -92,6 +93,12 @@ export type DaangnPriceSweepOptions = {
   timeoutMs?: number;
   dryRun?: boolean;
   now?: Date;
+  // Wave 813 (2026-05-30): A/B/C 3 워커 분산 — region pool 을 shard 로 나눠
+  //   각 워커가 다른 region 그룹 처리. cron-guard mode 별도 (_a/_b/_c).
+  //   detail-worker 패턴 그대로 (CRON_PROJECT_ROLE env 기반).
+  //   기본 shardCount=1, shardIndex=0 → 기존 동작 (단일 워커).
+  regionShardCount?: number;
+  regionShardIndex?: number;
 };
 
 export type DaangnPriceSweepResult = {
@@ -108,6 +115,9 @@ export type DaangnPriceSweepResult = {
   deficitSkus: number;
   selectedSkus: number;
   regions: number;
+  // Wave 813: shard info — observability + debug
+  regionShardCount?: number;
+  regionShardIndex?: number;
   searchCombos: number;
   categoryCombos: number;
   executedCombos: number;
@@ -740,7 +750,15 @@ export async function runDaangnPriceSweep(options: DaangnPriceSweepOptions = {})
   const dryRun = options.dryRun ?? false;
   const targetSamples = toPositiveInt(options.targetSamples, DEFAULT_TARGET_SAMPLES, 1, 50);
   const maxSkus = toPositiveInt(options.maxSkus, DEFAULT_MAX_SKUS, 1, 500);
-  const searchRegionSeeds = DAANGN_SEARCH_REGION_SEEDS.length > 0 ? DAANGN_SEARCH_REGION_SEEDS : DEFAULT_DAANGN_REGION_SEEDS;
+  const allRegionSeeds = DAANGN_SEARCH_REGION_SEEDS.length > 0 ? DAANGN_SEARCH_REGION_SEEDS : DEFAULT_DAANGN_REGION_SEEDS;
+  // Wave 813 (2026-05-30): A/B/C shard — 각 워커가 region pool 1/N 만 처리.
+  //   shardCount=1, shardIndex=0 → 전체 region (기존 동작 = 단일 워커).
+  //   shardCount=3 → searchRegionSeeds = allRegionSeeds 의 약 1/3 (deterministic split).
+  const regionShardCount = toPositiveInt(options.regionShardCount, 1, 1, 20);
+  const regionShardIndex = toPositiveInt(options.regionShardIndex, 0, 0, Math.max(0, regionShardCount - 1));
+  const searchRegionSeeds = regionShardCount > 1
+    ? selectDaangnRegionShard(allRegionSeeds, regionShardCount, regionShardIndex)
+    : allRegionSeeds;
   const maxRegions = toPositiveInt(options.maxRegions, DEFAULT_MAX_REGIONS, 1, searchRegionSeeds.length);
   const maxSearchCombos = toPositiveInt(options.maxSearchCombos, DEFAULT_MAX_SEARCH_COMBOS, 0, 2000);
   const maxCategoryCombos = toPositiveInt(options.maxCategoryCombos, DEFAULT_MAX_CATEGORY_COMBOS, 0, 2000);
@@ -876,6 +894,8 @@ export async function runDaangnPriceSweep(options: DaangnPriceSweepOptions = {})
     deficitSkus: readySkus.filter((sku) => (counts.get(sku.id)?.total ?? 0) < targetSamples).length,
     selectedSkus: targets.length,
     regions: regions.length,
+    regionShardCount,
+    regionShardIndex,
     searchCombos: searchCombos.length,
     categoryCombos: categoryCombos.length,
     executedCombos: combos.length,

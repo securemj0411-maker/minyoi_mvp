@@ -26,6 +26,38 @@ function envBool(name: string, fallback = false): boolean {
   return value === "1" || value === "true" || value === "yes";
 }
 
+// Wave 813 (2026-05-30): 다중 프로젝트 분산 — A/B/C 워커 패턴 (detail-worker 와 동일).
+//   primary/all/daangn_primary → shardCount=3, shardIndex=0 (전체 region 의 1/3)
+//   daangn_b → shardCount=3, shardIndex=1
+//   daangn_c → shardCount=3, shardIndex=2
+function isDaangnPriceSweepProject() {
+  const role = String(process.env.CRON_PROJECT_ROLE ?? "").trim().toLowerCase();
+  return !role || role === "primary" || role === "all" || role === "daangn_primary"
+         || role === "daangn_b" || role === "daangn_c";
+}
+
+function defaultSweepShardIndex() {
+  const role = String(process.env.CRON_PROJECT_ROLE ?? "").trim().toLowerCase();
+  if (role === "daangn_b") return 1;
+  if (role === "daangn_c") return 2;
+  return 0;
+}
+
+function defaultSweepShardCount() {
+  const role = String(process.env.CRON_PROJECT_ROLE ?? "").trim().toLowerCase();
+  return !role || role === "primary" || role === "all"
+         || role === "daangn_primary" || role === "daangn_b" || role === "daangn_c"
+    ? 3 : 1;
+}
+
+import type { CronWorkerMode } from "@/lib/cron-guard";
+function sweepGuardMode(shardCount: number, shardIndex: number): CronWorkerMode {
+  if (shardCount <= 1) return "daangn_price_sweep_worker";
+  if (shardIndex === 1) return "daangn_price_sweep_worker_b";
+  if (shardIndex === 2) return "daangn_price_sweep_worker_c";
+  return "daangn_price_sweep_worker_a";
+}
+
 async function handleDaangnPriceSweepWorker(req: NextRequest) {
   const { authOk, authReason } = checkCronAuth(req);
   const meta = buildCronRequestMeta(req, authOk, authReason, "daangn-price-sweep-worker");
@@ -34,7 +66,21 @@ async function handleDaangnPriceSweepWorker(req: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const guard = await acquireCronGuardWithSourceHealth("daangn_price_sweep_worker", req);
+  if (!isDaangnPriceSweepProject()) {
+    return NextResponse.json({
+      ok: true,
+      started: false,
+      skipped: true,
+      mode: "daangn_price_sweep_worker",
+      reason: "project_role_disabled",
+      projectRole: process.env.CRON_PROJECT_ROLE ?? null,
+    });
+  }
+
+  const shardCount = envInt("DAANGN_PRICE_SWEEP_SHARD_COUNT", defaultSweepShardCount(), 1, 3);
+  const shardIndex = envInt("DAANGN_PRICE_SWEEP_SHARD_INDEX", defaultSweepShardIndex(), 0, Math.max(0, shardCount - 1));
+  const guardMode = sweepGuardMode(shardCount, shardIndex);
+  const guard = await acquireCronGuardWithSourceHealth(guardMode, req);
   if (!guard.allowed) {
     return NextResponse.json(cronGuardSkipBody(guard));
   }
@@ -45,13 +91,11 @@ async function handleDaangnPriceSweepWorker(req: NextRequest) {
     ...meta,
     requestMeta: {
       ...meta.requestMeta,
-      pipelineMode: "daangn_price_sweep_worker",
+      pipelineMode: guardMode,
       staleMarkedBeforeRun: staleMarked,
       dryRun,
-      // Wave 812 (2026-05-30): batch size 대폭 ↑ — 49% stale (15만건) fix.
-      //   기존 30분 × maxSkus 80 = 시간당 160 SKU. 31일 걸려 다 못 sweep.
-      //   변경 5분 × maxSkus 200 = 시간당 2,400 SKU. 약 2일이면 1 cycle.
-      //   maxDuration 300s 안에서 안전 (region rotation 으로 자연 분산).
+      shardCount,
+      shardIndex,
       targetSamples: envInt("DAANGN_PRICE_SWEEP_TARGET_SAMPLES", 10, 1, 50),
       maxSkus: envInt("DAANGN_PRICE_SWEEP_MAX_SKUS", 200, 1, 500),
       maxRegions: envInt("DAANGN_PRICE_SWEEP_MAX_REGIONS", 24, 1, 300),
@@ -70,7 +114,8 @@ async function handleDaangnPriceSweepWorker(req: NextRequest) {
   try {
     const result = await runDaangnPriceSweep({
       dryRun,
-      // Wave 812 (2026-05-30): batch + concurrency ↑ — stale fix.
+      regionShardCount: shardCount,
+      regionShardIndex: shardIndex,
       targetSamples: envInt("DAANGN_PRICE_SWEEP_TARGET_SAMPLES", 10, 1, 50),
       maxSkus: envInt("DAANGN_PRICE_SWEEP_MAX_SKUS", 200, 1, 500),
       maxRegions: envInt("DAANGN_PRICE_SWEEP_MAX_REGIONS", 24, 1, 300),

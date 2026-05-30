@@ -115,7 +115,10 @@ export type CronWorkerMode =
   | "daangn_detail_worker_a"
   | "daangn_detail_worker_b"
   | "daangn_detail_worker_c"
-  | "daangn_price_sweep_worker";
+  | "daangn_price_sweep_worker"
+  | "daangn_price_sweep_worker_a"
+  | "daangn_price_sweep_worker_b"
+  | "daangn_price_sweep_worker_c";
 
 type CronGuardSkipReason = "cooldown" | "same_worker_running" | "source_health_unhealthy" | "project_role_disabled";
 
@@ -195,6 +198,9 @@ const DEFAULT_COOLDOWN_MS: Record<CronWorkerMode, number> = {
   daangn_detail_worker_b: 4 * 60_000,
   daangn_detail_worker_c: 4 * 60_000,
   daangn_price_sweep_worker: 20 * 60_000,
+  daangn_price_sweep_worker_a: 4 * 60_000,
+  daangn_price_sweep_worker_b: 4 * 60_000,
+  daangn_price_sweep_worker_c: 4 * 60_000,
 };
 
 const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
@@ -224,6 +230,9 @@ const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
   daangn_detail_worker_b: 2 * 60_000,
   daangn_detail_worker_c: 2 * 60_000,
   daangn_price_sweep_worker: 2 * 60_000,
+  daangn_price_sweep_worker_a: 2 * 60_000,
+  daangn_price_sweep_worker_b: 2 * 60_000,
+  daangn_price_sweep_worker_c: 2 * 60_000,
 };
 
 const HEAVY_SOURCE_HEALTH_GUARD_MODES = new Set<CronWorkerMode>([
