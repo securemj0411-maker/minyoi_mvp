@@ -2729,7 +2729,15 @@ async function loadMarketStatRows(limit: number): Promise<ScorableRawRow[]> {
   );
   const sinceIso = new Date(Date.now() - lookbackHours * 3600 * 1000).toISOString();
   // order 도 last_seen_at.desc 단일로 변경 — detail_enriched 우선 정책이 옛 매물 누락 원인.
-  const baseUrl = `${tableUrl("mvp_raw_listings")}?select=${columns}&detail_status=eq.done&or=(listing_type.eq.normal,listing_type_override.eq.normal)&sku_id=not.is.null&listing_state=in.(active,sold_confirmed,disappeared)&last_seen_at=gte.${encodeURIComponent(sinceIso)}&order=last_seen_at.desc`;
+  // Wave 894 (2026-05-30 사용자 NB 991 손실 케이스):
+  //   기존: `detail_status=eq.done` 일률 적용 → 당근 sold 매물 96.6% drop (detail enrich은 active 만 함).
+  //   결과: 사용자에게 보여준 시세가 호가 × 0.92 fallback 으로 박힘 → 실제 sold 대비 50%+ 과대평가.
+  //   fix: 시세 집계 filter — active 만 detail done 요구, sold/disappeared 는 detail 무관.
+  //   sold 매물은 가격이 fixed (closing price). title 기반 parsed 1차 comparable_key 만 있으면 충분.
+  //   parsed map lookup 에서 comparable_key 없으면 자동 drop — 안전.
+  const stateFilter = "or(and(listing_state.eq.active,detail_status.eq.done),listing_state.in.(sold_confirmed,disappeared))";
+  const typeFilter = "or(listing_type.eq.normal,listing_type_override.eq.normal)";
+  const baseUrl = `${tableUrl("mvp_raw_listings")}?select=${columns}&and=(${stateFilter},${typeFilter})&sku_id=not.is.null&last_seen_at=gte.${encodeURIComponent(sinceIso)}&order=last_seen_at.desc`;
   // Wave 184: pagination — PostgREST 1000 cap 우회. limit param 까지 chunk 별 페치 후 합침.
   // chunk 가 PAGE_SIZE 미만이면 더 없음 → break.
   const rows: ScorableRawRow[] = [];
@@ -2754,7 +2762,11 @@ async function loadMarketStatRowsByPids(pids: number[], limit: number): Promise<
   for (const chunk of chunkArray(unique, PARSED_PID_READ_CHUNK_SIZE)) {
     const remaining = limit - rows.length;
     if (remaining <= 0) break;
-    const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&pid=in.(${chunk.join(",")})&detail_status=eq.done&or=(listing_type.eq.normal,listing_type_override.eq.normal)&sku_id=not.is.null&listing_state=in.(active,sold_confirmed,disappeared)&limit=${Math.min(remaining, chunk.length)}`;
+    // Wave 894: 시세 집계 filter 동일 적용 (loadMarketStatRows 와 일관성).
+    //   active = detail done 요구, sold/disappeared = detail 무관 — sold 매물 96.6% drop 방지.
+    const stateFilterPid = "or(and(listing_state.eq.active,detail_status.eq.done),listing_state.in.(sold_confirmed,disappeared))";
+    const typeFilterPid = "or(listing_type.eq.normal,listing_type_override.eq.normal)";
+    const url = `${tableUrl("mvp_raw_listings")}?select=${columns}&pid=in.(${chunk.join(",")})&and=(${stateFilterPid},${typeFilterPid})&sku_id=not.is.null&limit=${Math.min(remaining, chunk.length)}`;
     const res = await restFetch(url, { headers: serviceHeaders() });
     rows.push(...((await res.json()) as ScorableRawRow[]));
   }
