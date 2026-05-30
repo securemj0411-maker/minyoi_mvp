@@ -110,6 +110,13 @@ export function HomeRegionOnboarding() {
       const name = json.home_region?.daangn_region_name ?? "";
       if (fullPath || name) {
         setConfirmedRegion({ fullPath, name });
+        // Wave 801 (2026-05-30): 동네 확정 노출 시간 (1.1s) 동안 메인 피드 prefetch.
+        //   /me 진입 시 ExploreClient 가 같은 endpoint fetch — server-side DB 가 warm
+        //   (cache: no-store 라 응답은 재사용 안 하지만 PG buffer + 거리 계산 캐시 효과).
+        //   fire-and-forget — 실패해도 redirect 진행. 토큰 같이 박아 인증 통과.
+        const prefetchHeaders = { Authorization: `Bearer ${token}` } as const;
+        void fetch("/api/packs/pool", { cache: "no-store", headers: prefetchHeaders }).catch(() => undefined);
+        void fetch("/api/stats/pool", { cache: "no-store", headers: prefetchHeaders }).catch(() => undefined);
         await new Promise<void>((r) => setTimeout(r, 1100));
       }
       // Wave 886.5 (2026-05-27): 기존 "/explore" 라우트는 존재 X (404) → "/me" 로 redirect.

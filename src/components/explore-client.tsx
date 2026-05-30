@@ -1987,6 +1987,35 @@ export default function ExploreClient({
         description: "수익성, 상태, 거래 가능성을 같이 확인하고 있어요.",
       };
 
+  // Wave 801 (2026-05-30): 메인 피드 로딩 진행 단계 표시.
+  //   당근 거리 정렬 때문에 첫 진입 시 오래 걸리는 경향 — 사용자가 "멈췄나" 걱정하지 않게
+  //   단계별 progress UI 제공. timer 기반 (실제 server progress 가 아닌 fake stage).
+  const loadingStages = isDaangnFocusedView
+    ? [
+        "내 동네 좌표 확인",
+        "근처 당근 ready 매물 후보 수집",
+        "수익·시세·상태 검증 + AI 차익 산정",
+        "거리 가까운 순으로 정렬",
+      ]
+    : [
+        "오늘 등록된 매물 후보 수집",
+        "수익·시세·상태 검증",
+        "AI 차익 산정",
+        "추천 순으로 정렬",
+      ];
+  const [loadingStage, setLoadingStage] = useState(0);
+  useEffect(() => {
+    if (!loading) {
+      setLoadingStage(0);
+      return;
+    }
+    setLoadingStage(1);
+    const t1 = setTimeout(() => setLoadingStage(2), isDaangnFocusedView ? 1200 : 700);
+    const t2 = setTimeout(() => setLoadingStage(3), isDaangnFocusedView ? 2800 : 1800);
+    const t3 = setTimeout(() => setLoadingStage(4), isDaangnFocusedView ? 4500 : 3200);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [loading, isDaangnFocusedView]);
+
   // PackRevealModal용 result wrapper (single card)
   const modalResult: RevealResult | null = useMemo(() => {
     if (!selectedCard) return null;
@@ -2513,11 +2542,57 @@ export default function ExploreClient({
               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300">
                 <SearchIcon className="h-4 w-4 animate-pulse" />
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-black text-zinc-950 dark:text-zinc-50">{loadingCopy.title}</p>
                 <p className="mt-0.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">{loadingCopy.description}</p>
               </div>
             </div>
+            {/* Wave 801: progress bar + 4 stage 표시 */}
+            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-blue-100 dark:bg-blue-950/60">
+              <div
+                className="h-full rounded-full bg-[#3182f6] transition-all duration-500 ease-out"
+                style={{ width: `${Math.min(100, loadingStage * 25)}%` }}
+              />
+            </div>
+            <ul className="mt-2.5 space-y-1.5">
+              {loadingStages.map((label, idx) => {
+                const n = idx + 1;
+                const done = loadingStage > n;
+                const active = loadingStage === n;
+                return (
+                  <li key={label} className="flex items-center gap-2">
+                    <span
+                      aria-hidden="true"
+                      className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-black ${
+                        done
+                          ? "bg-emerald-500 text-white"
+                          : active
+                            ? "bg-[#3182f6] text-white animate-pulse"
+                            : "bg-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500"
+                      }`}
+                    >
+                      {done ? "✓" : n}
+                    </span>
+                    <span
+                      className={`text-[11.5px] font-bold leading-4 ${
+                        done
+                          ? "text-zinc-400 line-through"
+                          : active
+                            ? "text-[#3182f6] dark:text-blue-300"
+                            : "text-zinc-500 dark:text-zinc-500"
+                      }`}
+                    >
+                      {label}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+            {isDaangnFocusedView ? (
+              <p className="mt-2 break-keep text-[10.5px] font-semibold leading-4 text-zinc-400 dark:text-zinc-500">
+                💡 당근 매물은 가까운 동네 순으로 정렬해서 평소보다 시간이 좀 더 걸려요.
+              </p>
+            ) : null}
           </div>
           <div className="-mx-3 divide-y divide-zinc-100 dark:divide-zinc-800 sm:mx-0 sm:grid sm:grid-cols-2 sm:divide-y-0 sm:gap-3 lg:grid-cols-3">
             {/* Wave 370: 6 → 3 (모바일 viewport 잔해 줄임, 빠른 fade-in 체감) */}
