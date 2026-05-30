@@ -102,10 +102,28 @@ function timeAgo(iso: string): string {
 export default function LookupClient() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [progressStage, setProgressStage] = useState(0);
   const [result, setResult] = useState<LookupResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paywall, setPaywall] = useState<{ balance: number | null; message: string } | null>(null);
   const [authReady, setAuthReady] = useState<"loading" | "authed" | "guest">("loading");
+
+  // Wave 799d: progress stage 자동 진행 (지연 stage 4 잔류).
+  useEffect(() => {
+    if (!loading) {
+      setProgressStage(0);
+      return;
+    }
+    setProgressStage(1);
+    const t1 = setTimeout(() => setProgressStage(2), 700);
+    const t2 = setTimeout(() => setProgressStage(3), 1800);
+    const t3 = setTimeout(() => setProgressStage(4), 3200);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [loading]);
 
   useEffect(() => {
     let cancelled = false;
@@ -224,16 +242,16 @@ export default function LookupClient() {
         {/* Input */}
         <section className="mt-3 rounded-[16px] border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
           <label htmlFor="lookup-url" className="text-[12px] font-bold text-zinc-700 dark:text-zinc-300">
-            매물 URL
+            매물 URL <span className="font-medium text-zinc-400">(공유 문구 그대로 붙여넣어도 OK)</span>
           </label>
-          <input
+          <textarea
             id="lookup-url"
-            type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://m.bunjang.co.kr/products/... 또는 www.daangn.com/kr/buy-sell/..."
+            placeholder="https://m.bunjang.co.kr/products/... · Check out this on Karrot ... https://www.daangn.com/articles/..."
             disabled={loading}
-            className="mt-1.5 flex h-11 w-full items-center rounded-xl border border-zinc-200 bg-white px-3 text-[13px] text-zinc-950 placeholder:text-zinc-400 focus:border-[#3182f6] focus:outline-none focus:ring-2 focus:ring-[#3182f6]/25 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+            rows={2}
+            className="mt-1.5 block w-full resize-none rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-[13px] leading-5 text-zinc-950 placeholder:text-zinc-400 focus:border-[#3182f6] focus:outline-none focus:ring-2 focus:ring-[#3182f6]/25 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500"
           />
           <button
             type="button"
@@ -243,6 +261,58 @@ export default function LookupClient() {
           >
             {loading ? "조회 중..." : "조회하기"}
           </button>
+
+          {/* Wave 799d: 진행 단계 표시 */}
+          {loading ? (
+            <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50/60 p-3 dark:border-blue-900/40 dark:bg-blue-950/24">
+              {/* progress bar */}
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-blue-100 dark:bg-blue-950/60">
+                <div
+                  className="h-full rounded-full bg-[#3182f6] transition-all duration-500 ease-out"
+                  style={{ width: `${Math.min(100, progressStage * 25)}%` }}
+                />
+              </div>
+              {/* stage list */}
+              <ul className="mt-2.5 space-y-1.5">
+                {[
+                  { n: 1, label: "URL 분석 + 매물 ID 추출" },
+                  { n: 2, label: "미뇨이 DB 에서 매물 검색" },
+                  { n: 3, label: "비교 매물 + 14일 시세 그래프 모으는 중" },
+                  { n: 4, label: "결과 정리 + 표시" },
+                ].map((s) => {
+                  const done = progressStage > s.n;
+                  const active = progressStage === s.n;
+                  return (
+                    <li key={s.n} className="flex items-center gap-2">
+                      <span
+                        aria-hidden="true"
+                        className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-black ${
+                          done
+                            ? "bg-emerald-500 text-white"
+                            : active
+                              ? "bg-[#3182f6] text-white animate-pulse"
+                              : "bg-zinc-200 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500"
+                        }`}
+                      >
+                        {done ? "✓" : s.n}
+                      </span>
+                      <span
+                        className={`text-[11.5px] font-bold leading-4 ${
+                          done
+                            ? "text-zinc-400 line-through"
+                            : active
+                              ? "text-[#3182f6] dark:text-blue-300"
+                              : "text-zinc-500 dark:text-zinc-500"
+                        }`}
+                      >
+                        {s.label}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
           {authReady === "guest" ? (
             <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] font-bold text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
               로그인이 필요해요.{" "}

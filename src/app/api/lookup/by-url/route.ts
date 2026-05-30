@@ -127,6 +127,16 @@ type ParsedRow = {
 };
 
 /**
+ * 입력 text 에서 첫 번째 http(s) URL 만 추출.
+ *   당근 share button 으로 복사하면 "Check out this ... <URL>" 처럼 잡문 같이 붙음.
+ *   사용자가 URL 만 찾을 필요 없게 자동 추출.
+ */
+function extractFirstUrl(text: string): string {
+  const m = text.match(/https?:\/\/[^\s<>"'`)\]]+/i);
+  return m ? m[0] : text.trim();
+}
+
+/**
  * URL 에서 source + key 추출.
  * 번장: https://m.bunjang.co.kr/products/{pid}
  * 중나: https://web.joongna.com/product/{joongna_pid}
@@ -148,6 +158,36 @@ function parseListingUrl(url: string): { source: string; key: string } | null {
   const daangn = cleaned.match(/daangn\.com\/(?:kr\/)?(?:articles|buy-sell)\/([^/?]+)/i);
   if (daangn) return { source: "daangn", key: daangn[1] };
 
+  return null;
+}
+
+/**
+ * Wave 799d (2026-05-30): Daangn 공유 URL (articles/{numeric}) → buy-sell/{slug} redirect 따라가서 slug 추출.
+ *   당근 share button 은 articles/{numeric} 형식인데 DB 는 buy-sell/{slug} 형식 — 다른 ID 체계.
+ *   redirect 따라가서 slug 의 끝 shortId 추출해야 DB 매칭 가능.
+ *   timeout 5s, 실패하면 null 반환 (caller 가 원래 key 로 fallback).
+ */
+async function resolveDaangnArticleSlug(articleId: string): Promise<string | null> {
+  try {
+    const res = await fetch(`https://www.daangn.com/articles/${articleId}`, {
+      method: "HEAD",
+      redirect: "manual",
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.status >= 300 && res.status < 400) {
+      const loc = res.headers.get("location");
+      if (loc) {
+        const slugMatch = loc.match(/buy-sell\/([^/?]+)/i);
+        if (slugMatch) {
+          // slug 끝 shortId (예: 4qai2x6asn5z) 가 가장 안정적 — 한글 인코딩 vs 디코딩 충돌 회피.
+          const shortIdMatch = slugMatch[1].match(/-([a-z0-9]{8,})\/?$/i);
+          return shortIdMatch ? shortIdMatch[1] : slugMatch[1];
+        }
+      }
+    }
+  } catch {
+    // timeout / network 실패 — null fallback.
+  }
   return null;
 }
 
@@ -176,26 +216,39 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "bad_body" }, { status: 400 });
   }
 
-  const inputUrl = (body.url ?? "").trim();
-  if (!inputUrl) {
+  const rawInput = (body.url ?? "").trim();
+  if (!rawInput) {
     return NextResponse.json({ error: "no_url", message: "URL 을 입력해주세요." }, { status: 400 });
   }
+
+  // Wave 799d: 잡문 섞인 share text 에서 URL 만 추출.
+  const inputUrl = extractFirstUrl(rawInput);
 
   const parsed = parseListingUrl(inputUrl);
   if (!parsed) {
     return NextResponse.json(
       {
         error: "unsupported_url",
-        message: "번개장터, 중고나라, 당근마켓 URL 만 지원해요.",
+        message: "번개장터, 중고나라, 당근마켓 URL 을 찾지 못했어요.",
       },
       { status: 400 },
     );
   }
 
+  // Wave 799d: Daangn articles/{numeric} URL 은 buy-sell/{slug} 로 redirect → slug 추출 후 DB 검색.
+  let searchKey = parsed.key;
+  let resolvedSlug: string | null = null;
+  if (parsed.source === "daangn" && /^\d+$/.test(parsed.key)) {
+    resolvedSlug = await resolveDaangnArticleSlug(parsed.key);
+    if (resolvedSlug) {
+      searchKey = resolvedSlug;
+    }
+  }
+
   // DB 매물 조회 — url 컬럼 ILIKE 검색
   // (크레딧 차감은 성공 응답 직전에 — 404/202 시 무료)
   const headers = serviceHeaders();
-  const escapedKey = parsed.key.replace(/[%_]/g, "\\$&");
+  const escapedKey = searchKey.replace(/[%_]/g, "\\$&");
   const urlFilter = `url=ilike.*${encodeURIComponent(escapedKey)}*`;
   const rawRes = await restFetch(
     `${tableUrl("mvp_raw_listings")}?select=pid,source,url,name,price,sku_id,sku_name,thumbnail_url,shop_review_rating,shop_review_count,free_shipping,listing_state,sale_status,first_seen_at,daangn_region_id,daangn_region_name,raw_json,description_preview,image_count&${urlFilter}&limit=1`,
@@ -203,12 +256,18 @@ export async function POST(req: NextRequest) {
   );
   const rawRows = (await rawRes.json()) as RawListing[];
   if (!rawRes.ok || rawRows.length === 0) {
+    const baseMsg = "미뇨이 DB 에서 이 매물을 찾을 수 없어요.";
+    const hint =
+      parsed.source === "daangn" && /^\d+$/.test(parsed.key) && !resolvedSlug
+        ? " 당근 공유 URL 을 분석하지 못했어요 — 매물 상세 화면의 주소를 그대로 붙여넣어 보세요."
+        : " 새 매물이거나 아직 우리 풀에 들어오지 않았어요.";
     return NextResponse.json(
       {
         error: "not_found",
-        message: "미뇨이 DB 에서 이 매물을 찾을 수 없어요. 새 매물이거나 우리 풀에 안 들어온 매물이에요.",
+        message: baseMsg + hint,
         source: parsed.source,
         key: parsed.key,
+        resolvedSlug,
       },
       { status: 404 },
     );
