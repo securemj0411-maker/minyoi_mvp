@@ -4796,6 +4796,42 @@ export async function marketStatsStage(): Promise<StageStats> {
     reveal_current_profit_updated: revealRecomputeStats.updated,
     reveal_current_profit_invalidated: revealRecomputeStats.invalidated,
   };
+
+  // Wave 886.17 (2026-05-27): velocity self-healing.
+  //   사용자 짚음: velocity cron `sync_market_velocity_daily` 가 5/26~5/29 5일 안 fire (이유 미상 — Vercel cron silent fail 의심).
+  //   schedule 4회/일로 늘렸지만 그 cron 자체가 또 silent fail 하면 같은 문제 재발.
+  //   영구 fix: market-worker (매 10분 fire 안정 입증) 가 매 run 끝에 오늘 velocity row 있는지 cheap check.
+  //   없으면 RPC 1회 자동 호출 (idempotent). standalone cron 죽어도 market-worker 가 1일 1회는 보장.
+  try {
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const checkRes = await restFetch(
+      `${tableUrl("mvp_market_velocity_daily")}?select=date&date=eq.${todayIso}&limit=1`,
+      { headers: serviceHeaders() },
+    );
+    const checkRows = (await checkRes.json()) as Array<{ date: string }>;
+    if (checkRows.length === 0) {
+      const rpcRes = await restFetch(rpcUrl("sync_market_velocity_daily"), {
+        method: "POST",
+        headers: serviceHeaders(),
+        body: "{}",
+      });
+      stats.timingsMs = {
+        ...(stats.timingsMs ?? {}),
+        velocity_self_healed: rpcRes.ok ? 1 : 0,
+        velocity_self_heal_status: rpcRes.status,
+      };
+    } else {
+      stats.timingsMs = {
+        ...(stats.timingsMs ?? {}),
+        velocity_self_healed: 0,
+        velocity_today_fresh: 1,
+      };
+    }
+  } catch (err) {
+    // 비파괴 — velocity self-heal 실패해도 market-worker 본 작업 영향 X.
+    console.warn("[velocity-self-heal] failed:", err instanceof Error ? err.message : String(err));
+  }
+
   return stats;
 }
 
