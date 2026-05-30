@@ -7224,14 +7224,26 @@ export default function PackRevealModal({
   }, []);
 
   // 사진 영역 IntersectionObserver — scrollAreaRef 안에서 사진 visibility 추적.
+  // Wave 803 (2026-05-30): hysteresis 도입. 기존 threshold 0.1 단일 → 사진 10% 경계 자주
+  //   넘나들면 photoVisible 토글 빈번 → 7864 line modal 전체 re-render → opacity transition
+  //   여러 element 동시 박힘 → PC 모드 스크롤 깜빡임. fix: enter 0.2 / exit 0.05 hysteresis.
   useEffect(() => {
     if (!open || activeRevealPid == null || guideModeActive) return;
     const photoEl = photoRef.current;
     const scrollEl = scrollAreaRef.current;
     if (!photoEl || !scrollEl) return;
     const observer = new IntersectionObserver(
-      ([entry]) => setPhotoVisible(entry.isIntersecting),
-      { root: scrollEl, threshold: 0.1 },
+      ([entry]) => {
+        const ratio = entry.intersectionRatio;
+        setPhotoVisible((prev) => {
+          // hysteresis — visible→hidden 은 5% 미만, hidden→visible 은 20% 이상.
+          // 경계 근방에서 photoVisible 토글 자주 X → re-render 줄임.
+          if (prev && ratio < 0.05) return false;
+          if (!prev && ratio > 0.2) return true;
+          return prev;
+        });
+      },
+      { root: scrollEl, threshold: [0, 0.05, 0.2, 0.5] },
     );
     observer.observe(photoEl);
     return () => observer.disconnect();
@@ -7538,7 +7550,7 @@ export default function PackRevealModal({
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-stretch justify-stretch overscroll-contain bg-[#f5f7fb] p-0 dark:bg-zinc-950 sm:items-center sm:justify-center sm:bg-[rgba(31,40,34,0.48)] sm:p-4 sm:backdrop-blur-sm sm:dark:bg-[rgba(9,9,11,0.62)]"
+      className="fixed inset-0 z-[90] flex items-stretch justify-stretch overscroll-contain bg-[#f5f7fb] p-0 dark:bg-zinc-950 sm:items-center sm:justify-center sm:bg-[rgba(31,40,34,0.48)] sm:p-4 sm:dark:bg-[rgba(9,9,11,0.62)]"
       role="dialog"
       aria-modal="true"
       onClick={() => {
