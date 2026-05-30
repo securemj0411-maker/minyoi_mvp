@@ -568,12 +568,12 @@ function sourceAwareMedian(
   const sourceSampleCount = row
     ? Number(row.active_sample_count ?? 0) + Number(row.sold_sample_count ?? 0)
     : 0;
-  // Wave 803c (2026-05-30): 사용자 보고 — daangn 매물인데 시세 230k (bunjang clean 통합 fallback).
-  //   원인: sample=2 (daangn clean) < threshold 3 → NULL → 통합 시세 fallback → 비교 매물 (daangn 200k/67k/65k) 과 모순.
-  //   Fix: threshold 3 → 2. sample=2 도 source-specific 시세 박음 (단일 outlier 보다 평균이 안전).
-  //   sample=1 (단일 매물) 면 여전히 fallback (안전 마진).
-  //   효과: daangn clean sample=2 박힌 매물 → daangn 184k 박힘 (비교 매물과 일관성 회복).
-  if (!row || sourceSampleCount < 2) return null;
+  // Wave 803e (2026-05-30): Wave 803c REVERT — 사용자 정책 위반.
+  //   사용자 정책: MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE = 3 (pack-open.ts:1191) + detail-access:253
+  //   "당근 매물 sample < 3 → ready 차단 (expectedProfit 0)" — ready throughput 보호.
+  //   Wave 803c 가 < 3 → < 2 박은 건 그 정책 우회. 원복.
+  //   진짜 fix 는 fallback 박힐 때 UI 라벨 명시 (별도 wave) — "당근 표본 부족, 통합 시세 박힘".
+  if (!row || sourceSampleCount < 3) return null;
   const price = row.blended_median_price ?? row.active_median_price ?? null;
   return price && price > 0 ? price : null;
 }
