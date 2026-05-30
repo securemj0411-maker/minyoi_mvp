@@ -42,6 +42,8 @@ type RevealItem = {
   tradeLabels?: string[];
   transactionMode?: string | null;
   shippingAssumption?: string | null;
+  // Wave 886.12 (2026-05-27): /api/packs/me 가 보내는 directTradeLocation 누락 — 모달 "지역 확인 필요" placeholder 만 보임.
+  directTradeLocation?: string | null;
   skuId: string | null;
   thumbnailUrl: string | null;
   genericImageUrl: string | null;
@@ -571,6 +573,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         tradeLabels: selectedItem.tradeLabels ?? [],
         transactionMode: selectedItem.transactionMode === "direct_only" || selectedItem.transactionMode === "shipping_only" || selectedItem.transactionMode === "direct_and_shipping" ? selectedItem.transactionMode : "unknown",
         shippingAssumption: selectedItem.shippingAssumption === "direct_only" || selectedItem.shippingAssumption === "included" || selectedItem.shippingAssumption === "separate" || selectedItem.shippingAssumption === "free_shipping" ? selectedItem.shippingAssumption : "unknown",
+        // Wave 886.12 (2026-05-27): 모달이 "거래 가능 지역" row + 배송비 note 표시에 사용.
+        directTradeLocation: selectedItem.directTradeLocation ?? null,
       },
       skuListingFlow: selectedItem.skuListingFlow ?? undefined,
       optionBaseAssumed: selectedItem.optionBaseAssumed ?? null,

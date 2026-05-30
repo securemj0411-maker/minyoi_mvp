@@ -4,6 +4,7 @@ import { categoryFromComparableKey, loadCategoryReadinessMap } from "@/lib/categ
 import { pickByConditionFallback } from "@/lib/condition-fallback";
 import { mergeConditionDisplayChips } from "@/lib/condition-display";
 import { fetchDaangnLiveState } from "@/lib/daangn";
+import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import {
   BUNJANG_SOURCE_ID,
@@ -332,6 +333,7 @@ type RawSkuMeta = {
   num_comment: number | null;
   detail_enriched_at: string | null;
   raw_json: Record<string, unknown> | null;
+  daangn_region_id: string | null;
   daangn_region_name: string | null;
   daangn_manner_temperature: number | null;
   daangn_review_count: number | null;
@@ -637,7 +639,7 @@ async function fetchListings(pids: number[]): Promise<Map<number, ListingMeta>> 
   if (pids.length === 0) return new Map();
   const pidFilter = pids.join(",");
   const listingCols = "pid,name,url,price,sku_name,thumbnail_url";
-  const rawCols = "pid,source,seller_source,url,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,image_count,num_comment,detail_enriched_at,raw_json,daangn_region_name,daangn_manner_temperature,daangn_review_count";
+  const rawCols = "pid,source,seller_source,url,sku_id,description_preview,num_faved,free_shipping,shop_review_rating,shop_review_count,image_count,num_comment,detail_enriched_at,raw_json,daangn_region_id,daangn_region_name,daangn_manner_temperature,daangn_review_count";
   const [listingRes, rawRes] = await Promise.all([
     callSupabase(`/mvp_listings?select=${listingCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
     callSupabase(`/mvp_raw_listings?select=${rawCols}&pid=in.(${pidFilter})`, { headers: authHeaders() }),
@@ -1582,6 +1584,7 @@ type RevealDetailSourceMeta = {
   shop_review_rating: number | null;
   shop_review_count: number | null;
   raw_json: Record<string, unknown> | null;
+  daangn_region_id: string | null;
   daangn_region_name: string | null;
   daangn_manner_temperature: number | null;
   daangn_review_count: number | null;
@@ -1589,7 +1592,7 @@ type RevealDetailSourceMeta = {
 
 async function loadRevealDetailSourceMeta(pid: number): Promise<RevealDetailSourceMeta | null> {
   const res = await callSupabase(
-    `/mvp_raw_listings?select=pid,source,seller_source,url,thumbnail_url,description_preview,num_faved,num_comment,image_count,free_shipping,shop_review_rating,shop_review_count,raw_json,daangn_region_name,daangn_manner_temperature,daangn_review_count&pid=eq.${pid}&limit=1`,
+    `/mvp_raw_listings?select=pid,source,seller_source,url,thumbnail_url,description_preview,num_faved,num_comment,image_count,free_shipping,shop_review_rating,shop_review_count,raw_json,daangn_region_id,daangn_region_name,daangn_manner_temperature,daangn_review_count&pid=eq.${pid}&limit=1`,
     { headers: authHeaders() },
   );
   const rows = (await res.json()) as RevealDetailSourceMeta[];
@@ -2235,7 +2238,10 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
             directTradeLocation: marketplaceLocationCombinedWithRegion(
               rawMeta.raw_json,
               rawMeta.description_preview,
-              rawMeta.daangn_region_name,
+              // Wave 886.12 (2026-05-27): full path (시/도 + 시군구 + 동) 로 통일.
+              //   기존엔 dong name 만 ("관양동") 전달 → 모달 "거래 가능 지역" row 가 시/도 없이 박혀 무의미.
+              //   /api/packs/me/route.ts:956 도 resolveDaangnFullRegion 사용 — 동일 패턴.
+              resolveDaangnFullRegion(rawMeta.daangn_region_id, rawMeta.daangn_region_name),
             ),
             // Wave 758 (2026-05-26): RevealCard.savedDetail 에 박음 — UI 가 sellerTrust display 재계산 시 사용.
             daangnMannerTemperature: rawMeta.daangn_manner_temperature ?? null,
