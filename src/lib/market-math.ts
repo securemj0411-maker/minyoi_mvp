@@ -102,7 +102,11 @@ export function madTrim(values: number[]) {
   // Wave 90 (2026-05-15): threshold 8 → 5. 사용자 코멘트로 발견 (pid 398109917 iPad mini,
   // 407677847 Apple Watch Series 9): 매물 7건 이하인 SKU는 outlier trim 안 됨 →
   // 어그로 매물 (₩410만 등) 시세 평균 왜곡. 5건이면 통계적으로 madTrim 의미 있음.
-  if (values.length < 5) {
+  // Wave 798b (2026-05-30): systemic outlier filter 강화. barbour 퀼팅자켓 case 발견:
+  //   sample 6건 중 4건이 outlier (BAPE/화이트라벨/왁스/Rouje 콜라보) → median 350K 거짓.
+  //   기존: min 5건 + 3×MAD + max(5, 50%) cutoff → outlier 50%+ case 처리 못 함.
+  //   변경: min 4건 + 2.5×MAD + max(3, 30%) cutoff → 큰 outlier 비율도 trim 가능.
+  if (values.length < 4) {
     return { values, medianValue: median(values), mad: 0, removed: 0 };
   }
   const medianValue = median(values);
@@ -111,9 +115,11 @@ export function madTrim(values: number[]) {
   if (mad <= 0) {
     return { values, medianValue, mad, removed: 0 };
   }
-  const threshold = 3 * 1.4826 * mad;
+  // Wave 798b: 3 → 2.5 (sample 작을 때 outlier 더 엄격하게 trim).
+  const threshold = 2.5 * 1.4826 * mad;
   const trimmed = values.filter((value) => Math.abs(value - medianValue) <= threshold);
-  if (trimmed.length < Math.max(5, Math.ceil(values.length * 0.5))) {
+  // Wave 798b: max(5, 50%) → max(3, 30%). 50%+ outlier case 도 trim 가능.
+  if (trimmed.length < Math.max(3, Math.ceil(values.length * 0.3))) {
     return { values, medianValue, mad, removed: 0 };
   }
   return { values: trimmed, medianValue, mad, removed: values.length - trimmed.length };
