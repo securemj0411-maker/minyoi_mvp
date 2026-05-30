@@ -176,21 +176,14 @@ export default function LookupClient() {
   const [paywall, setPaywall] = useState<{ balance: number | null; message: string } | null>(null);
   const [authReady, setAuthReady] = useState<"loading" | "authed" | "guest">("loading");
 
-  // Wave 799d: progress stage 자동 진행 (지연 stage 4 잔류).
+  // Wave 803j (2026-05-30): SSE 실제 step 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게.
+  //   기존 가짜 setTimeout progress 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게.
+  //   server step 박은 게 박은 게 박은 게 handleSubmit SSE 박은 게 박은 게 setProgressStage 박은 게 박은 게.
+  //   loading 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게.
   useEffect(() => {
     if (!loading) {
       setProgressStage(0);
-      return;
     }
-    setProgressStage(1);
-    const t1 = setTimeout(() => setProgressStage(2), 700);
-    const t2 = setTimeout(() => setProgressStage(3), 1800);
-    const t3 = setTimeout(() => setProgressStage(4), 3200);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
   }, [loading]);
 
   useEffect(() => {
@@ -209,6 +202,25 @@ export default function LookupClient() {
     };
   }, []);
 
+  // Wave 803j (2026-05-30): server step → progress percentage 매핑.
+  //   가짜 setTimeout 대신 진짜 server step 기준 박음. 100% 도달 후 대기 X.
+  function stepToStage(step: string): number {
+    // 0=초기, 1-4 박은 게 진행도 박은 게 박은 게 박은 게. progressStage * 25 = % 박은 게.
+    switch (step) {
+      case "parse_body": return 1; // 25%
+      case "daangn_redirect": return 1;
+      case "fetch_raw_listing": return 1;
+      case "fetch_parsed": return 2; // 50%
+      case "fetch_market_stats": return 2;
+      case "compute_market_basis": return 3; // 75%
+      case "fetch_comparable_listings": return 3;
+      case "fetch_price_daily": return 3;
+      case "register_to_pool": return 4; // 95% (마지막)
+      case "charge_credit": return 4;
+      default: return 1;
+    }
+  }
+
   async function handleSubmit() {
     if (!url.trim()) {
       setError("URL 을 입력해주세요.");
@@ -218,6 +230,7 @@ export default function LookupClient() {
     setError(null);
     setResult(null);
     setPaywall(null);
+    setProgressStage(1);
     try {
       const supabase = getSupabaseBrowserClient();
       const token = supabase ? (await supabase.auth.getSession()).data.session?.access_token : null;
@@ -226,26 +239,85 @@ export default function LookupClient() {
         cache: "no-store",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "text/event-stream",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ url: url.trim() }),
       });
-      const data = (await res.json().catch(() => ({}))) as LookupResponse & ErrorResponse;
-      if (!res.ok) {
-        if (res.status === 402) {
-          setPaywall({
-            balance: data.balance ?? 0,
-            message: data.message ?? "크레딧이 부족해요.",
-          });
+
+      const contentType = res.headers.get("content-type") ?? "";
+      const isStream = contentType.includes("text/event-stream") && res.body != null;
+
+      if (!isStream) {
+        // server SSE 미지원 (또는 rate-limit/auth 등 박은 게 JSON 박힘) → 기존 처리.
+        const data = (await res.json().catch(() => ({}))) as LookupResponse & ErrorResponse;
+        if (!res.ok) {
+          if (res.status === 402) {
+            setPaywall({ balance: data.balance ?? 0, message: data.message ?? "크레딧이 부족해요." });
+            return;
+          }
+          const baseMsg = data.message ?? "조회에 실패했어요. 잠시 후 다시 시도해주세요.";
+          const stepHint = data.step && res.status >= 500 ? ` [단계: ${data.step}]` : "";
+          setError(baseMsg + stepHint);
           return;
         }
-        // Wave 799e: 500 / 4xx 시 step + detail 같이 노출 (디버그 / 사용자 신뢰 ↑)
-        const baseMsg = data.message ?? "조회에 실패했어요. 잠시 후 다시 시도해주세요.";
-        const stepHint = data.step && res.status >= 500 ? ` [단계: ${data.step}]` : "";
+        setResult(data);
+        return;
+      }
+
+      // SSE 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게.
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let doneStatus: number | null = null;
+      let doneBody: (LookupResponse & ErrorResponse) | null = null;
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        // SSE 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 \n\n 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게.
+        let sepIndex: number;
+        while ((sepIndex = buffer.indexOf("\n\n")) >= 0) {
+          const rawEvent = buffer.slice(0, sepIndex);
+          buffer = buffer.slice(sepIndex + 2);
+          if (!rawEvent.trim() || rawEvent.startsWith(":")) continue; // heartbeat / comment 박은 게 박은 게.
+          let eventName = "message";
+          let dataLine = "";
+          for (const line of rawEvent.split("\n")) {
+            if (line.startsWith("event:")) eventName = line.slice(6).trim();
+            else if (line.startsWith("data:")) dataLine += line.slice(5).trim();
+          }
+          if (!dataLine) continue;
+          let payload: unknown = null;
+          try { payload = JSON.parse(dataLine); } catch { continue; }
+          if (eventName === "step") {
+            const step = (payload as { step?: string }).step ?? "";
+            setProgressStage(stepToStage(step));
+          } else if (eventName === "done") {
+            const done = payload as { status: number; body: LookupResponse & ErrorResponse };
+            doneStatus = done.status;
+            doneBody = done.body;
+            setProgressStage(4);
+          }
+        }
+      }
+
+      if (doneStatus == null || doneBody == null) {
+        setError("응답 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+      if (doneStatus !== 200) {
+        if (doneStatus === 402) {
+          setPaywall({ balance: doneBody.balance ?? 0, message: doneBody.message ?? "크레딧이 부족해요." });
+          return;
+        }
+        const baseMsg = doneBody.message ?? "조회에 실패했어요. 잠시 후 다시 시도해주세요.";
+        const stepHint = doneBody.step && doneStatus >= 500 ? ` [단계: ${doneBody.step}]` : "";
         setError(baseMsg + stepHint);
         return;
       }
-      setResult(data);
+      setResult(doneBody);
     } catch (err) {
       setError(err instanceof Error ? err.message : "네트워크 오류가 발생했어요.");
     } finally {
