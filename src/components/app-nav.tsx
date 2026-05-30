@@ -343,6 +343,8 @@ export default function AppNav() {
   const navLinks = [
     { href: "/", label: "추천 상품" },
     // Wave 343: /explore 폐기 — /me history view에 통합. nav "탐색" 링크 제거.
+    // Wave 799c (2026-05-30): /lookup 시세 조회 nav 추가 — URL 넣어 시세/수익 확인 (0.2크레딧).
+    { href: "/lookup", label: "시세 조회" },
     { href: "/how-it-works", label: "서비스 안내" },
     { href: "/plans", label: "크레딧 충전" },
     ...(user ? [{ href: "/me", label: "내 대시보드" }] : []),
@@ -352,6 +354,8 @@ export default function AppNav() {
   const mobileNavLinks = user
     ? [
         { href: "/me", label: "추천 피드", caption: "오늘 볼 만한 매물" },
+        // Wave 799c (2026-05-30): /lookup nav 추가 — URL 시세 조회 (1번 = 0.2크레딧).
+        { href: "/lookup", label: "시세 조회", caption: "URL 넣으면 시세·수익·비교매물" },
         // Wave 726 (2026-05-23): 모바일에서 sidebar 숨김 (lg:block) 이라 텔레그램 알림 설정 접근 불가.
         //   모바일 사용자가 한 번이라도 설정 가능하게 drawer 에 link 박음.
         { href: "/me?view=hotdeal-alerts", label: "핫딜 알림", caption: "텔레그램 알림 설정" },
@@ -363,6 +367,8 @@ export default function AppNav() {
       ]
     : [
         { href: "/", label: "추천 상품", caption: "오늘의 후보" },
+        // Wave 799c: guest 도 노출 (클릭 시 login wall) — 기능 인지 우선.
+        { href: "/lookup", label: "시세 조회", caption: "URL 넣으면 시세·수익 (로그인 필요)" },
         { href: "/how-it-works", label: "서비스 안내", caption: "득템잡이 사용법" },
         { href: "/plans", label: "크레딧 충전", caption: "가격 보기" },
       ];
