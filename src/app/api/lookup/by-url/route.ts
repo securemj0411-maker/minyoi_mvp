@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
-import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import {
   fetchLatestMarketStats,
   fetchLatestMarketStatsPerSource,
@@ -16,6 +16,83 @@ import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { userRefForAuthUser } from "@/lib/user-ref";
+import { spendUserCredits, getUserCreditsReadOnly } from "@/lib/user-credits";
+import type { User } from "@supabase/supabase-js";
+import { isAdminUser } from "@/lib/auth-users";
+
+const LOOKUPS_PER_CREDIT = 5; // Wave 799b: 1 lookup = 0.2 credit → 5 lookups = 1 credit
+
+/**
+ * Wave 799b (2026-05-30): 1 lookup = 0.2 credit paywall.
+ *   DB balance integer 라 fractional 안 됨 → 5번 누적 후 1 credit 차감 패턴.
+ *   1~4번째: 무료 + counter++
+ *   5번째: 1 credit 차감 + counter reset
+ *   admin: free pass.
+ */
+async function chargeLookupCredit(user: User, userRef: string): Promise<{
+  ok: boolean;
+  charged: boolean;
+  balance: number | null;
+  lookupsUsed: number;
+  reason?: string;
+}> {
+  if (isAdminUser(user)) {
+    return { ok: true, charged: false, balance: null, lookupsUsed: 0 };
+  }
+
+  // 현재 counter 조회
+  const counterKey = `lookup-counter:${userRef}`;
+  const counterRes = await restFetch(
+    `${tableUrl("mvp_rate_limits")}?select=request_count&bucket_key=eq.${encodeURIComponent(counterKey)}&limit=1`,
+    { headers: serviceHeaders() },
+  );
+  const rows = (await counterRes.json()) as Array<{ request_count: number }>;
+  const currentCount = Math.max(0, Number(rows[0]?.request_count ?? 0));
+
+  if (currentCount >= LOOKUPS_PER_CREDIT - 1) {
+    // 5번째 — credit 1 spend + counter reset
+    const spend = await spendUserCredits({
+      user,
+      userRef,
+      amount: 1,
+      metadata: { source: "lookup_5x" },
+    });
+    if (!spend.ok) {
+      const balance = await getUserCreditsReadOnly(user, userRef);
+      return {
+        ok: false,
+        charged: false,
+        balance: Math.max(0, Number(balance?.tokens ?? 0)),
+        lookupsUsed: currentCount,
+        reason: "insufficient_credits",
+      };
+    }
+    // counter reset
+    await restFetch(
+      `${tableUrl("mvp_rate_limits")}?bucket_key=eq.${encodeURIComponent(counterKey)}`,
+      { method: "DELETE", headers: serviceHeaders() },
+    );
+    return { ok: true, charged: true, balance: spend.tokens, lookupsUsed: 0 };
+  }
+
+  // 1~4번째: counter++ (rate-limit RPC 활용 — 무제한 max_requests 로 카운터만 증가)
+  await restFetch(rpcUrl("check_mvp_rate_limit"), {
+    method: "POST",
+    headers: serviceHeaders(),
+    body: jsonBody({
+      p_bucket_key: counterKey,
+      p_max_requests: 99999,
+      p_window_seconds: 31_536_000, // 1년 (사실상 무기한)
+    }),
+  });
+  const balance = await getUserCreditsReadOnly(user, userRef);
+  return {
+    ok: true,
+    charged: false,
+    balance: Math.max(0, Number(balance?.tokens ?? 0)),
+    lookupsUsed: currentCount + 1,
+  };
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -116,6 +193,7 @@ export async function POST(req: NextRequest) {
   }
 
   // DB 매물 조회 — url 컬럼 ILIKE 검색
+  // (크레딧 차감은 성공 응답 직전에 — 404/202 시 무료)
   const headers = serviceHeaders();
   const escapedKey = parsed.key.replace(/[%_]/g, "\\$&");
   const urlFilter = `url=ilike.*${encodeURIComponent(escapedKey)}*`;
@@ -247,8 +325,28 @@ export async function POST(req: NextRequest) {
     priceDaily = ((await dailyRes.json()) as typeof priceDaily).reverse();
   }
 
+  // Wave 799b: 크레딧 차감 — 모든 데이터 fetch 성공 후 (404/202 시 무료)
+  const charge = await chargeLookupCredit(auth.user, userRef);
+  if (!charge.ok) {
+    return NextResponse.json(
+      {
+        error: "insufficient_credits",
+        message: "5번째 조회에서 1크레딧이 필요해요. 크레딧을 충전하면 계속 조회할 수 있어요.",
+        balance: charge.balance,
+        lookupsUsed: charge.lookupsUsed,
+      },
+      { status: 402 },
+    );
+  }
+
   return NextResponse.json({
     ok: true,
+    creditInfo: {
+      charged: charge.charged,
+      balance: charge.balance,
+      lookupsUsed: charge.lookupsUsed,
+      lookupsPerCredit: LOOKUPS_PER_CREDIT,
+    },
     raw: {
       pid,
       source: raw.source,
