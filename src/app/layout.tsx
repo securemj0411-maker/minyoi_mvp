@@ -48,6 +48,19 @@ export const metadata: Metadata = {
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: { card: "summary_large_image", title: `${SITE_NAME} — ${TAGLINE}`, description: DESCRIPTION, images: ["/opengraph-image"] },
+  // Wave 804 (2026-05-30): Google 검색결과 favicon 명시. 기존 32px → 미달, 96px 로 bump.
+  //   Google 요구: multiple of 48 (48/96/144/192), 1:1 square, crawlable.
+  //   sizes="any" 박아서 Google + 모바일/PC 브라우저 다 같은 link 사용.
+  //   /favicon.svg 도 박음 — 모던 브라우저 + 일부 검색엔진 SVG 우선.
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon", type: "image/png", sizes: "96x96" },
+      { url: "/icon", type: "image/png", sizes: "any" },
+    ],
+    apple: [{ url: "/apple-icon", type: "image/png", sizes: "180x180" }],
+    shortcut: [{ url: "/icon", type: "image/png" }],
+  },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
   // Wave 753 (2026-05-25): 네이버 서치어드바이저 사이트 소유 확인 메타.
   //   https://searchadvisor.naver.com/ → 사이트 등록 후 verification → "확인" 클릭하면 활성.

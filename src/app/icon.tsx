@@ -1,15 +1,17 @@
 // Wave launch-120b (2026-05-24): piggy brand mark (정확) — favicon.
+// Wave 804 (2026-05-30): 32→96 — Google 검색결과 favicon 최소 48px (multiple of 48 권장).
+//   기존 32px → Google 무시. 96 = browser tab 도 선명, Google search 도 사용.
 
 import { ImageResponse } from "next/og";
 
-export const size = { width: 32, height: 32 };
+export const size = { width: 96, height: 96 };
 export const contentType = "image/png";
 
 export default function Icon() {
   return new ImageResponse(
     (
       <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <svg width="96" height="96" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
           <rect width="100" height="100" rx="22" fill="#0064FF" />
           <circle cx="50" cy="52" r="38" fill="none" stroke="#fff" strokeWidth="2" strokeDasharray="4 4" opacity="0.5" />
           <path d="M14 28 l2 4 l4 2 l-4 2 l-2 4 l-2 -4 l-4 -2 l4 -2 z" fill="#fff" />
