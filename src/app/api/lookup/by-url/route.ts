@@ -209,11 +209,38 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Wave 799e: top-level try/catch — 어디서 throw 되든 사용자한테 빈 500 대신
+  //   step + reason 명시한 JSON 응답. 디버그 효율 ↑.
+  let currentStep = "init";
+  try {
+    return await runLookup(req, auth.user, userRef, (s) => { currentStep = s; });
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    console.error(`[lookup-by-url] step=${currentStep} error=`, errorMessage, err instanceof Error ? err.stack : undefined);
+    return NextResponse.json(
+      {
+        error: "internal",
+        message: `처리 중 오류가 발생했어요 (${currentStep}). 잠시 후 다시 시도해주세요.`,
+        step: currentStep,
+        detail: errorMessage,
+      },
+      { status: 500 },
+    );
+  }
+}
+
+async function runLookup(
+  req: NextRequest,
+  user: User,
+  userRef: string,
+  setStep: (s: string) => void,
+): Promise<NextResponse> {
+  setStep("parse_body");
   let body: { url?: string };
   try {
     body = (await req.json()) as { url?: string };
   } catch {
-    return NextResponse.json({ error: "bad_body" }, { status: 400 });
+    return NextResponse.json({ error: "bad_body", message: "잘못된 요청이에요." }, { status: 400 });
   }
 
   const rawInput = (body.url ?? "").trim();
@@ -239,6 +266,7 @@ export async function POST(req: NextRequest) {
   let searchKey = parsed.key;
   let resolvedSlug: string | null = null;
   if (parsed.source === "daangn" && /^\d+$/.test(parsed.key)) {
+    setStep("daangn_redirect");
     resolvedSlug = await resolveDaangnArticleSlug(parsed.key);
     if (resolvedSlug) {
       searchKey = resolvedSlug;
@@ -247,6 +275,7 @@ export async function POST(req: NextRequest) {
 
   // DB 매물 조회 — url 컬럼 ILIKE 검색
   // (크레딧 차감은 성공 응답 직전에 — 404/202 시 무료)
+  setStep("fetch_raw_listing");
   const headers = serviceHeaders();
   const escapedKey = searchKey.replace(/[%_]/g, "\\$&");
   const urlFilter = `url=ilike.*${encodeURIComponent(escapedKey)}*`;
@@ -276,6 +305,7 @@ export async function POST(req: NextRequest) {
   const pid = raw.pid;
 
   // Parsed (comparable_key + condition_class)
+  setStep("fetch_parsed");
   const parsedRes = await restFetch(
     `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class,category&pid=eq.${pid}&limit=1`,
     { headers },
@@ -303,6 +333,7 @@ export async function POST(req: NextRequest) {
   }
 
   // marketBasis + reference + v7
+  setStep("fetch_market_stats");
   const [marketStatsResult, marketStatsPerSourceResult, referencePricesResult, v7Result] = await Promise.all([
     fetchLatestMarketStats([comparableKey]),
     fetchLatestMarketStatsPerSource([comparableKey]),
@@ -310,6 +341,7 @@ export async function POST(req: NextRequest) {
     fetchV7SiblingPresence([comparableKey]),
   ]);
 
+  setStep("compute_market_basis");
   const marketplaceSource = normalizeMarketplaceSource(raw.source ?? null);
   const marketBasis = marketBasisForCandidate(
     comparableKey,
@@ -335,6 +367,7 @@ export async function POST(req: NextRequest) {
     : null;
 
   // 비교 매물 (같은 comparable_key + condition_class, top 12)
+  setStep("fetch_comparable_listings");
   let comparableFilter = `comparable_key=eq.${encodeURIComponent(comparableKey)}`;
   if (conditionClass) {
     comparableFilter += `&condition_class=eq.${encodeURIComponent(conditionClass)}`;
@@ -364,6 +397,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 시세 그래프 (mvp_market_price_daily 14일 추이)
+  setStep("fetch_price_daily");
   let priceDaily: Array<{
     date: string;
     active_median_price: number | null;
@@ -385,7 +419,8 @@ export async function POST(req: NextRequest) {
   }
 
   // Wave 799b: 크레딧 차감 — 모든 데이터 fetch 성공 후 (404/202 시 무료)
-  const charge = await chargeLookupCredit(auth.user, userRef);
+  setStep("charge_credit");
+  const charge = await chargeLookupCredit(user, userRef);
   if (!charge.ok) {
     return NextResponse.json(
       {

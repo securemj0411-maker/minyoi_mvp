@@ -74,6 +74,8 @@ type ErrorResponse = {
   message?: string;
   balance?: number | null;
   lookupsUsed?: number;
+  step?: string;
+  detail?: string;
 };
 
 function krw(n: number | null | undefined): string {
@@ -171,7 +173,10 @@ export default function LookupClient() {
           });
           return;
         }
-        setError(data.message ?? "조회에 실패했어요. 잠시 후 다시 시도해주세요.");
+        // Wave 799e: 500 / 4xx 시 step + detail 같이 노출 (디버그 / 사용자 신뢰 ↑)
+        const baseMsg = data.message ?? "조회에 실패했어요. 잠시 후 다시 시도해주세요.";
+        const stepHint = data.step && res.status >= 500 ? ` [단계: ${data.step}]` : "";
+        setError(baseMsg + stepHint);
         return;
       }
       setResult(data);
