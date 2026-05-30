@@ -289,10 +289,19 @@ async function runLookup(
   // (크레딧 차감은 성공 응답 직전에 — 404/202 시 무료)
   setStep("fetch_raw_listing");
   const headers = serviceHeaders();
-  const escapedKey = searchKey.replace(/[%_]/g, "\\$&");
-  const urlFilter = `url=ilike.*${encodeURIComponent(escapedKey)}*`;
+  // Wave 886.14 (2026-05-27): bunjang/joongna 는 key=pid (numeric) → pid 인덱스 eq 사용.
+  //   기존 ILIKE %key% 는 url 컬럼 full scan → 부하 시 57014 statement timeout 빈번.
+  //   사용자 짚음: 모바일 vs PC 동일 URL 다른 결과 (PC 빠른 시점, 모바일 느린 시점).
+  const isNumericKey = /^\d+$/.test(searchKey);
+  const selectCols = "pid,source,url,name,price,sku_id,sku_name,thumbnail_url,shop_review_rating,shop_review_count,free_shipping,listing_state,sale_status,first_seen_at,daangn_region_id,daangn_region_name,raw_json,description_preview,image_count";
+  const filter = (parsed.source === "bunjang" || parsed.source === "joongna") && isNumericKey
+    ? `pid=eq.${searchKey}&source=eq.${parsed.source}`
+    : (() => {
+        const escapedKey = searchKey.replace(/[%_]/g, "\\$&");
+        return `url=ilike.*${encodeURIComponent(escapedKey)}*`;
+      })();
   const rawRes = await restFetch(
-    `${tableUrl("mvp_raw_listings")}?select=pid,source,url,name,price,sku_id,sku_name,thumbnail_url,shop_review_rating,shop_review_count,free_shipping,listing_state,sale_status,first_seen_at,daangn_region_id,daangn_region_name,raw_json,description_preview,image_count&${urlFilter}&limit=1`,
+    `${tableUrl("mvp_raw_listings")}?select=${selectCols}&${filter}&limit=1`,
     { headers },
   );
   const rawRows = (await rawRes.json()) as RawListing[];

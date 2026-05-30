@@ -75,7 +75,9 @@ function isTransientRestFailure(status: number, body: string) {
   // P1-10: 429(rate limit) / 503/504(gateway) 도 transient. 502도 cold start나 일시 장애로 발생.
   if (status === 429 || status === 502 || status === 503 || status === 504) return true;
   if (status < 500 && status !== 409) return false;
-  return /40P01|deadlock detected|40001|serialization_failure|55P03|lock_not_available/i.test(body);
+  // Wave 886.14 (2026-05-27): 57014 statement timeout (Postgres) — 일시 부하로 발생.
+  //   lookup-by-url 모바일에서 500 발생 (PC는 동일 URL 성공) — DB 부하 시점 차이.
+  return /40P01|deadlock detected|40001|serialization_failure|55P03|lock_not_available|57014|statement timeout|canceling statement/i.test(body);
 }
 
 function retryDelayMs(attempt: number, status: number, retryAfterHeader: string | null): number {
