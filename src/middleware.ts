@@ -9,16 +9,23 @@ import { NextRequest, NextResponse } from "next/server";
 const REFERRAL_COOKIE = "minyoi_referral";
 const REFERRAL_COOKIE_TTL_SECONDS = 30 * 24 * 60 * 60; // 30일
 const REFERRAL_CODE_PATTERN = /^[A-HJ-NP-Z2-9]{6}$/; // referral.ts 와 동일 alphabet (헷갈리는 문자 제외)
+// Wave 886.19 (2026-05-27): Wave 813 sweep B/C shard 진짜 root cause fix.
+//   middleware 가 cron path 화이트리스트로 막는데 daangn-price-sweep-worker 누락 →
+//   atff/daangn-c 에서 sweep cron 호출 자체 middleware 단에서 즉시 skip (route 진입 X).
+//   → cron-guard fix (Wave 886.18) 효과 0.
+//   sweep route 가 role-aware (shardIndex 자동 결정) 이므로 path 추가만 하면 됨.
 const DAANGN_WORKER_ONLY_CRON_PATHS: Record<string, Set<string>> = {
   daangn_b: new Set([
     "/api/cron/daangn-worker-b",
     "/api/cron/score-worker-b",
     "/api/cron/daangn-detail-worker",
+    "/api/cron/daangn-price-sweep-worker",
   ]),
   daangn_c: new Set([
     "/api/cron/daangn-worker-c",
     "/api/cron/score-worker-c",
     "/api/cron/daangn-detail-worker",
+    "/api/cron/daangn-price-sweep-worker",
   ]),
 };
 
