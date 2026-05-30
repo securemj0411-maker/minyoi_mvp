@@ -4325,14 +4325,16 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
       parsed.comparable_key,
       shoeSizeAgnosticComparableKey(parsed.comparable_key),
     ].filter((key): key is string => Boolean(key));
-    // Wave 722 hotfix (2026-05-23 13:00 UTC): tier-aware grouping 일시 revert.
-    //   schema PK 3-col로 rollback됨 — tier 추가하면 PK violation 발생.
-    //   condition_tier 컬럼은 유지하되 aggregation 그룹핑에는 제외. 다음 cycle에서 재migration.
-    const conditionTier = ""; // sentinel — tier-bucketing 미적용 (Wave 722 rollback)
+    // Wave 803g (2026-05-30 사용자 결정): Wave 722 hotfix 박힌 후 1주일 plan "다음 cycle 재migration" 박혀있지 X.
+    //   PK 4-col migration 박음 (date, comparable_key, condition_class, condition_tier).
+    //   Polo 매물 모순 (시세 mint+B class layer 분리) 근본 차단.
+    //   parsed.condition_tier 박음 — shoe/clothing 만 박힘 (parser 박은 5-tier S/A/B/C/D),
+    //   그 외 카테고리는 빈 문자열 (Wave 722 정책 — fashion 만 tier-aware).
+    const conditionTier = (parsed.condition_tier ?? "").trim();
     for (const comparableKey of comparableKeys) {
-      // Wave 130: grouping key = (comparable_key, condition_class). 같은 SKU+옵션이라도
-      // condition별 별도 시세 산정.
-      const key = `${comparableKey}|${conditionClass}`;
+      // Wave 130 + Wave 803g: grouping key = (comparable_key, condition_class, condition_tier).
+      // 같은 condition_class('clean') 안에 tier S/A/B/C/D 매물 섞여 D급 시세 부정확 → tier 별 별도 row.
+      const key = `${comparableKey}|${conditionClass}|${conditionTier}`;
       if (!byKey.has(key)) {
         byKey.set(key, {
           comparableKey,
@@ -4537,14 +4539,10 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     };
   });
 
-  // Wave 130: PK (date, comparable_key, condition_class) — condition별 별도 upsert.
-  // Wave 722 hotfix (2026-05-23 13:00 UTC): tier-aware 일시 rollback.
-  //   파일 13:00 시점에 production cron 3+시간 정체 발견.
-  //   4-col PK + partial unique index 시도했으나 PostgREST가 partial index의 WHERE 전달 안 함 → 매칭 실패.
-  //   schema PK 3-col로 rollback + 코드도 3-col on_conflict로 revert.
-  //   condition_tier 컬럼은 유지 (data 손실 X). 다음 cycle에서 더 안전한 방식으로 재migration.
-  //   Plan: code deploy 완료 확인 후 schema migration → 시간차 원인 차단.
-  await upsertRows("mvp_market_price_daily", marketRows, "date,comparable_key,condition_class");
+  // Wave 803g (2026-05-30 사용자 결정): Wave 722 hotfix 박힌 후 1주일 plan "다음 cycle 재migration" 박혀있지 X.
+  //   PK 4-col migration 박음 (date, comparable_key, condition_class, condition_tier).
+  //   on_conflict 4-col 박음. shoe/clothing tier-aware 시세 박힘 (Wave 722 정책 정상 작동).
+  await upsertRows("mvp_market_price_daily", marketRows, "date,comparable_key,condition_class,condition_tier");
 
   // Wave 886 (2026-05-26 사용자 결정): per-source 시세 통계 — 당근 전용 시세 박기.
   //   배경: 동일 SKU/condition 매물도 source 별 가격 35-44% 차이 (당근이 번장의 56-67%).
