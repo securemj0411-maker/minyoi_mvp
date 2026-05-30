@@ -166,16 +166,7 @@ function timeAgo(iso: string): string {
   return `${Math.floor(h / 24)}일 전`;
 }
 
-/**
- * Wave 803 (2026-05-30): props 로 home 모드 / page 모드 분기.
- *   - page (default): /lookup 페이지 — "← 메인으로" link, 일반 헤더.
- *   - home: / 로그인 후 메인 — 큰 hero + 피드 진입 CTA. 마운트 시 피드 prefetch.
- */
-export default function LookupClient({
-  mode = "page",
-}: {
-  mode?: "page" | "home";
-} = {}) {
+export default function LookupClient() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [progressStage, setProgressStage] = useState(0);
@@ -216,25 +207,6 @@ export default function LookupClient({
       cancelled = true;
     };
   }, []);
-
-  // Wave 803: home 모드 — 마운트 시 백그라운드로 피드 prefetch.
-  //   사용자가 "싸게 나온 매물 보러가기" 버튼 누르면 /me 가 빠르게 hot.
-  useEffect(() => {
-    if (mode !== "home") return;
-    let cancelled = false;
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-    void supabase.auth.getSession().then(({ data }) => {
-      if (cancelled) return;
-      const token = data.session?.access_token;
-      if (!token) return;
-      const headers = { Authorization: `Bearer ${token}` } as const;
-      // fire-and-forget — 응답 안 기다림. server warm-up 만 목적.
-      void fetch("/api/packs/pool", { cache: "no-store", headers }).catch(() => undefined);
-      void fetch("/api/stats/pool", { cache: "no-store", headers }).catch(() => undefined);
-    });
-    return () => { cancelled = true; };
-  }, [mode]);
 
   async function handleSubmit() {
     if (!url.trim()) {
@@ -317,69 +289,25 @@ export default function LookupClient({
   return (
     <main className="min-h-screen bg-[#f5f7fb] px-3 py-3 dark:bg-zinc-950 sm:px-5 sm:py-7">
       <div className="mx-auto w-full max-w-[560px]">
-        {/* Header — mode 분기 */}
-        {mode === "home" ? (
-          <section className="rounded-[20px] border border-zinc-200 bg-white p-5 shadow-[0_18px_36px_rgba(15,23,42,0.06)] dark:border-zinc-800 dark:bg-zinc-900">
-            <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-[10.5px] font-black uppercase tracking-wider text-[#3182f6] dark:bg-blue-950/30 dark:text-blue-300">
-              💎 득템잡이
-            </span>
-            <h1 className="mt-2.5 break-keep text-[22px] font-black leading-tight tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[26px]">
-              관심 매물 시세 바로 확인해보세요
-            </h1>
-            <p className="mt-2 break-keep text-[13px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-              번개장터·중고나라·당근마켓 URL 만 붙여넣으면 미뇨이 AI 가{" "}
-              <span className="text-zinc-700 dark:text-zinc-300">시세·예상 수익·비교 매물·시세 그래프</span>{" "}
-              를 정리해 보여드려요.
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-1.5 rounded-xl bg-[#f5f9ff] px-3 py-2 text-[11.5px] font-bold text-[#3182f6] dark:bg-blue-950/24 dark:text-blue-300">
-              <span>💎 조회 1번 = 0.2크레딧 (5번 = 1크레딧 차감)</span>
-            </div>
-          </section>
-        ) : (
-          <section className="rounded-[18px] border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1 text-[12px] font-bold text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-            >
-              ← 메인으로
-            </Link>
-            <h1 className="mt-2 text-[20px] font-black leading-tight tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[22px]">
-              시세 조회
-            </h1>
-            <p className="mt-1 break-keep text-[12.5px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-              번개장터·중고나라·당근마켓 URL 을 붙여넣으면 미뇨이가 시세 / 예상 수익 / 비교 매물 / 14일 시세 추이를 보여드려요.
-            </p>
-            <div className="mt-3 flex items-center gap-1.5 rounded-xl bg-[#f5f9ff] px-3 py-2 text-[11px] font-bold text-[#3182f6] dark:bg-blue-950/24 dark:text-blue-300">
-              <span>💎</span>
-              <span>조회 1번 = 0.2크레딧 (5번 = 1크레딧 차감)</span>
-            </div>
-          </section>
-        )}
-
-        {/* Wave 803: home 모드 — 결과 없을 때 피드 진입 CTA 노출 */}
-        {mode === "home" && !result && !loading ? (
-          <section className="mt-3 overflow-hidden rounded-[18px] border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5 dark:border-emerald-900/40 dark:from-emerald-950/24 dark:to-zinc-900">
-            <div className="flex items-start gap-3">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-500 text-white shadow-[0_8px_18px_rgba(16,185,129,0.32)]">
-                🔥
-              </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-[15.5px] font-black leading-5 text-zinc-950 dark:text-zinc-50">
-                  지금 바로 싸게 나온 매물 보러가기
-                </h2>
-                <p className="mt-1 break-keep text-[12px] font-bold leading-4 text-zinc-500 dark:text-zinc-400">
-                  AI 가 미리 정리한 차익 매물을 둘러보세요.
-                </p>
-              </div>
-            </div>
-            <Link
-              href="/me?view=history"
-              className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 text-[14.5px] font-black text-white shadow-[0_10px_22px_rgba(16,185,129,0.28)] transition hover:bg-emerald-700 active:scale-[0.99]"
-            >
-              추천 매물 둘러보기 →
-            </Link>
-          </section>
-        ) : null}
+        {/* Header */}
+        <section className="rounded-[18px] border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1 text-[12px] font-bold text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+          >
+            ← 메인으로
+          </Link>
+          <h1 className="mt-2 text-[20px] font-black leading-tight tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[22px]">
+            시세 조회
+          </h1>
+          <p className="mt-1 break-keep text-[12.5px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+            번개장터·중고나라·당근마켓 URL 을 붙여넣으면 미뇨이가 시세 / 예상 수익 / 비교 매물 / 14일 시세 추이를 보여드려요.
+          </p>
+          <div className="mt-3 flex items-center gap-1.5 rounded-xl bg-[#f5f9ff] px-3 py-2 text-[11px] font-bold text-[#3182f6] dark:bg-blue-950/24 dark:text-blue-300">
+            <span>💎</span>
+            <span>조회 1번 = 0.2크레딧 (5번 = 1크레딧 차감)</span>
+          </div>
+        </section>
 
         {/* Input */}
         <section className="mt-3 rounded-[16px] border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">

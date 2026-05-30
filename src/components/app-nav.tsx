@@ -341,11 +341,10 @@ export default function AppNav() {
   }, []);
 
   const navLinks = [
-    // Wave 803 (2026-05-30): 메인 = URL 시세 조회로 전환됨. "추천 상품" 은 /me 피드로 redirect.
-    { href: user ? "/me?view=history" : "/", label: "추천 상품" },
-    // Wave 799c (2026-05-30): /lookup 시세 조회 nav. 로그인 후 메인 (/) 도 같은 화면이지만
-    //   사용자가 /lookup 직접 진입 가능하도록 link 유지 (history feed 보다가 클릭하는 경로).
-    ...(user ? [] : [{ href: "/lookup", label: "시세 조회" }]),
+    { href: "/", label: "추천 상품" },
+    // Wave 343: /explore 폐기 — /me history view에 통합. nav "탐색" 링크 제거.
+    // Wave 799c (2026-05-30): /lookup 시세 조회 nav 추가 — URL 넣어 시세/수익 확인 (0.2크레딧).
+    { href: "/lookup", label: "시세 조회" },
     { href: "/how-it-works", label: "서비스 안내" },
     { href: "/plans", label: "크레딧 충전" },
     ...(user ? [{ href: "/me", label: "내 대시보드" }] : []),
@@ -354,9 +353,8 @@ export default function AppNav() {
   const mobileHomeHref = user ? "/me" : "/";
   const mobileNavLinks = user
     ? [
-        // Wave 803: 메인 = URL 시세 조회. "추천 피드" 는 /me?view=history 로.
-        { href: "/me?view=history", label: "추천 피드", caption: "오늘 볼 만한 매물" },
-        // Wave 799c (2026-05-30): /lookup 시세 조회 (= 메인과 동일 화면이지만 명시 진입 path).
+        { href: "/me", label: "추천 피드", caption: "오늘 볼 만한 매물" },
+        // Wave 799c (2026-05-30): /lookup nav 추가 — URL 시세 조회 (1번 = 0.2크레딧).
         { href: "/lookup", label: "시세 조회", caption: "URL 넣으면 시세·수익·비교매물" },
         // Wave 726 (2026-05-23): 모바일에서 sidebar 숨김 (lg:block) 이라 텔레그램 알림 설정 접근 불가.
         //   모바일 사용자가 한 번이라도 설정 가능하게 drawer 에 link 박음.

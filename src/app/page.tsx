@@ -10,10 +10,9 @@
 //   PreviewMaskedDashboard 의 client-side intro 는 그대로 유지.
 
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 import { loadUserHomeRegion } from "@/lib/user-home-region-loader";
-import LookupClient from "@/app/lookup/lookup-client";
+import MeDashboardClient from "@/components/me-dashboard-client";
 import PreviewMaskedDashboardServer from "@/components/preview-masked-dashboard-server";
 
 export const dynamic = "force-dynamic";
@@ -61,13 +60,5 @@ export default async function Home() {
     redirect("/onboarding/home-region");
   }
 
-  // Wave 803 (2026-05-30): 로그인 메인 = URL 시세 조회 (LookupClient home 모드).
-  //   기존 MeDashboardClient 추천 피드는 nav '추천 상품' + '추천 매물 둘러보기' CTA 로 /me 이동.
-  //   사용자 의도 — "내가 본 매물 시세 확인" 직관적 entry, 피드는 secondary action.
-  //   마운트 시 백그라운드 prefetch — 피드 진입 시 cold-start 줄임.
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-[#f5f7fb] dark:bg-zinc-950" />}>
-      <LookupClient mode="home" />
-    </Suspense>
-  );
+  return <MeDashboardClient initialInventory={[]} />;
 }
