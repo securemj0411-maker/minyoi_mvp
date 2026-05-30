@@ -4302,8 +4302,15 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
       ?? [];
     // Wave 130: flawed class (손상/문제 매물) 시세 산정 차단 — 현재 정책 유지.
     // condition_class column이 채워져 있으면 그대로, 아니면 condition_notes에서 즉시 derive.
-    const conditionClass = parsed.condition_class ?? extractConditionClass(conditionNotes);
-    if (conditionClass === "flawed") continue;
+    const rawConditionClass = parsed.condition_class ?? extractConditionClass(conditionNotes);
+    if (rawConditionClass === "flawed") continue;
+    // Wave 803i (2026-05-30 사용자 정책 Wave 763 정확 적용):
+    //   shoe/clothing 은 comparable_key tier (S/A/B/C/D) 로 통일. condition_class (mint/clean/normal/worn) 옛 layer.
+    //   fashion 매물은 condition_class 시세 grouping 에서 무시 (빈 문자열) → tier 단위 1개 row.
+    //   전자기기/기타: 기존 condition_class 유지.
+    //   flawed 판정만 rawConditionClass 사용 (위 차단 logic), grouping 은 conditionClass.
+    const isFashionCategory = parsed.category === "shoe" || parsed.category === "clothing";
+    const conditionClass = isFashionCategory ? "" : rawConditionClass;
     // Wave 130: bundle 매물은 단품 시세와 비교 noisy → 차단 유지 (Wave 90 정책).
     // accessory_bundle/multi_device_bundle은 condition_class와 별도 — bundle 자체가 noise.
     if (conditionNotes.includes("accessory_bundle")) continue;
