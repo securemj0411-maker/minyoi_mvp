@@ -83,6 +83,9 @@ export const FLAWED_NOTES = [
   "single_side_only",
   // Wave 208 (2026-05-18): "X용 + 액세서리" 호환 매물 — 본품 sku 매칭 잘못 (시세 부풀림).
   "accessory_compatible_for_other_product",
+  // Wave 886.10 (2026-05-27): earphone 기능 결함 (한쪽 소리/노캔/배터리 이상) — 정상 거래 X.
+  // 사용자 짚음 "왼쪽이 좀 작게 들리는거같아서" → 결함인데 cosmetic_wear(worn) 로만 분류되던 케이스.
+  "earphone_function_defect",
 ] as const;
 
 // Wave 203 (2026-05-18): "battery_high_health" 추가 — 95~99% 배터리 객관적 신호.
@@ -1322,6 +1325,25 @@ function conditionFromText(
     const singleSidePattern = /(?:^|[\s\[(/,])(?:왼쪽(?:만)?|오른쪽(?:만)?|좌측(?:만)?|우측(?:만)?|왼유닛|오른유닛|left\s*only|right\s*only|l\s*유닛|r\s*유닛|한\s*쪽만|한쪽만)(?:[\s\])\/,]|$)/i;
     if (singleSidePattern.test(titleNormalized)) {
       add("single_side_only", -0.4);
+    }
+
+    // Wave 886.10 (2026-05-27): earphone 기능 결함 detect (한쪽 소리/노캔/배터리).
+    // 사용자 짚음: "사용감 꽤 있고 기스도 있습니다 ... 왼쪽이 좀 작게 들리는거같아서"
+    // → 기존엔 cosmetic_wear(worn)로만 분류 → 사용감 매물 풀에 들어가 시세 부풀림.
+    // 한쪽 기능 이상은 결함 (flawed) → 풀 진입 차단.
+    // title + description 모두 스캔 (셀러는 description 에 결함 박는 경향).
+    const sidePrefix = "(?:왼쪽|오른쪽|좌측|우측|한\\s*쪽|왼유닛|오른유닛|왼쪽\\s*유닛|오른쪽\\s*유닛|l\\s*유닛|r\\s*유닛)";
+    const soundDefectVerb = "(?:안\\s*들|들리지\\s*않|작게\\s*(?:들|나)|소리(?:가|는)?\\s*작|미세하(?:게|기만)|희미하(?:게|기)|무음|먹먹|끊김|끊겨|끊어|소리\\s*없|먹통|뻑뻑하게\\s*들)";
+    const earphoneSoundDefect = new RegExp(`${sidePrefix}(?:이|가|만|는|도)?[^.!?\\n]{0,20}${soundDefectVerb}`);
+    const earphoneAncDefect = /(?:노이즈\s*캔슬|노캔|anc|active\s*noise|패시브\s*노이즈)\s*(?:이|가|는|만)?[^.!?\n]{0,12}(?:안\s*돼|안\s*됨|작동\s*안|작동이?\s*안|불량|고장|문제|이상|이상하|먹통)/i;
+    const earphoneBatteryDefect = new RegExp(`${sidePrefix}(?:이|가|는|만)?[^.!?\\n]{0,15}배터리[^.!?\\n]{0,15}(?:빨리\\s*닳|빨리\\s*다됨|빨리\\s*닳음|급격|이상|불량)`);
+    // 명시 negation — "왼쪽 소리 문제 없음" 같은 정상 표현 false positive 차단.
+    const earphoneDefectNegation = /(?:왼쪽|오른쪽|한\s*쪽|소리|노캔|anc|배터리)[^.!?\n]{0,18}(?:문제|이상|불량|결함|하자)\s*(?:없|없음|없어|아님|x|❌)/;
+    if (!earphoneDefectNegation.test(lower) && (earphoneSoundDefect.test(lower) || earphoneAncDefect.test(lower) || earphoneBatteryDefect.test(lower))) {
+      add("earphone_function_defect", -0.4);
+      if (!notes.includes("repair_or_defect_signal")) {
+        notes.push("repair_or_defect_signal");
+      }
     }
   }
 

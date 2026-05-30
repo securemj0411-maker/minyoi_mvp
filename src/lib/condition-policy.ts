@@ -45,6 +45,9 @@ export const POOL_BLOCK_NOTES = [
   // 사용자 코멘트 #157 (pid 398121430 "DJI 오즈모 액션6 용 pov 렌즈") Action 6 본체 SKU 매칭 fix.
   // 기존: catalog.ts DRONE_FILTER_ACCESSORY_NOISE drone-only → parser 일반 detection.
   "accessory_compatible_for_other_product",
+  // Wave 886.10 (2026-05-27): earphone 기능 결함 (한쪽 소리/노캔/배터리 이상) — 페어 매물이지만 사용자 손해 명확.
+  // 사용자 짚음 "왼쪽이 좀 작게 들리는거같아서" → 결함인데 사용감 매물로 분류돼 시세 비교 통과 fix.
+  "earphone_function_defect",
 ] as const;
 
 // 비교군 UI 제외 = POOL_BLOCK + premium/noise tier.
