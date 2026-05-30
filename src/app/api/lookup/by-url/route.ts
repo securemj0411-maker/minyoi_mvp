@@ -378,11 +378,19 @@ async function runLookup(
 
   setStep("compute_market_basis");
   const marketplaceSource = normalizeMarketplaceSource(raw.source ?? null);
+  // Wave 886.16 (2026-05-27): fashion (shoe/clothing) 시세는 tier 단위 (Wave 763/803i 정책).
+  //   conditionClass (mint/clean/normal/worn) 박은 게 옛 layer → marketBasis 박을 때 무시.
+  //   사용자 짚음: Polo 시세 101k 인데 비교매물 median 58k — 본 매물 cc=mint 박혀 mint row(110K, sample 3) 잡힘.
+  //   fashion 박은 게 conditionClass="" 전달 → byCondition Map 박은 게 "" key 우선 박힘 (Wave 803i 정책),
+  //   "" 없으면 fallback chain "" → "normal" 박은 게 큰 sample 박힘.
+  const parsedCategoryForMarket = parsedRow?.category ?? null;
+  const isFashionForMarket = parsedCategoryForMarket === "shoe" || parsedCategoryForMarket === "clothing";
+  const conditionClassForMarket = isFashionForMarket ? "" : conditionClass;
   const marketBasis = marketBasisForCandidate(
     comparableKey,
     raw.sku_name ?? raw.name ?? "",
     marketStatsResult,
-    conditionClass,
+    conditionClassForMarket,
     referencePricesResult,
     v7Result,
     {
