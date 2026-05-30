@@ -902,7 +902,14 @@ async function loadPool(
   const readyBaseUrl =
     `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready${excludeClause}&${orderClause}`;
   const nearbyDaangnPrimary = Boolean(options.userHomeDaangnFullPath) && (options.source === "daangn" || options.sort === "distance");
-  const readyOverfetchLimit = nearbyDaangnPrimary
+  // Wave 803b (2026-05-30): 사용자 보고 "당근만 박으면 매물 누락" fix.
+  //   Wave 953 (다른 세션) 가 nearbyDaangnPrimary 일 때 overfetch 1500→100 줄였는데
+  //   부작용: source=daangn + sort=profit_desc 박을 때 main pool 100 + nearby 120 = 220 매물만
+  //   → daangn ready 4,206 중 5% 만 fetch → 멀리 있는 매물 (낙성대동 등) 누락.
+  //   Fix: overfetch 줄임은 sort=distance 박힐 때만 (nearby 가 sort 자체). source=daangn 박을 땐
+  //   overfetch 1500 유지 → 매물 다 보임 (Wave 953 속도 의도는 sort=distance 에서만 살림).
+  const nearbyDaangnSortPriority = Boolean(options.userHomeDaangnFullPath) && options.sort === "distance";
+  const readyOverfetchLimit = nearbyDaangnSortPriority
     ? Math.min(FETCH_POOL_OVERFETCH, Math.max(READY_SLOTS * 4, options.readyCandidateLimit ?? READY_SLOTS))
     : FETCH_POOL_OVERFETCH;
   const [readyRowsPage, nearbyDaangnResult, soldOutRes] = await Promise.all([
