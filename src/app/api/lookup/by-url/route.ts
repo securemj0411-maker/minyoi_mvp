@@ -359,11 +359,16 @@ async function runLookup(
   //   사용자 짚음: 모바일 vs PC 동일 URL 다른 결과 (PC 빠른 시점, 모바일 느린 시점).
   const isNumericKey = /^\d+$/.test(searchKey);
   const selectCols = "pid,source,url,name,price,sku_id,sku_name,thumbnail_url,shop_review_rating,shop_review_count,free_shipping,listing_state,sale_status,first_seen_at,daangn_region_id,daangn_region_name,raw_json,description_preview,image_count";
+  // Wave 803k (2026-05-30): daangn URL ILIKE 박은 게 박은 게 박은 게 statement timeout (11s) → 6ms.
+  //   원인: mvp_raw_listings.url 박은 게 박은 게 박은 게 박은 게 박은 게 0개. 874K row × 2GB full scan.
+  //   Fix (DB): partial trigram GIN index 박음 (WHERE source = 'daangn').
+  //   Fix (코드): query 박은 게 박은 게 박은 게 source=eq.daangn 박은 게 박은 게 박은 게 partial index 박은 게.
   const filter = (parsed.source === "bunjang" || parsed.source === "joongna") && isNumericKey
     ? `pid=eq.${searchKey}&source=eq.${parsed.source}`
     : (() => {
         const escapedKey = searchKey.replace(/[%_]/g, "\\$&");
-        return `url=ilike.*${encodeURIComponent(escapedKey)}*`;
+        // Wave 803k: source=eq.${source} 박은 게 박은 게 박은 게 박은 게 daangn partial index 박은 게.
+        return `source=eq.${parsed.source}&url=ilike.*${encodeURIComponent(escapedKey)}*`;
       })();
   const rawRes = await restFetch(
     `${tableUrl("mvp_raw_listings")}?select=${selectCols}&${filter}&limit=1`,
