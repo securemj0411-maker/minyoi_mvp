@@ -6256,6 +6256,15 @@ function RevealCardItem({
                 <span className="mr-1.5 inline-flex align-middle">
                   <MarketplaceSourceBadge source={card.marketplaceSource} label={card.marketplaceLabel} />
                 </span>
+                {/* Wave 886.13 (2026-05-27): 당근 매물은 source badge 옆 동네 inline 표시 (거리 제약 핵심 정보). */}
+                {isDaangn && card.savedDetail?.directTradeLocation ? (
+                  <span className="mr-1.5 inline-flex items-center gap-0.5 align-middle text-orange-700 dark:text-orange-300">
+                    <svg viewBox="0 0 12 12" fill="currentColor" className="h-2.5 w-2.5" aria-hidden="true">
+                      <path d="M6 1a3.5 3.5 0 0 0-3.5 3.5c0 2.625 3.5 6.5 3.5 6.5s3.5-3.875 3.5-6.5A3.5 3.5 0 0 0 6 1zm0 4.7a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4z" />
+                    </svg>
+                    {card.savedDetail.directTradeLocation}
+                  </span>
+                ) : null}
                 AI 판단 · 매물 설명(텍스트) 기준 · 사진은 직접 확인 권장
               </div>
               <div className="absolute right-0 top-[-2px]">
@@ -6292,6 +6301,15 @@ function RevealCardItem({
                     <DealMeterButton card={card} />
                   </div>
                 </div>
+                {/* Wave 886.13 (2026-05-27): 당근 매물 거래 가능 동네 강조 chip — 거리 제약 핵심 정보. */}
+                {isDaangn && card.savedDetail?.directTradeLocation ? (
+                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-[11.5px] font-bold text-orange-700 dark:border-orange-900/60 dark:bg-orange-950/30 dark:text-orange-300">
+                    <svg viewBox="0 0 14 14" fill="currentColor" className="h-3 w-3 shrink-0" aria-hidden="true">
+                      <path d="M7 1a4 4 0 0 0-4 4c0 3 4 7.5 4 7.5s4-4.5 4-7.5a4 4 0 0 0-4-4zm0 5.4a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8z" />
+                    </svg>
+                    <span>거래 가능 동네: {card.savedDetail.directTradeLocation}</span>
+                  </div>
+                ) : null}
                 {onBeginnerGuideClick ? (
                   <button
                     type="button"
