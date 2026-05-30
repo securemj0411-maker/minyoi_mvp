@@ -225,8 +225,10 @@ export async function GET(
     let comparables: Comparable[] = [];
     if (comparableKey) {
       // listing_parsed limit 더 크게 — sold 매물도 비교군에 들어갈 자리 확보 (#96).
+      // Wave 818b (2026-05-30): detail_status=eq.done 추가 — mvp_market_price_daily strict filter 와 align.
+      //   시세 vs 비교매물 모순 (NB 991 case) — 시세 8 strict sample 82.8K 였는데 비교매물 790 lenient 45K outlier.
       const sameKeyPidsRes = await restFetch(
-        `${tableUrl("mvp_listing_parsed")}?select=pid&comparable_key=eq.${encodeURIComponent(comparableKey)}&needs_review=eq.false&limit=${MAX_COMPARABLES * 6}`,
+        `${tableUrl("mvp_listing_parsed")}?select=pid&comparable_key=eq.${encodeURIComponent(comparableKey)}&needs_review=eq.false&detail_status=eq.done&limit=${MAX_COMPARABLES * 6}`,
         { headers: serviceHeaders() },
       );
       const sameKeyPids = ((await sameKeyPidsRes.json()) as Array<{ pid: number }>)

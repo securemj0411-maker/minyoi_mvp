@@ -478,9 +478,13 @@ async function runLookup(
   //   변경: needs_review=false, COMPARABLE_EXCLUDE_NOTES, condition strict-with-fallback,
   //         shoe/clothing tier eq 필터 추가. listing_state=active + 3d 최신 유지 (lookup 만의 안전망).
   //   Wave 810a price.desc 정렬도 유지 (사용자 직관 우선).
+  // Wave 818b (2026-05-30): detail_status=eq.done 추가 — mvp_market_price_daily 의 strict filter 와 align.
+  //   배경: market-source 도 동일. Wave 814-818 박은 후 다른 세션 NB 991 type case sanity check —
+  //   시세 (8 strict sample 82.8K) vs 비교매물 (790 lenient 45K outlier) 모순 잔재.
+  //   detail_status 없으면 detail fetch 미완료 매물 (price/condition 노이즈) 도 비교매물에 박힘.
   setStep("fetch_comparable_listings");
   const sameKeyPidsRes = await restFetch(
-    `${tableUrl("mvp_listing_parsed")}?select=pid,condition_class,condition_tier,condition_notes,parsed_json&comparable_key=eq.${encodeURIComponent(comparableKey)}&needs_review=eq.false&limit=480`,
+    `${tableUrl("mvp_listing_parsed")}?select=pid,condition_class,condition_tier,condition_notes,parsed_json&comparable_key=eq.${encodeURIComponent(comparableKey)}&needs_review=eq.false&detail_status=eq.done&limit=480`,
     { headers },
   );
   const sameKeyParsedRows = (await sameKeyPidsRes.json()) as Array<{
