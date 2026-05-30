@@ -9336,7 +9336,10 @@ export const CATALOG: Sku[] = [
     // Wave 737 leak fix (2026-05-24): group 2 ["랄프", "포니", "rl"] 제거 — group 0의 "폴로/polo/랄프로렌"으로 충분.
     //   462건 unmatched 분석: 매물 "폴로 피케티 카라티 네이비"는 group 0/1 매칭하지만 group 2 없어 leak.
     //   mustNotContain에 이미 비폴로 brand 모두 차단되어 있어 false positive 위험 낮음.
-    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌", "랄프 로렌"], ["피케", "pique", "pk ", "pk티", "pk 티", "pk반팔", "pk 반팔", "카라티", "카라 티"]],
+    // Wave 886.11 (2026-05-27): standalone "폴로/polo" 단어가 타미힐피거/질스튜어트/펄리게이츠 등 흡수.
+    //   사용자 짚음: 다른 브랜드 폴로티가 Polo Pique Classic / Pony Tee 로 매칭되어 비교군 짬뽕.
+    //   group 1 = 명시 Ralph Lauren 표기만 (polo_apparel_broad 와 동일). §12b 정확성 우선.
+    mustContain: [["polo ralph", "폴로 랄프", "랄프로렌", "랄프 로렌", "ralph lauren", "polo by ralph"], ["피케", "pique", "pk ", "pk티", "pk 티", "pk반팔", "pk 반팔", "카라티", "카라 티"]],
     mustNotContain: [
       "RRL", "purple label", "퍼플라벨", "polo bear", "베어", "키즈", "kids", "여아", "남아", "토들러", "polo boys", "폴로 보이즈", "폴로보이즈", "polo girls", "폴로 girls", "polo kids", "랄프로렌 보이즈", "랄프로렌 키즈",
       // Wave 764 (2026-05-24): 보세/sub-brand polo 차단 (사용자 #4 audit 발견).
@@ -9408,7 +9411,10 @@ export const CATALOG: Sku[] = [
     //   polo SKU 가 다른 brand 의 "폴로" 단어 매물에 매칭됨. brand 한정 필요.
     // Wave 737 leak fix: group 0 "폴로 랄프로렌" compound → 분리. 한국 셀러 "폴로" 단독 표기 많음.
     //   pony_tee + tee bucket 726건 unmatched. mustNotContain 이미 비폴로 brand 다 차단.
-    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌", "랄프 로렌"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "크루넥"]],
+    // Wave 886.11 (2026-05-27): Wave 737 가정 (mustNotContain 이 다 차단) 깨짐 — 질스튜어트/펄리게이츠/타미힐피거 흡수 발견.
+    //   "폴로/polo" 단독 표기는 명시 Ralph Lauren signal 없음 → recall 손해 받고 명시 brand만 매칭.
+    //   해당 매물은 polo_apparel_broad / tommy_hilfiger_broad 등으로 흡수됨.
+    mustContain: [["polo ralph", "폴로 랄프", "랄프로렌", "랄프 로렌", "ralph lauren", "polo by ralph"], ["반팔", "티셔츠", "tee ", "t-shirt", "t셔츠", "크루넥"]],
     mustNotContain: ["RRL", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "pique", "pk ", "pk티", "pk 티", "pk반팔", "pk 반팔", "긴팔", "롱슬리브", "키즈", "kids", "토들러", "보이즈", "boys", "걸즈", "girls", "주니어", "youth",
       // Wave 812: BAPE shark/polo wording polluted Polo Pony Tee sample groups.
       "bape", "베이프", "a bathing ape", "샤크", "shark",
@@ -9453,7 +9459,8 @@ export const CATALOG: Sku[] = [
     brand: "Polo Ralph Lauren", category: "clothing", laneKey: "polo_oxford_shirt",
     modelName: "Polo Oxford Shirt (Standard)",
     aliases: ["Polo Oxford", "폴로 옥스포드", "Ralph Lauren Oxford"],
-    mustContain: [["폴로", "polo", "ralph lauren", "랄프로렌"], ["옥스포드", "oxford"]],
+    // Wave 886.11 (2026-05-27): standalone "폴로/polo" 제거 — 명시 Ralph Lauren signal만 매칭.
+    mustContain: [["polo ralph", "폴로 랄프", "랄프로렌", "랄프 로렌", "ralph lauren", "polo by ralph"], ["옥스포드", "oxford"]],
     // RRL 옥스포드는 별도 SKU (가격 5배)
     mustNotContain: ["RRL", "더블 알엘", "double rl", "purple label", "퍼플라벨", "polo bear", "베어", "피케", "키즈", "kids", "보이즈", "boys", "주니어", "youth", "14~16", "14-16",
       "아미", "ami", "ami paris", "아미 파리스",

@@ -41,6 +41,9 @@ const APPAREL_PRODUCT_TYPES = [
   "반팔", "티셔츠", "tee", "긴팔", "롱슬리브", "long sleeve",
   "후드", "hoodie", "후디", "맨투맨", "크루넥", "스웻", "sweat",
   "셔츠", "shirt", "남방", "블라우스",
+  // Wave 886.11 (2026-05-27): 폴로/카라티 류 추가 — 타미힐피거/라코스테/펄리게이츠 등 폴로 매물이
+  //   기존엔 mustContain 통과 못 해서 Polo Pony Tee/Pique Classic (RL) 로 잘못 흡수됐음.
+  "폴로", "polo", "폴로티", "폴로셔츠", "폴로 셔츠", "카라티", "카라 티", "pk티", "pk 티",
   "니트", "knit", "스웨터", "sweater", "카디건", "cardigan", "가디건",
   "베스트", "vest", "조끼", "탱크탑", "tank top",
   // 자켓류
