@@ -4247,9 +4247,21 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
   // Wave 337 (사용자 + 메모리 정책 bunjang_safe_payment_mandate):
   // 번개장터 안전결제 의무화 → 셀러가 3.5% 부담. 구매자(우리 사용자가 살 때)는 0원.
   // Wave 394.7.h (외부 review 2라운드 #8): 비용 그룹 분리 — 구매 / 재판매. 초보자 헷갈림 차단.
+  // Wave 803d (2026-05-30): 사용자 보고 "상세페이지 위치 안 나옴" fix.
+  //   directTradeLocation 박혀있지만 (pack-open.ts:2235 박는 코드 + RevealCard.savedDetail 통해 도달) UI 활용 0 hits.
+  //   당근 매물 (direct_only) 일 때 "거래 가능 지역 확인 필요" placeholder 만 박혀서 사용자 frustration.
+  //   Fix: directTradeLocation 박혀있으면 별도 row 박음 ("거래 가능 지역" label) + 배송비 note 도 region 박음.
+  const directTradeLocationLabel = isDaangn ? (card.savedDetail?.directTradeLocation ?? null) : null;
   const purchaseRows = [
     { label: "상품가", value: krw(card.price), note: "현재 매입 기준" },
-    { label: "내가 낼 배송비", value: snapshot.shippingValueLabel, note: snapshot.shippingNote },
+    ...(directTradeLocationLabel
+      ? [{ label: "거래 가능 지역", value: directTradeLocationLabel, note: "당근 동네 인증 기준" }]
+      : []),
+    {
+      label: "내가 낼 배송비",
+      value: snapshot.shippingValueLabel,
+      note: directTradeLocationLabel ? `${directTradeLocationLabel} 직거래` : snapshot.shippingNote,
+    },
     {
       label: "결제 수수료",
       value: "0원",
