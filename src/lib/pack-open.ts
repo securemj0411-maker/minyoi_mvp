@@ -354,6 +354,10 @@ type MarketPriceRow = {
   comparable_key: string;
   // Wave 130: condition_class — DB PK 일부. condition별 시세 분리.
   condition_class: string;
+  // Wave 814 (2026-05-30): condition_tier 5-tier (S/A/B/C/D) — Wave 722/130 DB PK 일부.
+  //   fashion (shoe/clothing) 시세 = tier 별 row, condition_class = "".
+  //   non-fashion = cc 별 row, tier = "" or NULL.
+  condition_tier?: string | null;
   active_median_price: number | null;
   sold_median_price: number | null;
   blended_median_price: number | null;
@@ -673,7 +677,19 @@ async function assertRevealAccess(userRef: string, pid: number): Promise<void> {
 // Wave 130 (2026-05-16): condition별 시세 분리. Map 구조:
 //   comparable_key → (condition_class → MarketPriceRow)
 // 사업 보고서 L2: 같은 SKU+옵션 매물이라도 condition별 시세 spread 15~40% — 끼리 비교 retention.
+//
+// Wave 814+816 (2026-05-30): condition_tier composite key 박음.
+//   기존 = Map<condition_class, row> — tier 차원 drop, fashion row 들이 cc="" 로 collision (non-deterministic).
+//   새 = Map<`${tier}|${condition_class}`, row> — fashion/non-fashion 모두 정확 key.
+//   fashion: cc="" + tier="B/A/S/..." → "B|", "A|" 등
+//   non-fashion: cc="normal/clean/..." + tier="" → "|normal", "|clean" 등
+//   marketBasisForCandidate 가 caller — fashion 이면 tier prefix 만, 아니면 cc suffix 만 박아 lookup.
 export type MarketStatsByCondition = Map<string, MarketPriceRow>;
+
+// Wave 816: composite key helper. tier 빈 값 = non-fashion, cc 빈 값 = fashion.
+export function marketStatsConditionKey(conditionTier: string | null | undefined, conditionClass: string | null | undefined): string {
+  return `${(conditionTier ?? "").trim()}|${(conditionClass ?? "").trim()}`;
+}
 export type MarketStatsMap = Map<string, MarketStatsByCondition>;
 export type MarketStatsBySourceMap = Map<string, Map<KnownMarketplaceSource, MarketStatsByCondition>>;
 
@@ -831,6 +847,7 @@ export async function fetchLatestMarketStats(comparableKeys: (string | null)[]):
   const cols = [
     "comparable_key",
     "condition_class",
+    "condition_tier",  // Wave 814+816: 5-tier (S/A/B/C/D) — fashion 시세 tier 별 row
     "active_median_price",
     "sold_median_price",
     "blended_median_price",
@@ -851,11 +868,14 @@ export async function fetchLatestMarketStats(comparableKeys: (string | null)[]):
   );
   const rows = (await res.json()) as MarketPriceRow[];
   const fetched: MarketStatsMap = new Map();
-  // 같은 comparable_key + condition_class 조합에서 가장 최신 row만 보존 (order by date desc).
+  // Wave 814+816 (2026-05-30): composite key (tier|cc) — fashion tier/non-fashion cc 분리.
+  //   기존 = cc 단일 key 라 fashion row (cc="") 다중 tier collision (non-deterministic).
+  //   새 = `${tier}|${cc}` 박아 정확 매칭.
   for (const row of rows) {
     const byCondition = fetched.get(row.comparable_key) ?? new Map<string, MarketPriceRow>();
-    if (!byCondition.has(row.condition_class)) {
-      byCondition.set(row.condition_class, row);
+    const key = marketStatsConditionKey(row.condition_tier ?? "", row.condition_class);
+    if (!byCondition.has(key)) {
+      byCondition.set(key, row);
     }
     fetched.set(row.comparable_key, byCondition);
   }
@@ -901,6 +921,7 @@ export async function fetchLatestMarketStatsPerSource(
   const cols = [
     "comparable_key",
     "condition_class",
+    "condition_tier",  // Wave 814+816: 5-tier composite key
     "source",
     "active_median_price",
     "sold_median_price",
@@ -921,11 +942,13 @@ export async function fetchLatestMarketStatsPerSource(
   );
   const rows = (await res.json()) as MarketPriceRowWithSource[];
   const fetched = new Map<string, MarketStatsByCondition>();
+  // Wave 814+816: composite key (tier|cc) — fashion tier/non-fashion cc 분리.
   for (const row of rows) {
     const source = normalizeMarketplaceSource(row.source);
     const cacheKey = marketStatsPerSourceCacheKey(source, row.comparable_key);
     const byCondition = fetched.get(cacheKey) ?? new Map<string, MarketPriceRow>();
-    if (!byCondition.has(row.condition_class)) byCondition.set(row.condition_class, row);
+    const key = marketStatsConditionKey(row.condition_tier ?? "", row.condition_class);
+    if (!byCondition.has(key)) byCondition.set(key, row);
     fetched.set(cacheKey, byCondition);
   }
 
@@ -1193,14 +1216,18 @@ const MIN_SAMPLE_COUNT_FOR_CONFIDENCE = 3;
 const MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE = 3;
 
 // Wave 159h (2026-05-17): condition-fallback shared module 사용 (DRY).
+// Wave 817 (2026-05-30): tier 인자 추가 — fashion 시세 tier 정확 lookup.
 function selectMarketRowByCondition(
   byCondition: MarketStatsByCondition | undefined,
   targetConditionClass: string | null,
+  targetConditionTier?: string | null,
 ): { row: MarketPriceRow | undefined; conditionClass: string | null; fallbackUsed: boolean } {
   return pickByConditionFallback(
     byCondition,
     targetConditionClass,
     (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0) + Number(r.disappeared_sample_count ?? 0),
+    1,
+    targetConditionTier,
   );
 }
 
@@ -1254,6 +1281,10 @@ export function marketBasisForCandidate(
   // Wave 252.A real (2026-05-20): v3 stale 가드 — v7 sibling 존재 시 mixed-pool row 차단.
   v7SiblingPresence?: V7SiblingPresenceMap,
   sourceOptions?: MarketBasisSourceOptions,
+  // Wave 817 (2026-05-30): tier 인자 — fashion (shoe/clothing) 시세 tier 정확 lookup.
+  //   기존 effectiveConditionClass = isFashion ? "" : cc 임시 봉합 (Wave 803i/886.16)
+  //   제거됨. caller 가 tier 직접 전달.
+  conditionTier?: string | null,
 ): RevealMarketBasis {
   // Wave 252.A real: v3 clothing key + v7 sibling 존재 → mixed-pool 신뢰 불가 → "v3_pending_rematch" 표시.
   //   medianPrice=null 로 caller (currentNetProfitFromMarketPrice) 가 차익 계산 skip → 사용자에게 잘못된 가격 노출 X.
@@ -1285,17 +1316,16 @@ export function marketBasisForCandidate(
     };
   }
   const byCondition = comparableKey ? marketStats.get(comparableKey) : undefined;
-  // Wave 886.16b (2026-05-27): fashion (shoe/clothing) 시세는 tier 단위 (Wave 763/803i 정책).
-  //   comparable_key 가 "shoe|" / "clothing|" 시작이면 conditionClass 무시 (빈 문자열).
-  //   효과: pickByConditionFallback 에서 byCondition.get("") 우선 시도. 없으면
-  //   fallback chain "" → "normal" 박은 큰 sample 매칭. mint/clean outlier 회피.
-  //   사용자 보고: Polo 시세 101K (cc=mint, sample 3) vs 비교매물 median 58K — 본 매물 cc=mint 박혀 outlier 잡힘.
-  //   modified 박은 게 root cause fix — lookup/market-source/pack-open 모두 자동 적용.
-  const isFashionKey = typeof comparableKey === "string" && (comparableKey.startsWith("shoe|") || comparableKey.startsWith("clothing|"));
-  const effectiveConditionClass = isFashionKey ? "" : conditionClass;
+  // Wave 817 (2026-05-30): tier 기반 시세 lookup. fashion 의 effectiveConditionClass="" 임시 봉합 제거.
+  //   - fashion (shoe/clothing): tier 박혀있어 tier 정확 매칭 (cc 무시)
+  //   - non-fashion: cc fallback chain
+  //   conditionTier 인자 caller 가 전달 (Wave 818 callsites).
+  //   참고 (옛 정책): Wave 886.16b — isFashionKey ? "" : cc 임시 봉합. Wave 803i — `byCondition.get("")` hack.
+  //   둘 다 tier 차원 drop → non-deterministic collision 발생. Wave 817 가 진짜 fix.
   const { row: mixedStat, conditionClass: mixedCondition, fallbackUsed: mixedFallbackUsed } = selectMarketRowByCondition(
     byCondition,
-    effectiveConditionClass,
+    conditionClass,
+    conditionTier,
   );
   const listingSource = sourceOptions?.listingSource ? normalizeMarketplaceSource(sourceOptions.listingSource) : null;
   const sourceByCondition = comparableKey && listingSource
@@ -1305,7 +1335,7 @@ export function marketBasisForCandidate(
     row: sourceStatCandidate,
     conditionClass: sourceCondition,
     fallbackUsed: sourceConditionFallbackUsed,
-  } = selectMarketRowByCondition(sourceByCondition, effectiveConditionClass);
+  } = selectMarketRowByCondition(sourceByCondition, conditionClass, conditionTier);
   const sourceStatUsable = sourceStatCandidate != null
     && marketRowActiveSoldSampleCount(sourceStatCandidate) >= MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE;
   // Wave 887: 당근 매물은 당근 sample 이 충분하면 상세/쉬운모드 기준 시세도 당근 기준으로 표시한다.
@@ -1351,7 +1381,7 @@ export function marketBasisForCandidate(
   const {
     row: daangnChannelStat,
     fallbackUsed: daangnChannelFallbackUsed,
-  } = selectMarketRowByCondition(daangnByCondition, effectiveConditionClass);
+  } = selectMarketRowByCondition(daangnByCondition, conditionClass, conditionTier);
   const daangnChannelUsable = daangnChannelStat != null
     && marketRowActiveSoldSampleCount(daangnChannelStat) >= MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE;
   const resaleChannels: ResaleChannelBasis[] = [
@@ -2261,6 +2291,7 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
       const skuConfusionNote = meta.sku_id
         ? CATALOG.find((sku) => sku.id === meta.sku_id)?.confusionNote ?? null
         : null;
+      const conditionGrading = gradingMap.get(candidate.pid);
       const marketBasis = marketBasisForCandidate(
         candidate.comparable_key,
         meta.sku_name,
@@ -2272,8 +2303,8 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
           listingSource: meta.marketplaceSource,
           perSourceMarketStats: marketStatsPerSource,
         },
+        conditionGrading?.tier ?? null,  // Wave 817: tier 인자 직접 전달 — fashion (shoe/clothing) lookup
       );
-      const conditionGrading = gradingMap.get(candidate.pid);
       const sourceAwareProfit = expectedProfitFromMarketPrice({
         buyPrice: meta.price,
         marketPrice: marketBasis.medianPrice,

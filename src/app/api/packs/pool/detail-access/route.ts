@@ -249,6 +249,7 @@ async function recomputeExactPoolItemProfit(item: ExactPoolItem | null): Promise
       listingSource: item.marketplaceSource,
       perSourceMarketStats: marketStatsPerSource,
     },
+    item.conditionTier ?? null,  // Wave 817: tier 인자 직접 전달
   );
   // Wave 803f (2026-05-30 사용자 결정 옵션 A): daangn 매물 mixed fallback 박힌 경우 DB sku_median 우선.
   //   배경: Wave 897 정책 (daangn per-source sample<3 → sku_median 0) + Pool ready floor 정책 (ready 부족 시 invalidation defer)

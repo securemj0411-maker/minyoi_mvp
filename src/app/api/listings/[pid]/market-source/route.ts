@@ -202,6 +202,7 @@ export async function GET(
           listingSource: ourMarketplaceSource,
           perSourceMarketStats: basisStatsPerSource,
         },
+        conditionTier,  // Wave 817 (2026-05-30): tier 인자 직접 전달
       );
       const matchedCondition = displayMarketBasis.conditionClass;
       const byCondition = basisStats.get(comparableKey);

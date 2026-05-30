@@ -40,6 +40,8 @@ type ParsedAnalysisRow = {
   pid: number;
   comparable_key: string | null;
   condition_class: string | null;
+  // Wave 817 (2026-05-30): tier-aware 시세 lookup — fashion 카테고리 (shoe/clothing) 의 tier 차원.
+  condition_tier: string | null;
   parsed_json: Record<string, unknown> | null;
 };
 
@@ -75,7 +77,7 @@ async function loadAnalysis(pid: number): Promise<Analysis> {
       `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,name,sku_id,sku_name&pid=eq.${pid}&limit=1`,
     ),
     loadJson<ParsedAnalysisRow[]>(
-      `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class,parsed_json&pid=eq.${pid}&limit=1`,
+      `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class,condition_tier,parsed_json&pid=eq.${pid}&limit=1`,
     ),
   ]);
   const raw = rawRows[0] ?? null;
@@ -138,6 +140,7 @@ async function loadAnalysis(pid: number): Promise<Analysis> {
           listingSource: marketplaceSource,
           perSourceMarketStats: marketStatsPerSource,
         },
+        parsed?.condition_tier ?? null,  // Wave 817: tier 인자 직접 전달
       )
     : null;
 

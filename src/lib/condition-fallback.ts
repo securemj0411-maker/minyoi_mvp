@@ -59,23 +59,48 @@ export function pickByConditionFallback<T>(
   target: ConditionClass | null | undefined,
   getSamples: (row: T) => number,
   minSamples = 1,
+  // Wave 817 (2026-05-30): tier 인자 추가 — fashion (shoe/clothing) 의 tier 차원 lookup.
+  //   tier 박혀있고 UNKNOWN 아니면 fashion path: `${tier}|` composite key 우선 lookup.
+  //   tier 빈 값 → non-fashion legacy path: `|${cc}` composite + 옛 단일 cc key 동시 시도.
+  //   Map key 는 fetchLatestMarketStats (Wave 816) 가 박은 `${tier}|${cc}` composite.
+  //   backward compat: 옛 cc 단일 key 도 fallback 으로 시도 (한 deploy turn 안 깨짐).
+  conditionTier?: ConditionClass | null,
 ): { row: T | undefined; conditionClass: ConditionClass | null; fallbackUsed: boolean } {
   if (!byCondition || byCondition.size === 0) {
     return { row: undefined, conditionClass: null, fallbackUsed: false };
   }
-  // Wave 803i (2026-05-30 사용자 정책 Wave 763 정확):
-  //   fashion (shoe/clothing) 시세 row 박은 게 condition_class="" 박힘 (tier 단위 grouping, Wave 803g + 803i).
-  //   byCondition Map 박은 게 "" key 박혀있으면 fashion 매물이므로 우선 박음.
-  //   fallback chain 무시 — fashion 박은 게 "" 1개 row + tier 별 row 박힘.
-  //   전자기기/기타 (non-fashion): "" key 박혀있지 않음 → 기존 fallback chain 박은 게 그대로 박힘.
-  const fashionRow = byCondition.get("" as ConditionClass);
-  if (fashionRow != null) {
-    return { row: fashionRow, conditionClass: "" as ConditionClass, fallbackUsed: false };
+
+  const tier = (conditionTier ?? "").trim();
+  const isFashion = tier !== "" && tier !== "UNKNOWN";
+
+  // Wave 817: fashion path — tier 기반 exact match (Wave 803g 정책: fashion row = cc="" + tier).
+  if (isFashion) {
+    // 새 composite key 우선: `${tier}|`
+    const exactKey = `${tier}|`;
+    const exactRow = byCondition.get(exactKey);
+    if (exactRow != null) {
+      return { row: exactRow, conditionClass: "" as ConditionClass, fallbackUsed: false };
+    }
+    // Wave 803i 호환: 옛 cc="" 단일 key
+    const legacyEmpty = byCondition.get("" as ConditionClass);
+    if (legacyEmpty != null) {
+      return { row: legacyEmpty, conditionClass: "" as ConditionClass, fallbackUsed: true };
+    }
+    // any tier|"" 매치 (cross-tier fallback) — 다른 tier row 라도 cc 비어있으면 fashion
+    for (const [k, v] of byCondition.entries()) {
+      if (k.endsWith("|") && k !== "") {
+        return { row: v, conditionClass: "" as ConditionClass, fallbackUsed: true };
+      }
+    }
   }
+
+  // Non-fashion (또는 fashion fallback) — cc 기반 chain.
+  //   composite `|${cc}` 우선, 옛 단일 cc key fallback.
   const order = conditionFallbackChain(target);
   for (let i = 0; i < order.length; i++) {
     const cls = order[i];
-    const cand = byCondition.get(cls);
+    let cand = byCondition.get(`|${cls}` as ConditionClass);
+    if (!cand) cand = byCondition.get(cls);
     if (!cand) continue;
     const samples = getSamples(cand);
     if (samples >= minSamples || i === order.length - 1) {
@@ -84,7 +109,7 @@ export function pickByConditionFallback<T>(
   }
   // 안전 fallback: normal/worn/clean 순. unopened/mint 임의 잡지 않음.
   for (const cls of SAFE_FINAL_FALLBACK) {
-    const cand = byCondition.get(cls);
+    const cand = byCondition.get(`|${cls}` as ConditionClass) ?? byCondition.get(cls);
     if (cand) return { row: cand, conditionClass: cls, fallbackUsed: true };
   }
   return { row: undefined, conditionClass: null, fallbackUsed: false };

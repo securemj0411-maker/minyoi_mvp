@@ -897,6 +897,8 @@ export async function GET(req: Request) {
       // Wave 208 (2026-05-18): /me display는 request-time marketBasis를 source of truth로 사용.
       // DB current_profit_*는 cron lag/cache 값이라, 있더라도 stale할 수 있다. 사용자가 /me를
       // 새로고침하면 그 시점의 latest market/reference median 기준으로 차익을 다시 보여준다.
+      // Wave 817 (2026-05-30): grading 선행 fetch — marketBasisForCandidate 에 conditionTier 인자 전달.
+      const grading = gradingByPid.get(Number(reveal.pid));
       const computedMarketBasis = comparableKey
         ? marketBasisForCandidate(
             comparableKey,
@@ -909,13 +911,13 @@ export async function GET(req: Request) {
               listingSource: marketplaceSource,
               perSourceMarketStats: marketStatsPerSource,
             },
+            grading?.tier ?? null,  // Wave 817 (2026-05-30): tier 인자 직접 전달
           )
         : null;
       const dbCurrentProfitMin = reveal.current_profit_min ?? null;
       const dbCurrentProfitMax = reveal.current_profit_max ?? null;
       const dbMarketInvalidatedAt = reveal.market_invalidated_at ?? null;
       const fallbackMedian = computedMarketBasis?.medianPrice ?? null;
-      const grading = gradingByPid.get(Number(reveal.pid));
       const currentNetProfit = currentNetProfitFromMarketPrice(raw, listingCost, fallbackMedian, marketplaceSource, {
         conditionChips: grading?.chips ?? null,
         conditionClass: conditionClassByPid.get(Number(reveal.pid)) ?? null,
