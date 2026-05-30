@@ -222,24 +222,88 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Wave 799e: top-level try/catch — 어디서 throw 되든 사용자한테 빈 500 대신
-  //   step + reason 명시한 JSON 응답. 디버그 효율 ↑.
-  let currentStep = "init";
-  try {
-    return await runLookup(req, auth.user, userRef, (s) => { currentStep = s; });
-  } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    console.error(`[lookup-by-url] step=${currentStep} error=`, errorMessage, err instanceof Error ? err.stack : undefined);
-    return NextResponse.json(
-      {
-        error: "internal",
-        message: `처리 중 오류가 발생했어요 (${currentStep}). 잠시 후 다시 시도해주세요.`,
-        step: currentStep,
-        detail: errorMessage,
-      },
-      { status: 500 },
-    );
+  // Wave 803j (2026-05-30): SSE streaming — 사용자 보고 "게이지바 100% 박은 후 5-10초 대기".
+  //   Accept: text/event-stream 박은 게 박은 게 SSE 박은 게. 기존 JSON 응답 backward compat 그대로.
+  //   server 박은 게 setStep 박은 게 박은 게 박은 게 client 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게.
+  const wantsStream = (req.headers.get("accept") ?? "").includes("text/event-stream");
+
+  if (!wantsStream) {
+    // 기존 JSON 응답 — backward compat (mobile / old client / curl).
+    let currentStep = "init";
+    try {
+      return await runLookup(req, auth.user, userRef, (s) => { currentStep = s; });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error(`[lookup-by-url] step=${currentStep} error=`, errorMessage, err instanceof Error ? err.stack : undefined);
+      return NextResponse.json(
+        {
+          error: "internal",
+          message: `처리 중 오류가 발생했어요 (${currentStep}). 잠시 후 다시 시도해주세요.`,
+          step: currentStep,
+          detail: errorMessage,
+        },
+        { status: 500 },
+      );
+    }
   }
+
+  // SSE streaming branch.
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      let closed = false;
+      const send = (event: string, data: unknown) => {
+        if (closed) return;
+        try {
+          controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+        } catch {
+          // controller 박은 게 박은 게 박은 게 박은 게 (client 박은 게 박은 게 박은 게 박은 게 등) — silent.
+          closed = true;
+        }
+      };
+      // heartbeat (15s 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게) — Vercel/Cloudflare 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게.
+      const heartbeat = setInterval(() => {
+        if (closed) return;
+        try { controller.enqueue(encoder.encode(`: ping\n\n`)); } catch { closed = true; }
+      }, 15_000);
+
+      let currentStep = "init";
+      try {
+        const response = await runLookup(req, auth.user, userRef, (s) => {
+          currentStep = s;
+          send("step", { step: s });
+        });
+        const status = response.status;
+        const body = await response.json().catch(() => ({}));
+        send("done", { status, body });
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        console.error(`[lookup-by-url-stream] step=${currentStep} error=`, errorMessage, err instanceof Error ? err.stack : undefined);
+        send("done", {
+          status: 500,
+          body: {
+            error: "internal",
+            message: `처리 중 오류가 발생했어요 (${currentStep}). 잠시 후 다시 시도해주세요.`,
+            step: currentStep,
+            detail: errorMessage,
+          },
+        });
+      } finally {
+        clearInterval(heartbeat);
+        closed = true;
+        try { controller.close(); } catch { /* ignore */ }
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "Cache-Control": "no-cache, no-transform",
+      "Connection": "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
+  });
 }
 
 async function runLookup(
