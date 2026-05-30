@@ -48,11 +48,15 @@ async function handleDaangnPriceSweepWorker(req: NextRequest) {
       pipelineMode: "daangn_price_sweep_worker",
       staleMarkedBeforeRun: staleMarked,
       dryRun,
+      // Wave 812 (2026-05-30): batch size 대폭 ↑ — 49% stale (15만건) fix.
+      //   기존 30분 × maxSkus 80 = 시간당 160 SKU. 31일 걸려 다 못 sweep.
+      //   변경 5분 × maxSkus 200 = 시간당 2,400 SKU. 약 2일이면 1 cycle.
+      //   maxDuration 300s 안에서 안전 (region rotation 으로 자연 분산).
       targetSamples: envInt("DAANGN_PRICE_SWEEP_TARGET_SAMPLES", 10, 1, 50),
-      maxSkus: envInt("DAANGN_PRICE_SWEEP_MAX_SKUS", 80, 1, 500),
-      maxRegions: envInt("DAANGN_PRICE_SWEEP_MAX_REGIONS", 8, 1, 300),
+      maxSkus: envInt("DAANGN_PRICE_SWEEP_MAX_SKUS", 200, 1, 500),
+      maxRegions: envInt("DAANGN_PRICE_SWEEP_MAX_REGIONS", 24, 1, 300),
       maxSearchCombos: envInt("DAANGN_PRICE_SWEEP_MAX_SEARCH_COMBOS", 0, 0, 2000),
-      maxCategoryCombos: envInt("DAANGN_PRICE_SWEEP_MAX_CATEGORY_COMBOS", 8, 0, 2000),
+      maxCategoryCombos: envInt("DAANGN_PRICE_SWEEP_MAX_CATEGORY_COMBOS", 16, 0, 2000),
     },
   });
   if (!run.id) {
@@ -66,15 +70,16 @@ async function handleDaangnPriceSweepWorker(req: NextRequest) {
   try {
     const result = await runDaangnPriceSweep({
       dryRun,
+      // Wave 812 (2026-05-30): batch + concurrency ↑ — stale fix.
       targetSamples: envInt("DAANGN_PRICE_SWEEP_TARGET_SAMPLES", 10, 1, 50),
-      maxSkus: envInt("DAANGN_PRICE_SWEEP_MAX_SKUS", 80, 1, 500),
-      maxRegions: envInt("DAANGN_PRICE_SWEEP_MAX_REGIONS", 8, 1, 300),
+      maxSkus: envInt("DAANGN_PRICE_SWEEP_MAX_SKUS", 200, 1, 500),
+      maxRegions: envInt("DAANGN_PRICE_SWEEP_MAX_REGIONS", 24, 1, 300),
       maxSearchCombos: envInt("DAANGN_PRICE_SWEEP_MAX_SEARCH_COMBOS", 0, 0, 2000),
-      maxCategoryCombos: envInt("DAANGN_PRICE_SWEEP_MAX_CATEGORY_COMBOS", 8, 0, 2000),
-      maxDetailFetches: envInt("DAANGN_PRICE_SWEEP_MAX_DETAIL_FETCHES", 100, 0, 1000),
-      searchConcurrency: envInt("DAANGN_PRICE_SWEEP_SEARCH_CONCURRENCY", 2, 1, 200),
-      detailConcurrency: envInt("DAANGN_PRICE_SWEEP_DETAIL_CONCURRENCY", 2, 1, 50),
-      requestDelayMs: envInt("DAANGN_PRICE_SWEEP_REQUEST_DELAY_MS", 250, 0, 30_000),
+      maxCategoryCombos: envInt("DAANGN_PRICE_SWEEP_MAX_CATEGORY_COMBOS", 16, 0, 2000),
+      maxDetailFetches: envInt("DAANGN_PRICE_SWEEP_MAX_DETAIL_FETCHES", 250, 0, 1000),
+      searchConcurrency: envInt("DAANGN_PRICE_SWEEP_SEARCH_CONCURRENCY", 4, 1, 200),
+      detailConcurrency: envInt("DAANGN_PRICE_SWEEP_DETAIL_CONCURRENCY", 4, 1, 50),
+      requestDelayMs: envInt("DAANGN_PRICE_SWEEP_REQUEST_DELAY_MS", 200, 0, 30_000),
       abortOnBlockedCombo: envBool("DAANGN_PRICE_SWEEP_ABORT_ON_BLOCKED_COMBO", true),
       regionRotationOffset: envInt("DAANGN_PRICE_SWEEP_REGION_ROTATION_OFFSET", 0, 0, 300),
       timeoutMs: envInt("DAANGN_PRICE_SWEEP_TIMEOUT_MS", 8_000, 1_000, 30_000),
