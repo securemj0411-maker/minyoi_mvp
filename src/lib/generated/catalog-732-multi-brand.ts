@@ -258,6 +258,20 @@ export const WAVE_732_MULTI_BRAND: Sku[] = [
       // 다른 brand
       "벨스타프", "belstaff",
       "polo", "폴로",
+      // Wave 798a (2026-05-30): 시세 과대평가 fix — 콜라보/다른 라인/별도 제품 차단.
+      //   바버 퀼팅 SKU 가 BAPE 콜라보 (₩458K), 화이트라벨 헤이든 (₩319K), 왁스 자켓 (₩200K),
+      //   Rouje 콜라보 (₩125K) 다 흡수 → median ₩350K 거짓 시세. 진짜 퀼팅 시세 ₩130~165K.
+      // 콜라보 차단
+      "베이프", "bape", "a bathing ape", "bathing ape",
+      "rouje", "루제",
+      "콜라보", "collab", "콜라보레이션", "collaboration", "x ",
+      // 다른 라인업 차단 (퀼팅과 다른 시세군)
+      "화이트라벨", "화이트 라벨", "white label",
+      "헤이든", "hayden",
+      "어드밴스드", "advanced",
+      // 별도 제품 차단 — 왁스 자켓은 퀼팅 자켓과 다른 시세군
+      "왁스 자켓", "왁스자켓", "wax jacket", "왁스드 자켓", "왁스드자켓",
+      "왁스 코튼", "waxed cotton",
     ],
     msrpKrw: 480000, released: 1894,
   },
