@@ -9,7 +9,8 @@ import { signAdminAction } from "@/lib/admin-action-token";
 import { planForKey, type PlanKey } from "@/lib/plan-config";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
-import { notifyAdminTelegram } from "@/lib/telegram-notify";
+import { notifyAdminTelegram, type InlineKeyboardMarkup } from "@/lib/telegram-notify";
+import { buildCallbackData } from "@/lib/telegram-callback-token";
 import { hasUserActionHeader } from "@/lib/user-action-guard";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -160,6 +161,18 @@ export async function POST(req: NextRequest) {
     const rejectToken = signAdminAction("manual_deposit", requestId, "reject");
     const approveLink = `${baseUrl}/api/admin/manual-deposit/decide?id=${requestId}&decision=approve&token=${encodeURIComponent(approveToken)}`;
     const rejectLink = `${baseUrl}/api/admin/manual-deposit/decide?id=${requestId}&decision=reject&token=${encodeURIComponent(rejectToken)}`;
+    // Wave 801: inline keyboard 박음 — 봇 alert 안에서 1-tap 처리 (세션 불필요).
+    //   text link 도 fallback 으로 유지 (callback secret 미박힘 + 옛 메시지 호환).
+    const nowSec = Math.floor(Date.now() / 1000);
+    const ttlSec = 30 * 60; // 30분 — auto-approve window (3분) 보다 길게, 운영자 늦게 봐도 처리 가능.
+    const approveCb = buildCallbackData("md", requestId, "approve", ttlSec, nowSec);
+    const rejectCb = buildCallbackData("md", requestId, "reject", ttlSec, nowSec);
+    const inlineKeyboard: InlineKeyboardMarkup = {
+      inline_keyboard: [[
+        { text: "✅ 승인", callback_data: approveCb },
+        { text: "❌ 거절", callback_data: rejectCb },
+      ]],
+    };
     const msg = [
       "💰 *충전 신청* (3분 안에 결정 / 안 누르면 자동 지급)",
       "",
@@ -168,9 +181,9 @@ export async function POST(req: NextRequest) {
       `• 패키지: ${plan.monthlyCredits.toLocaleString("ko-KR")} 크레딧 (${plan.priceKrw.toLocaleString("ko-KR")}원)`,
       `• 회원: ${escapeMarkdown(auth.user.email ?? authUserId)}`,
       "",
-      `통장 확인 후 → [✅ 승인](${approveLink}) / [❌ 거절](${rejectLink})`,
+      `_세션 안 잡힐 때 백업 링크_: [승인](${approveLink}) / [거절](${rejectLink})`,
     ].join("\n");
-    await notifyAdminTelegram(msg);
+    await notifyAdminTelegram(msg, { replyMarkup: inlineKeyboard });
 
     return NextResponse.json({
       ok: true,
