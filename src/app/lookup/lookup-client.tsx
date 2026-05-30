@@ -346,24 +346,14 @@ export default function LookupClient({
           <label htmlFor="lookup-url" className="text-[11.5px] font-bold text-zinc-600 dark:text-zinc-400">
             매물 URL
           </label>
-          <input
+          <textarea
             id="lookup-url"
-            type="text"
-            inputMode="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            onPaste={(e) => {
-              // Wave 803c: 공유 문구 paste 시 첫 https URL 만 자동 추출 (backend 도 처리하지만 즉시 시각 정리).
-              const text = e.clipboardData.getData("text");
-              const m = text.match(/https?:\/\/[^\s<>"'`)\]]+/i);
-              if (m && text !== m[0]) {
-                e.preventDefault();
-                setUrl(m[0]);
-              }
-            }}
             placeholder="번개장터 · 중고나라 · 당근마켓 URL"
             disabled={loading}
-            className="mt-1.5 block h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-[13px] text-zinc-950 placeholder:text-zinc-400 focus:border-[#3182f6] focus:outline-none focus:ring-2 focus:ring-[#3182f6]/25 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+            rows={2}
+            className="mt-1.5 block w-full resize-none rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-[13px] leading-5 text-zinc-950 placeholder:text-zinc-400 focus:border-[#3182f6] focus:outline-none focus:ring-2 focus:ring-[#3182f6]/25 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500"
           />
           <button
             type="button"
@@ -463,28 +453,19 @@ export default function LookupClient({
           </p>
         </section>
 
-        {/* Wave 803c: home 모드 — 결과/로딩 없을 때 input 아래에 큰 CTA 버튼.
-            owner: "확실히 누르고 싶게 크게 해야지 CTA 확실하게". */}
+        {/* Wave 803b: home 모드 — 결과/로딩 없을 때 input 아래에 피드 진입 link */}
         {mode === "home" && !result && !loading ? (
-          <Link
-            href="/me?view=history"
-            className="mt-3 flex h-14 w-full items-center justify-between rounded-2xl border border-zinc-200 bg-white px-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)] transition hover:border-emerald-300 hover:bg-emerald-50/40 active:scale-[0.99] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-700/50 dark:hover:bg-emerald-950/20"
-          >
-            <span className="flex items-center gap-3">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-500 text-[16px] text-white">
-                🔥
-              </span>
-              <span className="flex flex-col items-start">
-                <span className="text-[14.5px] font-black leading-tight text-zinc-950 dark:text-zinc-50">
-                  오늘 싸게 나온 매물 보기
-                </span>
-                <span className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
-                  AI 가 미리 추려놓은 차익 매물
-                </span>
-              </span>
-            </span>
-            <span className="shrink-0 text-zinc-400 dark:text-zinc-500">→</span>
-          </Link>
+          <div className="mt-6 flex flex-col items-center gap-1.5 px-1">
+            <Link
+              href="/me?view=history"
+              className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#3182f6] hover:text-[#1c6fe8] dark:text-blue-300 dark:hover:text-blue-200"
+            >
+              오늘 싸게 나온 매물 보러가기 →
+            </Link>
+            <p className="text-[10.5px] font-medium text-zinc-400 dark:text-zinc-500">
+              AI 가 미리 추려놓은 차익 매물
+            </p>
+          </div>
         ) : null}
 
         {/* Result */}
