@@ -514,7 +514,7 @@ export default function LookupClient() {
                     {krw(result.marketBasis.medianPrice)}
                   </div>
                   <div className="mt-0.5 text-[9.5px] font-bold text-zinc-500">
-                    표본 {result.marketBasis.sampleCount}건
+                    시세 계산 표본 {result.marketBasis.sampleCount}건
                   </div>
                 </div>
                 <div className={`rounded-xl p-2.5 ${profitAvg && profitAvg > 0 ? "bg-emerald-50 dark:bg-emerald-950/24" : "bg-zinc-50 dark:bg-zinc-950/50"}`}>
@@ -562,7 +562,7 @@ export default function LookupClient() {
                 ) : null}
                 {result.conditionConfidence != null ? (
                   <span className="text-[10.5px] font-bold text-zinc-400 dark:text-zinc-500">
-                    신뢰도 {Math.round(result.conditionConfidence * 100)}%
+                    상태 분석 신뢰도 {Math.round(result.conditionConfidence * 100)}%
                   </span>
                 ) : null}
               </div>
@@ -690,7 +690,7 @@ export default function LookupClient() {
             {result.comparableListings.length > 0 ? (
               <section className="mt-3 rounded-[16px] border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
                 <div className="text-[12px] font-black text-zinc-500 dark:text-zinc-400">
-                  비교 매물 {result.comparableListings.length}개{result.conditionClass ? ` · 같은 등급` : ""}
+                  비교 매물 {result.comparableListings.length}개{result.conditionClass ? ` · 같은 등급` : ""} · 가격 높은 순
                 </div>
                 <div className="mt-3 space-y-2">
                   {result.comparableListings.map((c) => {
@@ -748,7 +748,7 @@ export default function LookupClient() {
             {result.marketBasis.sampleCount < 3 ? (
               <section className="mt-3 rounded-[16px] border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/50 dark:bg-amber-950/30">
                 <div className="text-[11.5px] font-bold leading-5 text-amber-800 dark:text-amber-200">
-                  같은 등급 비교 매물이 {result.marketBasis.sampleCount}건뿐이라 시세 신뢰도가 낮아요. 참고용으로만 보세요.
+                  시세 계산에 쓴 표본이 {result.marketBasis.sampleCount}건뿐이라 시세 신뢰도가 낮아요. (비교 매물 12개는 display 만 — 일부는 가격 outlier 라 시세 계산에서 제외됨) 참고용으로만 보세요.
                 </div>
               </section>
             ) : null}

@@ -418,9 +418,12 @@ async function runLookup(
     // Wave 806 (2026-05-30): stale 차단 — last_seen_at 3일 이상이면 진짜 sold 가능성 ↑
     //   (daangn sweep cron throughput 부족으로 active 매물 49% 가 3~7일 stale).
     //   listing_state=active + last_seen_at > 3d 둘 다 박아 stale-leak 차단.
+    // Wave 810a (2026-05-30): 정렬을 first_seen_at.desc → price.desc 로 변경.
+    //   사용자 매물 가격 근처 + 더 비싼 매물이 위로 와야 시세 비교 직관적.
+    //   기존: 등록 최신순 random → 사용자 입장 가격 뒤죽박죽 ("왜 ₩10K 부터?").
     const staleCutoffIso = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
     const compListRes = await restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,source,thumbnail_url,listing_state,first_seen_at,last_seen_at&pid=in.(${compPids.join(",")})&listing_state=eq.active&last_seen_at=gte.${encodeURIComponent(staleCutoffIso)}&order=first_seen_at.desc&limit=12`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,source,thumbnail_url,listing_state,first_seen_at,last_seen_at&pid=in.(${compPids.join(",")})&listing_state=eq.active&last_seen_at=gte.${encodeURIComponent(staleCutoffIso)}&order=price.desc&limit=12`,
       { headers },
     );
     comparableListings = (await compListRes.json()) as typeof comparableListings;

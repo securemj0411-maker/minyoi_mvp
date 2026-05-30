@@ -306,6 +306,18 @@ export const WAVE_712B_BIAS_FREE_SKUS: Sku[] = [
       // 캐시미어 100% 별도 라인 (top tier) — Wave 766: 순서 변형 추가.
       "캐시미어 100", "100프로 캐시미어", "100% cashmere", "캐시미어 100프로", "캐시미어100", "100캐시미어",
       "나바호 핸드니트", "navajo handknit",  // Polo Country 한정
+      // Wave 810b (2026-05-30): 다른 라인/직조 차단 — owner case 발견:
+      //   "폴로 랄프로렌 케이블 니트 S 퍼플" (₩80K) 의 비교 매물로
+      //   "폴로 랄프로렌 메쉬 니트 코튼 쿼터집 스웨터 M" (₩130K) 들어옴.
+      //   "메쉬" vs "케이블" = 다른 직조 + "쿼터집/하프집업" = 다른 product type.
+      //   가격대 다 다름 → 같은 SKU 묶이면 시세 왜곡.
+      "메쉬 니트", "메쉬니트", "mesh knit",  // 다른 직조
+      "쿼터집", "쿼터 집", "쿼터집업", "쿼터 집업", "quarter zip",  // 하프집업과 별도 type
+      "하프집업", "하프 집업", "half zip", "halfzip", "1/2 zip",
+      "풀집업", "풀 집업", "full zip", "full-zip",
+      "집업 니트", "집업니트", "zip-up knit",
+      "후드 니트", "후드니트", "hood knit", "hooded knit",  // 후드 변형
+      "터틀넥", "turtleneck", "turtle neck",  // 시세 다름 (롤넥과 비슷하지만 명시)
     ],
     msrpKrw: 219000, released: 2018,
   },
