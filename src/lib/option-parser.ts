@@ -232,7 +232,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v71";  // Wave 946: carrier-risk negation and negotiation-noise guard
+export const PARSER_VERSION = "option-parser-v72";  // Wave 803l: earphone "본체/케이스 분실" + "이어버드만" 박은 게 → drift gate reparse trigger
 
 // Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
 //   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
@@ -1341,6 +1341,33 @@ function conditionFromText(
     const earphoneDefectNegation = /(?:왼쪽|오른쪽|한\s*쪽|소리|노캔|anc|배터리)[^.!?\n]{0,18}(?:문제|이상|불량|결함|하자)\s*(?:없|없음|없어|아님|x|❌)/;
     if (!earphoneDefectNegation.test(lower) && (earphoneSoundDefect.test(lower) || earphoneAncDefect.test(lower) || earphoneBatteryDefect.test(lower))) {
       add("earphone_function_defect", -0.4);
+      if (!notes.includes("repair_or_defect_signal")) {
+        notes.push("repair_or_defect_signal");
+      }
+    }
+
+    // Wave 803l (2026-05-30 revised): earphone "본체/케이스 분실" 박은 게 박은 게 박은 게 박은 게 박은 게.
+    //   사용자 보고:
+    //     1. "갤럭시 버즈3 프로 이어버드 양쪽(좌,우)" desc: "본체 잃어버려서 팔아요"
+    //     2. "갤럭시 버즈3 양쪽 팔아요" desc: "케이스를 잃어버려서"
+    //   → earbud 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 (단품 — 정상 거래 X, 시세 박은 게 박은 게).
+    //   regex 박은 게 박은 게 박은 게 박은 게 박은 게 — "잃어버" / "분실" / "망가져서 없" / "버려서" 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게.
+    //   "없어요" / "없는" 단독 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게.
+    //   (예: "실리콘 케이스 사용해서 기스가 없는" / "케이스 껴서 새거나 다름 없어요")
+    const caseOrBodyLost = /(?:본체|케이스|충전\s*케이스|충전케이스|크래들|크레들)\s*(?:은|는|이|가|를|만)?\s*(?:[^.!?\n]{0,12}?)(?:잃어\s*버|분실|망가져서?\s*없|버려서|버렸어|버렸습니다|놓고\s*왔|읎)/;
+    // negation — "잃어버린줄 알고 찾았" / "잃어버린 줄" / "찾았" 등 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게.
+    const caseOrBodyLostNegation = /(?:잃어버린\s*줄|잃어버린줄|찾았|찾아서|찾은|되찾)/;
+    if (!caseOrBodyLostNegation.test(lower) && caseOrBodyLost.test(lower)) {
+      add("earphone_missing_case_or_body", -0.5);
+      if (!notes.includes("repair_or_defect_signal")) {
+        notes.push("repair_or_defect_signal");
+      }
+    }
+
+    // Wave 803l: "이어버드 양쪽(좌,우)" / "이어버드만" 박은 게 title 박은 게 박은 게 박은 게 — 본체 박은 게 박은 게 박은 게 강 신호.
+    const earbudsOnlyTitle = /(?:이어버드|이어\s*피스|이어\s*폰)\s*(?:양쪽|좌\s*우|양\s*유닛|페어|만)?\s*[(\[]\s*(?:좌|왼)/;
+    if (earbudsOnlyTitle.test(titleNormalized)) {
+      add("earphone_earbuds_only", -0.5);
       if (!notes.includes("repair_or_defect_signal")) {
         notes.push("repair_or_defect_signal");
       }
