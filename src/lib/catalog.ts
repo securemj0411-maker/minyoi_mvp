@@ -79,6 +79,7 @@ import { WAVE_806_FASHION_SHOE_AXIS_SPLITS } from "@/lib/generated/catalog-806-f
 //   Asics Kayano generation split + Adidas/Puma football model split.
 import { WAVE_811_SHOE_EXACT_AXIS_SPLITS } from "@/lib/generated/catalog-811-shoe-exact-axis-splits";
 import { WAVE_880_FASHION_CURRENT_DRIFT } from "@/lib/generated/catalog-880-fashion-current-drift";
+import { WAVE809_TIER_S_SKUS } from "@/lib/generated/catalog-wave809-tier-s";
 
 export type Sku = {
   id: string;
@@ -9285,6 +9286,7 @@ export const CATALOG: Sku[] = [
   ...WAVE_806_FASHION_SHOE_AXIS_SPLITS, // Wave 806 — 신발 broad spread를 명시 모델 lane으로 분리
   ...WAVE_811_SHOE_EXACT_AXIS_SPLITS, // Wave 811 — Kayano/football broad에서 안전한 exact shoe lane 승격
   ...WAVE_880_FASHION_CURRENT_DRIFT, // Wave 880 — recent current-replay exact/internal fashion lanes
+  ...WAVE809_TIER_S_SKUS, // Wave 809 (2026-05-30) — Tier S 5 cluster (LEGO/Switch 게임/골프 3종/AirPods 4 2종/Dyson V8·V10). Wave 807/808 deepsweep 후 owner 결정 (저~중저가, 일반인 친화, 명품 X).
   ...BAG_CATALOG,
   ...BAG_WAVE266_CATALOG, // Wave 266 — 명품 가방 brand-broad fallback 20 SKU
   ...BIKE_CATALOG,
