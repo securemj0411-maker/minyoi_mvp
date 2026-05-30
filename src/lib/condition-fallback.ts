@@ -63,6 +63,15 @@ export function pickByConditionFallback<T>(
   if (!byCondition || byCondition.size === 0) {
     return { row: undefined, conditionClass: null, fallbackUsed: false };
   }
+  // Wave 803i (2026-05-30 사용자 정책 Wave 763 정확):
+  //   fashion (shoe/clothing) 시세 row 박은 게 condition_class="" 박힘 (tier 단위 grouping, Wave 803g + 803i).
+  //   byCondition Map 박은 게 "" key 박혀있으면 fashion 매물이므로 우선 박음.
+  //   fallback chain 무시 — fashion 박은 게 "" 1개 row + tier 별 row 박힘.
+  //   전자기기/기타 (non-fashion): "" key 박혀있지 않음 → 기존 fallback chain 박은 게 그대로 박힘.
+  const fashionRow = byCondition.get("" as ConditionClass);
+  if (fashionRow != null) {
+    return { row: fashionRow, conditionClass: "" as ConditionClass, fallbackUsed: false };
+  }
   const order = conditionFallbackChain(target);
   for (let i = 0; i < order.length; i++) {
     const cls = order[i];
