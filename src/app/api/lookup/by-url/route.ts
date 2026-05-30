@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
 import {
   fetchLatestMarketStats,
   fetchLatestMarketStatsPerSource,
@@ -400,25 +401,53 @@ async function runLookup(
       })
     : null;
 
-  // 비교 매물 (같은 comparable_key, top 12)
-  // Wave 803h (2026-05-30 사용자 결정 Wave 763 정책 보정):
-  //   shoe/clothing 박은 게 comparable_key 박은 게 tier 박힘 (|b_grade 등).
-  //   condition_class (mint/clean/normal/worn) 박은 게 옛 layer — 박지 X 박아야 정상.
-  //   사용자 비교: 피드 (market-source/route.ts:228) 박은 게 condition_class 박지 X (Wave 763 정확),
-  //   시세 조회 (이 endpoint) 박은 게 condition_class=mint filter 박은 게 박은 게 박은 게 — 박지 X 박아야 정상.
+  // 비교 매물 — Wave 886.15 (2026-05-27): /api/listings/[pid]/market-source 와 동일 필터 적용 (통일).
+  //   사용자 짚음: "같은 상품에 비교매물이 다른데?" — lookup 과 detail 모달이 다른 필터 → 다른 결과.
+  //   변경: needs_review=false, COMPARABLE_EXCLUDE_NOTES, condition strict-with-fallback,
+  //         shoe/clothing tier eq 필터 추가. listing_state=active + 3d 최신 유지 (lookup 만의 안전망).
+  //   Wave 810a price.desc 정렬도 유지 (사용자 직관 우선).
   setStep("fetch_comparable_listings");
-  const parsedCategory = parsedRow?.category ?? null;
-  const isFashionLookup = parsedCategory === "shoe" || parsedCategory === "clothing";
-  let comparableFilter = `comparable_key=eq.${encodeURIComponent(comparableKey)}`;
-  if (conditionClass && !isFashionLookup) {
-    comparableFilter += `&condition_class=eq.${encodeURIComponent(conditionClass)}`;
-  }
-  const compRes = await restFetch(
-    `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,condition_class&${comparableFilter}&limit=200`,
+  const sameKeyPidsRes = await restFetch(
+    `${tableUrl("mvp_listing_parsed")}?select=pid,condition_class,condition_tier,condition_notes,parsed_json&comparable_key=eq.${encodeURIComponent(comparableKey)}&needs_review=eq.false&limit=480`,
     { headers },
   );
-  const compRows = (await compRes.json()) as Array<{ pid: number }>;
-  const compPids = compRows.map((r) => r.pid).filter((p) => p !== pid).slice(0, 50);
+  const sameKeyParsedRows = (await sameKeyPidsRes.json()) as Array<{
+    pid: number;
+    condition_class: string | null;
+    condition_tier: string | null;
+    condition_notes: string[] | null;
+    parsed_json: Record<string, unknown> | null;
+  }>;
+  const parsedCategory = parsedRow?.category ?? null;
+  const isFashionLookup = parsedCategory === "shoe" || parsedCategory === "clothing";
+  // condition strict-with-fallback: 같은 class 5+ 면 strict, 적으면 모두 표시 (Wave 896 정책).
+  const strictConditionSampleCount = conditionClass == null
+    ? 0
+    : sameKeyParsedRows.filter((p) => p.condition_class === conditionClass).length;
+  const requireKnownCondition = conditionClass != null && strictConditionSampleCount >= 5;
+  const keepPids = new Set<number>();
+  for (const p of sameKeyParsedRows) {
+    if (Number(p.pid) === pid) continue;
+    const parsedJsonNotes = (p.parsed_json?.condition_notes as string[] | undefined) ?? [];
+    const notes = p.condition_notes ?? parsedJsonNotes;
+    if (COMPARABLE_EXCLUDE_NOTES.some((n) => notes.includes(n))) continue;
+    // condition_class strict-with-fallback (Wave 130/896 + market-source 동일).
+    if (conditionClass != null) {
+      if (p.condition_class == null && requireKnownCondition) continue;
+      if (p.condition_class != null && p.condition_class !== conditionClass) continue;
+    }
+    // shoe/clothing 5-tier 분리 (market-source 동일 정책).
+    if (
+      isFashionLookup
+      && conditionTier != null
+      && conditionTier !== "UNKNOWN"
+      && p.condition_tier != null
+      && p.condition_tier !== "UNKNOWN"
+      && p.condition_tier !== conditionTier
+    ) continue;
+    keepPids.add(Number(p.pid));
+  }
+  const compPids = Array.from(keepPids).slice(0, 80);
   let comparableListings: Array<{
     pid: number;
     name: string;
@@ -431,15 +460,11 @@ async function runLookup(
     last_seen_at: string | null;
   }> = [];
   if (compPids.length > 0) {
-    // Wave 806 (2026-05-30): stale 차단 — last_seen_at 3일 이상이면 진짜 sold 가능성 ↑
-    //   (daangn sweep cron throughput 부족으로 active 매물 49% 가 3~7일 stale).
-    //   listing_state=active + last_seen_at > 3d 둘 다 박아 stale-leak 차단.
-    // Wave 810a (2026-05-30): 정렬을 first_seen_at.desc → price.desc 로 변경.
-    //   사용자 매물 가격 근처 + 더 비싼 매물이 위로 와야 시세 비교 직관적.
-    //   기존: 등록 최신순 random → 사용자 입장 가격 뒤죽박죽 ("왜 ₩10K 부터?").
+    // Wave 806 (2026-05-30): stale 차단 — listing_state=active + last_seen 3d.
+    // Wave 810a (2026-05-30): price.desc 정렬 (사용자 직관 우선).
     const staleCutoffIso = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
     const compListRes = await restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,source,thumbnail_url,listing_state,first_seen_at,last_seen_at&pid=in.(${compPids.join(",")})&listing_state=eq.active&last_seen_at=gte.${encodeURIComponent(staleCutoffIso)}&order=price.desc&limit=12`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,source,thumbnail_url,listing_state,first_seen_at,last_seen_at&pid=in.(${compPids.join(",")})&listing_type=eq.normal&listing_state=eq.active&last_seen_at=gte.${encodeURIComponent(staleCutoffIso)}&order=price.desc&limit=12`,
       { headers },
     );
     comparableListings = (await compListRes.json()) as typeof comparableListings;
