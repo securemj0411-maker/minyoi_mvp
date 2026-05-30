@@ -400,10 +400,17 @@ async function runLookup(
       })
     : null;
 
-  // 비교 매물 (같은 comparable_key + condition_class, top 12)
+  // 비교 매물 (같은 comparable_key, top 12)
+  // Wave 803h (2026-05-30 사용자 결정 Wave 763 정책 보정):
+  //   shoe/clothing 박은 게 comparable_key 박은 게 tier 박힘 (|b_grade 등).
+  //   condition_class (mint/clean/normal/worn) 박은 게 옛 layer — 박지 X 박아야 정상.
+  //   사용자 비교: 피드 (market-source/route.ts:228) 박은 게 condition_class 박지 X (Wave 763 정확),
+  //   시세 조회 (이 endpoint) 박은 게 condition_class=mint filter 박은 게 박은 게 박은 게 — 박지 X 박아야 정상.
   setStep("fetch_comparable_listings");
+  const parsedCategory = parsedRow?.category ?? null;
+  const isFashionLookup = parsedCategory === "shoe" || parsedCategory === "clothing";
   let comparableFilter = `comparable_key=eq.${encodeURIComponent(comparableKey)}`;
-  if (conditionClass) {
+  if (conditionClass && !isFashionLookup) {
     comparableFilter += `&condition_class=eq.${encodeURIComponent(conditionClass)}`;
   }
   const compRes = await restFetch(
@@ -449,7 +456,8 @@ async function runLookup(
     p75_price: number | null;
     active_sample_count: number;
   }> = [];
-  const dailyFilter = conditionClass
+  // Wave 803h: fashion 박은 게 condition_class 박지 X (tier 단위 박힘, Wave 763 정책).
+  const dailyFilter = conditionClass && !isFashionLookup
     ? `comparable_key=eq.${encodeURIComponent(comparableKey)}&condition_class=eq.${encodeURIComponent(conditionClass)}`
     : `comparable_key=eq.${encodeURIComponent(comparableKey)}`;
   const dailyRes = await restFetch(
