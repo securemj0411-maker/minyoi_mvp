@@ -5934,6 +5934,32 @@ export async function lifecycleStage(
   const stats = emptyStats();
   const sourceHealth = await loadLatestSourceHealth();
   const healthStatus = sourceHealth?.status ?? "degraded";
+
+  // Wave 987 (2026-05-31): lifecycle worker 자체 catch-up 시드 (영구 lock-free fix).
+  //   배경: wave 984 backfill cron lock 충돌 영구 fail. wave 985 daangn-ingest catch-up best-effort swallow.
+  //   본질: lifecycle worker (자기 자신) 안에서 RPC 호출 → 같은 worker 안 sequential = lock 충돌 0.
+  //   shard 별로 다른 row 처리 (a=shard 0, b=shard 1, c=shard 2) → 3 lane 동시 작동 시 다른 row.
+  //   부담: chunk 50 INSERT = ~0.5초. lifecycleBudgetMs 75s 안 무시.
+  //   default mode 만 적용 (terminal_recheck 은 별개 사용).
+  if (mode === "default") {
+    try {
+      const catchUpShardCount = Math.max(1, Math.floor(Number(claimOptions.daangnShardCount ?? 1)));
+      const catchUpShardIndex = Math.max(0, Math.floor(Number(claimOptions.daangnShardIndex ?? 0)));
+      await restFetch(rpcUrl("wave978_backfill_daangn_lifecycle_chunk"), {
+        method: "POST",
+        headers: serviceHeaders(),
+        body: jsonBody({
+          p_chunk_size: 50,
+          p_daangn_shard_count: catchUpShardCount,
+          p_daangn_shard_index: catchUpShardIndex,
+        }),
+      });
+    } catch (err) {
+      // lock 충돌 0 가정이지만 RPC 자체 fail (예: PG 부하)은 swallow → 다음 tick 재시도.
+      console.warn("[wave987] lifecycle catch-up failed (non-fatal)", err instanceof Error ? err.message : String(err));
+    }
+  }
+
   const claims = await claimLifecycleChecks(mode, claimOptions);
   stats.claimed = claims.length;
   stats.timingsMs = {
