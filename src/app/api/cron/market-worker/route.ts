@@ -15,7 +15,10 @@ import type { PipelineResult } from "@/lib/pipeline";
 
 // Wave 724 (2026-05-23): max 165s 측정 (Wave 722 시점 163s) → 240s buffer. Pro plan 한도 300s.
 //   Wave 722에서 180s로 늘렸으나 spike margin 더 확보.
-export const maxDuration = 240;
+// Wave 995 (2026-05-31): 240→300 (Vercel Pro max). 30분 안 3/3 fail (duration 379~385s 측정).
+//   원인: mvp_raw_listings 더 커지면서 240s 초과. stale 6m 마킹 (wave 989 새 threshold).
+//   추가 stage 분리는 별개 wave 후속.
+export const maxDuration = 300;
 
 function firstForwardedIp(value: string | null): string | null {
   if (!value) return null;
