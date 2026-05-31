@@ -1049,13 +1049,30 @@ export async function upsertDaangnRawListings(
   //   parallel chunked 도 효과 X 확인 (213s) — Supabase 가 row 별 락 leitung.
   //   Postgres 안에서 single SQL transaction 으로 처리 → 5-10x 단축 기대.
   const rawRpcStart = Date.now();
-  const rawRes = await restFetch(rpcUrl("daangn_bulk_upsert_raw_listings_v2"), {
+  // Wave 994 (2026-05-31): lock timeout 55P03 1회 retry — 다른 worker 동시 작업 시 충돌.
+  //   다른 daangn worker (a/b/c) 가 같은 mvp_raw_listings row UPDATE 중 lock 잡으면 RPC fail.
+  //   1회 retry 후 200ms wait — 다른 worker 끝나기 기다림. best-effort.
+  let rawRes = await restFetch(rpcUrl("daangn_bulk_upsert_raw_listings_v2"), {
     method: "POST",
     headers: serviceHeaders(),
     body: jsonBody({ rows: rawRows }),
   });
   if (!rawRes.ok) {
-    throw new Error(`daangn_bulk_upsert_raw_listings_v2 RPC failed: ${rawRes.status} ${await rawRes.text()}`);
+    const firstText = await rawRes.text();
+    const isLockTimeout = firstText.includes("55P03") || firstText.includes("lock timeout");
+    if (isLockTimeout) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      rawRes = await restFetch(rpcUrl("daangn_bulk_upsert_raw_listings_v2"), {
+        method: "POST",
+        headers: serviceHeaders(),
+        body: jsonBody({ rows: rawRows }),
+      });
+      if (!rawRes.ok) {
+        throw new Error(`daangn_bulk_upsert_raw_listings_v2 RPC failed (retry): ${rawRes.status} ${await rawRes.text()}`);
+      }
+    } else {
+      throw new Error(`daangn_bulk_upsert_raw_listings_v2 RPC failed: ${rawRes.status} ${firstText}`);
+    }
   }
   const rawPayload = await rawRes.json() as { affected?: unknown; affectedPids?: unknown } | number;
   const rawRpcMs = Date.now() - rawRpcStart;

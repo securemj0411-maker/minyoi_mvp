@@ -6870,20 +6870,9 @@ export async function housekeeperStage(): Promise<StageStats> {
     }
   }
 
-  // P2-2: observation payload 90일 retention. daily cooldown.
-  if (await shouldRunPayloadRetention()) {
-    try {
-      const deleted = await runPayloadRetention();
-      stats.timingsMs = {
-        ...(stats.timingsMs ?? {}),
-        payload_retention_deleted: deleted,
-      };
-    } catch (err) {
-      console.error("[payload-retention] sweep failed", err);
-    }
-    // marker는 sweep 성공/실패 무관하게 기록 — 실패 시에도 다음 실행은 24h 뒤로(로그/알람으로 별도 대응).
-    await recordPayloadRetentionRun();
-  }
+  // Wave 994 (2026-05-31): payload retention 별도 cron (`/api/cron/payload-retention`) 으로 분리.
+  //   housekeeper 매 30분 cron 이 retention 90일 누적 무거움 흡수 → maxDuration 180s/300s 초과.
+  //   별도 cron daily 1번 (Vercel cron 신규 등록) — housekeeper 부담 0.
 
   return stats;
 }
