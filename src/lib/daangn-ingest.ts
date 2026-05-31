@@ -1124,6 +1124,22 @@ export async function upsertDaangnRawListings(
     console.warn("daangn lifecycle seed failed (non-fatal)", err instanceof Error ? err.message : String(err));
   }
 
+  // Wave 985 (2026-05-31): catch-up 시드 — search 페이지에 안 보이는 옛 매물 영구 누락 차단.
+  //   배경: 신규 매물은 위 seedLifecycleChecks 가 시드. 단 옛 매물 (search 페이지 부재) 누락.
+  //   wave 984 별개 backfill cron 은 lifecycle worker 와 lock 충돌로 영구 fail (55P03).
+  //   해결: daangn-ingest 자체 매 run 끝에 chunk 100 catch-up RPC 호출. 작은 chunk + best-effort.
+  //         lock 충돌 발생해도 swallow → 다음 run (5분 후) 재시도.
+  //   capacity: 3 lane × 12회/h × 100 = 3,600/h. 영구 작동. 신규 + 옛 매물 둘 다 cover.
+  try {
+    await restFetch(rpcUrl("wave978_backfill_daangn_lifecycle_chunk"), {
+      method: "POST",
+      headers: serviceHeaders(),
+      body: jsonBody({ p_chunk_size: 100 }),
+    });
+  } catch (err) {
+    console.warn("daangn lifecycle catch-up failed (non-fatal)", err instanceof Error ? err.message : String(err));
+  }
+
   return {
     rawUpserted,
     rawSkippedExisting: preflightSkipped + Math.max(0, rawRows.length - rawUpserted),
