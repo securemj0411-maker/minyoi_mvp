@@ -4515,15 +4515,18 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     // 2026-05-15 (사용자 베타테스터 보고): sold ≥ 5 미만이면 active 100% fallback 됐었음.
     // 예: iPad 10세대 sold=4, active=22 → blended가 active median(38만)만 박힘 → 실제 거래가(35만) 무시.
     // 2026-05-18 Wave 221: sold 1건을 50%로 섞으면 저가 거래 1건이 시세를 붕괴시킴.
-    // sold 표본이 적을수록 active anchor를 더 강하게 유지하고, sold 표본이 쌓이면 거래가 가중치를 높인다.
+    // Wave 983 (2026-05-31): 사용자 정책 "팔린 게 시세, 호가는 fallback" — sold weight 강화.
+    //   배경: 갤럭시 S25 sold 2건 650k + active 10건 730k → 기존 blended 706k (active 가중치 75%).
+    //         사용자 의도: 실제 거래가 650k 가 시세. 호가는 anchor 정도.
+    //   변경: sold 3건+ 부터 sold dominant 비중. sold 1건은 outlier 위험으로 active anchor 유지 (Wave 221 안전).
+    //   원칙: 정확성 > recall (LAUNCH_PLAN §12b). sold = ground truth, active = 셀러 호가.
     const blendedMedian = (() => {
       if (soldMedian != null && activeMedian != null) {
-        if (sold.count >= 8 && active.count >= 5) return Math.round((soldMedian * 0.7) + (activeMedian * 0.3));
-        if (sold.count >= 5) return Math.round((soldMedian * 0.6) + (activeMedian * 0.4));
-        if (sold.count >= 3) return Math.round((soldMedian * 0.45) + (activeMedian * 0.55));
-        if (sold.count >= 1 && active.count >= 5) return Math.round((soldMedian * 0.3) + (activeMedian * 0.7));
-        if (sold.count >= 1 && active.count >= 3) return Math.round((soldMedian * 0.25) + (activeMedian * 0.75));
-        if (sold.count >= 1) return Math.round((soldMedian * 0.4) + (activeMedian * 0.6));
+        if (sold.count >= 8 && active.count >= 5) return Math.round((soldMedian * 0.85) + (activeMedian * 0.15));
+        if (sold.count >= 5) return Math.round((soldMedian * 0.75) + (activeMedian * 0.25));
+        if (sold.count >= 3) return Math.round((soldMedian * 0.65) + (activeMedian * 0.35));
+        if (sold.count >= 2) return Math.round((soldMedian * 0.50) + (activeMedian * 0.50));
+        if (sold.count >= 1) return Math.round((soldMedian * 0.30) + (activeMedian * 0.70));
       }
       if (soldMedian != null && sold.count >= 1) return soldMedian;
       if (activeMedian != null) {
@@ -4608,15 +4611,15 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
       const srcActiveMedian = srcActive.median;
       const srcSoldMedian = srcSold.median;
       const srcDisappearedMedian = srcDisappeared.median;
-      // blended logic — 기존 marketRows 와 동일 (Wave 130/221 정책).
+      // Wave 983 (2026-05-31): per-source blended 도 sold weight 강화 (mixed 와 동일 정책).
+      //   사용자 정책: "팔린 게 시세, 호가는 fallback". sold 3+ 부터 sold dominant.
       const srcBlendedMedian = (() => {
         if (srcSoldMedian != null && srcActiveMedian != null) {
-          if (srcSold.count >= 8 && srcActive.count >= 5) return Math.round((srcSoldMedian * 0.7) + (srcActiveMedian * 0.3));
-          if (srcSold.count >= 5) return Math.round((srcSoldMedian * 0.6) + (srcActiveMedian * 0.4));
-          if (srcSold.count >= 3) return Math.round((srcSoldMedian * 0.45) + (srcActiveMedian * 0.55));
-          if (srcSold.count >= 1 && srcActive.count >= 5) return Math.round((srcSoldMedian * 0.3) + (srcActiveMedian * 0.7));
-          if (srcSold.count >= 1 && srcActive.count >= 3) return Math.round((srcSoldMedian * 0.25) + (srcActiveMedian * 0.75));
-          if (srcSold.count >= 1) return Math.round((srcSoldMedian * 0.4) + (srcActiveMedian * 0.6));
+          if (srcSold.count >= 8 && srcActive.count >= 5) return Math.round((srcSoldMedian * 0.85) + (srcActiveMedian * 0.15));
+          if (srcSold.count >= 5) return Math.round((srcSoldMedian * 0.75) + (srcActiveMedian * 0.25));
+          if (srcSold.count >= 3) return Math.round((srcSoldMedian * 0.65) + (srcActiveMedian * 0.35));
+          if (srcSold.count >= 2) return Math.round((srcSoldMedian * 0.50) + (srcActiveMedian * 0.50));
+          if (srcSold.count >= 1) return Math.round((srcSoldMedian * 0.30) + (srcActiveMedian * 0.70));
         }
         if (srcSoldMedian != null && srcSold.count >= 1) return srcSoldMedian;
         if (srcActiveMedian != null) return Math.round(srcActiveMedian * 0.92);

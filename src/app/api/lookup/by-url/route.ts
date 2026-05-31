@@ -586,15 +586,22 @@ async function runLookup(
     source: string | null;
     thumbnail_url: string | null;
     listing_state: string;
+    sold_detected_at: string | null;
     first_seen_at: string;
     last_seen_at: string | null;
   }> = [];
   if (compPids.length > 0) {
     // Wave 806 (2026-05-30): stale 차단 — listing_state=active + last_seen 3d.
     // Wave 810a (2026-05-30): price.desc 정렬 (사용자 직관 우선).
+    // Wave 983 (2026-05-31): sold 매물 포함. "팔린 게 시세" 사용자 정책.
+    //   active = 호가 (현재 3d 이내 fresh)
+    //   sold = 실제 거래가 (14d 이내, sold_detected_at 기준 — 14일 지난 sold 는 시세 의미 약함)
+    //   listing_state.in.(active,sold_confirmed) + 각각 fresh filter.
     const staleCutoffIso = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+    const soldCutoffIso = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+    const stateFilter = `or(and(listing_state.eq.active,last_seen_at.gte.${encodeURIComponent(staleCutoffIso)}),and(listing_state.eq.sold_confirmed,sold_detected_at.gte.${encodeURIComponent(soldCutoffIso)}))`;
     const compListRes = await restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,source,thumbnail_url,listing_state,first_seen_at,last_seen_at&pid=in.(${compPids.join(",")})&listing_type=eq.normal&listing_state=eq.active&last_seen_at=gte.${encodeURIComponent(staleCutoffIso)}&order=price.desc&limit=12`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,name,url,price,source,thumbnail_url,listing_state,sold_detected_at,first_seen_at,last_seen_at&pid=in.(${compPids.join(",")})&listing_type=eq.normal&and=(${stateFilter})&order=listing_state.asc,price.desc&limit=20`,
       { headers },
     );
     comparableListings = (await compListRes.json()) as typeof comparableListings;
