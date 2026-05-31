@@ -62,6 +62,11 @@ export type DetailData = {
   thumbnailUrl: string | null;
   imageUrls: string[];
   metricsData: Record<string, unknown>;
+  // Wave 803m (2026-05-31): live ingest 박을 때 name/price 박혀있어야. fetchDetail 박은 게 product object 박은 게 박은 게.
+  name: string | null;
+  price: number | null;
+  freeShipping: boolean | null;
+  updateTime: number | null;
 };
 
 function toInt(v: unknown, fallback = 0): number {
@@ -212,6 +217,11 @@ export async function fetchDetail(pid: string): Promise<DetailData | null> {
       buildBunjangImageUrl(imageUrlTemplate, idx + 1, 856),
     ).filter((src): src is string => Boolean(src));
     return {
+      // Wave 803m: name/price/freeShipping/updateTime 박음 (live-ingest 박을 때 박은 게 박은 게).
+      name: stringOrNull(product?.name),
+      price: Number.isFinite(Number(product?.price)) ? Number(product.price) : null,
+      freeShipping: boolish(product?.freeShipping ?? product?.free_shipping),
+      updateTime: Number.isFinite(Number(product?.updateTime ?? product?.updateTimeUnix)) ? Number(product?.updateTime ?? product?.updateTimeUnix) : null,
       description: String(product?.description ?? "").slice(0, 1200),
       saleStatus: String(product?.saleStatus ?? ""),
       conditionLabel:
