@@ -2265,18 +2265,45 @@ async function loadScorableRows(limit: number, options: ScoreStageOptions = {}):
     };
 
     if (scoreDirtyAvailable) {
-      // Daangn firehose can leave many dirty search-only rows. Push the cheap
-      // scorable predicates into Postgres so the worker does not sort/fetch
-      // rows that JS will immediately throw away.
-      //
-      // Keep listing_type and listing_type_override as two narrow predicates
-      // instead of one PostgREST OR. Under Daangn backlog pressure the OR path
-      // has intermittently hit statement_timeout on the primary score worker,
-      // while each typed predicate stays index-friendly and cheap.
-      for (const listingTypeFilter of ["&listing_type=eq.normal", "&listing_type_override=eq.normal"]) {
-        if (rows.length >= rowLimit) break;
-        const dirtyRes = await restFetch(buildDirtyScorableUrl(`${extraFilter}${listingTypeFilter}`, scanLimit), { headers: serviceHeaders() });
-        collect((await dirtyRes.json()) as ScorableRawRow[]);
+      // Wave 986 (2026-05-31): PostgREST GET 대신 dedicated RPC 호출.
+      //   배경: wave 939 (OR split) 박은 후에도 lane a (sourceFilter 없음 = 모든 source) 매 5-10분 fail.
+      //         PostgREST default statement_timeout 8s, mvp_raw_listings 840k+ × 25 columns × scanLimit 1000 무거움.
+      //   fix: claim_scorable_raw_rows RPC. PG side statement_timeout 60s, SECURITY DEFINER.
+      //         lane a/b/c 모두 동일 RPC. extraFilter (e.g. &source=eq.daangn) 는 RPC param 으로 합쳐 전달.
+      //         RPC 실패 시 기존 GET path fallback (best-effort).
+      const sourceFilterArg = options.sourceFilter ?? null;
+      const shardCountArg = Math.max(1, Math.floor(Number(options.daangnShardCount ?? 1)));
+      const shardIndexArg = Math.max(0, Math.floor(Number(options.daangnShardIndex ?? 0)));
+      const tryRpc = async (listingTypeFilter: string): Promise<ScorableRawRow[] | null> => {
+        try {
+          const res = await restFetch(rpcUrl("claim_scorable_raw_rows"), {
+            method: "POST",
+            headers: serviceHeaders(),
+            body: jsonBody({
+              p_limit: scanLimit,
+              p_source_filter: sourceFilterArg,
+              p_daangn_shard_count: shardCountArg,
+              p_daangn_shard_index: shardIndexArg,
+              p_listing_type_filter: listingTypeFilter,
+            }),
+          });
+          if (!res.ok) return null;
+          return (await res.json()) as ScorableRawRow[];
+        } catch {
+          return null;
+        }
+      };
+      // listing_type='normal' RPC 한 번이면 normal/override 둘 다 cover (RPC 안 OR).
+      const rpcRows = await tryRpc("normal");
+      if (rpcRows != null) {
+        collect(rpcRows);
+      } else {
+        // RPC 실패 시 기존 GET path fallback (wave 939 OR split).
+        for (const listingTypeFilter of ["&listing_type=eq.normal", "&listing_type_override=eq.normal"]) {
+          if (rows.length >= rowLimit) break;
+          const dirtyRes = await restFetch(buildDirtyScorableUrl(`${extraFilter}${listingTypeFilter}`, scanLimit), { headers: serviceHeaders() });
+          collect((await dirtyRes.json()) as ScorableRawRow[]);
+        }
       }
     } else {
       const normalRes = await restFetch(buildUrl(`${extraFilter}&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active&listing_type=eq.normal`, rowLimit), { headers: serviceHeaders() });
