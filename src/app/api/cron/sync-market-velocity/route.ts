@@ -22,7 +22,10 @@ import { startCollectRun, finishCollectRun, failCollectRun, type CollectRunReque
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 // 함수 자체는 보통 수 초 ~ 수십 초. raw_listings 커지면 1분 근처 가능. pro 가정 90s.
-export const maxDuration = 90;
+// Wave 990 (2026-05-31): 90s → 180s. RPC statement_timeout 120s 박혔지만 90s route 가 먼저 kill.
+//   12:15/18:15 UTC sync 둘 다 stale 3m fail. velocity_daily 7:43 UTC 이후 12시간 stop.
+//   180s = RPC 120s + processing margin. trade-off 0.
+export const maxDuration = 180;
 
 // Wave 981 (2026-05-31): collect_runs 박음 + monitor. silent fail 차단.
 //   배경: 어제 11:36 이후 velocity_daily 갱신 stop (사용자 짚음). route 가 collect_runs 안 박아서
