@@ -14,7 +14,10 @@ import { runHousekeeperPipeline } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
 
 // Wave 982 (2026-05-31): 90s → 180s. housekeeper 33% stale 3m 발생 — expire_mvp_plans RPC + cadence evaluator + payload retention 90일 누적 무거움.
-export const maxDuration = 180;
+// Wave 997 (2026-05-31): 180→300 (Vercel Pro max). wave 994 payload retention 분리 후에도
+//   372~382s duration. 나머지 stage (invalidateRawNotScorablePoolResidues + expire_mvp_plans +
+//   cadence evaluator) 도 누적 무거움. 추가 분리는 별개 wave.
+export const maxDuration = 300;
 
 function firstForwardedIp(value: string | null): string | null {
   if (!value) return null;
