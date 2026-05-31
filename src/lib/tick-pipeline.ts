@@ -335,9 +335,13 @@ type PoolWarmRow = {
 
 const DETAIL_STAGE_SAFETY_MARGIN_MS = 8_000;
 const REST_READ_CHUNK_SIZE = 25;
+// Wave 993 (2026-05-31): PATCH IN 절 timeout (recovery/score-c/tick fail) 본질 fix.
+//   mvp_raw_listings 840k+ row + 다수 partial index → PATCH 50 row UPDATE 마다 index 다 갱신.
+//   statement_timeout 8s 초과 가능. chunk 50 → 25 로 PATCH 마다 빠르게 끝나도록.
+//   trade-off: PATCH 호출 2배 ↑ (단 각 빨라져 총 시간 비슷 또는 짧음).
 const RAW_EXISTING_READ_CHUNK_SIZE = 500;
 const POOL_PID_READ_CHUNK_SIZE = 500;
-const REST_WRITE_CHUNK_SIZE = 50;
+const REST_WRITE_CHUNK_SIZE = 25;
 const SCORE_DIRTY_CLEAR_CHUNK_SIZE = 200;
 const SCORE_DIRTY_MARK_CHUNK_SIZE = 300;
 const RAW_TOUCH_WRITE_CHUNK_SIZE = 400;
