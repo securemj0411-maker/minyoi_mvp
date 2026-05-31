@@ -6515,8 +6515,9 @@ export async function evaluateSearchQueryCadences(): Promise<{
 }
 
 // Wave 819 (2026-05-31): housekeeper stale 박힘 fix — cadence eval 이 24h raw scan + 50K pool scan 박아서
-//   88초 spike + 10분 timeout 누적. 1h cooldown 4h 로 늘림. query crawl 빈도 영향 미미 (4h 1회 재평가 충분).
-const QUERY_CADENCE_EVAL_COOLDOWN_MS = 4 * 60 * 60_000; // 4시간
+//   88초 spike + 10분 timeout 누적. 1h cooldown 2h 로 늘림 (사용자 보수적 선택 — 4h 너무 길까봐).
+//   query crawl 빈도 영향 미미 (2h 1회 재평가 충분), housekeeper stale 차단.
+const QUERY_CADENCE_EVAL_COOLDOWN_MS = 2 * 60 * 60_000; // 2시간
 const PAYLOAD_RETENTION_COOLDOWN_MS = 24 * 60 * 60_000; // 1일
 const PAYLOAD_RETENTION_DAYS = 90;
 const PAYLOAD_RETENTION_BATCH_LIMIT = 50_000;
