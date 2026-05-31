@@ -19,7 +19,10 @@ import { checkCronAuth } from "@/lib/cron-auth";
 import { jsonBody, restFetch, rpcUrl, serviceHeaders } from "@/lib/supabase-rest";
 import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 
-export const maxDuration = 60;
+// Wave 982 follow-up (2026-05-31): 60s → 180s + chunk default 5000 → 2000.
+//   원인: 5k INSERT 가 PG 55s 안 끝나면 route 60s 안 finish 못 함 → stale 3m 마킹.
+//   180s + 2k chunk 로 안전 margin. capacity 12회/h × 2k × 3 lane = 72k/h (363k 약 5h 안 해소).
+export const maxDuration = 180;
 
 function envInt(name: string, fallback: number, min: number, max: number): number {
   const parsed = Number.parseInt(process.env[name] ?? "", 10);
@@ -75,7 +78,7 @@ async function handle(req: NextRequest) {
   const meta = requestMeta(req, authOk, authReason);
   const config = loadPipelineRuntimeConfig();
   const staleMarked = await markStaleCollectRuns(config.staleRunMinutes);
-  const chunkSize = envInt("DAANGN_LIFECYCLE_BACKFILL_CHUNK", 5000, 100, 20000);
+  const chunkSize = envInt("DAANGN_LIFECYCLE_BACKFILL_CHUNK", 2000, 100, 20000);
 
   const run = await startCollectRun({
     ...meta,
