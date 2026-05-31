@@ -5718,7 +5718,16 @@ async function patchPoolWarmDetailFacts(pid: number, detail: { commentCount: num
   await patchRows("mvp_raw_listings", `pid=eq.${pid}`, patch);
 }
 
-async function claimLifecycleChecks(mode: LifecycleClaimMode = "default"): Promise<LifecycleClaimRow[]> {
+export type LifecycleClaimOptions = {
+  sourceFilter?: KnownMarketplaceSource | null;
+  daangnShardCount?: number;
+  daangnShardIndex?: number;
+};
+
+async function claimLifecycleChecks(
+  mode: LifecycleClaimMode = "default",
+  options: LifecycleClaimOptions = {},
+): Promise<LifecycleClaimRow[]> {
   const config = loadPipelineRuntimeConfig();
   // 2026-05-16: Bunjang rate limit probe 결과 600 calls 전부 200 응답 (429 0건).
   // c=20에서 throughput 329 req/s까지 lenient. 우리 cron 주기 7분 기준 batch 400은 매우 안전.
@@ -5731,6 +5740,8 @@ async function claimLifecycleChecks(mode: LifecycleClaimMode = "default"): Promi
   //   market-worker incremental (Wave 184) 의 28h lookback 안에 더 많은 active 매물이 들어와야 함.
   //   현재 batch 400 + 7분 주기 = 시간당 ~3,429 매물 sweep. active 151K cover ≈ 44시간 (2일+) → 28h 부족.
   //   batch 800 으로 ≈ 22시간 (28h 안에 거의 다 cover). probe c=20 lenient 결과 안전.
+  // Wave 979 (2026-05-31): source/shard 옵션 — lifecycle-worker-b/c 가 daangn shard 처리.
+  //   capacity 9,600/h → 28,800/h (3 lane), backlog 12만+ 4시간 해소 + daangn 자연 sweep.
   const LIFECYCLE_BATCH_HARDCODE = 800;
   const batchSize = mode === "terminal_recheck"
     ? config.terminalLifecycleRecheckBatchSize
@@ -5738,13 +5749,22 @@ async function claimLifecycleChecks(mode: LifecycleClaimMode = "default"): Promi
   const rpcName = mode === "terminal_recheck"
     ? "claim_mvp_terminal_lifecycle_rechecks"
     : "claim_mvp_lifecycle_checks";
+  const body: Record<string, unknown> = {
+    p_batch_size: batchSize,
+    p_lease_seconds: config.tickDetailLeaseSeconds,
+  };
+  // terminal_recheck RPC 는 source/shard param 없음 — default lifecycle 만 적용.
+  if (mode === "default") {
+    if (options.sourceFilter) body.p_source_filter = options.sourceFilter;
+    if (options.daangnShardCount && options.daangnShardCount > 1) {
+      body.p_daangn_shard_count = options.daangnShardCount;
+      body.p_daangn_shard_index = options.daangnShardIndex ?? 0;
+    }
+  }
   const res = await restFetch(rpcUrl(rpcName), {
     method: "POST",
     headers: serviceHeaders(),
-    body: jsonBody({
-      p_batch_size: batchSize,
-      p_lease_seconds: config.tickDetailLeaseSeconds,
-    }),
+    body: jsonBody(body),
   });
   return (await res.json()) as LifecycleClaimRow[];
 }
@@ -5875,14 +5895,23 @@ async function fetchLifecycleDetailBySource(row: LifecycleClaimRow): Promise<{
   return { detail: d ? { saleStatus: d.saleStatus } : null, signals };
 }
 
-export async function lifecycleStage(deadlineMs: number, mode: LifecycleClaimMode = "default"): Promise<StageStats> {
+export async function lifecycleStage(
+  deadlineMs: number,
+  mode: LifecycleClaimMode = "default",
+  claimOptions: LifecycleClaimOptions = {},
+): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
   const sourceHealth = await loadLatestSourceHealth();
   const healthStatus = sourceHealth?.status ?? "degraded";
-  const claims = await claimLifecycleChecks(mode);
+  const claims = await claimLifecycleChecks(mode, claimOptions);
   stats.claimed = claims.length;
-  stats.timingsMs = { claim_mode_terminal_recheck: mode === "terminal_recheck" ? 1 : 0 };
+  stats.timingsMs = {
+    claim_mode_terminal_recheck: mode === "terminal_recheck" ? 1 : 0,
+    claim_source_filter_daangn: claimOptions.sourceFilter === "daangn" ? 1 : 0,
+    claim_daangn_shard_count: Math.max(1, Math.floor(Number(claimOptions.daangnShardCount ?? 1))),
+    claim_daangn_shard_index: Math.max(0, Math.floor(Number(claimOptions.daangnShardIndex ?? 0))),
+  };
   const marketInvalidations: MarketKeyInvalidationEvent[] = [];
 
   // 2026-05-16: Bunjang rate limit probe 결과 c=20까지 매우 lenient (probe 600 calls 다 200 응답).
@@ -7743,15 +7772,23 @@ export async function runRecoveryWorkerPipeline(): Promise<TickResult> {
   };
 }
 
-export async function runLifecycleWorkerPipeline(options: { terminalRecheck?: boolean } = {}): Promise<TickResult> {
+export async function runLifecycleWorkerPipeline(
+  options: { terminalRecheck?: boolean } & LifecycleClaimOptions = {},
+): Promise<TickResult> {
   const config = loadPipelineRuntimeConfig();
   const stageDurationsMs: Record<string, number> = {};
   const mode: LifecycleClaimMode = options.terminalRecheck ? "terminal_recheck" : "default";
+  const claimOptions: LifecycleClaimOptions = {
+    sourceFilter: options.sourceFilter,
+    daangnShardCount: options.daangnShardCount,
+    daangnShardIndex: options.daangnShardIndex,
+  };
 
   const search = emptyStats();
   // Wave 187 B2 (2026-05-17): tickDetailBudgetMs (20s) → lifecycleBudgetMs (75s) 전용 budget.
   //   route maxDuration 90s 활용 — batch 800/1000 처리 시 timeout 차단.
-  const detail = await timedStage(stageDurationsMs, "lifecycle", () => lifecycleStage(Date.now() + config.lifecycleBudgetMs, mode));
+  // Wave 979 (2026-05-31): claimOptions 전달 — lifecycle-worker-b/c 가 daangn shard 처리.
+  const detail = await timedStage(stageDurationsMs, "lifecycle", () => lifecycleStage(Date.now() + config.lifecycleBudgetMs, mode, claimOptions));
   stageDurationsMs.lifecycleMode = options.terminalRecheck ? 1 : 0;
   const score = emptyStats();
   const total = mergeStats([search, detail, score]);

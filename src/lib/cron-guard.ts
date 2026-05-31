@@ -93,6 +93,8 @@ export type CronWorkerMode =
   | "market_worker"
   | "pool_warmer"
   | "lifecycle_worker"
+  | "lifecycle_worker_b"
+  | "lifecycle_worker_c"
   | "lifecycle_terminal_recheck"
   | "housekeeper"
   | "collect"
@@ -178,6 +180,8 @@ const DEFAULT_COOLDOWN_MS: Record<CronWorkerMode, number> = {
   market_worker: 8 * 60_000,
   pool_warmer: 5 * 60_000,
   lifecycle_worker: 2 * 60_000,
+  lifecycle_worker_b: 2 * 60_000,
+  lifecycle_worker_c: 2 * 60_000,
   lifecycle_terminal_recheck: 5 * 60_000,
   housekeeper: 5 * 60_000,
   collect: 5 * 60_000,
@@ -210,6 +214,8 @@ const DEFAULT_LEASE_MS: Record<CronWorkerMode, number> = {
   market_worker: 2 * 60_000,
   pool_warmer: 2 * 60_000,
   lifecycle_worker: 2 * 60_000,
+  lifecycle_worker_b: 2 * 60_000,
+  lifecycle_worker_c: 2 * 60_000,
   lifecycle_terminal_recheck: 2 * 60_000,
   housekeeper: 2 * 60_000,
   collect: 2 * 60_000,

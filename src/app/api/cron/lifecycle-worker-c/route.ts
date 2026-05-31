@@ -1,3 +1,7 @@
+// Wave 979 (2026-05-31): lifecycle-worker-c — daangn shard 2/3 전용.
+//   score-worker-c 패턴 동일. base lifecycle-worker 가 bunjang/joongna 다 + daangn shard 0/3 처리,
+//   b 가 daangn shard 1/3, c 가 daangn shard 2/3. capacity 9,600/h → 28,800/h (3 lane).
+
 import { NextRequest, NextResponse } from "next/server";
 
 import {
@@ -18,7 +22,6 @@ import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { runLifecycleWorkerPipeline, type LifecycleClaimOptions } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
 
-// Wave 724 (2026-05-23): max 106s 측정 (90s 이미 초과) → 180s. duplicate invocation 별 별 분석 필요.
 export const maxDuration = 180;
 
 function firstForwardedIp(value: string | null): string | null {
@@ -31,12 +34,6 @@ function truncate(value: string | null, max = 500): string | null {
   return value.length > max ? `${value.slice(0, max)}...` : value;
 }
 
-function envBool(name: string, fallback: boolean): boolean {
-  const value = String(process.env[name] ?? "").trim().toLowerCase();
-  if (!value) return fallback;
-  return value === "1" || value === "true" || value === "yes" || value === "on";
-}
-
 function envInt(names: string[], fallback: number, min: number, max: number): number {
   for (const name of names) {
     const parsed = Number.parseInt(process.env[name] ?? "", 10);
@@ -45,13 +42,11 @@ function envInt(names: string[], fallback: number, min: number, max: number): nu
   return fallback;
 }
 
-// Wave 979 (2026-05-31): base lifecycle-worker (lane a) — 모든 source 처리하되 daangn 은 shard 0/3 만.
-//   lifecycle-worker-b/c 가 daangn shard 1/3, 2/3 처리. score-worker 패턴 동일.
-function baseLifecycleClaimOptions(): LifecycleClaimOptions {
-  const shardCount = envInt(["PIPELINE_LIFECYCLE_DAANGN_SHARD_COUNT"], 3, 1, 20);
-  const shardIndex = envInt(["PIPELINE_LIFECYCLE_DAANGN_SHARD_INDEX"], 0, 0, Math.max(0, shardCount - 1));
+function lifecycleCClaimOptions(): LifecycleClaimOptions {
+  const shardCount = envInt(["PIPELINE_LIFECYCLE_C_DAANGN_SHARD_COUNT", "PIPELINE_LIFECYCLE_DAANGN_SHARD_COUNT"], 3, 1, 20);
+  const shardIndex = envInt(["PIPELINE_LIFECYCLE_C_DAANGN_SHARD_INDEX"], 2, 0, Math.max(0, shardCount - 1));
   return {
-    sourceFilter: null,
+    sourceFilter: "daangn",
     daangnShardCount: shardCount,
     daangnShardIndex: shardIndex,
   };
@@ -67,7 +62,7 @@ function requestMeta(req: NextRequest, authOk: boolean, authReason: string): Col
     headers.get("x-vercel-forwarded-for");
 
   return {
-    triggerSource: (headers.get("x-qstash-schedule-id") ?? userAgent ?? "lifecycle-worker").slice(0, 120),
+    triggerSource: (headers.get("x-qstash-schedule-id") ?? userAgent ?? "lifecycle-worker-c").slice(0, 120),
     requestMethod: req.method,
     requestPath: `${req.nextUrl.pathname}${req.nextUrl.search}`,
     requestHost: headers.get("host"),
@@ -110,90 +105,59 @@ function toPipelineResult(result: Awaited<ReturnType<typeof runLifecycleWorkerPi
   };
 }
 
-function isTerminalRecheckMode(req: NextRequest) {
-  const raw = req.nextUrl.searchParams.get("mode") ?? req.nextUrl.searchParams.get("target");
-  return raw === "terminal-recheck" || raw === "terminal_recheck";
-}
-
-function lifecycleGuardMode(terminalRecheck: boolean): CronWorkerMode {
-  return terminalRecheck ? "lifecycle_terminal_recheck" : "lifecycle_worker";
-}
-
-type LifecycleRunOutcome = {
-  status: number;
-  body: Record<string, unknown>;
-};
-
-async function executeLifecycleRun(
+async function executeLifecycleCRun(
   meta: CollectRunRequestMeta,
   guard: CronGuardAllowed,
   guardMode: CronWorkerMode,
-  terminalRecheck: boolean,
-  requestMetaExtras: Record<string, unknown> = {},
-): Promise<LifecycleRunOutcome> {
+): Promise<{ status: number; body: Record<string, unknown> }> {
   const config = loadPipelineRuntimeConfig();
   const staleMarked = await markStaleCollectRuns(config.staleRunMinutes);
+  const claimOptions = lifecycleCClaimOptions();
   const run = await startCollectRun({
     ...meta,
     requestMeta: {
       ...meta.requestMeta,
-      ...requestMetaExtras,
       pipelineMode: guardMode,
-      lifecycleMode: terminalRecheck ? "terminal_recheck" : "default",
-      budgets: {
-        detail: config.tickDetailBudgetMs,
+      lifecycleMode: "daangn_shard_c",
+      claimOptions: {
+        sourceFilter: claimOptions.sourceFilter,
+        shardCount: claimOptions.daangnShardCount,
+        shardIndex: claimOptions.daangnShardIndex,
       },
+      budgets: { detail: config.tickDetailBudgetMs },
       staleMarkedBeforeRun: staleMarked,
     },
   });
   if (!run.id) {
     guard.release();
-    return {
-      status: 503,
-      body: { ok: false, mode: guardMode, error: "supabase_unavailable_before_pipeline", ts: run.startedAt },
-    };
+    return { status: 503, body: { ok: false, mode: guardMode, error: "supabase_unavailable_before_pipeline", ts: run.startedAt } };
   }
 
   try {
-    const claimOptions = terminalRecheck ? {} : baseLifecycleClaimOptions();
-    const result = await runLifecycleWorkerPipeline({ terminalRecheck, ...claimOptions });
+    const result = await runLifecycleWorkerPipeline({ terminalRecheck: false, ...claimOptions });
     await finishCollectRun(run.id, run.startedAt, toPipelineResult(result), {
       stages: result.stages,
       stageDurationsMs: result.stageDurationsMs,
     });
     return {
       status: 200,
-      body: {
-        ok: true,
-        runId: run.id,
-        mode: guardMode,
-        lifecycleMode: terminalRecheck ? "terminal_recheck" : "default",
-        result,
-        ts: run.startedAt,
-      },
+      body: { ok: true, runId: run.id, mode: guardMode, result, ts: run.startedAt },
     };
   } catch (err) {
     await failCollectRun(run.id, run.startedAt, err);
     return {
       status: 500,
-      body: {
-        ok: false,
-        runId: run.id,
-        mode: guardMode,
-        error: err instanceof Error ? err.message : String(err),
-        ts: run.startedAt,
-      },
+      body: { ok: false, runId: run.id, mode: guardMode, error: err instanceof Error ? err.message : String(err), ts: run.startedAt },
     };
   } finally {
     guard.release();
   }
 }
 
-async function handleLifecycleWorker(req: NextRequest) {
+async function handleLifecycleWorkerC(req: NextRequest) {
   const { authOk, authReason } = checkCronAuth(req);
   const meta = requestMeta(req, authOk, authReason);
-  const terminalRecheck = isTerminalRecheckMode(req);
-  const guardMode = lifecycleGuardMode(terminalRecheck);
+  const guardMode: CronWorkerMode = "lifecycle_worker_c";
 
   if (!authOk) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -204,57 +168,14 @@ async function handleLifecycleWorker(req: NextRequest) {
     return NextResponse.json(cronGuardSkipBody(guard));
   }
 
-  const outcome = await executeLifecycleRun(meta, guard, guardMode, terminalRecheck);
-
-  if (terminalRecheck || outcome.status !== 200) {
-    return NextResponse.json(outcome.body, { status: outcome.status });
-  }
-
-  // Wave 915: terminal claim RPC is timing out in production and creating
-  // failed collect runs after successful lifecycle sweeps. Keep explicit
-  // ?mode=terminal-recheck available, but stop embedding it until the DB-side
-  // claim path is indexed/reworked.
-  if (!envBool("PIPELINE_EMBEDDED_TERMINAL_RECHECK_ENABLED", false)) {
-    return NextResponse.json({
-      ...outcome.body,
-      terminalRecheck: {
-        ok: true,
-        skipped: true,
-        reason: "embedded_terminal_recheck_disabled",
-      },
-    });
-  }
-
-  const terminalGuardMode: CronWorkerMode = "lifecycle_terminal_recheck";
-  const terminalGuard = await acquireCronGuardWithSourceHealth(terminalGuardMode, req);
-  if (!terminalGuard.allowed) {
-    return NextResponse.json({
-      ...outcome.body,
-      terminalRecheck: cronGuardSkipBody(terminalGuard),
-    });
-  }
-
-  const terminalOutcome = await executeLifecycleRun(
-    meta,
-    terminalGuard,
-    terminalGuardMode,
-    true,
-    {
-      embeddedIn: "lifecycle_worker",
-      embeddedTriggerPath: meta.requestPath,
-    },
-  );
-
-  return NextResponse.json({
-    ...outcome.body,
-    terminalRecheck: terminalOutcome.body,
-  });
+  const outcome = await executeLifecycleCRun(meta, guard, guardMode);
+  return NextResponse.json(outcome.body, { status: outcome.status });
 }
 
 export async function GET(req: NextRequest) {
-  return handleLifecycleWorker(req);
+  return handleLifecycleWorkerC(req);
 }
 
 export async function POST(req: NextRequest) {
-  return handleLifecycleWorker(req);
+  return handleLifecycleWorkerC(req);
 }
