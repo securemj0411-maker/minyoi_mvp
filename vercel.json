@@ -85,10 +85,6 @@
       "schedule": "4,9,14,19,24,29,34,39,44,49,54,59 * * * *"
     },
     {
-      "path": "/api/cron/daangn-lifecycle-backfill",
-      "schedule": "*/5 * * * *"
-    },
-    {
       "path": "/api/cron/daily-backup",
       "schedule": "0 19 * * *"
     },
