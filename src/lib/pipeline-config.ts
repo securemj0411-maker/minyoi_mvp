@@ -600,7 +600,11 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     maxAiReviewTopN,
     aiReviewConcurrency: envIntAny(["PIPELINE_AI_REVIEW_CONCURRENCY", "AI_REVIEW_CONCURRENCY"], 5, 1, maxAiReviewConcurrency),
     maxAiReviewConcurrency,
-    staleRunMinutes: envInt("PIPELINE_STALE_RUN_MINUTES", 3, 1, 60),
+    // Wave 989 (2026-05-31): default 3→6.
+    //   배경: market-worker maxDuration 240s / lifecycle-worker 180s. staleRunMinutes 3 (180s) 와 mismatch.
+    //         실제 작업이 240s 안 끝나도 다음 cron 시작 시 markStaleCollectRuns(3min) 가 false-positive fail 마킹.
+    //   fix: default 6 (360s). 가장 긴 route maxDuration 240s + 2분 margin. trade-off 0 (코드 변경 X, 단순 임계값).
+    staleRunMinutes: envInt("PIPELINE_STALE_RUN_MINUTES", 6, 1, 60),
     // Wave 88 follow-up: 15s → 25s. 127 narrow + 10 category sweep을 한 tick에 다 처리.
     // Vercel maxDuration 60s 안에 search(25s) + score(10s) + DB write(~5s) = 40s 여유.
     tickSearchBudgetMs: envInt("PIPELINE_TICK_SEARCH_BUDGET_MS", 25_000, 1_000, 120_000),
