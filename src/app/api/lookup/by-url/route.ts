@@ -21,6 +21,7 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 import { spendUserCredits, getUserCreditsReadOnly } from "@/lib/user-credits";
 import type { User } from "@supabase/supabase-js";
 import { isAdminUser } from "@/lib/auth-users";
+import { liveIngestFromParsedUrl, type LiveIngestSource } from "@/lib/live-ingest";
 
 const LOOKUPS_PER_CREDIT = 5; // Wave 799b: 1 lookup = 0.2 credit → 5 lookups = 1 credit
 
@@ -138,6 +139,27 @@ type PoolStatusRow = {
   invalidated_reason: string | null;
   score: number | string | null;
 };
+
+/**
+ * Wave 979 (2026-05-31): live-ingest 실패 사유별 사용자 메시지.
+ */
+function liveIngestFailureHint(
+  reason: string,
+  source: string,
+  originalKey: string,
+  resolvedSlug: string | null,
+): string {
+  if (reason === "blocked") return " 해당 사이트가 일시적으로 접근을 차단했어요. 잠시 후 다시 시도해주세요.";
+  if (reason === "fetch_failed") return " 매물 페이지를 불러오지 못했어요. URL 이 올바른지 확인해주세요.";
+  if (reason === "parse_failed") return " 매물 정보를 분석하지 못했어요. URL 이 올바른지 확인해주세요.";
+  if (reason === "not_a_product") return " 매물 정보를 찾지 못했어요 (판매 종료/삭제됐을 수 있어요).";
+  if (reason === "unsupported_source") return " 지원하지 않는 사이트예요.";
+  if (reason === "upsert_failed") return " 매물을 등록하는 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.";
+  if (source === "daangn" && /^\d+$/.test(originalKey) && !resolvedSlug) {
+    return " 당근 공유 URL 을 분석하지 못했어요 — 매물 상세 화면의 주소를 그대로 붙여넣어 보세요.";
+  }
+  return " 새 매물이거나 아직 우리 풀에 들어오지 않았어요.";
+}
 
 /**
  * 입력 text 에서 첫 번째 http(s) URL 만 추출.
@@ -374,23 +396,52 @@ async function runLookup(
     `${tableUrl("mvp_raw_listings")}?select=${selectCols}&${filter}&limit=1`,
     { headers },
   );
-  const rawRows = (await rawRes.json()) as RawListing[];
+  let rawRows = (await rawRes.json()) as RawListing[];
+  let freshlyIngested = false;
   if (!rawRes.ok || rawRows.length === 0) {
-    const baseMsg = "미뇨이 DB 에서 이 매물을 찾을 수 없어요.";
-    const hint =
-      parsed.source === "daangn" && /^\d+$/.test(parsed.key) && !resolvedSlug
-        ? " 당근 공유 URL 을 분석하지 못했어요 — 매물 상세 화면의 주소를 그대로 붙여넣어 보세요."
-        : " 새 매물이거나 아직 우리 풀에 들어오지 않았어요.";
-    return NextResponse.json(
-      {
-        error: "not_found",
-        message: baseMsg + hint,
-        source: parsed.source,
-        key: parsed.key,
-        resolvedSlug,
-      },
-      { status: 404 },
+    // Wave 979 (2026-05-31): DB 미존재 → live fetch + ingest → 재조회.
+    //   기존엔 404 로 끝났음. 사용자 입장에서 "DB 에 없는 매물은 시세도 못 봄" 불편.
+    //   3 source (번장/중나/당근) 다 시도. 카탈로그 매칭 + parser 통과 → raw/parsed upsert.
+    //   ingest 실패 (fetch_failed/blocked/parse_failed/not_a_product) 시 명확한 404 메시지.
+    setStep("live_ingest");
+    const ingest = await liveIngestFromParsedUrl({
+      source: parsed.source as LiveIngestSource,
+      key: searchKey,
+    });
+    if (!ingest.ok) {
+      const baseMsg = "미뇨이 DB 에서 이 매물을 찾을 수 없어요.";
+      const hint = liveIngestFailureHint(ingest.reason, parsed.source, parsed.key, resolvedSlug);
+      return NextResponse.json(
+        {
+          error: "not_found",
+          message: baseMsg + hint,
+          source: parsed.source,
+          key: parsed.key,
+          resolvedSlug,
+          liveIngestReason: ingest.reason,
+        },
+        { status: 404 },
+      );
+    }
+    // 재조회 — ingest pid 로 정확히 가져오기.
+    setStep("refetch_after_ingest");
+    const refetchRes = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=${selectCols}&pid=eq.${ingest.pid}&limit=1`,
+      { headers },
     );
+    rawRows = (await refetchRes.json()) as RawListing[];
+    if (!refetchRes.ok || rawRows.length === 0) {
+      return NextResponse.json(
+        {
+          error: "ingest_race",
+          message: "매물을 새로 등록했지만 다시 읽어오지 못했어요. 잠시 후 다시 시도해주세요.",
+          source: parsed.source,
+          key: parsed.key,
+        },
+        { status: 500 },
+      );
+    }
+    freshlyIngested = true;
   }
   const raw = rawRows[0];
   const pid = raw.pid;
@@ -412,10 +463,15 @@ async function runLookup(
   const conditionFlags = parsedRow?.condition_flags ?? null;
 
   if (!comparableKey) {
+    // Wave 979: live-ingest 직후 매칭 실패 = catalog 에 모델 없음 (단순 대기 X). 메시지 분리.
+    const message = freshlyIngested
+      ? "이 매물은 카탈로그에 등록된 모델이 아니라 시세를 계산할 수 없어요. (지원 카테고리: 이어폰/스마트워치/태블릿/노트북/데스크탑/모니터/스피커/가전)"
+      : "이 매물은 분석 대기 중이에요 (1~2시간 뒤 다시 시도해주세요).";
     return NextResponse.json(
       {
-        error: "parse_pending",
-        message: "이 매물은 분석 대기 중이에요 (1~2시간 뒤 다시 시도해주세요).",
+        error: freshlyIngested ? "not_in_catalog" : "parse_pending",
+        message,
+        freshlyIngested,
         raw: {
           pid,
           source: raw.source,
@@ -424,7 +480,7 @@ async function runLookup(
           thumbnail_url: raw.thumbnail_url,
         },
       },
-      { status: 202 },
+      { status: freshlyIngested ? 422 : 202 },
     );
   }
 
@@ -619,6 +675,7 @@ async function runLookup(
 
   return NextResponse.json({
     ok: true,
+    freshlyIngested,
     creditInfo: {
       charged: charge.charged,
       balance: charge.balance,

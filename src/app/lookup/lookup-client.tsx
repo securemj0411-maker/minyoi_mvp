@@ -10,6 +10,8 @@ import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type LookupResponse = {
   ok: boolean;
+  // Wave 979: DB 미존재 → 실시간 fetch + ingest 한 매물 표시.
+  freshlyIngested?: boolean;
   creditInfo?: {
     charged: boolean;
     balance: number | null;
@@ -541,10 +543,16 @@ export default function LookupClient() {
                   <div className="h-20 w-20 shrink-0 rounded-lg bg-zinc-100 dark:bg-zinc-800" />
                 )}
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-[#ebf2ff] px-2 py-0.5 text-[10px] font-black text-[#3182f6] dark:bg-blue-950/40 dark:text-blue-300">
                       {sourceLabel(result.raw.source)}
                     </span>
+                    {/* Wave 979: live-ingest 직후 매물 = "방금 새로 등록" 배지. */}
+                    {result.freshlyIngested ? (
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                        방금 등록
+                      </span>
+                    ) : null}
                     {result.raw.daangn_region_name ? (
                       <span className="text-[10.5px] font-bold text-zinc-500">{result.raw.daangn_region_name}</span>
                     ) : null}
