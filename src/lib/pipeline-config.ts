@@ -645,7 +645,12 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     //   PostgREST max-rows=1000 cap → loadMarketStatRows 가 pagination 으로 chunk 페치.
     //   8000 / 1000 = 8 chunks max. lookback 안 6.7K 다 cover + 마진.
     //   1 chunk ≈ 5s → 8 chunks ≈ 40s + group/upsert. maxDuration 90 안에 들어옴.
-    marketStatsLimit: envInt("PIPELINE_MARKET_STATS_LIMIT", 8000, 100, 20000),
+    // Wave 996 (2026-05-31): 8000→3000.
+    //   배경: market-worker 30분 100% fail (duration 379~385s). mvp_raw_listings 더 커지면서 8000 row
+    //         처리가 maxDuration 240s/300s 초과. 25 columns × 8000 row = 200K data + INSERT/UPDATE 무거움.
+    //   fix: chunk 8000 → 3000. 매 cron 처리 ~140s 예상 (5분 maxDuration 안 안전).
+    //   trade-off: 한 cron 처리량 1/3. 단 매 10분 cron 이라 시간당 18,000 처리 — backlog 누적 안 함.
+    marketStatsLimit: envInt("PIPELINE_MARKET_STATS_LIMIT", 3000, 100, 20000),
     deepCrawlMaxPage: envInt("PIPELINE_DEEP_CRAWL_MAX_PAGE", 3, 1, 30),
     // Deep crawl ignores cadence by design, so a full catalog-sized query list can otherwise
     // hit the 90s route ceiling during post-processing. Rotate a bounded window each run.
