@@ -13,7 +13,8 @@ import { loadPipelineRuntimeConfig } from "@/lib/pipeline-config";
 import { runHousekeeperPipeline } from "@/lib/tick-pipeline";
 import type { PipelineResult } from "@/lib/pipeline";
 
-export const maxDuration = 90;
+// Wave 982 (2026-05-31): 90s → 180s. housekeeper 33% stale 3m 발생 — expire_mvp_plans RPC + cadence evaluator + payload retention 90일 누적 무거움.
+export const maxDuration = 180;
 
 function firstForwardedIp(value: string | null): string | null {
   if (!value) return null;
