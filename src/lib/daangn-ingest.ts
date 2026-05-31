@@ -55,6 +55,7 @@ import { buildDaangnQueryPool } from "@/lib/daangn-query-pool";
 import { classifyListing } from "@/lib/pipeline";
 import { buildCatalogSearchQueryEntries, normalize, skuById, type Sku } from "@/lib/catalog";
 import { parseListingOptions, toParsedListingRow, type ParsedListingOptions } from "@/lib/option-parser";
+import { lifecycleTierForParsed, seedLifecycleChecks } from "@/lib/tick-pipeline";
 
 // ───────────────────────────────────────────────────────────────────────────
 // Types
@@ -1084,6 +1085,43 @@ export async function upsertDaangnRawListings(
       // parsed upsert 실패는 fatal X — raw 는 박혔으니 다음 cron 재시도
       console.warn(`daangn_bulk_upsert_listing_parsed RPC failed: ${parsedRes.status} ${await parsedRes.text()}`);
     }
+  }
+
+  // Wave 978 (2026-05-31): lifecycle seed. 측정에서 mvp_lifecycle_checks daangn 0건 발견 →
+  //   당근 매물 sold 전환 추적 누락 (사용자 코멘트 "lifecycle 안 돌아서 판매완료 처리 안 됨").
+  //   joongna-ingest 패턴 동일: raw upsert 후 active 매물만 seed. parsed metadata 있으면 tier 결정.
+  //   active 외 상태는 daangn-ingest 자체가 article.status 보고 listing_state 박는 시점에 종결됨.
+  //   best-effort try/catch — seed 실패해도 ingest 진행 (RPC primary path 보호).
+  try {
+    const lifecycleSeedRows: { pid: number; source: "daangn"; priorityTier: ReturnType<typeof lifecycleTierForParsed> }[] = [];
+    const parsedByPid = new Map<number, Record<string, unknown>>();
+    for (const row of parsedRows) {
+      const pidValue = Number(row.pid);
+      if (Number.isFinite(pidValue)) parsedByPid.set(pidValue, row);
+    }
+    for (const built of byPid.values()) {
+      const pidValue = Number(built.raw.pid);
+      if (!Number.isFinite(pidValue)) continue;
+      // 신규 upsert 영향 row 만 seed — 기존 active row 는 이미 lifecycle 추적 중일 수 있음.
+      // affectedPidSet 비어 있으면 (RPC 응답 누락) rawUpserted >= rawRows.length 일 때만 전체 시드.
+      if (affectedPidSet.size > 0 && !affectedPidSet.has(pidValue)) continue;
+      if (built.raw.listing_state !== "active") continue;
+      const parsedRow = parsedByPid.get(pidValue);
+      lifecycleSeedRows.push({
+        pid: pidValue,
+        source: "daangn",
+        priorityTier: lifecycleTierForParsed({
+          parseConfidence: parsedRow ? Number(parsedRow.parse_confidence ?? 0) : 0,
+          needsReview: parsedRow ? Boolean(parsedRow.needs_review) : true,
+          comparableKey: parsedRow ? (parsedRow.comparable_key as string | null | undefined) : null,
+        }),
+      });
+    }
+    if (lifecycleSeedRows.length > 0) {
+      await seedLifecycleChecks(lifecycleSeedRows);
+    }
+  } catch (err) {
+    console.warn("daangn lifecycle seed failed (non-fatal)", err instanceof Error ? err.message : String(err));
   }
 
   return {

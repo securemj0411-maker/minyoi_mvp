@@ -788,15 +788,18 @@ export function lifecycleTierForParsed(parsed: { parseConfidence?: number; needs
 //   영구 누락 → sold/disappeared 추적 X → 사용자에게 sold 매물 노출 신뢰 박살 risk.
 //   joongna-ingest 가 detail 처리 후 이 함수 호출하면 lifecycle 추적 가능.
 //   export 추가 — joongna-ingest 에서 import 사용.
+// Wave 978 (2026-05-31): daangn 추가. lifecycle_checks 측정에서 daangn 0건 발견 → 당근 매물
+//   sold 전환 추적 누락 (사용자 체감 일치: 최근 daangn sold_detected_at 0~8건/일 vs bunjang 수백~수천).
+//   `fetchLifecycleDetailBySource` 는 이미 daangn 분기 구현됨 → 시드만 박으면 추적 가능.
 export async function seedLifecycleChecks(rows: {
   pid: number;
-  source?: "bunjang" | "joongna";
+  source?: "bunjang" | "joongna" | "daangn";
   priorityTier: LifecyclePriorityTier;
   nextCheckAt?: string;
 }[]) {
   if (rows.length === 0) return 0;
   const now = new Date().toISOString();
-  const deduped = new Map<number, { pid: number; source: "bunjang" | "joongna"; priorityTier: LifecyclePriorityTier; nextCheckAt?: string }>();
+  const deduped = new Map<number, { pid: number; source: "bunjang" | "joongna" | "daangn"; priorityTier: LifecyclePriorityTier; nextCheckAt?: string }>();
   const priorityScore: Record<LifecyclePriorityTier, number> = {
     pool: 5,
     near_pool: 4,
@@ -806,7 +809,7 @@ export async function seedLifecycleChecks(rows: {
   };
   for (const row of rows) {
     const existing = deduped.get(row.pid);
-    const next = { ...row, source: row.source ?? ("bunjang" as const) };
+    const next = { ...row, source: row.source ?? ("bunjang" as const) } as { pid: number; source: "bunjang" | "joongna" | "daangn"; priorityTier: LifecyclePriorityTier; nextCheckAt?: string };
     if (!existing || priorityScore[next.priorityTier] > priorityScore[existing.priorityTier]) {
       deduped.set(row.pid, next);
     }
