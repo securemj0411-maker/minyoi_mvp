@@ -550,21 +550,42 @@ async function insertObservationsWithPayloads(rows: Array<Record<string, unknown
   }
 }
 
+// Wave 1004 (2026-06-01): patchRows 자체에 single-call retry + jitter backoff.
+//   배경: Wave 1002 patchRowsByIds chunk-level retry 박았지만 score_c 12:35~12:51 UTC 4건 PATCH 500 fail 잔존.
+//         restFetch retry 3번 있지만 isTransientRestFailure 가 status 500 + PG 패턴 (deadlock/timeout) 외엔 즉시 throw.
+//         즉 PostgREST 자체 500 (예: connection pool / supabase 일시 부하) 은 restFetch 가 안 잡고, patchRowsByIds chunk catch 가 2회 재시도하지만 둘 다 즉시 throw 받아 silent skip.
+//         단 worker 전체 fail 마킹은 다른 path (patchRows 직접 호출 line 1861/1938/5771/5859/6212/6240) 에서 발생 가능 — single-call PATCH 는 retry 0.
+//   fix: patchRows 안에 500 또는 network err 만 한정 1회 retry (500ms + jitter). transient 500 흡수.
+//        patchRowsByIds chunk-level retry 와 layered — chunk loop catch 는 retry 다 실패 시 silent skip 역할.
+//   trade-off: 정상 PATCH 시 추가 호출 0 (성공 응답이면 retry path 안 들어감). transient 500 만 retry.
+//             진짜 schema/auth 오류 (400/401/403/404 등) 는 즉시 throw — caller 가 catch 안 하면 worker fail 그대로 (의도).
 async function patchRows(table: string, filter: string, payload: Record<string, unknown>): Promise<void> {
-  await restFetch(`${tableUrl(table)}?${filter}`, {
+  const url = `${tableUrl(table)}?${filter}`;
+  const init: RequestInit = {
     method: "PATCH",
     headers: serviceHeaders("return=minimal"),
     body: jsonBody(payload),
-  });
+  };
+  try {
+    await restFetch(url, init);
+  } catch (firstErr) {
+    const msg = firstErr instanceof Error ? firstErr.message : String(firstErr);
+    // 500 / 502 / 503 / 504 / network/timeout 만 retry. 4xx (400/401/403/404 등) 은 즉시 throw.
+    const retriable = /Supabase REST (failed (500|502|503|504)|timed out|fetch failed)/.test(msg);
+    if (!retriable) throw firstErr;
+    await new Promise((resolve) => setTimeout(resolve, 500 + Math.floor(Math.random() * 200)));
+    await restFetch(url, init);
+  }
 }
 
-// Wave 1001 (2026-06-01): per-chunk retry + skip on persistent failure.
+// Wave 1002 (2026-06-01): per-chunk retry + skip on persistent failure.
 //   배경: recovery_worker 9% 실패 (7/81 over 2h). 에러 = "Supabase REST failed 500 PATCH /rest/v1/mvp_raw_listings?pid=in.(...)".
 //         chunk 25 pid 짜리 PATCH 가 transient 500 받으면 patchRowsByIds 가 throw → worker 전체 fail.
 //         같은 후보가 다음 1분 cron 에서 또 시도 → 부하 spike 에 재충돌 → 누적 fail.
 //   fix: chunk 별 try/catch + 1회 retry (500ms backoff). 그래도 실패하면 warn 로그 + 다음 chunk 진행.
 //        recovery 는 idempotent (score_dirty=true 마킹) — 다음 cron 이 같은 후보 다시 picks up. drop 안 됨.
 //   trade-off: 진짜 schema/auth 오류도 warn 로 skip → silent fail 가능성. 단 restFetch 가 4xx/5xx 그대로 throw 하므로 log 에 status code 보임.
+//   Wave 1004 후속: patchRows 자체에 single-call retry 추가. chunk-level catch 는 retry 후에도 fail 시 silent skip 역할.
 async function patchRowsByIds(table: string, ids: number[], payload: Record<string, unknown>, chunkSize = REST_WRITE_CHUNK_SIZE): Promise<void> {
   if (ids.length === 0) return;
   for (const chunk of chunkArray(ids, chunkSize)) {
