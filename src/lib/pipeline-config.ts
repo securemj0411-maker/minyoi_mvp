@@ -649,8 +649,11 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     //   배경: market-worker 30분 100% fail (duration 379~385s). mvp_raw_listings 더 커지면서 8000 row
     //         처리가 maxDuration 240s/300s 초과. 25 columns × 8000 row = 200K data + INSERT/UPDATE 무거움.
     //   fix: chunk 8000 → 3000. 매 cron 처리 ~140s 예상 (5분 maxDuration 안 안전).
-    //   trade-off: 한 cron 처리량 1/3. 단 매 10분 cron 이라 시간당 18,000 처리 — backlog 누적 안 함.
-    marketStatsLimit: envInt("PIPELINE_MARKET_STATS_LIMIT", 3000, 100, 20000),
+    // Wave 998 (2026-05-31): 3000→1000. 측정 stageDurationsMs.market_stats 390s — 3000 row 가 6.5분
+    //   걸림 (한 row 130ms). upsertMarketPriceDaily 의 condition×tier×source grouping + 두 테이블
+    //   INSERT/UPDATE 가 무거움. limit 1000 = 130s 예상 (5분 maxDuration 안 안전).
+    //   trade-off: 한 cron 처리량 1/3 ↓. 매 10분 × 1000 = 6,000/h. pending 3,603 — 36분 안 해소.
+    marketStatsLimit: envInt("PIPELINE_MARKET_STATS_LIMIT", 1000, 100, 20000),
     deepCrawlMaxPage: envInt("PIPELINE_DEEP_CRAWL_MAX_PAGE", 3, 1, 30),
     // Deep crawl ignores cadence by design, so a full catalog-sized query list can otherwise
     // hit the 90s route ceiling during post-processing. Rotate a bounded window each run.
