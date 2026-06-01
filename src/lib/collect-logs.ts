@@ -220,7 +220,11 @@ async function acquireStaleCollectRunMarkerLease(): Promise<boolean | null> {
   }
 }
 
-export async function markStaleCollectRuns(maxAgeMinutes = 3): Promise<number> {
+// Wave 1002 (2026-06-01): default 3→8.
+//   배경: 모든 known caller (cron route 20+개) 가 config.staleRunMinutes (pipeline-config default 8) 사용.
+//         그러나 production DB 에 "after 3m" 메시지 잔존 (12h 내 market_worker 18건 등) — 미지 caller / build cache / 옛 deployment 가능성.
+//   fix: lib default 도 8 로 올려서 인자 없이 호출되는 경로 cover. config default(8) 와 일치.
+export async function markStaleCollectRuns(maxAgeMinutes = 8): Promise<number> {
   const nowMs = Date.now();
   const localCooldownMs = envInt("COLLECT_RUN_STALE_MARK_LOCAL_COOLDOWN_MS", 60_000, 0, 10 * 60_000);
   if (nowMs - lastStaleMarkAttemptAt < localCooldownMs) return 0;

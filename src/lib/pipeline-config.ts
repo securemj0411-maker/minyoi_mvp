@@ -604,7 +604,12 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     //   배경: market-worker maxDuration 240s / lifecycle-worker 180s. staleRunMinutes 3 (180s) 와 mismatch.
     //         실제 작업이 240s 안 끝나도 다음 cron 시작 시 markStaleCollectRuns(3min) 가 false-positive fail 마킹.
     //   fix: default 6 (360s). 가장 긴 route maxDuration 240s + 2분 margin. trade-off 0 (코드 변경 X, 단순 임계값).
-    staleRunMinutes: envInt("PIPELINE_STALE_RUN_MINUTES", 6, 1, 60),
+    // Wave 1001 (2026-06-01): default 6→8.
+    //   배경: Wave 995/997 에서 market-worker/housekeeper maxDuration 240→300s 로 늘림.
+    //         default 6 (360s) = 300s + 60s margin → 부족. 실측 326s market-worker → 다음 cron 시작 시 6분 도달 직전, false-fail 위험.
+    //   fix: default 8 (480s) = 300s + 180s margin. Vercel env override (=3) 안 풀려도 default 가 더 보수적.
+    //   trade-off: 진짜 stuck run cleanup 6→8분 지연 (alert 일 뿐, 운영 영향 작음).
+    staleRunMinutes: envInt("PIPELINE_STALE_RUN_MINUTES", 8, 1, 60),
     // Wave 88 follow-up: 15s → 25s. 127 narrow + 10 category sweep을 한 tick에 다 처리.
     // Vercel maxDuration 60s 안에 search(25s) + score(10s) + DB write(~5s) = 40s 여유.
     tickSearchBudgetMs: envInt("PIPELINE_TICK_SEARCH_BUDGET_MS", 25_000, 1_000, 120_000),

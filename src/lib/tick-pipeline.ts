@@ -558,10 +558,29 @@ async function patchRows(table: string, filter: string, payload: Record<string, 
   });
 }
 
+// Wave 1001 (2026-06-01): per-chunk retry + skip on persistent failure.
+//   배경: recovery_worker 9% 실패 (7/81 over 2h). 에러 = "Supabase REST failed 500 PATCH /rest/v1/mvp_raw_listings?pid=in.(...)".
+//         chunk 25 pid 짜리 PATCH 가 transient 500 받으면 patchRowsByIds 가 throw → worker 전체 fail.
+//         같은 후보가 다음 1분 cron 에서 또 시도 → 부하 spike 에 재충돌 → 누적 fail.
+//   fix: chunk 별 try/catch + 1회 retry (500ms backoff). 그래도 실패하면 warn 로그 + 다음 chunk 진행.
+//        recovery 는 idempotent (score_dirty=true 마킹) — 다음 cron 이 같은 후보 다시 picks up. drop 안 됨.
+//   trade-off: 진짜 schema/auth 오류도 warn 로 skip → silent fail 가능성. 단 restFetch 가 4xx/5xx 그대로 throw 하므로 log 에 status code 보임.
 async function patchRowsByIds(table: string, ids: number[], payload: Record<string, unknown>, chunkSize = REST_WRITE_CHUNK_SIZE): Promise<void> {
   if (ids.length === 0) return;
   for (const chunk of chunkArray(ids, chunkSize)) {
-    await patchRows(table, `pid=in.(${chunk.join(",")})`, payload);
+    const filter = `pid=in.(${chunk.join(",")})`;
+    try {
+      await patchRows(table, filter, payload);
+    } catch (firstErr) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      try {
+        await patchRows(table, filter, payload);
+      } catch (retryErr) {
+        console.warn(
+          `patchRowsByIds chunk failed twice, skipping: table=${table} chunk_size=${chunk.length} first_pid=${chunk[0]} err=${retryErr instanceof Error ? retryErr.message : String(retryErr)}`,
+        );
+      }
+    }
   }
 }
 
