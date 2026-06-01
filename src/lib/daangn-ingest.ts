@@ -1049,30 +1049,33 @@ export async function upsertDaangnRawListings(
   //   parallel chunked 도 효과 X 확인 (213s) — Supabase 가 row 별 락 leitung.
   //   Postgres 안에서 single SQL transaction 으로 처리 → 5-10x 단축 기대.
   const rawRpcStart = Date.now();
-  // Wave 994 (2026-05-31): lock timeout 55P03 1회 retry — 다른 worker 동시 작업 시 충돌.
-  //   다른 daangn worker (a/b/c) 가 같은 mvp_raw_listings row UPDATE 중 lock 잡으면 RPC fail.
-  //   1회 retry 후 200ms wait — 다른 worker 끝나기 기다림. best-effort.
-  let rawRes = await restFetch(rpcUrl("daangn_bulk_upsert_raw_listings_v2"), {
-    method: "POST",
-    headers: serviceHeaders(),
-    body: jsonBody({ rows: rawRows }),
-  });
-  if (!rawRes.ok) {
-    const firstText = await rawRes.text();
-    const isLockTimeout = firstText.includes("55P03") || firstText.includes("lock timeout");
-    if (isLockTimeout) {
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      rawRes = await restFetch(rpcUrl("daangn_bulk_upsert_raw_listings_v2"), {
-        method: "POST",
-        headers: serviceHeaders(),
-        body: jsonBody({ rows: rawRows }),
-      });
-      if (!rawRes.ok) {
-        throw new Error(`daangn_bulk_upsert_raw_listings_v2 RPC failed (retry): ${rawRes.status} ${await rawRes.text()}`);
-      }
-    } else {
-      throw new Error(`daangn_bulk_upsert_raw_listings_v2 RPC failed: ${rawRes.status} ${firstText}`);
+  // Wave 994 (2026-05-31): lock timeout 55P03 retry — 다른 worker 동시 작업 시 충돌.
+  // Wave 1000 (2026-06-01): retry 1회 → 3회 (지수 backoff 200ms / 500ms / 1.5s).
+  //   사용자 알림 — daangn-price-sweep 6% fail. 1차 lock 60s + 200ms + 2차 lock 또 fail = 68s 후 throw.
+  //   3회 retry 후 누적 wait 2.2s 까지 — lock 잡고 있는 worker 거의 끝남.
+  //   정상 호출 영향 0 (lock 충돌 시만 추가 시간).
+  const lockBackoffMs = [200, 500, 1500];
+  let rawRes: Response | null = null;
+  let lastErrText = "";
+  for (let attempt = 0; attempt <= lockBackoffMs.length; attempt++) {
+    rawRes = await restFetch(rpcUrl("daangn_bulk_upsert_raw_listings_v2"), {
+      method: "POST",
+      headers: serviceHeaders(),
+      body: jsonBody({ rows: rawRows }),
+    });
+    if (rawRes.ok) break;
+    lastErrText = await rawRes.text();
+    const isLockTimeout = lastErrText.includes("55P03") || lastErrText.includes("lock timeout");
+    if (!isLockTimeout) {
+      throw new Error(`daangn_bulk_upsert_raw_listings_v2 RPC failed: ${rawRes.status} ${lastErrText}`);
     }
+    if (attempt >= lockBackoffMs.length) {
+      throw new Error(`daangn_bulk_upsert_raw_listings_v2 RPC failed after ${lockBackoffMs.length + 1} attempts: ${rawRes.status} ${lastErrText}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, lockBackoffMs[attempt]));
+  }
+  if (!rawRes || !rawRes.ok) {
+    throw new Error(`daangn_bulk_upsert_raw_listings_v2 RPC fail (unexpected): ${lastErrText}`);
   }
   const rawPayload = await rawRes.json() as { affected?: unknown; affectedPids?: unknown } | number;
   const rawRpcMs = Date.now() - rawRpcStart;
