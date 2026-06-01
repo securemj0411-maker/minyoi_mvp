@@ -6611,7 +6611,10 @@ const PAYLOAD_RETENTION_COOLDOWN_MS = 24 * 60 * 60_000; // 1일
 const PAYLOAD_RETENTION_DAYS = 90;
 const PAYLOAD_RETENTION_BATCH_LIMIT = 50_000;
 const CRON_EXECUTION_STALE_RUNNING_MINUTES = 10;
-const POOL_RAW_RESIDUE_CLEANUP_LIMIT = 2_000;
+// Wave 999 (2026-05-31): 2000→500. housekeeper duration 295s (max). pool residue cleanup 이 무거움
+//   (mvp_candidate_pool 5000 limit fetch + chunk 25 마다 raw_listings GET × 80 호출). 500 → 20 호출.
+//   trade-off: 매 30분 cron × 500 = 1,000/h 처리. invalid 신규 inflow 보다 큼 — backlog 누적 X.
+const POOL_RAW_RESIDUE_CLEANUP_LIMIT = 500;
 
 async function releaseStaleCronExecutionRows(): Promise<number> {
   const now = new Date();
