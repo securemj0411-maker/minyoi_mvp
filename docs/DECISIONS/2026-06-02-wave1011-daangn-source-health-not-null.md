@@ -40,3 +40,29 @@ Date: 2026-06-02
 - `npm run build`
   - Passed
   - Existing landing showcase sold-preview query hit a Supabase `57014` statement timeout during revalidation, but the page fallback allowed the build to complete.
+
+## Production Verification
+
+- Commit deployed to production as `minyoi-isa8ijml4-securemj0411-7703s-projects.vercel.app`.
+- Next production Daangn main worker ran at `2026-06-02T08:18:39Z`.
+- Runtime logs no longer showed `daangn source health insert failed`.
+- Latest `mvp_source_health(source='daangn')` row after deploy:
+  - `checked_at`: `2026-06-02T08:18:17.307Z`
+  - `status`: `healthy`
+  - `reason`: `ok`
+  - `mode`: `active`
+  - `search_result_count`: `45098`
+  - `rawUpserted`: `573`
+  - `detailAttempts/detailParsed`: `8/8`
+  - `detail_success_rate/detail_404_rate/detail_5xx_rate`: `1/0/0`
+- A following lifecycle run recorded:
+  - `source_health_daangn_fresh: 1`
+  - `source_health_bunjang_fresh: 1`
+  - `source_health_joongna_fresh: 1`
+
+## Follow-up
+
+- Source health stale/missing is fixed.
+- The next real bottleneck is lifecycle throughput:
+  - sample run: `claimed=165`, `enriched=0`, `timedOut=true`
+  - this points to lifecycle claim/recheck execution cost, not source health gating.
