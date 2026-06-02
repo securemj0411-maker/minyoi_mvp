@@ -6032,7 +6032,10 @@ export async function lifecycleStage(
 ): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
+  const preClaimTimings: Record<string, number> = {};
+  const sourceHealthStartedAt = Date.now();
   const sourceHealthBySource = await loadLatestSourceHealthMap();
+  preClaimTimings.lifecycle_source_health_ms = Date.now() - sourceHealthStartedAt;
 
   // Wave 987 (2026-05-31): lifecycle worker 자체 catch-up 시드 (영구 lock-free fix).
   //   배경: wave 984 backfill cron lock 충돌 영구 fail. wave 985 daangn-ingest catch-up best-effort swallow.
@@ -6040,28 +6043,50 @@ export async function lifecycleStage(
   //   shard 별로 다른 row 처리 (a=shard 0, b=shard 1, c=shard 2) → 3 lane 동시 작동 시 다른 row.
   //   부담: chunk 50 INSERT = ~0.5초. lifecycleBudgetMs 75s 안 무시.
   //   default mode 만 적용 (terminal_recheck 은 별개 사용).
-  if (mode === "default") {
+  // Wave 1013 (2026-06-02): lifecycle 본업 starvation 방지.
+  //   ingest 쪽 catch-up 경로는 유지하고, lifecycle 내부 catch-up 은 env opt-in 으로 전환.
+  //   배경: production stage_stats 에서 lifecycle 이 claim 후 enrich 0, timedOut 반복. catch-up/claim
+  //   시간이 별도 계측되지 않아 본업 검증 전 budget 소진 가능성이 큼.
+  const lifecycleCatchUpChunk = boundedInt(process.env.LIFECYCLE_DAANGN_CATCHUP_CHUNK ?? null, 0, 0, 500);
+  if (mode === "default" && lifecycleCatchUpChunk > 0) {
     try {
       const catchUpShardCount = Math.max(1, Math.floor(Number(claimOptions.daangnShardCount ?? 1)));
       const catchUpShardIndex = Math.max(0, Math.floor(Number(claimOptions.daangnShardIndex ?? 0)));
-      await restFetch(rpcUrl("wave978_backfill_daangn_lifecycle_chunk"), {
+      const catchUpStartedAt = Date.now();
+      const catchUpRes = await restFetch(rpcUrl("wave978_backfill_daangn_lifecycle_chunk"), {
         method: "POST",
         headers: serviceHeaders(),
         body: jsonBody({
-          p_chunk_size: 50,
+          p_chunk_size: lifecycleCatchUpChunk,
           p_daangn_shard_count: catchUpShardCount,
           p_daangn_shard_index: catchUpShardIndex,
         }),
       });
+      const inserted = Number(await catchUpRes.json().catch(() => 0));
+      preClaimTimings.lifecycle_daangn_catchup_ms = Date.now() - catchUpStartedAt;
+      preClaimTimings.lifecycle_daangn_catchup_inserted = Number.isFinite(inserted) ? inserted : 0;
     } catch (err) {
+      preClaimTimings.lifecycle_daangn_catchup_failed = 1;
       // lock 충돌 0 가정이지만 RPC 자체 fail (예: PG 부하)은 swallow → 다음 tick 재시도.
       console.warn("[wave987] lifecycle catch-up failed (non-fatal)", err instanceof Error ? err.message : String(err));
     }
   }
 
+  if (Date.now() >= deadlineMs - DETAIL_STAGE_SAFETY_MARGIN_MS) {
+    stats.timedOut = true;
+    stats.timingsMs = {
+      ...preClaimTimings,
+      lifecycle_budget_before_claim: 1,
+    };
+    return stats;
+  }
+
+  const claimStartedAt = Date.now();
   const claims = await claimLifecycleChecks(mode, claimOptions);
+  preClaimTimings.lifecycle_claim_ms = Date.now() - claimStartedAt;
   stats.claimed = claims.length;
   stats.timingsMs = {
+    ...preClaimTimings,
     claim_mode_terminal_recheck: mode === "terminal_recheck" ? 1 : 0,
     claim_source_filter_daangn: claimOptions.sourceFilter === "daangn" ? 1 : 0,
     claim_daangn_shard_count: Math.max(1, Math.floor(Number(claimOptions.daangnShardCount ?? 1))),
