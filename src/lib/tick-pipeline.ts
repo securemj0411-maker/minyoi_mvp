@@ -307,6 +307,7 @@ type CollectRunHealthRow = {
 };
 
 type SourceHealthRow = {
+  source?: KnownMarketplaceSource | string | null;
   status: "healthy" | "degraded" | "unhealthy";
   checked_at: string;
   baseline_json: Record<string, unknown> | null;
@@ -3574,15 +3575,52 @@ async function loadRecentCollectRuns(windowMinutes: number): Promise<CollectRunH
   return (await res.json()) as CollectRunHealthRow[];
 }
 
-async function loadLatestSourceHealth(): Promise<SourceHealthRow | null> {
+async function loadLatestSourceHealth(source: KnownMarketplaceSource = "bunjang"): Promise<SourceHealthRow | null> {
   try {
-    const url = `${tableUrl("mvp_source_health")}?select=status,checked_at,baseline_json,hysteresis_json,reason&source=eq.bunjang&order=checked_at.desc&limit=1`;
+    const url = `${tableUrl("mvp_source_health")}?select=source,status,checked_at,baseline_json,hysteresis_json,reason&source=eq.${source}&order=checked_at.desc&limit=1`;
     const res = await restFetch(url, { headers: serviceHeaders() });
     const rows = (await res.json()) as SourceHealthRow[];
     return rows[0] ?? null;
   } catch {
     return null;
   }
+}
+
+async function loadLatestSourceHealthMap(): Promise<Map<KnownMarketplaceSource, SourceHealthRow>> {
+  const sources: KnownMarketplaceSource[] = ["bunjang", "joongna", "daangn"];
+  try {
+    const url = `${tableUrl("mvp_source_health")}?select=source,status,checked_at,baseline_json,hysteresis_json,reason&source=in.(${sources.join(",")})&order=checked_at.desc&limit=12`;
+    const res = await restFetch(url, { headers: serviceHeaders() });
+    const rows = (await res.json()) as SourceHealthRow[];
+    const bySource = new Map<KnownMarketplaceSource, SourceHealthRow>();
+    for (const row of rows) {
+      const source = normalizeMarketplaceSource(row.source);
+      if (!bySource.has(source)) bySource.set(source, row);
+    }
+    return bySource;
+  } catch {
+    return new Map();
+  }
+}
+
+const SOURCE_HEALTH_STALE_MS = 6 * 60 * 60 * 1000;
+
+function lifecycleHealthGateForSource(
+  source: string | null | undefined,
+  healthBySource: Map<KnownMarketplaceSource, SourceHealthRow>,
+  nowMs = Date.now(),
+): { source: KnownMarketplaceSource; status: SourceHealthStatus; fresh: boolean } {
+  const normalizedSource = normalizeMarketplaceSource(source);
+  const health = healthBySource.get(normalizedSource);
+  const checkedAtMs = health?.checked_at ? Date.parse(health.checked_at) : Number.NaN;
+  const fresh = Boolean(health) && Number.isFinite(checkedAtMs) && nowMs - checkedAtMs <= SOURCE_HEALTH_STALE_MS;
+  // Unknown/stale health should not throttle throughput, but it should stay
+  // conservative for fetch-missing terminal transitions.
+  return {
+    source: normalizedSource,
+    status: fresh ? health!.status : "degraded",
+    fresh,
+  };
 }
 
 function runMode(row: CollectRunHealthRow) {
@@ -5921,6 +5959,14 @@ function shouldSkipLifecycleForHealth(row: LifecycleClaimRow, health: SourceHeal
   return row.priority_tier !== "pool" && row.priority_tier !== "near_pool";
 }
 
+function shouldSkipLifecycleForHealthGate(
+  row: LifecycleClaimRow,
+  gate: { status: SourceHealthStatus; fresh: boolean },
+) {
+  if (!gate.fresh) return false;
+  return shouldSkipLifecycleForHealth(row, gate.status);
+}
+
 // Wave launch-41: source 별 lifecycle detail fetch + sold signal 감지.
 //   bunjang: fetchDetail (bunjang API) + detectSoldOut (sale_status / text / image 종합)
 //   joongna: fetchJoongnaDetail (HTML parse) + productStatus + text hit
@@ -5976,8 +6022,7 @@ export async function lifecycleStage(
 ): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
-  const sourceHealth = await loadLatestSourceHealth();
-  const healthStatus = sourceHealth?.status ?? "degraded";
+  const sourceHealthBySource = await loadLatestSourceHealthMap();
 
   // Wave 987 (2026-05-31): lifecycle worker 자체 catch-up 시드 (영구 lock-free fix).
   //   배경: wave 984 backfill cron lock 충돌 영구 fail. wave 985 daangn-ingest catch-up best-effort swallow.
@@ -6011,6 +6056,9 @@ export async function lifecycleStage(
     claim_source_filter_daangn: claimOptions.sourceFilter === "daangn" ? 1 : 0,
     claim_daangn_shard_count: Math.max(1, Math.floor(Number(claimOptions.daangnShardCount ?? 1))),
     claim_daangn_shard_index: Math.max(0, Math.floor(Number(claimOptions.daangnShardIndex ?? 0))),
+    source_health_bunjang_fresh: lifecycleHealthGateForSource("bunjang", sourceHealthBySource).fresh ? 1 : 0,
+    source_health_joongna_fresh: lifecycleHealthGateForSource("joongna", sourceHealthBySource).fresh ? 1 : 0,
+    source_health_daangn_fresh: lifecycleHealthGateForSource("daangn", sourceHealthBySource).fresh ? 1 : 0,
   };
   const marketInvalidations: MarketKeyInvalidationEvent[] = [];
 
@@ -6031,12 +6079,14 @@ export async function lifecycleStage(
       return;
     }
 
-    if (shouldSkipLifecycleForHealth(row, healthStatus)) {
+    const healthGate = lifecycleHealthGateForSource(row.source, sourceHealthBySource);
+    const healthStatus = healthGate.status;
+    if (shouldSkipLifecycleForHealthGate(row, healthGate)) {
       stats.poolSkipped += 1;
       await patchLifecycle(row.pid, {
         last_check_result: "skipped_source_degraded",
         next_check_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-        state_reason: `source_health_${healthStatus}`,
+        state_reason: `source_health_${healthGate.source}_${healthStatus}`,
       });
       return;
     }
@@ -6176,12 +6226,7 @@ export async function lifecycleStage(
 export async function poolWarmerStage(deadlineMs: number): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
-  const sourceHealth = await loadLatestSourceHealth();
-  const healthStatus = sourceHealth?.status ?? "degraded";
-  if (healthStatus === "unhealthy") {
-    stats.poolSkipped = 1;
-    return stats;
-  }
+  const sourceHealthBySource = await loadLatestSourceHealthMap();
   const rows = await loadPoolWarmRows(Math.min(80, config.tickDetailBatchSize * 2));
   const rawByPid = await loadRawPriceNames(rows.map((row) => row.pid));
 
@@ -6191,6 +6236,12 @@ export async function poolWarmerStage(deadlineMs: number): Promise<StageStats> {
       return stats;
     }
     const raw = rawByPid.get(row.pid);
+    const healthGate = lifecycleHealthGateForSource(raw?.source, sourceHealthBySource);
+    const healthStatus = healthGate.status;
+    if (healthGate.fresh && healthStatus === "unhealthy") {
+      stats.poolSkipped += 1;
+      continue;
+    }
     stats.claimed += 1;
 
     // Wave launch-74 (사용자 짚음 "pool-warmer 가 joongna 도 실시간 검증해야"):
