@@ -73,11 +73,15 @@ Verification:
   - passed
   - previous landing sold-listing timeout warning disappeared
   - only existing `metadataBase` warnings remained
+- primary Vercel deploy after commit:
+  - `minyoi-acud5yckt...`
+  - status `Ready`
+- `/` public page response after deploy:
+  - status `200`
+  - `1.2s`
 
 ## Deferred
 
-- Deploy the code change to primary Vercel so `/api/cron/landing-showcases`
-  uses the ready-pool fallback in production.
 - Do not use `supabase db push` until migration history is repaired or
   intentionally reconciled.
 - A future quality wave can enrich `sample_count` from `mvp_market_price_daily`;
