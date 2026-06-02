@@ -127,6 +127,7 @@ type RawRow = {
 
 type RawListingMeta = {
   pid: number;
+  listing_state: string | null;
   sku_id: string | null;
   free_shipping: boolean | null;
   last_seen_at: string | null;
@@ -237,28 +238,15 @@ export async function GET() {
   try {
     const headers = serviceHeaders();
 
-    // Wave launch-113 (2026-05-24): 비로그인 hook 강화 — sold 표본을 내부 소스로 사용.
-    // Wave launch-115 (2026-05-24): 7일 → 14일 + scan limit 500 (3개만 보이는 frustration fix).
-    //   배경: 7일 sold + tier dedup 5겹 거치면 5개 못 채우는 케이스 발생.
-    // Wave 2026-05-25 correction: public sample 은 lock feed 가 아니라 실제 후크 샘플이다.
-    //   거래완료 문구는 숨기되, 사진/제목/매입/시세/차익은 보여준다.
+    // Wave 1021 (2026-06-02): raw_listings sold_detected_at full scan avoidance.
+    // Old flow scanned raw sold/disappeared rows first and timed out on PostgREST.
+    // Start from recently invalidated positive-profit pool rows, then confirm sold state by pid.
+    // Public samples remain non-live examples, but the expensive broad raw scan is gone.
     const sinceIso = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
-    const soldPidsRes = await restFetch(
-      `${tableUrl("mvp_raw_listings")}?select=pid,sold_detected_at&listing_state=in.(sold_confirmed,disappeared)&sold_detected_at=gte.${encodeURIComponent(sinceIso)}&order=sold_detected_at.desc&limit=500`,
+    const poolRes = await restFetch(
+      `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key&status=eq.invalidated&expected_profit_max=gt.0&updated_at=gte.${encodeURIComponent(sinceIso)}&order=updated_at.desc,expected_profit_max.desc&limit=${PREVIEW_POOL_SCAN_LIMIT}`,
       { headers },
     );
-    const soldPidRows = (await soldPidsRes.json()) as Array<{ pid: number; sold_detected_at: string }>;
-    const soldPids = soldPidRows.map((r) => r.pid).filter((p) => Number.isFinite(p) && p > 0);
-
-    if (soldPids.length === 0) {
-      return NextResponse.json({ items: [] }, {
-        headers: { "Cache-Control": `public, max-age=${CACHE_SECONDS}, s-maxage=${CACHE_SECONDS}` },
-      });
-    }
-
-    // candidate_pool 에서 sold pid + positive profit 만. status 는 invalidated 거나 다른 거 (sold 면 보통 invalidated).
-    const poolUrl = `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key&pid=in.(${soldPids.join(",")})&expected_profit_max=gt.0&order=profit_band.desc,expected_profit_max.desc&limit=${PREVIEW_POOL_SCAN_LIMIT}`;
-    const poolRes = await restFetch(poolUrl, { headers });
     const pool = (await poolRes.json()) as PoolRow[];
 
     if (pool.length === 0) {
@@ -275,7 +263,7 @@ export async function GET() {
         { headers },
       ),
       restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,sku_id,free_shipping,last_seen_at,shop_review_rating,shop_review_count&pid=in.(${poolPids.join(",")})`,
+        `${tableUrl("mvp_raw_listings")}?select=pid,listing_state,sku_id,free_shipping,last_seen_at,shop_review_rating,shop_review_count&pid=in.(${poolPids.join(",")})&listing_state=in.(sold_confirmed,disappeared)`,
         { headers },
       ),
     ]);
@@ -287,7 +275,8 @@ export async function GET() {
     const candidateRows = pool
       .filter((row) => {
         const raw = rawByPid.get(row.pid);
-        return Boolean(raw && raw.price > 0 && raw.price <= TIER_B_MAX_KRW);
+        const soldMeta = metaByPid.get(row.pid);
+        return Boolean(soldMeta && raw && raw.price > 0 && raw.price <= TIER_B_MAX_KRW);
       })
       .slice(0, PREVIEW_MARKET_SCAN_LIMIT);
     const candidateComparableKeys = [
