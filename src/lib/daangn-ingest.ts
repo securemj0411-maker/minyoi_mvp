@@ -347,6 +347,48 @@ function buildEmptyResult(mode: DaangnSourceMode, skipReason: string | undefined
   };
 }
 
+async function loadPreviousDaangnSourceStatus() {
+  const res = await restFetch(
+    `${tableUrl("mvp_source_health")}?select=status&source=eq.${DAANGN_SOURCE_ID}&order=checked_at.desc&limit=1`,
+    { headers: serviceHeaders() },
+  );
+  const rows = (await res.json()) as Array<{ status?: string | null }>;
+  return rows[0]?.status ?? null;
+}
+
+async function insertDaangnSourceHealth(input: {
+  status: DaangnIngestResult["sourceHealthStatus"];
+  reason: string;
+  searchResultCount: number;
+  metrics: Record<string, unknown>;
+}) {
+  try {
+    const previous = await loadPreviousDaangnSourceStatus();
+    await restFetch(tableUrl("mvp_source_health"), {
+      method: "POST",
+      headers: serviceHeaders("return=minimal"),
+      body: jsonBody([{
+        source: DAANGN_SOURCE_ID,
+        checked_at: new Date().toISOString(),
+        window_minutes: 15,
+        status: input.status,
+        previous_status: previous,
+        detail_success_rate: input.metrics.detailSuccessRate ?? null,
+        detail_404_rate: input.metrics.detail404Rate ?? null,
+        detail_5xx_rate: input.metrics.detail5xxRate ?? null,
+        sold_transition_rate: 0,
+        disappeared_transition_rate: 0,
+        search_result_count: input.searchResultCount,
+        baseline_json: input.metrics,
+        hysteresis_json: { note: "daangn_ingest_source_health" },
+        reason: input.reason,
+      }]),
+    });
+  } catch (err) {
+    console.warn("daangn source health insert failed (non-fatal)", err instanceof Error ? err.message : String(err));
+  }
+}
+
 function sleep(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, Math.max(0, ms)));
 }
@@ -2096,6 +2138,40 @@ export async function runDaangnIngest(options: DaangnIngestOptions = {}): Promis
   }
   timings.rawUpsert = Date.now() - tRawUpsertStart;
   timings.total = Date.now() - tIngestStart;
+
+  const detailAttempts = detailFetched + detailFailed;
+  await insertDaangnSourceHealth({
+    status: sourceHealthStatus,
+    reason: sourceHealthReason,
+    searchResultCount: summary.total,
+    metrics: {
+      mode,
+      regionShardCount,
+      regionShardIndex,
+      regionShardRegions: regions.length,
+      regionSelectionMode,
+      searchConcurrency,
+      combos: combos.length,
+      executedCombos,
+      blockedCombos,
+      failedCombos,
+      failureRate: combos.length > 0 ? Number((failedCombos / combos.length).toFixed(3)) : 0,
+      articles: summary.total,
+      filteredArticles: filteredArticles.length,
+      categoryFilterDropRatio,
+      catalogHintArticles: catalogHintArticles.length,
+      upsertCandidateArticles: upsertCandidateArticles.length,
+      rawUpserted,
+      rawSkippedExisting,
+      detailAttempts,
+      detailFetched,
+      detailParsed,
+      detailFailed,
+      detailSuccessRate: detailAttempts > 0 ? Number((detailParsed / detailAttempts).toFixed(3)) : null,
+      blockedSignals,
+      timingsMs: timings,
+    },
+  });
 
   const finishedAt = new Date();
   return {
