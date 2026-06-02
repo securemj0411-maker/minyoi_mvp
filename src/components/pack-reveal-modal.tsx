@@ -872,7 +872,7 @@ function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
     return {
       eyebrow: "5. 판매 속도",
       title: hasHours
-        ? `되팔면 보통 ${label} 안에 팔리는 편이에요`
+        ? `판매 속도는 참고로 ${label} 정도예요`
         : `최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}건 거래됐어요`,
       metric: label,
       metricLabel: `7일 ${velocity.sold7dCount.toLocaleString("ko-KR")}건 — 표본 적음`,
@@ -5180,6 +5180,9 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
           <div className="mt-1 text-[20px] font-black leading-tight text-[#172019] dark:text-zinc-50">{sampleValue}</div>
         </div>
       </div>
+      <p className="mt-2 break-keep text-[10.5px] font-semibold leading-4 text-zinc-500 dark:text-zinc-400">
+        판매 주기는 같은 모델 전체 기준의 참고값이에요. 상태·출처별 차이는 시세 비교와 함께 봐주세요.
+      </p>
     </div>
   );
 }

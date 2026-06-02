@@ -713,7 +713,7 @@ export default function LookupClient() {
                   </div>
                 </div>
                 <p className="mt-2 text-[10.5px] font-medium leading-4 text-zinc-400 dark:text-zinc-500">
-                  같은 등급 매물 기준으로 등록 → 판매까지 평균 얼마 걸리는지에요.
+                  같은 모델 전체 기준으로 등록 → 판매 감지까지 걸린 시간이에요. 상태·출처별 차이는 참고로 봐주세요.
                 </p>
               </section>
             ) : null}

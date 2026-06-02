@@ -37,8 +37,9 @@ export const maxDuration = 300;
 // Wave 1003 (2026-06-01): category 단위 분할 처리.
 //   각 cron 호출 시 mvp_listing_parsed 에서 distinct category 가져와서 loop.
 //   각 category 호출 별도 try/catch — 한 category timeout 해도 나머지 진행.
-//   route maxDuration 300s 안에서 가능한 만큼 처리. 다음 cron (6h 후) 이 남은 category picks up.
-//   결과적으로 24h 안 (sync cron 매 6h × 4번) 모든 category 한 번 이상 갱신.
+//   route maxDuration 300s 안에서 가능한 만큼 처리. Wave 1024부터 tail category order를 6h slot별로 회전해
+//   항상 앞쪽 category만 처리되는 starvation을 막는다.
+//   결과적으로 24h 안 (sync cron 매 6h × 4번) 더 많은 category가 한 번 이상 갱신된다.
 async function loadCategoryList(): Promise<string[]> {
   // mvp_listing_parsed.category 의 distinct 값. 빠른 query (인덱스 있을 시 ms 단위).
   // PostgREST 통해 호출 — distinct=true + select=category.
@@ -69,6 +70,34 @@ const FALLBACK_CATEGORY_ORDER = [
   "lego", "home_appliance", "desktop", "speaker", "perfume", "bike",
   "camera", "monitor",
 ];
+
+const VELOCITY_ALWAYS_FIRST_CATEGORIES = [
+  "clothing",
+  "shoe",
+  "smartphone",
+  "bag",
+  "earphone",
+  "tablet",
+];
+
+function orderedVelocityCategories(categories: string[], now = new Date()): string[] {
+  const seen = new Set<string>();
+  const deduped = categories.filter((category) => {
+    const key = category.trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const categorySet = new Set(deduped);
+  const priority = VELOCITY_ALWAYS_FIRST_CATEGORIES.filter((category) => categorySet.has(category));
+  const rest = deduped.filter((category) => !priority.includes(category));
+  if (rest.length === 0) return priority;
+  // 300s 한도 때문에 한 run 에서 뒤쪽 category 가 반복적으로 굶지 않게 6h slot 단위로 tail 을 회전.
+  const sixHourSlot = Math.floor(now.getTime() / (6 * 60 * 60 * 1000));
+  const offset = sixHourSlot % rest.length;
+  const rotatedRest = [...rest.slice(offset), ...rest.slice(0, offset)];
+  return [...priority, ...rotatedRest];
+}
 
 export async function GET(req: NextRequest) {
   const auth = checkCronAuth(req);
@@ -110,8 +139,8 @@ export async function GET(req: NextRequest) {
   try {
     const dbCategories = await loadCategoryList();
     const categories = dbCategories.length > 0
-      ? [...new Set([...FALLBACK_CATEGORY_ORDER, ...dbCategories])]
-      : FALLBACK_CATEGORY_ORDER;
+      ? orderedVelocityCategories([...FALLBACK_CATEGORY_ORDER, ...dbCategories])
+      : orderedVelocityCategories(FALLBACK_CATEGORY_ORDER);
     const perCategory: Array<{ category: string; ok: boolean; durationMs: number; upserted?: number; error?: string }> = [];
     let totalUpserted = 0;
     let processed = 0;
