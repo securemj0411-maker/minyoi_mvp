@@ -157,6 +157,10 @@ export async function GET(req: NextRequest) {
   const daangnRegionDistrict = url.searchParams.get("daangnRegion2")?.trim() || null;
   const daangnRegionNeighborhood = url.searchParams.get("daangnRegion3")?.trim() || null;
   const hasDaangnRegionFilter = Boolean(daangnRegionProvince || daangnRegionDistrict || daangnRegionNeighborhood);
+  const includeStatsParam = url.searchParams.get("includeStats");
+  const includeStats = includeStatsParam == null
+    ? page === 1
+    : ["1", "true", "yes"].includes(includeStatsParam.toLowerCase());
   // Wave 176 (2026-05-17): 검색어 — 매물명/SKU명/comparable_key/pid 통합 검색.
   // 운영자가 특정 매물/모델 찾을 때 (예: "327", "Gazelle", "shoe|nb_327").
   const searchQuery = url.searchParams.get("q")?.trim() || null;
@@ -627,7 +631,7 @@ export async function GET(req: NextRequest) {
       bySource: Array<{ source: string; label: string; ready_count: number }>;
       byDaangnRegion: Array<{ province: string; district: string; neighborhood: string; full: string; ready_count: number }>;
     } | null = null;
-    if (page === 1) {
+    if (includeStats) {
       const bands = [1, 2, 3];
       const statuses = ["ready", "invalidated", "spent"];
       const requests = bands.flatMap((b) => statuses.map(async (s) => {

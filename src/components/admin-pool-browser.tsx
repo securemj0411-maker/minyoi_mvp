@@ -191,6 +191,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
   const [data, setData] = useState<Resp | null>(null);
   const [stats, setStats] = useState<Resp["stats"]>(null);
   const [loading, setLoading] = useState(false);
+  const [statsLoading, setStatsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
@@ -213,7 +214,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), status, sort });
+      const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), status, sort, includeStats: "0" });
       if (band) params.set("band", band);
       if (category) params.set("category", category);
       if (priceBucket) params.set("priceBucket", priceBucket);
@@ -230,14 +231,31 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
       }
       const json = (await res.json()) as Resp;
       setData(json);
-      // stats는 page=1 응답에만 포함 — 받으면 메모리에 보관 (페이지 이동해도 유지)
-      if (json.stats) setStats(json.stats);
     } catch (err) {
       setError(err instanceof Error ? err.message : "fetch failed");
     } finally {
       setLoading(false);
     }
   }, [page, pageSize, status, band, category, priceBucket, sku, source, daangnRegion1, daangnRegion2, daangnRegion3, sort, searchQuery, endpoint]);
+
+  const fetchStats = useCallback(async () => {
+    setStatsLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: "1",
+        pageSize: "1",
+        status: "ready",
+        sort: "newest_added",
+        includeStats: "1",
+      });
+      const res = await fetch(`${endpoint}?${params}`, { credentials: "include" });
+      if (!res.ok) return;
+      const json = (await res.json()) as Resp;
+      if (json.stats) setStats(json.stats);
+    } finally {
+      setStatsLoading(false);
+    }
+  }, [endpoint]);
 
   // Wave 176: Enter / 🔍 버튼 / X 클릭 시 draft → query 적용 + 페이지 리셋.
   const applySearch = useCallback(() => {
@@ -276,6 +294,10 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
   useEffect(() => {
     void fetchPage();
   }, [fetchPage]);
+
+  useEffect(() => {
+    void fetchStats();
+  }, [fetchStats]);
 
   // 코멘트 실시간 갱신 — MarketSourceDebug 저장 callback에서 호출
   const handleCommentSaved = useCallback((pid: number, savedNote: string) => {
@@ -330,6 +352,12 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
           )}
         </div>
 
+        {statsLoading && !stats && (
+          <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-3 text-xs font-semibold text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
+            풀 통계 계산 중... 목록은 먼저 표시됩니다.
+          </div>
+        )}
+
         {/* Pool 전체 stats — band × status breakdown */}
         {stats && (
           <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40">
@@ -363,7 +391,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                 </tbody>
               </table>
             </div>
-            <div className="mt-2 text-[10px] text-zinc-400 dark:text-zinc-500">stats는 page 1 로드 시만 fetch (DB I/O 절약).</div>
+            <div className="mt-2 text-[10px] text-zinc-400 dark:text-zinc-500">stats는 별도 요청으로 fetch (목록 로딩 차단 방지).</div>
           </div>
         )}
 
@@ -686,7 +714,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
               ))}
             </select>
           )}
-          <button onClick={fetchPage} disabled={loading} className="rounded-md border border-zinc-300 bg-white px-3 py-1 font-semibold hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700">
+          <button onClick={() => { void fetchPage(); void fetchStats(); }} disabled={loading} className="rounded-md border border-zinc-300 bg-white px-3 py-1 font-semibold hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700">
             {loading ? "..." : "↻ 새로고침"}
           </button>
           {(band || category || priceBucket || sku || source || daangnRegion1 || daangnRegion2 || daangnRegion3) && (
