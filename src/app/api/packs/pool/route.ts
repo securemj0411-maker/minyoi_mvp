@@ -60,7 +60,11 @@ const FETCH_POOL_OVERFETCH = 1500;
 const POOL_PAGE_SIZE = 1000;
 const PID_LOOKUP_CHUNK_SIZE = 400;
 const REFRESH_READY_CANDIDATE_LIMIT = 500;
+const INITIAL_READY_OVERFETCH = intEnv("FEED_INITIAL_READY_OVERFETCH", 600, 100, FETCH_POOL_OVERFETCH);
+const DAANGN_SOURCE_READY_OVERFETCH = intEnv("DAANGN_FEED_SOURCE_READY_OVERFETCH", 600, READY_SLOTS, FETCH_POOL_OVERFETCH);
 const DAANGN_POOL_LIVE_VERIFY_CONCURRENCY = 8;
+const DAANGN_POOL_LIVE_VERIFY_MAX_TARGETS = intEnv("DAANGN_POOL_LIVE_VERIFY_MAX_TARGETS", 4, 0, PAGE_SIZE);
+const DAANGN_POOL_LIVE_VERIFY_TIMEOUT_MS = intEnv("DAANGN_POOL_LIVE_VERIFY_TIMEOUT_MS", 900, 300, 3_000);
 
 function intEnv(name: string, fallback: number, min: number, max: number) {
   const raw = Number(process.env[name]);
@@ -249,17 +253,18 @@ async function liveVerifyDaangnVisiblePool(
     .filter((entry): entry is { row: PoolRow & { soldOut: boolean }; meta: RawListingMeta } => (
       Boolean(entry.meta?.url) && isDaangnMarketplaceSource(entry.meta?.source ?? entry.meta?.seller_source)
     ));
-  if (targets.length === 0) return { pool, raws, metas };
+  if (targets.length === 0 || DAANGN_POOL_LIVE_VERIFY_MAX_TARGETS <= 0) return { pool, raws, metas };
+  const verifyTargets = targets.slice(0, DAANGN_POOL_LIVE_VERIFY_MAX_TARGETS);
 
   const blockedPids = new Set<number>();
   let cursor = 0;
   async function worker() {
-    while (cursor < targets.length) {
+    while (cursor < verifyTargets.length) {
       const index = cursor;
       cursor += 1;
-      const target = targets[index];
+      const target = verifyTargets[index];
       if (!target?.meta.url) continue;
-      const live = await fetchDaangnLiveState(target.meta.url, 3_000);
+      const live = await fetchDaangnLiveState(target.meta.url, DAANGN_POOL_LIVE_VERIFY_TIMEOUT_MS);
       if (!live.ok) {
         if (live.status === 404) {
           blockedPids.add(target.row.pid);
@@ -274,11 +279,12 @@ async function liveVerifyDaangnVisiblePool(
     }
   }
 
-  await Promise.all(Array.from({ length: Math.min(DAANGN_POOL_LIVE_VERIFY_CONCURRENCY, targets.length) }, () => worker()));
+  await Promise.all(Array.from({ length: Math.min(DAANGN_POOL_LIVE_VERIFY_CONCURRENCY, verifyTargets.length) }, () => worker()));
   if (blockedPids.size > 0) {
     console.warn("[pool] daangn live-state block", {
       blocked: blockedPids.size,
-      checked: targets.length,
+      checked: verifyTargets.length,
+      skipped: Math.max(0, targets.length - verifyTargets.length),
     });
   }
   return {
@@ -899,6 +905,31 @@ function mergePoolRowsPreferFirst(...groups: VisiblePoolRow[][]): VisiblePoolRow
   return out;
 }
 
+function readyPoolOverfetchLimit(options: {
+  sort?: "profit_desc" | "latest" | "price_asc" | "distance";
+  source?: "bunjang" | "joongna" | "daangn" | null;
+  priceMax?: number | null;
+  readyCandidateLimit?: number;
+  userHomeDaangnFullPath?: string | null;
+}) {
+  const candidateTarget = options.readyCandidateLimit ?? READY_SLOTS;
+  const nearbyDaangnSortPriority = Boolean(options.userHomeDaangnFullPath) && options.sort === "distance";
+  if (nearbyDaangnSortPriority) {
+    return Math.min(FETCH_POOL_OVERFETCH, Math.max(READY_SLOTS * 4, candidateTarget));
+  }
+  // Budget filtering needs mvp_listings.price, so keep the wider scan until
+  // candidate_pool has a denormalized buy-price column or a DB-side feed RPC.
+  if (options.priceMax != null) return FETCH_POOL_OVERFETCH;
+  if (options.source === "daangn") {
+    return Math.min(FETCH_POOL_OVERFETCH, Math.max(DAANGN_SOURCE_READY_OVERFETCH, candidateTarget));
+  }
+  if (options.source) return FETCH_POOL_OVERFETCH;
+  if (candidateTarget <= READY_SLOTS) {
+    return Math.min(FETCH_POOL_OVERFETCH, Math.max(INITIAL_READY_OVERFETCH, candidateTarget));
+  }
+  return Math.min(FETCH_POOL_OVERFETCH, Math.max(INITIAL_READY_OVERFETCH, candidateTarget));
+}
+
 async function loadPool(
   headers: Record<string, string>,
   options: {
@@ -951,16 +982,11 @@ async function loadPool(
   const readyBaseUrl =
     `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready${excludeClause}&${orderClause}`;
   const nearbyDaangnPrimary = Boolean(options.userHomeDaangnFullPath) && (options.source === "daangn" || options.sort === "distance");
-  // Wave 803b (2026-05-30): 사용자 보고 "당근만 박으면 매물 누락" fix.
-  //   Wave 953 (다른 세션) 가 nearbyDaangnPrimary 일 때 overfetch 1500→100 줄였는데
-  //   부작용: source=daangn + sort=profit_desc 박을 때 main pool 100 + nearby 120 = 220 매물만
-  //   → daangn ready 4,206 중 5% 만 fetch → 멀리 있는 매물 (낙성대동 등) 누락.
-  //   Fix: overfetch 줄임은 sort=distance 박힐 때만 (nearby 가 sort 자체). source=daangn 박을 땐
-  //   overfetch 1500 유지 → 매물 다 보임 (Wave 953 속도 의도는 sort=distance 에서만 살림).
-  const nearbyDaangnSortPriority = Boolean(options.userHomeDaangnFullPath) && options.sort === "distance";
-  const readyOverfetchLimit = nearbyDaangnSortPriority
-    ? Math.min(FETCH_POOL_OVERFETCH, Math.max(READY_SLOTS * 4, options.readyCandidateLimit ?? READY_SLOTS))
-    : FETCH_POOL_OVERFETCH;
+  // Wave 1026 (2026-06-02): feed hot path trim.
+  // Budgeted requests still need a wider scan because candidate_pool has no buy-price column.
+  // Unbudgeted first feed can be much lighter: nearby Daangn prefetch preserves local-first
+  // ordering, while the normal ready page only needs enough rows for category/source diversity.
+  const readyOverfetchLimit = readyPoolOverfetchLimit(options);
   const [readyRowsPage, nearbyDaangnResult, soldOutRes] = await Promise.all([
     fetchPaginatedJson<PoolRow>(readyBaseUrl, headers, readyOverfetchLimit),
     withTimeout(
