@@ -10,6 +10,7 @@ type Point = {
   active: number | null;
   sold: number | null;
   blended: number | null;
+  conditionTier?: string | null;
   activeCount: number;
   soldCount: number;
   confidence?: "high" | "medium" | "low";
@@ -69,6 +70,7 @@ export default function MarketHistoryChart({
   comparableKey,
   currentPrice,
   conditionClass,
+  conditionTier,
   priceSource,
   basisSource,
   basisSourceLabel,
@@ -84,6 +86,7 @@ export default function MarketHistoryChart({
   comparableKey: string | null;
   currentPrice?: number | null;
   conditionClass?: string | null;
+  conditionTier?: string | null;
   priceSource?: "reference" | "market" | "source_market" | "v3_pending_rematch" | null;
   basisSource?: string | null;
   basisSourceLabel?: string | null;
@@ -107,9 +110,10 @@ export default function MarketHistoryChart({
     const isReferenceChart = priceSource === "reference";
     const chartConditionClass = isReferenceChart ? "unopened" : conditionClass;
     const ccQuery = chartConditionClass ? `&cc=${encodeURIComponent(chartConditionClass)}` : "";
+    const tierQuery = !isReferenceChart && conditionTier ? `&tier=${encodeURIComponent(conditionTier)}` : "";
     const strictQuery = isReferenceChart ? "&strict=1" : "";
     const sourceQuery = basisSource ? `&source=${encodeURIComponent(basisSource)}` : "";
-    fetch(`/api/market/history?ck=${encodeURIComponent(comparableKey)}&days=30${ccQuery}${strictQuery}${sourceQuery}`, { cache: "no-store" })
+    fetch(`/api/market/history?ck=${encodeURIComponent(comparableKey)}&days=30${ccQuery}${tierQuery}${strictQuery}${sourceQuery}`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((j: HistoryResp) => {
         if (!cancelled) setData(j.points ?? []);
@@ -123,7 +127,7 @@ export default function MarketHistoryChart({
     return () => {
       cancelled = true;
     };
-  }, [basisSource, comparableKey, conditionClass, opened, priceSource, onState]);
+  }, [basisSource, comparableKey, conditionClass, conditionTier, opened, priceSource, onState]);
 
   // Wave launch-83: data 상태 → parent 에 알림.
   //   data null = 아직 fetch 안 됨 (loading 별도 처리).

@@ -588,7 +588,7 @@ function sourceAwareMedian(
   const source = normalizeMarketplaceSource(marketplaceSource);
   const byCondition = sourceBandMap.get(comparableKey)?.get(source);
   if (!byCondition) return null;
-  const { row } = pickByConditionFallback(
+  const { row, fallbackUsed } = pickByConditionFallback(
     byCondition,
     conditionClass,
     (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0),
@@ -604,6 +604,9 @@ function sourceAwareMedian(
   //   Wave 803c 가 < 3 → < 2 박은 건 그 정책 우회. 원복.
   //   진짜 fix 는 fallback 박힐 때 UI 라벨 명시 (별도 wave) — "당근 표본 부족, 통합 시세 박힘".
   if (!row || sourceSampleCount < 3) return null;
+  // Wave 1023 (2026-06-02): 당근은 fallback condition/tier row로 차익을 만들지 않는다.
+  // source는 같아도 상태가 다르면 당근 가격 편차가 커서 "같은 상태끼리" 신뢰를 깨기 쉽다.
+  if (isDaangnMarketplaceSource(source) && fallbackUsed) return null;
   const price = row.blended_median_price ?? row.active_median_price ?? null;
   return price && price > 0 ? price : null;
 }

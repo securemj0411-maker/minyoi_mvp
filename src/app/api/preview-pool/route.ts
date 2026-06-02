@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { conditionFallbackChain } from "@/lib/condition-fallback";
+import { pickByConditionFallback } from "@/lib/condition-fallback";
 import { teaserBudgetRangeLabel, teaserProfitLabel } from "@/lib/feed-price-display";
+import { isDaangnMarketplaceSource, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 // 2026-05-17: 비로그인 사용자용 마스킹 매물 preview API.
@@ -127,6 +128,8 @@ type RawRow = {
 
 type RawListingMeta = {
   pid: number;
+  source: string | null;
+  seller_source: string | null;
   listing_state: string | null;
   sku_id: string | null;
   free_shipping: boolean | null;
@@ -135,9 +138,17 @@ type RawListingMeta = {
   shop_review_count: number | null;
 };
 
+type ParsedRow = {
+  pid: number;
+  condition_class: string | null;
+  condition_tier: string | null;
+};
+
 type MarketPriceRow = {
   comparable_key: string;
   condition_class: string | null;
+  condition_tier: string | null;
+  source?: string | null;
   blended_median_price: number | null;
   active_median_price: number | null;
   sold_median_price: number | null;
@@ -158,7 +169,7 @@ function buildMarketByKeyCondition(rows: MarketPriceRow[]) {
   const byKey = new Map<string, Map<string, MarketPriceRow>>();
   for (const row of rows) {
     if (!row.comparable_key) continue;
-    const condition = row.condition_class ?? "normal";
+    const condition = `${(row.condition_tier ?? "").trim()}|${(row.condition_class ?? "").trim()}`;
     const byCondition = byKey.get(row.comparable_key) ?? new Map<string, MarketPriceRow>();
     // Query is ordered newest first, so the first row per key/condition wins.
     if (!byCondition.has(condition)) byCondition.set(condition, row);
@@ -167,18 +178,62 @@ function buildMarketByKeyCondition(rows: MarketPriceRow[]) {
   return byKey;
 }
 
+function buildSourceMarketByKeyCondition(rows: MarketPriceRow[]) {
+  const byKey = new Map<string, Map<string, Map<string, MarketPriceRow>>>();
+  for (const row of rows) {
+    if (!row.comparable_key || !row.source) continue;
+    const source = normalizeMarketplaceSource(row.source);
+    const bySource = byKey.get(row.comparable_key) ?? new Map<string, Map<string, MarketPriceRow>>();
+    const byCondition = bySource.get(source) ?? new Map<string, MarketPriceRow>();
+    const condition = `${(row.condition_tier ?? "").trim()}|${(row.condition_class ?? "").trim()}`;
+    if (!byCondition.has(condition)) byCondition.set(condition, row);
+    bySource.set(source, byCondition);
+    byKey.set(row.comparable_key, bySource);
+  }
+  return byKey;
+}
+
 function marketPriceForPoolRow(
   row: PoolRow,
   raw: RawRow | undefined,
+  meta: RawListingMeta | undefined,
+  parsed: ParsedRow | undefined,
   marketByKeyCondition: Map<string, Map<string, MarketPriceRow>>,
+  sourceMarketByKeyCondition: Map<string, Map<string, Map<string, MarketPriceRow>>>,
 ): number | null {
+  const conditionClass = parsed?.condition_class ?? row.condition_class ?? "normal";
+  const conditionTier = parsed?.condition_tier ?? null;
+  const source = meta ? normalizeMarketplaceSource(meta.source ?? meta.seller_source) : null;
   if (row.comparable_key) {
-    const byCondition = marketByKeyCondition.get(row.comparable_key);
-    if (byCondition) {
-      for (const condition of conditionFallbackChain(row.condition_class ?? "normal")) {
-        const price = marketPriceFromRow(byCondition.get(condition));
+    if (source) {
+      const byCondition = sourceMarketByKeyCondition.get(row.comparable_key)?.get(source);
+      const picked = pickByConditionFallback(
+        byCondition,
+        conditionClass,
+        (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0),
+        1,
+        conditionTier,
+      );
+      const sourceSampleCount = picked.row
+        ? Number(picked.row.active_sample_count ?? 0) + Number(picked.row.sold_sample_count ?? 0)
+        : 0;
+      if (picked.row && sourceSampleCount >= 3 && !(isDaangnMarketplaceSource(source) && picked.fallbackUsed)) {
+        const price = marketPriceFromRow(picked.row);
         if (price != null) return price;
       }
+      if (isDaangnMarketplaceSource(source)) return null;
+    }
+    const byCondition = marketByKeyCondition.get(row.comparable_key);
+    if (byCondition) {
+      const picked = pickByConditionFallback(
+        byCondition,
+        conditionClass,
+        (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0) + Number(r.disappeared_sample_count ?? 0),
+        1,
+        conditionTier,
+      );
+      const price = marketPriceFromRow(picked.row);
+      if (price != null) return price;
     }
   }
 
@@ -189,10 +244,13 @@ function marketPriceForPoolRow(
 function previewMarketGap(
   row: PoolRow,
   raw: RawRow | undefined,
+  meta: RawListingMeta | undefined,
+  parsed: ParsedRow | undefined,
   marketByKeyCondition: Map<string, Map<string, MarketPriceRow>>,
+  sourceMarketByKeyCondition: Map<string, Map<string, Map<string, MarketPriceRow>>>,
 ): number | null {
   const buyPrice = Number(raw?.price ?? 0);
-  const marketPrice = marketPriceForPoolRow(row, raw, marketByKeyCondition);
+  const marketPrice = marketPriceForPoolRow(row, raw, meta, parsed, marketByKeyCondition, sourceMarketByKeyCondition);
   if (!Number.isFinite(buyPrice) || buyPrice <= 0 || marketPrice == null) return null;
   const gap = marketPrice - buyPrice;
   return Number.isFinite(gap) && gap > 0 ? gap : null;
@@ -201,10 +259,13 @@ function previewMarketGap(
 function previewProfitRoi(
   row: PoolRow,
   raw: RawRow | undefined,
+  meta: RawListingMeta | undefined,
+  parsed: ParsedRow | undefined,
   marketByKeyCondition: Map<string, Map<string, MarketPriceRow>>,
+  sourceMarketByKeyCondition: Map<string, Map<string, Map<string, MarketPriceRow>>>,
 ): number | null {
   const buyBase = Math.max(Number(raw?.price ?? 0), 1);
-  const marketGap = previewMarketGap(row, raw, marketByKeyCondition);
+  const marketGap = previewMarketGap(row, raw, meta, parsed, marketByKeyCondition, sourceMarketByKeyCondition);
   if (!Number.isFinite(buyBase) || marketGap == null || marketGap <= 0) return null;
   const roi = marketGap / buyBase;
   return Number.isFinite(roi) ? roi : null;
@@ -213,9 +274,12 @@ function previewProfitRoi(
 function isPreviewHighProfitAnomaly(
   row: PoolRow,
   raw: RawRow | undefined,
+  meta: RawListingMeta | undefined,
+  parsed: ParsedRow | undefined,
   marketByKeyCondition: Map<string, Map<string, MarketPriceRow>>,
+  sourceMarketByKeyCondition: Map<string, Map<string, Map<string, MarketPriceRow>>>,
 ): boolean {
-  const roi = previewProfitRoi(row, raw, marketByKeyCondition);
+  const roi = previewProfitRoi(row, raw, meta, parsed, marketByKeyCondition, sourceMarketByKeyCondition);
   if (roi == null || roi < HIGH_PROFIT_ELECTRONICS_ROI) return false;
 
   const category = row.category ?? "";
@@ -263,7 +327,7 @@ export async function GET() {
         { headers },
       ),
       restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,listing_state,sku_id,free_shipping,last_seen_at,shop_review_rating,shop_review_count&pid=in.(${poolPids.join(",")})&listing_state=in.(sold_confirmed,disappeared)`,
+        `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,listing_state,sku_id,free_shipping,last_seen_at,shop_review_rating,shop_review_count&pid=in.(${poolPids.join(",")})&listing_state=in.(sold_confirmed,disappeared)`,
         { headers },
       ),
     ]);
@@ -282,13 +346,26 @@ export async function GET() {
     const candidateComparableKeys = [
       ...new Set(candidateRows.map((row) => row.comparable_key).filter((key): key is string => Boolean(key))),
     ];
-    const marketRows = candidateComparableKeys.length > 0
-      ? await restFetch(
-        `${tableUrl("mvp_market_price_daily")}?select=comparable_key,condition_class,blended_median_price,active_median_price,sold_median_price,sold_sample_count,active_sample_count,disappeared_sample_count,date,computed_at&comparable_key=in.(${candidateComparableKeys.map(encodeURIComponent).join(",")})&order=date.desc,computed_at.desc&limit=${Math.max(200, candidateComparableKeys.length * 12)}`,
-        { headers },
-      ).then((res) => res.json() as Promise<MarketPriceRow[]>)
-      : [];
+    const candidatePids = candidateRows.map((row) => row.pid);
+    const [marketRows, sourceMarketRows, parsedRows] = candidateComparableKeys.length > 0
+      ? await Promise.all([
+        restFetch(
+          `${tableUrl("mvp_market_price_daily")}?select=comparable_key,condition_class,condition_tier,blended_median_price,active_median_price,sold_median_price,sold_sample_count,active_sample_count,disappeared_sample_count,date,computed_at&comparable_key=in.(${candidateComparableKeys.map(encodeURIComponent).join(",")})&order=date.desc,computed_at.desc&limit=${Math.max(200, candidateComparableKeys.length * 12)}`,
+          { headers },
+        ).then((res) => res.json() as Promise<MarketPriceRow[]>),
+        restFetch(
+          `${tableUrl("mvp_market_price_daily_per_source")}?select=comparable_key,source,condition_class,condition_tier,blended_median_price,active_median_price,sold_median_price,sold_sample_count,active_sample_count,disappeared_sample_count,date,computed_at&comparable_key=in.(${candidateComparableKeys.map(encodeURIComponent).join(",")})&order=date.desc,computed_at.desc&limit=${Math.max(400, candidateComparableKeys.length * 36)}`,
+          { headers },
+        ).then((res) => res.json() as Promise<MarketPriceRow[]>),
+        restFetch(
+          `${tableUrl("mvp_listing_parsed")}?select=pid,condition_class,condition_tier&pid=in.(${candidatePids.join(",")})&limit=${candidatePids.length + 20}`,
+          { headers },
+        ).then((res) => res.json() as Promise<ParsedRow[]>),
+      ])
+      : [[], [], []] as [MarketPriceRow[], MarketPriceRow[], ParsedRow[]];
     const marketByKeyCondition = buildMarketByKeyCondition(marketRows);
+    const sourceMarketByKeyCondition = buildSourceMarketByKeyCondition(sourceMarketRows);
+    const parsedByPid = new Map<number, ParsedRow>(parsedRows.map((row) => [Number(row.pid), row]));
 
     // 2026-05-17: 가격 tier 분리 — 10만 이하 2개 + 10-30만 3개. SKU + category + condition_class 다양화.
     // pickFromTier 가 carry-over: cumulative usedSkus/categories/usedConditions.
@@ -305,9 +382,9 @@ export async function GET() {
         if (selected.some((s) => s.pid === row.pid)) continue;
         const raw = rawByPid.get(row.pid);
         if (!raw || raw.price > maxPriceKrw) continue;
-        const currentGap = previewMarketGap(row, raw, marketByKeyCondition);
+        const currentGap = previewMarketGap(row, raw, metaByPid.get(row.pid), parsedByPid.get(row.pid), marketByKeyCondition, sourceMarketByKeyCondition);
         if (currentGap == null || currentGap < MIN_PREVIEW_MARKET_GAP) continue;
-        if (isPreviewHighProfitAnomaly(row, raw, marketByKeyCondition)) continue;
+        if (isPreviewHighProfitAnomaly(row, raw, metaByPid.get(row.pid), parsedByPid.get(row.pid), marketByKeyCondition, sourceMarketByKeyCondition)) continue;
         const sku = skuByPid.get(row.pid);
         if (sku && usedSkus.has(sku)) continue;
         const cat = row.category ?? "other";
@@ -327,9 +404,9 @@ export async function GET() {
           if (tierPicked.some((s) => s.pid === row.pid)) continue;
           const raw = rawByPid.get(row.pid);
           if (!raw || raw.price > maxPriceKrw) continue;
-          const currentGap = previewMarketGap(row, raw, marketByKeyCondition);
+          const currentGap = previewMarketGap(row, raw, metaByPid.get(row.pid), parsedByPid.get(row.pid), marketByKeyCondition, sourceMarketByKeyCondition);
           if (currentGap == null || currentGap < MIN_PREVIEW_MARKET_GAP) continue;
-          if (isPreviewHighProfitAnomaly(row, raw, marketByKeyCondition)) continue;
+          if (isPreviewHighProfitAnomaly(row, raw, metaByPid.get(row.pid), parsedByPid.get(row.pid), marketByKeyCondition, sourceMarketByKeyCondition)) continue;
           const sku = skuByPid.get(row.pid);
           if (sku && usedSkus.has(sku)) continue;
           const cat = row.category ?? "other";
@@ -347,9 +424,9 @@ export async function GET() {
           if (tierPicked.some((s) => s.pid === row.pid)) continue;
           const raw = rawByPid.get(row.pid);
           if (!raw || raw.price > maxPriceKrw) continue;
-          const currentGap = previewMarketGap(row, raw, marketByKeyCondition);
+          const currentGap = previewMarketGap(row, raw, metaByPid.get(row.pid), parsedByPid.get(row.pid), marketByKeyCondition, sourceMarketByKeyCondition);
           if (currentGap == null || currentGap < MIN_PREVIEW_MARKET_GAP) continue;
-          if (isPreviewHighProfitAnomaly(row, raw, marketByKeyCondition)) continue;
+          if (isPreviewHighProfitAnomaly(row, raw, metaByPid.get(row.pid), parsedByPid.get(row.pid), marketByKeyCondition, sourceMarketByKeyCondition)) continue;
           const sku = skuByPid.get(row.pid);
           if (sku && usedSkus.has(sku)) continue;
           tierPicked.push(row);
@@ -424,8 +501,9 @@ export async function GET() {
     const items = selected.map((row, idx) => {
       const raw = rawByPid.get(row.pid);
       const meta = metaByPid.get(row.pid);
-      const marketPrice = marketPriceForPoolRow(row, raw, marketByKeyCondition);
-      const marketGap = previewMarketGap(row, raw, marketByKeyCondition) ?? 0;
+      const parsed = parsedByPid.get(row.pid);
+      const marketPrice = marketPriceForPoolRow(row, raw, meta, parsed, marketByKeyCondition, sourceMarketByKeyCondition);
+      const marketGap = previewMarketGap(row, raw, meta, parsed, marketByKeyCondition, sourceMarketByKeyCondition) ?? 0;
       const fallbackTitle = categoryFriendlyLabel(row.category);
       return {
         slot: idx + 1,
@@ -440,6 +518,7 @@ export async function GET() {
         blurredImage: raw?.thumbnail_url ?? null,
         category: row.category ?? "other",
         conditionClass: row.condition_class,
+        conditionTier: parsed?.condition_tier ?? null,
         price: raw?.price ?? 0,
         skuMedian: marketPrice,
         expectedProfitMin: marketGap,

@@ -1019,7 +1019,14 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                 })()}
                 {/* 운영자풀은 카드가 많아 자동 그래프 로드 시 /api/market/history rate limit에 걸린다. */}
                 <div className="mt-2">
-                  <MarketHistoryChart comparableKey={item.comparableKey} currentPrice={item.price} lazy />
+                  <MarketHistoryChart
+                    comparableKey={item.comparableKey}
+                    currentPrice={item.price}
+                    conditionClass={item.conditionClass ?? null}
+                    conditionTier={item.conditionTier ?? null}
+                    basisSource={item.marketplaceSource ?? null}
+                    lazy
+                  />
                 </div>
                 <div className="mt-2">
                   <MarketSourceDebug

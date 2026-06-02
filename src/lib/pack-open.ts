@@ -1336,13 +1336,15 @@ export function marketBasisForCandidate(
     conditionClass: sourceCondition,
     fallbackUsed: sourceConditionFallbackUsed,
   } = selectMarketRowByCondition(sourceByCondition, conditionClass, conditionTier);
+  const sourceMarketRequired = listingSource === DAANGN_SOURCE_ID;
   const sourceStatUsable = sourceStatCandidate != null
     && marketRowActiveSoldSampleCount(sourceStatCandidate) >= MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE;
   // Wave 1022 (2026-06-02): 당근은 실행 시장 자체가 다르다.
   // source sample 이 부족하면 mixed/reference fallback 으로 상세/easy 기준 시세를 만들지 않는다.
   // UI/상세 접근은 "당근 표본 부족"으로 fail-closed 하고, 번개/중나만 mixed fallback 을 유지한다.
-  const sourceMarketRequired = listingSource === DAANGN_SOURCE_ID;
-  const useListingSourceStat = sourceMarketRequired && sourceStatUsable;
+  // Wave 1023 (2026-06-02): 당근은 source뿐 아니라 condition/tier fallback도 fail-closed.
+  // 같은 당근 row여도 worn → normal 같은 fallback으로 차익을 만들면 "같은 상태끼리" 원칙이 샌다.
+  const useListingSourceStat = sourceMarketRequired && sourceStatUsable && !sourceConditionFallbackUsed;
   const stat = useListingSourceStat ? sourceStatCandidate : (sourceMarketRequired ? undefined : mixedStat);
   const sampleStat = useListingSourceStat ? sourceStatCandidate : (sourceMarketRequired ? sourceStatCandidate : stat);
   const actualCondition = useListingSourceStat ? sourceCondition : (sourceMarketRequired ? (sourceCondition ?? conditionClass) : mixedCondition);

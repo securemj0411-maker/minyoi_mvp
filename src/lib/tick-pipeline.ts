@@ -3399,13 +3399,14 @@ function pickPerSourceStatForMatter(
   if (!bySource) return null;
   const byCond = bySource.get(matterSource);
   if (!byCond) return null;
-  const { row } = pickByConditionFallback(
+  const { row, fallbackUsed } = pickByConditionFallback(
     byCond,
     conditionClass,
     (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0),
     1,
     conditionTier,
   );
+  if (normalizeMarketplaceSource(matterSource) === "daangn" && fallbackUsed) return null;
   return row && trustedMarketMedian(row, category) != null ? row : null;
 }
 

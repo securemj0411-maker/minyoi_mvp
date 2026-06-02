@@ -3467,6 +3467,7 @@ function DetailMarketGraphSection({ card }: { card: RevealCard }) {
           comparableKey={card.marketBasis?.comparableKey ?? null}
           currentPrice={card.price}
           conditionClass={card.marketBasis?.conditionClass ?? null}
+          conditionTier={card.conditionTier ?? null}
           priceSource={card.marketBasis?.priceSource ?? null}
           basisSource={card.marketBasis?.basisSource ?? null}
           basisSourceLabel={card.marketBasis?.basisSourceLabel ?? null}
@@ -5461,6 +5462,7 @@ function BeginnerGuideTrendVisual({ card }: { card: RevealCard }) {
         comparableKey={card.marketBasis?.comparableKey ?? null}
         currentPrice={card.price}
         conditionClass={card.marketBasis?.conditionClass ?? null}
+        conditionTier={card.conditionTier ?? null}
         priceSource={card.marketBasis?.priceSource ?? null}
         basisSource={card.marketBasis?.basisSource ?? null}
         basisSourceLabel={card.marketBasis?.basisSourceLabel ?? null}

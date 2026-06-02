@@ -9,7 +9,7 @@
 //   숫자는 다나와 reference인데 그래프만 normal/clean fallback으로 보이는 괴리를 차단한다.
 
 import { NextResponse, type NextRequest } from "next/server";
-import { conditionFallbackChain } from "@/lib/condition-fallback";
+import { pickByConditionFallback } from "@/lib/condition-fallback";
 import { normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { checkRateLimit, clientIpKey } from "@/lib/rate-limit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -29,6 +29,8 @@ export async function GET(req: NextRequest) {
   const days = Math.max(1, Math.min(MAX_DAYS, Number(url.searchParams.get("days") ?? String(DEFAULT_DAYS)) || DEFAULT_DAYS));
   const cc = url.searchParams.get("cc")?.trim();
   const ccFilter = cc && VALID_CCS.has(cc) ? cc : null;
+  const rawTier = url.searchParams.get("tier")?.trim();
+  const tierFilter = rawTier && rawTier.length <= 32 && /^[A-Za-z0-9_-]+$/.test(rawTier) ? rawTier : null;
   const strictCondition = url.searchParams.get("strict") === "1";
   const sourceParam = url.searchParams.get("source")?.trim();
   const source = sourceParam ? normalizeMarketplaceSource(sourceParam) : null;
@@ -51,7 +53,7 @@ export async function GET(req: NextRequest) {
     const table = source ? "mvp_market_price_daily_per_source" : "mvp_market_price_daily";
     const sourceFilter = source ? `&source=eq.${encodeURIComponent(source)}` : "";
     const res = await restFetch(
-      `${tableUrl(table)}?select=date,condition_class,active_median_price,sold_median_price,blended_median_price,active_sample_count,sold_sample_count,confidence&comparable_key=eq.${encodeURIComponent(ck)}${sourceFilter}&date=gte.${since}&order=date.asc,computed_at.desc&limit=1000`,
+      `${tableUrl(table)}?select=date,condition_class,condition_tier,active_median_price,sold_median_price,blended_median_price,active_sample_count,sold_sample_count,confidence&comparable_key=eq.${encodeURIComponent(ck)}${sourceFilter}&date=gte.${since}&order=date.asc,computed_at.desc&limit=1000`,
       { headers: serviceHeaders() },
     );
     if (!res.ok) {
@@ -60,6 +62,7 @@ export async function GET(req: NextRequest) {
     const rows = (await res.json()) as Array<{
       date: string;
       condition_class: string | null;
+      condition_tier: string | null;
       active_median_price: number | null;
       sold_median_price: number | null;
       blended_median_price: number | null;
@@ -76,14 +79,37 @@ export async function GET(req: NextRequest) {
       if (!byDate.has(r.date)) byDate.set(r.date, []);
       byDate.get(r.date)!.push(r);
     }
-    // Wave 159h (2026-05-17): shared module conditionFallbackChain 사용 (DRY).
-    const fallbackOrder = ccFilter ? (strictCondition ? [ccFilter] : conditionFallbackChain(ccFilter)) : ["all", "normal"];
     const picked: typeof rows = [];
     for (const [, dateRows] of byDate) {
-      let chosen = null;
-      for (const target of fallbackOrder) {
-        const c = dateRows.find((r) => r.condition_class === target);
-        if (c) { chosen = c; break; }
+      let chosen: (typeof rows)[number] | null = null;
+      const byCondition = new Map<string, (typeof rows)[number]>();
+      for (const r of dateRows) {
+        const composite = `${(r.condition_tier ?? "").trim()}|${(r.condition_class ?? "").trim()}`;
+        if (!byCondition.has(composite)) byCondition.set(composite, r);
+        if (!r.condition_tier && r.condition_class && !byCondition.has(r.condition_class)) {
+          byCondition.set(r.condition_class, r);
+        }
+      }
+      if (strictCondition) {
+        const strictKeys = [
+          tierFilter && ccFilter ? `${tierFilter}|${ccFilter}` : null,
+          tierFilter ? `${tierFilter}|` : null,
+          ccFilter ? `|${ccFilter}` : null,
+          ccFilter,
+        ].filter((key): key is string => Boolean(key));
+        for (const key of strictKeys) {
+          const c = byCondition.get(key);
+          if (c) { chosen = c; break; }
+        }
+      } else {
+        const target = ccFilter ?? "all";
+        chosen = pickByConditionFallback(
+          byCondition,
+          target,
+          (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0),
+          1,
+          tierFilter,
+        ).row ?? null;
       }
       if (!chosen && !strictCondition) chosen = dateRows[0];
       if (!chosen) continue;
@@ -95,10 +121,12 @@ export async function GET(req: NextRequest) {
       comparableKey: ck,
       source,
       conditionClass: ccFilter,
+      conditionTier: tierFilter,
       strictCondition,
       points: picked.map((r) => ({
         date: r.date,
         conditionClass: r.condition_class,
+        conditionTier: r.condition_tier,
         active: r.active_median_price ?? null,
         sold: r.sold_median_price ?? null,
         blended: r.blended_median_price ?? null,

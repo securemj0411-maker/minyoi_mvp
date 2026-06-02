@@ -71,26 +71,35 @@ export function pickByConditionFallback<T>(
   }
 
   const tier = (conditionTier ?? "").trim();
-  const isFashion = tier !== "" && tier !== "UNKNOWN";
+  const hasTier = tier !== "" && tier !== "UNKNOWN";
 
-  // Wave 817: fashion path — tier 기반 exact match (Wave 803g 정책: fashion row = cc="" + tier).
-  if (isFashion) {
-    // 새 composite key 우선: `${tier}|`
-    const exactKey = `${tier}|`;
-    const exactRow = byCondition.get(exactKey);
-    if (exactRow != null) {
-      return { row: exactRow, conditionClass: "" as ConditionClass, fallbackUsed: false };
+  // Wave 1023 (2026-06-02): tier-aware exact lookup for every tiered category.
+  // Earlier logic treated any non-empty tier as fashion-only and looked for
+  // `${tier}|` first. That missed game/golf rows stored as `${tier}|${cc}` and
+  // could fall back to unrelated condition rows. Prefer same tier + same/fallback
+  // condition, then same-tier classless fashion rows. Never pick another tier.
+  if (hasTier) {
+    const order = conditionFallbackChain(target);
+    for (let i = 0; i < order.length; i += 1) {
+      const cls = order[i];
+      const cand = byCondition.get(`${tier}|${cls}` as ConditionClass);
+      if (!cand) continue;
+      const samples = getSamples(cand);
+      if (samples >= minSamples || i === order.length - 1) {
+        return { row: cand, conditionClass: cls, fallbackUsed: i > 0 };
+      }
     }
-    // Wave 803i 호환: 옛 cc="" 단일 key
+
+    // Fashion rows intentionally store condition_class="" and use tier only.
+    const tierOnly = byCondition.get(`${tier}|` as ConditionClass);
+    if (tierOnly != null) {
+      return { row: tierOnly, conditionClass: "" as ConditionClass, fallbackUsed: false };
+    }
+
+    // Wave 803i legacy compatibility: old classless rows before composite keys.
     const legacyEmpty = byCondition.get("" as ConditionClass);
     if (legacyEmpty != null) {
       return { row: legacyEmpty, conditionClass: "" as ConditionClass, fallbackUsed: true };
-    }
-    // any tier|"" 매치 (cross-tier fallback) — 다른 tier row 라도 cc 비어있으면 fashion
-    for (const [k, v] of byCondition.entries()) {
-      if (k.endsWith("|") && k !== "") {
-        return { row: v, conditionClass: "" as ConditionClass, fallbackUsed: true };
-      }
     }
   }
 
