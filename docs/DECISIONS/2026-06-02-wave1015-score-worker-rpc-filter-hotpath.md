@@ -88,11 +88,59 @@ Conclusion: the raw table/indexes are not the immediate problem. The SQL RPC pla
 
 ## Deferred
 
-- Production verification after deploy:
-  - compare next score-worker `score_load_rows` against the pre-fix `~90s-105s`
-  - expected target: single-digit to low tens of seconds, with nonzero scoring when dirty rows exist
 - Repair or replace `claim_scorable_raw_rows` SQL separately:
   - avoid generic OR conditions
   - avoid modulo shard predicates on the ordered scan path, or split into source/shard-specific functions/indexes
   - validate with EXPLAIN before re-enabling `PIPELINE_SCORE_CLAIM_RPC_ENABLED`
 - Landing showcase sold-listing query should be fixed separately with an index/RPC/cache strategy.
+
+## Production Verification
+
+After deploying the opt-in RPC patch to primary and B:
+
+- `19:03 KST /api/cron/score-worker`
+  - host: `minyoi-g2dygr03b...`
+  - duration: `15.4s`
+  - `score_load_rows=1.8s`
+  - `scored=96`
+  - `timedOut=false`
+- `19:03 KST /api/cron/score-worker-b`
+  - host: `minyoi-mvp-atff-l0j321qe8...`
+  - duration: `1.3s`
+  - `score_load_rows=0.3s`
+  - `scored=50`
+  - `timedOut=false`
+
+The C shard initially stayed slow because the separate `minyoi-mvp-daangn-c`
+Vercel project had not deployed the new commit:
+
+- project list showed `minyoi-mvp-daangn-c` last updated `5h` ago while
+  primary/B were current.
+- old C host `minyoi-mvp-daangn-ecvdqthcy...` kept producing
+  `~98s`, `scored=0`, `timedOut=true`.
+
+Redeployed C from a clean `HEAD` worktree to avoid uploading unrelated local
+dirty files:
+
+- deployment: `minyoi-mvp-daangn-20olxy0q6...`
+- forced verification run:
+  - run id: `36f75a99-7052-4025-9d7c-1ccef57827c4`
+  - duration: `33.3s`
+  - `score_load_rows=852ms`
+  - `scored=100`
+  - `poolUpserted=3`
+  - `timedOut=false`
+
+Conclusion: the score row-load bottleneck is fixed in A/B/C. This was not an
+alert mute; the verification was based on collect-run stage timings and scored
+row counts.
+
+## New Follow-up
+
+The C verification surfaced a smaller post-load cost:
+
+- `score_clear_score_dirty=20.2s`
+
+This is not currently causing timeouts, but it is the next score-stage
+optimization candidate after the row-load fix. Likely direction: make the dirty
+clear patch smaller/chunked or source/shard-aware before raising throughput.

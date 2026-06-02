@@ -1,5 +1,4 @@
 import { unstable_cache } from "next/cache";
-import { conditionFallbackChain } from "@/lib/condition-fallback";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 const LANDING_SHOWCASE_LIMIT = 10;
@@ -35,39 +34,32 @@ type LandingShowcaseRow = {
   sample_count: number;
 };
 
-type RawListingRow = {
-  pid: number;
-  name: string;
-  price: number;
-  thumbnail_url: string | null;
-  sku_name: string | null;
-  sold_detected_at: string | null;
-};
-
-type ParsedRow = {
-  pid: number;
-  comparable_key: string | null;
-  category: string | null;
-  // Wave 130 (2026-05-16): condition_class 추가 — landing showcase 시세 매칭에 사용.
-  condition_class: string | null;
-};
-
-type MarketPriceRow = {
-  comparable_key: string;
-  // Wave 130: condition_class — PK 일부.
-  condition_class: string;
-  blended_median_price: number | null;
-  active_median_price: number | null;
-  sold_median_price: number | null;
-  active_sample_count: number;
-  sold_sample_count: number;
-  disappeared_sample_count: number;
-  confidence: "high" | "medium" | "low" | null;
-};
-
 type CandidatePoolKpiRow = {
   expected_profit_min: number;
   expected_profit_max: number;
+};
+
+type ReadyPoolShowcaseRow = {
+  pid: number;
+  expected_profit_min: number;
+  expected_profit_max: number;
+  confidence: number | null;
+  category: string | null;
+  comparable_key: string | null;
+};
+
+type ReadyListingShowcaseRow = {
+  pid: number;
+  name: string;
+  price: number;
+  sku_median: number | null;
+  thumbnail_url: string | null;
+  sku_name: string | null;
+};
+
+type ReadyRawStateRow = {
+  pid: number;
+  listing_state: string | null;
 };
 
 type ShowcaseCandidate = LandingShowcase & {
@@ -98,19 +90,6 @@ function normalizeSkuLabel(value: string) {
     .replace(/\s+/g, " ")
     .replace(/[·,()[\]{}]/g, " ")
     .trim();
-}
-
-function buildConfidencePercent(row: MarketPriceRow) {
-  const base =
-    row.confidence === "high" ? 76 :
-    row.confidence === "medium" ? 66 :
-    58;
-  const sampleCount =
-    Number(row.active_sample_count ?? 0) +
-    Number(row.sold_sample_count ?? 0) +
-    Number(row.disappeared_sample_count ?? 0);
-  const bonus = Math.min(12, Math.floor(sampleCount / 8));
-  return clamp(base + bonus, 52, 92);
 }
 
 function toShowcase(row: LandingShowcaseRow): LandingShowcase {
@@ -199,96 +178,58 @@ async function loadFromLandingCacheTable(): Promise<LandingShowcase[]> {
 }
 
 async function loadLiveSoldShowcases(limit: number): Promise<LandingShowcase[]> {
-  const rawRes = await restFetch(
-    `${tableUrl("mvp_raw_listings")}?select=pid,name,price,thumbnail_url,sku_name,sold_detected_at&listing_state=eq.sold_confirmed&detail_status=eq.done&listing_type=eq.normal&thumbnail_url=not.is.null&sku_name=not.is.null&order=sold_detected_at.desc.nullslast&limit=80`,
+  const poolRes = await restFetch(
+    `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,confidence,category,comparable_key&status=eq.ready&expected_profit_max=gt.0&order=expected_profit_max.desc&limit=${Math.max(80, limit * 12)}`,
     { headers: serviceHeaders() },
   );
-  const rawRows = (await rawRes.json()) as RawListingRow[];
-  const pids = rawRows.map((row) => Number(row.pid)).filter(Number.isFinite);
+  const poolRows = (await poolRes.json()) as ReadyPoolShowcaseRow[];
+  const pids = poolRows.map((row) => Number(row.pid)).filter(Number.isFinite);
   if (pids.length === 0) return [FALLBACK_SHOWCASE];
 
-  const parsedRes = await restFetch(
-    // Wave 130 (2026-05-16): condition_class 컬럼 추가 — 매물 condition별 시세 매칭.
-    `${tableUrl("mvp_listing_parsed")}?select=pid,comparable_key,category,condition_class&pid=in.(${pids.join(",")})&comparable_key=not.is.null`,
-    { headers: serviceHeaders() },
-  );
-  const parsedRows = (await parsedRes.json()) as ParsedRow[];
-  const parsedByPid = new Map(
-    parsedRows
-      .filter((row) => row.comparable_key)
-      .map((row) => [
-        Number(row.pid),
-        {
-          comparableKey: String(row.comparable_key),
-          category: row.category?.trim() || "other",
-          // Wave 130 (2026-05-16): condition_class 박음 — landing showcase 시세 매칭에 사용.
-          conditionClass: row.condition_class ?? "normal",
-        },
-      ]),
-  );
-  const comparableKeys = [...new Set(parsedRows.map((row) => row.comparable_key).filter(Boolean) as string[])];
-  if (comparableKeys.length === 0) return [FALLBACK_SHOWCASE];
-
-  const encodedKeys = comparableKeys.map((key) => encodeURIComponent(key)).join(",");
-  const marketRes = await restFetch(
-    // Wave 130 (2026-05-16): condition_class 별 시세 분리 fetch — 매물 condition에 매칭되는 시세 선택.
-    `${tableUrl("mvp_market_price_daily")}?select=comparable_key,condition_class,blended_median_price,active_median_price,sold_median_price,active_sample_count,sold_sample_count,disappeared_sample_count,confidence&comparable_key=in.(${encodedKeys})&order=date.desc,computed_at.desc&limit=${Math.max(200, comparableKeys.length * 12)}`,
-    { headers: serviceHeaders() },
-  );
-  const marketRows = (await marketRes.json()) as MarketPriceRow[];
-  // Wave 130: (comparable_key, condition_class) 복합 키로 group.
-  const marketByKeyCondition = new Map<string, Map<string, MarketPriceRow>>();
-  for (const row of marketRows) {
-    if (!row.comparable_key) continue;
-    const byCond = marketByKeyCondition.get(row.comparable_key) ?? new Map<string, MarketPriceRow>();
-    if (!byCond.has(row.condition_class)) byCond.set(row.condition_class, row);
-    marketByKeyCondition.set(row.comparable_key, byCond);
-  }
+  const encodedPids = pids.join(",");
+  const [listingRes, rawStateRes] = await Promise.all([
+    restFetch(
+      `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,thumbnail_url,sku_name&pid=in.(${encodedPids})`,
+      { headers: serviceHeaders() },
+    ),
+    restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid,listing_state&pid=in.(${encodedPids})`,
+      { headers: serviceHeaders() },
+    ),
+  ]);
+  const listingRows = (await listingRes.json()) as ReadyListingShowcaseRow[];
+  const rawStateRows = (await rawStateRes.json()) as ReadyRawStateRow[];
+  const listingByPid = new Map(listingRows.map((row) => [Number(row.pid), row]));
+  const stateByPid = new Map(rawStateRows.map((row) => [Number(row.pid), row.listing_state]));
 
   const showcases: ShowcaseCandidate[] = [];
   const seenKeys = new Set<string>();
-  for (const row of rawRows) {
-    const parsed = parsedByPid.get(Number(row.pid));
-    const comparableKey = parsed?.comparableKey;
-    if (!comparableKey || seenKeys.has(comparableKey)) continue;
-    // Wave 130: 매물 condition_class 매칭 우선, fallback chain (target → normal → all → first).
-    const byCond = marketByKeyCondition.get(comparableKey);
-    if (!byCond) continue;
-    // Wave 130: 매물 condition_class — parsedByPid에서 lookup (O(1)).
-    // Wave 159h (2026-05-17): shared module conditionFallbackChain 사용 (DRY).
-    const conditionClass = parsed?.conditionClass ?? "normal";
-    const fallback = conditionFallbackChain(conditionClass);
-    let market: MarketPriceRow | undefined = undefined;
-    for (const cls of fallback) {
-      const cand = byCond.get(cls);
-      if (cand) {
-        market = cand;
-        break;
-      }
-    }
-    if (!market) continue;
-    const marketPrice = Number(market.blended_median_price ?? market.active_median_price ?? market.sold_median_price ?? 0);
-    const buyPrice = Number(row.price ?? 0);
-    const expectedProfit = marketPrice - buyPrice;
-    const sampleCount =
-      Number(market.active_sample_count ?? 0) +
-      Number(market.sold_sample_count ?? 0) +
-      Number(market.disappeared_sample_count ?? 0);
-    if (!row.thumbnail_url || marketPrice <= 0 || buyPrice <= 0 || expectedProfit < 10_000 || sampleCount < 8) continue;
+  for (const pool of poolRows) {
+    const pid = Number(pool.pid);
+    if (stateByPid.get(pid) !== "active") continue;
+    const listing = listingByPid.get(pid);
+    if (!listing?.thumbnail_url) continue;
+    const comparableKey = pool.comparable_key?.trim() || `pid:${pid}`;
+    if (seenKeys.has(comparableKey)) continue;
+
+    const buyPrice = Number(listing.price ?? 0);
+    const expectedProfit = Math.round((Number(pool.expected_profit_min ?? 0) + Number(pool.expected_profit_max ?? 0)) / 2);
+    const marketPrice = Number(listing.sku_median ?? 0) > 0 ? Number(listing.sku_median) : buyPrice + expectedProfit;
+    if (marketPrice <= 0 || buyPrice <= 0 || expectedProfit < 10_000) continue;
 
     showcases.push({
-      pid: Number(row.pid),
-      name: row.name,
-      imageUrl: row.thumbnail_url,
+      pid,
+      name: listing.name,
+      imageUrl: listing.thumbnail_url,
       buyPrice,
       marketPrice,
       expectedProfit,
-      confidencePercent: buildConfidencePercent(market),
-      skuLabel: row.sku_name?.trim() || "실거래 기준 상품",
-      sampleCount,
-      category: parsed?.category || "other",
+      confidencePercent: clamp(Math.round(Number(pool.confidence ?? 0.6) * 100), 52, 92),
+      skuLabel: listing.sku_name?.trim() || "현재 추천 풀 상품",
+      sampleCount: 0,
+      category: pool.category?.trim() || "other",
       comparableKey,
-      normalizedSku: normalizeSkuLabel(row.sku_name?.trim() || row.name),
+      normalizedSku: normalizeSkuLabel(listing.sku_name?.trim() || listing.name),
     });
     seenKeys.add(comparableKey);
   }
