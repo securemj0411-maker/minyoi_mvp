@@ -302,6 +302,7 @@ type CollectRunHealthRow = {
   collected_count: number | null;
   enriched_count: number | null;
   stage_stats: Record<string, unknown> | null;
+  error_message: string | null;
   request_meta: Record<string, unknown> | null;
   started_at: string;
 };
@@ -3568,7 +3569,7 @@ function numberField(value: unknown, key: string) {
 
 async function loadRecentCollectRuns(windowMinutes: number): Promise<CollectRunHealthRow[]> {
   const cutoff = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
-  const columns = "status,collected_count,enriched_count,stage_stats,request_meta,started_at";
+  const columns = "status,collected_count,enriched_count,stage_stats,error_message,request_meta,started_at";
   const limit = boundedInt(process.env.PIPELINE_SOURCE_HEALTH_RUN_LIMIT ?? null, 600, 200, 2000);
   const url = `${tableUrl("mvp_collect_runs")}?select=${columns}&started_at=gte.${encodeURIComponent(cutoff)}&order=started_at.desc&limit=${limit}`;
   const res = await restFetch(url, { headers: serviceHeaders() });
@@ -3626,6 +3627,18 @@ function lifecycleHealthGateForSource(
 function runMode(row: CollectRunHealthRow) {
   const meta = asRecord(row.request_meta);
   return String(meta.pipelineMode ?? "");
+}
+
+function isStaleCollectRunAutoMarked(row: CollectRunHealthRow) {
+  return row.status === "failed" && /^stale running run auto-marked after \d+m$/.test(String(row.error_message ?? ""));
+}
+
+function isEffectiveCollectRunFailure(row: CollectRunHealthRow) {
+  if (row.status !== "failed") return false;
+  // Wave 1014 (2026-06-02): deploy/function-finish cleanup rows are not source failures.
+  // They remain in baseline_json as staleMarkedRuns, but they should not page as
+  // Market/Housekeeper worker failure-rate incidents.
+  return !isStaleCollectRunAutoMarked(row);
 }
 
 function isSourceRelevantMode(mode: string) {
@@ -3912,7 +3925,13 @@ export async function sourceHealthStage(): Promise<StageStats> {
     return stats;
   }
   const sourceRows = rows.filter((row) => isSourceRelevantMode(runMode(row)));
-  const failedRuns = sourceRows.filter((row) => row.status === "failed").length;
+  const staleMarkedRuns = rows.filter(isStaleCollectRunAutoMarked);
+  const staleMarkedRunsByMode = new Map<string, number>();
+  for (const row of staleMarkedRuns) {
+    const mode = runMode(row) || "unknown";
+    staleMarkedRunsByMode.set(mode, (staleMarkedRunsByMode.get(mode) ?? 0) + 1);
+  }
+  const failedRuns = sourceRows.filter(isEffectiveCollectRunFailure).length;
   const failedRunRate = sourceRows.length === 0 ? 0 : failedRuns / sourceRows.length;
   const workerBreakdown = new Map<string, { total: number; failed: number; collected: number; enriched: number }>();
   let detailAttempts = 0;
@@ -3931,7 +3950,7 @@ export async function sourceHealthStage(): Promise<StageStats> {
     const mode = runMode(row);
     const bucket = workerBreakdown.get(mode) ?? { total: 0, failed: 0, collected: 0, enriched: 0 };
     bucket.total += 1;
-    if (row.status === "failed") bucket.failed += 1;
+    if (isEffectiveCollectRunFailure(row)) bucket.failed += 1;
     bucket.collected += Number(row.collected_count ?? 0);
     bucket.enriched += Number(row.enriched_count ?? 0);
     workerBreakdown.set(mode, bucket);
@@ -4021,7 +4040,9 @@ export async function sourceHealthStage(): Promise<StageStats> {
       avgSearchCollected: Math.round(avgSearchCollected),
       previousCheckedAt: previous?.checked_at ?? null,
       effectiveStatus: hysteresis.status,
-      ignoredInternalWorkerFailures: rows.filter((row) => !isSourceRelevantMode(runMode(row)) && row.status === "failed").length,
+      staleMarkedRuns: staleMarkedRuns.length,
+      staleMarkedRunsByMode: Object.fromEntries(staleMarkedRunsByMode.entries()),
+      ignoredInternalWorkerFailures: rows.filter((row) => !isSourceRelevantMode(runMode(row)) && isEffectiveCollectRunFailure(row)).length,
       workerBreakdown: Object.fromEntries(workerBreakdown.entries()),
       operationalAlerts,
       alertCount: operationalAlerts.length,
