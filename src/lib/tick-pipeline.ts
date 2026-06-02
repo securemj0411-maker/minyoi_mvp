@@ -2283,6 +2283,11 @@ export function scorableRpcLimitForRequest(rowLimit: number): number {
   return Math.max(limit, Math.min(300, Math.max(120, limit * 3)));
 }
 
+function scoreClaimRpcEnabled(): boolean {
+  const value = String(process.env.PIPELINE_SCORE_CLAIM_RPC_ENABLED ?? "").trim().toLowerCase();
+  return value === "1" || value === "true" || value === "yes" || value === "on";
+}
+
 function scoreStageScope(row: Pick<ScorableRawRow, "pid" | "source">, options: ScoreStageOptions): boolean {
   const source = normalizeMarketplaceSource(row.source);
   if (options.sourceFilter && source !== options.sourceFilter) return false;
@@ -2339,9 +2344,13 @@ async function loadScorableRows(limit: number, options: ScoreStageOptions = {}):
       //   fix: claim_scorable_raw_rows RPC. PG side statement_timeout 60s, SECURITY DEFINER.
       //         lane a/b/c 모두 동일 RPC. extraFilter (e.g. &source=eq.daangn) 는 RPC param 으로 합쳐 전달.
       //         RPC 실패 시 기존 GET path fallback (best-effort).
+      // Wave 1015 (2026-06-02): production check showed this RPC timing out
+      // even at p_limit=10, while equivalent indexed REST GETs return in <1s.
+      // Keep it as an opt-in only until the SQL function plan is repaired.
       const shardCountArg = Math.max(1, Math.floor(Number(options.daangnShardCount ?? 1)));
       const shardIndexArg = Math.max(0, Math.floor(Number(options.daangnShardIndex ?? 0)));
       const tryRpc = async (listingTypeFilter: string): Promise<ScorableRawRow[] | null> => {
+        if (!scoreClaimRpcEnabled()) return null;
         const sourceFilterArg = scorableRpcSourceFilterForExtraFilter(extraFilter, options.sourceFilter ?? null);
         if (sourceFilterArg === undefined) return null;
         try {

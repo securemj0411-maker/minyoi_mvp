@@ -25,3 +25,9 @@ test("joongna ingest directly enqueues parsed market invalidations", () => {
   assert.match(joongnaIngestSource, /marketInvalidationsQueued/);
   assert.match(joongnaIngestSource, /!parsed\.needsReview && parsed\.comparableKey/);
 });
+
+test("score claim RPC stays opt-in after production timeout finding", () => {
+  assert.match(tickPipelineSource, /PIPELINE_SCORE_CLAIM_RPC_ENABLED/);
+  assert.match(tickPipelineSource, /function scoreClaimRpcEnabled/);
+  assert.match(tickPipelineSource, /if \(!scoreClaimRpcEnabled\(\)\) return null/);
+});

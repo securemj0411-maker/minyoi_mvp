@@ -39,12 +39,41 @@ Result: score workers could spend most of their 55s intended budget loading rows
 - Added `scorableRpcLimitForRequest()`.
   - Current `tickScoreLimit=100` now requests a 300-row RPC buffer instead of 1000.
   - Larger explicit limits are not capped below the requested limit.
+- Made `claim_scorable_raw_rows` opt-in via `PIPELINE_SCORE_CLAIM_RPC_ENABLED=1`.
+  - Default production path returns to the indexed REST GET fallback.
+  - The RPC code remains available for a future SQL-plan repair, but is not used by default.
 - Added regression tests for both contracts.
+
+## Follow-up Production Measurement
+
+The first code-only deploy still showed no improvement:
+
+- `18:39 KST score_worker`: `score_load_rows=104.8s`, `scored=0`, `timedOut=true`
+- `18:39 KST score_worker_b`: `score_load_rows=90.9s`, `scored=0`, `timedOut=true`
+- `18:39 KST score_worker_c`: `score_load_rows=93.2s`, `scored=0`, `timedOut=true`
+
+Direct non-mutating production calls then isolated the root cause:
+
+- RPC `claim_scorable_raw_rows(p_limit=10, p_source_filter='daangn', shard=0/3)`
+  - failed after `60.2s`
+  - error: `57014 canceling statement due to statement timeout`
+- equivalent REST GET, source-scoped:
+  - Daangn limit 100, small columns: `153ms`
+  - Bunjang limit 100, small columns: `184ms`
+  - Joongna limit 100, small columns: `58ms`
+- equivalent REST GET, full score columns:
+  - Daangn limit 100: `297ms`
+  - Bunjang limit 100: `525ms`
+  - Joongna limit 100: `268ms`
+
+Conclusion: the raw table/indexes are not the immediate problem. The SQL RPC plan is the immediate bottleneck, likely because the generic OR/modulo shard conditions prevent the intended source/dirty/recent index path.
 
 ## Verification
 
 - `npx tsx --test --test-name-pattern "score RPC" tests/core-rules.test.ts`
   - `2 pass, 0 fail`
+- `npx tsx --test tests/market-invalidation-priority-contract.test.ts`
+  - verifies the score claim RPC remains opt-in by default
 - `npm run build`
   - passed
 
@@ -60,6 +89,10 @@ Result: score workers could spend most of their 55s intended budget loading rows
 ## Deferred
 
 - Production verification after deploy:
-  - compare next score-worker `score_load_rows` against the pre-fix `~96s`
+  - compare next score-worker `score_load_rows` against the pre-fix `~90s-105s`
   - expected target: single-digit to low tens of seconds, with nonzero scoring when dirty rows exist
+- Repair or replace `claim_scorable_raw_rows` SQL separately:
+  - avoid generic OR conditions
+  - avoid modulo shard predicates on the ordered scan path, or split into source/shard-specific functions/indexes
+  - validate with EXPLAIN before re-enabling `PIPELINE_SCORE_CLAIM_RPC_ENABLED`
 - Landing showcase sold-listing query should be fixed separately with an index/RPC/cache strategy.
