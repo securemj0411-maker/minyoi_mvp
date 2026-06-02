@@ -2673,9 +2673,15 @@ function marketScoreDirtyMarkLimit() {
   );
 }
 
+function marketScoreDirtyRpcEnabled(): boolean {
+  const value = String(process.env.PIPELINE_MARKET_SCORE_DIRTY_RPC_ENABLED ?? "").trim().toLowerCase();
+  return value === "1" || value === "true" || value === "yes" || value === "on";
+}
+
 async function markScorableScoreDirtyByComparableKeysRpc(comparableKeys: string[]): Promise<ScoreDirtyMarkResult | null> {
   const unique = [...new Set(comparableKeys.filter(Boolean))];
   if (unique.length === 0) return { candidateRows: 0, markedRows: 0 };
+  if (!marketScoreDirtyRpcEnabled()) return null;
   try {
     const res = await restFetch(rpcUrl("mark_scorable_score_dirty_by_comparable_keys"), {
       method: "POST",

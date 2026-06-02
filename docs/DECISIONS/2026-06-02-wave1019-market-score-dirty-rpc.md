@@ -49,7 +49,19 @@ Wave 1018로 marked row는 크게 줄었다.
 - score worker가 실제 처리 가능한 active/scorable/clean row만 target.
 - `score_dirty=true` update 후 candidate/marked count 반환.
 
-3. runtime은 RPC 우선, 실패 시 Wave 1018 REST scoped path로 fallback.
+3. runtime은 RPC opt-in, 기본은 Wave 1018 REST scoped path.
+
+초기 구현은 RPC 우선 + fallback 이었지만, production 20:02 KST run에서 RPC path가 `candidate=0/marked=0`인데도 `market_mark_score_dirty_ms=164083`을 먹었다. 따라서 즉시 기본 off로 전환했다.
+
+활성화 조건:
+
+- `PIPELINE_MARKET_SCORE_DIRTY_RPC_ENABLED=1`
+
+기본 동작:
+
+- RPC 사용 안 함.
+- Wave 1018 REST scoped path 사용.
+- 새 partial index는 REST scoped PATCH에도 도움을 줄 수 있으므로 유지.
 
 ## 안전성
 
@@ -58,6 +70,7 @@ Wave 1018로 marked row는 크게 줄었다.
 - 시세 산정 sample 범위 변경 없음.
 - RPC 실패 시 기존 REST fallback 유지.
 - fake key probe 결과: `200`, `candidate_count=0`, `marked_count=0`.
+- production probe 결과 RPC 기본 on은 위험하다고 판단해 opt-in으로 내렸다.
 
 ## 적용
 
@@ -70,8 +83,18 @@ Supabase migration history mismatch가 있으므로 `supabase db push`는 사용
 - `mark_scorable_score_dirty_by_comparable_keys`
   - apply time: 약 64ms
 
+## 후속 검증
+
+- 20:02 KST run:
+  - `market_stats=187449ms`
+  - `market_mark_score_dirty_ms=164083`
+  - `candidate=0`
+  - `marked=0`
+- 결론: RPC query shape는 아직 운영 기본값으로 쓰면 안 된다.
+- hotfix: `PIPELINE_MARKET_SCORE_DIRTY_RPC_ENABLED` opt-in gate 추가.
+
 ## 보류
 
-- 다음 production market-worker run에서 `market_mark_score_dirty_ms`가 실제로 얼마나 줄었는지 확인한다.
+- 다음 production market-worker run에서 REST scoped path + partial index가 실제로 얼마나 줄었는지 확인한다.
 - RPC target query 자체가 27s까지 걸릴 수 있으므로, index 적용 후에도 30s+가 유지되면 query shape 또는 추가 index를 다시 검토한다.
 - lifecycle A worker는 55s 안팎으로 성공 중이라 이번 wave 범위에서는 건드리지 않는다.
