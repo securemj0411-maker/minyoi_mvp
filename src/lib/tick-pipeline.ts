@@ -2621,6 +2621,7 @@ async function clearUnscorableScoreDirty(limit: number): Promise<number> {
 type ScoreDirtyMarkResult = {
   candidateRows: number;
   markedRows: number;
+  skippedBacklog?: number;
 };
 
 async function markScoreDirtyIfClean(pids: number[]): Promise<number> {
@@ -2678,6 +2679,33 @@ function marketScoreDirtyRpcEnabled(): boolean {
   return value === "1" || value === "true" || value === "yes" || value === "on";
 }
 
+function marketScoreDirtyBacklogSkipLimit() {
+  return boundedInt(
+    process.env.PIPELINE_MARKET_SCORE_DIRTY_BACKLOG_SKIP_LIMIT ?? null,
+    1000,
+    0,
+    50000,
+  );
+}
+
+async function scorableScoreDirtyBacklogAtLeast(limit: number): Promise<boolean> {
+  if (limit <= 0) return false;
+  let seen = 0;
+  const baseFilter = "score_dirty=eq.true&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active";
+  for (const listingTypeFilter of ["listing_type=eq.normal", "listing_type_override=eq.normal"]) {
+    const remaining = limit - seen;
+    if (remaining <= 0) return true;
+    const res = await restFetch(
+      `${tableUrl("mvp_raw_listings")}?select=pid&${baseFilter}&${listingTypeFilter}&order=last_seen_at.desc&limit=${remaining}`,
+      { headers: serviceHeaders() },
+    );
+    const rows = (await res.json()) as Array<{ pid: number | string | null }>;
+    seen += rows.length;
+    if (seen >= limit) return true;
+  }
+  return false;
+}
+
 async function markScorableScoreDirtyByComparableKeysRpc(comparableKeys: string[]): Promise<ScoreDirtyMarkResult | null> {
   const unique = [...new Set(comparableKeys.filter(Boolean))];
   if (unique.length === 0) return { candidateRows: 0, markedRows: 0 };
@@ -2707,6 +2735,10 @@ async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Prom
   if (!(await rawScoreDirtySchemaAvailable())) return { candidateRows: 0, markedRows: 0 };
   const unique = [...new Set(comparableKeys.filter(Boolean))];
   if (unique.length === 0) return { candidateRows: 0, markedRows: 0 };
+  const backlogSkipLimit = marketScoreDirtyBacklogSkipLimit();
+  if (backlogSkipLimit > 0 && await scorableScoreDirtyBacklogAtLeast(backlogSkipLimit)) {
+    return { candidateRows: 0, markedRows: 0, skippedBacklog: backlogSkipLimit };
+  }
   const rpcResult = await markScorableScoreDirtyByComparableKeysRpc(unique);
   if (rpcResult) return rpcResult;
 
@@ -5051,13 +5083,13 @@ export async function marketStatsStage(): Promise<StageStats> {
   );
   // P0-5: 시세가 갱신된 comparable_key의 raw_listings는 score를 재계산해야 한다.
   // 같은 매물이라도 trustedMedian이 바뀌면 priceGap/score가 달라지므로 dirty=true.
-  const markedDirty = await timedMarketSubstage(
+  const markedDirty: ScoreDirtyMarkResult = await timedMarketSubstage(
     stats,
     "market_mark_score_dirty_ms",
     () => markRawScoreDirtyByComparableKeys(recomputedKeys),
   ).catch((err) => {
     console.error("mark raw score dirty by comparable keys failed", err);
-    return { candidateRows: 0, markedRows: 0 };
+    return { candidateRows: 0, markedRows: 0 } satisfies ScoreDirtyMarkResult;
   });
   // Wave 714c (2026-05-23): lane unblock 시 stale invalidated 매물 자동 재평가.
   //   Wave 678/679 에서 4 의류 lane 풀어줬는데 candidate_pool 의 invalidated row 안 reset 발견.
@@ -5108,6 +5140,7 @@ export async function marketStatsStage(): Promise<StageStats> {
     ...(stats.timingsMs ?? {}),
     market_score_dirty_candidate_rows: markedDirty.candidateRows,
     market_score_dirty_marked_rows: markedDirty.markedRows,
+    market_score_dirty_skipped_backlog: markedDirty.skippedBacklog ?? 0,
     reveal_current_profit_updated: revealRecomputeStats.updated,
     reveal_current_profit_invalidated: revealRecomputeStats.invalidated,
   };
