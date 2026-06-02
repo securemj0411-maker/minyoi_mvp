@@ -69,15 +69,16 @@ function intEnv(name: string, fallback: number, min: number, max: number) {
 
 // Daangn is local-first. The profit-ordered pool query can miss nearby dong rows,
 // so we prefetch ready candidates by nearby Daangn region ids before diversification.
-const DAANGN_NEARBY_REGION_LIMIT = intEnv("DAANGN_NEARBY_FEED_REGION_LIMIT", 260, 20, 900);
+const DAANGN_NEARBY_REGION_LIMIT = intEnv("DAANGN_NEARBY_FEED_REGION_LIMIT", 96, 20, 900);
 const DAANGN_NEARBY_RADIUS_KM = intEnv("DAANGN_NEARBY_FEED_RADIUS_KM", 10, 1, 30);
-const DAANGN_NEARBY_RAW_LOOKUP_LIMIT = intEnv("DAANGN_NEARBY_FEED_RAW_LOOKUP_LIMIT", 4000, 100, 6000);
-const DAANGN_NEARBY_REGION_BATCH_SIZE = intEnv("DAANGN_NEARBY_FEED_REGION_BATCH_SIZE", 32, 8, 260);
-const DAANGN_NEARBY_REGION_BATCH_RAW_LIMIT = intEnv("DAANGN_NEARBY_FEED_REGION_BATCH_RAW_LIMIT", 1000, 100, 2000);
-const DAANGN_NEARBY_POOL_LOOKUP_LIMIT = intEnv("DAANGN_NEARBY_FEED_POOL_LOOKUP_LIMIT", 700, 50, 2000);
-const DAANGN_NEARBY_BOOST_LIMIT = intEnv("DAANGN_NEARBY_FEED_BOOST_LIMIT", 120, 10, 500);
+const DAANGN_NEARBY_RAW_LOOKUP_LIMIT = intEnv("DAANGN_NEARBY_FEED_RAW_LOOKUP_LIMIT", 1200, 100, 6000);
+const DAANGN_NEARBY_REGION_BATCH_SIZE = intEnv("DAANGN_NEARBY_FEED_REGION_BATCH_SIZE", 24, 8, 260);
+const DAANGN_NEARBY_REGION_BATCH_RAW_LIMIT = intEnv("DAANGN_NEARBY_FEED_REGION_BATCH_RAW_LIMIT", 300, 100, 2000);
+const DAANGN_NEARBY_POOL_LOOKUP_LIMIT = intEnv("DAANGN_NEARBY_FEED_POOL_LOOKUP_LIMIT", 250, 50, 2000);
+const DAANGN_NEARBY_BOOST_LIMIT = intEnv("DAANGN_NEARBY_FEED_BOOST_LIMIT", 36, 10, 500);
 const DAANGN_NEARBY_CACHE_TTL_MS = intEnv("DAANGN_NEARBY_FEED_CACHE_TTL_MS", 45_000, 0, 300_000);
 const DAANGN_NEARBY_SLOW_LOG_MS = intEnv("DAANGN_NEARBY_FEED_SLOW_LOG_MS", 1_200, 100, 10_000);
+const DAANGN_NEARBY_PREFETCH_BUDGET_MS = intEnv("DAANGN_NEARBY_FEED_PREFETCH_BUDGET_MS", 4_500, 500, 30_000);
 const DAANGN_SOURCE_QUOTA = intEnv("DAANGN_FEED_SOURCE_QUOTA", 18, 0, READY_SLOTS);
 const JOONGNA_SOURCE_QUOTA = intEnv("JOONGNA_FEED_SOURCE_QUOTA", 3, 0, READY_SLOTS);
 
@@ -178,6 +179,23 @@ const NEARBY_DAANGN_READY_CACHE = new Map<string, {
   rows: VisiblePoolRow[];
   stats: NearbyDaangnPrefetchStats;
 }>();
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+  if (timeoutMs <= 0) return promise;
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${label}_timeout_${timeoutMs}ms`)), timeoutMs);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
 
 async function patchDaangnVisiblePoolTerminal(
   pid: number,
@@ -736,15 +754,20 @@ async function loadNearbyDaangnReadyRows(
     let usedBatches = 0;
 
     for (const batch of regionBatches) {
+      if (Date.now() - startedAt >= DAANGN_NEARBY_PREFETCH_BUDGET_MS) break;
       if (rawRows >= DAANGN_NEARBY_RAW_LOOKUP_LIMIT) break;
       const regionCsv = batch.map((id) => encodeURIComponent(id)).join(",");
       const limit = Math.min(
         DAANGN_NEARBY_REGION_BATCH_RAW_LIMIT,
         DAANGN_NEARBY_RAW_LOOKUP_LIMIT - rawRows,
       );
-      const sourceRes = await restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,source,daangn_region_id,daangn_region_name,listing_state,last_seen_at&source=eq.daangn&listing_state=eq.active&detail_status=eq.done&daangn_region_id=in.(${regionCsv})&order=last_seen_at.desc&limit=${limit}`,
-        { headers },
+      const sourceRes = await withTimeout(
+        restFetch(
+          `${tableUrl("mvp_raw_listings")}?select=pid,source,daangn_region_id,daangn_region_name,listing_state,last_seen_at&source=eq.daangn&listing_state=eq.active&detail_status=eq.done&daangn_region_id=in.(${regionCsv})&order=last_seen_at.desc&limit=${limit}`,
+          { headers },
+        ),
+        Math.max(500, DAANGN_NEARBY_PREFETCH_BUDGET_MS - (Date.now() - startedAt)),
+        "nearby_daangn_raw_fetch",
       );
       const sourceRows = (await sourceRes.json()) as NearbyDaangnSourceRow[];
       usedBatches += 1;
@@ -782,7 +805,11 @@ async function loadNearbyDaangnReadyRows(
         .slice(0, poolLookupLimit);
 
       for (const pid of orderedPids) candidatePids.add(pid);
-      const poolRows = await fetchReadyPoolRowsByPidChunks(orderedPids, headers, targetReady - readyByPid.size);
+      const poolRows = await withTimeout(
+        fetchReadyPoolRowsByPidChunks(orderedPids, headers, targetReady - readyByPid.size),
+        Math.max(500, DAANGN_NEARBY_PREFETCH_BUDGET_MS - (Date.now() - startedAt)),
+        "nearby_daangn_pool_fetch",
+      );
       for (const row of poolRows) readyByPid.set(row.pid, row);
 
       if (readyByPid.size >= targetReady) break;
@@ -919,11 +946,26 @@ async function loadPool(
     : FETCH_POOL_OVERFETCH;
   const [readyRowsPage, nearbyDaangnResult, soldOutRes] = await Promise.all([
     fetchPaginatedJson<PoolRow>(readyBaseUrl, headers, readyOverfetchLimit),
-    loadNearbyDaangnReadyRows(headers, {
-      userHomeDaangnFullPath: options.userHomeDaangnFullPath,
-      source: options.source,
-      sort: options.sort,
-      excludePids: options.excludePids,
+    withTimeout(
+      loadNearbyDaangnReadyRows(headers, {
+        userHomeDaangnFullPath: options.userHomeDaangnFullPath,
+        source: options.source,
+        sort: options.sort,
+        excludePids: options.excludePids,
+      }),
+      DAANGN_NEARBY_PREFETCH_BUDGET_MS + 500,
+      "nearby_daangn_prefetch",
+    ).catch((err): NearbyDaangnPrefetchResult => {
+      console.warn("[pool] nearby daangn prefetch fallback", err instanceof Error ? err.message : String(err));
+      return {
+        rows: [],
+        stats: {
+          ...EMPTY_NEARBY_DAANGN_STATS,
+          enabled: true,
+          elapsedMs: DAANGN_NEARBY_PREFETCH_BUDGET_MS,
+          reason: "timeout_fallback",
+        },
+      };
     }),
     restFetch(
       `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.invalidated&updated_at=gte.${encodeURIComponent(todayIso)}${excludeClause}&order=updated_at.desc&limit=${SOLD_OUT_SLOTS * 4}`,
