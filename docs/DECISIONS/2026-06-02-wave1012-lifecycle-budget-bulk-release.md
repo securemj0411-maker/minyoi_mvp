@@ -58,3 +58,13 @@ This explains the pattern: successful collect run, zero useful enrichment, high 
   - Passed
   - Existing landing showcase sold-preview query again hit Supabase `57014` during static revalidation, then fell back successfully.
   - This query is a separate Supabase-cost follow-up candidate: `/mvp_raw_listings` sold preview ordered by `sold_detected_at`.
+
+## Production Verification
+
+- Commit deployed: `6fe3d01c` / deployment `minyoi-hqtmc1cyj-securemj0411-7703s-projects.vercel.app`
+- New `stage_stats.stages.lifecycle.timingsMs.lifecycle_budget_bulk_skipped` appeared in production:
+  - `/api/cron/lifecycle-worker`: `claimed=800`, `enriched=0`, `timedOut=true`, `bulkSkipped=800`
+  - `/api/cron/lifecycle-worker-b`: `claimed=210`, `enriched=0`, `timedOut=true`, `bulkSkipped=210`
+  - `/api/cron/lifecycle-worker-c`: `claimed=183`, `enriched=0`, `timedOut=true`, `bulkSkipped=183`
+- Conclusion: row-by-row skipped-budget PATCH storm was removed.
+- Remaining issue: lifecycle was still starved before row processing. That became Wave 1013.

@@ -53,3 +53,24 @@ That catch-up was added as a permanent safety path when old Daangn active rows w
   - source/shard-aware partial indexes or an adjusted claim RPC for `mvp_lifecycle_checks`.
 - Any new production schema/index should be reviewed before applying because it affects hot tables.
 
+## Verification
+
+- `npx tsx --test tests/cron-guard.test.ts tests/lifecycle-state.test.ts`
+  - 16 pass, 0 fail
+- `npm run build`
+  - Passed
+  - Existing landing showcase sold-preview query again hit Supabase `57014` during build revalidation and fell back successfully.
+
+## Production Verification
+
+- Commit deployed: `a484495f` / deployment `minyoi-d422efes1-securemj0411-7703s-projects.vercel.app`
+- Before this wave, production runs repeatedly claimed rows but enriched zero:
+  - `/api/cron/lifecycle-worker`: `claimed=800`, `enriched=0`, `timedOut=true`
+  - `/api/cron/lifecycle-worker-b`: `claimed≈200`, `enriched=0`, `timedOut=true`
+  - `/api/cron/lifecycle-worker-c`: `claimed≈65-183`, `enriched=0`, `timedOut=true`
+- After this wave:
+  - `/api/cron/lifecycle-worker-c` at `2026-06-02T08:58:09Z`: `claimed=37`, `enriched=31`, `timedOut=false`, `claimMs=9364`
+  - `/api/cron/lifecycle-worker` at `2026-06-02T09:01:04Z`: `claimed=800`, `enriched=303`, `detailFailed=107`, `timedOut=true`, `bulkSkipped=390`, `claimMs=12729`
+  - `/api/cron/lifecycle-worker-b` at `2026-06-02T09:02:30Z`: `claimed=103`, `enriched=66`, `detailFailed=4`, `timedOut=true`, `bulkSkipped=33`, `claimMs=42244`
+  - `/api/cron/lifecycle-worker-c` at `2026-06-02T09:03:08Z`: `claimed=198`, `enriched=175`, `detailFailed=23`, `timedOut=false`, `claimMs=4178`
+- Conclusion: disabling lifecycle self catch-up by default restored useful lifecycle verification. B lane still has high claim latency and should be the next DB-side/index/RPC target if it persists.
