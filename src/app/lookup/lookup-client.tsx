@@ -77,6 +77,8 @@ type LookupResponse = {
   }>;
   velocity: {
     confidence: string | null;
+    conditionClass?: string | null;
+    conditionSpecific?: boolean;
     observedSoldSampleCount: number;
     activeSampleCount: number;
     sold24hCount: number;
@@ -713,7 +715,7 @@ export default function LookupClient() {
                   </div>
                 </div>
                 <p className="mt-2 text-[10.5px] font-medium leading-4 text-zinc-400 dark:text-zinc-500">
-                  같은 모델 전체 기준으로 등록 → 판매 감지까지 걸린 시간이에요. 상태·출처별 차이는 참고로 봐주세요.
+                  상태별 표본이 충분하면 같은 상태 기준, 부족하면 같은 모델 전체 기준으로 등록 → 판매 감지까지 걸린 시간이에요.
                 </p>
               </section>
             ) : null}

@@ -120,6 +120,8 @@ export type RevealCard = {
 // Wave 394.7.ab: confidence "low" 도 통과 (UI 측 분기로 "참고용" 톤 표시).
 export type RevealVelocityBasis = {
   comparableKey: string;
+  conditionClass: string | null;
+  conditionSpecific: boolean;
   confidence: "high" | "medium" | "low";
   observedSoldSampleCount: number;
   activeSampleCount: number;
@@ -704,7 +706,7 @@ const REFERENCE_PRICE_CACHE_TTL_MS = ttlFromEnv("PACK_REFERENCE_PRICE_CACHE_TTL_
 
 const marketStatsCache = new Map<string, TtlEntry<MarketStatsByCondition>>();
 const marketStatsPerSourceCache = new Map<string, TtlEntry<MarketStatsByCondition>>();
-const marketVelocityCache = new Map<string, TtlEntry<MarketVelocityRow | null>>();
+const marketVelocityCache = new Map<string, TtlEntry<MarketVelocityRow[] | null>>();
 const referencePriceCache = new Map<string, TtlEntry<number | null>>();
 
 function ttlFromEnv(name: string, fallbackMs: number) {
@@ -724,6 +726,38 @@ function readTtl<T>(cache: Map<string, TtlEntry<T>>, key: string, now: number): 
 
 function writeTtl<T>(cache: Map<string, TtlEntry<T>>, key: string, value: T, ttlMs: number, now: number) {
   cache.set(key, { value, expiresAt: now + ttlMs });
+}
+
+function normalizedVelocityCondition(conditionClass: string | null | undefined): string | null {
+  const value = (conditionClass ?? "").trim();
+  if (!value || value === "unknown" || value === "all") return null;
+  return value;
+}
+
+function velocityStatsConditionKey(comparableKey: string, conditionClass: string | null | undefined): string {
+  const condition = normalizedVelocityCondition(conditionClass);
+  return condition ? `${comparableKey}::${condition}` : comparableKey;
+}
+
+function isUsableConditionVelocity(row: MarketVelocityRow | null | undefined): row is MarketVelocityRow {
+  if (!row) return false;
+  const soldSample = Number(row.observed_sold_sample_count ?? 0);
+  const sold7d = Number(row.sold_7d_count ?? 0);
+  const medianHours = Number(row.median_hours_to_sold ?? 0);
+  return soldSample >= 3 && sold7d > 0 && Number.isFinite(medianHours) && medianHours > 0;
+}
+
+function addVelocityRowsToStatsMap(rows: MarketVelocityRow[], target: Map<string, MarketVelocityRow>) {
+  for (const row of rows) {
+    const condition = normalizedVelocityCondition(row.condition_class);
+    if (condition) {
+      if (!isUsableConditionVelocity(row)) continue;
+      const conditionKey = velocityStatsConditionKey(row.comparable_key, condition);
+      if (!target.has(conditionKey)) target.set(conditionKey, row);
+    } else if (!target.has(row.comparable_key)) {
+      target.set(row.comparable_key, row);
+    }
+  }
 }
 
 /**
@@ -1118,8 +1152,8 @@ export async function fetchLatestMarketVelocity(comparableKeys: (string | null)[
     const cached = readTtl(marketVelocityCache, key, now);
     if (cached === undefined) {
       missing.push(key);
-    } else if (cached) {
-      latest.set(key, cached);
+    } else if (cached?.length) {
+      addVelocityRowsToStatsMap(cached, latest);
     }
   }
   if (missing.length === 0) return latest;
@@ -1141,23 +1175,22 @@ export async function fetchLatestMarketVelocity(comparableKeys: (string | null)[
   ].join(",");
   const encoded = missing.map((key) => encodeURIComponent(key)).join(",");
   const res = await callSupabase(
-    // Wave 394.7.ac (사용자 짚음 — DB 직접 확인): "에어팟맥스는 기록 없을 수가 없는데"
-    // 원인 = 쿼리에서 confidence=in.(high,medium) 으로 low 데이터 아예 fetch 안 함.
-    // DB 실측: airpods_max condition별 confidence "low" 8건 (sold_7d 2~7건 풍부). all 통합은 high.
-    // condition_class=all 의 high confidence 못 매칭되는 케이스에서 low fallback 도 필요.
-    // confidence 가드 제거 → UI 측 (velocityGuideStep) 의 hasReferenceVelocity 분기로 정직 표시.
-    `/mvp_market_velocity_daily?select=${cols}&comparable_key=in.(${encoded})&condition_class=eq.all&order=date.desc,computed_at.desc,observed_sold_sample_count.desc&limit=${Math.max(100, missing.length * 2)}`,
+    // Wave 1025: all row + condition_class row를 같이 가져온다.
+    // UI는 condition row가 충분한 표본일 때만 사용하고, 아니면 all aggregate로 fallback.
+    `/mvp_market_velocity_daily?select=${cols}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc,observed_sold_sample_count.desc&limit=${Math.max(100, missing.length * 10)}`,
     { headers: authHeaders() },
   );
   const rows = (await res.json()) as MarketVelocityRow[];
-  const fetched = new Map<string, MarketVelocityRow>();
+  const fetchedByKey = new Map<string, MarketVelocityRow[]>();
   for (const row of rows) {
-    if (!fetched.has(row.comparable_key)) fetched.set(row.comparable_key, row);
+    const bucket = fetchedByKey.get(row.comparable_key) ?? [];
+    bucket.push(row);
+    fetchedByKey.set(row.comparable_key, bucket);
   }
   for (const key of missing) {
-    const row = fetched.get(key) ?? null;
-    writeTtl(marketVelocityCache, key, row, MARKET_VELOCITY_CACHE_TTL_MS, now);
-    if (row) latest.set(key, row);
+    const bucket = fetchedByKey.get(key) ?? null;
+    writeTtl(marketVelocityCache, key, bucket, MARKET_VELOCITY_CACHE_TTL_MS, now);
+    if (bucket?.length) addVelocityRowsToStatsMap(bucket, latest);
   }
   return latest;
 }
@@ -1437,18 +1470,24 @@ export function velocityBasisForCandidate(
   comparableKey: string | null,
   velocityStats: Map<string, MarketVelocityRow>,
   readinessMap: Awaited<ReturnType<typeof loadCategoryReadinessMap>>,
+  conditionClass?: string | null,
 ): RevealVelocityBasis | null {
   if (!comparableKey) return null;
   const category = categoryFromComparableKey(comparableKey);
   if (!category || readinessMap[category]?.status !== "ready") return null;
-  const stat = velocityStats.get(comparableKey);
+  const conditionStat = velocityStats.get(velocityStatsConditionKey(comparableKey, conditionClass));
+  const allStat = velocityStats.get(comparableKey);
+  const stat = isUsableConditionVelocity(conditionStat) ? conditionStat : allStat;
   // Wave 394.7.ab (사용자 짚음 — "에어팟맥스면 기록이 없을수가 없는데 수집 중만 뜸"):
   // 이전엔 confidence high/medium 만 통과 → low 인 케이스 데이터 있어도 전부 null 반환.
   // 사용자 입장 = "수집 중" 만 보임. "데이터 진짜 있긴 한 거?" 의심.
   // 이제 low 도 통과 — UI 측 (velocityGuideStep) 에서 confidence 별 분기로 정직 표시.
   if (!stat) return null;
+  const conditionSpecific = Boolean(normalizedVelocityCondition(stat.condition_class));
   return {
     comparableKey,
+    conditionClass: conditionSpecific ? stat.condition_class : null,
+    conditionSpecific,
     confidence: stat.confidence,
     observedSoldSampleCount: Number(stat.observed_sold_sample_count ?? 0),
     activeSampleCount: Number(stat.active_sample_count ?? 0),
@@ -2354,7 +2393,12 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         // Wave 130 (2026-05-16): 매물 condition_class lookup → 매칭되는 condition별 시세 우선 표시.
         // Wave 201 (2026-05-18): unopened 매물 → reference_prices anchor 우선.
         marketBasis,
-        velocityBasis: velocityBasisForCandidate(candidate.comparable_key, velocityStats, readinessMap),
+        velocityBasis: velocityBasisForCandidate(
+          candidate.comparable_key,
+          velocityStats,
+          readinessMap,
+          poolConditionMap.get(candidate.pid) ?? null,
+        ),
         lastVerifiedAt: liveVerifiedAt,
         freshSeconds,
         savedDetail,

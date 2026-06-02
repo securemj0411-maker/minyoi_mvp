@@ -13,7 +13,9 @@ import {
   fetchReferencePrices,
   fetchV7SiblingPresence,
   marketBasisForCandidate,
+  velocityBasisForCandidate,
 } from "@/lib/pack-open";
+import { loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -486,18 +488,19 @@ async function runLookup(
 
   // marketBasis + reference + v7 + velocity (회전주기) + pool status
   setStep("fetch_market_stats");
-  const [marketStatsResult, marketStatsPerSourceResult, referencePricesResult, v7Result, velocityResult, poolStatusRes] = await Promise.all([
+  const [marketStatsResult, marketStatsPerSourceResult, referencePricesResult, v7Result, velocityResult, readinessMap, poolStatusRes] = await Promise.all([
     fetchLatestMarketStats([comparableKey]),
     fetchLatestMarketStatsPerSource([comparableKey]),
     fetchReferencePrices([comparableKey]),
     fetchV7SiblingPresence([comparableKey]),
     fetchLatestMarketVelocity([comparableKey]),
+    loadCategoryReadinessMap(),
     restFetch(
       `${tableUrl("mvp_candidate_pool")}?select=status,invalidated_reason,score&pid=eq.${pid}&limit=1`,
       { headers },
     ),
   ]);
-  const velocityRow = velocityResult.get(comparableKey) ?? null;
+  const velocityBasis = velocityBasisForCandidate(comparableKey, velocityResult, readinessMap, conditionClass);
   const poolStatusRows = (await poolStatusRes.json()) as PoolStatusRow[];
   const poolStatus = poolStatusRows[0] ?? null;
 
@@ -720,16 +723,18 @@ async function runLookup(
     profit,
     comparableListings,
     priceDaily,
-    velocity: velocityRow
+    velocity: velocityBasis
       ? {
-          confidence: velocityRow.confidence,
-          observedSoldSampleCount: Number(velocityRow.observed_sold_sample_count ?? 0),
-          activeSampleCount: Number(velocityRow.active_sample_count ?? 0),
-          sold24hCount: Number(velocityRow.sold_24h_count ?? 0),
-          sold7dCount: Number(velocityRow.sold_7d_count ?? 0),
-          medianHoursToSold: velocityRow.median_hours_to_sold,
-          p25HoursToSold: velocityRow.p25_hours_to_sold,
-          p75HoursToSold: velocityRow.p75_hours_to_sold,
+          confidence: velocityBasis.confidence,
+          conditionClass: velocityBasis.conditionClass,
+          conditionSpecific: velocityBasis.conditionSpecific,
+          observedSoldSampleCount: velocityBasis.observedSoldSampleCount,
+          activeSampleCount: velocityBasis.activeSampleCount,
+          sold24hCount: velocityBasis.sold24hCount,
+          sold7dCount: velocityBasis.sold7dCount,
+          medianHoursToSold: velocityBasis.medianHoursToSold,
+          p25HoursToSold: velocityBasis.p25HoursToSold,
+          p75HoursToSold: velocityBasis.p75HoursToSold,
         }
       : null,
     poolStatus: poolStatus

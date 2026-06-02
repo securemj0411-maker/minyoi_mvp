@@ -987,7 +987,12 @@ export async function GET(req: Request) {
         // 2026-05-20 P0-Demand-A: 하드코딩 null 제거. reveal/pool 라우트와 동일 채움.
         //   사용자가 매물 상세 모달에서 "수요·공급 데이터 부족" 보던 버그 해소.
         velocityBasis: comparableKey
-          ? velocityBasisForCandidate(comparableKey, velocityStats, readinessMap)
+          ? velocityBasisForCandidate(
+              comparableKey,
+              velocityStats,
+              readinessMap,
+              conditionClassByPid.get(Number(reveal.pid)) ?? null,
+            )
           : null,
         skuListingFlow: skuId ? (skuFlowByIdMap.get(skuId) ?? null) : null,
         // 2026-05-20 P0-Upload: 셀러 업로드 시점 (first_seen_at). UI에서 "등록 N시간 전" 표시.

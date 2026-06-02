@@ -139,7 +139,7 @@ async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
 
   return {
     marketBasis,
-    velocityBasis: velocityBasisForCandidate(comparableKey, velocityStats, readinessMap),
+    velocityBasis: velocityBasisForCandidate(comparableKey, velocityStats, readinessMap, parsed?.condition_class ?? null),
     skuListingFlow,
     optionBaseAssumed,
   };

@@ -5161,6 +5161,7 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
   const market = card.marketBasis;
   const sampleCount = velocity?.observedSoldSampleCount ?? market?.soldSampleCount ?? 0;
   const dailySoldValue = velocity?.sold7dCount ? dailySoldCountLabel(velocity.sold7dCount) : null;
+  const basisLabel = velocity?.conditionSpecific ? "같은 상태" : "같은 모델 전체";
   // Wave 394.7.ab: "확인 중" → "표본 부족" — 정직 카피.
   const sampleLabel = dailySoldValue ? "동일 모델 하루 판매량" : sampleCount > 0 ? "비슷한 거래 기록" : "거래 기록";
   const sampleValue = dailySoldValue ?? (sampleCount > 0 ? `${sampleCount.toLocaleString("ko-KR")}건` : "표본 부족");
@@ -5181,7 +5182,7 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
         </div>
       </div>
       <p className="mt-2 break-keep text-[10.5px] font-semibold leading-4 text-zinc-500 dark:text-zinc-400">
-        판매 주기는 같은 모델 전체 기준의 참고값이에요. 상태·출처별 차이는 시세 비교와 함께 봐주세요.
+        판매 주기는 {basisLabel} 기준의 참고값이에요. 표본이 부족하면 모델 전체 기록으로 보수적으로 봅니다.
       </p>
     </div>
   );
