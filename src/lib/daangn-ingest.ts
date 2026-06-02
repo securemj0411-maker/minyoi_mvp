@@ -364,6 +364,9 @@ async function insertDaangnSourceHealth(input: {
 }) {
   try {
     const previous = await loadPreviousDaangnSourceStatus();
+    const detailSuccessRate = boundedRate(input.metrics.detailSuccessRate, 1);
+    const detail404Rate = boundedRate(input.metrics.detail404Rate, 0);
+    const detail5xxRate = boundedRate(input.metrics.detail5xxRate, 0);
     await restFetch(tableUrl("mvp_source_health"), {
       method: "POST",
       headers: serviceHeaders("return=minimal"),
@@ -373,9 +376,9 @@ async function insertDaangnSourceHealth(input: {
         window_minutes: 15,
         status: input.status,
         previous_status: previous,
-        detail_success_rate: input.metrics.detailSuccessRate ?? null,
-        detail_404_rate: input.metrics.detail404Rate ?? null,
-        detail_5xx_rate: input.metrics.detail5xxRate ?? null,
+        detail_success_rate: detailSuccessRate,
+        detail_404_rate: detail404Rate,
+        detail_5xx_rate: detail5xxRate,
         sold_transition_rate: 0,
         disappeared_transition_rate: 0,
         search_result_count: input.searchResultCount,
@@ -387,6 +390,13 @@ async function insertDaangnSourceHealth(input: {
   } catch (err) {
     console.warn("daangn source health insert failed (non-fatal)", err instanceof Error ? err.message : String(err));
   }
+}
+
+function boundedRate(value: unknown, fallback: number) {
+  if (value == null || value === "") return fallback;
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(1, Math.max(0, n));
 }
 
 function sleep(ms: number) {

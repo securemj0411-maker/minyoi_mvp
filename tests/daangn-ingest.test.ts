@@ -10,6 +10,7 @@ import {
   daangnUpsertPreflightLimit,
   hasDaangnDetailPayload,
   inferDaangnShipping,
+  runDaangnIngest,
   selectDaangnCategoryBoostCombos,
   selectDaangnCombos,
   selectDaangnFirehoseCombos,
@@ -27,6 +28,21 @@ import {
   type DaangnDetailArticle,
   type DaangnSearchArticle,
 } from "../src/lib/daangn";
+
+const originalFetch = globalThis.fetch;
+const originalSupabaseUrl = process.env.SUPABASE_URL;
+const originalServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const originalDaangnSourceMode = process.env.DAANGN_SOURCE_MODE;
+
+function restoreEnvAndFetch() {
+  globalThis.fetch = originalFetch;
+  if (originalSupabaseUrl == null) delete process.env.SUPABASE_URL;
+  else process.env.SUPABASE_URL = originalSupabaseUrl;
+  if (originalServiceRoleKey == null) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  else process.env.SUPABASE_SERVICE_ROLE_KEY = originalServiceRoleKey;
+  if (originalDaangnSourceMode == null) delete process.env.DAANGN_SOURCE_MODE;
+  else process.env.DAANGN_SOURCE_MODE = originalDaangnSourceMode;
+}
 
 describe("Daangn search region seeds", () => {
   it("uses leaf dong/eup/myeon ids instead of gu/city representative ids", () => {
@@ -68,6 +84,57 @@ function makeArticle(overrides: Partial<DaangnSearchArticle> = {}): DaangnSearch
     ...overrides,
   };
 }
+
+describe("runDaangnIngest source health writer", () => {
+  it("writes non-null health rates when no detail samples were attempted", async () => {
+    process.env.SUPABASE_URL = "https://stub.supabase.co";
+    process.env.SUPABASE_SERVICE_ROLE_KEY = "stub-service-key";
+    process.env.DAANGN_SOURCE_MODE = "active";
+
+    let insertedHealth: Record<string, unknown> | null = null;
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes("stub.supabase.co/rest/v1/mvp_source_health?select=status")) {
+        return new Response(JSON.stringify([{ status: "healthy" }]), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      if (url === "https://stub.supabase.co/rest/v1/mvp_source_health" && init?.method === "POST") {
+        const rows = JSON.parse(String(init.body ?? "[]")) as Array<Record<string, unknown>>;
+        insertedHealth = rows[0] ?? null;
+        return new Response("", { status: 201 });
+      }
+      if (url.startsWith("https://www.daangn.com/")) {
+        return new Response("<html></html>", {
+          status: 200,
+          headers: { "content-type": "text/html" },
+        });
+      }
+      throw new Error(`unexpected fetch: ${url}`);
+    }) as typeof globalThis.fetch;
+
+    try {
+      const result = await runDaangnIngest({
+        regions: [{ id: "6092", name: "상도1동" }],
+        maxCombos: 1,
+        maxDetailSamples: 0,
+        maxUpsertArticles: 0,
+        categoryBoostRegions: 0,
+        useAdaptiveRegionRotation: false,
+        dryRun: true,
+      });
+
+      assert.equal(result.detailFetched, 0);
+      assert.ok(insertedHealth);
+      assert.equal(insertedHealth.detail_success_rate, 1);
+      assert.equal(insertedHealth.detail_404_rate, 0);
+      assert.equal(insertedHealth.detail_5xx_rate, 0);
+    } finally {
+      restoreEnvAndFetch();
+    }
+  });
+});
 
 describe("selectDaangnCombos", () => {
   it("returns at most maxCombos with region-first rotation", () => {
