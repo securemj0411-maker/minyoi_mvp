@@ -13,7 +13,6 @@ import { ConditionPhotoBadge, ConditionTierPhotoBadge } from "@/components/condi
 import { CategoryWatermark } from "@/components/category-watermark";
 import KakaoLogo from "@/components/kakao-logo";
 import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
-import { SkuImageLockBadge } from "@/components/sku-image-lock-badge";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { detectBrandDepth } from "@/lib/category-brand-depth";
 import type { DetailEventType } from "@/lib/detail-analytics";
@@ -2771,6 +2770,7 @@ export default function ExploreClient({
             const tierBadgeCategory = tierBadgeCategoryForItem(item);
             const legacyBadgeCondition = tierBadgeCategory ? null : item.conditionClass;
             const fullLocked = false;
+            const previewImageUrl = item.thumbnailUrl ?? item.genericImageUrl ?? null;
             return (
               <button
                 key={item.pid}
@@ -2808,14 +2808,14 @@ export default function ExploreClient({
                 }`}
               >
                 <div className={`relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 ${isSoldOut ? "grayscale" : ""}`}>
-                  {(item.genericImageUrl ?? item.thumbnailUrl) ? (
+                  {previewImageUrl ? (
                     <Image
-                      src={item.genericImageUrl ?? item.thumbnailUrl ?? ""}
+                      src={previewImageUrl}
                       alt={item.name}
                       fill
                       sizes="120px"
                       unoptimized
-                      className={`object-cover ${isSoldOut ? "opacity-60" : ""} ${lockedPreview && !item.genericImageUrl ? "scale-105 blur-[1.5px]" : ""}`}
+                      className={`object-cover ${isSoldOut ? "opacity-60" : ""}`}
                     />
                   ) : (
                     // Wave 749 (2026-05-25): 썸네일 없을 때 카테고리 워터마크 placeholder.
@@ -2825,23 +2825,8 @@ export default function ExploreClient({
                       size={60}
                     />
                   )}
-                  {/* Wave 886 (2026-05-27): generic 이미지 있으면 잠금 CTA 배지 1개만 (위장 이미지 그대로 보이게).
-                      generic 없는 잠긴 카드는 기존 CategoryIcon center + "상세에서 원문 공개" overlay 유지. */}
-                  {item.genericImageUrl && !isSoldOut ? <SkuImageLockBadge variant="compact" /> : null}
-                  {lockedPreview && !isSoldOut && !item.genericImageUrl ? (
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-br from-black/10 via-transparent to-black/20">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/88 shadow-[0_4px_14px_rgba(15,23,42,0.16)] ring-1 ring-white/70 backdrop-blur dark:bg-zinc-950/82 dark:ring-zinc-700/60">
-                        <CategoryIcon
-                          category={item.category ?? categoryFromComparableKey(item.comparableKey ?? null) ?? "default"}
-                          className="h-5 w-5 text-[#3182f6] dark:text-blue-300"
-                          strokeWidth={1.9}
-                        />
-                      </div>
-                      <span className="absolute bottom-2 left-2 rounded-full bg-black/58 px-2 py-0.5 text-[9px] font-black text-white backdrop-blur">
-                        탭해서 실제 매물 사진 보기
-                      </span>
-                    </div>
-                  ) : null}
+                  {/* Wave 1027 (2026-06-03): 고액/고의도 사용자 MVP에서는 피드 사진을 숨기지 않는다.
+                      제목/정확가/원문 링크 CTA는 유지하되, 썸네일은 원본 우선으로 보여줘 탐색 후크를 살린다. */}
                   {/* Wave 355 → launch: 구형 condition_class 도 사진 위 배지로 통일.
                       Wave 714p/760d: 최신 5-tier 카테고리는 옛 conditionClass 뱃지 hide.
                       신발/의류/게임기/골프는 새 S/A/B/C/D 뱃지가 단일 표시 기준. */}
@@ -2865,7 +2850,7 @@ export default function ExploreClient({
                     </div>
                   ) : null}
                   {/* Wave 751 (2026-05-25): 사진 위 우하단 카테고리 워터마크 배지 (HTML 레퍼런스). */}
-                  {(item.genericImageUrl ?? item.thumbnailUrl) ? (
+                  {previewImageUrl ? (
                     <CategoryWatermark
                       category={item.category}
                       comparableKey={item.comparableKey ?? null}

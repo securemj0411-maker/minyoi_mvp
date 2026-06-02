@@ -2685,6 +2685,42 @@ function isSameSourceComparableForCard(card: RevealCard, item: ComparableListing
   return String(item.marketplaceSource ?? "").toLowerCase() === cardSource;
 }
 
+function finitePositivePrice(value: number | null | undefined) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function comparableDisplayBounds(card: RevealCard): { lower: number; upper: number } | null {
+  const median = finitePositivePrice(card.marketBasis?.medianPrice);
+  if (!median) return null;
+
+  const p25 = finitePositivePrice(card.marketBasis?.p25Price);
+  const p75 = finitePositivePrice(card.marketBasis?.p75Price);
+  const hardLower = median * 0.35;
+  const hardUpper = median * 2.2;
+
+  if (p25 && p75 && p75 > p25) {
+    const iqr = p75 - p25;
+    const iqrLower = p25 - iqr * 2;
+    const iqrUpper = p75 + iqr * 2;
+    return {
+      lower: Math.max(hardLower, Math.min(median * 0.85, iqrLower)),
+      upper: Math.min(hardUpper, Math.max(median * 1.45, iqrUpper)),
+    };
+  }
+
+  return { lower: hardLower, upper: hardUpper };
+}
+
+function filterDisplayComparableListings(card: RevealCard, items: ComparableListing[]) {
+  const bounds = comparableDisplayBounds(card);
+  if (!bounds) return items.filter((item) => finitePositivePrice(item.price) != null);
+  return items.filter((item) => {
+    const price = finitePositivePrice(item.price);
+    return price != null && price >= bounds.lower && price <= bounds.upper;
+  });
+}
+
 function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; mode?: "simple" | "detailed" }) {
   const [listings, setListings] = useState<ComparableListing[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -2709,11 +2745,14 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((j: { comparables?: ComparableListing[] }) => {
         if (!cancelled) {
-          // disappeared 매물 제외, 가격 높은 순 정렬. outlier는 market-source API에서 먼저 제거된다.
+          // disappeared 매물 제외, 가격 높은 순 정렬.
+          // Wave 1027 (2026-06-03): market-source 1차 제외에 더해 UI 표시용 outlier guard.
+          // 시세 계산은 기존 backend 기준 유지, 사용자에게 보이는 "증거 리스트"에서 극단 고/저가 샘플만 숨긴다.
           // simple = 6, detailed = 12 표시. fetch 한 번에 16 까지 보관해서 mode 변경 시 re-fetch X.
-          const filtered = (j.comparables ?? [])
+          const candidates = (j.comparables ?? [])
             .filter((c) => c.listingState !== "disappeared")
-            .filter((c) => isSameSourceComparableForCard(card, c))
+            .filter((c) => isSameSourceComparableForCard(card, c));
+          const filtered = filterDisplayComparableListings(card, candidates)
             .sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
             .slice(0, 16);
           setListings(filtered);
@@ -5259,9 +5298,10 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((j: { comparables?: ComparableListing[] }) => {
         if (cancelled) return;
-        const filtered = (j.comparables ?? [])
+        const candidates = (j.comparables ?? [])
           .filter((item) => item.listingState !== "disappeared")
-          .filter((item) => isSameSourceComparableForCard(card, item))
+          .filter((item) => isSameSourceComparableForCard(card, item));
+        const filtered = filterDisplayComparableListings(card, candidates)
           .sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
           .slice(0, 16);
         setListings(filtered);
