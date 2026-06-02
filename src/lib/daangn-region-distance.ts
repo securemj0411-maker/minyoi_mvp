@@ -93,6 +93,21 @@ export function regionFirstLevel(path: string | null | undefined) {
   return FIRST_LEVEL_ALIASES[first] ?? first;
 }
 
+function regionSecondLevel(path: string | null | undefined) {
+  return normalizeRegionPath(path).split(" ").filter(Boolean)[1] ?? "";
+}
+
+function sameLocalAdministrativeArea(
+  userPath: string | null | undefined,
+  itemPath: string | null | undefined,
+) {
+  const userFirst = regionFirstLevel(userPath);
+  const itemFirst = regionFirstLevel(itemPath);
+  const userSecond = regionSecondLevel(userPath);
+  const itemSecond = regionSecondLevel(itemPath);
+  return Boolean(userFirst && itemFirst && userSecond && itemSecond && userFirst === itemFirst && userSecond === itemSecond);
+}
+
 function pathPrefixes(path: string) {
   const parts = normalizeRegionPath(path).split(" ").filter(Boolean);
   const out: string[] = [];
@@ -243,13 +258,26 @@ export function evaluateDaangnRegionDistance(
   const userGeo = resolveDaangnGeoByPath(userFullPath);
   const item = resolveDaangnGeo(itemRegionId, itemRegionName);
 
-  if (!normalizedUserPath || !item.fullPath) {
+  if (!normalizedUserPath) {
     return {
       actionable: true,
       bucket: "unknown",
       distanceKm: null,
       rank: 4,
       label: null,
+      userGeo,
+      itemGeo: item.geo,
+      itemFullPath: item.fullPath,
+    };
+  }
+
+  if (!item.fullPath) {
+    return {
+      actionable: false,
+      bucket: "unknown",
+      distanceKm: null,
+      rank: 9,
+      label: "거리 확인 필요",
       userGeo,
       itemGeo: item.geo,
       itemFullPath: item.fullPath,
@@ -279,12 +307,13 @@ export function evaluateDaangnRegionDistance(
   }
 
   const sameFirstLevel = regionFirstLevel(normalizedUserPath) && regionFirstLevel(normalizedUserPath) === regionFirstLevel(item.fullPath);
+  const sameLocalArea = sameLocalAdministrativeArea(normalizedUserPath, item.fullPath);
   return {
-    actionable: Boolean(sameFirstLevel),
+    actionable: sameLocalArea,
     bucket: sameFirstLevel ? "unknown" : "too_far",
     distanceKm: null,
-    rank: sameFirstLevel ? 4 : 9,
-    label: sameFirstLevel ? "거리 확인 필요" : "거리 멂",
+    rank: sameLocalArea ? 4 : 9,
+    label: sameLocalArea ? "같은 구 · 거리 확인 필요" : sameFirstLevel ? "거리 확인 필요" : "거리 멂",
     userGeo,
     itemGeo: item.geo,
     itemFullPath: item.fullPath,

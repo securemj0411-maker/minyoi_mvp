@@ -70,3 +70,27 @@ test("Daangn distance does not show a far label before the user sets a home regi
   assert.equal(signal.bucket, "unknown");
   assert.equal(signal.label, null);
 });
+
+test("Daangn distance fails closed when a known user region cannot verify listing locality", () => {
+  const missingItemRegion = evaluateDaangnRegionDistance(SANGDO_1, null, null);
+
+  assert.equal(missingItemRegion.actionable, false);
+  assert.equal(missingItemRegion.bucket, "unknown");
+  assert.equal(missingItemRegion.label, "거리 확인 필요");
+});
+
+test("Daangn distance no longer allows broad same-city fallback across districts", () => {
+  const unknownSeoulDistrict = evaluateDaangnRegionDistance(SANGDO_1, null, "서울특별시 가상구 미확인동");
+
+  assert.equal(unknownSeoulDistrict.actionable, false);
+  assert.equal(unknownSeoulDistrict.bucket, "unknown");
+  assert.equal(unknownSeoulDistrict.label, "거리 확인 필요");
+});
+
+test("Daangn distance keeps same-district fuzzy paths actionable through district centroid resolution", () => {
+  const fuzzyDongjak = evaluateDaangnRegionDistance(SANGDO_1, null, "서울특별시 동작구 미확인동");
+
+  assert.equal(fuzzyDongjak.actionable, true);
+  assert.notEqual(fuzzyDongjak.bucket, "too_far");
+  assert.ok((fuzzyDongjak.distanceKm ?? 999) < 10);
+});
