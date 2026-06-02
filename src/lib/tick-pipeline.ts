@@ -2664,10 +2664,46 @@ async function markScorableScoreDirtyIfClean(pids: number[]): Promise<number> {
   return marked;
 }
 
+function marketScoreDirtyMarkLimit() {
+  return boundedInt(
+    process.env.PIPELINE_MARKET_SCORE_DIRTY_MARK_LIMIT ?? null,
+    5000,
+    100,
+    5000,
+  );
+}
+
+async function markScorableScoreDirtyByComparableKeysRpc(comparableKeys: string[]): Promise<ScoreDirtyMarkResult | null> {
+  const unique = [...new Set(comparableKeys.filter(Boolean))];
+  if (unique.length === 0) return { candidateRows: 0, markedRows: 0 };
+  try {
+    const res = await restFetch(rpcUrl("mark_scorable_score_dirty_by_comparable_keys"), {
+      method: "POST",
+      headers: serviceHeaders(),
+      body: jsonBody({
+        p_comparable_keys: unique,
+        p_limit: marketScoreDirtyMarkLimit(),
+      }),
+    });
+    if (!res.ok) return null;
+    const rows = (await res.json().catch(() => [])) as Array<{ candidate_count?: number; marked_count?: number }>;
+    return {
+      candidateRows: Number(rows[0]?.candidate_count ?? 0),
+      markedRows: Number(rows[0]?.marked_count ?? 0),
+    };
+  } catch (err) {
+    console.warn("[market-score-dirty] rpc failed; falling back to REST path", err instanceof Error ? err.message : String(err));
+    return null;
+  }
+}
+
 async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Promise<ScoreDirtyMarkResult> {
   if (!(await rawScoreDirtySchemaAvailable())) return { candidateRows: 0, markedRows: 0 };
   const unique = [...new Set(comparableKeys.filter(Boolean))];
   if (unique.length === 0) return { candidateRows: 0, markedRows: 0 };
+  const rpcResult = await markScorableScoreDirtyByComparableKeysRpc(unique);
+  if (rpcResult) return rpcResult;
+
   // comparable_key를 가진 parsed pid를 모은 뒤 raw_listings.score_dirty=true.
   const parsedByPid = await loadParsedRowsByComparableKeys(unique, 5000, {
     includeParsedJson: false,
