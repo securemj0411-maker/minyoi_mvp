@@ -2261,6 +2261,28 @@ function positiveModulo(value: number, modulo: number): number {
   return ((value % modulo) + modulo) % modulo;
 }
 
+function isKnownMarketplaceSourceValue(value: string): value is KnownMarketplaceSource {
+  return value === "bunjang" || value === "joongna" || value === "daangn";
+}
+
+export function scorableRpcSourceFilterForExtraFilter(
+  extraFilter: string,
+  optionSourceFilter: KnownMarketplaceSource | null | undefined = null,
+): KnownMarketplaceSource | null | undefined {
+  if (optionSourceFilter) return optionSourceFilter;
+  const normalized = extraFilter.trim().replace(/^&/, "");
+  if (!normalized) return null;
+  const match = normalized.match(/^source=eq\.([a-z_]+)$/);
+  if (!match) return undefined;
+  const source = match[1] ?? "";
+  return isKnownMarketplaceSourceValue(source) ? source : undefined;
+}
+
+export function scorableRpcLimitForRequest(rowLimit: number): number {
+  const limit = Math.max(1, Math.floor(Number(rowLimit) || 1));
+  return Math.max(limit, Math.min(300, Math.max(120, limit * 3)));
+}
+
 function scoreStageScope(row: Pick<ScorableRawRow, "pid" | "source">, options: ScoreStageOptions): boolean {
   const source = normalizeMarketplaceSource(row.source);
   if (options.sourceFilter && source !== options.sourceFilter) return false;
@@ -2296,7 +2318,7 @@ async function loadScorableRows(limit: number, options: ScoreStageOptions = {}):
   const fetchScorableRows = async (extraFilter: string, rowLimit: number, seenPids = new Set<number>()) => {
     const rows: ScorableRawRow[] = [];
     const scanLimit = scoreDirtyAvailable
-      ? Math.max(rowLimit, Math.min(1000, Math.max(200, rowLimit * 20)))
+      ? scorableRpcLimitForRequest(rowLimit)
       : rowLimit;
     const collect = (batch: ScorableRawRow[]) => {
       for (const row of batch) {
@@ -2317,10 +2339,11 @@ async function loadScorableRows(limit: number, options: ScoreStageOptions = {}):
       //   fix: claim_scorable_raw_rows RPC. PG side statement_timeout 60s, SECURITY DEFINER.
       //         lane a/b/c 모두 동일 RPC. extraFilter (e.g. &source=eq.daangn) 는 RPC param 으로 합쳐 전달.
       //         RPC 실패 시 기존 GET path fallback (best-effort).
-      const sourceFilterArg = options.sourceFilter ?? null;
       const shardCountArg = Math.max(1, Math.floor(Number(options.daangnShardCount ?? 1)));
       const shardIndexArg = Math.max(0, Math.floor(Number(options.daangnShardIndex ?? 0)));
       const tryRpc = async (listingTypeFilter: string): Promise<ScorableRawRow[] | null> => {
+        const sourceFilterArg = scorableRpcSourceFilterForExtraFilter(extraFilter, options.sourceFilter ?? null);
+        if (sourceFilterArg === undefined) return null;
         try {
           const res = await restFetch(rpcUrl("claim_scorable_raw_rows"), {
             method: "POST",

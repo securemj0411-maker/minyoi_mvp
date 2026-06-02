@@ -17,6 +17,8 @@ import {
 import {
   shouldCoalesceActiveSeenOnlyTouch,
   shouldRefreshSearchSeller,
+  scorableRpcLimitForRequest,
+  scorableRpcSourceFilterForExtraFilter,
   splitActiveSeenOnlyTouches,
   splitActiveSeenOnlyTouchesByPoolProtection,
   rawListingTypeForStorage,
@@ -62,6 +64,23 @@ test("pool policy treats legacy Daangn saling typo as active", () => {
   };
   assert.equal(poolSkipReason({ ...base, saleStatus: "selling" }), null);
   assert.equal(poolSkipReason({ ...base, saleStatus: "saling" }), null);
+});
+
+test("score RPC source filter preserves source reserve filters only when supported", () => {
+  assert.equal(scorableRpcSourceFilterForExtraFilter("", null), null);
+  assert.equal(scorableRpcSourceFilterForExtraFilter("&source=eq.daangn", null), "daangn");
+  assert.equal(scorableRpcSourceFilterForExtraFilter("&source=eq.joongna", null), "joongna");
+  assert.equal(scorableRpcSourceFilterForExtraFilter("&source=eq.bunjang", "daangn"), "daangn");
+  assert.equal(
+    scorableRpcSourceFilterForExtraFilter("&or=(sku_id.like.shoe-%2A,sku_id.like.clothing-%2A)", null),
+    undefined,
+  );
+});
+
+test("score RPC request limit keeps a small buffer instead of broad 1000-row scans", () => {
+  assert.equal(scorableRpcLimitForRequest(10), 120);
+  assert.equal(scorableRpcLimitForRequest(100), 300);
+  assert.equal(scorableRpcLimitForRequest(500), 500);
 });
 
 test("Daangn marketplace defaults to direct trade and exposes region metadata", () => {
