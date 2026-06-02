@@ -46,3 +46,19 @@ That means a collect-log cleanup row created by `markStaleCollectRuns()` could p
 - If stale markers continue without later successes, inspect function max duration / collect-run finish logging separately.
 - `mvp_collect_runs(request_path, started_at desc)` is still a DB hotpath improvement candidate; broad latest-run queries can time out.
 
+## Production Verification
+
+After deploy `minyoi-is8n32umm-securemj0411-7703s-projects.vercel.app`, the next source-health row confirmed the filter is active:
+
+- `checked_at`: `2026-06-02T09:22:35Z` (`18:22 KST`)
+- `status`: `healthy`
+- `reason`: `within_operating_bounds`
+- `baseline_json.staleMarkedRuns`: `14`
+- `baseline_json.staleMarkedRunsByMode.market_worker`: `1`
+- `baseline_json.staleMarkedRunsByMode.housekeeper`: `1`
+- `workerBreakdown.market_worker.failed`: `0`
+- `workerBreakdown.housekeeper.failed`: `0`
+- `operationalAlerts`: `[]`
+- `notification`: `recovered`
+
+This verifies the Telegram Market/Housekeeper alert was not hidden globally. The stale-marker rows remain visible in diagnostics, while worker failure-rate alerts now count only effective failures.
