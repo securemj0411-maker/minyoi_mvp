@@ -244,6 +244,7 @@ type MarketPriceRow = {
   comparable_key: string;
   // Wave 130 (2026-05-16): condition_class — PK 일부. condition별 시세 분리.
   condition_class: string;
+  condition_tier?: string | null;
   active_median_price: number | null;
   sold_median_price: number | null;
   blended_median_price: number | null;
@@ -257,8 +258,12 @@ type MarketPriceRow = {
   computed_at: string;
 };
 
-// Wave 130: comparable_key → (condition_class → row) 이중 map.
+// Wave 130 + 1022: comparable_key → (`condition_tier|condition_class` → row) 이중 map.
 type MarketPriceStatsMap = Map<string, Map<string, MarketPriceRow>>;
+
+function marketPriceStatsConditionKey(conditionTier: string | null | undefined, conditionClass: string | null | undefined) {
+  return `${(conditionTier ?? "").trim()}|${(conditionClass ?? "").trim()}`;
+}
 
 function rawJsonSource(row: { raw_json?: Record<string, unknown> | null }): string {
   const source = row.raw_json?.source;
@@ -3292,6 +3297,7 @@ async function loadMarketPriceStats(comparableKeys: string[]): Promise<MarketPri
     "date",
     "comparable_key",
     "condition_class",
+    "condition_tier",
     "active_median_price",
     "sold_median_price",
     "blended_median_price",
@@ -3317,7 +3323,8 @@ async function loadMarketPriceStats(comparableKeys: string[]): Promise<MarketPri
     const rows = (await res.json()) as MarketPriceRow[];
     for (const row of rows) {
       const byCond = result.get(row.comparable_key) ?? new Map<string, MarketPriceRow>();
-      if (!byCond.has(row.condition_class)) byCond.set(row.condition_class, row);
+      const conditionKey = marketPriceStatsConditionKey(row.condition_tier ?? "", row.condition_class);
+      if (!byCond.has(conditionKey)) byCond.set(conditionKey, row);
       result.set(row.comparable_key, byCond);
     }
   }
@@ -3338,6 +3345,7 @@ async function loadMarketPriceStatsPerSource(comparableKeys: string[]): Promise<
     "date",
     "comparable_key",
     "condition_class",
+    "condition_tier",
     "source",
     "active_median_price",
     "sold_median_price",
@@ -3364,7 +3372,8 @@ async function loadMarketPriceStatsPerSource(comparableKeys: string[]): Promise<
         if (!row.source) continue;
         const bySource = result.get(row.comparable_key) ?? new Map<string, Map<string, MarketPriceRowWithSource>>();
         const byCond = bySource.get(row.source) ?? new Map<string, MarketPriceRowWithSource>();
-        if (!byCond.has(row.condition_class)) byCond.set(row.condition_class, row);
+        const conditionKey = marketPriceStatsConditionKey(row.condition_tier ?? "", row.condition_class);
+        if (!byCond.has(conditionKey)) byCond.set(conditionKey, row);
         bySource.set(row.source, byCond);
         result.set(row.comparable_key, bySource);
       }
@@ -3381,6 +3390,7 @@ function pickPerSourceStatForMatter(
   perSourceMap: MarketPriceStatsPerSourceMap | null,
   comparableKey: string | null,
   conditionClass: string | null,
+  conditionTier: string | null | undefined,
   matterSource: string | null | undefined,
   category?: Sku["category"] | null,
 ): MarketPriceRowWithSource | null {
@@ -3389,23 +3399,28 @@ function pickPerSourceStatForMatter(
   if (!bySource) return null;
   const byCond = bySource.get(matterSource);
   if (!byCond) return null;
-  for (const cls of conditionFallbackChain(conditionClass)) {
-    const stat = byCond.get(cls);
-    if (!stat) continue;
-    if (trustedMarketMedian(stat, category) != null) return stat;
-  }
-  return null;
+  const { row } = pickByConditionFallback(
+    byCond,
+    conditionClass,
+    (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0),
+    1,
+    conditionTier,
+  );
+  return row && trustedMarketMedian(row, category) != null ? row : null;
 }
 
 // Wave 159h (2026-05-17): condition-fallback shared module 사용 (DRY).
 function pickMarketStatByCondition(
   byCondition: Map<string, MarketPriceRow> | undefined,
   conditionClass: string | null,
+  conditionTier?: string | null,
 ): MarketPriceRow | undefined {
   const { row } = pickByConditionFallback(
     byCondition,
     conditionClass,
     (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0) + Number(r.disappeared_sample_count ?? 0),
+    1,
+    conditionTier,
   );
   return row;
 }
@@ -5642,6 +5657,7 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
     category: Sku["category"] | null;
     comparable_key: string | null;
     condition_class: string | null;
+    condition_tier: string | null;
   }>();
   for (const chunk of chunkArray(pids, REST_WRITE_CHUNK_SIZE)) {
     const [rawRes, listingRes, parsedRes] = await Promise.all([
@@ -5654,7 +5670,7 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
         { headers: serviceHeaders() },
       ),
       restFetch(
-        `${tableUrl("mvp_listing_parsed")}?select=pid,category,comparable_key,condition_class&pid=in.(${chunk.join(",")})`,
+        `${tableUrl("mvp_listing_parsed")}?select=pid,category,comparable_key,condition_class,condition_tier&pid=in.(${chunk.join(",")})`,
         { headers: serviceHeaders() },
       ),
     ]);
@@ -5692,6 +5708,7 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
       category: Sku["category"] | null;
       comparable_key: string | null;
       condition_class: string | null;
+      condition_tier: string | null;
     }>;
     for (const parsed of parsedRows) {
       const pid = Number(parsed.pid);
@@ -5700,6 +5717,7 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
         category: parsed.category ?? null,
         comparable_key: parsed.comparable_key ?? null,
         condition_class: parsed.condition_class ?? null,
+        condition_tier: parsed.condition_tier ?? null,
       });
     }
   }
@@ -5724,6 +5742,7 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
         marketStatsPerSource,
         parsed.comparable_key,
         parsed.condition_class ?? null,
+        parsed.condition_tier ?? null,
         rawSource,
         parsed.category,
       );
@@ -5732,6 +5751,7 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
         marketStatsPerSource,
         sizeAnyKey ?? null,
         parsed.condition_class ?? null,
+        parsed.condition_tier ?? null,
         rawSource,
         parsed.category,
       );
@@ -5739,12 +5759,13 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
       continue;
     }
     const byCondition = marketStatsByKey.get(parsed.comparable_key);
-    const stat = pickMarketStatByCondition(byCondition, parsed.condition_class ?? null);
+    const stat = pickMarketStatByCondition(byCondition, parsed.condition_class ?? null, parsed.condition_tier ?? null);
     const exactMedian = trustedMarketMedian(stat, parsed.category);
     const sizeAnyKey = shoeSizeAgnosticComparableKey(parsed.comparable_key);
     const sizeAnyStat = pickMarketStatByCondition(
       sizeAnyKey ? marketStatsByKey.get(sizeAnyKey) : undefined,
       parsed.condition_class ?? null,
+      parsed.condition_tier ?? null,
     );
     if (exactMedian != null || trustedMarketMedian(sizeAnyStat, parsed.category) != null) recoveredMarket.add(pid);
   }
@@ -7483,7 +7504,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     // Wave 130 (2026-05-16): 매물 condition_class에 매칭되는 시세 row 선택 (sample 부족 시 fallback).
     // 사업 보고서 L2: 같은 SKU+옵션도 condition별 시세 spread 15~40% — 정확성 ↑.
     const byCondition = comparableKey ? marketStatsByKey.get(comparableKey) : undefined;
-    const exactMixedMarketStat = pickMarketStatByCondition(byCondition, parsed?.condition_class ?? null);
+    const exactMixedMarketStat = pickMarketStatByCondition(byCondition, parsed?.condition_class ?? null, parsed?.condition_tier ?? null);
     // Wave 886 Phase 3 (2026-05-26 사용자 결정): 매물 source 일치 per-source stat 시도.
     //   당근 매물 (source=daangn): 같은 SKU/condition 의 당근 sample ≥ 3 → 당근 median.
     //   Wave 897 (2026-05-28): 당근은 local execution market 이라 mixed fallback 으로 차익 계산 금지.
@@ -7492,6 +7513,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
       marketStatsPerSource,
       comparableKey,
       parsed?.condition_class ?? null,
+      parsed?.condition_tier ?? null,
       row.source,
       parsed?.category,
     );
@@ -7506,6 +7528,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
       const sizeAnyStat = pickMarketStatByCondition(
         sizeAnyKey ? marketStatsByKey.get(sizeAnyKey) : undefined,
         parsed?.condition_class ?? null,
+        parsed?.condition_tier ?? null,
       );
       const sizeAnyMedian = trustedMarketMedian(sizeAnyStat, parsed?.category);
       if (sizeAnyMedian != null) {
@@ -7547,14 +7570,18 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     // marketKey 매물 2건+ 시 batch median 사용. outlier 위험은 Wave 171 ceiling(msrp×5) +
     // 가품 floor 4 tier + 광고 차단 72 patterns + 셀러당 1 pool entry safety nets로 차단.
     const fallbackThreshold = parsed?.category === "shoe" ? 2 : 5;
-    const fallbackMedian = prices.length >= fallbackThreshold ? madTrim(prices).medianValue : 0;
+    // Wave 1022 (2026-06-02): Daangn rows must not derive price from mixed in-tick batch fallback.
+    // 당근은 source-specific daily stat 이 없으면 화면/상세에서 fail-closed 하는 정책과 맞춘다.
+    const fallbackMedian = requiresSourceMarket
+      ? 0
+      : prices.length >= fallbackThreshold ? madTrim(prices).medianValue : 0;
     // 2026-05-15: 미개봉/새상품 매물의 시세 = 다나와 reference_price (쿠팡/네이버 등 새 가격) 우선.
     // 베타테스터 통찰: 업자/일반인 모두 미개봉 선호 → 미개봉 매물 시세 정확해야.
     // 중고 시세와 비교하면 호가 부풀어져 풀에서 빠짐 (진짜 꿀 매물 놓침).
     const conditionNotesScore = (parsedJsonObject(parsed)?.condition_notes as string[] | undefined) ?? [];
     const isNewItem = conditionNotesScore.includes("new_or_open_box");
     const referencePrice = comparableKey && isNewItem ? referencePricesByKey.get(comparableKey) : null;
-    const skuMedianCandidate = referencePrice != null && referencePrice > 0
+    const skuMedianCandidate = !requiresSourceMarket && referencePrice != null && referencePrice > 0
       ? referencePrice
       : hasTrustedMarket ? trustedMedian : fallbackMedian;
     const skuMedian = Math.max(0, Number(skuMedianCandidate ?? 0));

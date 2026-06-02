@@ -20,6 +20,7 @@ import { getDetailAccessSnapshot } from "@/lib/detail-access";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { teaserBudgetRangeLabel } from "@/lib/feed-price-display";
 import { fetchDaangnLiveState } from "@/lib/daangn";
+import { marketStatsConditionKey } from "@/lib/pack-open";
 
 // Wave 338 (Phase 1a — Freemium /explore):
 // 무료 사용자 매물 풀 browsing. 6h 이상 지난 매물만 노출 (유료는 즉시 — Phase 2).
@@ -399,6 +400,7 @@ function confidenceSignalLabel(confidence: number | null | undefined) {
 type MarketBandRow = {
   comparable_key: string;
   condition_class: string;
+  condition_tier?: string | null;
   blended_median_price: number | null;
   active_median_price: number | null;
   active_sample_count: number | null;
@@ -430,6 +432,7 @@ async function loadMarketBandsForPool(
   const cols = [
     "comparable_key",
     "condition_class",
+    "condition_tier",
     "blended_median_price",
     "active_median_price",
     "active_sample_count",
@@ -447,8 +450,9 @@ async function loadMarketBandsForPool(
   const byKey = new Map<string, Map<string, MarketBandRow>>();
   for (const row of rows) {
     const byCondition = byKey.get(row.comparable_key) ?? new Map<string, MarketBandRow>();
-    if (!byCondition.has(row.condition_class)) {
-      byCondition.set(row.condition_class, row);
+    const conditionKey = marketStatsConditionKey(row.condition_tier ?? "", row.condition_class);
+    if (!byCondition.has(conditionKey)) {
+      byCondition.set(conditionKey, row);
     }
     byKey.set(row.comparable_key, byCondition);
   }
@@ -465,6 +469,7 @@ async function loadSourceMarketBandsForPool(
     "comparable_key",
     "source",
     "condition_class",
+    "condition_tier",
     "blended_median_price",
     "active_median_price",
     "active_sample_count",
@@ -484,8 +489,9 @@ async function loadSourceMarketBandsForPool(
       const source = normalizeMarketplaceSource(row.source);
       const bySource = byKey.get(row.comparable_key) ?? new Map<string, Map<string, MarketBandRow>>();
       const byCondition = bySource.get(source) ?? new Map<string, MarketBandRow>();
-      if (!byCondition.has(row.condition_class)) {
-        byCondition.set(row.condition_class, row);
+      const conditionKey = marketStatsConditionKey(row.condition_tier ?? "", row.condition_class);
+      if (!byCondition.has(conditionKey)) {
+        byCondition.set(conditionKey, row);
       }
       bySource.set(source, byCondition);
       byKey.set(row.comparable_key, bySource);
@@ -549,6 +555,7 @@ function bandAwareMedian(
   bandMap: Map<string, Map<string, MarketBandRow>>,
   comparableKey: string | null,
   conditionClass: string | null,
+  conditionTier: string | null | undefined,
   // Wave 252.A real (2026-05-20): v3 clothing key + v7 sibling 존재 시 mixed-pool median 차단.
   v7SiblingPresence?: V7SiblingPresenceMap,
 ): number | null {
@@ -560,6 +567,8 @@ function bandAwareMedian(
     byCondition,
     conditionClass,
     (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0) + Number(r.disappeared_sample_count ?? 0),
+    1,
+    conditionTier,
   );
   if (!row) return null;
   const price = row.blended_median_price ?? row.active_median_price ?? null;
@@ -570,6 +579,7 @@ function sourceAwareMedian(
   sourceBandMap: Map<string, Map<string, Map<string, MarketBandRow>>>,
   comparableKey: string | null,
   conditionClass: string | null,
+  conditionTier: string | null | undefined,
   marketplaceSource: string | null | undefined,
   v7SiblingPresence?: V7SiblingPresenceMap,
 ): number | null {
@@ -582,6 +592,8 @@ function sourceAwareMedian(
     byCondition,
     conditionClass,
     (r) => Number(r.active_sample_count ?? 0) + Number(r.sold_sample_count ?? 0),
+    1,
+    conditionTier,
   );
   const sourceSampleCount = row
     ? Number(row.active_sample_count ?? 0) + Number(row.sold_sample_count ?? 0)
@@ -1284,8 +1296,9 @@ function buildItems(
       //   v3 매물은 raw.sku_median 도 mixed-pool 계산값 → 둘 다 신뢰 불가 → skuMedianFinal=0
       //   (Wave 249 sku_median_unavailable 가드 동일 결과).
       const v3Stale = row.comparable_key && v7SiblingPresence.get(row.comparable_key) === true;
-      const sourceBandPrice = sourceAwareMedian(sourceMarketBands, row.comparable_key, row.condition_class, marketplaceSource, v7SiblingPresence);
-      const bandPrice = bandAwareMedian(marketBands, row.comparable_key, row.condition_class, v7SiblingPresence);
+      const grading = gradingByPid.get(row.pid);
+      const sourceBandPrice = sourceAwareMedian(sourceMarketBands, row.comparable_key, row.condition_class, grading?.tier ?? null, marketplaceSource, v7SiblingPresence);
+      const bandPrice = bandAwareMedian(marketBands, row.comparable_key, row.condition_class, grading?.tier ?? null, v7SiblingPresence);
       const skuMedianFinal = v3Stale
         ? 0
         : marketplaceSource === "daangn"
@@ -1312,8 +1325,10 @@ function buildItems(
           : 3500;
       let recomputedProfitMin = row.expected_profit_min;
       let recomputedProfitMax = row.expected_profit_max;
-      if (skuMedianFinal && skuMedianFinal > 0 && Number.isFinite(raw.price) && raw.price > 0) {
-        const grading = gradingByPid.get(row.pid);
+      if (!skuMedianFinal || skuMedianFinal <= 0) {
+        recomputedProfitMin = 0;
+        recomputedProfitMax = 0;
+      } else if (Number.isFinite(raw.price) && raw.price > 0) {
         const profit = expectedProfitFromMarketPrice({
           buyPrice: raw.price,
           marketPrice: skuMedianFinal,

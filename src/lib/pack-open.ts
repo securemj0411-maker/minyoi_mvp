@@ -1338,19 +1338,22 @@ export function marketBasisForCandidate(
   } = selectMarketRowByCondition(sourceByCondition, conditionClass, conditionTier);
   const sourceStatUsable = sourceStatCandidate != null
     && marketRowActiveSoldSampleCount(sourceStatCandidate) >= MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE;
-  // Wave 887: 당근 매물은 당근 sample 이 충분하면 상세/쉬운모드 기준 시세도 당근 기준으로 표시한다.
-  // 부족하면 mixed 로 fallback 하되 sourceFallbackUsed 를 내려 UI/후속에서 라벨 분리 가능하게 둔다.
-  const useListingSourceStat = listingSource === DAANGN_SOURCE_ID && sourceStatUsable;
-  const stat = useListingSourceStat ? sourceStatCandidate : mixedStat;
-  const actualCondition = useListingSourceStat ? sourceCondition : mixedCondition;
-  const fallbackUsed = useListingSourceStat ? sourceConditionFallbackUsed : mixedFallbackUsed;
-  const activeSampleCount = Number(stat?.active_sample_count ?? 0);
-  const soldSampleCount = Number(stat?.sold_sample_count ?? 0);
-  const disappearedSampleCount = Number(stat?.disappeared_sample_count ?? 0);
+  // Wave 1022 (2026-06-02): 당근은 실행 시장 자체가 다르다.
+  // source sample 이 부족하면 mixed/reference fallback 으로 상세/easy 기준 시세를 만들지 않는다.
+  // UI/상세 접근은 "당근 표본 부족"으로 fail-closed 하고, 번개/중나만 mixed fallback 을 유지한다.
+  const sourceMarketRequired = listingSource === DAANGN_SOURCE_ID;
+  const useListingSourceStat = sourceMarketRequired && sourceStatUsable;
+  const stat = useListingSourceStat ? sourceStatCandidate : (sourceMarketRequired ? undefined : mixedStat);
+  const sampleStat = useListingSourceStat ? sourceStatCandidate : (sourceMarketRequired ? sourceStatCandidate : stat);
+  const actualCondition = useListingSourceStat ? sourceCondition : (sourceMarketRequired ? (sourceCondition ?? conditionClass) : mixedCondition);
+  const fallbackUsed = useListingSourceStat ? sourceConditionFallbackUsed : (sourceMarketRequired ? sourceConditionFallbackUsed : mixedFallbackUsed);
+  const activeSampleCount = Number(sampleStat?.active_sample_count ?? 0);
+  const soldSampleCount = Number(sampleStat?.sold_sample_count ?? 0);
+  const disappearedSampleCount = Number(sampleStat?.disappeared_sample_count ?? 0);
 
   // Wave 130: 다른 condition 시세 (UI에서 비교용 — "내 condition vs 전체" 표시).
   const otherConditions: RevealMarketBasis["otherConditions"] = [];
-  const comparisonByCondition = useListingSourceStat ? sourceByCondition : byCondition;
+  const comparisonByCondition = useListingSourceStat ? sourceByCondition : (sourceMarketRequired ? undefined : byCondition);
   if (comparisonByCondition && actualCondition) {
     for (const [cls, row] of comparisonByCondition.entries()) {
       if (cls === actualCondition || cls === "flawed") continue;
@@ -1373,8 +1376,10 @@ export function marketBasisForCandidate(
   // Wave 201 (2026-05-18): unopened 매물 시세 = reference_prices.effective_price (다나와/공식 anchor).
   // 사용자 정정: 미개봉 매물은 번개 중고 sold median이 아니라 다나와 새 가격 표시해야 함.
   const refPrice = (actualCondition === "unopened" && comparableKey && referencePrices?.get(comparableKey)) || null;
-  const useRefAnchor = !useListingSourceStat && refPrice != null && refPrice > 0;
-  const medianPriceFinal = useRefAnchor ? refPrice : marketSalePrice(stat);
+  const useRefAnchor = !sourceMarketRequired && !useListingSourceStat && refPrice != null && refPrice > 0;
+  const medianPriceFinal = sourceMarketRequired && !useListingSourceStat
+    ? null
+    : useRefAnchor ? refPrice : marketSalePrice(stat);
   const daangnByCondition = comparableKey
     ? sourceOptions?.perSourceMarketStats?.get(comparableKey)?.get(DAANGN_SOURCE_ID)
     : undefined;
@@ -1399,25 +1404,25 @@ export function marketBasisForCandidate(
   return {
     comparableKey,
     label: marketBasisLabel(comparableKey, skuName),
-    p25Price: useRefAnchor ? null : (stat?.p25_price ?? null),
+    p25Price: useRefAnchor || (sourceMarketRequired && !useListingSourceStat) ? null : (stat?.p25_price ?? null),
     medianPrice: medianPriceFinal,
-    p75Price: useRefAnchor ? null : (stat?.p75_price ?? null),
+    p75Price: useRefAnchor || (sourceMarketRequired && !useListingSourceStat) ? null : (stat?.p75_price ?? null),
     sampleCount: activeSampleCount + soldSampleCount + disappearedSampleCount,
     activeSampleCount,
     soldSampleCount,
     disappearedSampleCount,
     // ref anchor 신뢰는 medium (단일 값이라 "high" 비호환).
-    confidence: useRefAnchor ? "medium" : (stat?.confidence ?? null),
-    priceSource: useRefAnchor ? "reference" : (useListingSourceStat ? "source_market" : "market"),
-    marketplaceSource: useListingSourceStat ? listingSource : "mixed",
-    marketplaceLabel: useListingSourceStat ? marketplaceSourceLabel(listingSource) : "통합",
+    confidence: useRefAnchor ? "medium" : (sourceMarketRequired && !useListingSourceStat ? null : (stat?.confidence ?? null)),
+    priceSource: useRefAnchor ? "reference" : (sourceMarketRequired || useListingSourceStat ? "source_market" : "market"),
+    marketplaceSource: useListingSourceStat ? listingSource : (sourceMarketRequired ? listingSource : "mixed"),
+    marketplaceLabel: useListingSourceStat ? marketplaceSourceLabel(listingSource) : (sourceMarketRequired ? marketplaceSourceLabel(listingSource) : "통합"),
     sourceSampleUsed: useListingSourceStat,
     sourceFallbackUsed: listingSource === DAANGN_SOURCE_ID && !useListingSourceStat,
     basisSource: useListingSourceStat ? listingSource : null,
     basisSourceLabel: useListingSourceStat ? marketplaceSourceLabel(listingSource) : null,
-    sourceSampleCount: useListingSourceStat ? activeSampleCount + soldSampleCount : null,
+    sourceSampleCount: sourceMarketRequired || useListingSourceStat ? activeSampleCount + soldSampleCount : null,
     resaleChannels,
-    computedAt: stat?.computed_at ?? null,
+    computedAt: sampleStat?.computed_at ?? stat?.computed_at ?? null,
     excludedExamples: excludedExamplesForKey(comparableKey),
     conditionClass: actualCondition,
     conditionLabel: actualCondition ? CONDITION_LABEL[actualCondition] ?? actualCondition : null,
@@ -2315,7 +2320,11 @@ export async function openPack(input: PackOpenInput): Promise<PackOpenResult> {
         conditionTier: conditionGrading?.tier ?? null,
       });
       const daangnMarketBasisMissing = isDaangnMarketplaceSource(meta.marketplaceSource)
-        && (!marketBasis.medianPrice || !marketBasis.sourceSampleUsed || marketBasis.sampleCount < MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE);
+        && (
+          !marketBasis.medianPrice
+          || !marketBasis.sourceSampleUsed
+          || Number(marketBasis.sourceSampleCount ?? marketBasis.sampleCount ?? 0) < MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE
+        );
       if (daangnMarketBasisMissing) {
         await rpcInvalidate(candidate.pid, "daangn_market_basis_missing");
         continue;

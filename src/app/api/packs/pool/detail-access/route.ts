@@ -251,24 +251,22 @@ async function recomputeExactPoolItemProfit(item: ExactPoolItem | null): Promise
     },
     item.conditionTier ?? null,  // Wave 817: tier 인자 직접 전달
   );
-  // Wave 803f (2026-05-30 사용자 결정 옵션 A): daangn 매물 mixed fallback 박힌 경우 DB sku_median 우선.
-  //   배경: Wave 897 정책 (daangn per-source sample<3 → sku_median 0) + Pool ready floor 정책 (ready 부족 시 invalidation defer)
-  //         두 정책 충돌 → 옛 sku_median 박힌 매물 ready 유지 + marketBasis 가 real-time mixed fallback 박음 → 사용자 화면 모순.
-  //   사용자 보고: "비교 매물 (daangn 200/67/65k) 인데 시세 230k (mixed) 박힘 — 통합 fallback 박힌 게 문제"
-  //   Fix: sourceFallbackUsed 박혀있으면 (Wave 887 박은 라벨) DB sku_median 박음. 사용자 mental model 일치.
-  const effectiveMedianPrice = isDaangnMarketplaceSource(item.marketplaceSource)
-    && marketBasis.sourceFallbackUsed
-    && item.skuMedian
-    && item.skuMedian > 0
-    ? item.skuMedian
-    : marketBasis.medianPrice;
-  if (isDaangnMarketplaceSource(item.marketplaceSource) && (!effectiveMedianPrice || marketBasis.sampleCount < 3)) {
+  // Wave 1022 (2026-06-02): 당근은 same-source basis 가 없으면 상세 진입 전 fail-closed.
+  // 예전 DB sku_median 을 되살리면 mixed/batch fallback 잔여물이 상세/easy 계산에 다시 샌다.
+  const effectiveMedianPrice = marketBasis.medianPrice;
+  const daangnBasisMissing = isDaangnMarketplaceSource(item.marketplaceSource)
+    && (
+      !marketBasis.sourceSampleUsed
+      || !effectiveMedianPrice
+      || Number(marketBasis.sourceSampleCount ?? marketBasis.sampleCount ?? 0) < 3
+    );
+  if (daangnBasisMissing) {
     return {
       ...item,
-      skuMedian: effectiveMedianPrice ?? null,
+      skuMedian: null,
       expectedProfitMin: 0,
       expectedProfitMax: 0,
-      marketBasisSampleCount: marketBasis.sampleCount,
+      marketBasisSampleCount: marketBasis.sourceSampleCount ?? marketBasis.sampleCount,
       marketBasisUsable: false,
     };
   }

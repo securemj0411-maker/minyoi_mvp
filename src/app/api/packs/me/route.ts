@@ -924,7 +924,11 @@ export async function GET(req: Request) {
         conditionTier: grading?.tier ?? null,
       });
       const daangnMarketBasisMissing = isDaangnMarketplaceSource(marketplaceSource)
-        && (!computedMarketBasis?.medianPrice || (computedMarketBasis.sampleCount ?? 0) < 3);
+        && (
+          !computedMarketBasis?.medianPrice
+          || !computedMarketBasis.sourceSampleUsed
+          || Number(computedMarketBasis.sourceSampleCount ?? computedMarketBasis.sampleCount ?? 0) < 3
+        );
       const marketGapKrw = daangnMarketBasisMissing ? 0 : (currentNetProfit?.min ?? dbCurrentProfitMin);
       const marketGapKrwMax = daangnMarketBasisMissing ? 0 : (currentNetProfit?.max ?? dbCurrentProfitMax ?? marketGapKrw);
       const marketStale = marketGapKrw != null

@@ -9,13 +9,16 @@ function source(path: string) {
 test("Daangn detail access rejects missing same-source market basis before charging", () => {
   const route = source("src/app/api/packs/pool/detail-access/route.ts");
   const packOpen = source("src/lib/pack-open.ts");
-  assert.match(route, /isDaangnMarketplaceSource\(item\.marketplaceSource\).*marketBasis\.sampleCount < 3/s);
+  assert.match(route, /!marketBasis\.sourceSampleUsed/);
+  assert.match(route, /marketBasis\.sourceSampleCount \?\? marketBasis\.sampleCount/);
   assert.match(route, /marketBasisUsable: false/);
   assert.match(route, /verifiedItem\.marketBasisUsable === false/);
   assert.match(route, /daangn_market_basis_missing/);
+  assert.match(packOpen, /sourceMarketRequired = listingSource === DAANGN_SOURCE_ID/);
+  assert.match(packOpen, /sourceMarketRequired \? undefined : mixedStat/);
   assert.match(packOpen, /const daangnMarketBasisMissing = isDaangnMarketplaceSource\(meta\.marketplaceSource\)/);
   assert.match(packOpen, /!marketBasis\.sourceSampleUsed/);
-  assert.match(packOpen, /marketBasis\.sampleCount < MIN_SOURCE_SAMPLE_COUNT_FOR_CONFIDENCE/);
+  assert.match(packOpen, /marketBasis\.sourceSampleCount \?\? marketBasis\.sampleCount/);
   assert.match(packOpen, /basisSource: useListingSourceStat \? listingSource : null/);
   assert.match(packOpen, /basisSourceLabel: useListingSourceStat \? marketplaceSourceLabel\(listingSource\) : null/);
   assert.match(packOpen, /rpcInvalidate\(candidate\.pid, "daangn_market_basis_missing"\)/);
@@ -47,4 +50,17 @@ test("Daangn comparable proof list is source-strict", () => {
   assert.match(modal, /isSameSourceComparableForCard\(card, c\)/);
   assert.match(modal, /isSameSourceComparableForCard\(card, item\)/);
   assert.match(modal, /isShoeOrClothingCard\(card\) && tierShortLabel\(card\.conditionTier\)/);
+});
+
+test("Daangn feed and score stage fail closed when same-source market basis is missing", () => {
+  const poolRoute = source("src/app/api/packs/pool/route.ts");
+  const pipeline = source("src/lib/tick-pipeline.ts");
+
+  assert.match(poolRoute, /marketStatsConditionKey\(row\.condition_tier \?\? "", row\.condition_class\)/);
+  assert.match(poolRoute, /sourceAwareMedian\(sourceMarketBands, row\.comparable_key, row\.condition_class, grading\?\.tier \?\? null, marketplaceSource/);
+  assert.match(poolRoute, /if \(!skuMedianFinal \|\| skuMedianFinal <= 0\) \{\s*recomputedProfitMin = 0;\s*recomputedProfitMax = 0;/s);
+  assert.match(pipeline, /const fallbackMedian = requiresSourceMarket\s*\?\s*0/s);
+  assert.match(pipeline, /const skuMedianCandidate = !requiresSourceMarket && referencePrice != null && referencePrice > 0/);
+  assert.match(pipeline, /marketPriceStatsConditionKey\(row\.condition_tier \?\? "", row\.condition_class\)/);
+  assert.match(pipeline, /pickPerSourceStatForMatter\([\s\S]*conditionTier/s);
 });
