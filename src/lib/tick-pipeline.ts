@@ -2642,6 +2642,28 @@ async function markScoreDirtyIfClean(pids: number[]): Promise<number> {
   return marked;
 }
 
+async function markScorableScoreDirtyIfClean(pids: number[]): Promise<number> {
+  const unique = [...new Set(pids.filter(Number.isFinite))];
+  if (unique.length === 0) return 0;
+  let marked = 0;
+  for (const chunk of chunkArray(unique, SCORE_DIRTY_MARK_CHUNK_SIZE)) {
+    const baseFilter = `pid=in.(${chunk.join(",")})&score_dirty=eq.false&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active`;
+    for (const listingTypeFilter of ["listing_type=eq.normal", "listing_type_override=eq.normal"]) {
+      const res = await restFetch(
+        `${tableUrl("mvp_raw_listings")}?select=pid&${baseFilter}&${listingTypeFilter}`,
+        {
+          method: "PATCH",
+          headers: serviceHeaders("return=representation"),
+          body: jsonBody({ score_dirty: true }),
+        },
+      );
+      const rows = (await res.json()) as Array<{ pid: number | string | null }>;
+      marked += rows.length;
+    }
+  }
+  return marked;
+}
+
 async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Promise<ScoreDirtyMarkResult> {
   if (!(await rawScoreDirtySchemaAvailable())) return { candidateRows: 0, markedRows: 0 };
   const unique = [...new Set(comparableKeys.filter(Boolean))];
@@ -2653,7 +2675,10 @@ async function markRawScoreDirtyByComparableKeys(comparableKeys: string[]): Prom
   });
   const pids = [...parsedByPid.keys()];
   if (pids.length === 0) return { candidateRows: 0, markedRows: 0 };
-  const markedRows = await markScoreDirtyIfClean(pids);
+  // Market price changes only need to re-score rows that can enter the candidate pool.
+  // Sold/disappeared/non-normal rows remain valid market samples, but pushing them into
+  // score_dirty creates a large backlog that the score worker later has to reject.
+  const markedRows = await markScorableScoreDirtyIfClean(pids);
   return { candidateRows: pids.length, markedRows };
 }
 
@@ -3405,6 +3430,18 @@ function countMarketInvalidationPrefixes(rows: MarketKeyInvalidationRow[]): Reco
     acc[prefix] = (acc[prefix] ?? 0) + 1;
     return acc;
   }, {});
+}
+
+async function timedMarketSubstage<T>(stats: StageStats, key: string, fn: () => Promise<T>): Promise<T> {
+  const started = Date.now();
+  try {
+    return await fn();
+  } finally {
+    stats.timingsMs = {
+      ...(stats.timingsMs ?? {}),
+      [key]: Date.now() - started,
+    };
+  }
 }
 
 async function markMarketInvalidationsDone(comparableKeys: string[]): Promise<number> {
@@ -4835,7 +4872,11 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
 export async function marketStatsStage(): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
-  const pendingInvalidations = await loadPendingMarketInvalidations();
+  const pendingInvalidations = await timedMarketSubstage(
+    stats,
+    "market_load_pending_invalidations_ms",
+    () => loadPendingMarketInvalidations(),
+  );
   const pendingPrefixCounts = countMarketInvalidationPrefixes(pendingInvalidations);
   stats.timingsMs = {
     ...(stats.timingsMs ?? {}),
@@ -4857,28 +4898,36 @@ export async function marketStatsStage(): Promise<StageStats> {
     market_invalidation_parsed_rows_per_key_chunk: invalidationRowsPerKeyChunk,
     market_invalidation_rescue_rows_per_key: invalidationRescueRowsPerKey,
   };
-  const invalidatedParsedByPid = await loadParsedRowsByComparableKeys([...pendingKeys], config.marketStatsLimit, {
-    includeParsedJson: false,
-    keyChunkSize: invalidationKeyChunkSize,
-    maxRowsPerKeyChunk: invalidationRowsPerKeyChunk,
-    rescueRowsPerKey: invalidationRescueRowsPerKey,
-    onAttemptedKeys: (keys) => {
-      for (const key of keys) attemptedPendingKeys.add(key);
-    },
-    onRescuedKeys: (keys) => {
-      for (const key of keys) rescuedPendingKeys.add(key);
-    },
-    onFailedKeys: (keys) => {
-      for (const key of keys) failedPendingKeys.add(key);
-    },
-  });
-  const remainingSiblingLimit = Math.max(0, config.marketStatsLimit - invalidatedParsedByPid.size);
-  const siblingParsedByPid = remainingSiblingLimit > 0
-    ? await loadParsedRowsByShoeSizeSiblingKeys([...pendingKeys], remainingSiblingLimit, {
+  const invalidatedParsedByPid = await timedMarketSubstage(
+    stats,
+    "market_load_invalidated_parsed_ms",
+    () => loadParsedRowsByComparableKeys([...pendingKeys], config.marketStatsLimit, {
       includeParsedJson: false,
       keyChunkSize: invalidationKeyChunkSize,
-      maxRowsPerKeyChunk: Math.min(500, invalidationRowsPerKeyChunk),
-    })
+      maxRowsPerKeyChunk: invalidationRowsPerKeyChunk,
+      rescueRowsPerKey: invalidationRescueRowsPerKey,
+      onAttemptedKeys: (keys) => {
+        for (const key of keys) attemptedPendingKeys.add(key);
+      },
+      onRescuedKeys: (keys) => {
+        for (const key of keys) rescuedPendingKeys.add(key);
+      },
+      onFailedKeys: (keys) => {
+        for (const key of keys) failedPendingKeys.add(key);
+      },
+    }),
+  );
+  const remainingSiblingLimit = Math.max(0, config.marketStatsLimit - invalidatedParsedByPid.size);
+  const siblingParsedByPid = remainingSiblingLimit > 0
+    ? await timedMarketSubstage(
+      stats,
+      "market_load_sibling_parsed_ms",
+      () => loadParsedRowsByShoeSizeSiblingKeys([...pendingKeys], remainingSiblingLimit, {
+        includeParsedJson: false,
+        keyChunkSize: invalidationKeyChunkSize,
+        maxRowsPerKeyChunk: Math.min(500, invalidationRowsPerKeyChunk),
+      }),
+    )
     : new Map<number, ParsedListingRow>();
   for (const [pid, parsed] of siblingParsedByPid.entries()) {
     if (!invalidatedParsedByPid.has(pid)) invalidatedParsedByPid.set(pid, parsed);
@@ -4895,24 +4944,52 @@ export async function marketStatsStage(): Promise<StageStats> {
   };
   if (pendingInvalidations.length > 0 && invalidatedPids.length === 0) {
     stats.queued = pendingInvalidations.length;
-    stats.enriched = await markMarketInvalidationsDone([...pendingKeys]);
+    stats.enriched = await timedMarketSubstage(
+      stats,
+      "market_mark_invalidations_done_ms",
+      () => markMarketInvalidationsDone([...pendingKeys]),
+    );
     return stats;
   }
   const rows = invalidatedPids.length > 0
-    ? await loadMarketStatRowsByPids(invalidatedPids, config.marketStatsLimit)
-    : await loadMarketStatRows(config.marketStatsLimit);
+    ? await timedMarketSubstage(
+      stats,
+      "market_load_raw_rows_by_pids_ms",
+      () => loadMarketStatRowsByPids(invalidatedPids, config.marketStatsLimit),
+    )
+    : await timedMarketSubstage(
+      stats,
+      "market_load_raw_rows_recent_ms",
+      () => loadMarketStatRows(config.marketStatsLimit),
+    );
   if (rows.length === 0) {
     stats.queued = pendingInvalidations.length;
     if (pendingInvalidations.length > 0) {
-      stats.enriched = await markMarketInvalidationsDone([...pendingKeys]);
+      stats.enriched = await timedMarketSubstage(
+        stats,
+        "market_mark_invalidations_done_ms",
+        () => markMarketInvalidationsDone([...pendingKeys]),
+      );
     }
     return stats;
   }
 
   const parsedByPid = invalidatedPids.length > 0
-    ? await ensureParsedRows(rows, invalidatedParsedByPid)
-    : await ensureParsedRows(rows, await loadParsedRows(rows.map((row) => row.pid)));
-  const result = await upsertMarketPriceDaily(rows, parsedByPid);
+    ? await timedMarketSubstage(
+      stats,
+      "market_ensure_parsed_rows_ms",
+      () => ensureParsedRows(rows, invalidatedParsedByPid),
+    )
+    : await timedMarketSubstage(
+      stats,
+      "market_ensure_parsed_rows_ms",
+      async () => ensureParsedRows(rows, await loadParsedRows(rows.map((row) => row.pid))),
+    );
+  const result = await timedMarketSubstage(
+    stats,
+    "market_upsert_daily_ms",
+    () => upsertMarketPriceDaily(rows, parsedByPid),
+  );
   const recomputedKeys = [...new Set(
     rows
       .map((row) => preciseComparableKey(parsedByPid.get(row.pid)))
@@ -4925,17 +5002,29 @@ export async function marketStatsStage(): Promise<StageStats> {
   const completedInvalidationKeys = pendingInvalidations.length > 0
     ? [...new Set([...attemptedPendingKeys, ...recomputedKeys])]
     : recomputedKeys;
-  const closedInvalidations = await markMarketInvalidationsDone(completedInvalidationKeys);
+  const closedInvalidations = await timedMarketSubstage(
+    stats,
+    "market_mark_invalidations_done_ms",
+    () => markMarketInvalidationsDone(completedInvalidationKeys),
+  );
   // P0-5: 시세가 갱신된 comparable_key의 raw_listings는 score를 재계산해야 한다.
   // 같은 매물이라도 trustedMedian이 바뀌면 priceGap/score가 달라지므로 dirty=true.
-  const markedDirty = await markRawScoreDirtyByComparableKeys(recomputedKeys).catch((err) => {
+  const markedDirty = await timedMarketSubstage(
+    stats,
+    "market_mark_score_dirty_ms",
+    () => markRawScoreDirtyByComparableKeys(recomputedKeys),
+  ).catch((err) => {
     console.error("mark raw score dirty by comparable keys failed", err);
     return { candidateRows: 0, markedRows: 0 };
   });
   // Wave 714c (2026-05-23): lane unblock 시 stale invalidated 매물 자동 재평가.
   //   Wave 678/679 에서 4 의류 lane 풀어줬는데 candidate_pool 의 invalidated row 안 reset 발견.
   //   매 tick 마다 LANE_READINESS check 해서 ready 인 lane 의 stale invalidated → score_dirty=true.
-  const staleLaneRescored = await markStaleLaneBlockedScoreDirty().catch((err) => {
+  const staleLaneRescored = await timedMarketSubstage(
+    stats,
+    "market_mark_stale_lane_score_dirty_ms",
+    () => markStaleLaneBlockedScoreDirty(),
+  ).catch((err) => {
     console.error("mark stale lane_blocked score dirty failed", err);
     return 0;
   });
@@ -4950,11 +5039,15 @@ export async function marketStatsStage(): Promise<StageStats> {
   let revealRecomputeStats = { updated: 0, invalidated: 0 };
   if (recomputedKeys.length > 0) {
     try {
-      const recRes = await restFetch(rpcUrl("recompute_reveal_current_profits"), {
-        method: "POST",
-        headers: serviceHeaders(),
-        body: jsonBody({ p_comparable_keys: recomputedKeys }),
-      });
+      const recRes = await timedMarketSubstage(
+        stats,
+        "market_recompute_reveal_current_profits_ms",
+        () => restFetch(rpcUrl("recompute_reveal_current_profits"), {
+          method: "POST",
+          headers: serviceHeaders(),
+          body: jsonBody({ p_comparable_keys: recomputedKeys }),
+        }),
+      );
       const recRows = (await recRes.json().catch(() => [])) as Array<{ updated_count?: number; invalidated_count?: number }>;
       revealRecomputeStats = {
         updated: Number(recRows[0]?.updated_count ?? 0),
@@ -4984,17 +5077,25 @@ export async function marketStatsStage(): Promise<StageStats> {
   //   없으면 RPC 1회 자동 호출 (idempotent). standalone cron 죽어도 market-worker 가 1일 1회는 보장.
   try {
     const todayIso = new Date().toISOString().slice(0, 10);
-    const checkRes = await restFetch(
-      `${tableUrl("mvp_market_velocity_daily")}?select=date&date=eq.${todayIso}&limit=1`,
-      { headers: serviceHeaders() },
+    const checkRes = await timedMarketSubstage(
+      stats,
+      "market_velocity_self_heal_check_ms",
+      () => restFetch(
+        `${tableUrl("mvp_market_velocity_daily")}?select=date&date=eq.${todayIso}&limit=1`,
+        { headers: serviceHeaders() },
+      ),
     );
     const checkRows = (await checkRes.json()) as Array<{ date: string }>;
     if (checkRows.length === 0) {
-      const rpcRes = await restFetch(rpcUrl("sync_market_velocity_daily"), {
-        method: "POST",
-        headers: serviceHeaders(),
-        body: "{}",
-      });
+      const rpcRes = await timedMarketSubstage(
+        stats,
+        "market_velocity_self_heal_rpc_ms",
+        () => restFetch(rpcUrl("sync_market_velocity_daily"), {
+          method: "POST",
+          headers: serviceHeaders(),
+          body: "{}",
+        }),
+      );
       stats.timingsMs = {
         ...(stats.timingsMs ?? {}),
         velocity_self_healed: rpcRes.ok ? 1 : 0,
