@@ -5890,6 +5890,16 @@ async function patchLifecycle(pid: number, payload: Record<string, unknown>) {
   });
 }
 
+async function patchLifecycleRowsByIds(pids: number[], payload: Record<string, unknown>) {
+  if (pids.length === 0) return;
+  await patchRowsByIds("mvp_lifecycle_checks", pids, {
+    ...payload,
+    locked_at: null,
+    locked_until: null,
+    updated_at: new Date().toISOString(),
+  });
+}
+
 async function markRawLifecycleState(row: LifecycleClaimRow, status: LifecycleStatus, detailSaleStatus?: string | null) {
   const now = new Date().toISOString();
   // Wave 187 B1 (2026-05-17): last_seen_at 동시 갱신.
@@ -6067,18 +6077,23 @@ export async function lifecycleStage(
   // c=10은 conservative pick (probe c=20 OK였지만 DB write 부담 고려 + 안전 마진 50%).
   const LIFECYCLE_CONCURRENCY = 10;
   for (let waveStart = 0; waveStart < claims.length; waveStart += LIFECYCLE_CONCURRENCY) {
-    const wave = claims.slice(waveStart, waveStart + LIFECYCLE_CONCURRENCY);
-    await Promise.all(wave.map(async (row) => {
     if (Date.now() >= deadlineMs - DETAIL_STAGE_SAFETY_MARGIN_MS) {
+      const remaining = claims.slice(waveStart);
       stats.timedOut = true;
-      await patchLifecycle(row.pid, {
+      const nextCheckAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+      await patchLifecycleRowsByIds(remaining.map((row) => row.pid), {
         last_check_result: "skipped_budget",
-        next_check_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+        next_check_at: nextCheckAt,
         state_reason: "lifecycle_budget_guard",
       });
-      return;
+      stats.timingsMs = {
+        ...(stats.timingsMs ?? {}),
+        lifecycle_budget_bulk_skipped: remaining.length,
+      };
+      break;
     }
-
+    const wave = claims.slice(waveStart, waveStart + LIFECYCLE_CONCURRENCY);
+    await Promise.all(wave.map(async (row) => {
     const healthGate = lifecycleHealthGateForSource(row.source, sourceHealthBySource);
     const healthStatus = healthGate.status;
     if (shouldSkipLifecycleForHealthGate(row, healthGate)) {
