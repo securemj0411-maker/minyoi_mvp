@@ -23,6 +23,9 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(applications, /REJECT/);
   assert.match(applications, /\/api\/admin\/membership-applications\/decide/);
   assert.match(applications, /90일 pro 멤버십/);
+  assert.match(applications, /getMembershipPlan/);
+  assert.match(applications, /plan\.label/);
+  assert.doesNotMatch(applications, /\/ 3개월/);
 
   assert.match(applyRoute, /mvp_membership_applications/);
   assert.match(applyRoute, /notifyResult/);
@@ -30,6 +33,9 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(applyRoute, /telegram_notify_failed/);
   assert.match(applyRoute, /admin_note/);
   assert.match(applyRoute, /parseMode: null/);
+  assert.match(applyRoute, /productKey/);
+  assert.match(applyRoute, /selectedPlan/);
+  assert.match(applyRoute, /price_krw: selectedPlan\.priceKrw/);
   assert.match(decideRoute, /mvp_user_plans/);
   assert.match(decideRoute, /plan_key: "pro"/);
   assert.match(decideRoute, /"approved"/);

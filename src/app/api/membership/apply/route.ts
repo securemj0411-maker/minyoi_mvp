@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getMembershipPlan } from "@/lib/membership-plans";
 import { notifyAdminTelegram } from "@/lib/telegram-notify";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { getProStatus } from "@/lib/user-subscription";
@@ -26,6 +27,8 @@ async function updateApplicationAdminNote(applicationId: number | null, note: st
 export async function POST(req: Request) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const body = (await req.json().catch(() => ({}))) as { productKey?: string };
+  const selectedPlan = getMembershipPlan(body.productKey);
 
   const userRef = userRefForAuthUser(auth.user.id);
   const status = await getProStatus(auth.user, userRef);
@@ -52,13 +55,23 @@ export async function POST(req: Request) {
         auth_user_id: auth.user.id,
         email: auth.user.email ?? null,
         display_name: String(name),
-        product_key: "limited_300_3mo",
-        price_krw: 99000,
+        product_key: selectedPlan.key,
+        price_krw: selectedPlan.priceKrw,
         status: "pending",
       }]),
     });
     const inserted = (await insertRes.json()) as Array<{ id: number }>;
     applicationId = inserted[0]?.id ?? null;
+  } else {
+    await restFetch(`${tableUrl("mvp_membership_applications")}?id=eq.${applicationId}&status=eq.pending`, {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: jsonBody({
+        product_key: selectedPlan.key,
+        price_krw: selectedPlan.priceKrw,
+        updated_at: new Date().toISOString(),
+      }),
+    });
   }
 
   const notifyResult = await notifyAdminTelegram(
@@ -69,7 +82,8 @@ export async function POST(req: Request) {
       `이메일: ${email}`,
       `auth_user_id: ${auth.user.id}`,
       `user_ref: ${userRef}`,
-      "상품: 선공개 300명 멤버십 / 3개월 99,000원",
+      `상품: ${selectedPlan.label} / ${selectedPlan.priceKrw.toLocaleString("ko-KR")}원`,
+      `월 단가: ${selectedPlan.monthlyLabel}`,
       "처리: cau 운영자 페이지에서 승인/거절",
     ].join("\n"),
     { parseMode: null },
@@ -93,6 +107,8 @@ export async function POST(req: Request) {
   return NextResponse.json({
     ok: true,
     applicationId,
+    productKey: selectedPlan.key,
+    priceKrw: selectedPlan.priceKrw,
     telegramSent: notifyResult.ok,
     telegramReason: notifyResult.ok ? null : notifyResult.reason ?? "unknown",
   });

@@ -1,22 +1,59 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  getMembershipPlan,
+  krw,
+  UPSELL_PLANS_FROM_1MO,
+  UPSELL_PLANS_FROM_3MO,
+  type MembershipPlan,
+  type MembershipPlanKey,
+} from "@/lib/membership-plans";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type ApplyState = "idle" | "submitting" | "sent" | "error";
+type PendingApplication = {
+  id: number;
+  planLabel: string;
+  priceKrw: number;
+  createdAt: string;
+};
 
 export default function MembershipApplicationClient({
   isAuthed,
   isMember,
   loginHref,
+  plans,
+  pendingApplication,
 }: {
   isAuthed: boolean;
   isMember: boolean;
   loginHref: string;
+  plans: MembershipPlan[];
+  pendingApplication: PendingApplication | null;
 }) {
-  const [state, setState] = useState<ApplyState>("idle");
+  const [selectedKey, setSelectedKey] = useState<MembershipPlanKey>(plans[1]?.key ?? "limited_300_3mo");
+  const [state, setState] = useState<ApplyState>(pendingApplication ? "sent" : "idle");
   const [message, setMessage] = useState<string | null>(null);
+  const [upsellOpen, setUpsellOpen] = useState(false);
+  const [upsellStartedAt, setUpsellStartedAt] = useState<number | null>(null);
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  const selectedPlan = getMembershipPlan(selectedKey);
+  const upsellPlans = selectedPlan.key === "limited_300_1mo"
+    ? UPSELL_PLANS_FROM_1MO
+    : selectedPlan.key === "limited_300_3mo"
+      ? UPSELL_PLANS_FROM_3MO
+      : [];
+  const offerMsLeft = upsellStartedAt ? Math.max(0, (10 * 60_000) - (nowMs - upsellStartedAt)) : 10 * 60_000;
+  const offerMinutesLeft = Math.max(0, Math.ceil(offerMsLeft / 60_000));
+  const offerExpired = upsellStartedAt !== null && offerMsLeft <= 0;
+
+  useEffect(() => {
+    if (!upsellOpen) return;
+    const id = window.setInterval(() => setNowMs(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [upsellOpen]);
 
   if (isMember) {
     return (
@@ -31,19 +68,47 @@ export default function MembershipApplicationClient({
 
   if (!isAuthed) {
     return (
-      <Link
-        href={loginHref}
-        className="flex h-11 min-w-[172px] items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90"
-      >
-        로그인하고 신청하기
-      </Link>
+      <div className="mt-4">
+        <PlanGrid plans={plans} selectedKey={selectedKey} onSelect={setSelectedKey} disabled />
+        <Link
+          href={loginHref}
+          className="mt-3 flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90"
+        >
+          로그인하고 신청하기
+        </Link>
+      </div>
     );
   }
 
-  async function submitApplication() {
+  if (pendingApplication) {
+    return (
+      <div className="mt-4 rounded-[12px] border border-blue-100 bg-white px-3.5 py-3 dark:border-blue-950/70 dark:bg-zinc-950/50">
+        <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">신청 접수 완료</div>
+        <div className="mt-1 text-[15px] font-black text-zinc-950 dark:text-zinc-50">
+          {pendingApplication.planLabel} · {krw(pendingApplication.priceKrw)}
+        </div>
+        <p className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
+          이미 신청이 접수되어 운영자 검토 중입니다. 컴퓨터·스마트폰 어디서 새로고침해도 이 상태가 유지됩니다.
+        </p>
+      </div>
+    );
+  }
+
+  function startSubmit(plan: MembershipPlan) {
+    if (state === "submitting" || state === "sent") return;
+    if (!plan.isUpsell && upsellPlans.length > 0) {
+      setUpsellStartedAt(Date.now());
+      setUpsellOpen(true);
+      return;
+    }
+    void submitApplication(plan);
+  }
+
+  async function submitApplication(plan: MembershipPlan) {
     if (state === "submitting" || state === "sent") return;
     setState("submitting");
     setMessage(null);
+    setUpsellOpen(false);
 
     const supabase = getSupabaseBrowserClient();
     const { data } = supabase ? await supabase.auth.getSession() : { data: null };
@@ -60,7 +125,7 @@ export default function MembershipApplicationClient({
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ source: "plans" }),
+      body: JSON.stringify({ source: "plans", productKey: plan.key }),
     }).catch(() => null);
 
     if (!res?.ok) {
@@ -72,24 +137,134 @@ export default function MembershipApplicationClient({
     setState("sent");
     setMessage(payload?.telegramSent === false
       ? "신청은 접수됐어요. 운영자 알림은 확인 중이라, 필요하면 카톡으로도 알려주세요."
-      : "신청이 접수됐어요. 운영자가 확인하고 안내할게요.");
+      : `${plan.label} 신청이 접수됐어요. 운영자가 확인하고 안내할게요.`);
   }
 
   return (
-    <div className="min-w-[172px]">
+    <div className="mt-4">
+      <PlanGrid plans={plans} selectedKey={selectedKey} onSelect={setSelectedKey} disabled={state === "submitting" || state === "sent"} />
       <button
         type="button"
-        onClick={submitApplication}
+        onClick={() => startSubmit(selectedPlan)}
         disabled={state === "submitting" || state === "sent"}
-        className="flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+        className="mt-3 flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
       >
-        {state === "submitting" ? "신청 접수 중" : state === "sent" ? "신청 완료" : "신청하기"}
+        {state === "submitting" ? "신청 접수 중" : state === "sent" ? "신청 완료" : `${selectedPlan.label} 신청하기`}
       </button>
       {message ? (
         <p className={`mt-2 break-keep text-[11px] font-bold leading-4 ${state === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}>
           {message}
         </p>
       ) : null}
+      {upsellOpen ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 py-4 backdrop-blur-sm sm:items-center">
+          <div className="w-full max-w-[520px] rounded-[18px] border border-zinc-200 bg-white p-4 shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
+            <div className="inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-[#3182f6] dark:bg-blue-950/40 dark:text-blue-200">
+              {offerExpired ? "신청 직후 조건 만료" : `신청 직후 ${offerMinutesLeft}분 조건`}
+            </div>
+            <h2 className="mt-3 break-keep text-[22px] font-black leading-tight text-zinc-950 dark:text-zinc-50">
+              지금 기간을 늘리면 월 단가를 더 낮출 수 있어요.
+            </h2>
+            <p className="mt-2 break-keep text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
+              원래 선택한 {selectedPlan.label} 신청도 그대로 가능합니다. 더 오래 볼 생각이면 아래 조건이 더 유리합니다.
+            </p>
+            <div className="mt-4 grid gap-2">
+              {upsellPlans.map((plan) => (
+                <button
+                  key={plan.key}
+                  type="button"
+                  onClick={() => void submitApplication(plan)}
+                  disabled={state === "submitting" || offerExpired}
+                  className="rounded-[12px] border border-blue-100 bg-blue-50/70 px-3.5 py-3 text-left transition hover:border-[#3182f6] hover:bg-blue-50 disabled:opacity-50 dark:border-blue-950/70 dark:bg-blue-950/20"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="text-[14px] font-black text-zinc-950 dark:text-zinc-50">{plan.label}</div>
+                      <div className="mt-1 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">{plan.valueNote}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[15px] font-black text-[#3182f6]">{krw(plan.priceKrw)}</div>
+                      <div className="mt-0.5 text-[10px] font-black text-zinc-400">{plan.monthlyLabel}</div>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">{plan.paybackNote}</div>
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setUpsellOpen(false);
+                  void submitApplication(selectedPlan);
+                }}
+                className="h-10 rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+              >
+                {selectedPlan.label} 그대로 신청
+              </button>
+              <button
+                type="button"
+                onClick={() => setUpsellOpen(false)}
+                className="h-10 rounded-xl bg-zinc-900 text-[12px] font-black text-white transition hover:bg-zinc-700 dark:bg-white dark:text-zinc-950"
+              >
+                다시 고르기
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function PlanGrid({
+  plans,
+  selectedKey,
+  onSelect,
+  disabled,
+}: {
+  plans: MembershipPlan[];
+  selectedKey: MembershipPlanKey;
+  onSelect: (key: MembershipPlanKey) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="grid gap-2 sm:grid-cols-2">
+      {plans.map((plan) => {
+        const active = plan.key === selectedKey;
+        return (
+          <button
+            key={plan.key}
+            type="button"
+            disabled={disabled}
+            onClick={() => onSelect(plan.key)}
+            className={`rounded-[12px] border px-3.5 py-3 text-left transition disabled:cursor-default ${
+              active
+                ? "border-[#3182f6] bg-blue-50 shadow-[0_10px_24px_rgba(49,130,246,0.12)] dark:border-blue-700 dark:bg-blue-950/30"
+                : "border-zinc-200 bg-white hover:border-blue-200 hover:bg-[#fbfcff] dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-blue-900"
+            }`}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[15px] font-black text-zinc-950 dark:text-zinc-50">{plan.label}</span>
+                  {plan.badge ? (
+                    <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-black text-[#3182f6] ring-1 ring-blue-100 dark:bg-zinc-900 dark:ring-blue-900">
+                      {plan.badge}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="mt-1 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">{plan.valueNote}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[14px] font-black text-zinc-950 dark:text-zinc-50">{krw(plan.priceKrw)}</div>
+                <div className="mt-0.5 text-[10px] font-black text-zinc-400">{plan.monthlyLabel}</div>
+              </div>
+            </div>
+            <div className="mt-2 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">{plan.paybackNote}</div>
+          </button>
+        );
+      })}
     </div>
   );
 }

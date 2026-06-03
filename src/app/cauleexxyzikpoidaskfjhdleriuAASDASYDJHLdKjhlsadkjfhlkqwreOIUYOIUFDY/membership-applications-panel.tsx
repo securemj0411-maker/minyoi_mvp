@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getMembershipPlan } from "@/lib/membership-plans";
 
 export type MembershipApplicationRow = {
   id: number;
@@ -126,8 +127,16 @@ export default function MembershipApplicationsPanel({ initialRows }: { initialRo
                   <div className="mt-0.5 max-w-[300px] truncate text-[9px] text-zinc-700">{row.authUserId}</div>
                 </td>
                 <td className="px-3 py-2">
-                  <div className="font-bold text-amber-200">{krw(row.priceKrw)} / 3개월</div>
-                  <div className="mt-0.5 text-[10px] uppercase text-zinc-600">{row.productKey}</div>
+                  {(() => {
+                    const plan = getMembershipPlan(row.productKey);
+                    return (
+                      <>
+                        <div className="font-bold text-amber-200">{plan.label} · {krw(row.priceKrw)}</div>
+                        <div className="mt-0.5 text-[10px] text-zinc-500">{plan.monthlyLabel}</div>
+                        <div className="mt-0.5 text-[9px] uppercase text-zinc-700">{row.productKey}</div>
+                      </>
+                    );
+                  })()}
                 </td>
                 <td className="px-3 py-2">
                   <div className="flex justify-end gap-1.5">
