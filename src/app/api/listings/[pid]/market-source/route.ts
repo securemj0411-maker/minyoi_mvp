@@ -368,24 +368,49 @@ export async function GET(
             excludeByPid.set(rowPid, true);
           }
         }
-        const safeRows = rawRows.filter((r) => {
-          const pid = Number(r.pid);
+        const parsedByPid = new Map(parsedRowsForCond.map((row) => [Number(row.pid), row]));
+        const passesComparableProofGuard = (
+          row: Record<string, unknown>,
+          options: { allowCrossSource?: boolean } = {},
+        ) => {
+          const pid = Number(row.pid);
           if ((riskByPid.get(pid) ?? 0) > 0) return false;
-          if (excludeByPid.get(pid) === true) return false;
-          const source = normalizeMarketplaceSource((r.source as string | null) ?? (r.seller_source as string | null));
+          const parsedRow = parsedByPid.get(pid);
+          const parsedJsonNotes = parsedRow?.parsed_json?.condition_notes as string[] | undefined;
+          const notes = parsedRow?.condition_notes ?? parsedJsonNotes ?? [];
+          if (COMPARABLE_EXCLUDE_NOTES.some((n) => notes.includes(n))) return false;
+          const rowHardSignature = hardSignatureByPid.get(pid) ?? "";
+          if (!targetHardChipSignature && rowHardSignature) return false;
+          if (targetHardChipSignature && exactHardChipGate?.ok && rowHardSignature !== targetHardChipSignature) return false;
+
+          const source = normalizeMarketplaceSource((row.source as string | null) ?? (row.seller_source as string | null));
           // Daangn is a local execution market. Even if the display market basis is missing
           // or v3-stale, never show Bunjang/Joongna rows as the visible proof for a Daangn listing.
           if (isDaangnMarketplaceSource(ourMarketplaceSource) && source !== ourMarketplaceSource) return false;
-          if (displayMarketBasis?.basisSource && source !== displayMarketBasis.basisSource) return false;
+          if (!options.allowCrossSource && displayMarketBasis?.basisSource && source !== displayMarketBasis.basisSource) return false;
+          return true;
+        };
+        const safeRows = rawRows.filter((r) => {
+          if (!passesComparableProofGuard(r)) return false;
+          if (excludeByPid.get(Number(r.pid)) === true) return false;
           return true;
         });
+        const sourceRelaxedRows = rawRows.filter((r) => passesComparableProofGuard(r));
+        const broadRelaxedRows = isDaangnMarketplaceSource(ourMarketplaceSource)
+          ? []
+          : rawRows.filter((r) => passesComparableProofGuard(r, { allowCrossSource: true }));
+        const comparableProofRows = safeRows.length > 0
+          ? safeRows
+          : sourceRelaxedRows.length > 0
+            ? sourceRelaxedRows
+            : broadRelaxedRows;
         // Wave launch-31 (사용자 짚음): 같은 셀러 다수 매물 dedup.
         // 동일 셀러가 같은 상품 여러 가격으로 올린 경우 UI list 신뢰 박살.
         // → seller_uid 별 가장 낮은 가격 1개만 keep (사용자 best buy 톤).
         const dedupedBySeller = (() => {
           const bestPerSeller = new Map<string, Record<string, unknown>>();
           const noSellerRows: Array<Record<string, unknown>> = [];
-          for (const row of safeRows) {
+          for (const row of comparableProofRows) {
             const sellerUid = typeof row.seller_uid === "string" && row.seller_uid.trim() ? row.seller_uid.trim() : null;
             if (!sellerUid) {
               noSellerRows.push(row);
@@ -401,8 +426,8 @@ export async function GET(
           return [...bestPerSeller.values(), ...noSellerRows];
         })();
         const displayRows = trimComparableDisplayRows(dedupedBySeller, displayMarketBasis);
-        const parsedByPid = new Map(parsedRowsForCond.map((row) => [Number(row.pid), row]));
-        comparables = displayRows.map((row) => {
+        const proofRows = displayRows.length > 0 ? displayRows : dedupedBySeller;
+        comparables = proofRows.map((row) => {
           const rowPid = Number(row.pid);
           const marketplaceSource = normalizeMarketplaceSource((row.source as string | null) ?? (row.seller_source as string | null));
           const listingUrl = listingUrlForSource(rowPid, row.url as string | null, marketplaceSource);

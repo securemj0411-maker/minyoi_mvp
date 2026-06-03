@@ -5508,9 +5508,9 @@ async function invalidatePoolIneligibleResidues(limit: number): Promise<number> 
 }
 
 async function findPoolVelocityMissingResidues(limit: number): Promise<PoolInvalidationEntry[]> {
-  const rowLimit = Math.max(1, Math.min(limit, 1000));
+  const rowLimit = Math.max(1, Math.min(limit, 5000));
   const res = await restFetch(
-    `${tableUrl("mvp_candidate_pool")}?select=pid,category,comparable_key,condition_class&status=in.(ready,reserved)&order=updated_at.asc&limit=${rowLimit}`,
+    `${tableUrl("mvp_candidate_pool")}?select=pid,category,comparable_key,condition_class&status=in.(ready,reserved)&order=updated_at.desc&limit=${rowLimit}`,
     { headers: serviceHeaders() },
   );
   if (!res.ok) {
@@ -7511,7 +7511,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
   if (cleanupEnabled && !readyFloor.deferCleanup) {
     const velocityResidueInvalidations = await timedScoreSubstage(
       "score_find_velocity_missing_residue",
-      () => findPoolVelocityMissingResidues(Math.max(config.tickScoreLimit * 2, 1000)),
+      () => findPoolVelocityMissingResidues(Math.max(config.tickScoreLimit * 2, 5000)),
     );
     const guardedVelocityResidues = await timedScoreSubstage(
       "score_filter_velocity_missing_residue",

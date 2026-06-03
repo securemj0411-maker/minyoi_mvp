@@ -854,14 +854,7 @@ function velocityGuideStep(card: RevealCard, context: BeginnerGuideStepContext =
   const velocity = card.velocityBasis;
   const marketSoldSample = card.marketBasis?.soldSampleCount ?? 0;
   const marketActiveSample = card.marketBasis?.sampleCount ?? 0;
-  const analysisPending =
-    Boolean(context.analysisLoading) ||
-    (
-      !velocity &&
-      marketSoldSample <= 0 &&
-      marketActiveSample <= 0 &&
-      card.marketBasis?.computedAt == null
-    );
+  const analysisPending = Boolean(context.analysisLoading);
   const hasStrongVelocity =
     velocity?.medianHoursToSold != null &&
     velocity.medianHoursToSold > 0 &&
@@ -872,6 +865,10 @@ function velocityGuideStep(card: RevealCard, context: BeginnerGuideStepContext =
   const hasReferenceVelocity =
     velocity?.confidence === "low" &&
     velocity.sold7dCount > 0;
+  const observedVelocitySample = Math.max(
+    Number(velocity?.observedSoldSampleCount ?? 0),
+    Number(velocity?.sold7dCount ?? 0),
+  );
 
   if (hasStrongVelocity && velocity) {
     const label = velocityHoursLabel(velocity.medianHoursToSold);
@@ -904,6 +901,18 @@ function velocityGuideStep(card: RevealCard, context: BeginnerGuideStepContext =
       metricLabel: `7일 ${velocity.sold7dCount.toLocaleString("ko-KR")}건 — 표본 적음`,
       body: `같은 모델이 최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}건만 거래돼서 추세 단정은 어려워요. 위 숫자는 참고용으로 보고, 매입가는 더 보수적으로 잡는 게 안전해요.`,
       note: "표본이 적은 모델은 판매가 늦어질 수 있어요. 시세와 셀러 신뢰도를 같이 보세요.",
+      tone: "speed",
+    };
+  }
+
+  if (velocity && observedVelocitySample > 0) {
+    return {
+      eyebrow: "5. 판매 속도",
+      title: `같은 모델 거래 기록은 ${observedVelocitySample.toLocaleString("ko-KR")}건 잡혔어요`,
+      metric: `${observedVelocitySample.toLocaleString("ko-KR")}건`,
+      metricLabel: velocity.conditionSpecific ? "같은 상태 거래 기록" : "동일 모델 거래 기록",
+      body: "판매까지 걸린 시간을 안정적으로 말하기엔 부족하지만, 거래 기록 자체는 잡혀 있어요. 이럴 땐 판매 주기를 단정하지 않고 시세와 비교 매물, 판매자 신뢰를 같이 봅니다.",
+      note: "피드 진입은 회전 기록을 보지만, 화면에서는 시간이 불안정하면 건수로 낮춰 표시합니다.",
       tone: "speed",
     };
   }
@@ -2461,6 +2470,10 @@ function saleSpeedDisplay(card: RevealCard, options: { analysisLoading?: boolean
     Number.isFinite(velocity.medianHoursToSold) &&
     velocity.medianHoursToSold > 0 &&
     velocity.sold7dCount > 0;
+  const observedVelocitySample = Math.max(
+    Number(velocity?.observedSoldSampleCount ?? 0),
+    Number(velocity?.sold7dCount ?? 0),
+  );
   const analysisLoading = Boolean(options.analysisLoading) && !hasRealTurnEstimate;
   // 2026-05-19 P0: 운영 게이트 OFF에선 hours=null → "수집 중" 표시. 개발 게이트 ON에선 48h 폴백 유지.
   const hours = hasRealTurnEstimate
@@ -2471,7 +2484,11 @@ function saleSpeedDisplay(card: RevealCard, options: { analysisLoading?: boolean
     // Wave 394.7.ab: "수집 중" → "표본 부족" — 데이터가 진짜 모이는 중인지 부족한 건지 정직 표시.
     // 사용자 짚음 — "에어팟맥스면 기록이 없을수가 없는데 수집 중만 뜸". "수집 중"은 진행감 주는데
     // 실제로는 confidence low 라서 가드에 막힌 케이스가 대부분. 정직 표시.
-    label: analysisLoading ? "확인 중" : hours == null ? (hasRealTurnEstimate ? "확인 어려움" : "표본 부족") : velocityHoursLabel(hours),
+    label: analysisLoading
+      ? "확인 중"
+      : hours == null
+        ? observedVelocitySample > 0 ? `${observedVelocitySample.toLocaleString("ko-KR")}건 기록` : "표본 부족"
+        : velocityHoursLabel(hours),
     isFallback: !hasRealTurnEstimate && !analysisLoading,
     analysisLoading,
     isFast: hours != null && hours > 0 && hours <= 48,
@@ -2480,7 +2497,7 @@ function saleSpeedDisplay(card: RevealCard, options: { analysisLoading?: boolean
     confidenceLabel: analysisLoading
       ? "분석 중"
       : !hasRealTurnEstimate
-      ? (VELOCITY_UI_TEST_ENABLED ? "UI 테스트" : "표본 부족")
+      ? (VELOCITY_UI_TEST_ENABLED ? "UI 테스트" : observedVelocitySample > 0 ? "판매 기록 있음" : "표본 부족")
       : velocity?.confidence === "high"
         ? "신뢰 높음"
         : velocity?.confidence === "medium"
@@ -2751,8 +2768,49 @@ function filterDisplayComparableListings(card: RevealCard, items: ComparableList
   });
 }
 
+type ComparableDisplayScope = "strict" | "price_relaxed" | "source_relaxed";
+
+function sortComparableDisplayListings(items: ComparableListing[]) {
+  return [...items].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+}
+
+function selectComparableDisplayListings(
+  card: RevealCard,
+  items: ComparableListing[],
+  limit: number,
+): { listings: ComparableListing[]; scope: ComparableDisplayScope } {
+  const visible = items.filter((item) => item.listingState !== "disappeared");
+  const sameSource = visible.filter((item) => isSameSourceComparableForCard(card, item));
+  const strict = filterDisplayComparableListings(card, sameSource);
+  if (strict.length > 0) {
+    return { listings: sortComparableDisplayListings(strict).slice(0, limit), scope: "strict" };
+  }
+
+  const priceRelaxed = sameSource.filter((item) => finitePositivePrice(item.price) != null);
+  if (priceRelaxed.length > 0) {
+    return { listings: sortComparableDisplayListings(priceRelaxed).slice(0, limit), scope: "price_relaxed" };
+  }
+
+  const sourceRelaxed = filterDisplayComparableListings(card, visible);
+  return {
+    listings: sortComparableDisplayListings(
+      sourceRelaxed.length > 0
+        ? sourceRelaxed
+        : visible.filter((item) => finitePositivePrice(item.price) != null),
+    ).slice(0, limit),
+    scope: "source_relaxed",
+  };
+}
+
+function comparableScopeCopy(scope: ComparableDisplayScope, baseLabel: string | null) {
+  if (scope === "strict") return baseLabel ? `${baseLabel}끼리` : "같은 조건";
+  if (scope === "price_relaxed") return baseLabel ? `${baseLabel} 기준 · 범위 완화` : "동일 모델 기준";
+  return "동일 모델 전체 기준";
+}
+
 function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; mode?: "simple" | "detailed" }) {
   const [listings, setListings] = useState<ComparableListing[] | null>(null);
+  const [listingScope, setListingScope] = useState<ComparableDisplayScope>("strict");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Wave 394.7.i (사용자 짚음): 비교 매물 4개 이상이면 처음 3개만 보이고 "자세히 보기" 펼침.
@@ -2779,13 +2837,9 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
           // Wave 1027 (2026-06-03): market-source 1차 제외에 더해 UI 표시용 outlier guard.
           // 시세 계산은 기존 backend 기준 유지, 사용자에게 보이는 "증거 리스트"에서 극단 고/저가 샘플만 숨긴다.
           // simple = 6, detailed = 12 표시. fetch 한 번에 16 까지 보관해서 mode 변경 시 re-fetch X.
-          const candidates = (j.comparables ?? [])
-            .filter((c) => c.listingState !== "disappeared")
-            .filter((c) => isSameSourceComparableForCard(card, c));
-          const filtered = filterDisplayComparableListings(card, candidates)
-            .sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
-            .slice(0, 16);
-          setListings(filtered);
+          const selected = selectComparableDisplayListings(card, j.comparables ?? [], 16);
+          setListings(selected.listings);
+          setListingScope(selected.scope);
         }
       })
       .catch((err) => {
@@ -2797,7 +2851,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
     return () => {
       cancelled = true;
     };
-  }, [ck, card.pid]);
+  }, [ck, card, card.pid, card.marketplaceSource, card.marketBasis?.medianPrice, card.marketBasis?.p25Price, card.marketBasis?.p75Price]);
 
   if (!ck) return null;
 
@@ -2821,7 +2875,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
         </div>
         {ccLabel ? (
           <span className="whitespace-nowrap text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">
-            {ccLabel} 매물끼리만
+            {comparableScopeCopy(listingScope, ccLabel)}
           </span>
         ) : null}
       </div>
@@ -2850,7 +2904,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
         <div className="rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">비교 매물 불러오기 실패</div>
       ) : !listings || listings.length === 0 ? (
         <div className="rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-          {ccLabel ? `${ccLabel} 비교 매물 누적 중` : "비교 매물 누적 중"} — 데이터 쌓이면 자동 표시
+          {ccLabel ? `${ccLabel} 표시 가능 비교 매물이 아직 없어요` : "표시 가능 비교 매물이 아직 없어요"} — 시세는 누적 통계 기준으로 봅니다
         </div>
       ) : (
         <ul className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
@@ -5230,10 +5284,14 @@ function BeginnerGuidePurchaseCheckVisual({ card }: { card: RevealCard }) {
 }
 
 function BeginnerGuideSpeedVisual({ card, analysisLoading = false }: { card: RevealCard; analysisLoading?: boolean }) {
-  const speed = saleSpeedDisplay(card);
+  const speed = saleSpeedDisplay(card, { analysisLoading });
   const velocity = card.velocityBasis;
   const market = card.marketBasis;
-  const sampleCount = velocity?.observedSoldSampleCount ?? market?.soldSampleCount ?? 0;
+  const sampleCount = Math.max(
+    Number(velocity?.observedSoldSampleCount ?? 0),
+    Number(velocity?.sold7dCount ?? 0),
+    Number(market?.soldSampleCount ?? 0),
+  );
   const dailySoldValue = velocity?.sold7dCount ? dailySoldCountLabel(velocity.sold7dCount) : null;
   const basisLabel = velocity?.conditionSpecific ? "같은 상태" : "같은 모델 전체";
   // Wave 394.7.ab: "확인 중" → "표본 부족" — 정직 카피.
@@ -5316,6 +5374,7 @@ function BeginnerGuideSummaryVisual({ card }: { card: RevealCard }) {
 
 function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
   const [listings, setListings] = useState<ComparableListing[] | null>(null);
+  const [listingScope, setListingScope] = useState<ComparableDisplayScope>("strict");
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const ck = card.marketBasis?.comparableKey ?? null;
@@ -5340,13 +5399,9 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((j: { comparables?: ComparableListing[] }) => {
         if (cancelled) return;
-        const candidates = (j.comparables ?? [])
-          .filter((item) => item.listingState !== "disappeared")
-          .filter((item) => isSameSourceComparableForCard(card, item));
-        const filtered = filterDisplayComparableListings(card, candidates)
-          .sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
-          .slice(0, 16);
-        setListings(filtered);
+        const selected = selectComparableDisplayListings(card, j.comparables ?? [], 16);
+        setListings(selected.listings);
+        setListingScope(selected.scope);
       })
       .catch(() => {
         if (!cancelled) setListings([]);
@@ -5357,7 +5412,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
     return () => {
       cancelled = true;
     };
-  }, [ck, card.pid]);
+  }, [ck, card, card.pid, card.marketplaceSource, card.marketBasis?.medianPrice, card.marketBasis?.p25Price, card.marketBasis?.p75Price]);
 
   if (!ck) {
     return (
@@ -5374,7 +5429,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
     <div data-beginner-guide-comparables className="mt-4 overflow-hidden rounded-[22px] bg-white/86 ring-1 ring-zinc-200 dark:bg-zinc-950/60 dark:ring-zinc-800">
       <div className="flex items-center justify-between gap-2 px-4 py-3">
         <div className="text-[13px] font-black text-[#172019] dark:text-zinc-50">비교 매물</div>
-        <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{ccLabel}끼리</div>
+        <div className="text-[11px] font-bold text-[#7b8378] dark:text-zinc-400">{comparableScopeCopy(listingScope, ccLabel)}</div>
       </div>
       {loading ? (
         // Wave 394.7.aa (사용자 짚음): skeleton row 4개 — 디폴트 4개 보이는 것과 동일 shape.
@@ -5392,7 +5447,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
           ))}
         </div>
       ) : !listings || listings.length === 0 ? (
-        <div className="px-4 pb-4 text-[12px] font-bold text-[#7b8378] dark:text-zinc-400">비교 매물 누적 중</div>
+        <div className="px-4 pb-4 text-[12px] font-bold text-[#7b8378] dark:text-zinc-400">표시 가능 비교 매물이 아직 없어요</div>
       ) : (
         <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
           {/* Wave launch-65 (사용자 정정 — 진짜 위치): 쉬운모드 1페이지 비교 매물 상단에
