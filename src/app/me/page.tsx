@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import MeDashboardClient from "@/components/me-dashboard-client";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
+import { getProStatus } from "@/lib/user-subscription";
 import { loadUserHomeRegion } from "@/lib/user-home-region-loader";
+import { userRefForAuthUser } from "@/lib/user-ref";
 
 // Wave 74: server fetch 제거. 이전엔 loadInventory()를 서버에서 await해서
 // /me 네비게이션이 ~1~2초 block됐음. 클릭 즉시 페이지 mount + skeleton 표시,
@@ -18,6 +20,10 @@ export default async function MePage() {
     const homeRegion = await loadUserHomeRegion(auth.user.id);
     if (!homeRegion) {
       redirect("/onboarding/home-region");
+    }
+    const membership = await getProStatus(auth.user, userRefForAuthUser(auth.user.id));
+    if (!membership.isPro && !membership.isAdmin && !membership.isBetaTester) {
+      redirect("/plans?from=me");
     }
   }
   return <MeDashboardClient initialInventory={[]} />;

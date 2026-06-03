@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { isAdminUser } from "@/lib/auth-users";
 import { fetchDetail } from "@/lib/bunjang";
 import { consumeDetailAccess } from "@/lib/detail-access";
-import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { fetchDaangnLiveState } from "@/lib/daangn";
 import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
@@ -25,6 +23,7 @@ import { detectSoldOut, describeSignals, isSoldOut, soldOutTextHits } from "@/li
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { hasUserActionHeader } from "@/lib/user-action-guard";
 import { userRefForAuthUser } from "@/lib/user-ref";
+import { getProStatus } from "@/lib/user-subscription";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -430,14 +429,14 @@ async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAcce
       return null;
     });
     if (!detail) {
-      return { ok: false, status: 503, error: "live_verify_unavailable", message: "중고나라 원본 확인이 잠시 실패했어요. 크레딧은 사용하지 않았어요." };
+      return { ok: false, status: 503, error: "live_verify_unavailable", message: "중고나라 원본 확인이 잠시 실패했어요. 상세 이용에는 영향 없어요." };
     }
     if (!detail.ok) {
       if (detail.status === 404) {
         await markTerminalBeforeAccess(item, "disappeared", null, "joongna_detail_404");
         return { ok: false, status: 404, error: "not_ready", message: "원본 매물이 사라져 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요." };
       }
-      return { ok: false, status: 503, error: "live_verify_unavailable", message: "중고나라 원본 확인이 잠시 불안정해요. 크레딧은 사용하지 않았어요." };
+      return { ok: false, status: 503, error: "live_verify_unavailable", message: "중고나라 원본 확인이 잠시 불안정해요. 상세 이용에는 영향 없어요." };
     }
 
     const saleStatus = detail.productStatus == null ? item.saleStatus : `JOONGNA_STATUS_${detail.productStatus}`;
@@ -493,14 +492,14 @@ async function verifyBeforeDetailAccess(item: ExactPoolItem): Promise<DetailAcce
       return null;
     });
     if (!live) {
-      return { ok: false, status: 503, error: "live_verify_unavailable", message: "당근 원본 확인이 잠시 실패했어요. 크레딧은 사용하지 않았어요." };
+      return { ok: false, status: 503, error: "live_verify_unavailable", message: "당근 원본 확인이 잠시 실패했어요. 상세 이용에는 영향 없어요." };
     }
     if (!live.ok) {
       if (live.status === 404) {
         await markTerminalBeforeAccess(item, "disappeared", null, "daangn_detail_404");
         return { ok: false, status: 404, error: "not_ready", message: "원본 매물이 사라져 추천에서 내렸어요. 새로고침하면 다른 매물을 보여드릴게요." };
       }
-      return { ok: false, status: 503, error: "live_verify_unavailable", message: "당근 원본 확인이 잠시 불안정해요. 크레딧은 사용하지 않았어요." };
+      return { ok: false, status: 503, error: "live_verify_unavailable", message: "당근 원본 확인이 잠시 불안정해요. 상세 이용에는 영향 없어요." };
     }
     if (live.listingState !== "active") {
       await markTerminalBeforeAccess(item, live.listingState, live.saleStatus, `daangn_${live.reason}`);
@@ -622,7 +621,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_pid", message: "매물 정보가 올바르지 않아요." }, { status: 400 });
   }
 
-  const unlimitedAccess = isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
+  const userRef = userRefForAuthUser(auth.user.id);
+  const membership = await getProStatus(auth.user, userRef);
+  const unlimitedAccess = membership.isPro || membership.isAdmin || membership.isBetaTester;
+
+  if (!unlimitedAccess) {
+    return NextResponse.json(
+      {
+        error: "membership_required",
+        message: "선공개 멤버십 승인 후 상세 리포트를 볼 수 있어요.",
+        creditBalance: 0,
+        freeUsed: 0,
+        freeLimit: 0,
+        unlimited: false,
+      },
+      { status: 402 },
+    );
+  }
 
   if (!unlimitedAccess && !(await isReadyPoolPid(pid))) {
     return NextResponse.json(
@@ -672,7 +687,6 @@ export async function POST(req: Request) {
     );
   }
 
-  const userRef = userRefForAuthUser(auth.user.id);
   const access = await consumeDetailAccess({ user: auth.user, userRef, pid, unlimited: unlimitedAccess });
   if (!access.ok) {
     return NextResponse.json(

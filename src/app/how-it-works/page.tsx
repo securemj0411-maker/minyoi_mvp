@@ -198,7 +198,7 @@ export default function HowItWorksPage() {
                   href="/plans"
                   className="inline-flex items-center justify-center rounded-2xl border border-zinc-200 bg-white px-5 py-3.5 text-sm font-black text-zinc-900 transition hover:bg-[var(--brand-accent-soft)]"
                 >
-                  크레딧 충전
+                  멤버십 신청
                 </Link>
               </div>
             </div>
@@ -347,7 +347,7 @@ export default function HowItWorksPage() {
               href="/plans"
               className="inline-flex items-center justify-center rounded-2xl border border-zinc-200 bg-white px-5 py-3.5 text-sm font-black text-zinc-900 transition hover:bg-[var(--brand-accent-soft)]"
             >
-              크레딧 충전 보기
+              멤버십 신청 보기
             </Link>
           </div>
         </section>

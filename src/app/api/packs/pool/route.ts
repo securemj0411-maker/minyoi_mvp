@@ -17,7 +17,7 @@ import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 import { getDetailAccessSnapshot } from "@/lib/detail-access";
-import { isBetaTesterAuthId } from "@/lib/beta-tester";
+import { getProStatus } from "@/lib/user-subscription";
 import { teaserBudgetRangeLabel } from "@/lib/feed-price-display";
 import { fetchDaangnLiveState } from "@/lib/daangn";
 import { marketStatsConditionKey } from "@/lib/pack-open";
@@ -1558,7 +1558,8 @@ export async function GET(req: Request) {
     const excludeAllPids = [...new Set([...excludePids, ...excludeTokenPids])];
 
     const headers = serviceHeaders();
-    const unlimitedAccess = isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
+    const membership = await getProStatus(auth.user, userRef);
+    const unlimitedAccess = membership.isPro || membership.isAdmin || membership.isBetaTester;
     const detailAccess = await getDetailAccessSnapshot({ user: auth.user, userRef, unlimited: unlimitedAccess });
     const feedCooldown = { canRefresh: true, remainingSec: 0, nextAvailableAt: null };
 

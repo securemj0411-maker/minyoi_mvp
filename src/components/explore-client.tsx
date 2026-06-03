@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import CreditIcon from "@/components/credit-icon";
 import ReferralBanner from "@/components/referral-banner";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, HourglassIcon, BookmarkIcon } from "@/components/icons";
@@ -22,10 +21,10 @@ import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 // Wave 338+339 (Phase 1a + 1b — Freemium /explore):
-// 매물 풀 browsing. 피드는 무료 teaser, 크레딧은 상세 분석/원문 공개 때만 차감.
+// 매물 풀 browsing. 피드는 무료 teaser, 상세 분석은 멤버십 승인 후 공개.
 // + 통계 배너 + paywall 예고 + sold out 오버레이 + PackRevealModal 통합.
 // detail-access.ts FREE_DETAIL_ACCESS_LIMIT 와 동기화.
-// 현재 정책은 free rate-limit 대신 가입 크레딧 grant 를 쓰므로 기본 free limit 은 0이다.
+// 현재 정책은 승인형 멤버십 게이트이므로 기본 free limit 은 0이다.
 const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 0;
 
 type PoolItem = {
@@ -147,7 +146,7 @@ type DetailAccessResponse = {
 };
 
 // Wave launch-14 (사용자 짚음): error 종류 따라 다른 모달 톤.
-// paywall = 크레딧 부족 (충전 안내), sold = 매물 거래완료/사라짐 (새로고침), verify_fail = 일시 통신 (재시도).
+// paywall = 멤버십 승인 필요, sold = 매물 거래완료/사라짐 (새로고침), verify_fail = 일시 통신 (재시도).
 // Wave launch-106 (2026-05-24): profit_lost = active 매물인데 시세 떨어져 차익 -. "판매완료" 라벨 사용 금지.
 type DetailAccessLimitVariant = "paywall" | "sold" | "verify_fail" | "profit_lost";
 type DetailAccessLimitModal = {
@@ -246,7 +245,7 @@ function directTradeCostLabel(snapshot: DetailAccessSnapshot) {
   const freeRemaining = Math.max(0, Number(snapshot.freeLimit) - Number(snapshot.freeUsed));
   // Wave 762 (2026-05-26): hardcoded "1회" → 동적 (free limit 2 로 늘면서 정확한 잔여 노출).
   if (freeRemaining > 0) return `무료 상세보기 ${freeRemaining}회`;
-  return "1크레딧";
+  return "멤버십 상세보기";
 }
 
 function accessValueForItem(item: PoolItem): DetailAccessValueSummary {
@@ -787,11 +786,16 @@ function DetailAccessPaywallModal({
   onKakaoShare: () => void;
 }) {
   if (!state) return null;
+  void kakaoShareReady;
+  void kakaoShareLoading;
+  void kakaoShareCooldownHours;
+  void onKakaoShare;
   const variant = state.variant ?? "paywall";
   const freeLimit = state.freeLimit && state.freeLimit > 0 ? state.freeLimit : DEFAULT_FREE_DETAIL_ACCESS_LIMIT;
   const freeUsed = Math.min(freeLimit, Math.max(0, state.freeUsed ?? freeLimit));
   const segments = Math.min(3, Math.max(1, freeLimit));
   const creditBalance = Math.max(0, Number(state.creditBalance ?? 0));
+  void creditBalance;
   const summary = state.valueSummary ?? null;
 
   // Wave launch-14: variant 별 톤 분기.
@@ -805,7 +809,7 @@ function DetailAccessPaywallModal({
     : isSold ? "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300"
     : isProfitLost ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
     : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
-  const eyebrowText = isPaywall ? "크레딧 상세보기"
+  const eyebrowText = isPaywall ? "멤버십 상세보기"
     : isSold ? "방금 거래된 상품"
     : isProfitLost ? "시세 하락"
     : "잠시 후 다시 시도";
@@ -830,9 +834,9 @@ function DetailAccessPaywallModal({
         <div className="px-5 pb-5 pt-5 sm:px-6 sm:pt-6">
           <div className="flex items-start justify-between gap-4">
             <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] ${iconBg}`}>
-              {/* variant 별 아이콘 — paywall=CreditIcon, sold=원 안 X, profit_lost=↓ 화살표, verify_fail=시계 */}
+              {/* variant 별 아이콘 — paywall=번개, sold=원 안 X, profit_lost=↓ 화살표, verify_fail=시계 */}
               {isPaywall ? (
-                <CreditIcon size={26} />
+                <ZapIcon className="h-6 w-6" />
               ) : isSold ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
                   <circle cx="12" cy="12" r="9" />
@@ -870,13 +874,12 @@ function DetailAccessPaywallModal({
           </div>
 
           {/* Wave launch-88 (사용자 정정 — 모바일 화면 안에 다 안 들어옴):
-              4 row (header / progress / 설명 / 보유 크레딧) → 2 row 로 압축.
-              설명 텍스트 ("첫 상품 1개는 무료로 열리고...") 제거 — 모달 body 와 의미 중복.
-              "보유 크레딧" 정보는 헤더 row 에 inline. progress bar h-2.5 → h-1.5 (얇게). */}
+              4 row (header / progress / 설명 / 보유 정보) → 2 row 로 압축.
+              설명 텍스트 제거 — 모달 body 와 의미 중복. progress bar h-2.5 → h-1.5 (얇게). */}
           {/* Wave 766 (2026-05-26 사용자 결정): FREE_DETAIL_ACCESS_LIMIT 폐기 후 progress bar 조건부 표시.
                 기존: 모든 paywall 모달에 "무료 N/N 사용" + progress bar 박힘.
                 신규: freeLimit > 0 일 때만 박힘 (현재 0 — 영구 hidden).
-                보유 크레딧만 우측에 박음 (간결). */}
+                승인 안내만 우측에 박음 (간결). */}
           {isPaywall ? (
             <div className="mt-4 rounded-[18px] bg-zinc-50 p-3 dark:bg-zinc-900/70">
               <div className="flex items-center justify-between text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
@@ -885,7 +888,7 @@ function DetailAccessPaywallModal({
                 ) : (
                   <span>지금까지 매물 <b className="text-zinc-700 dark:text-zinc-200">{summary?.openedCount ?? 0}개</b> 자세히 봄</span>
                 )}
-                <span>보유 <b className="text-zinc-700 dark:text-zinc-200">{creditBalance.toLocaleString("ko-KR")}크레딧</b></span>
+                <span>승인 후 이용 가능</span>
               </div>
               {freeLimit > 0 ? (
                 <div className="mt-2 grid gap-1" style={{ gridTemplateColumns: `repeat(${segments}, minmax(0, 1fr))` }}>
@@ -921,88 +924,14 @@ function DetailAccessPaywallModal({
             </div>
           ) : null}
 
-          {/* Wave launch-29 (사용자 짚음): "방금 거래된 상품" 모달에 "크레딧 충전하고 계속 보기"
-           * 떴던 거 fix. sold / verify_fail variant 엔 위 (L749-757) 에 이미 적절한 action button
-           * 있음. 크레딧 충전은 paywall variant 만 의미 있음. */}
           <div className="mt-5 grid gap-2">
-            {/* Wave launch-52 (사용자 짚음 "이 모달에 카톡 공유 이식 ㄱ"):
-             *   크레딧 부족 = 사용자가 즉시 +1 크레딧 받고 싶은 시점.
-             *   카톡 공유 button = 무료 옵션 (충전 외 대안). 24h 1회 제한 + auth.
-             *   paywall variant 만 표시 (sold/verify_fail 은 크레딧 무관). */}
             {isPaywall ? (
-              <button
-                type="button"
-                disabled={kakaoShareLoading || !kakaoShareReady}
-                onClick={onKakaoShare}
-                title={kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : (kakaoShareReady ? "카톡 공유하고 매물 2개 더 자세히 보기" : "카카오 공유 로딩 중...")}
-                className={`flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left transition ${
-                  kakaoShareReady && kakaoShareCooldownHours === 0
-                    ? "bg-[#fbe300] shadow-[0_4px_14px_rgba(251,227,0,0.35)] hover:bg-[#fae100] active:scale-[0.99]"
-                    : "cursor-not-allowed bg-[#fbe300]/40 opacity-70"
-                }`}
-              >
-                <div className="flex min-w-0 items-center gap-2.5">
-                  <KakaoLogo className={`h-6 w-6 shrink-0 rounded-[6px] ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "" : "opacity-80"}`} />
-                  <div className="min-w-0">
-                    <div className={`text-sm font-bold ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]" : "text-[#3b1e1e]/80"}`}>
-                      {kakaoShareCooldownHours > 0 ? "오늘은 이미 받았어요" : kakaoShareLoading ? "공유 처리 중..." : "공유하고 매물 2개 더 보기"}
-                    </div>
-                    <div className={`mt-0.5 text-[11px] font-medium ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]/70" : "text-[#3b1e1e]/60"}`}>
-                      {kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : "하루 1번 · 충전 안 해도 OK"}
-                    </div>
-                  </div>
-                </div>
-                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                  kakaoShareReady && kakaoShareCooldownHours === 0 ? "bg-[#3b1e1e] text-[#fbe300]" : "bg-[#3b1e1e]/70 text-[#fbe300]/90"
-                }`}>
-                  {kakaoShareCooldownHours > 0 ? "내일" : "매물 2개 더"}
-                </span>
-              </button>
-            ) : null}
-            {/* Wave launch-127 (2026-05-25): /plans 이동 제거 → 모달 안 inline 패키지 선택.
-                클릭 수 줄이기 — paywall 뜨자마자 가격 보이고 바로 결제 이동. */}
-            {isPaywall ? (
-              <div className="space-y-1.5">
-                {/* Wave launch-129: 크레딧 = 열람 횟수 명시 + 690원 단건 복구. */}
-                {/* starter — 강조 */}
                 <Link
-                  href="/billing/manual?credits=20"
-                  className="flex items-center justify-between rounded-2xl bg-[#3182f6] px-4 py-3 transition hover:bg-[#1c6fe8] active:scale-[0.99] shadow-[0_12px_26px_rgba(49,130,246,0.28)]"
+                  href="/plans"
+                  className="flex min-h-12 w-full items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-sm font-black text-white shadow-sm transition hover:bg-[#1c6fe8] active:scale-[0.98]"
                 >
-                  <div>
-                    <div className="text-[13px] font-black text-white">9,900원 — 매물 20번 열람</div>
-                    <div className="mt-0.5 text-[11px] font-bold text-white/70">1번당 495원 · 가장 인기</div>
-                  </div>
-                  <span className="shrink-0 rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-black text-white">추천</span>
+                  멤버십 신청하기
                 </Link>
-                {/* trial / plus — 작게 */}
-                <div className="grid grid-cols-2 gap-1.5">
-                  <Link
-                    href="/billing/manual?credits=5"
-                    className="flex flex-col rounded-2xl bg-zinc-100 px-3 py-2.5 transition hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                  >
-                    <span className="text-[12px] font-black text-zinc-800 dark:text-zinc-100">2,900원 — 5번 열람</span>
-                    <span className="mt-0.5 text-[10.5px] font-bold text-zinc-500">1번당 580원</span>
-                  </Link>
-                  <Link
-                    href="/billing/manual?credits=45"
-                    className="flex flex-col rounded-2xl bg-zinc-100 px-3 py-2.5 transition hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                  >
-                    <span className="text-[12px] font-black text-zinc-800 dark:text-zinc-100">19,900원 — 45번 열람</span>
-                    <span className="mt-0.5 text-[10.5px] font-bold text-zinc-500">1번당 442원</span>
-                  </Link>
-                </div>
-                {/* 690원 단건 — 진입장벽 낮추기 */}
-                <Link
-                  href="/billing/manual?credits=1"
-                  className="block rounded-2xl border border-zinc-200 bg-white py-2.5 text-center text-[12.5px] font-black text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
-                >
-                  이 매물 하나만 690원에 열기
-                </Link>
-                <Link href="/plans" className="block text-center text-[11px] font-bold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 py-0.5">
-                  더 많은 패키지 보기 →
-                </Link>
-              </div>
             ) : null}
             <button
               type="button"
@@ -1440,7 +1369,7 @@ export default function ExploreClient({
   //   cooldown 상태 mount 시 fetch. cooldown 안이면 button 비활성 + "N시간 후 다시" 카피.
   const [kakaoShareCooldownHours, setKakaoShareCooldownHours] = useState<number>(0);
   // Wave 738 (2026-05-24): 카톡 공유 → webhook → DB UPDATE → Supabase Realtime → 토스트.
-  //   "크레딧 N개 지급됐어요!" 1.8초 표시 + app-nav "minyoi:credits-changed" event 발생.
+  //   legacy balance toast path. 멤버십 모델에서는 user-facing credit badge 를 노출하지 않는다.
   // Wave 746 (2026-05-24): 카톡 공유 토스트는 BalanceToast (layout.tsx) 가 universal 처리.
   //   여기는 cooldown UI 갱신만 — minyoi:share-bonus-received event listen.
 
@@ -2141,12 +2070,13 @@ export default function ExploreClient({
           writeDetailAccessSnapshot(storageScope, nextDetailAccess);
         }
         // Wave launch-14: error code 따라 다른 variant.
-        // - insufficient_credits / free_limit_exhausted = 크레딧 충전 paywall
+        // - membership_required / insufficient_credits / free_limit_exhausted = membership paywall
         // - not_ready (매물 거래완료/사라짐/검증 실패) = sold variant ("방금 거래된 상품이에요" 톤)
         // - live_verify_unavailable = verify_fail variant ("잠시 통신 불안정" 톤)
         // - detail_access_required (보관함 race) = paywall variant
         // Wave launch-106 (2026-05-24): not_ready + reason="profit_lost" = profit_lost variant
         //   (active 매물인데 시세 갱신으로 차익이 - 가 된 케이스. "판매완료" 라벨 절대 X.)
+        const isMembershipRequired = data.error === "membership_required";
         const isCreditShort = data.error === "insufficient_credits";
         const isLiveVerifyFail = data.error === "live_verify_unavailable";
         const isNotReady = data.error === "not_ready";
@@ -2161,16 +2091,16 @@ export default function ExploreClient({
                 ? "sold"
                 : "paywall"; // detail_access_required 등 기타 = paywall fallback
         const titleByVariant =
-          variant === "paywall"     ? (isCreditShort ? "크레딧이 부족해요" : "상세보기를 열 수 없어요") :
+          variant === "paywall"     ? (isMembershipRequired ? "멤버십 승인이 필요해요" : isCreditShort ? "멤버십 신청이 필요해요" : "상세보기를 열 수 없어요") :
           variant === "sold"        ? "방금 거래된 상품이에요" :
           variant === "profit_lost" ? "시세가 떨어져서 차익이 사라졌어요" :
                                       "잠시 통신이 불안정해요";
         // Wave launch-128 (2026-05-25): paywall 메시지 가치 포지셔닝 강화.
         const defaultMessageByVariant =
-          variant === "paywall"     ? "1크레딧으로 시세 비교, 비용 계산, 원본 링크까지. 최저 495원부터." :
+          variant === "paywall"     ? "선공개 멤버십 승인 후 시세 비교, 비용 계산, 원본 링크까지 볼 수 있어요." :
           variant === "sold"        ? "이 매물은 방금 다른 곳에서 거래되었거나 셀러가 내린 것 같아요. 새로고침하면 다른 매물을 보여드릴게요." :
           variant === "profit_lost" ? "지금 사면 손해예요. 새로고침하면 다른 매물 보여드릴게요." :
-                                      "원본 매물 확인이 잠시 실패했어요. 크레딧은 사용하지 않았어요. 잠시 후 다시 시도해주세요.";
+                                      "원본 매물 확인이 잠시 실패했어요. 상세 이용에는 영향 없어요. 잠시 후 다시 시도해주세요.";
         setDetailAccessLimit({
           variant,
           title: titleByVariant,
@@ -2780,7 +2710,7 @@ export default function ExploreClient({
             const lockedPreview = !exactUnlocked;
             const freeDetailAvailable = lockedPreview && freeDetailRemaining > 0;
             const unlimitedDetailAvailable = lockedPreview && detailAccessSnapshot.unlimited === true;
-            const detailCreditAvailable = lockedPreview && Number(detailAccessSnapshot.creditBalance ?? 0) > 0;
+            const membershipDetailPrompt = lockedPreview && !freeDetailAvailable && !unlimitedDetailAvailable;
             const tierBadgeCategory = tierBadgeCategoryForItem(item);
             const legacyBadgeCondition = tierBadgeCategory ? null : item.conditionClass;
             const fullLocked = false;
@@ -2801,8 +2731,8 @@ export default function ExploreClient({
                   if (fullLocked) {
                     setDetailAccessLimit({
                       variant: "paywall",
-                      title: "크레딧이 부족해요",
-                      message: "1크레딧으로 시세 비교, 비용 계산, 원본 링크까지. 최저 495원부터.",
+                      title: "멤버십 승인이 필요해요",
+                      message: "선공개 멤버십 승인 후 시세 비교, 비용 계산, 원본 링크까지 볼 수 있어요.",
                       creditBalance: detailAccessSnapshot.creditBalance ?? 0,
                       freeUsed: detailAccessSnapshot.freeUsed ?? 0,
                       freeLimit: detailAccessSnapshot.freeLimit ?? 0,
@@ -2889,9 +2819,9 @@ export default function ExploreClient({
                       상세 무제한
                     </div>
                   ) : null}
-                  {lockedPreview && !freeDetailAvailable && detailCreditAvailable ? (
+                  {membershipDetailPrompt ? (
                     <div className="mt-1 text-[11px] font-bold text-blue-600 dark:text-blue-400">
-                      1크레딧으로 정확한 매물 열기
+                      멤버십으로 정확한 매물 열기
                     </div>
                   ) : null}
                   <div className="mt-1.5 flex items-baseline gap-1.5">
@@ -2937,7 +2867,7 @@ export default function ExploreClient({
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] font-medium">
                     {isSoldOut ? (
                       <span className="flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
-                        💡 크레딧 충전하면 잡을 수 있었어요
+                        멤버십이면 이런 매물을 더 빨리 확인할 수 있어요
                       </span>
                     ) : (
                       <>
@@ -3110,7 +3040,7 @@ export default function ExploreClient({
               ) : null}
               <div className="mt-2 flex items-center gap-1.5 rounded-md bg-blue-50 px-2 py-1.5 text-[11px] font-bold text-blue-800 dark:bg-blue-950/40 dark:text-blue-200">
                 <ZapIcon className="h-3 w-3" />
-                <span>크레딧은 마음에 드는 매물의 상세 분석을 열 때만 써요</span>
+                <span>상세 분석은 선공개 멤버십 승인 후 열 수 있어요</span>
               </div>
             </div>
           </div>
@@ -3215,7 +3145,7 @@ export default function ExploreClient({
                       </span>
                     </div>
                     <div className={`mt-1.5 text-xs font-medium ${canRefresh ? "text-[var(--brand-cream)]/75" : "text-zinc-500 dark:text-zinc-500"}`}>
-                      {canRefresh ? "필터 없이 더 넓게 골라드려요" : "기다리면 크레딧 없이 다음 라운드가 열려요"}
+                      {canRefresh ? "필터 없이 더 넓게 골라드려요" : "잠시 후 다음 라운드가 열려요"}
                     </div>
                   </div>
                   {canRefresh ? (
@@ -3231,29 +3161,29 @@ export default function ExploreClient({
                   <div className="mt-3 mb-3 rounded-2xl border border-blue-200 bg-blue-50/90 p-4 shadow-[0_10px_28px_rgba(16,185,129,0.12)] dark:border-blue-900/70 dark:bg-blue-950/30">
                     <div className="flex items-start gap-3">
                       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm dark:bg-zinc-900/70">
-                        <CreditIcon size={26} />
+                        <ZapIcon className="h-6 w-6 text-[#3182f6]" />
                       </span>
                       <div className="min-w-0">
                         <div className="text-base font-black tracking-tight text-[#123c2b] dark:text-blue-100">
-                          크레딧 보유자는 피드 계속 보기
+                          멤버십 승인 후 피드 계속 보기
                         </div>
                         <div className="mt-1 text-[12px] font-bold leading-5 text-blue-800/80 dark:text-blue-200/80">
-                          1개 이상 있으면 다음 매물이 자동으로 이어지고, 피드는 차감 0개예요.
+                          승인된 계정은 추천 피드와 상세 리포트를 계속 볼 수 있어요.
                         </div>
                       </div>
                     </div>
                     <div className="mt-3 grid grid-cols-3 gap-2">
                       <div className="rounded-xl bg-white/80 px-2 py-2 text-center dark:bg-zinc-900/50">
-                        <div className="text-[11px] font-black text-[#008f5f] dark:text-blue-300">0개</div>
-                        <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">피드 차감</div>
+                        <div className="text-[11px] font-black text-[#008f5f] dark:text-blue-300">무료</div>
+                        <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">신청</div>
                       </div>
                       <div className="rounded-xl bg-white/80 px-2 py-2 text-center dark:bg-zinc-900/50">
-                        <div className="text-[11px] font-black text-[#008f5f] dark:text-blue-300">1개</div>
-                        <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">상세 분석</div>
+                        <div className="text-[11px] font-black text-[#008f5f] dark:text-blue-300">검토</div>
+                        <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">운영자 확인</div>
                       </div>
                       <div className="rounded-xl bg-white/80 px-2 py-2 text-center dark:bg-zinc-900/50">
-                        <div className="text-[11px] font-black text-[#008f5f] dark:text-blue-300">1개+</div>
-                        <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">보유 조건</div>
+                        <div className="text-[11px] font-black text-[#008f5f] dark:text-blue-300">승인</div>
+                        <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">계정 오픈</div>
                       </div>
                     </div>
                             </div>
@@ -3268,15 +3198,15 @@ export default function ExploreClient({
                                 </span>
                                 <div className="min-w-0">
                                   <div className="text-base font-bold text-white">
-                                    크레딧 충전하러 가기
+                                    멤버십 신청하러 가기
                                   </div>
                                   <div className="mt-0.5 text-[11px] font-medium text-white/85">
-                                    1크레딧 690원부터
+                                    선공개 300명
                                   </div>
                                 </div>
                               </div>
                               <span className="shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">
-                                피드 무제한
+                                신청하기
                               </span>
                             </Link>
 
@@ -3288,7 +3218,7 @@ export default function ExploreClient({
                               type="button"
                               disabled={kakaoShareLoading || !kakaoShareReady}
                               onClick={handleKakaoShare}
-                              title={kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : (kakaoShareReady ? "카톡으로 공유하고 크레딧 받기" : "카카오 공유 로딩 중...")}
+                              title={kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 공유할 수 있어요` : (kakaoShareReady ? "카톡으로 공유하기" : "카카오 공유 로딩 중...")}
                               className={`mt-3 flex w-full items-center justify-between gap-3 rounded-2xl px-5 py-4 text-left transition ${
                                 kakaoShareReady && kakaoShareCooldownHours === 0
                                   ? "bg-[#fbe300] shadow-[0_4px_14px_rgba(251,227,0,0.35)] hover:bg-[#fae100] active:scale-[0.99]"
@@ -3299,10 +3229,10 @@ export default function ExploreClient({
                                 <KakaoLogo className={`h-7 w-7 shrink-0 rounded-[8px] ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "" : "opacity-80"}`} />
                                 <div className="min-w-0">
                                   <div className={`text-base font-bold ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]" : "text-[#3b1e1e]/80"}`}>
-                                    {kakaoShareCooldownHours > 0 ? "오늘은 이미 받았어요" : kakaoShareLoading ? "공유 처리 중..." : "카톡 공유하고 크레딧 받기"}
+                                    {kakaoShareCooldownHours > 0 ? "오늘은 이미 공유했어요" : kakaoShareLoading ? "공유 처리 중..." : "카톡으로 공유하기"}
                                   </div>
                                   <div className={`mt-0.5 text-[11px] font-medium ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]/70" : "text-[#3b1e1e]/60"}`}>
-                                    {kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요` : "하루 1번, 공유 후 크레딧 2개 자동 지급"}
+                                    {kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 공유할 수 있어요` : "친구에게 득템잡이를 알려주세요"}
                                   </div>
                                 </div>
                               </div>

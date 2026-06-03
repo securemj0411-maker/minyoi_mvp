@@ -6,11 +6,9 @@ import { usePathname } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AccountPanel } from "@/components/account-panel";
 import { BrandLogo } from "@/components/brand-logo";
-import CreditIcon from "@/components/credit-icon";
 import { displayNameForUser, isAdminUser } from "@/lib/auth-users";
 import { hasClientAdminOverride, setClientAdminOverride } from "@/lib/client-admin-override";
 import { hasAdminShadowClient, setAdminShadowClient } from "@/lib/admin-shadow-mode";
-import { loadClientCredits } from "@/lib/client-credits";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type ThemeMode = "system" | "light" | "dark";
@@ -186,7 +184,7 @@ function AdminTerminalNav() {
           <span className="text-[11px] font-black uppercase tracking-[0.18em]">▌MINYOI TERM</span>
           <span className="hidden text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 sm:inline">OPERATOR CONSOLE</span>
         </div>
-        <a
+        <Link
           href="/"
           className="inline-flex h-7 items-center gap-1 rounded border border-zinc-700 bg-zinc-900 px-2.5 text-[11px] font-bold text-zinc-300 transition hover:border-amber-500/60 hover:bg-zinc-800 hover:text-amber-300"
         >
@@ -194,7 +192,7 @@ function AdminTerminalNav() {
             <path d="M3 11l9-8 9 8M5 10v10h14V10" />
           </svg>
           MAIN
-        </a>
+        </Link>
       </div>
     </nav>
   );
@@ -203,14 +201,10 @@ function AdminTerminalNav() {
 export default function AppNav() {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
-  const [tokens, setTokens] = useState(0);
-  const [infiniteCredits, setInfiniteCredits] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [creditMenuOpen, setCreditMenuOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [accountSheetOpen, setAccountSheetOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const creditMenuRef = useRef<HTMLDivElement | null>(null);
   const [adminOverride, setAdminOverride] = useState(false);
   const [adminShadow, setAdminShadow] = useState(false);
   const adminClickCountRef = useRef(0);
@@ -221,17 +215,6 @@ export default function AppNav() {
   const userName = useMemo(() => displayNameForUser(user), [user]);
   const userInitial = useMemo(() => (userName || "U").trim().charAt(0).toUpperCase(), [userName]);
 
-  const refreshCredits = useCallback(async () => {
-    const credits = await loadClientCredits().catch(() => null);
-    if (!credits) {
-      setTokens(0);
-      setInfiniteCredits(false);
-      return;
-    }
-    setTokens(credits.tokens);
-    setInfiniteCredits(credits.infinite);
-  }, []);
-
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
@@ -241,30 +224,17 @@ export default function AppNav() {
       if (!mounted) return;
       const nextUser = data.user ?? null;
       setUser(nextUser);
-      if (nextUser) void refreshCredits();
     }).catch(() => undefined);
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const nextUser = session?.user ?? null;
       setUser(nextUser);
-      if (nextUser) {
-        void refreshCredits();
-      } else {
-        setTokens(0);
-        setInfiniteCredits(false);
-      }
     });
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [refreshCredits]);
-
-  useEffect(() => {
-    const handler = () => { void refreshCredits(); };
-    window.addEventListener("minyoi:credits-changed", handler);
-    return () => window.removeEventListener("minyoi:credits-changed", handler);
-  }, [refreshCredits]);
+  }, []);
 
   useEffect(() => {
     setAdminOverride(hasClientAdminOverride());
@@ -282,7 +252,7 @@ export default function AppNav() {
         setAdminShadowClient(next);
         setAdminShadow(next);
         if (typeof window !== "undefined") {
-          window.alert(`Shadow Mode ${next ? "ON (일반인 가장 — rate limit / 플랜 게이팅 / 무한 크레딧 해제)" : "OFF (운영자 복귀)"}`);
+          window.alert(`Shadow Mode ${next ? "ON (일반인 가장 — 멤버십 게이팅 적용)" : "OFF (운영자 복귀)"}`);
           window.location.reload(); // server-side cookie 검사 반영
         }
       } else {
@@ -300,21 +270,19 @@ export default function AppNav() {
   }, [realAdmin]);
 
   useEffect(() => {
-    if (!menuOpen && !creditMenuOpen) return;
+    if (!menuOpen) return;
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target as Node;
       if (menuOpen && !menuRef.current?.contains(target)) setMenuOpen(false);
-      if (creditMenuOpen && !creditMenuRef.current?.contains(target)) setCreditMenuOpen(false);
     };
     window.addEventListener("pointerdown", handlePointerDown);
     return () => window.removeEventListener("pointerdown", handlePointerDown);
-  }, [menuOpen, creditMenuOpen]);
+  }, [menuOpen]);
 
   // mobile drawer: route 변경 시 자동 close, Esc 닫기, body scroll lock.
   useEffect(() => {
     setMobileDrawerOpen(false);
     setAccountSheetOpen(false);
-    setCreditMenuOpen(false);
   }, [pathname]);
   useEffect(() => {
     if (!mobileDrawerOpen && !accountSheetOpen) return;
@@ -343,10 +311,10 @@ export default function AppNav() {
   const navLinks = [
     { href: "/", label: "추천 상품" },
     // Wave 343: /explore 폐기 — /me history view에 통합. nav "탐색" 링크 제거.
-    // Wave 799c (2026-05-30): /lookup 시세 조회 nav 추가 — URL 넣어 시세/수익 확인 (0.2크레딧).
+    // Wave 799c (2026-05-30): /lookup 시세 조회 nav 추가.
     { href: "/lookup", label: "시세 조회" },
     { href: "/how-it-works", label: "서비스 안내" },
-    { href: "/plans", label: "크레딧 충전" },
+    { href: "/plans", label: "멤버십 신청" },
     ...(user ? [{ href: "/me", label: "내 대시보드" }] : []),
     ...(admin ? [{ href: "/debug", label: "운영 로그" }] : []),
   ];
@@ -354,14 +322,14 @@ export default function AppNav() {
   const mobileNavLinks = user
     ? [
         { href: "/me", label: "추천 피드", caption: "오늘 볼 만한 매물" },
-        // Wave 799c (2026-05-30): /lookup nav 추가 — URL 시세 조회 (1번 = 0.2크레딧).
+        // Wave 799c (2026-05-30): /lookup nav 추가.
         { href: "/lookup", label: "시세 조회", caption: "URL 넣으면 시세·수익·비교매물" },
         // Wave 726 (2026-05-23): 모바일에서 sidebar 숨김 (lg:block) 이라 텔레그램 알림 설정 접근 불가.
         //   모바일 사용자가 한 번이라도 설정 가능하게 drawer 에 link 박음.
         { href: "/me?view=hotdeal-alerts", label: "핫딜 알림", caption: "텔레그램 알림 설정" },
         // Wave 731 (2026-05-24): 친구 초대 — 가입 시 양쪽 +5 / 첫 결제 시 추천인 +3/+30/+60
-        { href: "/invite", label: "친구 초대", caption: "가입하면 둘 다 +5 크레딧" },
-        { href: "/plans", label: "크레딧 충전", caption: "상세 분석 열기" },
+        { href: "/invite", label: "친구 초대", caption: "득템잡이 공유하기" },
+        { href: "/plans", label: "멤버십 신청", caption: "선공개 300명" },
         { href: "/how-it-works", label: "서비스 안내", caption: "득템잡이 사용법" },
         ...(admin ? [{ href: "/debug", label: "운영 로그", caption: "관리자 전용" }] : []),
       ]
@@ -370,7 +338,7 @@ export default function AppNav() {
         // Wave 799c: guest 도 노출 (클릭 시 login wall) — 기능 인지 우선.
         { href: "/lookup", label: "시세 조회", caption: "URL 넣으면 시세·수익 (로그인 필요)" },
         { href: "/how-it-works", label: "서비스 안내", caption: "득템잡이 사용법" },
-        { href: "/plans", label: "크레딧 충전", caption: "가격 보기" },
+        { href: "/plans", label: "멤버십 신청", caption: "선공개 300명" },
       ];
 
   // Wave launch-101 (사용자 정정 — 운영자 페이지 nav 거추장): cau* admin path 면 minimal terminal nav.
@@ -410,7 +378,7 @@ export default function AppNav() {
             <BrandLogo size={32} className="rounded-[7px] shadow-md shadow-blue-500/20" />
             <span className="font-black tracking-tight text-zinc-950 dark:text-white">득템잡이</span>
             <span className="rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-700 ring-1 ring-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:ring-blue-900">
-              Beta
+              선공개
             </span>
           </Link>
         </div>
@@ -439,18 +407,9 @@ export default function AppNav() {
         </div>
 
         <div className="flex items-center justify-self-end gap-1.5">
-          {/* mobile 전용: 로그인 시 크레딧 잔액만 상시 노출 / 비로그인 시 로그인 */}
+          {/* mobile 전용: 비로그인 시 로그인 */}
           {user ? (
-            <div className="flex items-center gap-1 md:hidden">
-              <Link
-                href="/plans"
-                aria-label={`크레딧 ${infiniteCredits ? "무제한" : `${tokens}개`} 충전하기`}
-                className="inline-flex h-9 items-center gap-1 rounded-xl border border-blue-100 bg-blue-50 px-2.5 text-xs font-black tabular-nums text-zinc-950 shadow-[0_8px_14px_rgba(49,130,246,0.10)] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-              >
-                <CreditIcon size={16} className="shrink-0" />
-                {infiniteCredits ? "∞" : tokens}
-              </Link>
-            </div>
+            <div className="h-9 w-9 md:hidden" aria-hidden="true" />
           ) : (
             <Link
               href="/login"
@@ -460,72 +419,15 @@ export default function AppNav() {
             </Link>
           )}
 
-          {/* desktop 전용: 기존 credits + account menu */}
+          {/* desktop 전용: account menu */}
           {user ? (
             <>
-              <div ref={creditMenuRef} className="relative hidden md:block">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCreditMenuOpen((prev) => !prev);
-                    setMenuOpen(false);
-                  }}
-                  aria-expanded={creditMenuOpen}
-                  aria-label="크레딧 충전 메뉴 열기"
-                  className="flex h-9 items-center gap-1.5 rounded-xl border border-blue-100 bg-blue-50 px-2.5 shadow-[0_8px_16px_rgba(49,130,246,0.10)] transition hover:border-blue-200 hover:bg-[var(--brand-accent-soft)] dark:border-zinc-700/70 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                >
-                  <CreditIcon size={20} className="shrink-0 drop-shadow-[0_1px_1px_rgba(63,42,10,0.25)]" />
-                  <span className="text-xs font-black leading-none tabular-nums text-zinc-950 dark:text-zinc-100">
-                    {infiniteCredits ? "∞" : tokens}
-                  </span>
-                  <span className="text-[10px] leading-none text-zinc-500 dark:text-zinc-500">{creditMenuOpen ? "▴" : "▾"}</span>
-                </button>
-                {creditMenuOpen ? (
-                  <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-64 rounded-2xl border border-zinc-200 bg-white p-3 shadow-[0_20px_40px_rgba(15,23,42,0.14)] dark:border-zinc-800 dark:bg-zinc-900">
-                    <div className="rounded-xl bg-white px-3 py-3 dark:bg-zinc-950/50">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">보유 크레딧</div>
-                      <div className="mt-2 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <CreditIcon size={24} className="shrink-0" />
-                          <span className="text-2xl font-black tabular-nums text-zinc-950 dark:text-zinc-100">
-                            {infiniteCredits ? "∞" : tokens}
-                          </span>
-                        </div>
-                        <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-black text-[#3182f6] dark:bg-blue-950/30 dark:text-blue-200">
-                          즉시 사용
-                        </span>
-                      </div>
-                      <div className="mt-2 text-[11px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
-                        부족하면 크레딧 패키지를 단건 충전할 수 있어요.
-                      </div>
-                    </div>
-                    <div className="mt-2 grid gap-1.5">
-                      <Link
-                        href="/plans"
-                        onClick={() => setCreditMenuOpen(false)}
-                        className="flex items-center justify-between rounded-xl bg-[var(--brand-accent-strong)] px-3 py-2.5 text-sm font-black text-[var(--brand-cream)] transition hover:opacity-90"
-                      >
-                        <span>크레딧 충전하기</span>
-                        <span>→</span>
-                      </Link>
-                      <Link
-                        href="/plans"
-                        onClick={() => setCreditMenuOpen(false)}
-                        className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-zinc-900 transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
-                      >
-                        <span>크레딧 패키지 보기</span>
-                        <span className="text-zinc-400">↗</span>
-                      </Link>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
               {admin ? (
                 <Link
-                  href="/plans"
+                  href="/debug"
                   className="hidden h-9 items-center rounded-xl border border-blue-100 bg-white px-2.5 text-xs font-black leading-none text-zinc-900 shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:inline-flex"
                 >
-                  충전하기
+                  운영 로그
                 </Link>
               ) : null}
               <div ref={menuRef} className="relative hidden md:block">
@@ -553,8 +455,6 @@ export default function AppNav() {
 	                    </div>
                     <div className="px-2 py-1">
                       <AccountPanel
-                        tokens={tokens}
-                        infiniteCredits={infiniteCredits}
                         variant="desktop"
                         onCloseAfterAction={() => setMenuOpen(false)}
                       />
@@ -639,7 +539,7 @@ export default function AppNav() {
                     로그인하고 시작하기
                   </div>
                   <div className="mt-0.5 truncate text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                    첫 상세 리포트 2회 무료
+                    선공개 멤버십 신청
                   </div>
                 </div>
               )}
@@ -664,15 +564,14 @@ export default function AppNav() {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-400">
-                        보유 크레딧
+                        선공개 멤버십
                       </div>
                       <div className="mt-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
-                        상세 분석을 열 때만 차감돼요
+                        승인된 계정만 추천 피드 이용
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1.5 text-sm font-black tabular-nums text-zinc-950 shadow-sm dark:bg-zinc-950 dark:text-zinc-100">
-                      <CreditIcon size={18} className="shrink-0" />
-                      {infiniteCredits ? "∞" : tokens}
+                    <div className="flex items-center rounded-full bg-white px-2.5 py-1.5 text-[11px] font-black text-[#3182f6] shadow-sm dark:bg-zinc-950 dark:text-blue-200">
+                      신청하기
                     </div>
                   </div>
                 </Link>
@@ -768,8 +667,6 @@ export default function AppNav() {
           {/* 계정 사용량 + 액션 */}
           <div className="mt-3">
             <AccountPanel
-              tokens={tokens}
-              infiniteCredits={infiniteCredits}
               variant="mobile"
               onCloseAfterAction={() => { setAccountSheetOpen(false); setMobileDrawerOpen(false); }}
             />

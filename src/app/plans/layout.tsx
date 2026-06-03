@@ -1,10 +1,10 @@
-// Wave 106: /plans 는 client component 라 metadata 별도 layout 에서.
+// Wave 1037: /plans 는 결제 페이지가 아니라 선공개 멤버십 신청 페이지.
 
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "크레딧 충전",
-  description: "득템잡이 크레딧 충전 — 690원 1크레딧 / 2,900원 5크레딧 / 9,900원 20크레딧 / 19,900원 45크레딧 / 49,900원 130크레딧. 자동 갱신 없는 단건 결제 방식입니다.",
+  title: "선공개 멤버십 신청",
+  description: "득템잡이 선공개 300명 멤버십 신청 페이지입니다. 승인된 계정은 추천 피드와 상세 리포트를 이용할 수 있습니다.",
 };
 
 export default function PlansLayout({ children }: { children: React.ReactNode }) {
