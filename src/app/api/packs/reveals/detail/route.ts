@@ -68,6 +68,28 @@ async function loadSkuListingFlow(skuId: string | null): Promise<RevealAnalysis[
   };
 }
 
+const OPTIONAL_ANALYSIS_TIMEOUT_MS = 1_500;
+
+function withOptionalAnalysisTimeout<T>(promise: Promise<T>, label: string, timeoutMs = OPTIONAL_ANALYSIS_TIMEOUT_MS): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${label}_timeout_${timeoutMs}ms`)), timeoutMs);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
+function loadSkuListingFlowFast(skuId: string | null): Promise<RevealAnalysis["skuListingFlow"]> {
+  return withOptionalAnalysisTimeout(loadSkuListingFlow(skuId), "skuListingFlow");
+}
+
 async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
   const [rawRows, parsedRows] = await Promise.all([
     loadJson<RawAnalysisRow[]>(
@@ -87,7 +109,7 @@ async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
     return {
       marketBasis: null,
       velocityBasis: null,
-      skuListingFlow: await loadSkuListingFlow(raw?.sku_id ?? null),
+      skuListingFlow: await loadSkuListingFlowFast(raw?.sku_id ?? null).catch(() => null),
       optionBaseAssumed,
     };
   }
@@ -99,7 +121,7 @@ async function loadRevealAnalysis(pid: number): Promise<RevealAnalysis | null> {
     fetchLatestMarketVelocity([comparableKey]),
     loadCategoryReadinessMap(),
     fetchReferencePrices([comparableKey]),
-    loadSkuListingFlow(raw?.sku_id ?? null),
+    loadSkuListingFlowFast(raw?.sku_id ?? null),
     fetchV7SiblingPresence([comparableKey]),
   ]);
 

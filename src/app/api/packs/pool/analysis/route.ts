@@ -71,6 +71,28 @@ async function loadSkuListingFlow(skuId: string | null): Promise<Analysis["skuLi
   };
 }
 
+const OPTIONAL_ANALYSIS_TIMEOUT_MS = 1_500;
+
+function withOptionalAnalysisTimeout<T>(promise: Promise<T>, label: string, timeoutMs = OPTIONAL_ANALYSIS_TIMEOUT_MS): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${label}_timeout_${timeoutMs}ms`)), timeoutMs);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
+function loadSkuListingFlowFast(skuId: string | null): Promise<Analysis["skuListingFlow"]> {
+  return withOptionalAnalysisTimeout(loadSkuListingFlow(skuId), "skuListingFlow");
+}
+
 async function loadAnalysis(pid: number): Promise<Analysis> {
   const [rawRows, parsedRows] = await Promise.all([
     loadJson<RawAnalysisRow[]>(
@@ -90,7 +112,7 @@ async function loadAnalysis(pid: number): Promise<Analysis> {
     return {
       marketBasis: null,
       velocityBasis: null,
-      skuListingFlow: await loadSkuListingFlow(raw?.sku_id ?? null),
+      skuListingFlow: await loadSkuListingFlowFast(raw?.sku_id ?? null).catch(() => null),
       optionBaseAssumed,
     };
   }
@@ -105,7 +127,7 @@ async function loadAnalysis(pid: number): Promise<Analysis> {
     fetchLatestMarketVelocity([comparableKey]),        // 2: 보조
     loadCategoryReadinessMap(),                         // 3: 보조 (velocity 가드용)
     fetchReferencePrices([comparableKey]),              // 4: 보조
-    loadSkuListingFlow(raw?.sku_id ?? null),            // 5: 보조
+    loadSkuListingFlowFast(raw?.sku_id ?? null),        // 5: 보조 (느리면 전체 분석 응답 붙잡지 않음)
     fetchV7SiblingPresence([comparableKey]),            // 6: 보조 (v3 clothing 가드)
   ]);
 

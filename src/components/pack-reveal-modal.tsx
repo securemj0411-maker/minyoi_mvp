@@ -778,10 +778,29 @@ function purchaseCheckGuideStep(card: RevealCard): BeginnerGuideStep {
   };
 }
 
-function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
+function marketCompareGuideStep(card: RevealCard, context: BeginnerGuideStepContext = {}): BeginnerGuideStep {
   const market = card.marketBasis;
   const median = market?.medianPrice ?? null;
   const sampleCount = market?.sampleCount ?? 0;
+  const analysisPending =
+    Boolean(context.analysisLoading) ||
+    (
+      sampleCount <= 0 &&
+      market?.computedAt == null
+    );
+
+  if (analysisPending) {
+    return {
+      eyebrow: "2. 비교 매물",
+      title: "비교 기준을 불러오는 중이에요",
+      metric: "확인 중",
+      metricLabel: market?.label ?? card.skuName,
+      body: "같은 모델과 같은 상태의 비교 매물을 가져오는 중이에요. 로딩이 끝난 뒤에도 표본이 부족한 경우에만 부족하다고 표시합니다.",
+      note: "잠시 후 시세 기준과 비교 매물이 채워집니다.",
+      valueNote: "분석 전 임시 카드의 0건 표본을 실제 표본 부족처럼 보여주지 않도록 분리했어요.",
+      tone: "market",
+    };
+  }
 
   if (median != null && median > 0 && card.price > 0) {
     const diff = median - card.price;
@@ -995,7 +1014,7 @@ function beginnerGuideSteps(card: RevealCard, context: BeginnerGuideStepContext 
   //   funnel 상 사용자가 진짜 살 의도 있을 때만 보여주는 게 자연스러움.
   return [
     finalMoneyGuideStep(card),
-    marketCompareGuideStep(card),
+    marketCompareGuideStep(card, context),
     channelGuideStep(card),
     sellerTrustGuideStep(card),
     velocityGuideStep(card, context),
@@ -2435,13 +2454,14 @@ function SkuListingFlowMini({ card }: { card: RevealCard }) {
   );
 }
 
-function saleSpeedDisplay(card: RevealCard) {
+function saleSpeedDisplay(card: RevealCard, options: { analysisLoading?: boolean } = {}) {
   const velocity = card.velocityBasis;
   const hasRealTurnEstimate =
     velocity?.medianHoursToSold != null &&
     Number.isFinite(velocity.medianHoursToSold) &&
     velocity.medianHoursToSold > 0 &&
     velocity.sold7dCount > 0;
+  const analysisLoading = Boolean(options.analysisLoading) && !hasRealTurnEstimate;
   // 2026-05-19 P0: 운영 게이트 OFF에선 hours=null → "수집 중" 표시. 개발 게이트 ON에선 48h 폴백 유지.
   const hours = hasRealTurnEstimate
     ? velocity.medianHoursToSold
@@ -2451,12 +2471,15 @@ function saleSpeedDisplay(card: RevealCard) {
     // Wave 394.7.ab: "수집 중" → "표본 부족" — 데이터가 진짜 모이는 중인지 부족한 건지 정직 표시.
     // 사용자 짚음 — "에어팟맥스면 기록이 없을수가 없는데 수집 중만 뜸". "수집 중"은 진행감 주는데
     // 실제로는 confidence low 라서 가드에 막힌 케이스가 대부분. 정직 표시.
-    label: hours == null ? (hasRealTurnEstimate ? "확인 어려움" : "표본 부족") : velocityHoursLabel(hours),
-    isFallback: !hasRealTurnEstimate,
+    label: analysisLoading ? "확인 중" : hours == null ? (hasRealTurnEstimate ? "확인 어려움" : "표본 부족") : velocityHoursLabel(hours),
+    isFallback: !hasRealTurnEstimate && !analysisLoading,
+    analysisLoading,
     isFast: hours != null && hours > 0 && hours <= 48,
     isSlow: hours != null && hours > 168,
     // Wave launch-26: "데이터 수집 중" → "표본 부족" 정직.
-    confidenceLabel: !hasRealTurnEstimate
+    confidenceLabel: analysisLoading
+      ? "분석 중"
+      : !hasRealTurnEstimate
       ? (VELOCITY_UI_TEST_ENABLED ? "UI 테스트" : "표본 부족")
       : velocity?.confidence === "high"
         ? "신뢰 높음"
@@ -3043,8 +3066,8 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
   );
 }
 
-function UpperFoldFearReducers({ card }: { card: RevealCard }) {
-  const speed = saleSpeedDisplay(card);
+function UpperFoldFearReducers({ card, analysisLoading = false }: { card: RevealCard; analysisLoading?: boolean }) {
+  const speed = saleSpeedDisplay(card, { analysisLoading });
   const risk = buildRiskScore(revealRiskScoreInput(card));
   const activity = marketActivityDisplay(card);
   const safety = safetyDisplay(card, risk);
@@ -3059,7 +3082,7 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
   //   사용자 짚음: "수요공급도 없으면 시세 안나오는거처럼? 평점만 나오게 해야되는거 아님?"
   //   2 타일 다 hide 되면 거래 안전 (셀러 평점) 만 단독 표시. grid layout 동적 적응.
   const activityTileAvailable = activity.value !== "데이터 부족";
-  const speedTileAvailable = !speed.isFallback || VELOCITY_UI_TEST_ENABLED;
+  const speedTileAvailable = speed.analysisLoading || !speed.isFallback || VELOCITY_UI_TEST_ENABLED;
   const tiles: Array<{
     key: string;
     label: string;
@@ -3082,8 +3105,10 @@ function UpperFoldFearReducers({ card }: { card: RevealCard }) {
     tiles.push({
       key: "speed",
       label: "팔리는 속도",
-      value: speed.isFast ? "빠름" : speed.isSlow ? "느림" : "보통",
-      sub: VELOCITY_UI_TEST_ENABLED && speed.isFallback
+      value: speed.analysisLoading ? "확인 중" : speed.isFast ? "빠름" : speed.isSlow ? "느림" : "보통",
+      sub: speed.analysisLoading
+        ? "비교 기록 불러오는 중"
+        : VELOCITY_UI_TEST_ENABLED && speed.isFallback
         ? `약 ${speed.label} · 표본 부족 (UI 테스트 표시)`
         : `약 ${speed.label} · 최근 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`,
       tone: speedTone,
@@ -6205,6 +6230,7 @@ function BeginnerGuideWalkthrough({
 function RevealCardItem({
   card,
   delay,
+  analysisLoading = false,
   currentFeedbackType,
   photoRef,
   onBeginnerGuideClick,
@@ -6213,6 +6239,7 @@ function RevealCardItem({
 }: {
   card: RevealCard;
   delay: number;
+  analysisLoading?: boolean;
   currentFeedbackType?: string | null;
   photoRef?: React.RefObject<HTMLDivElement | null>;
   onBeginnerGuideClick?: () => void;
@@ -6474,7 +6501,7 @@ function RevealCardItem({
               <ComparableListingsPanel card={card} mode={mode} />
               {/* Wave 392+393.2: "왜 싸지" 작은 inline note — 보조 정보 톤. */}
               <WhyCheapPanel card={card} />
-              <UpperFoldFearReducers card={card} />
+              <UpperFoldFearReducers card={card} analysisLoading={analysisLoading} />
               {/* Wave 394.6.b (외부 review #7): 정보 순서 재정렬 — 사용자 판단 흐름 따름.
                   "1. 사도 되나 → 2. 얼마 남나 → 3. 데이터 믿을 만? → 4. 위험? → 5. 깎기 → 6. 어디 팔까".
                   가품/리스크 위로 (구매 결정 핵심), 채널 비교 아래로 (판매 결정). */}
@@ -7855,6 +7882,7 @@ export default function PackRevealModal({
                         key={card.pid}
                         card={card}
                         delay={idx * 250}
+                        analysisLoading={idx === 0 ? activeAnalysisLoading : false}
                         currentFeedbackType={currentFeedbackType}
                         photoRef={idx === 0 ? photoRef : undefined}
                         onBeginnerGuideClick={idx === 0 ? openBeginnerGuide : undefined}
