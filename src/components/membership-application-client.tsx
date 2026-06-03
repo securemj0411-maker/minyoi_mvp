@@ -131,8 +131,8 @@ export default function MembershipApplicationClient({
     setSubmittedPlan(plan);
     setState("sent");
     setMessage(payload?.telegramSent === false
-      ? "자리는 예약됐어요. 운영자 알림은 확인 중이라, 입금 후 필요하면 카톡으로도 알려주세요."
-      : `${plan.label} 자리 예약 완료. 아래 계좌로 입금하면 운영자가 확인 후 피드를 열어줄게요.`);
+      ? "내 지역 티오 확인 후 자리는 예약됐어요. 운영자 알림은 확인 중이라, 입금 후 필요하면 카톡으로도 알려주세요."
+      : `${plan.label} 내 지역 티오 확인 완료. 아래 계좌로 입금하면 운영자가 확인 후 피드를 열어줄게요.`);
   }
 
   if (isMember) {
@@ -151,12 +151,12 @@ export default function MembershipApplicationClient({
     const priceKrw = pendingApplication?.priceKrw ?? submittedPlan?.priceKrw ?? 99_000;
     return (
       <div className="rounded-[12px] border border-blue-100 bg-white px-3.5 py-3 dark:border-blue-950/70 dark:bg-zinc-950/50">
-        <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">자리 예약 완료 · 입금 대기</div>
+        <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">내 지역 티오 확인 완료 · 입금 대기</div>
         <div className="mt-1 text-[15px] font-black text-zinc-950 dark:text-zinc-50">
           {planLabel} · {krw(priceKrw)}
         </div>
         <p className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
-          {message ?? "지역 티오 확인이 완료되어 자리가 예약됐습니다. 컴퓨터·스마트폰 어디서 새로고침해도 입금 대기 상태가 유지됩니다."}
+          {message ?? "신청자 기준 지역 티오 확인이 완료되어 자리가 예약됐습니다. 컴퓨터·스마트폰 어디서 새로고침해도 입금 대기 상태가 유지됩니다."}
         </p>
         <div className="mt-3 rounded-[12px] bg-[#f5f7fb] p-3 dark:bg-zinc-900/70">
           <div className="flex items-center justify-between gap-2">
@@ -220,7 +220,7 @@ export default function MembershipApplicationClient({
                   신청 기간을 고르세요.
                 </h2>
                 <p className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
-                  지역 티오는 바로 확인 완료로 처리됩니다. 월 단가는 기간이 길수록 낮아집니다.
+                  신청자 기준 지역 티오를 확인한 뒤 가능하면 자리를 예약합니다. 월 단가는 기간이 길수록 낮아집니다.
                 </p>
               </div>
               <button

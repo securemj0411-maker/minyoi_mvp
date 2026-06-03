@@ -38,7 +38,7 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(applyRoute, /selectedPlan/);
   assert.match(applyRoute, /price_krw: selectedPlan\.priceKrw/);
   assert.match(applyRoute, /자리 예약 \/ 입금 대기/);
-  assert.match(applyRoute, /지역 티오: mock 확인 완료/);
+  assert.match(applyRoute, /내 지역 티오: 신청자 기준 mock 확인 완료/);
   assert.match(decideRoute, /mvp_user_plans/);
   assert.match(decideRoute, /getMembershipPlan/);
   assert.match(decideRoute, /periodEndMonths\(selectedPlan\.months\)/);

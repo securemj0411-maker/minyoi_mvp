@@ -84,7 +84,7 @@ export async function POST(req: Request) {
       `user_ref: ${userRef}`,
       `상품: ${selectedPlan.label} / ${selectedPlan.priceKrw.toLocaleString("ko-KR")}원`,
       `월 단가: ${selectedPlan.monthlyLabel}`,
-      "지역 티오: mock 확인 완료",
+      "내 지역 티오: 신청자 기준 mock 확인 완료",
       "처리: 입금 확인 후 cau 운영자 페이지에서 승인/거절",
     ].join("\n"),
     { parseMode: null },
