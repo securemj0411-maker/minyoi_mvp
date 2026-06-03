@@ -53,6 +53,10 @@
       "schedule": "17 * * * *"
     },
     {
+      "path": "/api/cron/landing-showcases",
+      "schedule": "23 * * * *"
+    },
+    {
       "path": "/api/cron/housekeeper",
       "schedule": "7,37 * * * *"
     },

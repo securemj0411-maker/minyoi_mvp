@@ -42,6 +42,34 @@ test("preview pool only serves items with usable market velocity", () => {
   assert.match(cronRoute, /refreshPreviewPoolCache/);
 });
 
+test("public intro showcase cache has a scheduled refresh", () => {
+  const vercel = JSON.parse(source("vercel.json")) as { crons?: Array<{ path?: string; schedule?: string }> };
+  const landingCron = vercel.crons?.find((cron) => cron.path === "/api/cron/landing-showcases");
+
+  assert.ok(landingCron, "landing showcase cache refresh must be registered in vercel.json");
+  assert.match(landingCron.schedule ?? "", /\*/);
+});
+
+test("pool skips Daangn request-time live checks when lifecycle workers are fresh", () => {
+  const route = source("src/app/api/packs/pool/route.ts");
+  const migration = source("supabase/migrations/20260603221354_wave1051_daangn_feed_hotpath_indexes.sql");
+
+  assert.match(route, /DAANGN_POOL_LIVE_VERIFY_SKIP_IF_LIFECYCLE_FRESH_MS/);
+  assert.match(route, /loadDaangnLifecycleFreshness/);
+  assert.match(route, /mvp_collect_runs/);
+  assert.match(route, /lifecycle-worker-b/);
+  assert.match(route, /lifecycle-worker-c/);
+  assert.match(route, /if \(lifecycleFreshness\.fresh\)/);
+  const skipIndex = route.indexOf("if (lifecycleFreshness.fresh)");
+  const liveFetchIndex = route.indexOf("await fetchDaangnLiveState");
+  assert.ok(skipIndex > 0 && liveFetchIndex > skipIndex, "freshness check should happen before external Daangn fetch");
+
+  assert.match(migration, /mvp_raw_daangn_active_done_region_last_seen_idx/);
+  assert.match(migration, /daangn_region_id, last_seen_at desc/);
+  assert.match(migration, /listing_state = 'active'/);
+  assert.match(migration, /detail_status = 'done'/);
+});
+
 test("plans page explains scarcity, local constraints, and quota management", () => {
   const plans = source("src/app/plans/page.tsx");
   const planConfig = source("src/lib/membership-plans.ts");

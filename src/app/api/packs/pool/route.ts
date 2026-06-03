@@ -65,6 +65,18 @@ const DAANGN_SOURCE_READY_OVERFETCH = intEnv("DAANGN_FEED_SOURCE_READY_OVERFETCH
 const DAANGN_POOL_LIVE_VERIFY_CONCURRENCY = 8;
 const DAANGN_POOL_LIVE_VERIFY_MAX_TARGETS = intEnv("DAANGN_POOL_LIVE_VERIFY_MAX_TARGETS", 4, 0, PAGE_SIZE);
 const DAANGN_POOL_LIVE_VERIFY_TIMEOUT_MS = intEnv("DAANGN_POOL_LIVE_VERIFY_TIMEOUT_MS", 900, 300, 3_000);
+const DAANGN_POOL_LIVE_VERIFY_SKIP_IF_LIFECYCLE_FRESH_MS = intEnv(
+  "DAANGN_POOL_LIVE_VERIFY_SKIP_IF_LIFECYCLE_FRESH_MS",
+  5 * 60_000,
+  0,
+  30 * 60_000,
+);
+const DAANGN_LIFECYCLE_FRESHNESS_CACHE_TTL_MS = intEnv("DAANGN_LIFECYCLE_FRESHNESS_CACHE_TTL_MS", 30_000, 0, 5 * 60_000);
+const DAANGN_LIFECYCLE_WORKER_PATHS = [
+  "/api/cron/lifecycle-worker",
+  "/api/cron/lifecycle-worker-b",
+  "/api/cron/lifecycle-worker-c",
+];
 
 function intEnv(name: string, fallback: number, min: number, max: number) {
   const raw = Number(process.env[name]);
@@ -185,6 +197,16 @@ const NEARBY_DAANGN_READY_CACHE = new Map<string, {
   stats: NearbyDaangnPrefetchStats;
 }>();
 
+type DaangnLifecycleFreshness = {
+  fresh: boolean;
+  newestFinishedAt: string | null;
+};
+
+let daangnLifecycleFreshnessCache: {
+  expiresAt: number;
+  value: DaangnLifecycleFreshness;
+} | null = null;
+
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
   if (timeoutMs <= 0) return promise;
   return new Promise<T>((resolve, reject) => {
@@ -237,10 +259,63 @@ async function patchDaangnVisiblePoolTerminal(
   ]);
 }
 
+async function loadDaangnLifecycleFreshness(headers: Record<string, string>): Promise<DaangnLifecycleFreshness> {
+  if (DAANGN_POOL_LIVE_VERIFY_SKIP_IF_LIFECYCLE_FRESH_MS <= 0) {
+    return { fresh: false, newestFinishedAt: null };
+  }
+
+  const now = Date.now();
+  if (daangnLifecycleFreshnessCache && daangnLifecycleFreshnessCache.expiresAt > now) {
+    return daangnLifecycleFreshnessCache.value;
+  }
+
+  const sinceIso = new Date(now - DAANGN_POOL_LIVE_VERIFY_SKIP_IF_LIFECYCLE_FRESH_MS).toISOString();
+  try {
+    const rows = await Promise.all(
+      DAANGN_LIFECYCLE_WORKER_PATHS.map(async (path) => {
+        const requestPathFilter = encodeURIComponent(`like.${path}*`);
+        const res = await restFetch(
+          `${tableUrl("mvp_collect_runs")}?select=finished_at,started_at&request_path=${requestPathFilter}&status=eq.succeeded&started_at=gte.${encodeURIComponent(sinceIso)}&order=started_at.desc&limit=1`,
+          { headers },
+        );
+        if (!res.ok) throw new Error(`collect_runs_${path}_${res.status}`);
+        const body = (await res.json()) as Array<{ finished_at: string | null; started_at: string | null }>;
+        return body[0] ?? null;
+      }),
+    );
+
+    let newestFinishedAt: string | null = null;
+    for (const row of rows) {
+      const candidate = row?.finished_at ?? row?.started_at ?? null;
+      if (!candidate) continue;
+      if (!newestFinishedAt || Date.parse(candidate) > Date.parse(newestFinishedAt)) {
+        newestFinishedAt = candidate;
+      }
+    }
+
+    const fresh = newestFinishedAt != null && Date.parse(newestFinishedAt) >= now - DAANGN_POOL_LIVE_VERIFY_SKIP_IF_LIFECYCLE_FRESH_MS;
+    const value = { fresh, newestFinishedAt };
+    daangnLifecycleFreshnessCache = {
+      expiresAt: now + DAANGN_LIFECYCLE_FRESHNESS_CACHE_TTL_MS,
+      value,
+    };
+    return value;
+  } catch (err) {
+    console.warn("[pool] daangn lifecycle freshness lookup failed (live verify will run)", err instanceof Error ? err.message : String(err));
+    const value = { fresh: false, newestFinishedAt: null };
+    daangnLifecycleFreshnessCache = {
+      expiresAt: now + Math.min(10_000, DAANGN_LIFECYCLE_FRESHNESS_CACHE_TTL_MS),
+      value,
+    };
+    return value;
+  }
+}
+
 async function liveVerifyDaangnVisiblePool(
   pool: (PoolRow & { soldOut: boolean })[],
   raws: RawRow[],
   metas: RawListingMeta[],
+  headers: Record<string, string>,
 ): Promise<{
   pool: (PoolRow & { soldOut: boolean })[];
   raws: RawRow[];
@@ -255,6 +330,18 @@ async function liveVerifyDaangnVisiblePool(
     ));
   if (targets.length === 0 || DAANGN_POOL_LIVE_VERIFY_MAX_TARGETS <= 0) return { pool, raws, metas };
   const verifyTargets = targets.slice(0, DAANGN_POOL_LIVE_VERIFY_MAX_TARGETS);
+
+  const lifecycleFreshness = await loadDaangnLifecycleFreshness(headers);
+  if (lifecycleFreshness.fresh) {
+    if (process.env.FEED_DEBUG_LOG === "1") {
+      console.info("[pool] daangn live verify skipped", {
+        reason: "lifecycle_fresh",
+        newestFinishedAt: lifecycleFreshness.newestFinishedAt,
+        targets: verifyTargets.length,
+      });
+    }
+    return { pool, raws, metas };
+  }
 
   const blockedPids = new Set<number>();
   let cursor = 0;
@@ -1239,7 +1326,7 @@ async function loadPool(
   const filteredPool = pool.filter((r) => !blockedPids.has(r.pid));
   const filteredRaws = raws.filter((r) => !blockedPids.has(r.pid));
   const filteredMetas = metas.filter((m) => !blockedPids.has(m.pid));
-  const liveFiltered = await liveVerifyDaangnVisiblePool(filteredPool, filteredRaws, filteredMetas);
+  const liveFiltered = await liveVerifyDaangnVisiblePool(filteredPool, filteredRaws, filteredMetas, headers);
 
   return { pool: liveFiltered.pool, raws: liveFiltered.raws, metas: liveFiltered.metas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, parsedGradingRows, nearbyDaangnStats: nearbyDaangnResult.stats };
 }
