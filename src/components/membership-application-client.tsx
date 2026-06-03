@@ -35,6 +35,7 @@ type MembershipStatusResponse = {
   isMember?: boolean;
   planEndAt?: string | null;
   application?: {
+    applicationKind?: "new" | "renewal" | string | null;
     scheduledAutoApproveAt?: string | null;
     depositConfirmedAt?: string | null;
     status?: string | null;
@@ -145,13 +146,15 @@ export default function MembershipApplicationClient({
       const payload = (await res.json().catch(() => null)) as MembershipStatusResponse | null;
       const nextAutoApproveAt = payload?.application?.scheduledAutoApproveAt ?? null;
       if (nextAutoApproveAt && nextAutoApproveAt !== autoApproveAt) setAutoApproveAt(nextAutoApproveAt);
-      if (payload?.isMember) {
-        const applicationStatus = payload?.application?.status ?? null;
-        if (renewalMode && applicationStatus !== "approved") return;
+      const applicationStatus = payload?.application?.status ?? null;
+      if (payload?.isMember && applicationStatus === "approved") {
         setApprovalDetected(true);
         setApprovalMessage(renewalMode ? "멤버십 연장 완료. 기간이 추가됐어요." : "멤버십 가입 완료. 환영합니다.");
         setDepositNotifyMessage(renewalMode ? "연장 승인 완료됐어요. 상품 피드로 이동합니다." : "승인 완료됐어요. 상품 피드로 이동합니다.");
         window.setTimeout(() => router.replace("/me"), 1200);
+      } else if (applicationStatus === "rejected") {
+        setDepositNotifyState("error");
+        setDepositNotifyMessage("신청이 거절됐어요. 기간/금액을 다시 선택해주세요.");
       }
     }
 

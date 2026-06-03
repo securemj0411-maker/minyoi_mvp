@@ -12,6 +12,7 @@ export type MembershipApplicationRow = {
   product_key: string | null;
   status: string;
   price_krw: number | null;
+  deposit_confirmed_at: string | null;
 };
 
 export type MembershipApprovalResult = {
@@ -43,7 +44,7 @@ type ApprovalRpcRow = {
 
 async function loadMembershipApplication(id: number): Promise<MembershipApplicationRow | null> {
   const res = await restFetch(
-    `${tableUrl("mvp_membership_applications")}?select=id,user_ref,auth_user_id,email,display_name,product_key,status,price_krw&id=eq.${id}&limit=1`,
+    `${tableUrl("mvp_membership_applications")}?select=id,user_ref,auth_user_id,email,display_name,product_key,status,price_krw,deposit_confirmed_at&id=eq.${id}&limit=1`,
     { headers: serviceHeaders() },
   );
   if (!res.ok) return null;
@@ -64,6 +65,9 @@ export async function approveMembershipApplication(
     return { ok: false, activated: false, id, status: null, error: "lookup_failed" };
   }
   if (!application) return { ok: false, activated: false, id, status: null, error: "not_found" };
+  if (decisionSource !== "admin" && !application.deposit_confirmed_at) {
+    return { ok: false, activated: false, id, status: application.status, error: "deposit_not_confirmed" };
+  }
 
   const selectedPlan = getMembershipPlan(application.product_key);
   const priceKrw = Number(application.price_krw ?? selectedPlan.priceKrw);
