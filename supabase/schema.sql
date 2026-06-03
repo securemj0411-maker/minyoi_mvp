@@ -912,6 +912,11 @@ revoke all on public.mvp_joongna_detail_queue from authenticated;
 grant select, insert, update, delete on public.mvp_joongna_detail_queue to service_role;
 alter table public.mvp_collect_runs enable row level security;
 alter table public.mvp_landing_showcases enable row level security;
+alter table public.mvp_preview_showcases enable row level security;
+revoke all on public.mvp_preview_showcases from anon;
+revoke all on public.mvp_preview_showcases from authenticated;
+grant select, insert, update, delete on public.mvp_preview_showcases to service_role;
+grant usage, select on sequence public.mvp_preview_showcases_id_seq to service_role;
 
 create or replace function public.claim_mvp_detail_queue(
   p_batch_size integer default 30,
@@ -1326,6 +1331,21 @@ create table if not exists public.mvp_landing_showcases (
   unique (slot_index),
   unique (pid)
 );
+
+create table if not exists public.mvp_preview_showcases (
+  id bigserial primary key,
+  slot_index smallint not null check (slot_index between 1 and 10),
+  payload jsonb not null,
+  is_active boolean not null default true,
+  source_snapshot jsonb not null default '{}'::jsonb,
+  starts_at timestamptz not null default now(),
+  expires_at timestamptz,
+  updated_at timestamptz not null default now(),
+  unique (slot_index)
+);
+
+create index if not exists mvp_preview_showcases_active_slot_idx
+  on public.mvp_preview_showcases (is_active, slot_index, updated_at desc);
 
 create table if not exists public.mvp_reveal_feedback (
   id bigserial primary key,

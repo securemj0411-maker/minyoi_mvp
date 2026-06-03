@@ -121,7 +121,7 @@ export default function PreviewMaskedDashboard() {
 
   useEffect(() => {
     let mounted = true;
-    fetch("/api/preview-pool", { cache: "no-store" })
+    fetch("/api/preview-pool")
       .then((r) => r.json() as Promise<{ items?: PreviewItem[] }>)
       .then((data) => {
         if (mounted) setItems(data.items ?? []);

@@ -18,17 +18,27 @@ test("guest landing preview is velocity-led and routes login to membership appli
     assert.match(src, /href="\/login\?next=\/plans"/);
     assert.doesNotMatch(src, /무료로 시작|첫 상세 1개는 무료/);
   }
+  assert.doesNotMatch(clientPreview, /cache: "no-store"/);
 });
 
 test("preview pool only serves items with usable market velocity", () => {
   const route = source("src/app/api/preview-pool/route.ts");
+  const cacheLib = source("src/lib/preview-pool-showcases.ts");
+  const cronRoute = source("src/app/api/cron/preview-pool/route.ts");
 
-  assert.match(route, /mvp_market_velocity_daily/);
-  assert.match(route, /condition_class=eq\.all/);
-  assert.match(route, /velocitySignalFromRow/);
-  assert.match(route, /candidateRows = candidateRows\.filter\(\(row\) => row\.comparable_key \? velocityByKey\.has\(row\.comparable_key\) : false\)/);
-  assert.match(route, /observedSoldSampleCount/);
-  assert.doesNotMatch(route, /mvp_market_velocity"\)\?select/);
+  assert.match(route, /readPreviewPoolCache/);
+  assert.match(route, /mvp_preview_showcases|precomputed DB materialized cache/);
+  assert.doesNotMatch(route, /mvp_candidate_pool/);
+  assert.doesNotMatch(route, /mvp_market_price_daily/);
+  assert.doesNotMatch(route, /mvp_market_velocity_daily/);
+
+  assert.match(cacheLib, /mvp_market_velocity_daily/);
+  assert.match(cacheLib, /condition_class=eq\.all/);
+  assert.match(cacheLib, /velocitySignalFromRow/);
+  assert.match(cacheLib, /candidateRows = candidateRows\.filter\(\(row\) => row\.comparable_key \? velocityByKey\.has\(row\.comparable_key\) : false\)/);
+  assert.match(cacheLib, /observedSoldSampleCount/);
+  assert.match(cacheLib, /mvp_preview_showcases/);
+  assert.match(cronRoute, /refreshPreviewPoolCache/);
 });
 
 test("plans page explains scarcity, local constraints, and quota management", () => {

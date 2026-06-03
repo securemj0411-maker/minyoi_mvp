@@ -49,6 +49,10 @@
       "schedule": "2,7,12,17,22,27,32,37,42,47,52,57 * * * *"
     },
     {
+      "path": "/api/cron/preview-pool",
+      "schedule": "17 * * * *"
+    },
+    {
       "path": "/api/cron/housekeeper",
       "schedule": "7,37 * * * *"
     },

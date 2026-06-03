@@ -102,7 +102,7 @@ async function fetchPreviewItems(): Promise<PreviewItem[]> {
   const proto = headerStore.get("x-forwarded-proto") ?? (host?.startsWith("localhost") || host?.startsWith("127.0.0.1") ? "http" : "https");
   const origin = host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://minyoi-mvp.vercel.app");
   try {
-    // next 의 fetch — server-side. CACHE_SECONDS=60 cache 활용 (preview-pool route 의 Cache-Control 따름).
+    // Server-side fetch. The route itself reads the DB materialized preview cache.
     const res = await fetch(`${origin}/api/preview-pool`, { next: { revalidate: 60 } });
     if (!res.ok) return [];
     const data = (await res.json()) as { items?: PreviewItem[] };
