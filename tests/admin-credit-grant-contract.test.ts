@@ -48,6 +48,10 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(applyRoute, /intent/);
   assert.match(applyRoute, /isRenewal/);
   assert.match(applyRoute, /application_kind: isRenewal \? "renewal" : "new"/);
+  assert.match(applyRoute, /signAdminAction\("membership_application", applicationId, "approve"\)/);
+  assert.match(applyRoute, /signAdminAction\("membership_application", applicationId, "reject"\)/);
+  assert.match(applyRoute, /운영자 세션 불필요/);
+  assert.match(applyRoute, /inline_keyboard/);
   assert.match(applyRoute, /selectedPlan/);
   assert.match(applyRoute, /price_krw: selectedPlan\.priceKrw/);
   assert.match(applyRoute, /자리 예약 \/ 입금 대기/);

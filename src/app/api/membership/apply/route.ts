@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { signAdminAction } from "@/lib/admin-action-token";
 import { getMembershipPlan } from "@/lib/membership-plans";
 import { notifyAdminTelegram } from "@/lib/telegram-notify";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -96,6 +97,16 @@ export async function POST(req: Request) {
     });
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://minyoi-mvp.vercel.app";
+  const approveToken = applicationId ? signAdminAction("membership_application", applicationId, "approve") : "";
+  const rejectToken = applicationId ? signAdminAction("membership_application", applicationId, "reject") : "";
+  const approveLink = applicationId && approveToken
+    ? `${baseUrl}/api/admin/membership-applications/decide?id=${applicationId}&decision=approve&token=${encodeURIComponent(approveToken)}`
+    : null;
+  const rejectLink = applicationId && rejectToken
+    ? `${baseUrl}/api/admin/membership-applications/decide?id=${applicationId}&decision=reject&token=${encodeURIComponent(rejectToken)}`
+    : null;
+
   const notifyResult = await notifyAdminTelegram(
     [
       isRenewal ? "[득템잡이] 멤버십 연장 예약 / 입금 대기" : "[득템잡이] 선공개 300명 자리 예약 / 입금 대기",
@@ -107,9 +118,19 @@ export async function POST(req: Request) {
       `상품: ${selectedPlan.label} / ${selectedPlan.priceKrw.toLocaleString("ko-KR")}원`,
       `월 단가: ${selectedPlan.monthlyLabel}`,
       isRenewal ? `현재 만료일: ${status.proUntil ?? "기간 제한 없음"}` : "내 지역 티오: 신청자 기준 mock 확인 완료",
-      "처리: 입금 확인 후 cau 운영자 페이지에서 승인/거절",
-    ].join("\n"),
-    { parseMode: null },
+      "처리: 입금 확인 후 아래 링크로 승인/거절 (운영자 세션 불필요)",
+      approveLink ? `승인: ${approveLink}` : null,
+      rejectLink ? `거절: ${rejectLink}` : null,
+    ].filter(Boolean).join("\n"),
+    {
+      parseMode: null,
+      replyMarkup: approveLink && rejectLink ? {
+        inline_keyboard: [[
+          { text: "✅ 승인", url: approveLink },
+          { text: "❌ 거절", url: rejectLink },
+        ]],
+      } : undefined,
+    },
   );
 
   const notificationLine = notifyResult.ok
