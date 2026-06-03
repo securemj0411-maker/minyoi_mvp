@@ -49,5 +49,9 @@ test("plans page explains scarcity, local constraints, and quota management", ()
   assert.match(plans, /당근은 내 근처/);
   assert.match(plans, /티오를 관리/);
   assert.match(plans, /지역별로 티오/);
+  assert.match(plans, /아무나 보면 그마저도 사라집니다/);
+  assert.match(plans, /월 33,000원꼴/);
+  assert.match(plans, /3개월 99,000원/);
+  assert.doesNotMatch(plans, /결제 페이지가 아니라/);
   assert.doesNotMatch(plans, /베타|초기 베타/);
 });

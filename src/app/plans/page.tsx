@@ -8,15 +8,15 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const FEATURES = [
-  "하루에 올라오는 매물 중 실제로 돈 되는 후보는 극소수라서 티오를 관리해요.",
-  "당근은 특히 내 근처에 떠야 거래가 가능해서, 지역별로 볼 수 있는 사람이 너무 많으면 기회가 금방 사라져요.",
-  "승인된 계정만 원본 링크, 시세 근거, 예상 수익, 셀러 신뢰 신호를 한 화면에서 확인해요.",
+  "승인된 계정만 원본 링크, 시세 근거, 예상 수익, 셀러 신뢰 신호를 한 화면에서 봅니다.",
+  "당근은 내 근처에 떠야 실전성이 생겨서, 지역별 티오를 같이 봅니다.",
+  "돈 되는 매물은 적고 오래 남지 않아서, 보는 사람 수를 무제한으로 열지 않습니다.",
 ];
 
 const REVIEW_STEPS = [
-  { label: "1. 신청", value: "카카오 로그인 후 신청서를 남겨요." },
-  { label: "2. 확인", value: "운영자가 지역·사용 목적·현재 티오를 확인해요." },
-  { label: "3. 승인", value: "승인되면 결제 안내 후 상품 피드를 열어요." },
+  { label: "1. 신청", value: "카카오 로그인 후 신청합니다." },
+  { label: "2. 확인", value: "운영자가 지역·사용 목적·현재 티오를 봅니다." },
+  { label: "3. 승인", value: "승인 후 결제 안내와 상품 피드를 엽니다." },
 ];
 
 const SCARCITY_ROWS = [
@@ -32,18 +32,29 @@ export default async function PlansPage() {
 
   return (
     <main className="min-h-screen bg-[#f5f7fb] px-3 py-4 dark:bg-zinc-950 sm:px-5 sm:py-8">
-      <div className="mx-auto w-full max-w-[720px]">
+      <div className="mx-auto w-full max-w-[760px]">
         <section className="overflow-hidden rounded-[18px] border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="border-b border-zinc-200 px-4 py-5 dark:border-zinc-800 sm:px-6 sm:py-6">
-            <div className="inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-[#3182f6] ring-1 ring-blue-100 dark:bg-blue-950/30 dark:text-blue-200 dark:ring-blue-900/60">
+          <div className="border-b border-zinc-200 px-4 py-6 dark:border-zinc-800 sm:px-6 sm:py-7">
+            <h1 className="break-keep text-[30px] font-black leading-tight tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[42px]">
               선공개 300명 멤버십
-            </div>
-            <h1 className="mt-3 break-keep text-[26px] font-black leading-tight tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[34px]">
-              결제 페이지가 아니라 신청 페이지예요.
             </h1>
-            <p className="mt-3 break-keep text-[14px] font-semibold leading-6 text-zinc-600 dark:text-zinc-300">
-              득템잡이는 아무나 바로 결제해서 쓰는 대중형 공개 서비스가 아니에요.
-              돈 되는 매물은 적고, 특히 당근은 내 근처에 떠야 의미가 있어서 계정과 지역별로 티오를 관리합니다.
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {["신청제", "운영자 검토", "승인 후 활성"].map((label) => (
+                <span
+                  key={label}
+                  className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-[#3182f6] ring-1 ring-blue-100 dark:bg-blue-950/30 dark:text-blue-200 dark:ring-blue-900/60"
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+            <p className="mt-5 max-w-[520px] break-keep text-[16px] font-black leading-7 text-zinc-900 dark:text-zinc-100 sm:text-[18px] sm:leading-8">
+              하루에 올라오는 중고 매물 중 진짜 돈 되는 건 극소수예요.
+              아무나 보면 그마저도 사라집니다.
+            </p>
+            <p className="mt-3 max-w-[480px] break-keep text-[13px] font-semibold leading-6 text-zinc-600 dark:text-zinc-300 sm:text-[14px]">
+              신청 받고, 검토하고, 승인된 분만 봅니다.
+              당근은 내 근처에 떠야 의미가 있어서 지역별로 티오를 관리합니다.
             </p>
           </div>
 
@@ -66,12 +77,12 @@ export default async function PlansPage() {
               ))}
             </div>
 
-            <div className="rounded-[14px] border border-zinc-200 bg-white px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
+            <div className="rounded-[14px] border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <div className="text-[12px] font-black uppercase tracking-[0.16em] text-zinc-400">Membership</div>
-                  <div className="mt-1 text-[24px] font-black tracking-tight text-zinc-950 dark:text-zinc-50">3개월 99,000원</div>
-                  <div className="mt-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">월 33,000원꼴 · 승인 후 결제 안내</div>
+                  <div className="text-[11px] font-black uppercase tracking-[0.16em] text-zinc-400">Membership note</div>
+                  <div className="mt-1 text-[20px] font-black tracking-tight text-zinc-950 dark:text-zinc-50">월 33,000원꼴</div>
+                  <div className="mt-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">3개월 99,000원 · 승인 후 결제 안내</div>
                 </div>
                 <MembershipApplicationClient
                   isAuthed={auth.ok}

@@ -13,6 +13,12 @@ test("/plans is a membership application page, not a credit package page", () =>
   const plansLayout = source("src/app/plans/layout.tsx");
   const applyClient = source("src/components/membership-application-client.tsx");
   assert.match(plans, /선공개 300명 멤버십/);
+  assert.match(plans, /신청제/);
+  assert.match(plans, /운영자 검토/);
+  assert.match(plans, /승인 후 활성/);
+  assert.match(plans, /월 33,000원꼴/);
+  assert.match(plans, /3개월 99,000원/);
+  assert.doesNotMatch(plans, /결제 페이지가 아니라/);
   assert.match(plansLayout, /선공개 멤버십 신청/);
   assert.match(plans, /MembershipApplicationClient/);
   assert.match(applyClient, /신청하기|로그인하고 신청하기/);
