@@ -19,7 +19,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const CACHE_SECONDS = 60;
-const PREVIEW_COUNT = 5;
 // 2026-05-17: 진입장벽 ↓ — 가격 tier 분리.
 // tier A: 10만 이하 2개 (저렴한 hook — "와 진짜 싼 매물도 있네")
 // tier B: 30만 이하 3개 (실제 매물 분위기)
@@ -159,6 +158,23 @@ type MarketPriceRow = {
   computed_at: string | null;
 };
 
+type VelocityRow = {
+  comparable_key: string;
+  observed_sold_sample_count: number | null;
+  sold_7d_count: number | null;
+  confidence: string | null;
+  median_hours_to_sold: number | null;
+  date: string;
+  computed_at: string | null;
+};
+
+type VelocitySignal = {
+  medianHoursToSold: number;
+  observedSoldSampleCount: number;
+  sold7dCount: number;
+  confidence: string | null;
+};
+
 function marketPriceFromRow(row: MarketPriceRow | undefined): number | null {
   if (!row) return null;
   const value = Number(row.blended_median_price ?? row.active_median_price ?? row.sold_median_price ?? 0);
@@ -271,6 +287,21 @@ function previewProfitRoi(
   return Number.isFinite(roi) ? roi : null;
 }
 
+function velocitySignalFromRow(row: VelocityRow | undefined): VelocitySignal | null {
+  if (!row) return null;
+  const medianHours = Number(row.median_hours_to_sold ?? 0);
+  const sold7d = Number(row.sold_7d_count ?? 0);
+  const soldSample = Number(row.observed_sold_sample_count ?? 0);
+  if (!Number.isFinite(medianHours) || medianHours <= 0) return null;
+  if (sold7d <= 0 || soldSample < 3) return null;
+  return {
+    medianHoursToSold: medianHours,
+    observedSoldSampleCount: soldSample,
+    sold7dCount: sold7d,
+    confidence: typeof row.confidence === "string" ? row.confidence : null,
+  };
+}
+
 function isPreviewHighProfitAnomaly(
   row: PoolRow,
   raw: RawRow | undefined,
@@ -336,7 +367,7 @@ export async function GET() {
     const rawByPid = new Map<number, RawRow>(raws.map((r) => [r.pid, r]));
     const skuByPid = new Map<number, string | null>(rawListings.map((r) => [r.pid, r.sku_id]));
     const metaByPid = new Map<number, RawListingMeta>(rawListings.map((r) => [r.pid, r]));
-    const candidateRows = pool
+    let candidateRows = pool
       .filter((row) => {
         const raw = rawByPid.get(row.pid);
         const soldMeta = metaByPid.get(row.pid);
@@ -346,7 +377,27 @@ export async function GET() {
     const candidateComparableKeys = [
       ...new Set(candidateRows.map((row) => row.comparable_key).filter((key): key is string => Boolean(key))),
     ];
-    const candidatePids = candidateRows.map((row) => row.pid);
+    const velocityRows = candidateComparableKeys.length > 0
+      ? await restFetch(
+        `${tableUrl("mvp_market_velocity_daily")}?select=comparable_key,observed_sold_sample_count,sold_7d_count,confidence,median_hours_to_sold,date,computed_at&comparable_key=in.(${candidateComparableKeys.map(encodeURIComponent).join(",")})&condition_class=eq.all&order=date.desc,computed_at.desc,observed_sold_sample_count.desc&limit=${Math.max(100, candidateComparableKeys.length * 2)}`,
+        { headers },
+      ).then((res) => res.json() as Promise<VelocityRow[]>).catch(() => [])
+      : [];
+    const velocityByKey = new Map<string, VelocitySignal>();
+    for (const row of velocityRows) {
+      if (velocityByKey.has(row.comparable_key)) continue;
+      const signal = velocitySignalFromRow(row);
+      if (signal) velocityByKey.set(row.comparable_key, signal);
+    }
+
+    candidateRows = candidateRows.filter((row) => row.comparable_key ? velocityByKey.has(row.comparable_key) : false);
+    const velocityCandidatePids = candidateRows.map((row) => row.pid);
+    if (candidateRows.length === 0) {
+      return NextResponse.json({ items: [] }, {
+        headers: { "Cache-Control": `public, max-age=${CACHE_SECONDS}, s-maxage=${CACHE_SECONDS}` },
+      });
+    }
+
     const [marketRows, sourceMarketRows, parsedRows] = candidateComparableKeys.length > 0
       ? await Promise.all([
         restFetch(
@@ -358,7 +409,7 @@ export async function GET() {
           { headers },
         ).then((res) => res.json() as Promise<MarketPriceRow[]>),
         restFetch(
-          `${tableUrl("mvp_listing_parsed")}?select=pid,condition_class,condition_tier&pid=in.(${candidatePids.join(",")})&limit=${candidatePids.length + 20}`,
+          `${tableUrl("mvp_listing_parsed")}?select=pid,condition_class,condition_tier&pid=in.(${velocityCandidatePids.join(",")})&limit=${velocityCandidatePids.length + 20}`,
           { headers },
         ).then((res) => res.json() as Promise<ParsedRow[]>),
       ])
@@ -461,17 +512,9 @@ export async function GET() {
       return Date.now() - t < 24 * 60 * 60 * 1000;
     }
 
-    // 2026-05-17 Phase 3: selected 5개 매물에 velocity fetch.
-    // market_price_daily 는 위에서 current market/gap 재계산에 이미 사용한다.
     const comparableKeys = selected
       .map((r) => r.comparable_key)
       .filter((k): k is string => !!k);
-    const velocityRes = comparableKeys.length > 0
-      ? await restFetch(
-          `${tableUrl("mvp_market_velocity")}?select=comparable_key,median_hours_to_sold&comparable_key=in.(${comparableKeys.map(encodeURIComponent).join(",")})`,
-          { headers },
-        ).catch(() => null)
-      : null;
     const demandByKey = new Map<string, number>();
     if (marketRows.length > 0) {
       const latestByKey = new Map<string, { date: string; total: number }>();
@@ -488,16 +531,6 @@ export async function GET() {
       }
       for (const [k, v] of latestByKey) demandByKey.set(k, v.total);
     }
-    const velocityByKey = new Map<string, number>();
-    if (velocityRes) {
-      try {
-        const rows = (await velocityRes.json()) as Array<{ comparable_key: string; median_hours_to_sold: number | null }>;
-        for (const r of rows) {
-          if (r.median_hours_to_sold != null) velocityByKey.set(r.comparable_key, r.median_hours_to_sold);
-        }
-      } catch {}
-    }
-
     const items = selected.map((row, idx) => {
       const raw = rawByPid.get(row.pid);
       const meta = metaByPid.get(row.pid);
@@ -531,8 +564,8 @@ export async function GET() {
         sellerReviewRating: meta?.shop_review_rating == null ? null : Number(meta.shop_review_rating),
         sellerReviewCount: meta?.shop_review_count == null ? null : Number(meta.shop_review_count),
         // 2026-05-17 Phase 3: 근거 chip 데이터 (buildVerdicts input).
-        soldSampleCount: row.comparable_key ? (demandByKey.get(row.comparable_key) ?? null) : null,
-        medianHoursToSold: row.comparable_key ? (velocityByKey.get(row.comparable_key) ?? null) : null,
+        soldSampleCount: row.comparable_key ? (velocityByKey.get(row.comparable_key)?.observedSoldSampleCount ?? demandByKey.get(row.comparable_key) ?? null) : null,
+        medianHoursToSold: row.comparable_key ? (velocityByKey.get(row.comparable_key)?.medianHoursToSold ?? null) : null,
       };
     });
 

@@ -92,6 +92,12 @@ function daysLabel(hours: number): string {
 }
 
 function previewSignal(item: PreviewItem): PreviewSignal {
+  if (item.medianHoursToSold != null && item.medianHoursToSold > 0) {
+    return { label: `평균 ${daysLabel(item.medianHoursToSold)} 내 판매`, tone: "speed" };
+  }
+  if (item.soldSampleCount != null && item.soldSampleCount >= 20) {
+    return { label: `판매 표본 ${compactCount(item.soldSampleCount)}건`, tone: "market" };
+  }
   const reviews = item.sellerReviewCount ?? 0;
   const rating = item.sellerReviewRating;
   if (reviews >= 100) {
@@ -103,22 +109,10 @@ function previewSignal(item: PreviewItem): PreviewSignal {
   if (reviews >= 30) {
     return { label: `후기 ${reviews.toLocaleString("ko-KR")}건`, tone: "seller" };
   }
-  if (item.medianHoursToSold != null && item.medianHoursToSold > 0 && item.medianHoursToSold <= 336) {
-    return { label: `평균 ${daysLabel(item.medianHoursToSold)} 회전`, tone: "speed" };
-  }
-  if (item.soldSampleCount != null && item.soldSampleCount >= 20) {
-    return { label: `시장 표본 ${compactCount(item.soldSampleCount)}건`, tone: "market" };
-  }
   if (item.confidence === "high") {
     return { label: "시세 신뢰 높음", tone: "verified" };
   }
   return { label: "AI 검증 통과", tone: "verified" };
-}
-
-function previewStatusLabel(item: PreviewItem) {
-  if (item.freeShipping) return "배송비 확인 완료";
-  if (item.isFresh) return "최근 등록";
-  return "상세 분석 대기";
 }
 
 export default function PreviewMaskedDashboard() {
@@ -153,26 +147,27 @@ export default function PreviewMaskedDashboard() {
       <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-4 px-4 py-3 sm:gap-6 sm:px-6 sm:py-8 lg:grid lg:grid-cols-[minmax(0,0.88fr)_minmax(420px,1fr)] lg:items-start lg:gap-8">
         <section className="pt-0 lg:sticky lg:top-24 lg:pt-8">
           <div className="hidden items-center gap-2 rounded-full border border-[#d9d1c4] bg-white/70 px-3 py-1.5 text-[11px] font-black text-[#526055] shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-300 sm:inline-flex">
-            오늘의 추천 매물
+            빨리 사라지는 중고 매물
           </div>
           <h1 className="mt-1 break-keep text-[28px] font-black leading-[1.05] tracking-tight text-[var(--rd-ink)] dark:text-zinc-50 sm:mt-5 sm:text-[44px] lg:text-[52px]">
-            볼 만한 중고만
+            팔리는 속도까지 보고
             <br />
-            조용히 남겨둘게요.
+            극소수만 남깁니다.
           </h1>
           <p className="mt-2 max-w-[460px] break-keep text-[13px] font-semibold leading-5 text-[#5f6a60] dark:text-zinc-300 sm:mt-4 sm:text-[15px] sm:leading-7">
-            같은 상태끼리 가격을 맞춰보고, 배송비와 수수료까지 계산한 추천 매물만 보여줘요.
+            시세보다 싼 매물은 오래 남지 않아요. 가격 차이와 판매 회전 속도를 같이 보고,
+            실제로 빨리 거래되는 상품군만 조용히 추려요.
           </p>
           <p className="mt-1.5 max-w-[460px] break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400 sm:text-[12px]">
-            로그인하면 지금 진행 중인 추천 매물과 원본 링크를 볼 수 있어요.
+            로그인 후 승인된 멤버만 지금 진행 중인 추천 매물과 원본 링크를 볼 수 있어요.
           </p>
 
           <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:flex sm:flex-row sm:gap-2.5">
             <Link
-              href="/login"
+              href="/login?next=/plans"
               className="inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl bg-[#111816] px-4 text-[13px] font-black text-white shadow-[0_16px_36px_rgba(17,24,22,0.16)] transition hover:bg-[#26312c] dark:bg-white dark:text-zinc-950 sm:h-12 sm:gap-2 sm:px-5 sm:text-[15px]"
             >
-              <UnlockIcon width={16} height={16} /> 로그인하고 보기
+              <UnlockIcon width={16} height={16} /> 로그인하고 신청
             </Link>
             <Link
               href="/intro"
@@ -188,10 +183,10 @@ export default function PreviewMaskedDashboard() {
           <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800 sm:px-5">
             <div>
               <div className="text-[11px] font-black uppercase tracking-[0.16em] text-zinc-400 dark:text-zinc-500">Teaser feed</div>
-              <div className="mt-0.5 text-[16px] font-black text-[var(--rd-ink)] dark:text-zinc-50">오늘의 추천 매물</div>
+              <div className="mt-0.5 text-[16px] font-black text-[var(--rd-ink)] dark:text-zinc-50">회전 속도 있는 매물</div>
             </div>
             <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-black text-[#3182f6] dark:bg-blue-950/40 dark:text-blue-200">
-              진행 중 매물은 로그인 후
+              평균 판매 속도 기준
             </div>
           </div>
 
@@ -215,7 +210,7 @@ export default function PreviewMaskedDashboard() {
               const imageUrl = item.thumbnailUrl ?? item.blurredImage;
               return (
                 <Link
-                  href="/login"
+                  href="/login?next=/plans"
                   key={item.slot}
                   className="group block rounded-2xl border border-zinc-200 bg-white px-3.5 py-3 transition hover:border-blue-200 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-blue-900"
                 >
@@ -296,14 +291,14 @@ export default function PreviewMaskedDashboard() {
                 <SearchIcon width={18} height={18} className="text-[#3182f6]" />
                 <div>
                   <div className="text-[14px] font-black text-[var(--rd-ink)] dark:text-zinc-50">진행 중인 매물까지 열어볼까요?</div>
-                  <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-500">첫 상세 1개는 무료로 확인할 수 있어요.</div>
+                  <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-500">승인된 계정만 실시간 추천과 원본 링크를 볼 수 있어요.</div>
                 </div>
               </div>
             <Link
-              href="/login"
+              href="/login?next=/plans"
                 className="inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl bg-[#3182f6] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[#1c64dd]"
             >
-                무료로 시작
+                멤버십 신청
             </Link>
             </div>
           </div>
