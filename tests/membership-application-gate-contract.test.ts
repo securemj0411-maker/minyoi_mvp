@@ -13,6 +13,7 @@ test("/plans is a membership application page, not a credit package page", () =>
   const plansLayout = source("src/app/plans/layout.tsx");
   const applyClient = source("src/components/membership-application-client.tsx");
   const applyRoute = source("src/app/api/membership/apply/route.ts");
+  const depositNotifyRoute = source("src/app/api/membership/deposit-notify/route.ts");
   const planConfig = source("src/lib/membership-plans.ts");
   assert.match(plans, /선공개 300명 멤버십/);
   assert.match(plans, /선공개 300명/);
@@ -20,6 +21,10 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(plans, /운영자 입금 확인/);
   assert.match(plans, /SLOT_CAPACITY = 300/);
   assert.match(plans, /신청 후 즉시 조회/);
+  assert.match(plans, /입금했어요 버튼/);
+  assert.match(plans, /보통 3분 내 확인/);
+  assert.doesNotMatch(plans, /카카오 로그인 후 기간을 선택합니다/);
+  assert.doesNotMatch(plans, /2\. 지역 조회/);
   assert.match(planConfig, /월 33,000원꼴/);
   assert.match(planConfig, /priceKrw: 99_000/);
   assert.match(planConfig, /limited_300_1mo/);
@@ -38,7 +43,10 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(plans, /MembershipApplicationClient/);
   assert.match(applyClient, /신청하기|로그인하고 신청하기/);
   assert.match(applyClient, /telegramSent/);
-  assert.match(applyClient, /운영자 알림은 확인 중/);
+  assert.match(applyClient, /입금했어요/);
+  assert.match(applyClient, /notifyDepositDone/);
+  assert.match(applyClient, /\/api\/membership\/deposit-notify/);
+  assert.match(applyClient, /보통 3분 안에 확인됩니다/);
   assert.match(applyClient, /내 지역 티오 확인 완료 · 입금 대기/);
   assert.match(applyClient, /기간\/금액 변경/);
   assert.match(applyClient, /예약 취소/);
@@ -62,6 +70,10 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(applyRoute, /user_cancelled_reservation/);
   assert.match(applyRoute, /telegram_cancel_notified/);
   assert.match(applyRoute, /status: "rejected"/);
+  assert.match(depositNotifyRoute, /멤버십 입금 확인 요청/);
+  assert.match(depositNotifyRoute, /user_deposit_confirmed/);
+  assert.match(depositNotifyRoute, /telegram_deposit_notified/);
+  assert.match(depositNotifyRoute, /보통 3분 내 확인/);
   assert.doesNotMatch(plans, /크레딧 충전|1크레딧|billing\/manual\?credits/);
   assert.doesNotMatch(plansLayout, /크레딧 충전|1크레딧|billing\/manual/);
   assert.doesNotMatch(applyClient, /결제하기|크레딧 충전|billing\/manual/);

@@ -13,6 +13,7 @@ test("operator members page is membership-application led, not manual-credit led
   const table = source("src/app/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY/members-table.tsx");
   const applications = source("src/app/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY/membership-applications-panel.tsx");
   const applyRoute = source("src/app/api/membership/apply/route.ts");
+  const depositNotifyRoute = source("src/app/api/membership/deposit-notify/route.ts");
   const decideRoute = source("src/app/api/admin/membership-applications/decide/route.ts");
 
   assert.match(page, /MembershipApplicationsPanel/);
@@ -43,6 +44,9 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(applyRoute, /자리 예약 취소/);
   assert.match(applyRoute, /user_cancelled_reservation/);
   assert.match(applyRoute, /내 지역 티오: 신청자 기준 mock 확인 완료/);
+  assert.match(depositNotifyRoute, /멤버십 입금 확인 요청/);
+  assert.match(depositNotifyRoute, /user_deposit_confirmed/);
+  assert.match(depositNotifyRoute, /cau 운영자 페이지에서 입금 확인 후 승인/);
   assert.match(decideRoute, /mvp_user_plans/);
   assert.match(decideRoute, /getMembershipPlan/);
   assert.match(decideRoute, /periodEndMonths\(selectedPlan\.months\)/);

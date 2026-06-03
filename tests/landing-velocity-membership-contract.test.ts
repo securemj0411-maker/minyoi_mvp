@@ -57,7 +57,11 @@ test("plans page explains scarcity, local constraints, and quota management", ()
   assert.match(plans, /자리 예약 후 계좌이체/);
   assert.match(planConfig, /월 33,000원꼴/);
   assert.match(planConfig, /priceKrw: 99_000/);
-  assert.match(plans, /내 지역 티오를 확인한 뒤 가능 판정이면 기간 선택과 입금 안내가 열립니다/);
+  assert.match(plans, /송금 후 입금했어요 버튼을 눌러주세요/);
+  assert.match(plans, /입금했어요 버튼/);
+  assert.match(plans, /보통 3분 내 확인/);
+  assert.doesNotMatch(plans, /카카오 로그인 후 기간을 선택합니다/);
+  assert.doesNotMatch(plans, /2\. 지역 조회/);
   assert.doesNotMatch(plans, /결제 페이지가 아니라/);
   assert.doesNotMatch(plans, /베타|초기 베타/);
 });

@@ -17,10 +17,10 @@ const FEATURES = [
   "돈 되는 매물은 적고 오래 남지 않아서, 보는 사람 수를 무제한으로 열지 않습니다.",
 ];
 
-const REVIEW_STEPS = [
-  { label: "1. 신청", value: "카카오 로그인 후 기간을 선택합니다." },
-  { label: "2. 지역 조회", value: "신청자 기준 내 지역 티오를 확인합니다." },
-  { label: "3. 입금 후 활성", value: "입금 확인 후 상품 피드를 엽니다." },
+const PAYMENT_HELP = [
+  { label: "입금했어요 버튼", value: "송금 후 버튼을 누르면 운영자에게 입금 확인 알림이 바로 갑니다." },
+  { label: "보통 3분 내 확인", value: "운영자가 입금 확인 후 승인하면 추천 상품 피드가 열립니다." },
+  { label: "승인 전 변경 가능", value: "입금 전에는 기간/금액 변경이나 예약 취소를 직접 할 수 있습니다." },
 ];
 
 const SCARCITY_ROWS = [
@@ -120,7 +120,7 @@ export default async function PlansPage() {
               </div>
               <div className="mt-3 border-t border-blue-100 pt-3 dark:border-blue-950/70">
                 <div className="mb-2 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-                  신청하면 내 지역 티오를 확인한 뒤 가능 판정이면 기간 선택과 입금 안내가 열립니다.
+                  기간을 고르면 내 지역 티오 확인 후 계좌가 열립니다. 송금 후 입금했어요 버튼을 눌러주세요.
                 </div>
                 <MembershipApplicationClient
                   isAuthed={auth.ok}
@@ -140,10 +140,10 @@ export default async function PlansPage() {
           </div>
 
           <div className="grid gap-3 px-4 py-4 sm:grid-cols-3 sm:px-6">
-            {REVIEW_STEPS.map((step) => (
-              <div key={step.label} className="rounded-[12px] border border-zinc-200 bg-[#fbfcff] px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/50">
-                <div className="text-[12px] font-black text-[#3182f6] dark:text-blue-300">{step.label}</div>
-                <div className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-zinc-600 dark:text-zinc-300">{step.value}</div>
+            {PAYMENT_HELP.map((item) => (
+              <div key={item.label} className="rounded-[12px] border border-zinc-200 bg-[#fbfcff] px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/50">
+                <div className="text-[12px] font-black text-[#3182f6] dark:text-blue-300">{item.label}</div>
+                <div className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-zinc-600 dark:text-zinc-300">{item.value}</div>
               </div>
             ))}
           </div>

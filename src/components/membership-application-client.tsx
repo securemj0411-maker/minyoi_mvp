@@ -17,6 +17,7 @@ const ACCOUNT_NUMBER = "1002-367-160511";
 const ACCOUNT_HOLDER = "이민제";
 
 type ApplyState = "idle" | "submitting" | "sent" | "error";
+type DepositNotifyState = "idle" | "sending" | "sent" | "error";
 type PendingApplication = {
   id: number;
   planKey: MembershipPlanKey;
@@ -53,6 +54,8 @@ export default function MembershipApplicationClient({
   const [state, setState] = useState<ApplyState>(pendingApplication ? "sent" : "idle");
   const [message, setMessage] = useState<string | null>(null);
   const [copyOk, setCopyOk] = useState(false);
+  const [depositNotifyState, setDepositNotifyState] = useState<DepositNotifyState>("idle");
+  const [depositNotifyMessage, setDepositNotifyMessage] = useState<string | null>(null);
   const [reservationCancelled, setReservationCancelled] = useState(false);
   const [upsellOpen, setUpsellOpen] = useState(false);
   const [upsellStartedAt, setUpsellStartedAt] = useState<number | null>(null);
@@ -136,8 +139,42 @@ export default function MembershipApplicationClient({
     setReservationCancelled(false);
     setState("sent");
     setMessage(payload?.telegramSent === false
-      ? "내 지역 티오 확인 후 자리는 예약됐어요. 운영자 알림은 확인 중이라, 입금 후 필요하면 카톡으로도 알려주세요."
-      : `${plan.label} 내 지역 티오 확인 완료. 아래 계좌로 입금하면 운영자가 확인 후 피드를 열어줄게요.`);
+      ? "내 지역 티오 확인 후 자리는 예약됐어요. 아래 계좌로 송금한 뒤 입금했어요 버튼을 눌러주세요."
+      : `${plan.label} 내 지역 티오 확인 완료. 아래 계좌로 송금한 뒤 입금했어요 버튼을 눌러주세요.`);
+  }
+
+  async function notifyDepositDone() {
+    if (state === "submitting" || depositNotifyState === "sending") return;
+    setDepositNotifyState("sending");
+    setDepositNotifyMessage(null);
+
+    const supabase = getSupabaseBrowserClient();
+    const { data } = supabase ? await supabase.auth.getSession() : { data: null };
+    const token = data?.session?.access_token;
+    if (!token) {
+      setDepositNotifyState("error");
+      setDepositNotifyMessage("로그인 세션을 다시 확인해주세요.");
+      return;
+    }
+
+    const res = await fetch("/api/membership/deposit-notify", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }).catch(() => null);
+
+    if (!res?.ok) {
+      setDepositNotifyState("error");
+      setDepositNotifyMessage("입금 확인 요청을 보내지 못했어요. 잠시 후 다시 눌러주세요.");
+      return;
+    }
+
+    const payload = (await res.json().catch(() => null)) as { telegramSent?: boolean } | null;
+    setDepositNotifyState("sent");
+    setDepositNotifyMessage(payload?.telegramSent === false
+      ? "입금 확인 요청은 저장됐어요. 알림 상태는 확인 중이라, 늦으면 카톡으로도 알려주세요."
+      : "운영자에게 입금 확인 알림을 보냈어요. 보통 3분 안에 확인됩니다.");
   }
 
   async function cancelReservation() {
@@ -173,6 +210,8 @@ export default function MembershipApplicationClient({
     }
 
     setSubmittedPlan(null);
+    setDepositNotifyState("idle");
+    setDepositNotifyMessage(null);
     setReservationCancelled(true);
     setState("idle");
     setMessage("예약이 취소됐어요. 다시 신청할 수 있어요.");
@@ -213,7 +252,7 @@ export default function MembershipApplicationClient({
             {planLabel} · {krw(priceKrw)}
           </div>
           <p className={`mt-1.5 break-keep text-[12px] font-semibold leading-5 ${state === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}>
-            {message ?? "신청자 기준 지역 티오 확인이 완료되어 자리가 예약됐습니다. 컴퓨터·스마트폰 어디서 새로고침해도 입금 대기 상태가 유지됩니다."}
+            {message ?? "자리가 예약됐습니다. 아래 계좌로 송금한 뒤 입금했어요 버튼을 누르면 운영자에게 바로 알림이 갑니다."}
           </p>
           <div className="mt-3 rounded-[12px] bg-[#f5f7fb] p-3 dark:bg-zinc-900/70">
             <div className="flex items-center justify-between gap-2">
@@ -234,9 +273,26 @@ export default function MembershipApplicationClient({
             </div>
             <div className="mt-2 rounded-[10px] border border-blue-100 bg-white px-3 py-2 text-[11px] font-bold leading-4 text-zinc-600 dark:border-blue-950/60 dark:bg-zinc-950 dark:text-zinc-300">
               입금 금액: <b className="text-[#3182f6] dark:text-blue-300">{krw(priceKrw)}</b>
-              {" "}· 입금 확인 후 운영자 페이지에서 승인됩니다.
+              {" "}· 보통 3분 안에 운영자가 확인합니다.
             </div>
           </div>
+          <button
+            type="button"
+            onClick={() => void notifyDepositDone()}
+            disabled={state === "submitting" || depositNotifyState === "sending" || depositNotifyState === "sent"}
+            className="mt-3 flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+          >
+            {depositNotifyState === "sending"
+              ? "입금 확인 요청 중"
+              : depositNotifyState === "sent"
+                ? "입금 확인 요청 완료"
+                : "입금했어요"}
+          </button>
+          {depositNotifyMessage ? (
+            <p className={`mt-2 break-keep text-[11px] font-bold leading-4 ${depositNotifyState === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}>
+              {depositNotifyMessage}
+            </p>
+          ) : null}
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button
               type="button"
