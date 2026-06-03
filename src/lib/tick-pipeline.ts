@@ -350,6 +350,7 @@ const RAW_EXISTING_READ_CHUNK_SIZE = 500;
 const POOL_PID_READ_CHUNK_SIZE = 500;
 const REST_WRITE_CHUNK_SIZE = 25;
 const SCORE_DIRTY_CLEAR_CHUNK_SIZE = 200;
+const SCORE_SCORABLE_ROW_READ_CHUNK_SIZE = 100;
 const SCORE_DIRTY_MARK_CHUNK_SIZE = 300;
 const RAW_TOUCH_WRITE_CHUNK_SIZE = 400;
 const SELLER_WRITE_CHUNK_SIZE = 200;
@@ -2323,8 +2324,10 @@ async function loadScorableRows(limit: number, options: ScoreStageOptions = {}):
   const scorableBaseFilter = `${dirtyFilter}${sourceFilter}&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active`;
   const buildUrl = (extraFilter: string, rowLimit: number) =>
     `${tableUrl("mvp_raw_listings")}?select=${columns}${baseFilter}${extraFilter}&order=last_seen_at.desc&limit=${rowLimit}`;
-  const buildDirtyScorableUrl = (extraFilter: string, rowLimit: number) =>
-    `${tableUrl("mvp_raw_listings")}?select=${columns}${scorableBaseFilter}${extraFilter}&order=last_seen_at.desc&limit=${rowLimit}`;
+  const buildDirtyScorablePidUrl = (extraFilter: string, rowLimit: number) =>
+    `${tableUrl("mvp_raw_listings")}?select=pid,source${scorableBaseFilter}${extraFilter}&order=last_seen_at.desc&limit=${rowLimit}`;
+  const buildDirtyScorableRowsByPidUrl = (pids: number[]) =>
+    `${tableUrl("mvp_raw_listings")}?select=${columns}${dirtyFilter}&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active&pid=in.(${pids.join(",")})&limit=${pids.length}`;
   const fetchScorableRows = async (extraFilter: string, rowLimit: number, seenPids = new Set<number>()) => {
     const rows: ScorableRawRow[] = [];
     const scanLimit = scoreDirtyAvailable
@@ -2340,6 +2343,19 @@ async function loadScorableRows(limit: number, options: ScoreStageOptions = {}):
         rows.push(row);
         if (rows.length >= rowLimit) break;
       }
+    };
+    const fetchRowsByPids = async (pids: number[], rankByPid: Map<number, number>): Promise<ScorableRawRow[]> => {
+      const fullRows: ScorableRawRow[] = [];
+      for (const chunk of chunkArray(pids, SCORE_SCORABLE_ROW_READ_CHUNK_SIZE)) {
+        const res = await restFetch(buildDirtyScorableRowsByPidUrl(chunk), { headers: serviceHeaders() });
+        fullRows.push(...((await res.json()) as ScorableRawRow[]));
+      }
+      fullRows.sort((a, b) => {
+        const rankA = rankByPid.get(Number(a.pid)) ?? Number.MAX_SAFE_INTEGER;
+        const rankB = rankByPid.get(Number(b.pid)) ?? Number.MAX_SAFE_INTEGER;
+        return rankA - rankB;
+      });
+      return fullRows;
     };
 
     if (scoreDirtyAvailable) {
@@ -2381,11 +2397,27 @@ async function loadScorableRows(limit: number, options: ScoreStageOptions = {}):
       if (rpcRows != null) {
         collect(rpcRows);
       } else {
-        // RPC 실패 시 기존 GET path fallback (wave 939 OR split).
+        // Wave 1029 (2026-06-03): keep the indexed recent scan skinny.
+        // Direct full-row selects with last_seen_at ordering still produced
+        // intermittent Postgres 57014 statement timeouts under score_dirty backlog.
+        // Claim only pid/source first, then hydrate those pids in small chunks.
         for (const listingTypeFilter of ["&listing_type=eq.normal", "&listing_type_override=eq.normal"]) {
           if (rows.length >= rowLimit) break;
-          const dirtyRes = await restFetch(buildDirtyScorableUrl(`${extraFilter}${listingTypeFilter}`, scanLimit), { headers: serviceHeaders() });
-          collect((await dirtyRes.json()) as ScorableRawRow[]);
+          const pidRes = await restFetch(buildDirtyScorablePidUrl(`${extraFilter}${listingTypeFilter}`, scanLimit), { headers: serviceHeaders() });
+          const pidRows = (await pidRes.json()) as Array<{ pid: number | string | null; source: string | null }>;
+          const rankByPid = new Map<number, number>();
+          const candidatePids: number[] = [];
+          for (const row of pidRows) {
+            const pid = Number(row.pid);
+            if (!Number.isFinite(pid)) continue;
+            if (!scoreStageScope({ pid, source: row.source ?? "" }, options)) continue;
+            if (seenPids.has(pid) || rankByPid.has(pid)) continue;
+            rankByPid.set(pid, rankByPid.size);
+            candidatePids.push(pid);
+            if (candidatePids.length >= scanLimit) break;
+          }
+          if (candidatePids.length === 0) continue;
+          collect(await fetchRowsByPids(candidatePids, rankByPid));
         }
       }
     } else {
