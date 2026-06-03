@@ -418,6 +418,10 @@ type BeginnerGuideStep = {
   tone: "intro" | "trust" | "check" | "market" | "trend" | "buy" | "resell" | "safety" | "channel" | "speed" | "summary";
 };
 
+type BeginnerGuideStepContext = {
+  analysisLoading?: boolean;
+};
+
 // Wave launch-71: title 안 숫자/금액 자동 파란색 강조 (토스 스타일).
 //   매칭 패턴: 소수점 포함 일/시간/분 / 원 / % / N건 / N개 등.
 function highlightMetricsInText(text: string): React.ReactNode {
@@ -827,15 +831,18 @@ function marketCompareGuideStep(card: RevealCard): BeginnerGuideStep {
   };
 }
 
-function velocityGuideStep(card: RevealCard): BeginnerGuideStep {
+function velocityGuideStep(card: RevealCard, context: BeginnerGuideStepContext = {}): BeginnerGuideStep {
   const velocity = card.velocityBasis;
   const marketSoldSample = card.marketBasis?.soldSampleCount ?? 0;
   const marketActiveSample = card.marketBasis?.sampleCount ?? 0;
   const analysisPending =
-    !velocity &&
-    marketSoldSample <= 0 &&
-    marketActiveSample <= 0 &&
-    card.marketBasis?.computedAt == null;
+    Boolean(context.analysisLoading) ||
+    (
+      !velocity &&
+      marketSoldSample <= 0 &&
+      marketActiveSample <= 0 &&
+      card.marketBasis?.computedAt == null
+    );
   const hasStrongVelocity =
     velocity?.medianHoursToSold != null &&
     velocity.medianHoursToSold > 0 &&
@@ -977,7 +984,7 @@ function summaryGuideStep(card: RevealCard): BeginnerGuideStep {
   };
 }
 
-function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
+function beginnerGuideSteps(card: RevealCard, context: BeginnerGuideStepContext = {}): BeginnerGuideStep[] {
   // Wave 394.7.y: 안전결제 step 제거 → 셀러 신뢰 안으로 흡수. 10→9 step.
   // Wave 2026-05-25: 피드에서 정확가/시세를 잠근 뒤 상세에 들어오므로 쉬운모드 첫 장은
   //   돈 숫자 요약으로 시작한다. 그다음 비교 매물 → 채널 → 셀러 → 속도 → 요약.
@@ -991,7 +998,7 @@ function beginnerGuideSteps(card: RevealCard): BeginnerGuideStep[] {
     marketCompareGuideStep(card),
     channelGuideStep(card),
     sellerTrustGuideStep(card),
-    velocityGuideStep(card),
+    velocityGuideStep(card, context),
     summaryGuideStep(card),
   ];
 }
@@ -5194,7 +5201,7 @@ function BeginnerGuidePurchaseCheckVisual({ card }: { card: RevealCard }) {
   );
 }
 
-function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
+function BeginnerGuideSpeedVisual({ card, analysisLoading = false }: { card: RevealCard; analysisLoading?: boolean }) {
   const speed = saleSpeedDisplay(card);
   const velocity = card.velocityBasis;
   const market = card.marketBasis;
@@ -5202,8 +5209,13 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
   const dailySoldValue = velocity?.sold7dCount ? dailySoldCountLabel(velocity.sold7dCount) : null;
   const basisLabel = velocity?.conditionSpecific ? "같은 상태" : "같은 모델 전체";
   // Wave 394.7.ab: "확인 중" → "표본 부족" — 정직 카피.
-  const sampleLabel = dailySoldValue ? "동일 모델 하루 판매량" : sampleCount > 0 ? "비슷한 거래 기록" : "거래 기록";
-  const sampleValue = dailySoldValue ?? (sampleCount > 0 ? `${sampleCount.toLocaleString("ko-KR")}건` : "표본 부족");
+  const speedValue = analysisLoading ? "확인 중" : speed.label;
+  const sampleLabel = analysisLoading
+    ? "분석 진행 중"
+    : dailySoldValue ? "동일 모델 하루 판매량" : sampleCount > 0 ? "비슷한 거래 기록" : "거래 기록";
+  const sampleValue = analysisLoading
+    ? "잠시만요"
+    : dailySoldValue ?? (sampleCount > 0 ? `${sampleCount.toLocaleString("ko-KR")}건` : "표본 부족");
   return (
     <div className="rounded-[22px] bg-white p-4 shadow-[0_16px_34px_rgba(15,23,42,0.07)] ring-1 ring-zinc-200 dark:bg-zinc-950/70 dark:ring-zinc-800">
       {/* Wave launch-72 (사용자 짚음 "약 8.7개 파란색이면 위계 흔들림"):
@@ -5212,7 +5224,7 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
         <div className="rounded-[18px] bg-[#f5f9ff] px-3 py-3 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
           <div className="break-keep text-[11px] font-bold text-[#6f7b73] dark:text-zinc-400">되팔 때 판매 주기</div>
           <div className="mt-1 text-[20px] font-black leading-tight text-[#172019] dark:text-zinc-50">
-            {speed.label}
+            {speedValue}
           </div>
         </div>
         <div className="rounded-[18px] bg-[#f5f9ff] px-3 py-3 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
@@ -5221,7 +5233,9 @@ function BeginnerGuideSpeedVisual({ card }: { card: RevealCard }) {
         </div>
       </div>
       <p className="mt-2 break-keep text-[10.5px] font-semibold leading-4 text-zinc-500 dark:text-zinc-400">
-        판매 주기는 {basisLabel} 기준의 참고값이에요. 표본이 부족하면 모델 전체 기록으로 보수적으로 봅니다.
+        {analysisLoading
+          ? "비교 기록을 가져오는 중이에요. 로딩이 끝난 뒤에도 표본이 부족한 경우에만 부족하다고 표시합니다."
+          : `판매 주기는 ${basisLabel} 기준의 참고값이에요. 표본이 부족하면 모델 전체 기록으로 보수적으로 봅니다.`}
       </p>
     </div>
   );
@@ -5686,7 +5700,7 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
   );
 }
 
-function BeginnerGuideStepVisual({ card, tone }: { card: RevealCard; tone: BeginnerGuideStep["tone"] }) {
+function BeginnerGuideStepVisual({ card, tone, analysisLoading = false }: { card: RevealCard; tone: BeginnerGuideStep["tone"]; analysisLoading?: boolean }) {
   if (tone === "intro") return null;
   if (tone === "trust") return <BeginnerGuideProductVisual card={card} />;
   if (tone === "check") return <BeginnerGuidePurchaseCheckVisual card={card} />;
@@ -5695,7 +5709,7 @@ function BeginnerGuideStepVisual({ card, tone }: { card: RevealCard; tone: Begin
   if (tone === "buy") return <BeginnerGuideBuyCostVisual card={card} />;
   if (tone === "safety") return <BeginnerGuideSafetyVisual card={card} />;
   if (tone === "channel") return <BeginnerGuideChannelVisual card={card} />;
-  if (tone === "speed") return <BeginnerGuideSpeedVisual card={card} />;
+  if (tone === "speed") return <BeginnerGuideSpeedVisual card={card} analysisLoading={analysisLoading} />;
   return <BeginnerGuideSummaryVisual card={card} />;
 }
 
@@ -5932,6 +5946,7 @@ function BeginnerGuideSafetyFilterNote({ card, variant = "inline" }: { card: Rev
 function BeginnerGuideWalkthrough({
   card,
   stepIndex,
+  analysisLoading = false,
   onNext,
   onPrev,
   onSkip,
@@ -5939,12 +5954,13 @@ function BeginnerGuideWalkthrough({
 }: {
   card: RevealCard;
   stepIndex: number;
+  analysisLoading?: boolean;
   onNext: () => void;
   onPrev: () => void;
   onSkip: () => void;
   onClose: () => void;
 }) {
-  const steps = beginnerGuideSteps(card);
+  const steps = beginnerGuideSteps(card, { analysisLoading });
   const safeIndex = Math.max(0, Math.min(stepIndex, steps.length - 1));
   const step = steps[safeIndex];
   const isLast = safeIndex === steps.length - 1;
@@ -6099,7 +6115,7 @@ function BeginnerGuideWalkthrough({
           {step.tone === "buy" ? <BeginnerGuideProductVisual card={card} /> : null}
 
           <div className={step.tone === "buy" ? "mt-4" : isSummary ? "flex flex-1 flex-col items-center justify-center text-center" : ""}>
-            {isSummary ? <BeginnerGuideStepVisual card={card} tone={step.tone} /> : null}
+            {isSummary ? <BeginnerGuideStepVisual card={card} tone={step.tone} analysisLoading={analysisLoading} /> : null}
             {!isSummary ? (
               <div className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ${toneClass.bg} ${toneClass.text} ring-1 ${toneClass.ring}`}>
                 {step.eyebrow}
@@ -6148,7 +6164,7 @@ function BeginnerGuideWalkthrough({
           </div>
 
           {/* Wave launch-126: buy step 사진 이미 위에 박혔으니 아래 visual skip. trust 도 사진 제거 (위로 이동). */}
-          {step.tone !== "trust" && step.tone !== "buy" && !isSummary ? <BeginnerGuideStepVisual card={card} tone={step.tone} /> : null}
+          {step.tone !== "trust" && step.tone !== "buy" && !isSummary ? <BeginnerGuideStepVisual card={card} tone={step.tone} analysisLoading={analysisLoading} /> : null}
 
         </div>
       </div>
@@ -7237,6 +7253,15 @@ export default function PackRevealModal({
   const [saveToast, setSaveToast] = useState<string | null>(null);
   const saveToastTimerRef = useRef<number | null>(null);
   const requestedAnalysisPidsRef = useRef<Set<number>>(new Set());
+  const [analysisLoadingPids, setAnalysisLoadingPids] = useState<Set<number>>(() => new Set());
+  const activeAnalysisHasLoaded =
+    Boolean(activeRevealCard?.velocityBasis) ||
+    Boolean(activeRevealCard?.marketBasis?.computedAt) ||
+    Boolean(activeRevealCard?.skuListingFlow);
+  const activeAnalysisLoading =
+    activeRevealPid != null &&
+    analysisLoadingPids.has(activeRevealPid) &&
+    !activeAnalysisHasLoaded;
   const guideModeActive = result?.result === "success" && activeRevealCard != null && beginnerGuideVisible;
 
   useEffect(() => {
@@ -7336,10 +7361,23 @@ export default function PackRevealModal({
     if (!Number.isFinite(pid)) return;
     if (requestedAnalysisPidsRef.current.has(pid)) return;
     requestedAnalysisPidsRef.current.add(pid);
-    void onLoadDetail(pid).catch((err) => {
-      requestedAnalysisPidsRef.current.delete(pid);
-      console.error("[pack-reveal-modal] lazy detail analysis load failed", err);
+    setAnalysisLoadingPids((prev) => {
+      const next = new Set(prev);
+      next.add(pid);
+      return next;
     });
+    void onLoadDetail(pid)
+      .catch((err) => {
+        requestedAnalysisPidsRef.current.delete(pid);
+        console.error("[pack-reveal-modal] lazy detail analysis load failed", err);
+      })
+      .finally(() => {
+        setAnalysisLoadingPids((prev) => {
+          const next = new Set(prev);
+          next.delete(pid);
+          return next;
+        });
+      });
   }, [onLoadDetail]);
 
   useEffect(() => {
@@ -7359,7 +7397,7 @@ export default function PackRevealModal({
 
   useEffect(() => {
     if (!guideModeActive || !activeRevealCard || activeRevealPid == null) return;
-    const steps = beginnerGuideSteps(activeRevealCard);
+    const steps = beginnerGuideSteps(activeRevealCard, { analysisLoading: activeAnalysisLoading });
     const step = steps[Math.max(0, Math.min(beginnerGuideStep, steps.length - 1))];
     onTrackEvent?.(activeRevealPid, "easy_mode_step_view", {
       stepIndex: beginnerGuideStep,
@@ -7367,7 +7405,7 @@ export default function PackRevealModal({
       tone: step?.tone ?? "",
       title: step?.title ?? "",
     });
-  }, [activeRevealCard, activeRevealPid, beginnerGuideStep, guideModeActive, onTrackEvent]);
+  }, [activeAnalysisLoading, activeRevealCard, activeRevealPid, beginnerGuideStep, guideModeActive, onTrackEvent]);
 
   const requestDetailReportModeChoice = useCallback((source: DetailReportModeChoiceSource) => {
     if (!activeRevealCard) return;
@@ -7793,6 +7831,7 @@ export default function PackRevealModal({
                 <BeginnerGuideWalkthrough
                   card={activeRevealCard}
                   stepIndex={beginnerGuideStep}
+                  analysisLoading={activeAnalysisLoading}
                   onNext={advanceBeginnerGuide}
                   onPrev={retreatBeginnerGuide}
                   onSkip={skipBeginnerGuide}
