@@ -100,42 +100,6 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
     });
   }
 
-  async function grantCredits(row: MemberRow, amount: number) {
-    if (amount <= 0) { setError("크레딧 개수를 1 이상으로 입력해주세요."); return; }
-    const target = row.nickname || row.email || row.authUserId;
-    if (!window.confirm(`${target} 에게 크레딧 ${amount.toLocaleString("ko-KR")}개 지급?`)) return;
-    setError(null); setNotice(null); markPending(row.authUserId, true);
-    try {
-      const res = await fetch("/api/admin/credits/grant", {
-        method: "POST", headers: { "content-type": "application/json", "x-minyoi-admin-action": "1" },
-        body: JSON.stringify({ authUserId: row.authUserId, amount, note: "operator members drawer" }),
-      });
-      const data = (await res.json()) as { ok?: boolean; balance?: number; error?: string };
-      if (!res.ok || !data.ok) { setError(data.error ?? "credit_grant_failed"); return; }
-      setRows((prev) => prev.map((r) => r.authUserId === row.authUserId ? { ...r, balance: Number(data.balance ?? r.balance ?? 0), creditRowExists: true } : r));
-      setNotice(`${target} +${amount.toLocaleString("ko-KR")} 지급`);
-    } catch (err) { setError(err instanceof Error ? err.message : "network error"); }
-    finally { markPending(row.authUserId, false); }
-  }
-
-  async function revokeCredits(row: MemberRow, amount: number) {
-    if (amount <= 0) { setError("크레딧 개수를 1 이상으로 입력해주세요."); return; }
-    const target = row.nickname || row.email || row.authUserId;
-    if (!window.confirm(`${target} 회수 ${amount.toLocaleString("ko-KR")}개?`)) return;
-    setError(null); setNotice(null); markPending(row.authUserId, true);
-    try {
-      const res = await fetch("/api/admin/credits/revoke", {
-        method: "POST", headers: { "content-type": "application/json", "x-minyoi-admin-action": "1" },
-        body: JSON.stringify({ authUserId: row.authUserId, amount, note: "operator members drawer" }),
-      });
-      const data = (await res.json()) as { ok?: boolean; balance?: number; error?: string };
-      if (!res.ok || !data.ok) { setError(data.error ?? "credit_revoke_failed"); return; }
-      setRows((prev) => prev.map((r) => r.authUserId === row.authUserId ? { ...r, balance: Number(data.balance ?? r.balance ?? 0) } : r));
-      setNotice(`${target} −${amount.toLocaleString("ko-KR")} 회수`);
-    } catch (err) { setError(err instanceof Error ? err.message : "network error"); }
-    finally { markPending(row.authUserId, false); }
-  }
-
   async function toggleBlock(row: MemberRow) {
     const blocking = !row.blockedAt;
     const target = row.nickname || row.email || row.authUserId;
@@ -248,7 +212,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                   {isBlocked ? (
                     <span className="rounded-sm border border-rose-800/60 bg-rose-950/40 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-rose-300">BLOCKED</span>
                   ) : null}
-                  <span className="font-bold tabular-nums text-amber-400">{row.balance?.toLocaleString("ko-KR") ?? "—"}</span>
+                  <span className="font-bold uppercase text-amber-400">{row.planKey}</span>
                 </div>
               </div>
               <div className="mt-1 truncate font-mono text-[11px] text-zinc-400">{row.email ?? "—"}</div>
@@ -288,7 +252,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
               </th>
               <th className="px-3 py-2">NICK</th>
               <th className="px-3 py-2">EMAIL</th>
-              <th className="px-3 py-2 text-right">CREDIT</th>
+              <th className="px-3 py-2 text-right">MEMBERSHIP</th>
               <th className="px-3 py-2">STATUS</th>
               <th className="px-3 py-2">PROV</th>
               <th className="px-3 py-2 text-right">회원별 내역</th>
@@ -323,7 +287,10 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                     </div>
                   </td>
                   <td className="px-3 py-2 text-zinc-400">{row.email ?? "—"}</td>
-                  <td className="px-3 py-2 text-right font-bold tabular-nums text-amber-400">{row.balance?.toLocaleString("ko-KR") ?? "—"}</td>
+                  <td className="px-3 py-2 text-right">
+                    <div className="font-bold uppercase text-amber-400">{row.planKey}</div>
+                    <div className="text-[9px] uppercase tracking-wide text-zinc-600">{row.planStatus ?? "none"}</div>
+                  </td>
                   <td className="px-3 py-2">
                     {isBlocked ? (
                       <span className="rounded-sm border border-rose-800/60 bg-rose-950/40 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-rose-300">BLOCKED</span>
@@ -364,8 +331,6 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
           row={drawerRow}
           onClose={() => setDrawerId(null)}
           pending={actionPending.has(drawerRow.authUserId)}
-          onGrant={(amount) => void grantCredits(drawerRow, amount)}
-          onRevoke={(amount) => void revokeCredits(drawerRow, amount)}
           onToggleBlock={() => void toggleBlock(drawerRow)}
           onOpenPhoto={() => setPhotoPreview(drawerRow)}
         />
@@ -413,18 +378,14 @@ function ProfileThumb({ row, onOpen }: { row: MemberRow; onOpen: () => void }) {
 }
 
 function MemberDrawer({
-  row, onClose, pending, onGrant, onRevoke, onToggleBlock, onOpenPhoto,
+  row, onClose, pending, onToggleBlock, onOpenPhoto,
 }: {
   row: MemberRow;
   onClose: () => void;
   pending: boolean;
-  onGrant: (amount: number) => void;
-  onRevoke: (amount: number) => void;
   onToggleBlock: () => void;
   onOpenPhoto: () => void;
 }) {
-  const [grantAmount, setGrantAmount] = useState("");
-  const [revokeAmount, setRevokeAmount] = useState("");
   const isBlocked = Boolean(row.blockedAt);
 
   return (
@@ -500,8 +461,13 @@ function MemberDrawer({
               <span className="text-[11px] uppercase tracking-wide text-zinc-500">none</span>
             )}
           </dd>
-          <dt className="font-bold uppercase tracking-wide text-zinc-500">CREDIT</dt>
-          <dd className="font-bold tabular-nums text-amber-400">{row.balance?.toLocaleString("ko-KR") ?? "—"}</dd>
+          <dt className="font-bold uppercase tracking-wide text-zinc-500">MEMBERSHIP</dt>
+          <dd>
+            <div className="font-bold uppercase text-amber-400">{row.planKey}</div>
+            <div className="mt-0.5 text-[10px] uppercase tracking-wide text-zinc-600">
+              {row.planStatus ?? "none"} · until {fmt(row.planEndAt)}
+            </div>
+          </dd>
           <dt className="font-bold uppercase tracking-wide text-zinc-500">STATUS</dt>
           <dd>
             {isBlocked ? (
@@ -533,45 +499,11 @@ function MemberDrawer({
             </Link>
           </div>
 
-          {/* grant */}
-          <div>
-            <div className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-blue-400">▌GRANT CREDIT</div>
-            <div className="flex gap-2">
-              <input
-                type="number" min={1} step={1} value={grantAmount}
-                onChange={(e) => setGrantAmount(e.target.value)}
-                placeholder="amount"
-                className="h-8 flex-1 rounded-sm border border-zinc-800 bg-zinc-900 px-2 text-right text-[11px] tabular-nums text-zinc-200 focus:border-blue-700 focus:outline-none"
-              />
-              <button
-                type="button" disabled={pending || !grantAmount} onClick={() => onGrant(Math.round(Number(grantAmount)))}
-                className="rounded-sm border border-blue-800 bg-blue-900/40 px-3 text-[10px] font-black uppercase tracking-wide text-blue-300 hover:bg-blue-900/60 disabled:opacity-40"
-              >GRANT</button>
-            </div>
-          </div>
-
-          {/* revoke */}
-          <div>
-            <div className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-rose-400">▌REVOKE CREDIT</div>
-            <div className="flex gap-2">
-              <input
-                type="number" min={1} step={1} value={revokeAmount}
-                onChange={(e) => setRevokeAmount(e.target.value)}
-                placeholder="amount"
-                className="h-8 flex-1 rounded-sm border border-zinc-800 bg-zinc-900 px-2 text-right text-[11px] tabular-nums text-zinc-200 focus:border-rose-700 focus:outline-none"
-              />
-              <button
-                type="button" disabled={pending || !revokeAmount || !row.creditRowExists} onClick={() => onRevoke(Math.round(Number(revokeAmount)))}
-                className="rounded-sm border border-rose-800 bg-rose-900/40 px-3 text-[10px] font-black uppercase tracking-wide text-rose-300 hover:bg-rose-900/60 disabled:opacity-40"
-              >REVOKE</button>
-            </div>
-          </div>
-
           {/* block toggle */}
           <div>
             <div className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-zinc-400">▌ACCOUNT</div>
             <button
-              type="button" disabled={pending || !row.creditRowExists} onClick={onToggleBlock}
+              type="button" disabled={pending} onClick={onToggleBlock}
               className={`w-full rounded-sm border px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition disabled:opacity-40 ${
                 isBlocked
                   ? "border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"

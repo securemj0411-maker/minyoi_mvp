@@ -19,6 +19,10 @@ export type ProStatus = {
   source: "admin" | "subscription" | "legacy_pro_until" | "none";
 };
 
+export function hasMembershipAccess(status: Pick<ProStatus, "isPro" | "isAdmin" | "isBetaTester">): boolean {
+  return status.isPro || status.isAdmin || status.isBetaTester;
+}
+
 export async function getProStatus(user: User, userRef: string): Promise<ProStatus> {
   // Wave 106: admin이라도 shadow mode 켜져있으면 일반인처럼 처리 (auto-Pro override 해제).
   if (isAdminUser(user) && !(await hasAdminShadowFromCookies())) {

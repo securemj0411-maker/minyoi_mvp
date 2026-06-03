@@ -26,6 +26,7 @@ import { detectSoldOut, describeSignals, isSoldOut, soldOutTextHits } from "@/li
 import { conditionResaleAdjustmentKrw, safetyBufferForSource, sellingFeeForMarketPrice, resellShippingFeeForSource } from "@/lib/profit";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
+import { getProStatus, hasMembershipAccess } from "@/lib/user-subscription";
 
 // Wave 205: /me에서는 terminal state도 응답에 남겨 "판매완료 상품" tombstone으로 표시한다.
 const TERMINAL_STATES = new Set(["sold", "sold_confirmed", "disappeared"]);
@@ -701,6 +702,14 @@ export async function GET(req: Request) {
   if (!userRef) return NextResponse.json({ error: "missing user ref" }, { status: 400 });
   if (userRef !== userRefForAuthUser(auth.user.id)) {
     return NextResponse.json({ error: "user ref does not match session" }, { status: 403 });
+  }
+
+  const membership = await getProStatus(auth.user, userRef);
+  if (!hasMembershipAccess(membership)) {
+    return NextResponse.json(
+      { error: "membership_required", redirectTo: "/plans?from=me" },
+      { status: 403 },
+    );
   }
 
   if (!isAdminUser(auth.user)) {

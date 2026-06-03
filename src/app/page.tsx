@@ -12,6 +12,8 @@
 import { redirect } from "next/navigation";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 import { loadUserHomeRegion } from "@/lib/user-home-region-loader";
+import { getProStatus, hasMembershipAccess } from "@/lib/user-subscription";
+import { userRefForAuthUser } from "@/lib/user-ref";
 import MeDashboardClient from "@/components/me-dashboard-client";
 import PreviewMaskedDashboardServer from "@/components/preview-masked-dashboard-server";
 
@@ -53,8 +55,13 @@ export default async function Home() {
     );
   }
 
+  const membership = await getProStatus(auth.user, userRefForAuthUser(auth.user.id));
+  if (!hasMembershipAccess(membership)) {
+    redirect("/plans?from=feed");
+  }
+
   // Wave 773 (2026-05-27): 로그인 후 첫 진입 — 거주 동네 미설정이면 onboarding 페이지로 redirect.
-  //   당근 매물 거리 제약 (자기 인증 동네 인근만 채팅 가능) 대응. skip 불가 — 거주지 필수.
+  //   멤버십이 없는 사용자는 먼저 신청 페이지로 보낸다. 추천 피드는 승인된 계정만 접근 가능.
   const homeRegion = await loadUserHomeRegion(auth.user.id);
   if (!homeRegion) {
     redirect("/onboarding/home-region");

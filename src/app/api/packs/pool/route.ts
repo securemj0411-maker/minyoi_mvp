@@ -17,7 +17,7 @@ import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 import { getDetailAccessSnapshot } from "@/lib/detail-access";
-import { getProStatus } from "@/lib/user-subscription";
+import { getProStatus, hasMembershipAccess } from "@/lib/user-subscription";
 import { teaserBudgetRangeLabel } from "@/lib/feed-price-display";
 import { fetchDaangnLiveState } from "@/lib/daangn";
 import { marketStatsConditionKey } from "@/lib/pack-open";
@@ -981,7 +981,6 @@ async function loadPool(
   //   limit=1500 하나만 박으면 PostgREST 1000 cap 에 조용히 잘릴 수 있다.
   const readyBaseUrl =
     `${tableUrl("mvp_candidate_pool")}?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key,last_verified_at&status=eq.ready${excludeClause}&${orderClause}`;
-  const nearbyDaangnPrimary = Boolean(options.userHomeDaangnFullPath) && (options.source === "daangn" || options.sort === "distance");
   // Wave 1026 (2026-06-02): feed hot path trim.
   // Budgeted requests still need a wider scan because candidate_pool has no buy-price column.
   // Unbudgeted first feed can be much lighter: nearby Daangn prefetch preserves local-first
@@ -1559,7 +1558,13 @@ export async function GET(req: Request) {
 
     const headers = serviceHeaders();
     const membership = await getProStatus(auth.user, userRef);
-    const unlimitedAccess = membership.isPro || membership.isAdmin || membership.isBetaTester;
+    if (!hasMembershipAccess(membership)) {
+      return NextResponse.json(
+        { error: "membership_required", redirectTo: "/plans?from=feed" },
+        { status: 403 },
+      );
+    }
+    const unlimitedAccess = true;
     const detailAccess = await getDetailAccessSnapshot({ user: auth.user, userRef, unlimited: unlimitedAccess });
     const feedCooldown = { canRefresh: true, remainingSec: 0, nextAvailableAt: null };
 

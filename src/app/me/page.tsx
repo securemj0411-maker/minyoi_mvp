@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import MeDashboardClient from "@/components/me-dashboard-client";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
-import { getProStatus } from "@/lib/user-subscription";
+import { getProStatus, hasMembershipAccess } from "@/lib/user-subscription";
 import { loadUserHomeRegion } from "@/lib/user-home-region-loader";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
@@ -17,13 +17,13 @@ export const revalidate = 0;
 export default async function MePage() {
   const auth = await requireSupabaseUserFromCookies();
   if (auth.ok) {
+    const membership = await getProStatus(auth.user, userRefForAuthUser(auth.user.id));
+    if (!hasMembershipAccess(membership)) {
+      redirect("/plans?from=me");
+    }
     const homeRegion = await loadUserHomeRegion(auth.user.id);
     if (!homeRegion) {
       redirect("/onboarding/home-region");
-    }
-    const membership = await getProStatus(auth.user, userRefForAuthUser(auth.user.id));
-    if (!membership.isPro && !membership.isAdmin && !membership.isBetaTester) {
-      redirect("/plans?from=me");
     }
   }
   return <MeDashboardClient initialInventory={[]} />;

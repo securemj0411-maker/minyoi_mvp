@@ -917,6 +917,11 @@ revoke all on public.mvp_preview_showcases from anon;
 revoke all on public.mvp_preview_showcases from authenticated;
 grant select, insert, update, delete on public.mvp_preview_showcases to service_role;
 grant usage, select on sequence public.mvp_preview_showcases_id_seq to service_role;
+alter table public.mvp_membership_applications enable row level security;
+revoke all on public.mvp_membership_applications from anon;
+revoke all on public.mvp_membership_applications from authenticated;
+grant select, insert, update, delete on public.mvp_membership_applications to service_role;
+grant usage, select on sequence public.mvp_membership_applications_id_seq to service_role;
 
 create or replace function public.claim_mvp_detail_queue(
   p_batch_size integer default 30,
@@ -1346,6 +1351,30 @@ create table if not exists public.mvp_preview_showcases (
 
 create index if not exists mvp_preview_showcases_active_slot_idx
   on public.mvp_preview_showcases (is_active, slot_index, updated_at desc);
+
+create table if not exists public.mvp_membership_applications (
+  id bigserial primary key,
+  user_ref text not null,
+  auth_user_id uuid not null,
+  email text,
+  display_name text,
+  product_key text not null default 'limited_300_3mo',
+  price_krw integer not null default 99000,
+  status text not null default 'pending' check (status in ('pending','approved','rejected')),
+  applicant_note text,
+  admin_note text,
+  decided_by uuid,
+  decided_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create unique index if not exists mvp_membership_applications_pending_user_idx
+  on public.mvp_membership_applications (auth_user_id)
+  where status = 'pending';
+
+create index if not exists mvp_membership_applications_status_created_idx
+  on public.mvp_membership_applications (status, created_at desc);
 
 create table if not exists public.mvp_reveal_feedback (
   id bigserial primary key,

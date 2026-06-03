@@ -310,12 +310,9 @@ export default function AppNav() {
 
   const navLinks = [
     { href: "/", label: "추천 상품" },
-    // Wave 343: /explore 폐기 — /me history view에 통합. nav "탐색" 링크 제거.
-    // Wave 799c (2026-05-30): /lookup 시세 조회 nav 추가.
     { href: "/lookup", label: "시세 조회" },
     { href: "/how-it-works", label: "서비스 안내" },
     { href: "/plans", label: "멤버십 신청" },
-    ...(user ? [{ href: "/me", label: "내 대시보드" }] : []),
     ...(admin ? [{ href: "/debug", label: "운영 로그" }] : []),
   ];
   const mobileHomeHref = user ? "/me" : "/";

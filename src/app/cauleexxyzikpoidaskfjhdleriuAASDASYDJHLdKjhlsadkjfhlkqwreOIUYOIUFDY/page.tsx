@@ -9,8 +9,8 @@ import { OPS_ADMIN_REVEAL_ANALYTICS_PATH } from "@/lib/admin-routes";
 import { serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { userRefForAuthUser } from "@/lib/user-ref";
 import MembersTable, { type MemberRow } from "./members-table";
-import ManualDepositPanel from "./manual-deposit-panel";
 import FeedbackPanel from "./feedback-panel";
+import MembershipApplicationsPanel, { type MembershipApplicationRow } from "./membership-applications-panel";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -59,6 +59,20 @@ type PlanRow = {
   last_payment_amount: number | null;
 };
 
+type MembershipApplicationDbRow = {
+  id: number;
+  user_ref: string;
+  auth_user_id: string;
+  email: string | null;
+  display_name: string | null;
+  product_key: string;
+  price_krw: number;
+  status: "pending" | "approved" | "rejected";
+  admin_note: string | null;
+  decided_at: string | null;
+  created_at: string;
+};
+
 async function fetchAuthUsers(): Promise<AuthUser[]> {
   const base = (process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/$/, "");
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -94,6 +108,32 @@ async function fetchAllPlans(): Promise<PlanRow[]> {
   );
   if (!res.ok) return [];
   return (await res.json()) as PlanRow[];
+}
+
+async function fetchMembershipApplications(): Promise<MembershipApplicationRow[]> {
+  try {
+    const res = await fetch(
+      `${tableUrl("mvp_membership_applications")}?select=id,user_ref,auth_user_id,email,display_name,product_key,price_krw,status,admin_note,decided_at,created_at&order=status.asc,created_at.desc&limit=100`,
+      { headers: serviceHeaders(), cache: "no-store" },
+    );
+    if (!res.ok) return [];
+    const rows = (await res.json()) as MembershipApplicationDbRow[];
+    return rows.map((row) => ({
+      id: row.id,
+      userRef: row.user_ref,
+      authUserId: row.auth_user_id,
+      email: row.email,
+      displayName: row.display_name,
+      productKey: row.product_key,
+      priceKrw: Number(row.price_krw ?? 99000),
+      status: row.status,
+      adminNote: row.admin_note,
+      decidedAt: row.decided_at,
+      createdAt: row.created_at,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 function nicknameOf(user: AuthUser): string {
@@ -161,10 +201,11 @@ function profileImageUrlOf(user: AuthUser): string | null {
 
 export default async function MembersPage() {
   // admin auth 는 layout 에서 처리 (Wave launch-108).
-  const [users, credits, plans] = await Promise.all([
+  const [users, credits, plans, applications] = await Promise.all([
     fetchAuthUsers(),
     fetchAllCredits(),
     fetchAllPlans(),
+    fetchMembershipApplications(),
   ]);
 
   const creditMap = new Map(credits.map((c) => [c.auth_user_id, c]));
@@ -221,7 +262,7 @@ export default async function MembersPage() {
         </div>
       </header>
 
-      <ManualDepositPanel />
+      <MembershipApplicationsPanel initialRows={applications} />
       <FeedbackPanel />
       <section className="mb-4 rounded-sm border border-emerald-800 bg-emerald-950/30 p-3">
         <div className="flex flex-wrap items-center justify-between gap-3">

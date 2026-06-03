@@ -23,10 +23,16 @@ test("/plans is a membership application page, not a credit package page", () =>
 
 test("/me gates non-members to the application page", () => {
   const mePage = source("src/app/me/page.tsx");
+  const homePage = source("src/app/page.tsx");
   assert.match(mePage, /getProStatus/);
+  assert.match(mePage, /hasMembershipAccess/);
   assert.match(mePage, /redirect\("\/plans\?from=me"\)/);
-  assert.match(mePage, /isPro/);
-  assert.match(mePage, /isBetaTester/);
+  assert.ok(mePage.indexOf("const membership = await getProStatus") < mePage.indexOf("const homeRegion = await loadUserHomeRegion"));
+
+  assert.match(homePage, /getProStatus/);
+  assert.match(homePage, /hasMembershipAccess/);
+  assert.match(homePage, /redirect\("\/plans\?from=feed"\)/);
+  assert.ok(homePage.indexOf("const membership = await getProStatus") < homePage.indexOf("const homeRegion = await loadUserHomeRegion"));
 });
 
 test("navigation and account panel expose membership language instead of credit balance", () => {
@@ -35,6 +41,7 @@ test("navigation and account panel expose membership language instead of credit 
 
   assert.match(nav, /멤버십 신청/);
   assert.match(nav, /선공개/);
+  assert.doesNotMatch(nav, /내 대시보드/);
   assert.doesNotMatch(nav, /CreditIcon|loadClientCredits|크레딧 충전|보유 크레딧|Beta/);
 
   assert.match(accountPanel, /승인 대기|선공개 멤버십/);
@@ -43,11 +50,23 @@ test("navigation and account panel expose membership language instead of credit 
 
 test("detail access uses membership status as the unlimited source of truth", () => {
   const poolRoute = source("src/app/api/packs/pool/route.ts");
+  const meRoute = source("src/app/api/packs/me/route.ts");
   const detailRoute = source("src/app/api/packs/pool/detail-access/route.ts");
+  const lookupPage = source("src/app/lookup/page.tsx");
+  const lookupRoute = source("src/app/api/lookup/by-url/route.ts");
 
   assert.match(poolRoute, /getProStatus/);
-  assert.match(poolRoute, /membership\.isPro \|\| membership\.isAdmin \|\| membership\.isBetaTester/);
+  assert.match(poolRoute, /hasMembershipAccess/);
+  assert.match(poolRoute, /membership_required/);
   assert.doesNotMatch(poolRoute, /isBetaTesterAuthId/);
+
+  assert.match(meRoute, /hasMembershipAccess/);
+  assert.match(meRoute, /membership_required/);
+
+  assert.match(lookupPage, /redirect\("\/plans\?from=lookup"\)/);
+  assert.match(lookupRoute, /hasMembershipAccess/);
+  assert.match(lookupRoute, /membership_required/);
+  assert.doesNotMatch(lookupRoute, /spendUserCredits|getUserCreditsReadOnly|chargeLookupCredit/);
 
   assert.match(detailRoute, /getProStatus/);
   assert.match(detailRoute, /membership_required/);
