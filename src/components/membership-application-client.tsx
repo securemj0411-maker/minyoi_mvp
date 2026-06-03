@@ -12,6 +12,10 @@ import {
 } from "@/lib/membership-plans";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
+const BANK_NAME = "우리은행";
+const ACCOUNT_NUMBER = "1002-367-160511";
+const ACCOUNT_HOLDER = "이민제";
+
 type ApplyState = "idle" | "submitting" | "sent" | "error";
 type PendingApplication = {
   id: number;
@@ -45,6 +49,7 @@ export default function MembershipApplicationClient({
   const [submittedPlan, setSubmittedPlan] = useState<MembershipPlan | null>(null);
   const [state, setState] = useState<ApplyState>(pendingApplication ? "sent" : "idle");
   const [message, setMessage] = useState<string | null>(null);
+  const [copyOk, setCopyOk] = useState(false);
   const [upsellOpen, setUpsellOpen] = useState(false);
   const [upsellStartedAt, setUpsellStartedAt] = useState<number | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
@@ -82,6 +87,16 @@ export default function MembershipApplicationClient({
     void submitApplication(plan);
   }
 
+  async function copyAccountNumber() {
+    try {
+      await navigator.clipboard.writeText(ACCOUNT_NUMBER.replaceAll("-", ""));
+      setCopyOk(true);
+      window.setTimeout(() => setCopyOk(false), 1800);
+    } catch {
+      setCopyOk(false);
+    }
+  }
+
   async function submitApplication(plan: MembershipPlan) {
     if (state === "submitting" || state === "sent") return;
     setState("submitting");
@@ -109,15 +124,15 @@ export default function MembershipApplicationClient({
 
     if (!res?.ok) {
       setState("error");
-      setMessage("신청 접수가 실패했어요. 잠시 후 다시 눌러주세요.");
+      setMessage("자리 예약이 실패했어요. 잠시 후 다시 눌러주세요.");
       return;
     }
     const payload = (await res.json().catch(() => null)) as { telegramSent?: boolean } | null;
     setSubmittedPlan(plan);
     setState("sent");
     setMessage(payload?.telegramSent === false
-      ? "신청은 접수됐어요. 운영자 알림은 확인 중이라, 필요하면 카톡으로도 알려주세요."
-      : `${plan.label} 신청이 접수됐어요. 운영자가 확인하고 안내할게요.`);
+      ? "자리는 예약됐어요. 운영자 알림은 확인 중이라, 입금 후 필요하면 카톡으로도 알려주세요."
+      : `${plan.label} 자리 예약 완료. 아래 계좌로 입금하면 운영자가 확인 후 피드를 열어줄게요.`);
   }
 
   if (isMember) {
@@ -136,13 +151,35 @@ export default function MembershipApplicationClient({
     const priceKrw = pendingApplication?.priceKrw ?? submittedPlan?.priceKrw ?? 99_000;
     return (
       <div className="rounded-[12px] border border-blue-100 bg-white px-3.5 py-3 dark:border-blue-950/70 dark:bg-zinc-950/50">
-        <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">신청 접수 완료</div>
+        <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">자리 예약 완료 · 입금 대기</div>
         <div className="mt-1 text-[15px] font-black text-zinc-950 dark:text-zinc-50">
           {planLabel} · {krw(priceKrw)}
         </div>
         <p className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
-          {message ?? "이미 신청이 접수되어 운영자 검토 중입니다. 컴퓨터·스마트폰 어디서 새로고침해도 이 상태가 유지됩니다."}
+          {message ?? "지역 티오 확인이 완료되어 자리가 예약됐습니다. 컴퓨터·스마트폰 어디서 새로고침해도 입금 대기 상태가 유지됩니다."}
         </p>
+        <div className="mt-3 rounded-[12px] bg-[#f5f7fb] p-3 dark:bg-zinc-900/70">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <div className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">{BANK_NAME}</div>
+              <div className="mt-1 font-black tabular-nums text-[19px] tracking-tight text-zinc-950 dark:text-zinc-50">
+                {ACCOUNT_NUMBER}
+              </div>
+              <div className="mt-1 text-[12px] font-bold text-zinc-700 dark:text-zinc-300">예금주 {ACCOUNT_HOLDER}</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => void copyAccountNumber()}
+              className="flex h-10 shrink-0 items-center justify-center rounded-xl bg-white px-3 text-[11px] font-black text-[#3182f6] ring-1 ring-zinc-200 transition hover:bg-[#ebf2ff] dark:bg-zinc-950 dark:text-blue-300 dark:ring-zinc-700 dark:hover:bg-blue-950/40"
+            >
+              {copyOk ? "복사됨" : "계좌 복사"}
+            </button>
+          </div>
+          <div className="mt-2 rounded-[10px] border border-blue-100 bg-white px-3 py-2 text-[11px] font-bold leading-4 text-zinc-600 dark:border-blue-950/60 dark:bg-zinc-950 dark:text-zinc-300">
+            입금 금액: <b className="text-[#3182f6] dark:text-blue-300">{krw(priceKrw)}</b>
+            {" "}· 입금 확인 후 운영자 페이지에서 승인됩니다.
+          </div>
+        </div>
       </div>
     );
   }
@@ -166,7 +203,7 @@ export default function MembershipApplicationClient({
         disabled={state === "submitting"}
         className="flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
       >
-        {state === "submitting" ? "신청 접수 중" : "멤버십 신청하기"}
+        {state === "submitting" ? "자리 예약 중" : "멤버십 신청하기"}
       </button>
       {message ? (
         <p className={`mt-2 break-keep text-[11px] font-bold leading-4 ${state === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}>
@@ -183,7 +220,7 @@ export default function MembershipApplicationClient({
                   신청 기간을 고르세요.
                 </h2>
                 <p className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
-                  승인 후 결제 안내를 드립니다. 월 단가는 기간이 길수록 낮아집니다.
+                  지역 티오는 바로 확인 완료로 처리됩니다. 월 단가는 기간이 길수록 낮아집니다.
                 </p>
               </div>
               <button
@@ -212,7 +249,7 @@ export default function MembershipApplicationClient({
                 disabled={state === "submitting"}
                 className="h-11 rounded-xl bg-[var(--brand-accent-strong)] text-[12px] font-black text-[var(--brand-cream)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
               >
-                {selectedPlan.label}로 신청하기
+                {selectedPlan.label} 자리 예약하기
               </button>
             </div>
           </div>
@@ -228,7 +265,7 @@ export default function MembershipApplicationClient({
               지금 기간을 늘리면 월 단가를 더 낮출 수 있어요.
             </h2>
             <p className="mt-2 break-keep text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
-              아래 카드는 선택만 됩니다. 마지막 신청 버튼을 눌러야 접수됩니다.
+              아래 카드는 선택만 됩니다. 마지막 예약 버튼을 눌러야 입금 안내가 열립니다.
             </p>
             <div className="mt-4 grid gap-2">
               {upsellPlans.map((plan) => {
@@ -285,7 +322,7 @@ export default function MembershipApplicationClient({
                 disabled={state === "submitting" || offerExpired || !selectedUpsellPlan}
                 className="h-10 rounded-xl bg-zinc-900 px-3 text-[12px] font-black text-white transition hover:bg-zinc-700 disabled:cursor-default disabled:opacity-50 dark:bg-white dark:text-zinc-950"
               >
-                {offerExpired ? "특별 조건 만료" : `${selectedUpsellPlan?.label ?? "특별가"}로 신청`}
+                {offerExpired ? "특별 조건 만료" : `${selectedUpsellPlan?.label ?? "특별가"}로 예약`}
               </button>
             </div>
           </div>

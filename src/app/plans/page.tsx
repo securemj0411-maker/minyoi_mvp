@@ -9,16 +9,18 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+const SLOT_CAPACITY = 300;
+
 const FEATURES = [
   "승인된 계정만 원본 링크, 시세 근거, 예상 수익, 셀러 신뢰 신호를 한 화면에서 봅니다.",
-  "당근은 내 근처에 떠야 실전성이 생겨서, 지역별 티오를 같이 봅니다.",
+  "당근은 내 근처에 떠야 실전성이 생겨서, 지역별 티오를 먼저 확인합니다.",
   "돈 되는 매물은 적고 오래 남지 않아서, 보는 사람 수를 무제한으로 열지 않습니다.",
 ];
 
 const REVIEW_STEPS = [
-  { label: "1. 신청", value: "카카오 로그인 후 신청합니다." },
-  { label: "2. 확인", value: "운영자가 지역·사용 목적·현재 티오를 봅니다." },
-  { label: "3. 승인", value: "승인 후 결제 안내와 상품 피드를 엽니다." },
+  { label: "1. 신청", value: "카카오 로그인 후 기간을 선택합니다." },
+  { label: "2. 자리 확인", value: "지역 티오는 즉시 가능으로 확인합니다." },
+  { label: "3. 입금 후 활성", value: "입금 확인 후 상품 피드를 엽니다." },
 ];
 
 const SCARCITY_ROWS = [
@@ -32,6 +34,11 @@ type PendingApplicationRow = {
   product_key: string;
   price_krw: number;
   created_at: string;
+};
+
+type SlotSnapshot = {
+  capacity: number;
+  filled: number;
 };
 
 async function loadPendingApplication(authUserId: string): Promise<PendingApplicationRow | null> {
@@ -48,12 +55,30 @@ async function loadPendingApplication(authUserId: string): Promise<PendingApplic
   }
 }
 
+async function loadSlotSnapshot(): Promise<SlotSnapshot> {
+  try {
+    const res = await restFetch(
+      `${tableUrl("mvp_membership_applications")}?select=id&status=in.(pending,approved)&limit=1`,
+      { headers: serviceHeaders("count=exact"), cache: "no-store" },
+    );
+    const rawTotal = res.headers.get("content-range")?.split("/").at(1);
+    const total = Number(rawTotal);
+    return {
+      capacity: SLOT_CAPACITY,
+      filled: Number.isFinite(total) ? Math.min(Math.max(0, total), SLOT_CAPACITY - 1) : 0,
+    };
+  } catch {
+    return { capacity: SLOT_CAPACITY, filled: 0 };
+  }
+}
+
 export default async function PlansPage() {
   const auth = await requireSupabaseUserFromCookies();
   const membership = auth.ok ? await getProStatus(auth.user, userRefForAuthUser(auth.user.id)) : null;
   const isMember = Boolean(membership?.isPro || membership?.isAdmin || membership?.isBetaTester);
   const pendingApplication = auth.ok && !isMember ? await loadPendingApplication(auth.user.id) : null;
   const pendingPlan = pendingApplication ? getMembershipPlan(pendingApplication.product_key) : null;
+  const slotSnapshot = await loadSlotSnapshot();
 
   return (
     <main className="min-h-screen bg-[#f5f7fb] px-3 py-4 dark:bg-zinc-950 sm:px-5 sm:py-8">
@@ -64,7 +89,7 @@ export default async function PlansPage() {
               선공개 300명 멤버십
             </h1>
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {["신청제", "운영자 검토", "승인 후 활성"].map((label) => (
+              {["선공개 300명", "지역 티오 확인", "운영자 입금 확인"].map((label) => (
                 <span
                   key={label}
                   className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-[#3182f6] ring-1 ring-blue-100 dark:bg-blue-950/30 dark:text-blue-200 dark:ring-blue-900/60"
@@ -78,8 +103,8 @@ export default async function PlansPage() {
               아무나 보면 그마저도 사라집니다.
             </p>
             <p className="mt-3 max-w-[480px] break-keep text-[13px] font-semibold leading-6 text-zinc-600 dark:text-zinc-300 sm:text-[14px]">
-              신청 받고, 검토하고, 승인된 분만 봅니다.
-              당근은 내 근처에 떠야 의미가 있어서 지역별로 티오를 관리합니다.
+              신청하면 지역 티오를 바로 확인하고 자리를 예약합니다.
+              선공개 300명 기준으로 지역별로 티오를 관리하고, 계좌이체 입금 확인 후 승인된 분만 봅니다.
             </p>
             <div className="mt-5 rounded-[14px] border border-blue-100 bg-blue-50/70 px-4 py-4 dark:border-blue-950/70 dark:bg-blue-950/20">
               <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-200">Membership note</div>
@@ -87,11 +112,25 @@ export default async function PlansPage() {
                 월 33,000원꼴
               </div>
               <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
-                3개월 99,000원 · 승인 후 결제 안내
+                3개월 99,000원 · 자리 예약 후 계좌이체
+              </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <div className="rounded-[12px] bg-white px-3 py-2 dark:bg-zinc-950/60">
+                  <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">선공개 티오</div>
+                  <div className="mt-1 text-[15px] font-black text-zinc-950 dark:text-zinc-50">
+                    {slotSnapshot.filled}/{slotSnapshot.capacity}명 예약
+                  </div>
+                </div>
+                <div className="rounded-[12px] bg-white px-3 py-2 dark:bg-zinc-950/60">
+                  <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">지역 티오</div>
+                  <div className="mt-1 text-[15px] font-black text-emerald-700 dark:text-emerald-300">
+                    신청 가능
+                  </div>
+                </div>
               </div>
               <div className="mt-3 border-t border-blue-100 pt-3 dark:border-blue-950/70">
                 <div className="mb-2 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-                  신청은 먼저 누르고, 기간은 다음 단계에서 고릅니다.
+                  신청하면 지역 티오는 즉시 확인 완료로 처리되고, 기간 선택 후 입금 안내가 열립니다.
                 </div>
                 <MembershipApplicationClient
                   isAuthed={auth.ok}

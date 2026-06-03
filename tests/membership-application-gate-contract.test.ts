@@ -14,9 +14,11 @@ test("/plans is a membership application page, not a credit package page", () =>
   const applyClient = source("src/components/membership-application-client.tsx");
   const planConfig = source("src/lib/membership-plans.ts");
   assert.match(plans, /선공개 300명 멤버십/);
-  assert.match(plans, /신청제/);
-  assert.match(plans, /운영자 검토/);
-  assert.match(plans, /승인 후 활성/);
+  assert.match(plans, /선공개 300명/);
+  assert.match(plans, /지역 티오 확인/);
+  assert.match(plans, /운영자 입금 확인/);
+  assert.match(plans, /SLOT_CAPACITY = 300/);
+  assert.match(plans, /신청 가능/);
   assert.match(planConfig, /월 33,000원꼴/);
   assert.match(planConfig, /priceKrw: 99_000/);
   assert.match(planConfig, /limited_300_1mo/);
@@ -31,6 +33,9 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(applyClient, /신청하기|로그인하고 신청하기/);
   assert.match(applyClient, /telegramSent/);
   assert.match(applyClient, /운영자 알림은 확인 중/);
+  assert.match(applyClient, /자리 예약 완료 · 입금 대기/);
+  assert.match(applyClient, /ACCOUNT_NUMBER/);
+  assert.match(applyClient, /입금 금액/);
   assert.match(applyClient, /PlanGrid/);
   assert.match(applyClient, /selectorOpen/);
   assert.match(applyClient, /신청 기간을 고르세요/);
@@ -38,9 +43,9 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(applyClient, /UPSELL_PLANS_FROM_3MO/);
   assert.match(applyClient, /selectedUpsellKey/);
   assert.match(applyClient, /setSelectedUpsellKey\(plan\.key\)/);
-  assert.match(applyClient, /마지막 신청 버튼을 눌러야 접수됩니다/);
+  assert.match(applyClient, /마지막 예약 버튼을 눌러야 입금 안내가 열립니다/);
   assert.doesNotMatch(applyClient, /onClick=\{\(\) => void submitApplication\(plan\)\}/);
-  assert.match(applyClient, /신청 접수 완료/);
+  assert.doesNotMatch(applyClient, /운영자 검토 중입니다/);
   assert.doesNotMatch(applyClient, /localStorage/);
   assert.doesNotMatch(plans, /크레딧 충전|1크레딧|billing\/manual\?credits/);
   assert.doesNotMatch(plansLayout, /크레딧 충전|1크레딧|billing\/manual/);

@@ -48,7 +48,8 @@ export default function MembershipApplicationsPanel({ initialRows }: { initialRo
 
   async function decide(row: MembershipApplicationRow, decision: "approve" | "reject") {
     const target = row.displayName || row.email || row.authUserId;
-    const verb = decision === "approve" ? "승인하고 90일 멤버십 부여" : "거절";
+    const plan = getMembershipPlan(row.productKey);
+    const verb = decision === "approve" ? `입금 확인 후 ${plan.label} 멤버십 부여` : "거절";
     const adminNote = window.prompt(`${target} 신청을 ${verb}할까요? 메모(선택):`, "");
     if (adminNote === null) return;
     setPendingId(row.id);
@@ -91,11 +92,11 @@ export default function MembershipApplicationsPanel({ initialRows }: { initialRo
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">▌MEMBERSHIP APPLICATIONS</div>
-          <p className="mt-1 text-[11px] font-bold text-zinc-400">신청자를 승인하면 90일 pro 멤버십이 바로 열립니다. 크레딧 지급은 하지 않습니다.</p>
+          <p className="mt-1 text-[11px] font-bold text-zinc-400">입금 확인 후 승인하면 선택한 기간만큼 pro 멤버십이 열립니다. 크레딧 지급은 하지 않습니다.</p>
         </div>
         <div className="text-right">
           <div className="text-2xl font-black tabular-nums text-amber-200">{pendingRows.length}</div>
-          <div className="text-[9px] font-black uppercase tracking-[0.18em] text-zinc-500">pending</div>
+          <div className="text-[9px] font-black uppercase tracking-[0.18em] text-zinc-500">payment pending</div>
         </div>
       </div>
 

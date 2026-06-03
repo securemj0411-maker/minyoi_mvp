@@ -76,15 +76,16 @@ export async function POST(req: Request) {
 
   const notifyResult = await notifyAdminTelegram(
     [
-      "[득템잡이] 선공개 멤버십 신청",
-      `신청 ID: ${applicationId ?? "unknown"}`,
+      "[득템잡이] 선공개 300명 자리 예약 / 입금 대기",
+      `예약 ID: ${applicationId ?? "unknown"}`,
       `이름: ${String(name)}`,
       `이메일: ${email}`,
       `auth_user_id: ${auth.user.id}`,
       `user_ref: ${userRef}`,
       `상품: ${selectedPlan.label} / ${selectedPlan.priceKrw.toLocaleString("ko-KR")}원`,
       `월 단가: ${selectedPlan.monthlyLabel}`,
-      "처리: cau 운영자 페이지에서 승인/거절",
+      "지역 티오: mock 확인 완료",
+      "처리: 입금 확인 후 cau 운영자 페이지에서 승인/거절",
     ].join("\n"),
     { parseMode: null },
   );

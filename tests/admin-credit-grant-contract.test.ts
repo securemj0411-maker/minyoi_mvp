@@ -22,7 +22,8 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(applications, /APPROVE/);
   assert.match(applications, /REJECT/);
   assert.match(applications, /\/api\/admin\/membership-applications\/decide/);
-  assert.match(applications, /90일 pro 멤버십/);
+  assert.match(applications, /선택한 기간만큼 pro 멤버십/);
+  assert.match(applications, /입금 확인 후/);
   assert.match(applications, /getMembershipPlan/);
   assert.match(applications, /plan\.label/);
   assert.doesNotMatch(applications, /\/ 3개월/);
@@ -36,7 +37,12 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(applyRoute, /productKey/);
   assert.match(applyRoute, /selectedPlan/);
   assert.match(applyRoute, /price_krw: selectedPlan\.priceKrw/);
+  assert.match(applyRoute, /자리 예약 \/ 입금 대기/);
+  assert.match(applyRoute, /지역 티오: mock 확인 완료/);
   assert.match(decideRoute, /mvp_user_plans/);
+  assert.match(decideRoute, /getMembershipPlan/);
+  assert.match(decideRoute, /periodEndMonths\(selectedPlan\.months\)/);
+  assert.match(decideRoute, /plan_months: selectedPlan\.months/);
   assert.match(decideRoute, /plan_key: "pro"/);
   assert.match(decideRoute, /"approved"/);
   assert.match(decideRoute, /"rejected"/);
