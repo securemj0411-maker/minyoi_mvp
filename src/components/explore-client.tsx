@@ -85,6 +85,10 @@ type PoolItem = {
   daangnDistanceKm?: number | null;
   daangnDistanceLabel?: string | null;
   daangnDistanceRank?: number | null;
+  marketBasis?: RevealCard["marketBasis"] | null;
+  velocityBasis?: RevealCard["velocityBasis"];
+  skuListingFlow?: RevealCard["skuListingFlow"];
+  optionBaseAssumed?: RevealCard["optionBaseAssumed"];
 };
 
 type ScrappedPoolItem = PoolItem & {
@@ -296,6 +300,29 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
     : 0;
   const feedBasisSource = item.marketplaceSource === "daangn" ? "daangn" : null;
   const feedBasisSourceLabel = feedBasisSource ? "당근마켓" : null;
+  const fallbackMarketBasis: RevealCard["marketBasis"] = {
+    comparableKey: item.comparableKey,
+    label: item.skuName ?? item.name,
+    p25Price: null,
+    medianPrice: item.skuMedian,
+    p75Price: null,
+    sampleCount: 0,
+    activeSampleCount: 0,
+    soldSampleCount: 0,
+    disappearedSampleCount: 0,
+    confidence: null,
+    priceSource: "market",
+    basisSource: feedBasisSource,
+    basisSourceLabel: feedBasisSourceLabel,
+    sourceFallbackUsed: false,
+    sourceSampleCount: null,
+    computedAt: null,
+    excludedExamples: [],
+    conditionClass: item.conditionClass,
+    conditionLabel: null,
+    fallbackUsed: false,
+    otherConditions: [],
+  };
   return {
     pid: item.pid,
     name: item.name,
@@ -311,30 +338,8 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
     expectedProfitMax: item.expectedProfitMax,
     confidence: item.confidence ?? 0,
     band: (item.profitBand as 1 | 2 | 3) ?? null,
-    marketBasis: {
-      comparableKey: item.comparableKey,
-      label: item.skuName ?? item.name,
-      p25Price: null,
-      medianPrice: item.skuMedian,
-      p75Price: null,
-      sampleCount: 0,
-      activeSampleCount: 0,
-      soldSampleCount: 0,
-      disappearedSampleCount: 0,
-      confidence: null,
-      priceSource: "market",
-      basisSource: feedBasisSource,
-      basisSourceLabel: feedBasisSourceLabel,
-      sourceFallbackUsed: false,
-      sourceSampleCount: null,
-      computedAt: null,
-      excludedExamples: [],
-      conditionClass: item.conditionClass,
-      conditionLabel: null,
-      fallbackUsed: false,
-      otherConditions: [],
-    },
-    velocityBasis: null,
+    marketBasis: item.marketBasis ?? fallbackMarketBasis,
+    velocityBasis: item.velocityBasis ?? null,
     lastVerifiedAt: item.lastVerifiedAt,
     firstSeenAt: item.firstSeenAt ?? null,
     freshSeconds,
@@ -358,7 +363,8 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
       shippingAssumption: item.shippingAssumption === "direct_only" || item.shippingAssumption === "included" || item.shippingAssumption === "separate" || item.shippingAssumption === "free_shipping" ? item.shippingAssumption : "unknown",
       directTradeLocation: item.directTradeLocation ?? null,
     },
-    optionBaseAssumed: null,
+    skuListingFlow: item.skuListingFlow ?? null,
+    optionBaseAssumed: item.optionBaseAssumed ?? null,
     // Wave 714k (2026-05-23): 신발/의류 5-tier grading + chips — 메인 feed 카드 클릭 → 상세 모달 path 전달.
     conditionTier: item.conditionTier ?? null,
     conditionCluster: item.conditionCluster ?? null,
@@ -757,6 +763,10 @@ function revealCardToPoolItem(card: RevealCard): PoolItem {
     imageCount: card.savedDetail?.imageCount ?? null,
     descriptionPreview: card.savedDetail?.descriptionPreview ?? "",
     soldOut: false,
+    marketBasis: card.marketBasis ?? null,
+    velocityBasis: card.velocityBasis ?? null,
+    skuListingFlow: card.skuListingFlow ?? null,
+    optionBaseAssumed: card.optionBaseAssumed ?? null,
   };
 }
 
@@ -2327,6 +2337,10 @@ export default function ExploreClient({
               comparableKey: marketBasis?.comparableKey ?? item.comparableKey,
               expectedProfitMin: strictSourceMissing ? 0 : (recomputedProfit?.min ?? item.expectedProfitMin),
               expectedProfitMax: strictSourceMissing ? 0 : (recomputedProfit?.max ?? item.expectedProfitMax),
+              marketBasis: marketBasis ?? item.marketBasis ?? null,
+              velocityBasis: data.analysis!.velocityBasis ?? item.velocityBasis ?? null,
+              skuListingFlow: data.analysis!.skuListingFlow ?? item.skuListingFlow ?? null,
+              optionBaseAssumed: data.analysis!.optionBaseAssumed ?? item.optionBaseAssumed ?? null,
             };
           }));
         }

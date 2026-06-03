@@ -747,15 +747,41 @@ function isUsableConditionVelocity(row: MarketVelocityRow | null | undefined): r
   return soldSample >= 3 && sold7d > 0 && Number.isFinite(medianHours) && medianHours > 0;
 }
 
+function velocityComputedMs(row: MarketVelocityRow) {
+  const ms = row.computed_at ? Date.parse(row.computed_at) : Number.NaN;
+  return Number.isFinite(ms) ? ms : 0;
+}
+
+function shouldReplaceVelocityRow(existing: MarketVelocityRow | undefined, candidate: MarketVelocityRow) {
+  if (!existing) return true;
+  const existingUsable = isUsableConditionVelocity(existing);
+  const candidateUsable = isUsableConditionVelocity(candidate);
+  if (existingUsable !== candidateUsable) return candidateUsable;
+
+  const existingComputed = velocityComputedMs(existing);
+  const candidateComputed = velocityComputedMs(candidate);
+  if (existingComputed !== candidateComputed) return candidateComputed > existingComputed;
+
+  const existingSold7d = Number(existing.sold_7d_count ?? 0);
+  const candidateSold7d = Number(candidate.sold_7d_count ?? 0);
+  if (existingSold7d !== candidateSold7d) return candidateSold7d > existingSold7d;
+
+  return Number(candidate.observed_sold_sample_count ?? 0) > Number(existing.observed_sold_sample_count ?? 0);
+}
+
+function setBetterVelocityRow(target: Map<string, MarketVelocityRow>, key: string, row: MarketVelocityRow) {
+  if (shouldReplaceVelocityRow(target.get(key), row)) target.set(key, row);
+}
+
 function addVelocityRowsToStatsMap(rows: MarketVelocityRow[], target: Map<string, MarketVelocityRow>) {
   for (const row of rows) {
     const condition = normalizedVelocityCondition(row.condition_class);
     if (condition) {
       if (!isUsableConditionVelocity(row)) continue;
       const conditionKey = velocityStatsConditionKey(row.comparable_key, condition);
-      if (!target.has(conditionKey)) target.set(conditionKey, row);
-    } else if (!target.has(row.comparable_key)) {
-      target.set(row.comparable_key, row);
+      setBetterVelocityRow(target, conditionKey, row);
+    } else {
+      setBetterVelocityRow(target, row.comparable_key, row);
     }
   }
 }
