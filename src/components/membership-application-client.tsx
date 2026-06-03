@@ -266,7 +266,19 @@ export default function MembershipApplicationClient({
       return;
     }
 
-    const payload = (await res.json().catch(() => null)) as { telegramSent?: boolean; scheduledAutoApproveAt?: string | null } | null;
+    const payload = (await res.json().catch(() => null)) as {
+      alreadyMember?: boolean;
+      telegramSent?: boolean;
+      scheduledAutoApproveAt?: string | null;
+    } | null;
+    if (payload?.alreadyMember) {
+      setApprovalDetected(true);
+      setApprovalMessage("멤버십이 이미 활성화되어 있어요. 상품 피드로 이동합니다.");
+      setDepositNotifyState("sent");
+      setDepositNotifyMessage("이미 승인된 계정입니다.");
+      window.setTimeout(() => router.replace("/me"), 900);
+      return;
+    }
     const fallbackAutoApproveAt = new Date(Date.now() + 5 * 60_000).toISOString();
     setAutoApproveAt(payload?.scheduledAutoApproveAt ?? fallbackAutoApproveAt);
     setDepositNotifyState("sent");

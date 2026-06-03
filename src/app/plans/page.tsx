@@ -47,7 +47,7 @@ type SlotSnapshot = {
 async function loadPendingApplication(authUserId: string): Promise<PendingApplicationRow | null> {
   try {
     const res = await restFetch(
-      `${tableUrl("mvp_membership_applications")}?select=id,application_kind,product_key,price_krw,deposit_confirmed_at,scheduled_auto_approve_at,created_at&auth_user_id=eq.${authUserId}&status=eq.pending&limit=1`,
+      `${tableUrl("mvp_membership_applications")}?select=id,application_kind,product_key,price_krw,deposit_confirmed_at,scheduled_auto_approve_at,created_at&auth_user_id=eq.${authUserId}&status=eq.pending&order=created_at.desc&limit=1`,
       { headers: serviceHeaders(), cache: "no-store" },
     );
     if (!res.ok) return null;

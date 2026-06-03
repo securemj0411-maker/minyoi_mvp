@@ -22,12 +22,9 @@ export async function POST(req: Request) {
 
   const userRef = userRefForAuthUser(auth.user.id);
   const status = await getProStatus(auth.user, userRef);
-  if (status.isPro || status.isAdmin || status.isBetaTester) {
-    return NextResponse.json({ ok: true, alreadyMember: true, notified: false });
-  }
 
   const pendingRes = await restFetch(
-    `${tableUrl("mvp_membership_applications")}?select=id,user_ref,email,display_name,application_kind,product_key,price_krw,admin_note,deposit_confirmed_at,scheduled_auto_approve_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
+    `${tableUrl("mvp_membership_applications")}?select=id,user_ref,email,display_name,application_kind,product_key,price_krw,admin_note,deposit_confirmed_at,scheduled_auto_approve_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&order=created_at.desc&limit=1`,
     { headers: serviceHeaders() },
   );
   const pendingRows = (await pendingRes.json()) as Array<{
@@ -44,7 +41,13 @@ export async function POST(req: Request) {
   }>;
   const application = pendingRows[0] ?? null;
   if (!application) {
+    if (status.isPro || status.isAdmin || status.isBetaTester) {
+      return NextResponse.json({ ok: true, alreadyMember: true, notified: false });
+    }
     return NextResponse.json({ error: "no_pending_application" }, { status: 404 });
+  }
+  if ((status.isPro || status.isAdmin || status.isBetaTester) && application.application_kind !== "renewal") {
+    return NextResponse.json({ ok: true, alreadyMember: true, notified: false });
   }
 
   const selectedPlan = getMembershipPlan(application.product_key);
@@ -57,8 +60,7 @@ export async function POST(req: Request) {
   const email = application.email ?? auth.user.email ?? "email 없음";
   const nowIso = new Date().toISOString();
   const depositConfirmedAt = application.deposit_confirmed_at ?? nowIso;
-  const scheduledAutoApproveAt = application.scheduled_auto_approve_at
-    ?? new Date(Date.now() + AUTO_APPROVE_AFTER_MS).toISOString();
+  const scheduledAutoApproveAt = new Date(Date.now() + AUTO_APPROVE_AFTER_MS).toISOString();
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://minyoi-mvp.vercel.app";
   const approveToken = signAdminAction("membership_application", application.id, "approve");
   const rejectToken = signAdminAction("membership_application", application.id, "reject");

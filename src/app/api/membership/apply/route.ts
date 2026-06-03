@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { signAdminAction } from "@/lib/admin-action-token";
 import { getMembershipPlan } from "@/lib/membership-plans";
 import { notifyAdminTelegram } from "@/lib/telegram-notify";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -42,7 +41,7 @@ export async function POST(req: Request) {
   const email = auth.user.email ?? "email 없음";
   const name = auth.user.user_metadata?.name ?? auth.user.user_metadata?.full_name ?? auth.user.user_metadata?.nickname ?? "이름 없음";
   const pendingRes = await restFetch(
-    `${tableUrl("mvp_membership_applications")}?select=id,status,admin_note,application_kind,deposit_confirmed_at,scheduled_auto_approve_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
+    `${tableUrl("mvp_membership_applications")}?select=id,status,admin_note,application_kind,deposit_confirmed_at,scheduled_auto_approve_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&order=created_at.desc&limit=1`,
     { headers: serviceHeaders() },
   );
   const pendingRows = (await pendingRes.json()) as Array<{
@@ -97,16 +96,6 @@ export async function POST(req: Request) {
     });
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://minyoi-mvp.vercel.app";
-  const approveToken = applicationId ? signAdminAction("membership_application", applicationId, "approve") : "";
-  const rejectToken = applicationId ? signAdminAction("membership_application", applicationId, "reject") : "";
-  const approveLink = applicationId && approveToken
-    ? `${baseUrl}/api/admin/membership-applications/decide?id=${applicationId}&decision=approve&token=${encodeURIComponent(approveToken)}`
-    : null;
-  const rejectLink = applicationId && rejectToken
-    ? `${baseUrl}/api/admin/membership-applications/decide?id=${applicationId}&decision=reject&token=${encodeURIComponent(rejectToken)}`
-    : null;
-
   const notifyResult = await notifyAdminTelegram(
     [
       isRenewal ? "[득템잡이] 멤버십 연장 예약 / 입금 대기" : "[득템잡이] 선공개 300명 자리 예약 / 입금 대기",
@@ -118,19 +107,9 @@ export async function POST(req: Request) {
       `상품: ${selectedPlan.label} / ${selectedPlan.priceKrw.toLocaleString("ko-KR")}원`,
       `월 단가: ${selectedPlan.monthlyLabel}`,
       isRenewal ? `현재 만료일: ${status.proUntil ?? "기간 제한 없음"}` : "내 지역 티오: 신청자 기준 mock 확인 완료",
-      "처리: 입금 확인 후 아래 링크로 승인/거절 (운영자 세션 불필요)",
-      approveLink ? `승인: ${approveLink}` : null,
-      rejectLink ? `거절: ${rejectLink}` : null,
+      "처리: 사용자가 입금했어요 버튼을 누르면 승인/거절 링크를 다시 보냅니다.",
     ].filter(Boolean).join("\n"),
-    {
-      parseMode: null,
-      replyMarkup: approveLink && rejectLink ? {
-        inline_keyboard: [[
-          { text: "✅ 승인", url: approveLink },
-          { text: "❌ 거절", url: rejectLink },
-        ]],
-      } : undefined,
-    },
+    { parseMode: null },
   );
 
   const notificationLine = notifyResult.ok
@@ -167,7 +146,7 @@ export async function DELETE(req: Request) {
 
   const userRef = userRefForAuthUser(auth.user.id);
   const pendingRes = await restFetch(
-    `${tableUrl("mvp_membership_applications")}?select=id,user_ref,email,display_name,application_kind,product_key,price_krw,admin_note,deposit_confirmed_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
+    `${tableUrl("mvp_membership_applications")}?select=id,user_ref,email,display_name,application_kind,product_key,price_krw,admin_note,deposit_confirmed_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&order=created_at.desc&limit=1`,
     { headers: serviceHeaders() },
   );
   const pendingRows = (await pendingRes.json()) as Array<{

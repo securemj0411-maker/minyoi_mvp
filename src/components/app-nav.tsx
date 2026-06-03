@@ -2,7 +2,7 @@
 
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AccountPanel } from "@/components/account-panel";
 import { BrandLogo } from "@/components/brand-logo";
@@ -200,6 +200,7 @@ function AdminTerminalNav() {
 
 export default function AppNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -306,7 +307,11 @@ export default function AppNav() {
     await supabase.auth.signOut();
     setUser(null);
     setMenuOpen(false);
-  }, []);
+    setMobileDrawerOpen(false);
+    setAccountSheetOpen(false);
+    router.replace("/");
+    router.refresh();
+  }, [router]);
 
   const navLinks = [
     { href: "/", label: "추천 상품" },
