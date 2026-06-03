@@ -40,6 +40,13 @@ function krw(value: number): string {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
 }
 
+function statusLabel(row: MembershipApplicationRow): string {
+  if (row.status === "rejected" && row.adminNote?.includes("user_cancelled_reservation")) {
+    return "cancelled";
+  }
+  return row.status;
+}
+
 export default function MembershipApplicationsPanel({ initialRows }: { initialRows: MembershipApplicationRow[] }) {
   const [rows, setRows] = useState(initialRows);
   const [pendingId, setPendingId] = useState<number | null>(null);
@@ -167,7 +174,7 @@ export default function MembershipApplicationsPanel({ initialRows }: { initialRo
 
       {recentRows.length > 0 ? (
         <div className="mt-3 text-[10px] text-zinc-500">
-          최근 처리: {recentRows.map((row) => `#${row.id} ${row.status}`).join(" · ")}
+          최근 처리: {recentRows.map((row) => `#${row.id} ${statusLabel(row)}`).join(" · ")}
         </div>
       ) : null}
     </section>

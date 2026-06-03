@@ -12,6 +12,7 @@ test("/plans is a membership application page, not a credit package page", () =>
   const plans = source("src/app/plans/page.tsx");
   const plansLayout = source("src/app/plans/layout.tsx");
   const applyClient = source("src/components/membership-application-client.tsx");
+  const applyRoute = source("src/app/api/membership/apply/route.ts");
   const planConfig = source("src/lib/membership-plans.ts");
   assert.match(plans, /선공개 300명 멤버십/);
   assert.match(plans, /선공개 300명/);
@@ -30,6 +31,7 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.doesNotMatch(plans, /count=exact/);
   assert.match(plans, /status=eq\.pending/);
   assert.match(plans, /pendingApplication/);
+  assert.match(plans, /planKey: pendingPlan\?\.key/);
   assert.match(plans, /MEMBERSHIP_PLANS/);
   assert.doesNotMatch(plans, /결제 페이지가 아니라/);
   assert.match(plansLayout, /선공개 멤버십 신청/);
@@ -38,6 +40,11 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(applyClient, /telegramSent/);
   assert.match(applyClient, /운영자 알림은 확인 중/);
   assert.match(applyClient, /내 지역 티오 확인 완료 · 입금 대기/);
+  assert.match(applyClient, /기간\/금액 변경/);
+  assert.match(applyClient, /예약 취소/);
+  assert.match(applyClient, /cancelReservation/);
+  assert.match(applyClient, /reservationCancelled/);
+  assert.match(applyClient, /method: "DELETE"/);
   assert.match(applyClient, /ACCOUNT_NUMBER/);
   assert.match(applyClient, /입금 금액/);
   assert.match(applyClient, /PlanGrid/);
@@ -51,6 +58,10 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.doesNotMatch(applyClient, /onClick=\{\(\) => void submitApplication\(plan\)\}/);
   assert.doesNotMatch(applyClient, /운영자 검토 중입니다/);
   assert.doesNotMatch(applyClient, /localStorage/);
+  assert.match(applyRoute, /export async function DELETE/);
+  assert.match(applyRoute, /user_cancelled_reservation/);
+  assert.match(applyRoute, /telegram_cancel_notified/);
+  assert.match(applyRoute, /status: "rejected"/);
   assert.doesNotMatch(plans, /크레딧 충전|1크레딧|billing\/manual\?credits/);
   assert.doesNotMatch(plansLayout, /크레딧 충전|1크레딧|billing\/manual/);
   assert.doesNotMatch(applyClient, /결제하기|크레딧 충전|billing\/manual/);

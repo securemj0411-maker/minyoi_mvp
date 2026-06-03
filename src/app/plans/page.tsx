@@ -129,6 +129,7 @@ export default async function PlansPage() {
                   plans={MEMBERSHIP_PLANS}
                   pendingApplication={pendingApplication ? {
                     id: pendingApplication.id,
+                    planKey: pendingPlan?.key ?? "limited_300_3mo",
                     planLabel: pendingPlan?.label ?? "멤버십",
                     priceKrw: Number(pendingApplication.price_krw ?? pendingPlan?.priceKrw ?? 99_000),
                     createdAt: pendingApplication.created_at,

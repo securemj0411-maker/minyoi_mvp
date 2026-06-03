@@ -19,6 +19,7 @@ const ACCOUNT_HOLDER = "이민제";
 type ApplyState = "idle" | "submitting" | "sent" | "error";
 type PendingApplication = {
   id: number;
+  planKey: MembershipPlanKey;
   planLabel: string;
   priceKrw: number;
   createdAt: string;
@@ -44,12 +45,15 @@ export default function MembershipApplicationClient({
   pendingApplication: PendingApplication | null;
 }) {
   const [selectorOpen, setSelectorOpen] = useState(false);
-  const [selectedKey, setSelectedKey] = useState<MembershipPlanKey>(plans[1]?.key ?? "limited_300_3mo");
+  const [selectedKey, setSelectedKey] = useState<MembershipPlanKey>(
+    getMembershipPlan(pendingApplication?.planKey ?? plans[1]?.key).key,
+  );
   const [selectedUpsellKey, setSelectedUpsellKey] = useState<MembershipPlanKey | null>(null);
   const [submittedPlan, setSubmittedPlan] = useState<MembershipPlan | null>(null);
   const [state, setState] = useState<ApplyState>(pendingApplication ? "sent" : "idle");
   const [message, setMessage] = useState<string | null>(null);
   const [copyOk, setCopyOk] = useState(false);
+  const [reservationCancelled, setReservationCancelled] = useState(false);
   const [upsellOpen, setUpsellOpen] = useState(false);
   const [upsellStartedAt, setUpsellStartedAt] = useState<number | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
@@ -67,13 +71,13 @@ export default function MembershipApplicationClient({
   }, [upsellOpen]);
 
   function openSelector() {
-    if (state === "submitting" || state === "sent") return;
+    if (state === "submitting") return;
     setMessage(null);
     setSelectorOpen(true);
   }
 
   function beginApplication(plan: MembershipPlan) {
-    if (state === "submitting" || state === "sent") return;
+    if (state === "submitting") return;
     const nextUpsells = upsellPlansFor(plan);
     setSelectorOpen(false);
     if (!plan.isUpsell && nextUpsells.length > 0) {
@@ -98,7 +102,7 @@ export default function MembershipApplicationClient({
   }
 
   async function submitApplication(plan: MembershipPlan) {
-    if (state === "submitting" || state === "sent") return;
+    if (state === "submitting") return;
     setState("submitting");
     setMessage(null);
     setSelectorOpen(false);
@@ -129,10 +133,49 @@ export default function MembershipApplicationClient({
     }
     const payload = (await res.json().catch(() => null)) as { telegramSent?: boolean } | null;
     setSubmittedPlan(plan);
+    setReservationCancelled(false);
     setState("sent");
     setMessage(payload?.telegramSent === false
       ? "내 지역 티오 확인 후 자리는 예약됐어요. 운영자 알림은 확인 중이라, 입금 후 필요하면 카톡으로도 알려주세요."
       : `${plan.label} 내 지역 티오 확인 완료. 아래 계좌로 입금하면 운영자가 확인 후 피드를 열어줄게요.`);
+  }
+
+  async function cancelReservation() {
+    if (state === "submitting") return;
+    const confirmed = window.confirm("입금 전 자리 예약을 취소할까요? 취소 후 다시 신청할 수 있어요.");
+    if (!confirmed) return;
+
+    setState("submitting");
+    setMessage(null);
+    setSelectorOpen(false);
+    setUpsellOpen(false);
+
+    const supabase = getSupabaseBrowserClient();
+    const { data } = supabase ? await supabase.auth.getSession() : { data: null };
+    const token = data?.session?.access_token;
+    if (!token) {
+      setState("error");
+      setMessage("로그인 세션을 다시 확인해주세요.");
+      return;
+    }
+
+    const res = await fetch("/api/membership/apply", {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }).catch(() => null);
+
+    if (!res?.ok) {
+      setState("error");
+      setMessage("예약 취소가 실패했어요. 잠시 후 다시 눌러주세요.");
+      return;
+    }
+
+    setSubmittedPlan(null);
+    setReservationCancelled(true);
+    setState("idle");
+    setMessage("예약이 취소됐어요. 다시 신청할 수 있어요.");
   }
 
   if (isMember) {
@@ -143,44 +186,6 @@ export default function MembershipApplicationClient({
       >
         이미 승인됨
       </Link>
-    );
-  }
-
-  if (pendingApplication || state === "sent") {
-    const planLabel = pendingApplication?.planLabel ?? submittedPlan?.label ?? "멤버십";
-    const priceKrw = pendingApplication?.priceKrw ?? submittedPlan?.priceKrw ?? 99_000;
-    return (
-      <div className="rounded-[12px] border border-blue-100 bg-white px-3.5 py-3 dark:border-blue-950/70 dark:bg-zinc-950/50">
-        <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">내 지역 티오 확인 완료 · 입금 대기</div>
-        <div className="mt-1 text-[15px] font-black text-zinc-950 dark:text-zinc-50">
-          {planLabel} · {krw(priceKrw)}
-        </div>
-        <p className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
-          {message ?? "신청자 기준 지역 티오 확인이 완료되어 자리가 예약됐습니다. 컴퓨터·스마트폰 어디서 새로고침해도 입금 대기 상태가 유지됩니다."}
-        </p>
-        <div className="mt-3 rounded-[12px] bg-[#f5f7fb] p-3 dark:bg-zinc-900/70">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <div className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">{BANK_NAME}</div>
-              <div className="mt-1 font-black tabular-nums text-[19px] tracking-tight text-zinc-950 dark:text-zinc-50">
-                {ACCOUNT_NUMBER}
-              </div>
-              <div className="mt-1 text-[12px] font-bold text-zinc-700 dark:text-zinc-300">예금주 {ACCOUNT_HOLDER}</div>
-            </div>
-            <button
-              type="button"
-              onClick={() => void copyAccountNumber()}
-              className="flex h-10 shrink-0 items-center justify-center rounded-xl bg-white px-3 text-[11px] font-black text-[#3182f6] ring-1 ring-zinc-200 transition hover:bg-[#ebf2ff] dark:bg-zinc-950 dark:text-blue-300 dark:ring-zinc-700 dark:hover:bg-blue-950/40"
-            >
-              {copyOk ? "복사됨" : "계좌 복사"}
-            </button>
-          </div>
-          <div className="mt-2 rounded-[10px] border border-blue-100 bg-white px-3 py-2 text-[11px] font-bold leading-4 text-zinc-600 dark:border-blue-950/60 dark:bg-zinc-950 dark:text-zinc-300">
-            입금 금액: <b className="text-[#3182f6] dark:text-blue-300">{krw(priceKrw)}</b>
-            {" "}· 입금 확인 후 운영자 페이지에서 승인됩니다.
-          </div>
-        </div>
-      </div>
     );
   }
 
@@ -195,17 +200,73 @@ export default function MembershipApplicationClient({
     );
   }
 
+  const hasReservation = Boolean((pendingApplication || state === "sent") && !reservationCancelled);
+  const planLabel = submittedPlan?.label ?? pendingApplication?.planLabel ?? "멤버십";
+  const priceKrw = submittedPlan?.priceKrw ?? pendingApplication?.priceKrw ?? 99_000;
+
   return (
     <div>
-      <button
-        type="button"
-        onClick={openSelector}
-        disabled={state === "submitting"}
-        className="flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
-      >
-        {state === "submitting" ? "자리 예약 중" : "멤버십 신청하기"}
-      </button>
-      {message ? (
+      {hasReservation ? (
+        <div className="rounded-[12px] border border-blue-100 bg-white px-3.5 py-3 dark:border-blue-950/70 dark:bg-zinc-950/50">
+          <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">내 지역 티오 확인 완료 · 입금 대기</div>
+          <div className="mt-1 text-[15px] font-black text-zinc-950 dark:text-zinc-50">
+            {planLabel} · {krw(priceKrw)}
+          </div>
+          <p className={`mt-1.5 break-keep text-[12px] font-semibold leading-5 ${state === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}>
+            {message ?? "신청자 기준 지역 티오 확인이 완료되어 자리가 예약됐습니다. 컴퓨터·스마트폰 어디서 새로고침해도 입금 대기 상태가 유지됩니다."}
+          </p>
+          <div className="mt-3 rounded-[12px] bg-[#f5f7fb] p-3 dark:bg-zinc-900/70">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <div className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">{BANK_NAME}</div>
+                <div className="mt-1 font-black tabular-nums text-[19px] tracking-tight text-zinc-950 dark:text-zinc-50">
+                  {ACCOUNT_NUMBER}
+                </div>
+                <div className="mt-1 text-[12px] font-bold text-zinc-700 dark:text-zinc-300">예금주 {ACCOUNT_HOLDER}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => void copyAccountNumber()}
+                className="flex h-10 shrink-0 items-center justify-center rounded-xl bg-white px-3 text-[11px] font-black text-[#3182f6] ring-1 ring-zinc-200 transition hover:bg-[#ebf2ff] dark:bg-zinc-950 dark:text-blue-300 dark:ring-zinc-700 dark:hover:bg-blue-950/40"
+              >
+                {copyOk ? "복사됨" : "계좌 복사"}
+              </button>
+            </div>
+            <div className="mt-2 rounded-[10px] border border-blue-100 bg-white px-3 py-2 text-[11px] font-bold leading-4 text-zinc-600 dark:border-blue-950/60 dark:bg-zinc-950 dark:text-zinc-300">
+              입금 금액: <b className="text-[#3182f6] dark:text-blue-300">{krw(priceKrw)}</b>
+              {" "}· 입금 확인 후 운영자 페이지에서 승인됩니다.
+            </div>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={openSelector}
+              disabled={state === "submitting"}
+              className="h-10 rounded-xl border border-blue-100 bg-blue-50 text-[12px] font-black text-[#3182f6] transition hover:bg-[#ebf2ff] disabled:cursor-default disabled:opacity-60 dark:border-blue-950/70 dark:bg-blue-950/30 dark:text-blue-200"
+            >
+              기간/금액 변경
+            </button>
+            <button
+              type="button"
+              onClick={() => void cancelReservation()}
+              disabled={state === "submitting"}
+              className="h-10 rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-600 transition hover:bg-zinc-50 disabled:cursor-default disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300"
+            >
+              예약 취소
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={openSelector}
+          disabled={state === "submitting"}
+          className="flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+        >
+          {state === "submitting" ? "자리 예약 중" : "멤버십 신청하기"}
+        </button>
+      )}
+      {message && !hasReservation ? (
         <p className={`mt-2 break-keep text-[11px] font-bold leading-4 ${state === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}>
           {message}
         </p>

@@ -26,6 +26,8 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(applications, /입금 확인 후/);
   assert.match(applications, /getMembershipPlan/);
   assert.match(applications, /plan\.label/);
+  assert.match(applications, /statusLabel/);
+  assert.match(applications, /user_cancelled_reservation/);
   assert.doesNotMatch(applications, /\/ 3개월/);
 
   assert.match(applyRoute, /mvp_membership_applications/);
@@ -38,6 +40,8 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(applyRoute, /selectedPlan/);
   assert.match(applyRoute, /price_krw: selectedPlan\.priceKrw/);
   assert.match(applyRoute, /자리 예약 \/ 입금 대기/);
+  assert.match(applyRoute, /자리 예약 취소/);
+  assert.match(applyRoute, /user_cancelled_reservation/);
   assert.match(applyRoute, /내 지역 티오: 신청자 기준 mock 확인 완료/);
   assert.match(decideRoute, /mvp_user_plans/);
   assert.match(decideRoute, /getMembershipPlan/);
