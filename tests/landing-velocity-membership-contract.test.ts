@@ -53,7 +53,7 @@ test("plans page explains scarcity, local constraints, and quota management", ()
   assert.match(plans, /아무나 보면 그마저도 사라집니다/);
   assert.match(planConfig, /월 33,000원꼴/);
   assert.match(planConfig, /priceKrw: 99_000/);
-  assert.match(plans, /기간을 고르고 신청합니다/);
+  assert.match(plans, /신청은 먼저 누르고, 기간은 다음 단계에서 고릅니다/);
   assert.doesNotMatch(plans, /결제 페이지가 아니라/);
   assert.doesNotMatch(plans, /베타|초기 베타/);
 });

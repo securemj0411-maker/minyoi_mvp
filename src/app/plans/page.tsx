@@ -81,6 +81,32 @@ export default async function PlansPage() {
               신청 받고, 검토하고, 승인된 분만 봅니다.
               당근은 내 근처에 떠야 의미가 있어서 지역별로 티오를 관리합니다.
             </p>
+            <div className="mt-5 rounded-[14px] border border-blue-100 bg-blue-50/70 px-4 py-4 dark:border-blue-950/70 dark:bg-blue-950/20">
+              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-200">Membership note</div>
+              <div className="mt-1 text-[24px] font-black tracking-tight text-zinc-950 dark:text-zinc-50">
+                월 33,000원꼴
+              </div>
+              <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+                3개월 99,000원 · 승인 후 결제 안내
+              </div>
+              <div className="mt-3 border-t border-blue-100 pt-3 dark:border-blue-950/70">
+                <div className="mb-2 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+                  신청은 먼저 누르고, 기간은 다음 단계에서 고릅니다.
+                </div>
+                <MembershipApplicationClient
+                  isAuthed={auth.ok}
+                  isMember={isMember}
+                  loginHref="/login?next=/plans"
+                  plans={MEMBERSHIP_PLANS}
+                  pendingApplication={pendingApplication ? {
+                    id: pendingApplication.id,
+                    planLabel: pendingPlan?.label ?? "멤버십",
+                    priceKrw: Number(pendingApplication.price_krw ?? pendingPlan?.priceKrw ?? 99_000),
+                    createdAt: pendingApplication.created_at,
+                  } : null}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="grid gap-3 px-4 py-4 sm:grid-cols-3 sm:px-6">
@@ -100,28 +126,6 @@ export default async function PlansPage() {
                   <div className="mt-1 break-keep text-[12px] font-semibold leading-5 text-zinc-600 dark:text-zinc-300">{row.value}</div>
                 </div>
               ))}
-            </div>
-
-            <div className="rounded-[14px] border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
-              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-zinc-400">Membership select</div>
-              <div className="mt-1 text-[20px] font-black tracking-tight text-zinc-950 dark:text-zinc-50">
-                기간을 고르고 신청합니다.
-              </div>
-              <div className="mt-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
-                승인 후 결제 안내 · 월 단가는 기간이 길수록 낮아집니다.
-              </div>
-              <MembershipApplicationClient
-                isAuthed={auth.ok}
-                isMember={isMember}
-                loginHref="/login?next=/plans"
-                plans={MEMBERSHIP_PLANS}
-                pendingApplication={pendingApplication ? {
-                  id: pendingApplication.id,
-                  planLabel: pendingPlan?.label ?? "멤버십",
-                  priceKrw: Number(pendingApplication.price_krw ?? pendingPlan?.priceKrw ?? 99_000),
-                  createdAt: pendingApplication.created_at,
-                } : null}
-              />
             </div>
 
             <ul className="mt-4 space-y-2.5">

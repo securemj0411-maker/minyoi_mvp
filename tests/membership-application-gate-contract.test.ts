@@ -32,8 +32,14 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(applyClient, /telegramSent/);
   assert.match(applyClient, /운영자 알림은 확인 중/);
   assert.match(applyClient, /PlanGrid/);
+  assert.match(applyClient, /selectorOpen/);
+  assert.match(applyClient, /신청 기간을 고르세요/);
   assert.match(applyClient, /UPSELL_PLANS_FROM_1MO/);
   assert.match(applyClient, /UPSELL_PLANS_FROM_3MO/);
+  assert.match(applyClient, /selectedUpsellKey/);
+  assert.match(applyClient, /setSelectedUpsellKey\(plan\.key\)/);
+  assert.match(applyClient, /마지막 신청 버튼을 눌러야 접수됩니다/);
+  assert.doesNotMatch(applyClient, /onClick=\{\(\) => void submitApplication\(plan\)\}/);
   assert.match(applyClient, /신청 접수 완료/);
   assert.doesNotMatch(applyClient, /localStorage/);
   assert.doesNotMatch(plans, /크레딧 충전|1크레딧|billing\/manual\?credits/);
