@@ -9,6 +9,7 @@ export type MembershipApplicationRow = {
   authUserId: string;
   email: string | null;
   displayName: string | null;
+  applicationKind: "new" | "renewal";
   productKey: string;
   priceKrw: number;
   status: "pending" | "approved" | "rejected";
@@ -58,7 +59,8 @@ export default function MembershipApplicationsPanel({ initialRows }: { initialRo
   async function decide(row: MembershipApplicationRow, decision: "approve" | "reject") {
     const target = row.displayName || row.email || row.authUserId;
     const plan = getMembershipPlan(row.productKey);
-    const verb = decision === "approve" ? `입금 확인 후 ${plan.label} 멤버십 부여` : "거절";
+    const kindLabel = row.applicationKind === "renewal" ? "연장" : "신규";
+    const verb = decision === "approve" ? `입금 확인 후 ${plan.label} 멤버십 ${kindLabel}` : "거절";
     const adminNote = window.prompt(`${target} 신청을 ${verb}할까요? 메모(선택):`, "");
     if (adminNote === null) return;
     setPendingId(row.id);
@@ -101,7 +103,7 @@ export default function MembershipApplicationsPanel({ initialRows }: { initialRo
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">▌MEMBERSHIP APPLICATIONS</div>
-          <p className="mt-1 text-[11px] font-bold text-zinc-400">입금 확인 후 승인하면 선택한 기간만큼 pro 멤버십이 열립니다. 크레딧 지급은 하지 않습니다.</p>
+          <p className="mt-1 text-[11px] font-bold text-zinc-400">입금 확인 후 승인하면 신규는 pro 멤버십이 열리고, 연장은 기존 만료일 뒤에 기간이 붙습니다. 크레딧 지급은 하지 않습니다.</p>
         </div>
         <div className="text-right">
           <div className="text-2xl font-black tabular-nums text-amber-200">{pendingRows.length}</div>
@@ -143,7 +145,9 @@ export default function MembershipApplicationsPanel({ initialRows }: { initialRo
                       <>
                         <div className="font-bold text-amber-200">{plan.label} · {krw(row.priceKrw)}</div>
                         <div className="mt-0.5 text-[10px] text-zinc-500">{plan.monthlyLabel}</div>
-                        <div className="mt-0.5 text-[9px] uppercase text-zinc-700">{row.productKey}</div>
+                        <div className="mt-0.5 text-[9px] uppercase text-zinc-700">
+                          {row.applicationKind === "renewal" ? "RENEWAL" : "NEW"} · {row.productKey}
+                        </div>
                         {row.depositConfirmedAt ? (
                           <div className="mt-1 text-[9px] font-bold text-emerald-300">
                             입금확인 {fmt(row.depositConfirmedAt)} · 자동승인 {fmt(row.scheduledAutoApproveAt)}

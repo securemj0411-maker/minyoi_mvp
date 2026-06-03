@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   }
 
   const pendingRes = await restFetch(
-    `${tableUrl("mvp_membership_applications")}?select=id,user_ref,email,display_name,product_key,price_krw,admin_note,deposit_confirmed_at,scheduled_auto_approve_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
+    `${tableUrl("mvp_membership_applications")}?select=id,user_ref,email,display_name,application_kind,product_key,price_krw,admin_note,deposit_confirmed_at,scheduled_auto_approve_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
     { headers: serviceHeaders() },
   );
   const pendingRows = (await pendingRes.json()) as Array<{
@@ -35,6 +35,7 @@ export async function POST(req: Request) {
     user_ref: string | null;
     email: string | null;
     display_name: string | null;
+    application_kind: string | null;
     product_key: string | null;
     price_krw: number | null;
     admin_note: string | null;
@@ -66,12 +67,13 @@ export async function POST(req: Request) {
 
   const notifyResult = await notifyAdminTelegram(
     [
-      "[득템잡이] 멤버십 입금 확인 요청",
+      application.application_kind === "renewal" ? "[득템잡이] 멤버십 연장 입금 확인 요청" : "[득템잡이] 멤버십 입금 확인 요청",
       `예약 ID: ${application.id}`,
       `이름: ${String(name)}`,
       `이메일: ${email}`,
       `auth_user_id: ${auth.user.id}`,
       `user_ref: ${application.user_ref ?? userRef}`,
+      `종류: ${application.application_kind === "renewal" ? "연장 예약" : "신규 신청"}`,
       `상품: ${selectedPlan.label} / ${Number(application.price_krw ?? selectedPlan.priceKrw).toLocaleString("ko-KR")}원`,
       "처리: 아래 승인 링크를 누르면 운영자 세션 없이 즉시 승인",
       "보장: 5분 내 미처리 시 자동 승인",

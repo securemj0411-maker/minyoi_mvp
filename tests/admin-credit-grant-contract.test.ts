@@ -17,6 +17,7 @@ test("operator members page is membership-application led, not manual-credit led
   const decideRoute = source("src/app/api/admin/membership-applications/decide/route.ts");
   const approvalHelper = source("src/lib/membership-application-approval.ts");
   const migration = source("supabase/migrations/20260603222750_wave1052_membership_deposit_approval_flow.sql");
+  const renewalMigration = source("supabase/migrations/20260603224240_wave1053_membership_renewal_flow.sql");
   const membershipAutoCron = source("src/app/api/cron/membership-auto-approve/route.ts");
 
   assert.match(page, /MembershipApplicationsPanel/);
@@ -26,7 +27,9 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(applications, /APPROVE/);
   assert.match(applications, /REJECT/);
   assert.match(applications, /\/api\/admin\/membership-applications\/decide/);
-  assert.match(applications, /선택한 기간만큼 pro 멤버십/);
+  assert.match(applications, /신규는 pro 멤버십이 열리고, 연장은 기존 만료일 뒤에 기간이 붙습니다/);
+  assert.match(applications, /applicationKind/);
+  assert.match(applications, /RENEWAL/);
   assert.match(applications, /입금 확인 후/);
   assert.match(applications, /getMembershipPlan/);
   assert.match(applications, /plan\.label/);
@@ -41,13 +44,18 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(applyRoute, /admin_note/);
   assert.match(applyRoute, /parseMode: null/);
   assert.match(applyRoute, /productKey/);
+  assert.match(applyRoute, /intent/);
+  assert.match(applyRoute, /isRenewal/);
+  assert.match(applyRoute, /application_kind: isRenewal \? "renewal" : "new"/);
   assert.match(applyRoute, /selectedPlan/);
   assert.match(applyRoute, /price_krw: selectedPlan\.priceKrw/);
   assert.match(applyRoute, /자리 예약 \/ 입금 대기/);
+  assert.match(applyRoute, /멤버십 연장 예약 \/ 입금 대기/);
   assert.match(applyRoute, /자리 예약 취소/);
   assert.match(applyRoute, /user_cancelled_reservation/);
   assert.match(applyRoute, /내 지역 티오: 신청자 기준 mock 확인 완료/);
   assert.match(depositNotifyRoute, /멤버십 입금 확인 요청/);
+  assert.match(depositNotifyRoute, /멤버십 연장 입금 확인 요청/);
   assert.match(depositNotifyRoute, /user_deposit_confirmed/);
   assert.match(depositNotifyRoute, /signAdminAction\("membership_application", application\.id, "approve"\)/);
   assert.match(depositNotifyRoute, /운영자 세션 없이 즉시 승인/);
@@ -60,6 +68,11 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(migration, /insert into public\.mvp_user_plans/);
   assert.match(migration, /payment_key[\s\S]*membership_application_/);
   assert.match(migration, /grant execute on function public\.approve_mvp_membership_application/);
+  assert.match(renewalMigration, /add column if not exists application_kind/);
+  assert.match(renewalMigration, /application_kind in \('new', 'renewal'\)/);
+  assert.match(renewalMigration, /v_period_base := v_existing_plan\.current_period_end/);
+  assert.match(renewalMigration, /v_period_end := v_period_base \+ make_interval/);
+  assert.match(renewalMigration, /'application_kind', v_application\.application_kind/);
   assert.match(membershipAutoCron, /membership_auto_approve/);
   assert.match(membershipAutoCron, /approveMembershipApplication\(row\.id, "auto"/);
   assert.match(approvalHelper, /status: "rejected"/);

@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 type ApplicationStatusRow = {
   id: number;
+  application_kind: string | null;
   product_key: string | null;
   price_krw: number | null;
   status: string;
@@ -28,7 +29,7 @@ export async function GET(req: Request) {
   const isMember = hasMembershipAccess(membership);
 
   const res = await restFetch(
-    `${tableUrl("mvp_membership_applications")}?select=id,product_key,price_krw,status,deposit_confirmed_at,scheduled_auto_approve_at,decided_at,created_at&auth_user_id=eq.${auth.user.id}&order=created_at.desc&limit=1`,
+    `${tableUrl("mvp_membership_applications")}?select=id,application_kind,product_key,price_krw,status,deposit_confirmed_at,scheduled_auto_approve_at,decided_at,created_at&auth_user_id=eq.${auth.user.id}&order=created_at.desc&limit=1`,
     { headers: serviceHeaders(), cache: "no-store" },
   ).catch(() => null);
   const rows = res?.ok ? ((await res.json()) as ApplicationStatusRow[]) : [];
@@ -42,6 +43,7 @@ export async function GET(req: Request) {
     application: application ? {
       id: application.id,
       status: application.status,
+      applicationKind: application.application_kind ?? "new",
       planKey: selectedPlan?.key ?? application.product_key,
       planLabel: selectedPlan?.label ?? "멤버십",
       priceKrw: Number(application.price_krw ?? selectedPlan?.priceKrw ?? 0),

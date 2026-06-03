@@ -21,6 +21,7 @@ type ApplyState = "idle" | "submitting" | "sent" | "error";
 type DepositNotifyState = "idle" | "sending" | "sent" | "error";
 type PendingApplication = {
   id: number;
+  applicationKind: "new" | "renewal";
   planKey: MembershipPlanKey;
   planLabel: string;
   priceKrw: number;
@@ -32,6 +33,7 @@ type PendingApplication = {
 type MembershipStatusResponse = {
   ok?: boolean;
   isMember?: boolean;
+  planEndAt?: string | null;
   application?: {
     scheduledAutoApproveAt?: string | null;
     depositConfirmedAt?: string | null;
@@ -53,15 +55,40 @@ function countdownLabel(ms: number) {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
+function formatDateKst(value: string | null | undefined) {
+  if (!value) return "기간 제한 없음";
+  const d = new Date(value);
+  if (!Number.isFinite(d.getTime())) return "확인 중";
+  return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(d);
+}
+
+function remainingDaysLabel(value: string | null | undefined, nowMs: number) {
+  if (!value) return "운영자/특별 권한";
+  const endMs = Date.parse(value);
+  if (!Number.isFinite(endMs)) return "확인 중";
+  const days = Math.max(0, Math.ceil((endMs - nowMs) / 86_400_000));
+  if (days <= 0) return "오늘 만료 예정";
+  return `${days.toLocaleString("ko-KR")}일 남음`;
+}
+
 export default function MembershipApplicationClient({
   isAuthed,
   isMember,
+  memberPlanEndAt,
+  memberSource,
   loginHref,
   plans,
   pendingApplication,
 }: {
   isAuthed: boolean;
   isMember: boolean;
+  memberPlanEndAt: string | null;
+  memberSource: string | null;
   loginHref: string;
   plans: MembershipPlan[];
   pendingApplication: PendingApplication | null;
@@ -93,6 +120,7 @@ export default function MembershipApplicationClient({
   const offerMsLeft = upsellStartedAt ? Math.max(0, (10 * 60_000) - (nowMs - upsellStartedAt)) : 10 * 60_000;
   const offerMinutesLeft = Math.max(0, Math.ceil(offerMsLeft / 60_000));
   const offerExpired = upsellStartedAt !== null && offerMsLeft <= 0;
+  const renewalMode = isMember;
 
   useEffect(() => {
     if (!upsellOpen && !autoApproveAt) return;
@@ -118,9 +146,11 @@ export default function MembershipApplicationClient({
       const nextAutoApproveAt = payload?.application?.scheduledAutoApproveAt ?? null;
       if (nextAutoApproveAt && nextAutoApproveAt !== autoApproveAt) setAutoApproveAt(nextAutoApproveAt);
       if (payload?.isMember) {
+        const applicationStatus = payload?.application?.status ?? null;
+        if (renewalMode && applicationStatus !== "approved") return;
         setApprovalDetected(true);
-        setApprovalMessage("멤버십 가입 완료. 환영합니다.");
-        setDepositNotifyMessage("승인 완료됐어요. 상품 피드로 이동합니다.");
+        setApprovalMessage(renewalMode ? "멤버십 연장 완료. 기간이 추가됐어요." : "멤버십 가입 완료. 환영합니다.");
+        setDepositNotifyMessage(renewalMode ? "연장 승인 완료됐어요. 상품 피드로 이동합니다." : "승인 완료됐어요. 상품 피드로 이동합니다.");
         window.setTimeout(() => router.replace("/me"), 1200);
       }
     }
@@ -131,7 +161,7 @@ export default function MembershipApplicationClient({
       alive = false;
       window.clearInterval(id);
     };
-  }, [autoApproveAt, approvalDetected, reservationCancelled, router]);
+  }, [autoApproveAt, approvalDetected, renewalMode, reservationCancelled, router]);
 
   function openSelector() {
     if (state === "submitting") return;
@@ -143,7 +173,7 @@ export default function MembershipApplicationClient({
     if (state === "submitting") return;
     const nextUpsells = upsellPlansFor(plan);
     setSelectorOpen(false);
-    if (!plan.isUpsell && nextUpsells.length > 0) {
+    if (!renewalMode && !plan.isUpsell && nextUpsells.length > 0) {
       const startedAt = Date.now();
       setNowMs(startedAt);
       setSelectedUpsellKey(nextUpsells[0]?.key ?? null);
@@ -190,21 +220,23 @@ export default function MembershipApplicationClient({
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ source: "plans", productKey: plan.key }),
+      body: JSON.stringify({ source: "plans", productKey: plan.key, intent: renewalMode ? "renewal" : "new" }),
     }).catch(() => null);
 
     if (!res?.ok) {
       setState("error");
-      setMessage("자리 예약이 실패했어요. 잠시 후 다시 눌러주세요.");
+      setMessage(renewalMode ? "연장 예약이 실패했어요. 잠시 후 다시 눌러주세요." : "자리 예약이 실패했어요. 잠시 후 다시 눌러주세요.");
       return;
     }
     const payload = (await res.json().catch(() => null)) as { telegramSent?: boolean } | null;
     setSubmittedPlan(plan);
     setReservationCancelled(false);
     setState("sent");
-    setMessage(payload?.telegramSent === false
-      ? "내 지역 티오 확인 후 자리는 예약됐어요. 아래 계좌로 송금한 뒤 입금했어요 버튼을 눌러주세요."
-      : `${plan.label} 내 지역 티오 확인 완료. 아래 계좌로 송금한 뒤 입금했어요 버튼을 눌러주세요.`);
+    setMessage(renewalMode
+      ? `${plan.label} 연장 예약 완료. 아래 계좌로 송금한 뒤 입금했어요 버튼을 눌러주세요.`
+      : payload?.telegramSent === false
+        ? "내 지역 티오 확인 후 자리는 예약됐어요. 아래 계좌로 송금한 뒤 입금했어요 버튼을 눌러주세요."
+        : `${plan.label} 내 지역 티오 확인 완료. 아래 계좌로 송금한 뒤 입금했어요 버튼을 눌러주세요.`);
   }
 
   async function notifyDepositDone() {
@@ -249,7 +281,9 @@ export default function MembershipApplicationClient({
       setMessage("입금 확인 요청 후에는 예약 취소가 막혀요. 운영자에게 환불/취소를 요청해주세요.");
       return;
     }
-    const confirmed = window.confirm("입금 전 자리 예약을 취소할까요? 취소 후 다시 신청할 수 있어요.");
+    const confirmed = window.confirm(renewalMode
+      ? "입금 전 연장 예약을 취소할까요? 취소 후 다시 연장할 수 있어요."
+      : "입금 전 자리 예약을 취소할까요? 취소 후 다시 신청할 수 있어요.");
     if (!confirmed) return;
 
     setState("submitting");
@@ -287,18 +321,7 @@ export default function MembershipApplicationClient({
     setApprovalMessage(null);
     setReservationCancelled(true);
     setState("idle");
-    setMessage("예약이 취소됐어요. 다시 신청할 수 있어요.");
-  }
-
-  if (isMember) {
-    return (
-      <Link
-        href="/me"
-        className="flex h-11 min-w-[148px] items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90"
-      >
-        이미 승인됨
-      </Link>
-    );
+    setMessage(renewalMode ? "연장 예약이 취소됐어요. 다시 연장할 수 있어요." : "예약이 취소됐어요. 다시 신청할 수 있어요.");
   }
 
   if (!isAuthed) {
@@ -315,6 +338,10 @@ export default function MembershipApplicationClient({
   const hasReservation = Boolean((pendingApplication || state === "sent") && !reservationCancelled);
   const planLabel = submittedPlan?.label ?? pendingApplication?.planLabel ?? "멤버십";
   const priceKrw = submittedPlan?.priceKrw ?? pendingApplication?.priceKrw ?? 99_000;
+  const reservationTitle = renewalMode ? "연장 예약 완료 · 입금 대기" : "내 지역 티오 확인 완료 · 입금 대기";
+  const defaultReservationMessage = renewalMode
+    ? "연장 예약이 잡혔습니다. 아래 계좌로 송금한 뒤 입금했어요 버튼을 누르면 운영자에게 바로 알림이 갑니다."
+    : "자리가 예약됐습니다. 아래 계좌로 송금한 뒤 입금했어요 버튼을 누르면 운영자에게 바로 알림이 갑니다.";
   const autoApproveTargetMs = autoApproveAt ? Date.parse(autoApproveAt) : null;
   const autoApproveMsLeft = autoApproveTargetMs && Number.isFinite(autoApproveTargetMs)
     ? Math.max(0, autoApproveTargetMs - nowMs)
@@ -330,12 +357,12 @@ export default function MembershipApplicationClient({
       ) : null}
       {hasReservation ? (
         <div className="rounded-[12px] border border-blue-100 bg-white px-3.5 py-3 dark:border-blue-950/70 dark:bg-zinc-950/50">
-          <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">내 지역 티오 확인 완료 · 입금 대기</div>
+          <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">{reservationTitle}</div>
           <div className="mt-1 text-[15px] font-black text-zinc-950 dark:text-zinc-50">
             {planLabel} · {krw(priceKrw)}
           </div>
           <p className={`mt-1.5 break-keep text-[12px] font-semibold leading-5 ${state === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}>
-            {message ?? "자리가 예약됐습니다. 아래 계좌로 송금한 뒤 입금했어요 버튼을 누르면 운영자에게 바로 알림이 갑니다."}
+            {message ?? defaultReservationMessage}
           </p>
           <div className="mt-3 rounded-[12px] bg-[#f5f7fb] p-3 dark:bg-zinc-900/70">
             <div className="flex items-center justify-between gap-2">
@@ -398,7 +425,7 @@ export default function MembershipApplicationClient({
               disabled={state === "submitting" || depositNotifyState === "sent"}
               className="h-10 rounded-xl border border-blue-100 bg-blue-50 text-[12px] font-black text-[#3182f6] transition hover:bg-[#ebf2ff] disabled:cursor-default disabled:opacity-60 dark:border-blue-950/70 dark:bg-blue-950/30 dark:text-blue-200"
             >
-              기간/금액 변경
+              {renewalMode ? "연장 기간 변경" : "기간/금액 변경"}
             </button>
             <button
               type="button"
@@ -406,7 +433,34 @@ export default function MembershipApplicationClient({
               disabled={state === "submitting" || depositNotifyState === "sent"}
               className="h-10 rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-600 transition hover:bg-zinc-50 disabled:cursor-default disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300"
             >
-              예약 취소
+              {renewalMode ? "연장 취소" : "예약 취소"}
+            </button>
+          </div>
+        </div>
+      ) : renewalMode ? (
+        <div className="rounded-[12px] border border-emerald-200 bg-white px-3.5 py-3 dark:border-emerald-900/70 dark:bg-zinc-950/50">
+          <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">멤버십 활성화됨</div>
+          <div className="mt-1 text-[20px] font-black tracking-tight text-zinc-950 dark:text-zinc-50">
+            {remainingDaysLabel(memberPlanEndAt, nowMs)}
+          </div>
+          <div className="mt-1.5 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+            만료일 {formatDateKst(memberPlanEndAt)}
+            {memberSource === "subscription" ? " · 연장하면 기존 만료일 뒤로 기간이 붙습니다." : " · 특별 권한 계정입니다."}
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1.15fr]">
+            <Link
+              href="/me"
+              className="flex h-11 items-center justify-center rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+            >
+              상품 피드 보기
+            </Link>
+            <button
+              type="button"
+              onClick={openSelector}
+              disabled={state === "submitting"}
+              className="flex h-11 items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+            >
+              {state === "submitting" ? "연장 예약 중" : "멤버십 연장하기"}
             </button>
           </div>
         </div>
@@ -432,10 +486,12 @@ export default function MembershipApplicationClient({
               <div>
                 <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-200">Membership select</div>
                 <h2 className="mt-1 break-keep text-[22px] font-black leading-tight text-zinc-950 dark:text-zinc-50">
-                  신청 기간을 고르세요.
+                  {renewalMode ? "연장 기간을 고르세요." : "신청 기간을 고르세요."}
                 </h2>
                 <p className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
-                  신청자 기준 지역 티오를 확인한 뒤 가능하면 자리를 예약합니다. 월 단가는 기간이 길수록 낮아집니다.
+                  {renewalMode
+                    ? "승인되면 기존 만료일 뒤에 선택한 기간이 붙습니다. 월 단가는 기간이 길수록 낮아집니다."
+                    : "신청자 기준 지역 티오를 확인한 뒤 가능하면 자리를 예약합니다. 월 단가는 기간이 길수록 낮아집니다."}
                 </p>
               </div>
               <button
@@ -464,13 +520,13 @@ export default function MembershipApplicationClient({
                 disabled={state === "submitting"}
                 className="h-11 rounded-xl bg-[var(--brand-accent-strong)] text-[12px] font-black text-[var(--brand-cream)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
               >
-                {selectedPlan.label} 자리 예약하기
+                {selectedPlan.label} {renewalMode ? "연장 예약하기" : "자리 예약하기"}
               </button>
             </div>
           </div>
         </div>
       ) : null}
-      {upsellOpen ? (
+      {upsellOpen && !renewalMode ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 py-4 backdrop-blur-sm sm:items-center">
           <div className="w-full max-w-[520px] rounded-[18px] border border-zinc-200 bg-white p-4 shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
             <div className="inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-[#3182f6] dark:bg-blue-950/40 dark:text-blue-200">

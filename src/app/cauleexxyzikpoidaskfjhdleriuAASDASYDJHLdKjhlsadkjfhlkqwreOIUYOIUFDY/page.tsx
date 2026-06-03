@@ -65,6 +65,7 @@ type MembershipApplicationDbRow = {
   auth_user_id: string;
   email: string | null;
   display_name: string | null;
+  application_kind: "new" | "renewal" | null;
   product_key: string;
   price_krw: number;
   status: "pending" | "approved" | "rejected";
@@ -115,7 +116,7 @@ async function fetchAllPlans(): Promise<PlanRow[]> {
 async function fetchMembershipApplications(): Promise<MembershipApplicationRow[]> {
   try {
     const res = await fetch(
-      `${tableUrl("mvp_membership_applications")}?select=id,user_ref,auth_user_id,email,display_name,product_key,price_krw,status,admin_note,deposit_confirmed_at,scheduled_auto_approve_at,decided_at,created_at&order=status.asc,created_at.desc&limit=100`,
+      `${tableUrl("mvp_membership_applications")}?select=id,user_ref,auth_user_id,email,display_name,application_kind,product_key,price_krw,status,admin_note,deposit_confirmed_at,scheduled_auto_approve_at,decided_at,created_at&order=status.asc,created_at.desc&limit=100`,
       { headers: serviceHeaders(), cache: "no-store" },
     );
     if (!res.ok) return [];
@@ -126,6 +127,7 @@ async function fetchMembershipApplications(): Promise<MembershipApplicationRow[]
       authUserId: row.auth_user_id,
       email: row.email,
       displayName: row.display_name,
+      applicationKind: row.application_kind ?? "new",
       productKey: row.product_key,
       priceKrw: Number(row.price_krw ?? 99000),
       status: row.status,

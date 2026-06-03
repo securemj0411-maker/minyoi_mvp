@@ -31,6 +31,7 @@ const SCARCITY_ROWS = [
 
 type PendingApplicationRow = {
   id: number;
+  application_kind: "new" | "renewal" | null;
   product_key: string;
   price_krw: number;
   deposit_confirmed_at: string | null;
@@ -46,7 +47,7 @@ type SlotSnapshot = {
 async function loadPendingApplication(authUserId: string): Promise<PendingApplicationRow | null> {
   try {
     const res = await restFetch(
-      `${tableUrl("mvp_membership_applications")}?select=id,product_key,price_krw,deposit_confirmed_at,scheduled_auto_approve_at,created_at&auth_user_id=eq.${authUserId}&status=eq.pending&limit=1`,
+      `${tableUrl("mvp_membership_applications")}?select=id,application_kind,product_key,price_krw,deposit_confirmed_at,scheduled_auto_approve_at,created_at&auth_user_id=eq.${authUserId}&status=eq.pending&limit=1`,
       { headers: serviceHeaders(), cache: "no-store" },
     );
     if (!res.ok) return null;
@@ -55,6 +56,29 @@ async function loadPendingApplication(authUserId: string): Promise<PendingApplic
   } catch {
     return null;
   }
+}
+
+const KST_DATE_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
+  timeZone: "Asia/Seoul",
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
+function membershipEndLabel(value: string | null | undefined): string {
+  if (!value) return "기간 제한 없음";
+  const d = new Date(value);
+  if (!Number.isFinite(d.getTime())) return "만료일 확인 중";
+  return KST_DATE_FORMATTER.format(d);
+}
+
+function membershipRemainingLabel(value: string | null | undefined): string {
+  if (!value) return "운영자/특별 권한";
+  const d = new Date(value);
+  if (!Number.isFinite(d.getTime())) return "확인 중";
+  const days = Math.max(0, Math.ceil((d.getTime() - Date.now()) / 86_400_000));
+  if (days <= 0) return "오늘 만료 예정";
+  return `${days.toLocaleString("ko-KR")}일 남음`;
 }
 
 function loadSlotSnapshot(): SlotSnapshot {
@@ -68,9 +92,10 @@ export default async function PlansPage() {
   const auth = await requireSupabaseUserFromCookies();
   const membership = auth.ok ? await getProStatus(auth.user, userRefForAuthUser(auth.user.id)) : null;
   const isMember = Boolean(membership?.isPro || membership?.isAdmin || membership?.isBetaTester);
-  const pendingApplication = auth.ok && !isMember ? await loadPendingApplication(auth.user.id) : null;
+  const pendingApplication = auth.ok ? await loadPendingApplication(auth.user.id) : null;
   const pendingPlan = pendingApplication ? getMembershipPlan(pendingApplication.product_key) : null;
   const slotSnapshot = loadSlotSnapshot();
+  const membershipEndAt = membership?.proUntil ?? null;
 
   return (
     <main className="min-h-screen bg-[#f5f7fb] px-3 py-4 dark:bg-zinc-950 sm:px-5 sm:py-8">
@@ -78,10 +103,13 @@ export default async function PlansPage() {
         <section className="overflow-hidden rounded-[18px] border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <div className="border-b border-zinc-200 px-4 py-6 dark:border-zinc-800 sm:px-6 sm:py-7">
             <h1 className="break-keep text-[30px] font-black leading-tight tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[42px]">
-              선공개 300명 멤버십
+              {isMember ? "멤버십 이용 중" : "선공개 300명 멤버십"}
             </h1>
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {["선공개 300명", "내 지역 티오 조회", "운영자 입금 확인"].map((label) => (
+              {(isMember
+                ? ["활성 멤버", "남은 기간 확인", "기간 연장 가능"]
+                : ["선공개 300명", "내 지역 티오 조회", "운영자 입금 확인"]
+              ).map((label) => (
                 <span
                   key={label}
                   className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-[#3182f6] ring-1 ring-blue-100 dark:bg-blue-950/30 dark:text-blue-200 dark:ring-blue-900/60"
@@ -91,46 +119,61 @@ export default async function PlansPage() {
               ))}
             </div>
             <p className="mt-5 max-w-[520px] break-keep text-[16px] font-black leading-7 text-zinc-900 dark:text-zinc-100 sm:text-[18px] sm:leading-8">
-              하루에 올라오는 중고 매물 중 진짜 돈 되는 건 극소수예요.
-              아무나 보면 그마저도 사라집니다.
+              {isMember
+                ? "지금 멤버십이 활성화되어 있어요. 연장하면 남은 기간 뒤에 선택한 기간이 그대로 붙습니다."
+                : "하루에 올라오는 중고 매물 중 진짜 돈 되는 건 극소수예요. 아무나 보면 그마저도 사라집니다."}
             </p>
             <p className="mt-3 max-w-[480px] break-keep text-[13px] font-semibold leading-6 text-zinc-600 dark:text-zinc-300 sm:text-[14px]">
-              신청자의 지역을 기준으로 남은 티오를 확인하고 자리를 예약합니다.
-              선공개 300명 기준으로 지역별로 티오를 관리하고, 계좌이체 입금 확인 후 승인된 분만 봅니다.
+              {isMember
+                ? "만료 전에 미리 연장해도 기존 남은 기간이 사라지지 않습니다. 연장 예약 후 계좌이체, 입금 확인, 5분 내 승인 흐름은 동일합니다."
+                : "신청자의 지역을 기준으로 남은 티오를 확인하고 자리를 예약합니다. 선공개 300명 기준으로 지역별로 티오를 관리하고, 계좌이체 입금 확인 후 승인된 분만 봅니다."}
             </p>
             <div className="mt-5 rounded-[14px] border border-blue-100 bg-blue-50/70 px-4 py-4 dark:border-blue-950/70 dark:bg-blue-950/20">
-              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-200">Membership note</div>
+              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-200">
+                {isMember ? "Membership active" : "Membership note"}
+              </div>
               <div className="mt-1 text-[24px] font-black tracking-tight text-zinc-950 dark:text-zinc-50">
-                월 33,000원꼴
+                {isMember ? membershipRemainingLabel(membershipEndAt) : "월 33,000원꼴"}
               </div>
               <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
-                3개월 99,000원 · 자리 예약 후 계좌이체
+                {isMember
+                  ? `만료일 ${membershipEndLabel(membershipEndAt)} · 연장 예약 후 계좌이체`
+                  : "3개월 99,000원 · 자리 예약 후 계좌이체"}
               </div>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 <div className="rounded-[12px] bg-white px-3 py-2 dark:bg-zinc-950/60">
-                  <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">선착순 현황</div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
+                    {isMember ? "현재 상태" : "선착순 현황"}
+                  </div>
                   <div className="mt-1 text-[15px] font-black text-zinc-950 dark:text-zinc-50">
-                    {slotSnapshot.capacity}명 중 {slotSnapshot.filled}명 예약
+                    {isMember ? "승인 완료" : `${slotSnapshot.capacity}명 중 ${slotSnapshot.filled}명 예약`}
                   </div>
                 </div>
                 <div className="rounded-[12px] bg-white px-3 py-2 dark:bg-zinc-950/60">
-                  <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">내 지역 티오</div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
+                    {isMember ? "연장 적용" : "내 지역 티오"}
+                  </div>
                   <div className="mt-1 text-[15px] font-black text-emerald-700 dark:text-emerald-300">
-                    신청 후 즉시 조회
+                    {isMember ? "기존 만료일 뒤에 추가" : "신청 후 즉시 조회"}
                   </div>
                 </div>
               </div>
               <div className="mt-3 border-t border-blue-100 pt-3 dark:border-blue-950/70">
                 <div className="mb-2 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-                  기간을 고르면 내 지역 티오 확인 후 계좌가 열립니다. 송금 후 입금했어요 버튼을 눌러주세요.
+                  {isMember
+                    ? "연장 기간을 고르면 계좌가 열립니다. 송금 후 입금했어요 버튼을 누르면 5분 내 승인됩니다."
+                    : "기간을 고르면 내 지역 티오 확인 후 계좌가 열립니다. 송금 후 입금했어요 버튼을 눌러주세요."}
                 </div>
                 <MembershipApplicationClient
                   isAuthed={auth.ok}
                   isMember={isMember}
+                  memberPlanEndAt={membershipEndAt}
+                  memberSource={membership?.source ?? null}
                   loginHref="/login?next=/plans"
                   plans={MEMBERSHIP_PLANS}
                   pendingApplication={pendingApplication ? {
                     id: pendingApplication.id,
+                    applicationKind: pendingApplication.application_kind ?? (isMember ? "renewal" : "new"),
                     planKey: pendingPlan?.key ?? "limited_300_3mo",
                     planLabel: pendingPlan?.label ?? "멤버십",
                     priceKrw: Number(pendingApplication.price_krw ?? pendingPlan?.priceKrw ?? 99_000),

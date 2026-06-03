@@ -27,25 +27,28 @@ async function updateApplicationAdminNote(applicationId: number | null, note: st
 export async function POST(req: Request) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const body = (await req.json().catch(() => ({}))) as { productKey?: string };
+  const body = (await req.json().catch(() => ({}))) as { productKey?: string; intent?: string };
   const selectedPlan = getMembershipPlan(body.productKey);
 
   const userRef = userRefForAuthUser(auth.user.id);
   const status = await getProStatus(auth.user, userRef);
-  if (status.isPro || status.isAdmin || status.isBetaTester) {
+  const hasActiveMembership = status.isPro || status.isAdmin || status.isBetaTester;
+  const isRenewal = hasActiveMembership && body.intent === "renewal";
+  if (hasActiveMembership && !isRenewal) {
     return NextResponse.json({ ok: true, alreadyMember: true });
   }
 
   const email = auth.user.email ?? "email 없음";
   const name = auth.user.user_metadata?.name ?? auth.user.user_metadata?.full_name ?? auth.user.user_metadata?.nickname ?? "이름 없음";
   const pendingRes = await restFetch(
-    `${tableUrl("mvp_membership_applications")}?select=id,status,admin_note,deposit_confirmed_at,scheduled_auto_approve_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
+    `${tableUrl("mvp_membership_applications")}?select=id,status,admin_note,application_kind,deposit_confirmed_at,scheduled_auto_approve_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
     { headers: serviceHeaders() },
   );
   const pendingRows = (await pendingRes.json()) as Array<{
     id: number;
     status: string;
     admin_note: string | null;
+    application_kind: string | null;
     deposit_confirmed_at: string | null;
     scheduled_auto_approve_at: string | null;
   }>;
@@ -72,6 +75,7 @@ export async function POST(req: Request) {
         auth_user_id: auth.user.id,
         email: auth.user.email ?? null,
         display_name: String(name),
+        application_kind: isRenewal ? "renewal" : "new",
         product_key: selectedPlan.key,
         price_krw: selectedPlan.priceKrw,
         status: "pending",
@@ -84,6 +88,7 @@ export async function POST(req: Request) {
       method: "PATCH",
       headers: serviceHeaders("return=minimal"),
       body: jsonBody({
+        application_kind: isRenewal ? "renewal" : "new",
         product_key: selectedPlan.key,
         price_krw: selectedPlan.priceKrw,
         updated_at: new Date().toISOString(),
@@ -93,7 +98,7 @@ export async function POST(req: Request) {
 
   const notifyResult = await notifyAdminTelegram(
     [
-      "[득템잡이] 선공개 300명 자리 예약 / 입금 대기",
+      isRenewal ? "[득템잡이] 멤버십 연장 예약 / 입금 대기" : "[득템잡이] 선공개 300명 자리 예약 / 입금 대기",
       `예약 ID: ${applicationId ?? "unknown"}`,
       `이름: ${String(name)}`,
       `이메일: ${email}`,
@@ -101,7 +106,7 @@ export async function POST(req: Request) {
       `user_ref: ${userRef}`,
       `상품: ${selectedPlan.label} / ${selectedPlan.priceKrw.toLocaleString("ko-KR")}원`,
       `월 단가: ${selectedPlan.monthlyLabel}`,
-      "내 지역 티오: 신청자 기준 mock 확인 완료",
+      isRenewal ? `현재 만료일: ${status.proUntil ?? "기간 제한 없음"}` : "내 지역 티오: 신청자 기준 mock 확인 완료",
       "처리: 입금 확인 후 cau 운영자 페이지에서 승인/거절",
     ].join("\n"),
     { parseMode: null },
@@ -125,6 +130,7 @@ export async function POST(req: Request) {
   return NextResponse.json({
     ok: true,
     applicationId,
+    applicationKind: isRenewal ? "renewal" : "new",
     productKey: selectedPlan.key,
     priceKrw: selectedPlan.priceKrw,
     depositAlreadyConfirmed: false,
@@ -139,13 +145,8 @@ export async function DELETE(req: Request) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const userRef = userRefForAuthUser(auth.user.id);
-  const status = await getProStatus(auth.user, userRef);
-  if (status.isPro || status.isAdmin || status.isBetaTester) {
-    return NextResponse.json({ ok: true, alreadyMember: true, cancelled: false });
-  }
-
   const pendingRes = await restFetch(
-    `${tableUrl("mvp_membership_applications")}?select=id,user_ref,email,display_name,product_key,price_krw,admin_note,deposit_confirmed_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
+    `${tableUrl("mvp_membership_applications")}?select=id,user_ref,email,display_name,application_kind,product_key,price_krw,admin_note,deposit_confirmed_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
     { headers: serviceHeaders() },
   );
   const pendingRows = (await pendingRes.json()) as Array<{
@@ -153,6 +154,7 @@ export async function DELETE(req: Request) {
     user_ref: string | null;
     email: string | null;
     display_name: string | null;
+    application_kind: string | null;
     product_key: string | null;
     price_krw: number | null;
     admin_note: string | null;
@@ -184,6 +186,7 @@ export async function DELETE(req: Request) {
       `auth_user_id: ${auth.user.id}`,
       `user_ref: ${application.user_ref ?? userRef}`,
       `상품: ${selectedPlan.label} / ${Number(application.price_krw ?? selectedPlan.priceKrw).toLocaleString("ko-KR")}원`,
+      `종류: ${application.application_kind === "renewal" ? "연장 예약" : "신규 신청"}`,
       "처리: 신청자가 입금 전 예약 취소",
     ].join("\n"),
     { parseMode: null },
