@@ -366,31 +366,34 @@ test("/me keeps dashboard summary compact on mobile", () => {
 
 test("guest preview API keeps public sample visible without exposing original link identifiers", () => {
   const api = source("src/app/api/preview-pool/route.ts");
+  const cacheLib = source("src/lib/preview-pool-showcases.ts");
 
-  assert.match(api, /name:\s*raw\?\.name/);
-  assert.match(api, /thumbnailUrl:\s*raw\?\.thumbnail_url/);
-  assert.match(api, /price:\s*raw\?\.price/);
-  assert.match(api, /marketPriceForPoolRow/);
-  assert.match(api, /previewMarketGap/);
-  assert.match(api, /MIN_PREVIEW_MARKET_GAP/);
-  assert.match(api, /skuMedian:\s*marketPrice/);
-  assert.match(api, /expectedProfitMin:\s*marketGap/);
-  assert.match(api, /expectedProfitMax:\s*marketGap/);
-  assert.doesNotMatch(api, /expectedProfitMin:\s*row\.expected_profit_min/);
-  assert.doesNotMatch(api, /expectedProfitMax:\s*row\.expected_profit_max/);
-  assert.match(api, /previewTitle/);
-  assert.match(api, /profitLabel/);
-  assert.match(api, /budgetLabel/);
-  assert.match(api, /priceSignalLabel/);
+  assert.match(api, /readPreviewPoolCache/);
+  assert.doesNotMatch(api, /mvp_candidate_pool/);
+  assert.doesNotMatch(api, /mvp_market_price_daily/);
+  assert.match(cacheLib, /name:\s*raw\?\.name/);
+  assert.match(cacheLib, /thumbnailUrl:\s*raw\?\.thumbnail_url/);
+  assert.match(cacheLib, /price:\s*raw\?\.price/);
+  assert.match(cacheLib, /marketPriceForPoolRow/);
+  assert.match(cacheLib, /previewMarketGap/);
+  assert.match(cacheLib, /MIN_PREVIEW_MARKET_GAP/);
+  assert.match(cacheLib, /skuMedian:\s*marketPrice/);
+  assert.match(cacheLib, /expectedProfitMin:\s*marketGap/);
+  assert.match(cacheLib, /expectedProfitMax:\s*marketGap/);
+  assert.doesNotMatch(cacheLib, /expectedProfitMin:\s*row\.expected_profit_min/);
+  assert.doesNotMatch(cacheLib, /expectedProfitMax:\s*row\.expected_profit_max/);
+  assert.match(cacheLib, /previewTitle/);
+  assert.match(cacheLib, /profitLabel/);
+  assert.match(cacheLib, /budgetLabel/);
+  assert.match(cacheLib, /priceSignalLabel/);
   assert.doesNotMatch(api, /soldAt:/);
-  assert.doesNotMatch(api, /price:\s*0/);
-  assert.doesNotMatch(api, /skuMedian:\s*null/);
+  assert.doesNotMatch(cacheLib, /price:\s*0/);
+  assert.doesNotMatch(cacheLib, /skuMedian:\s*null/);
 });
 
 test("guest main preview shows sample photo and market price, but avoids sold language", () => {
   const clientPreview = source("src/components/preview-masked-dashboard.tsx");
   const serverPreview = source("src/components/preview-masked-dashboard-server.tsx");
-  const api = source("src/app/api/preview-pool/route.ts");
 
   for (const preview of [clientPreview, serverPreview]) {
     assert.match(preview, /item\.thumbnailUrl/);
@@ -399,8 +402,9 @@ test("guest main preview shows sample photo and market price, but avoids sold la
     assert.match(preview, /krw\(item\.skuMedian\)/);
     assert.match(preview, /marketGapLabel\(item\.expectedProfitMin, item\.expectedProfitMax\)/);
     assert.match(preview, /priceSignalLabel/);
-    assert.match(preview, /진행 중 매물은 로그인 후/);
-    assert.match(preview, /첫 상세 1개/);
+    assert.match(preview, /승인된 멤버만 지금 진행 중인 추천 매물과 원본 링크/);
+    assert.match(preview, /로그인하고 신청/);
+    assert.doesNotMatch(preview, /CheckCircleIcon/);
     assert.doesNotMatch(preview, /최근 거래된 실제 매물/);
     assert.doesNotMatch(preview, /거래 완료/);
     assert.doesNotMatch(preview, /이미 거래/);
@@ -410,9 +414,10 @@ test("guest main preview shows sample photo and market price, but avoids sold la
     assert.doesNotMatch(preview, /상세에서 원문 공개/);
   }
 
-  assert.match(api, /shop_review_rating,shop_review_count/);
-  assert.match(api, /sellerReviewRating/);
-  assert.match(api, /sellerReviewCount/);
+  const cacheLib = source("src/lib/preview-pool-showcases.ts");
+  assert.match(cacheLib, /shop_review_rating,shop_review_count/);
+  assert.match(cacheLib, /sellerReviewRating/);
+  assert.match(cacheLib, /sellerReviewCount/);
 });
 
 test("/me seek-more modal starts with personalization and hides duplicate safety stats", () => {

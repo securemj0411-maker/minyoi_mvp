@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 
-import { CheckCircleIcon, PackageIcon, SearchIcon, UnlockIcon } from "@/components/icons";
+import { PackageIcon, SearchIcon, UnlockIcon } from "@/components/icons";
 
 type PreviewItem = {
   slot: number;
@@ -228,18 +228,11 @@ export default async function PreviewMaskedDashboardServer() {
                             </span>
                           </div>
 
-                          <div className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-black text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 sm:hidden">
-                            <CheckCircleIcon width={13} height={13} className={signal.tone === "seller" ? "text-[#3182f6]" : "text-zinc-500"} />
-                            <span className="truncate">{signal.label}</span>
-                          </div>
+                          <div className="mt-2 text-[11px] font-black text-zinc-400 dark:text-zinc-500 sm:hidden">{budgetLabel}</div>
                         </div>
 
                         <div className="hidden shrink-0 text-right sm:block">
                           <div className="text-[11px] font-black text-zinc-400 dark:text-zinc-500">{budgetLabel}</div>
-                          <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 px-2.5 py-1 text-[11px] font-black text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
-                            <CheckCircleIcon width={13} height={13} className={signal.tone === "seller" ? "text-[#3182f6]" : "text-zinc-500"} />
-                            {signal.label}
-                          </div>
                         </div>
                       </div>
                     </Link>
