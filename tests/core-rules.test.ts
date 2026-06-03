@@ -1966,6 +1966,100 @@ test("candidate pool builder ignores stale Bunjang pool_eligible=false values", 
   assert.equal(result.entries.length, 1);
 });
 
+test("candidate pool builder blocks otherwise-ready rows without feed velocity", () => {
+  const sku = CATALOG.find((item) => item.laneKey === "airpods_max_usbc" || item.id === "airpods-max-usbc");
+  assert.ok(sku, "expected AirPods Max USB-C SKU in catalog");
+  const comparableKey = "airpods|airpods_max_usbc|usbc";
+  const parsedByPid = new Map([
+    [14, {
+      category: "earphone" as const,
+      comparable_key: comparableKey,
+      parse_confidence: 1,
+      needs_review: false,
+    }],
+  ]);
+  const result = buildCandidatePoolRows({
+    rows: [{
+      pid: 14,
+      source: "bunjang",
+      price: 450_000,
+      skuMedian: 600_000,
+      estimatedBuyCost: 450_000,
+      shippingFee: 0,
+      shippingFeeGeneral: 0,
+      riskHits: 0,
+      thumbnailUrl: "https://example.test/airpods-max.jpg",
+      skuId: sku.id,
+      score: 95,
+      scoreFlags: [],
+    }],
+    parsedByPid,
+    catalogById: new Map(CATALOG.map((item) => [item.id, item])),
+    categoryReadiness: {
+      earphone: {
+        status: "ready",
+        label: "Audio",
+        note: "ready",
+        minReadyPool: 6,
+        minParseRate: 0.85,
+        minTrustedKeys: 5,
+      },
+    },
+    liquidVelocityComparableKeys: new Set(),
+    now: "2026-06-04T00:00:00.000Z",
+  });
+
+  assert.equal(result.entries.length, 0);
+  assert.deepEqual(result.invalidations, [{ pid: 14, reason: "velocity_missing" }]);
+});
+
+test("candidate pool builder allows feed-ready rows with observed velocity", () => {
+  const sku = CATALOG.find((item) => item.laneKey === "airpods_max_usbc" || item.id === "airpods-max-usbc");
+  assert.ok(sku, "expected AirPods Max USB-C SKU in catalog");
+  const comparableKey = "airpods|airpods_max_usbc|usbc";
+  const parsedByPid = new Map([
+    [15, {
+      category: "earphone" as const,
+      comparable_key: comparableKey,
+      parse_confidence: 1,
+      needs_review: false,
+    }],
+  ]);
+  const result = buildCandidatePoolRows({
+    rows: [{
+      pid: 15,
+      source: "bunjang",
+      price: 450_000,
+      skuMedian: 600_000,
+      estimatedBuyCost: 450_000,
+      shippingFee: 0,
+      shippingFeeGeneral: 0,
+      riskHits: 0,
+      thumbnailUrl: "https://example.test/airpods-max.jpg",
+      skuId: sku.id,
+      score: 95,
+      scoreFlags: [],
+    }],
+    parsedByPid,
+    catalogById: new Map(CATALOG.map((item) => [item.id, item])),
+    categoryReadiness: {
+      earphone: {
+        status: "ready",
+        label: "Audio",
+        note: "ready",
+        minReadyPool: 6,
+        minParseRate: 0.85,
+        minTrustedKeys: 5,
+      },
+    },
+    liquidVelocityComparableKeys: new Set([comparableKey]),
+    now: "2026-06-04T00:00:00.000Z",
+  });
+
+  assert.equal(result.invalidations.length, 0);
+  assert.equal(result.entries.length, 1);
+});
+
 test("candidate pool builder holds rows from explicitly low-rated sellers", () => {
   const sku = CATALOG.find((item) => item.id === "clothing-polo-oxford-shirt");
   assert.ok(sku, "expected Polo Oxford Shirt SKU in catalog");

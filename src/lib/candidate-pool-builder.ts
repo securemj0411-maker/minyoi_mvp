@@ -93,6 +93,7 @@ const HIGH_PROFIT_MARKETPLACE_VARIANCE_CATEGORIES = new Set<Sku["category"]>([
 ]);
 
 const LOW_SELLER_RATING_REVIEW = 3.5;
+export const FEED_READY_VELOCITY_MISSING_REASON = "velocity_missing";
 
 function shouldHonorPoolEligibleFalse(row: Pick<PoolCandidateInput, "poolEligibleFalseStale">): boolean {
   return row.poolEligibleFalseStale !== true;
@@ -431,6 +432,10 @@ export function buildCandidatePoolRows(input: {
   // Wave 502 (2026-05-21): pool 입장 직전 parser freshness gate.
   // parsed row가 최신 parser가 아니면 stale comparable_key가 ready로 재진입할 수 있다.
   latestParserVersionByCategory?: Partial<Record<Sku["category"], string>>;
+  // Wave 1050 (2026-06-04): paid feed-ready requires observed resale velocity.
+  // Undefined/null means the upstream velocity lookup failed and this tick should
+  // avoid mass invalidation; an empty Set means lookup succeeded and no key is liquid.
+  liquidVelocityComparableKeys?: Set<string> | null;
 }): CandidatePoolBuildResult {
   const entries: Record<string, unknown>[] = [];
   const invalidations: { pid: number; reason: string }[] = [];
@@ -938,6 +943,15 @@ export function buildCandidatePoolRows(input: {
     if (fashionPrecisionReason) {
       skipped += 1;
       invalidations.push({ pid, reason: fashionPrecisionReason });
+      continue;
+    }
+
+    if (
+      input.liquidVelocityComparableKeys &&
+      (!comparableKey || !input.liquidVelocityComparableKeys.has(comparableKey))
+    ) {
+      skipped += 1;
+      invalidations.push({ pid, reason: FEED_READY_VELOCITY_MISSING_REASON });
       continue;
     }
 

@@ -17,7 +17,7 @@ function computeDescriptionHash(description: string | null | undefined): string 
 }
 import { loadCategoryReadinessMap, loadLaneReadinessMap } from "@/lib/category-readiness";
 import { evaluatePhase2Escrow, isPhase2EscrowEnabled } from "@/lib/ai-l2-escrow";
-import { buildCandidatePoolRows } from "@/lib/candidate-pool-builder";
+import { buildCandidatePoolRows, FEED_READY_VELOCITY_MISSING_REASON } from "@/lib/candidate-pool-builder";
 // Wave 238 (2026-05-19): AI L2 coverage gap fix. ready pool 매물 중 91.1% 가 AI 안 봄.
 //   Phase 1 = shadow audit (ai_audit_status 기록).
 //   Phase 2 = fashion non-pass residue cleanup 에서 ready/reserved 차단.
@@ -256,6 +256,15 @@ type MarketPriceRow = {
   disappeared_sample_count: number;
   confidence: "high" | "medium" | "low";
   computed_at: string;
+};
+
+type MarketVelocityRow = {
+  comparable_key: string | null;
+  observed_sold_sample_count: number | null;
+  sold_7d_count: number | null;
+  median_hours_to_sold: number | null;
+  date?: string | null;
+  computed_at?: string | null;
 };
 
 // Wave 130 + 1022: comparable_key → (`condition_tier|condition_class` → row) 이중 map.
@@ -4347,6 +4356,51 @@ const VOLUME_GATE_BULK_QUERY_THRESHOLD = Math.max(
   1,
   Math.min(Number(process.env.PIPELINE_VOLUME_GATE_BULK_QUERY_THRESHOLD ?? 128), 200),
 );
+const MIN_FEED_READY_VELOCITY_SOLD_SAMPLE_COUNT = 3;
+const MIN_FEED_READY_VELOCITY_SOLD_7D_COUNT = 1;
+
+function isFeedReadyVelocityRow(row: MarketVelocityRow | undefined): boolean {
+  if (!row) return false;
+  const medianHours = Number(row.median_hours_to_sold ?? 0);
+  const sold7d = Number(row.sold_7d_count ?? 0);
+  const soldSample = Number(row.observed_sold_sample_count ?? 0);
+  return (
+    Number.isFinite(medianHours) &&
+    medianHours > 0 &&
+    sold7d >= MIN_FEED_READY_VELOCITY_SOLD_7D_COUNT &&
+    soldSample >= MIN_FEED_READY_VELOCITY_SOLD_SAMPLE_COUNT
+  );
+}
+
+async function loadLiquidVelocityComparableKeys(targetComparableKeys?: Iterable<string>): Promise<Set<string> | null> {
+  const target = Array.from(new Set(Array.from(targetComparableKeys ?? [])
+    .map((key) => String(key ?? "").trim())
+    .filter(Boolean)));
+  if (target.length === 0) return new Set();
+
+  try {
+    const liquid = new Set<string>();
+    const seen = new Set<string>();
+    for (const chunk of chunkArray(target, REST_KEY_READ_CHUNK_SIZE)) {
+      const encoded = chunk.map(encodeURIComponent).join(",");
+      const limit = Math.max(100, chunk.length * 2);
+      const url = `${tableUrl("mvp_market_velocity_daily")}?select=comparable_key,observed_sold_sample_count,sold_7d_count,median_hours_to_sold,date,computed_at&comparable_key=in.(${encoded})&condition_class=eq.all&order=date.desc,computed_at.desc,observed_sold_sample_count.desc&limit=${limit}`;
+      const res = await restFetch(url, { headers: serviceHeaders() });
+      const rows = (await res.json()) as MarketVelocityRow[];
+      for (const row of rows) {
+        const key = row.comparable_key;
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        if (isFeedReadyVelocityRow(row)) liquid.add(key);
+      }
+    }
+    return liquid;
+  } catch (err) {
+    console.warn("loadLiquidVelocityComparableKeys failed (gate skipped this tick)", err instanceof Error ? err.message : String(err));
+    return null;
+  }
+}
+
 async function loadFraudGroupHashes(targetHashes?: Iterable<string>): Promise<Set<string>> {
   try {
     const target = Array.from(new Set(Array.from(targetHashes ?? [])
@@ -5453,6 +5507,39 @@ async function invalidatePoolIneligibleResidues(limit: number): Promise<number> 
   return ineligible.size;
 }
 
+async function findPoolVelocityMissingResidues(limit: number): Promise<PoolInvalidationEntry[]> {
+  const rowLimit = Math.max(1, Math.min(limit, 1000));
+  const res = await restFetch(
+    `${tableUrl("mvp_candidate_pool")}?select=pid,category,comparable_key,condition_class&status=in.(ready,reserved)&order=updated_at.asc&limit=${rowLimit}`,
+    { headers: serviceHeaders() },
+  );
+  if (!res.ok) {
+    console.warn(`findPoolVelocityMissingResidues fetch failed: ${res.status}`);
+    return [];
+  }
+
+  const poolRows = (await res.json()) as Array<{
+    pid: number | string;
+    category: Sku["category"] | null;
+    comparable_key: string | null;
+    condition_class: string | null;
+  }>;
+  const comparableKeys = [...new Set(poolRows.map((row) => row.comparable_key).filter((key): key is string => Boolean(key)))];
+  const liquidVelocityComparableKeys = await loadLiquidVelocityComparableKeys(comparableKeys);
+  if (liquidVelocityComparableKeys == null) return [];
+
+  return poolRows
+    .filter((row) => !row.comparable_key || !liquidVelocityComparableKeys.has(row.comparable_key))
+    .map((row) => ({
+      pid: Number(row.pid),
+      reason: FEED_READY_VELOCITY_MISSING_REASON,
+      category: row.category ?? null,
+      comparable_key: row.comparable_key ?? null,
+      condition_class: row.condition_class ?? null,
+    }))
+    .filter((row) => Number.isFinite(row.pid));
+}
+
 async function invalidatePoolLowSellerRatingResidues(limit: number): Promise<number> {
   const res = await restFetch(
     `${tableUrl("mvp_candidate_pool")}?select=pid&status=in.(ready,reserved)&limit=${limit}`,
@@ -5693,7 +5780,8 @@ async function markStaleInvalidatedPoolRowsDirty(limit: number): Promise<number>
 //   - 시세/가격 변동: sku_median_unavailable, profit_below_pack_band(legacy),
 //     profit_not_positive_after_costs, negative_resell_gap,
 //     wave99_thin_market_n_lt_5
-//   - volume gate 재평가: daangn_volume_below_3, sku_low_volume_below_2d1_or_7d3
+//   - volume/velocity gate 재평가: daangn_volume_below_3,
+//     sku_low_volume_below_2d1_or_7d3, velocity_missing
 //   - raw 복구: pool_eligible_false_residue
 //   - parser/policy stale: wave410_pool_key_drift, wave408/410_*_lane/category_*,
 //     wave498/500/501_stale_*, wave226_wrong_sku_match_cleanup, wave230_sku_id_null_stale,
@@ -5712,6 +5800,7 @@ const RECOVERABLE_INVALIDATED_REASONS = [
   "profit_below_pack_band",
   "profit_not_positive_after_costs",
   "negative_resell_gap",
+  FEED_READY_VELOCITY_MISSING_REASON,
   "daangn_volume_below_3",
   "sku_low_volume_below_2d1_or_7d3",
   "pool_eligible_false_residue",
@@ -5739,7 +5828,7 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
   const reasonsClause = `invalidated_reason=in.(${RECOVERABLE_INVALIDATED_REASONS.join(",")})`;
   // Wave launch-42b: category 필터 제거 (전자기기 카테고리 다 포함).
   const res = await restFetch(
-    `${tableUrl("mvp_candidate_pool")}?select=pid&status=eq.invalidated&${reasonsClause}&order=updated_at.desc&limit=${rowLimit}`,
+    `${tableUrl("mvp_candidate_pool")}?select=pid,invalidated_reason&status=eq.invalidated&${reasonsClause}&order=updated_at.desc&limit=${rowLimit}`,
     { headers: serviceHeaders() },
   );
   if (!res.ok) {
@@ -5747,9 +5836,14 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
     return 0;
   }
 
-  const poolRows = (await res.json()) as Array<{ pid: number | string | null }>;
+  const poolRows = (await res.json()) as Array<{ pid: number | string | null; invalidated_reason: string | null }>;
   const pids = [...new Set(poolRows.map((row) => Number(row.pid)).filter(Number.isFinite))];
   if (pids.length === 0) return 0;
+  const invalidatedReasonByPid = new Map<number, string | null>();
+  for (const row of poolRows) {
+    const pid = Number(row.pid);
+    if (Number.isFinite(pid)) invalidatedReasonByPid.set(pid, row.invalidated_reason ?? null);
+  }
 
   const eligibleRaw = new Map<number, string | null>();
   const recoveredMarket = new Set<number>();
@@ -5834,6 +5928,7 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
     console.warn("markRecoveredMarketInvalidatedPoolRowsDirty per-source fetch failed", err instanceof Error ? err.message : String(err));
     return null as MarketPriceStatsPerSourceMap | null;
   });
+  const liquidVelocityComparableKeys = await loadLiquidVelocityComparableKeys(comparableKeys);
   for (const [pid, parsed] of parsedByPid.entries()) {
     if (recoveredMarket.has(pid) || !parsed.comparable_key) continue;
     const rawSource = eligibleRaw.get(pid) ?? null;
@@ -5870,7 +5965,14 @@ async function markRecoveredMarketInvalidatedPoolRowsDirty(limit: number): Promi
     if (exactMedian != null || trustedMarketMedian(sizeAnyStat, parsed.category) != null) recoveredMarket.add(pid);
   }
 
-  const recovered = pids.filter((pid) => eligibleRaw.has(pid) && recoveredMarket.has(pid));
+  const recovered = pids.filter((pid) => {
+    if (!eligibleRaw.has(pid) || !recoveredMarket.has(pid)) return false;
+    if (invalidatedReasonByPid.get(pid) === FEED_READY_VELOCITY_MISSING_REASON) {
+      const parsed = parsedByPid.get(pid);
+      return Boolean(parsed?.comparable_key && liquidVelocityComparableKeys?.has(parsed.comparable_key));
+    }
+    return true;
+  });
   if (recovered.length === 0) return 0;
   await patchRowsByIds("mvp_raw_listings", recovered, { score_dirty: true }, REST_WRITE_CHUNK_SIZE);
   return recovered.length;
@@ -7404,6 +7506,21 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
   const poolStaleParserResidues = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
     : await timedScoreSubstage("score_cleanup_stale_parser_residue", () => invalidatePoolStaleParserResidues(Math.max(config.tickScoreLimit * 2, 1000)));
+  let poolVelocityMissingResidues = 0;
+  let poolVelocityMissingResiduesDeferred = 0;
+  if (cleanupEnabled && !readyFloor.deferCleanup) {
+    const velocityResidueInvalidations = await timedScoreSubstage(
+      "score_find_velocity_missing_residue",
+      () => findPoolVelocityMissingResidues(Math.max(config.tickScoreLimit * 2, 1000)),
+    );
+    const guardedVelocityResidues = await timedScoreSubstage(
+      "score_filter_velocity_missing_residue",
+      () => filterPoolInvalidationsForReadyFloor(velocityResidueInvalidations, readyFloor),
+    );
+    await timedScoreSubstage("score_invalidate_velocity_missing_residue", () => invalidatePoolEntries(guardedVelocityResidues.entries));
+    poolVelocityMissingResidues = guardedVelocityResidues.entries.length;
+    poolVelocityMissingResiduesDeferred = guardedVelocityResidues.deferred;
+  }
   const staleInvalidatedPoolDirtyMarked = !cleanupEnabled || readyFloor.deferCleanup
     ? 0
     : await timedScoreSubstage("score_cleanup_mark_stale_invalidated", () => markStaleInvalidatedPoolRowsDirty(Math.min(Math.max(config.tickScoreLimit, 100), 250)));
@@ -7431,6 +7548,8 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     score_pool_ineligible_residue_invalidated_rows: poolIneligibleResidues,
     score_pool_low_seller_rating_residue_invalidated_rows: poolLowSellerRatingResidues,
     score_pool_stale_parser_residue_invalidated_rows: poolStaleParserResidues,
+    score_pool_velocity_missing_residue_invalidated_rows: poolVelocityMissingResidues,
+    score_pool_velocity_missing_residue_deferred_rows: poolVelocityMissingResiduesDeferred,
     score_stale_invalidated_pool_dirty_marked_rows: staleInvalidatedPoolDirtyMarked,
     score_sku_median_unavailable_market_invalidations: skuMedianUnavailableMarketInvalidations,
     score_pool_ai_audit_residue_invalidated_rows: poolAiAuditResidues,
@@ -7864,6 +7983,11 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
         (skuId.startsWith("shoe-") || skuId.startsWith("clothing-") || skuId.startsWith("bag-"))
       )),
   );
+  const velocityTargetComparableKeys = new Set(
+    aiReview.rows
+      .map((row) => parsedByPid.get(Number(row.pid))?.comparable_key)
+      .filter((key): key is string => Boolean(key)),
+  );
   const poolGateTargetSellerUids = new Set(
     aiReview.rows
       .map((row) => row.sellerUid)
@@ -7880,9 +8004,10 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     score_pool_gate_target_hashes: poolGateTargetDescriptionHashes.size,
     score_pool_gate_low_volume_target_skus: lowVolumeTargetSkuIds.size,
     score_pool_gate_daangn_volume_target_skus: daangnVolumeTargetSkuIds.size,
+    score_pool_gate_velocity_target_keys: velocityTargetComparableKeys.size,
   };
 
-  const [existingPoolSellerCounts, fraudGroupHashes, lowVolumeSkuIds, daangnVolumeBySku] = await timedScoreSubstage("score_load_pool_gate_inputs", () => Promise.all([
+  const [existingPoolSellerCounts, fraudGroupHashes, lowVolumeSkuIds, daangnVolumeBySku, liquidVelocityComparableKeys] = await timedScoreSubstage("score_load_pool_gate_inputs", () => Promise.all([
     timedScoreSubstage("score_load_existing_pool_seller_counts", () => loadExistingPoolSellerCounts(poolGateTargetSellerUids)).catch((err) => {
       console.warn("loadExistingPoolSellerCounts failed (non-fatal)", err);
       return new Map<string, number>();
@@ -7899,7 +8024,16 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
       console.warn("loadDaangnVolumeBySku failed (non-fatal)", err);
       return new Map<string, number>();
     }),
+    timedScoreSubstage("score_load_liquid_velocity_keys", () => loadLiquidVelocityComparableKeys(velocityTargetComparableKeys)).catch((err) => {
+      console.warn("loadLiquidVelocityComparableKeys failed (gate skipped this tick)", err);
+      return null;
+    }),
   ]));
+  stats.timingsMs = {
+    ...(stats.timingsMs ?? {}),
+    score_pool_gate_liquid_velocity_keys: liquidVelocityComparableKeys?.size ?? -1,
+    score_pool_gate_velocity_gate_skipped: liquidVelocityComparableKeys == null ? 1 : 0,
+  };
 
   const poolBuild = timedScoreBlock("score_build_candidate_pool_rows", () => buildCandidatePoolRows({
     rows: aiReview.rows,
@@ -7913,6 +8047,7 @@ export async function scoreStage(deadlineMs: number, options: ScoreStageOptions 
     fraudGroupHashes,
     lowVolumeSkuIds,
     daangnVolumeBySku,
+    liquidVelocityComparableKeys,
   }));
   const poolBuildPids = poolBuild.entries
     .map((entry) => Number(entry.pid))
