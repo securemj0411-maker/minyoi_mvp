@@ -48,10 +48,7 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(applyRoute, /intent/);
   assert.match(applyRoute, /isRenewal/);
   assert.match(applyRoute, /application_kind: isRenewal \? "renewal" : "new"/);
-  assert.match(applyRoute, /signAdminAction\("membership_application", applicationId, "approve"\)/);
-  assert.match(applyRoute, /signAdminAction\("membership_application", applicationId, "reject"\)/);
-  assert.match(applyRoute, /운영자 세션 불필요/);
-  assert.match(applyRoute, /inline_keyboard/);
+  assert.match(applyRoute, /입금했어요 버튼을 누르면 승인\/거절 링크를 다시 보냅니다/);
   assert.match(applyRoute, /selectedPlan/);
   assert.match(applyRoute, /price_krw: selectedPlan\.priceKrw/);
   assert.match(applyRoute, /자리 예약 \/ 입금 대기/);
@@ -63,9 +60,14 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(depositNotifyRoute, /멤버십 연장 입금 확인 요청/);
   assert.match(depositNotifyRoute, /user_deposit_confirmed/);
   assert.match(depositNotifyRoute, /signAdminAction\("membership_application", application\.id, "approve"\)/);
-  assert.match(depositNotifyRoute, /운영자 세션 없이 즉시 승인/);
+  assert.match(depositNotifyRoute, /확인 버튼을 눌러야 승인\/거절 처리/);
+  assert.match(depositNotifyRoute, /승인 확인 열기/);
+  assert.doesNotMatch(depositNotifyRoute, /`승인: \$\{approveLink\}`/);
   assert.match(depositNotifyRoute, /scheduled_auto_approve_at/);
   assert.match(decideRoute, /verifyAdminActionToken\("membership_application", id, decision, token\)/);
+  assert.match(decideRoute, /confirmHtml\(id, decision, actionUrl\)/);
+  assert.match(decideRoute, /method="post"/);
+  assert.match(decideRoute, /form\?\.get\("confirm"\) !== "1"/);
   assert.match(decideRoute, /approveMembershipApplication/);
   assert.match(decideRoute, /rejectMembershipApplication/);
   assert.match(approvalHelper, /rpcUrl\("approve_mvp_membership_application"\)/);

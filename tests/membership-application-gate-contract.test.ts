@@ -49,7 +49,7 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(applyClient, /멤버십 연장하기/);
   assert.match(applyClient, /연장 기간을 고르세요/);
   assert.match(applyClient, /intent: renewalMode \? "renewal" : "new"/);
-  assert.match(applyClient, /applicationStatus !== "approved"/);
+  assert.match(applyClient, /payload\?\.isMember && applicationStatus === "approved"/);
   assert.match(applyClient, /멤버십 연장 완료\. 기간이 추가됐어요/);
   assert.match(applyClient, /telegramSent/);
   assert.match(applyClient, /입금했어요/);
@@ -90,6 +90,8 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(depositNotifyRoute, /signAdminAction\("membership_application", application\.id, "approve"\)/);
   assert.match(depositNotifyRoute, /scheduled_auto_approve_at/);
   assert.match(depositNotifyRoute, /5분 내 미처리 시 자동 승인/);
+  assert.match(depositNotifyRoute, /확인 버튼을 눌러야 승인\/거절 처리/);
+  assert.doesNotMatch(depositNotifyRoute, /`승인: \$\{approveLink\}`/);
   assert.doesNotMatch(plans, /크레딧 충전|1크레딧|billing\/manual\?credits/);
   assert.doesNotMatch(plansLayout, /크레딧 충전|1크레딧|billing\/manual/);
   assert.doesNotMatch(applyClient, /결제하기|크레딧 충전|billing\/manual/);
