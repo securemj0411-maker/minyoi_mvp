@@ -58,7 +58,12 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(applyClient, /\/api\/membership\/status/);
   assert.match(applyClient, /5분 내 승인 보장/);
   assert.match(applyClient, /멤버십 가입 완료\. 환영합니다/);
+  assert.match(applyClient, /role="dialog"/);
+  assert.match(applyClient, /Membership active/);
+  assert.match(applyClient, /상품 피드로 이동/);
+  assert.match(applyClient, /function goToFeed\(\)/);
   assert.match(applyClient, /router\.replace\("\/me"\)/);
+  assert.doesNotMatch(applyClient, /setTimeout\(\(\) => router\.replace\("\/me"\)/);
   assert.match(applyClient, /countdownLabel/);
   assert.match(applyClient, /내 지역 티오 확인 완료 · 입금 대기/);
   assert.match(applyClient, /기간\/금액 변경/);

@@ -150,8 +150,7 @@ export default function MembershipApplicationClient({
       if (payload?.isMember && applicationStatus === "approved") {
         setApprovalDetected(true);
         setApprovalMessage(renewalMode ? "멤버십 연장 완료. 기간이 추가됐어요." : "멤버십 가입 완료. 환영합니다.");
-        setDepositNotifyMessage(renewalMode ? "연장 승인 완료됐어요. 상품 피드로 이동합니다." : "승인 완료됐어요. 상품 피드로 이동합니다.");
-        window.setTimeout(() => router.replace("/me"), 1200);
+        setDepositNotifyMessage(renewalMode ? "연장 승인 완료됐어요." : "승인 완료됐어요.");
       } else if (applicationStatus === "rejected") {
         setDepositNotifyState("error");
         setDepositNotifyMessage("신청이 거절됐어요. 기간/금액을 다시 선택해주세요.");
@@ -276,10 +275,9 @@ export default function MembershipApplicationClient({
     } | null;
     if (payload?.alreadyMember) {
       setApprovalDetected(true);
-      setApprovalMessage("멤버십이 이미 활성화되어 있어요. 상품 피드로 이동합니다.");
+      setApprovalMessage("멤버십이 이미 활성화되어 있어요.");
       setDepositNotifyState("sent");
       setDepositNotifyMessage("이미 승인된 계정입니다.");
-      window.setTimeout(() => router.replace("/me"), 900);
       return;
     }
     const fallbackAutoApproveAt = new Date(Date.now() + 5 * 60_000).toISOString();
@@ -363,11 +361,40 @@ export default function MembershipApplicationClient({
     : 5 * 60_000;
   const showDepositCountdown = hasReservation && depositNotifyState === "sent";
 
+  function goToFeed() {
+    router.replace("/me");
+  }
+
   return (
     <div>
       {approvalMessage ? (
-        <div className="fixed left-1/2 top-4 z-[70] w-[calc(100%-24px)] max-w-[420px] -translate-x-1/2 rounded-[14px] border border-emerald-200 bg-white px-4 py-3 text-center text-[13px] font-black text-emerald-700 shadow-2xl dark:border-emerald-900 dark:bg-zinc-950 dark:text-emerald-300">
-          {approvalMessage}
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/55 px-4 py-6 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="membership-approval-title"
+            className="w-full max-w-[430px] rounded-[18px] border border-emerald-200 bg-white p-5 text-center shadow-2xl dark:border-emerald-900/80 dark:bg-zinc-950"
+          >
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-[28px] font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900">
+              ✓
+            </div>
+            <div className="mt-4 text-[11px] font-black uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">
+              Membership active
+            </div>
+            <h2 id="membership-approval-title" className="mt-2 break-keep text-[25px] font-black leading-tight text-zinc-950 dark:text-zinc-50">
+              {approvalMessage}
+            </h2>
+            <p className="mt-2 break-keep text-[13px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
+              이제 실시간 추천 매물, 원본 링크, 시세 근거를 바로 볼 수 있어요.
+            </p>
+            <button
+              type="button"
+              onClick={goToFeed}
+              className="mt-5 flex h-12 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90"
+            >
+              상품 피드로 이동
+            </button>
+          </div>
         </div>
       ) : null}
       {hasReservation ? (
