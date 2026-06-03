@@ -18,7 +18,6 @@ test("guest landing preview is velocity-led and routes login to membership appli
     assert.match(src, /href="\/login\?next=\/plans"/);
     assert.doesNotMatch(src, /무료로 시작|첫 상세 1개는 무료/);
   }
-  assert.doesNotMatch(clientPreview, /cache: "no-store"/);
 });
 
 test("preview pool only serves items with usable market velocity", () => {
@@ -28,6 +27,8 @@ test("preview pool only serves items with usable market velocity", () => {
 
   assert.match(route, /readPreviewPoolCache/);
   assert.match(route, /mvp_preview_showcases|precomputed DB materialized cache/);
+  assert.match(route, /items\.length > 0/);
+  assert.match(route, /no-store, max-age=0/);
   assert.doesNotMatch(route, /mvp_candidate_pool/);
   assert.doesNotMatch(route, /mvp_market_price_daily/);
   assert.doesNotMatch(route, /mvp_market_velocity_daily/);

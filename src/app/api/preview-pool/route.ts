@@ -12,11 +12,14 @@ const CACHE_SECONDS = 300;
 // This route intentionally reads only the precomputed DB materialized cache.
 export async function GET() {
   const items = await readPreviewPoolCache();
+  const cacheControl = items.length > 0
+    ? `public, max-age=${CACHE_SECONDS}, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=3600`
+    : "no-store, max-age=0";
   return NextResponse.json(
     { items },
     {
       headers: {
-        "Cache-Control": `public, max-age=${CACHE_SECONDS}, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=3600`,
+        "Cache-Control": cacheControl,
       },
     },
   );
