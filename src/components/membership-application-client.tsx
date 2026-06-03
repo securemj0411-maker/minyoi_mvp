@@ -68,8 +68,11 @@ export default function MembershipApplicationClient({
       setMessage("신청 접수가 실패했어요. 잠시 후 다시 눌러주세요.");
       return;
     }
+    const payload = (await res.json().catch(() => null)) as { telegramSent?: boolean } | null;
     setState("sent");
-    setMessage("신청이 접수됐어요. 운영자가 확인하고 안내할게요.");
+    setMessage(payload?.telegramSent === false
+      ? "신청은 접수됐어요. 운영자 알림은 확인 중이라, 필요하면 카톡으로도 알려주세요."
+      : "신청이 접수됐어요. 운영자가 확인하고 안내할게요.");
   }
 
   return (

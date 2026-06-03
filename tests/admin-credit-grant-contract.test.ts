@@ -25,6 +25,11 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(applications, /90일 pro 멤버십/);
 
   assert.match(applyRoute, /mvp_membership_applications/);
+  assert.match(applyRoute, /notifyResult/);
+  assert.match(applyRoute, /telegramSent/);
+  assert.match(applyRoute, /telegram_notify_failed/);
+  assert.match(applyRoute, /admin_note/);
+  assert.match(applyRoute, /parseMode: null/);
   assert.match(decideRoute, /mvp_user_plans/);
   assert.match(decideRoute, /plan_key: "pro"/);
   assert.match(decideRoute, /"approved"/);

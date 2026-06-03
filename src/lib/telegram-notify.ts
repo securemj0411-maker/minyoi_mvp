@@ -19,6 +19,8 @@ export type NotifyAdminOptions = {
   replyMarkup?: InlineKeyboardMarkup;
   /** 메시지 ID 반환 받기. inline 버튼 후 editMessageText 박으려면 필요. */
   returnMessageId?: boolean;
+  /** undefined keeps the legacy Markdown default. null sends plain text. */
+  parseMode?: "Markdown" | "HTML" | null;
 };
 
 export type NotifyAdminResult = {
@@ -43,9 +45,9 @@ export async function notifyAdminTelegram(
     const payload: Record<string, unknown> = {
       chat_id: chatId,
       text: message,
-      parse_mode: "Markdown",
       disable_web_page_preview: false,
     };
+    if (opts.parseMode !== null) payload.parse_mode = opts.parseMode ?? "Markdown";
     if (opts.replyMarkup) payload.reply_markup = opts.replyMarkup;
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",

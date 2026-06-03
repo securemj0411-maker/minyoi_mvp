@@ -8,8 +8,19 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function escapeMarkdown(value: string) {
-  return value.replace(/([_*[\]()~`>#+\-=|{}.!])/g, "\\$1");
+function adminNoteLine(message: string) {
+  return `[${new Date().toISOString()}] ${message}`;
+}
+
+async function updateApplicationAdminNote(applicationId: number | null, note: string) {
+  if (!applicationId) return;
+  await restFetch(`${tableUrl("mvp_membership_applications")}?id=eq.${applicationId}`, {
+    method: "PATCH",
+    headers: serviceHeaders("return=minimal"),
+    body: jsonBody({ admin_note: note }),
+  }).catch((err) => {
+    console.warn("[membership/apply] admin note update failed", err instanceof Error ? err.message : String(err));
+  });
 }
 
 export async function POST(req: Request) {
@@ -25,11 +36,13 @@ export async function POST(req: Request) {
   const email = auth.user.email ?? "email 없음";
   const name = auth.user.user_metadata?.name ?? auth.user.user_metadata?.full_name ?? auth.user.user_metadata?.nickname ?? "이름 없음";
   const pendingRes = await restFetch(
-    `${tableUrl("mvp_membership_applications")}?select=id,status&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
+    `${tableUrl("mvp_membership_applications")}?select=id,status,admin_note&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
     { headers: serviceHeaders() },
   );
-  const pendingRows = (await pendingRes.json()) as Array<{ id: number; status: string }>;
+  const pendingRows = (await pendingRes.json()) as Array<{ id: number; status: string; admin_note: string | null }>;
   let applicationId = pendingRows[0]?.id ?? null;
+  const previousAdminNote = pendingRows[0]?.admin_note?.trim() ?? "";
+  const isRepeatApplication = Boolean(applicationId);
   if (!applicationId) {
     const insertRes = await restFetch(`${tableUrl("mvp_membership_applications")}`, {
       method: "POST",
@@ -48,18 +61,39 @@ export async function POST(req: Request) {
     applicationId = inserted[0]?.id ?? null;
   }
 
-  await notifyAdminTelegram(
+  const notifyResult = await notifyAdminTelegram(
     [
-      "*[득템잡이] 선공개 멤버십 신청*",
-      `신청 ID: \`${applicationId ?? "unknown"}\``,
-      `이름: ${escapeMarkdown(String(name))}`,
-      `이메일: ${escapeMarkdown(email)}`,
-      `auth_user_id: \`${auth.user.id}\``,
-      `user_ref: \`${userRef}\``,
+      "[득템잡이] 선공개 멤버십 신청",
+      `신청 ID: ${applicationId ?? "unknown"}`,
+      `이름: ${String(name)}`,
+      `이메일: ${email}`,
+      `auth_user_id: ${auth.user.id}`,
+      `user_ref: ${userRef}`,
       "상품: 선공개 300명 멤버십 / 3개월 99,000원",
       "처리: cau 운영자 페이지에서 승인/거절",
     ].join("\n"),
+    { parseMode: null },
   );
 
-  return NextResponse.json({ ok: true, applicationId });
+  const notificationLine = notifyResult.ok
+    ? adminNoteLine(isRepeatApplication ? "telegram_notified_again" : "telegram_notified")
+    : adminNoteLine(`telegram_notify_failed:${notifyResult.reason ?? "unknown"}`);
+  await updateApplicationAdminNote(
+    applicationId,
+    [previousAdminNote, notificationLine].filter(Boolean).join("\n").slice(-1800),
+  );
+
+  if (!notifyResult.ok) {
+    console.warn("[membership/apply] telegram notify failed", {
+      applicationId,
+      reason: notifyResult.reason ?? "unknown",
+    });
+  }
+
+  return NextResponse.json({
+    ok: true,
+    applicationId,
+    telegramSent: notifyResult.ok,
+    telegramReason: notifyResult.ok ? null : notifyResult.reason ?? "unknown",
+  });
 }

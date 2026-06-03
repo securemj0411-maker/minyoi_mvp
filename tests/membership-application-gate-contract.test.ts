@@ -16,6 +16,8 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(plansLayout, /선공개 멤버십 신청/);
   assert.match(plans, /MembershipApplicationClient/);
   assert.match(applyClient, /신청하기|로그인하고 신청하기/);
+  assert.match(applyClient, /telegramSent/);
+  assert.match(applyClient, /운영자 알림은 확인 중/);
   assert.doesNotMatch(plans, /크레딧 충전|1크레딧|billing\/manual\?credits/);
   assert.doesNotMatch(plansLayout, /크레딧 충전|1크레딧|billing\/manual/);
   assert.doesNotMatch(applyClient, /결제하기|크레딧 충전|billing\/manual/);
