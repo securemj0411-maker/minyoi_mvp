@@ -39,13 +39,30 @@ export async function POST(req: Request) {
   const email = auth.user.email ?? "email 없음";
   const name = auth.user.user_metadata?.name ?? auth.user.user_metadata?.full_name ?? auth.user.user_metadata?.nickname ?? "이름 없음";
   const pendingRes = await restFetch(
-    `${tableUrl("mvp_membership_applications")}?select=id,status,admin_note&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
+    `${tableUrl("mvp_membership_applications")}?select=id,status,admin_note,deposit_confirmed_at,scheduled_auto_approve_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
     { headers: serviceHeaders() },
   );
-  const pendingRows = (await pendingRes.json()) as Array<{ id: number; status: string; admin_note: string | null }>;
+  const pendingRows = (await pendingRes.json()) as Array<{
+    id: number;
+    status: string;
+    admin_note: string | null;
+    deposit_confirmed_at: string | null;
+    scheduled_auto_approve_at: string | null;
+  }>;
   let applicationId = pendingRows[0]?.id ?? null;
   const previousAdminNote = pendingRows[0]?.admin_note?.trim() ?? "";
   const isRepeatApplication = Boolean(applicationId);
+  const depositAlreadyConfirmed = Boolean(pendingRows[0]?.deposit_confirmed_at);
+  if (applicationId && depositAlreadyConfirmed) {
+    return NextResponse.json({
+      ok: true,
+      applicationId,
+      depositAlreadyConfirmed: true,
+      scheduledAutoApproveAt: pendingRows[0]?.scheduled_auto_approve_at ?? null,
+      telegramSent: false,
+      telegramReason: "deposit_already_confirmed",
+    });
+  }
   if (!applicationId) {
     const insertRes = await restFetch(`${tableUrl("mvp_membership_applications")}`, {
       method: "POST",
@@ -62,7 +79,7 @@ export async function POST(req: Request) {
     });
     const inserted = (await insertRes.json()) as Array<{ id: number }>;
     applicationId = inserted[0]?.id ?? null;
-  } else {
+  } else if (!depositAlreadyConfirmed) {
     await restFetch(`${tableUrl("mvp_membership_applications")}?id=eq.${applicationId}&status=eq.pending`, {
       method: "PATCH",
       headers: serviceHeaders("return=minimal"),
@@ -110,6 +127,8 @@ export async function POST(req: Request) {
     applicationId,
     productKey: selectedPlan.key,
     priceKrw: selectedPlan.priceKrw,
+    depositAlreadyConfirmed: false,
+    scheduledAutoApproveAt: pendingRows[0]?.scheduled_auto_approve_at ?? null,
     telegramSent: notifyResult.ok,
     telegramReason: notifyResult.ok ? null : notifyResult.reason ?? "unknown",
   });
@@ -126,7 +145,7 @@ export async function DELETE(req: Request) {
   }
 
   const pendingRes = await restFetch(
-    `${tableUrl("mvp_membership_applications")}?select=id,user_ref,email,display_name,product_key,price_krw,admin_note&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
+    `${tableUrl("mvp_membership_applications")}?select=id,user_ref,email,display_name,product_key,price_krw,admin_note,deposit_confirmed_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
     { headers: serviceHeaders() },
   );
   const pendingRows = (await pendingRes.json()) as Array<{
@@ -137,10 +156,17 @@ export async function DELETE(req: Request) {
     product_key: string | null;
     price_krw: number | null;
     admin_note: string | null;
+    deposit_confirmed_at: string | null;
   }>;
   const application = pendingRows[0] ?? null;
   if (!application) {
     return NextResponse.json({ ok: true, cancelled: false });
+  }
+  if (application.deposit_confirmed_at) {
+    return NextResponse.json({
+      error: "deposit_already_confirmed",
+      message: "입금 확인 요청 후에는 예약 취소가 막혀요. 운영자에게 환불/취소를 요청해주세요.",
+    }, { status: 409 });
   }
 
   const selectedPlan = getMembershipPlan(application.product_key);

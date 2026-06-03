@@ -13,6 +13,8 @@ export type MembershipApplicationRow = {
   priceKrw: number;
   status: "pending" | "approved" | "rejected";
   adminNote: string | null;
+  depositConfirmedAt: string | null;
+  scheduledAutoApproveAt: string | null;
   decidedAt: string | null;
   createdAt: string;
 };
@@ -142,6 +144,13 @@ export default function MembershipApplicationsPanel({ initialRows }: { initialRo
                         <div className="font-bold text-amber-200">{plan.label} · {krw(row.priceKrw)}</div>
                         <div className="mt-0.5 text-[10px] text-zinc-500">{plan.monthlyLabel}</div>
                         <div className="mt-0.5 text-[9px] uppercase text-zinc-700">{row.productKey}</div>
+                        {row.depositConfirmedAt ? (
+                          <div className="mt-1 text-[9px] font-bold text-emerald-300">
+                            입금확인 {fmt(row.depositConfirmedAt)} · 자동승인 {fmt(row.scheduledAutoApproveAt)}
+                          </div>
+                        ) : (
+                          <div className="mt-1 text-[9px] font-bold text-zinc-600">입금확인 전</div>
+                        )}
                       </>
                     );
                   })()}

@@ -15,6 +15,9 @@ test("operator members page is membership-application led, not manual-credit led
   const applyRoute = source("src/app/api/membership/apply/route.ts");
   const depositNotifyRoute = source("src/app/api/membership/deposit-notify/route.ts");
   const decideRoute = source("src/app/api/admin/membership-applications/decide/route.ts");
+  const approvalHelper = source("src/lib/membership-application-approval.ts");
+  const migration = source("supabase/migrations/20260603222750_wave1052_membership_deposit_approval_flow.sql");
+  const membershipAutoCron = source("src/app/api/cron/membership-auto-approve/route.ts");
 
   assert.match(page, /MembershipApplicationsPanel/);
   assert.match(page, /mvp_membership_applications/);
@@ -46,14 +49,21 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(applyRoute, /내 지역 티오: 신청자 기준 mock 확인 완료/);
   assert.match(depositNotifyRoute, /멤버십 입금 확인 요청/);
   assert.match(depositNotifyRoute, /user_deposit_confirmed/);
-  assert.match(depositNotifyRoute, /cau 운영자 페이지에서 입금 확인 후 승인/);
-  assert.match(decideRoute, /mvp_user_plans/);
-  assert.match(decideRoute, /getMembershipPlan/);
-  assert.match(decideRoute, /periodEndMonths\(selectedPlan\.months\)/);
-  assert.match(decideRoute, /plan_months: selectedPlan\.months/);
-  assert.match(decideRoute, /plan_key: "pro"/);
-  assert.match(decideRoute, /"approved"/);
-  assert.match(decideRoute, /"rejected"/);
+  assert.match(depositNotifyRoute, /signAdminAction\("membership_application", application\.id, "approve"\)/);
+  assert.match(depositNotifyRoute, /운영자 세션 없이 즉시 승인/);
+  assert.match(depositNotifyRoute, /scheduled_auto_approve_at/);
+  assert.match(decideRoute, /verifyAdminActionToken\("membership_application", id, decision, token\)/);
+  assert.match(decideRoute, /approveMembershipApplication/);
+  assert.match(decideRoute, /rejectMembershipApplication/);
+  assert.match(approvalHelper, /rpcUrl\("approve_mvp_membership_application"\)/);
+  assert.match(migration, /create or replace function public\.approve_mvp_membership_application/);
+  assert.match(migration, /insert into public\.mvp_user_plans/);
+  assert.match(migration, /payment_key[\s\S]*membership_application_/);
+  assert.match(migration, /grant execute on function public\.approve_mvp_membership_application/);
+  assert.match(membershipAutoCron, /membership_auto_approve/);
+  assert.match(membershipAutoCron, /approveMembershipApplication\(row\.id, "auto"/);
+  assert.match(approvalHelper, /status: "rejected"/);
+  assert.match(migration, /set status = 'approved'/);
 
   assert.doesNotMatch(table, /grantCredits|revokeCredits|\/api\/admin\/credits\/grant|\/api\/admin\/credits\/revoke|▌GRANT CREDIT|▌REVOKE CREDIT/);
 });

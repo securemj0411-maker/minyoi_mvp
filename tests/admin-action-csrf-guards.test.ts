@@ -18,6 +18,7 @@ test("admin action tokens are scoped to action, id, and decision", () => {
   assert.ok(token.length > 20);
   assert.equal(verifyAdminActionToken("manual_deposit", 123, "approve", token), true);
   assert.equal(verifyAdminActionToken("manual_deposit", 123, "reject", token), false);
+  assert.equal(verifyAdminActionToken("membership_application", 123, "approve", token), false);
   assert.equal(verifyAdminActionToken("feedback", 123, "approve", token), false);
   assert.equal(verifyAdminActionToken("manual_deposit", 124, "approve", token), false);
   assert.equal(verifyAdminActionToken("manual_deposit", 123, "approve", null), false);
@@ -25,14 +26,19 @@ test("admin action tokens are scoped to action, id, and decision", () => {
 
 test("telegram GET admin decisions require signed action tokens", () => {
   const manualDecide = source("src/app/api/admin/manual-deposit/decide/route.ts");
+  const membershipDecide = source("src/app/api/admin/membership-applications/decide/route.ts");
   const feedbackDecide = source("src/app/api/admin/feedback/decide/route.ts");
   const manualSubmit = source("src/app/api/billing/manual-deposit/route.ts");
+  const membershipDepositNotify = source("src/app/api/membership/deposit-notify/route.ts");
   const feedbackSubmit = source("src/app/api/feedback/submit/route.ts");
 
   assert.match(manualDecide, /verifyAdminActionToken\("manual_deposit", id, decisionRaw, token\)/);
+  assert.match(membershipDecide, /verifyAdminActionToken\("membership_application", id, decision, token\)/);
   assert.match(feedbackDecide, /verifyAdminActionToken\("feedback", id, decision, token\)/);
   assert.match(manualSubmit, /signAdminAction\("manual_deposit", requestId, "approve"\)/);
   assert.match(manualSubmit, /signAdminAction\("manual_deposit", requestId, "reject"\)/);
+  assert.match(membershipDepositNotify, /signAdminAction\("membership_application", application\.id, "approve"\)/);
+  assert.match(membershipDepositNotify, /signAdminAction\("membership_application", application\.id, "reject"\)/);
   assert.match(feedbackSubmit, /signAdminAction\("feedback", feedbackId, "approve"\)/);
   assert.match(feedbackSubmit, /signAdminAction\("feedback", feedbackId, "reject"\)/);
   assert.match(manualSubmit, /&token=\$\{encodeURIComponent\(approveToken\)\}/);
@@ -41,6 +47,7 @@ test("telegram GET admin decisions require signed action tokens", () => {
 
 test("admin UI POST decisions require a custom same-origin header", () => {
   const manualDecide = source("src/app/api/admin/manual-deposit/decide/route.ts");
+  const membershipDecide = source("src/app/api/admin/membership-applications/decide/route.ts");
   const feedbackDecide = source("src/app/api/admin/feedback/decide/route.ts");
   const manualPanel = source("src/app/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY/manual-deposit-panel.tsx");
   const feedbackPanel = source("src/app/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY/feedback-panel.tsx");
@@ -48,6 +55,7 @@ test("admin UI POST decisions require a custom same-origin header", () => {
 
   assert.equal(ADMIN_ACTION_HEADER, "x-minyoi-admin-action");
   assert.match(manualDecide, /missing_admin_action_header/);
+  assert.match(membershipDecide, /missing_admin_action_header/);
   assert.match(feedbackDecide, /missing_admin_action_header/);
   for (const panel of [manualPanel, feedbackPanel, feedbackReview]) {
     assert.match(panel, /headers: \{ "x-minyoi-admin-action": "1" \}/);

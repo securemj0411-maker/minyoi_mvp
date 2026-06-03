@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 export type AdminActionDecision = "approve" | "reject";
-export type AdminActionScope = "manual_deposit" | "feedback";
+export type AdminActionScope = "manual_deposit" | "membership_application" | "feedback";
 
 export const ADMIN_ACTION_HEADER = "x-minyoi-admin-action";
 const TOKEN_VERSION = "v1";

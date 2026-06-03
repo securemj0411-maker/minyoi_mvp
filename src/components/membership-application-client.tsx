@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   getMembershipPlan,
@@ -23,13 +24,33 @@ type PendingApplication = {
   planKey: MembershipPlanKey;
   planLabel: string;
   priceKrw: number;
+  depositConfirmedAt: string | null;
+  scheduledAutoApproveAt: string | null;
   createdAt: string;
+};
+
+type MembershipStatusResponse = {
+  ok?: boolean;
+  isMember?: boolean;
+  application?: {
+    scheduledAutoApproveAt?: string | null;
+    depositConfirmedAt?: string | null;
+    status?: string | null;
+  } | null;
 };
 
 function upsellPlansFor(plan: MembershipPlan): MembershipPlan[] {
   if (plan.key === "limited_300_1mo") return UPSELL_PLANS_FROM_1MO;
   if (plan.key === "limited_300_3mo") return UPSELL_PLANS_FROM_3MO;
   return [];
+}
+
+function countdownLabel(ms: number) {
+  const safeMs = Math.max(0, ms);
+  const totalSec = Math.ceil(safeMs / 1000);
+  const minutes = Math.floor(totalSec / 60);
+  const seconds = totalSec % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
 export default function MembershipApplicationClient({
@@ -45,6 +66,7 @@ export default function MembershipApplicationClient({
   plans: MembershipPlan[];
   pendingApplication: PendingApplication | null;
 }) {
+  const router = useRouter();
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [selectedKey, setSelectedKey] = useState<MembershipPlanKey>(
     getMembershipPlan(pendingApplication?.planKey ?? plans[1]?.key).key,
@@ -54,8 +76,13 @@ export default function MembershipApplicationClient({
   const [state, setState] = useState<ApplyState>(pendingApplication ? "sent" : "idle");
   const [message, setMessage] = useState<string | null>(null);
   const [copyOk, setCopyOk] = useState(false);
-  const [depositNotifyState, setDepositNotifyState] = useState<DepositNotifyState>("idle");
-  const [depositNotifyMessage, setDepositNotifyMessage] = useState<string | null>(null);
+  const [depositNotifyState, setDepositNotifyState] = useState<DepositNotifyState>(pendingApplication?.depositConfirmedAt ? "sent" : "idle");
+  const [depositNotifyMessage, setDepositNotifyMessage] = useState<string | null>(
+    pendingApplication?.depositConfirmedAt ? "입금 확인 요청이 접수됐어요. 5분 내 승인 보장으로 확인 중입니다." : null,
+  );
+  const [autoApproveAt, setAutoApproveAt] = useState<string | null>(pendingApplication?.scheduledAutoApproveAt ?? null);
+  const [approvalDetected, setApprovalDetected] = useState(false);
+  const [approvalMessage, setApprovalMessage] = useState<string | null>(null);
   const [reservationCancelled, setReservationCancelled] = useState(false);
   const [upsellOpen, setUpsellOpen] = useState(false);
   const [upsellStartedAt, setUpsellStartedAt] = useState<number | null>(null);
@@ -68,10 +95,43 @@ export default function MembershipApplicationClient({
   const offerExpired = upsellStartedAt !== null && offerMsLeft <= 0;
 
   useEffect(() => {
-    if (!upsellOpen) return;
+    if (!upsellOpen && !autoApproveAt) return;
     const id = window.setInterval(() => setNowMs(Date.now()), 1000);
     return () => window.clearInterval(id);
-  }, [upsellOpen]);
+  }, [autoApproveAt, upsellOpen]);
+
+  useEffect(() => {
+    if (!autoApproveAt || approvalDetected || reservationCancelled) return;
+    let alive = true;
+
+    async function checkMembershipStatus() {
+      const supabase = getSupabaseBrowserClient();
+      const { data } = supabase ? await supabase.auth.getSession() : { data: null };
+      const token = data?.session?.access_token;
+      if (!token || !alive) return;
+
+      const res = await fetch("/api/membership/status", {
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => null);
+      if (!res?.ok || !alive) return;
+      const payload = (await res.json().catch(() => null)) as MembershipStatusResponse | null;
+      const nextAutoApproveAt = payload?.application?.scheduledAutoApproveAt ?? null;
+      if (nextAutoApproveAt && nextAutoApproveAt !== autoApproveAt) setAutoApproveAt(nextAutoApproveAt);
+      if (payload?.isMember) {
+        setApprovalDetected(true);
+        setApprovalMessage("멤버십 가입 완료. 환영합니다.");
+        setDepositNotifyMessage("승인 완료됐어요. 상품 피드로 이동합니다.");
+        window.setTimeout(() => router.replace("/me"), 1200);
+      }
+    }
+
+    void checkMembershipStatus();
+    const id = window.setInterval(() => void checkMembershipStatus(), 2000);
+    return () => {
+      alive = false;
+      window.clearInterval(id);
+    };
+  }, [autoApproveAt, approvalDetected, reservationCancelled, router]);
 
   function openSelector() {
     if (state === "submitting") return;
@@ -106,6 +166,10 @@ export default function MembershipApplicationClient({
 
   async function submitApplication(plan: MembershipPlan) {
     if (state === "submitting") return;
+    if (depositNotifyState === "sent") {
+      setMessage("입금 확인 요청 후에는 기간/금액 변경이 막혀요. 필요하면 운영자에게 알려주세요.");
+      return;
+    }
     setState("submitting");
     setMessage(null);
     setSelectorOpen(false);
@@ -170,15 +234,21 @@ export default function MembershipApplicationClient({
       return;
     }
 
-    const payload = (await res.json().catch(() => null)) as { telegramSent?: boolean } | null;
+    const payload = (await res.json().catch(() => null)) as { telegramSent?: boolean; scheduledAutoApproveAt?: string | null } | null;
+    const fallbackAutoApproveAt = new Date(Date.now() + 5 * 60_000).toISOString();
+    setAutoApproveAt(payload?.scheduledAutoApproveAt ?? fallbackAutoApproveAt);
     setDepositNotifyState("sent");
     setDepositNotifyMessage(payload?.telegramSent === false
       ? "입금 확인 요청은 저장됐어요. 알림 상태는 확인 중이라, 늦으면 카톡으로도 알려주세요."
-      : "운영자에게 입금 확인 알림을 보냈어요. 보통 3분 안에 확인됩니다.");
+      : "운영자에게 입금 확인 알림을 보냈어요. 5분 내 승인 보장으로 확인합니다.");
   }
 
   async function cancelReservation() {
     if (state === "submitting") return;
+    if (depositNotifyState === "sent") {
+      setMessage("입금 확인 요청 후에는 예약 취소가 막혀요. 운영자에게 환불/취소를 요청해주세요.");
+      return;
+    }
     const confirmed = window.confirm("입금 전 자리 예약을 취소할까요? 취소 후 다시 신청할 수 있어요.");
     if (!confirmed) return;
 
@@ -212,6 +282,9 @@ export default function MembershipApplicationClient({
     setSubmittedPlan(null);
     setDepositNotifyState("idle");
     setDepositNotifyMessage(null);
+    setAutoApproveAt(null);
+    setApprovalDetected(false);
+    setApprovalMessage(null);
     setReservationCancelled(true);
     setState("idle");
     setMessage("예약이 취소됐어요. 다시 신청할 수 있어요.");
@@ -242,9 +315,19 @@ export default function MembershipApplicationClient({
   const hasReservation = Boolean((pendingApplication || state === "sent") && !reservationCancelled);
   const planLabel = submittedPlan?.label ?? pendingApplication?.planLabel ?? "멤버십";
   const priceKrw = submittedPlan?.priceKrw ?? pendingApplication?.priceKrw ?? 99_000;
+  const autoApproveTargetMs = autoApproveAt ? Date.parse(autoApproveAt) : null;
+  const autoApproveMsLeft = autoApproveTargetMs && Number.isFinite(autoApproveTargetMs)
+    ? Math.max(0, autoApproveTargetMs - nowMs)
+    : 5 * 60_000;
+  const showDepositCountdown = hasReservation && depositNotifyState === "sent";
 
   return (
     <div>
+      {approvalMessage ? (
+        <div className="fixed left-1/2 top-4 z-[70] w-[calc(100%-24px)] max-w-[420px] -translate-x-1/2 rounded-[14px] border border-emerald-200 bg-white px-4 py-3 text-center text-[13px] font-black text-emerald-700 shadow-2xl dark:border-emerald-900 dark:bg-zinc-950 dark:text-emerald-300">
+          {approvalMessage}
+        </div>
+      ) : null}
       {hasReservation ? (
         <div className="rounded-[12px] border border-blue-100 bg-white px-3.5 py-3 dark:border-blue-950/70 dark:bg-zinc-950/50">
           <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">내 지역 티오 확인 완료 · 입금 대기</div>
@@ -273,9 +356,24 @@ export default function MembershipApplicationClient({
             </div>
             <div className="mt-2 rounded-[10px] border border-blue-100 bg-white px-3 py-2 text-[11px] font-bold leading-4 text-zinc-600 dark:border-blue-950/60 dark:bg-zinc-950 dark:text-zinc-300">
               입금 금액: <b className="text-[#3182f6] dark:text-blue-300">{krw(priceKrw)}</b>
-              {" "}· 보통 3분 안에 운영자가 확인합니다.
+              {" "}· 5분 내 승인 보장
             </div>
           </div>
+          {showDepositCountdown ? (
+            <div className="mt-3 rounded-[12px] border border-emerald-200 bg-emerald-50 px-3 py-3 dark:border-emerald-900/70 dark:bg-emerald-950/20">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">입금 확인 진행 중</div>
+                  <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+                    5분 내 운영자가 확인합니다. 시간이 지나면 자동으로 승인돼요.
+                  </div>
+                </div>
+                <div className="shrink-0 rounded-[10px] bg-white px-3 py-2 text-[22px] font-black tabular-nums text-emerald-700 ring-1 ring-emerald-100 dark:bg-zinc-950 dark:text-emerald-300 dark:ring-emerald-900">
+                  {autoApproveMsLeft > 0 ? countdownLabel(autoApproveMsLeft) : "0:00"}
+                </div>
+              </div>
+            </div>
+          ) : null}
           <button
             type="button"
             onClick={() => void notifyDepositDone()}
@@ -297,7 +395,7 @@ export default function MembershipApplicationClient({
             <button
               type="button"
               onClick={openSelector}
-              disabled={state === "submitting"}
+              disabled={state === "submitting" || depositNotifyState === "sent"}
               className="h-10 rounded-xl border border-blue-100 bg-blue-50 text-[12px] font-black text-[#3182f6] transition hover:bg-[#ebf2ff] disabled:cursor-default disabled:opacity-60 dark:border-blue-950/70 dark:bg-blue-950/30 dark:text-blue-200"
             >
               기간/금액 변경
@@ -305,7 +403,7 @@ export default function MembershipApplicationClient({
             <button
               type="button"
               onClick={() => void cancelReservation()}
-              disabled={state === "submitting"}
+              disabled={state === "submitting" || depositNotifyState === "sent"}
               className="h-10 rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-600 transition hover:bg-zinc-50 disabled:cursor-default disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300"
             >
               예약 취소

@@ -22,7 +22,7 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(plans, /SLOT_CAPACITY = 300/);
   assert.match(plans, /신청 후 즉시 조회/);
   assert.match(plans, /입금했어요 버튼/);
-  assert.match(plans, /보통 3분 내 확인/);
+  assert.match(plans, /5분 내 승인 보장/);
   assert.doesNotMatch(plans, /카카오 로그인 후 기간을 선택합니다/);
   assert.doesNotMatch(plans, /2\. 지역 조회/);
   assert.match(planConfig, /월 33,000원꼴/);
@@ -46,7 +46,11 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(applyClient, /입금했어요/);
   assert.match(applyClient, /notifyDepositDone/);
   assert.match(applyClient, /\/api\/membership\/deposit-notify/);
-  assert.match(applyClient, /보통 3분 안에 확인됩니다/);
+  assert.match(applyClient, /\/api\/membership\/status/);
+  assert.match(applyClient, /5분 내 승인 보장/);
+  assert.match(applyClient, /멤버십 가입 완료\. 환영합니다/);
+  assert.match(applyClient, /router\.replace\("\/me"\)/);
+  assert.match(applyClient, /countdownLabel/);
   assert.match(applyClient, /내 지역 티오 확인 완료 · 입금 대기/);
   assert.match(applyClient, /기간\/금액 변경/);
   assert.match(applyClient, /예약 취소/);
@@ -73,7 +77,10 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(depositNotifyRoute, /멤버십 입금 확인 요청/);
   assert.match(depositNotifyRoute, /user_deposit_confirmed/);
   assert.match(depositNotifyRoute, /telegram_deposit_notified/);
-  assert.match(depositNotifyRoute, /보통 3분 내 확인/);
+  assert.match(depositNotifyRoute, /AUTO_APPROVE_AFTER_MS = 5 \* 60 \* 1000/);
+  assert.match(depositNotifyRoute, /signAdminAction\("membership_application", application\.id, "approve"\)/);
+  assert.match(depositNotifyRoute, /scheduled_auto_approve_at/);
+  assert.match(depositNotifyRoute, /5분 내 미처리 시 자동 승인/);
   assert.doesNotMatch(plans, /크레딧 충전|1크레딧|billing\/manual\?credits/);
   assert.doesNotMatch(plansLayout, /크레딧 충전|1크레딧|billing\/manual/);
   assert.doesNotMatch(applyClient, /결제하기|크레딧 충전|billing\/manual/);

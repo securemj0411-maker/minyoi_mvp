@@ -69,6 +69,8 @@ type MembershipApplicationDbRow = {
   price_krw: number;
   status: "pending" | "approved" | "rejected";
   admin_note: string | null;
+  deposit_confirmed_at: string | null;
+  scheduled_auto_approve_at: string | null;
   decided_at: string | null;
   created_at: string;
 };
@@ -113,7 +115,7 @@ async function fetchAllPlans(): Promise<PlanRow[]> {
 async function fetchMembershipApplications(): Promise<MembershipApplicationRow[]> {
   try {
     const res = await fetch(
-      `${tableUrl("mvp_membership_applications")}?select=id,user_ref,auth_user_id,email,display_name,product_key,price_krw,status,admin_note,decided_at,created_at&order=status.asc,created_at.desc&limit=100`,
+      `${tableUrl("mvp_membership_applications")}?select=id,user_ref,auth_user_id,email,display_name,product_key,price_krw,status,admin_note,deposit_confirmed_at,scheduled_auto_approve_at,decided_at,created_at&order=status.asc,created_at.desc&limit=100`,
       { headers: serviceHeaders(), cache: "no-store" },
     );
     if (!res.ok) return [];
@@ -128,6 +130,8 @@ async function fetchMembershipApplications(): Promise<MembershipApplicationRow[]
       priceKrw: Number(row.price_krw ?? 99000),
       status: row.status,
       adminNote: row.admin_note,
+      depositConfirmedAt: row.deposit_confirmed_at,
+      scheduledAutoApproveAt: row.scheduled_auto_approve_at,
       decidedAt: row.decided_at,
       createdAt: row.created_at,
     }));

@@ -19,7 +19,7 @@ const FEATURES = [
 
 const PAYMENT_HELP = [
   { label: "입금했어요 버튼", value: "송금 후 버튼을 누르면 운영자에게 입금 확인 알림이 바로 갑니다." },
-  { label: "보통 3분 내 확인", value: "운영자가 입금 확인 후 승인하면 추천 상품 피드가 열립니다." },
+  { label: "5분 내 승인 보장", value: "운영자가 놓쳐도 5분이 지나면 자동 승인되어 추천 상품 피드가 열립니다." },
   { label: "승인 전 변경 가능", value: "입금 전에는 기간/금액 변경이나 예약 취소를 직접 할 수 있습니다." },
 ];
 
@@ -33,6 +33,8 @@ type PendingApplicationRow = {
   id: number;
   product_key: string;
   price_krw: number;
+  deposit_confirmed_at: string | null;
+  scheduled_auto_approve_at: string | null;
   created_at: string;
 };
 
@@ -44,7 +46,7 @@ type SlotSnapshot = {
 async function loadPendingApplication(authUserId: string): Promise<PendingApplicationRow | null> {
   try {
     const res = await restFetch(
-      `${tableUrl("mvp_membership_applications")}?select=id,product_key,price_krw,created_at&auth_user_id=eq.${authUserId}&status=eq.pending&limit=1`,
+      `${tableUrl("mvp_membership_applications")}?select=id,product_key,price_krw,deposit_confirmed_at,scheduled_auto_approve_at,created_at&auth_user_id=eq.${authUserId}&status=eq.pending&limit=1`,
       { headers: serviceHeaders(), cache: "no-store" },
     );
     if (!res.ok) return null;
@@ -132,6 +134,8 @@ export default async function PlansPage() {
                     planKey: pendingPlan?.key ?? "limited_300_3mo",
                     planLabel: pendingPlan?.label ?? "멤버십",
                     priceKrw: Number(pendingApplication.price_krw ?? pendingPlan?.priceKrw ?? 99_000),
+                    depositConfirmedAt: pendingApplication.deposit_confirmed_at,
+                    scheduledAutoApproveAt: pendingApplication.scheduled_auto_approve_at,
                     createdAt: pendingApplication.created_at,
                   } : null}
                 />

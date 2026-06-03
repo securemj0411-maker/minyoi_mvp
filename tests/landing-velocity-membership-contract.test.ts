@@ -89,7 +89,7 @@ test("plans page explains scarcity, local constraints, and quota management", ()
   assert.match(planConfig, /priceKrw: 99_000/);
   assert.match(plans, /송금 후 입금했어요 버튼을 눌러주세요/);
   assert.match(plans, /입금했어요 버튼/);
-  assert.match(plans, /보통 3분 내 확인/);
+  assert.match(plans, /5분 내 승인 보장/);
   assert.doesNotMatch(plans, /카카오 로그인 후 기간을 선택합니다/);
   assert.doesNotMatch(plans, /2\. 지역 조회/);
   assert.doesNotMatch(plans, /결제 페이지가 아니라/);

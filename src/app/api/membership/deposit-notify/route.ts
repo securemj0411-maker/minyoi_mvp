@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { signAdminAction } from "@/lib/admin-action-token";
 import { getMembershipPlan } from "@/lib/membership-plans";
 import { notifyAdminTelegram } from "@/lib/telegram-notify";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
@@ -8,6 +9,8 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const AUTO_APPROVE_AFTER_MS = 5 * 60 * 1000;
 
 function adminNoteLine(message: string) {
   return `[${new Date().toISOString()}] ${message}`;
@@ -24,7 +27,7 @@ export async function POST(req: Request) {
   }
 
   const pendingRes = await restFetch(
-    `${tableUrl("mvp_membership_applications")}?select=id,user_ref,email,display_name,product_key,price_krw,admin_note&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
+    `${tableUrl("mvp_membership_applications")}?select=id,user_ref,email,display_name,product_key,price_krw,admin_note,deposit_confirmed_at,scheduled_auto_approve_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&limit=1`,
     { headers: serviceHeaders() },
   );
   const pendingRows = (await pendingRes.json()) as Array<{
@@ -35,6 +38,8 @@ export async function POST(req: Request) {
     product_key: string | null;
     price_krw: number | null;
     admin_note: string | null;
+    deposit_confirmed_at: string | null;
+    scheduled_auto_approve_at: string | null;
   }>;
   const application = pendingRows[0] ?? null;
   if (!application) {
@@ -50,6 +55,14 @@ export async function POST(req: Request) {
     ?? "이름 없음";
   const email = application.email ?? auth.user.email ?? "email 없음";
   const nowIso = new Date().toISOString();
+  const depositConfirmedAt = application.deposit_confirmed_at ?? nowIso;
+  const scheduledAutoApproveAt = application.scheduled_auto_approve_at
+    ?? new Date(Date.now() + AUTO_APPROVE_AFTER_MS).toISOString();
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://minyoi-mvp.vercel.app";
+  const approveToken = signAdminAction("membership_application", application.id, "approve");
+  const rejectToken = signAdminAction("membership_application", application.id, "reject");
+  const approveLink = `${baseUrl}/api/admin/membership-applications/decide?id=${application.id}&decision=approve&token=${encodeURIComponent(approveToken)}`;
+  const rejectLink = `${baseUrl}/api/admin/membership-applications/decide?id=${application.id}&decision=reject&token=${encodeURIComponent(rejectToken)}`;
 
   const notifyResult = await notifyAdminTelegram(
     [
@@ -60,10 +73,21 @@ export async function POST(req: Request) {
       `auth_user_id: ${auth.user.id}`,
       `user_ref: ${application.user_ref ?? userRef}`,
       `상품: ${selectedPlan.label} / ${Number(application.price_krw ?? selectedPlan.priceKrw).toLocaleString("ko-KR")}원`,
-      "처리: cau 운영자 페이지에서 입금 확인 후 승인",
-      "기대 응답: 보통 3분 내 확인",
+      "처리: 아래 승인 링크를 누르면 운영자 세션 없이 즉시 승인",
+      "보장: 5분 내 미처리 시 자동 승인",
+      `자동 승인 예정: ${scheduledAutoApproveAt}`,
+      `승인: ${approveLink}`,
+      `거절: ${rejectLink}`,
     ].join("\n"),
-    { parseMode: null },
+    {
+      parseMode: null,
+      replyMarkup: {
+        inline_keyboard: [[
+          { text: "✅ 멤버십 승인", url: approveLink },
+          { text: "❌ 거절", url: rejectLink },
+        ]],
+      },
+    },
   );
 
   const adminNote = [
@@ -78,6 +102,8 @@ export async function POST(req: Request) {
     method: "PATCH",
     headers: serviceHeaders("return=minimal"),
     body: jsonBody({
+      deposit_confirmed_at: depositConfirmedAt,
+      scheduled_auto_approve_at: scheduledAutoApproveAt,
       admin_note: adminNote,
       updated_at: nowIso,
     }),
@@ -94,6 +120,8 @@ export async function POST(req: Request) {
     ok: true,
     notified: true,
     applicationId: application.id,
+    scheduledAutoApproveAt,
+    serverNow: nowIso,
     telegramSent: notifyResult.ok,
     telegramReason: notifyResult.ok ? null : notifyResult.reason ?? "unknown",
   });
