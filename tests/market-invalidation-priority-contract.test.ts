@@ -8,10 +8,14 @@ const joongnaIngestSource = readFileSync(new URL("../src/lib/joongna-ingest.ts",
 test("market invalidation worker claims a larger prioritized window safely", () => {
   assert.match(tickPipelineSource, /DEFAULT_MARKET_INVALIDATION_CLAIM_LIMIT\s*=\s*500/);
   assert.match(tickPipelineSource, /DEFAULT_MARKET_INVALIDATION_PRIORITY_WINDOW\s*=\s*3000/);
+  assert.match(tickPipelineSource, /DEFAULT_MARKET_INVALIDATION_STALE_LANE_LIMIT\s*=\s*40/);
   assert.match(tickPipelineSource, /MARKET_INVALIDATION_READ_PAGE_SIZE\s*=\s*1000/);
   assert.match(tickPipelineSource, /PIPELINE_MARKET_INVALIDATION_CLAIM_LIMIT/);
   assert.match(tickPipelineSource, /PIPELINE_MARKET_INVALIDATION_PRIORITY_WINDOW/);
+  assert.match(tickPipelineSource, /PIPELINE_MARKET_INVALIDATION_STALE_LANE_LIMIT/);
   assert.match(tickPipelineSource, /offset=\$\{offset\}/);
+  assert.match(tickPipelineSource, /fetchPendingRows\("last_event_at\.asc", staleLaneLimit\)/);
+  assert.match(tickPipelineSource, /market_invalidation_claimed_stale_lane_keys/);
   assert.match(tickPipelineSource, /MARKET_INVALIDATION_FAST_LANE_PREFIXES\s*=\s*new Set\(\["shoe", "clothing"\]\)/);
   assert.match(tickPipelineSource, /affected_source === "joongna"/);
   assert.match(tickPipelineSource, /loadAffectedSourcesForInvalidations/);

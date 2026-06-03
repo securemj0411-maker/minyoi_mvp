@@ -633,6 +633,34 @@ create index if not exists mvp_raw_listings_dirty_scorable_sku_recent_idx
     and sku_id is not null
     and listing_state = 'active';
 
+create index if not exists mvp_raw_listings_dirty_scorable_shoe_range_recent_idx
+  on public.mvp_raw_listings(last_seen_at desc)
+  include (pid, source)
+  where score_dirty = true
+    and detail_status = 'done'
+    and sku_id is not null
+    and listing_state = 'active'
+    and sku_id >= 'shoe-'
+    and sku_id < 'shoe.'
+    and (
+      listing_type = 'normal' or
+      listing_type_override = 'normal'
+    );
+
+create index if not exists mvp_raw_listings_dirty_scorable_clothing_range_recent_idx
+  on public.mvp_raw_listings(last_seen_at desc)
+  include (pid, source)
+  where score_dirty = true
+    and detail_status = 'done'
+    and sku_id is not null
+    and listing_state = 'active'
+    and sku_id >= 'clothing-'
+    and sku_id < 'clothing.'
+    and (
+      listing_type = 'normal' or
+      listing_type_override = 'normal'
+    );
+
 create index if not exists mvp_raw_listings_active_fashion_first_seen_idx
   on public.mvp_raw_listings(first_seen_at desc)
   where listing_state = 'active'
@@ -825,6 +853,10 @@ create index if not exists mvp_lifecycle_checks_claim_ready_idx
 
 create index if not exists mvp_market_key_invalidation_claim_idx
   on public.mvp_market_key_invalidation(status, priority desc, last_event_at asc);
+
+create index if not exists mvp_market_key_invalidation_pending_oldest_idx
+  on public.mvp_market_key_invalidation(last_event_at asc)
+  where status = 'pending';
 
 create index if not exists mvp_market_key_invalidation_locked_idx
   on public.mvp_market_key_invalidation(locked_until);

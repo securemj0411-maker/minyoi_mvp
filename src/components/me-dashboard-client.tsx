@@ -95,20 +95,14 @@ function initialViewFromUrl(): DashboardView {
 export default function MeDashboardClient({ initialInventory: _initialInventory }: { initialInventory: InventorySnapshot[] }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeView, setActiveView] = useState<DashboardView>(initialViewFromUrl);
-  const [isPro, setIsPro] = useState<boolean>(false);
-  const [isBetaTester, setIsBetaTester] = useState<boolean>(false);
+  const [activeView] = useState<DashboardView>(initialViewFromUrl);
   const [shadowMode, setShadowMode] = useState<boolean>(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   // Wave 343: welcome flow 폐기 (ExploreClient로 통합). welcomePending state 제거.
   // seekMoreOpen modal 제거 ("더 찾아보기" 버튼 사라짐 — cooldown으로 대체).
   // Wave 343: welcome flow 폐기로 welcomeRequestedRef 제거됨.
 
   useEffect(() => {
     setShadowMode(hasAdminShadowClient());
-    try {
-      setSidebarCollapsed(window.localStorage.getItem("me_sidebar_collapsed") === "1");
-    } catch {}
     // Wave 199 (2026-05-19): 가입 직후 me 진입 시 localStorage 의 pending consent 를 DB insert.
     //   카카오 OAuth callback 후 클라이언트 진입 시점에만 가능 (server callback 은 access_token X).
     //   best-effort — 실패해도 사용자 진행에 영향 X. 운영자가 추후 검증 가능.
@@ -116,17 +110,6 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
       flushPendingConsents().catch((err) => console.warn("[consents] flush failed (non-fatal)", err));
     });
   }, []);
-
-  const toggleSidebar = () => {
-    setSidebarCollapsed((prev) => {
-      const next = !prev;
-      try {
-        if (next) window.localStorage.setItem("me_sidebar_collapsed", "1");
-        else window.localStorage.removeItem("me_sidebar_collapsed");
-      } catch {}
-      return next;
-    });
-  };
 
   const effectiveAdmin = isAdminUser(user) && !shadowMode;
 
@@ -152,22 +135,6 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
     };
   }, []);
 
-  // Wave 93b: Pro 여부 fetch (메뉴 게이팅). 2026-05-15: isBetaTester 같이 가져옴.
-  useEffect(() => {
-    if (!user) { setIsPro(false); setIsBetaTester(false); return; }
-    let cancelled = false;
-    fetch("/api/me/subscription", { cache: "no-store" })
-      .then((r) => r.ok ? r.json() : null)
-      .then((data: { isPro?: boolean; isBetaTester?: boolean } | null) => {
-        if (!cancelled && data) {
-          setIsPro(Boolean(data.isPro));
-          setIsBetaTester(Boolean(data.isBetaTester));
-        }
-      })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [user]);
-
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
@@ -190,26 +157,9 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f5f7fb] dark:bg-zinc-950">
-        <div className="grid min-h-screen lg:grid-cols-[220px_minmax(0,1fr)]">
-          {/* Sidebar skeleton — layout 점프 방지 */}
-          <aside className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 lg:border-b-0 lg:border-r">
-            <div className="px-3 py-2 lg:px-4 lg:py-5">
-              <div className="space-y-2 px-2 pb-3">
-                <div className="h-2.5 w-24 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
-                <div className="h-4 w-32 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
-              </div>
-              <div className="flex gap-1 overflow-hidden pb-1 lg:block lg:space-y-2 lg:pb-0">
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="h-10 w-32 shrink-0 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-800 lg:w-full"
-                  />
-                ))}
-              </div>
-            </div>
-          </aside>
+        <div className="min-h-screen">
           {/* Main content skeleton — 추천 카드 grid 자리 */}
-          <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:col-start-2 lg:px-5 lg:py-8">
+          <section className="w-full min-w-0 px-3 py-4 sm:px-4 sm:py-6 lg:px-5 lg:py-8">
             <div className="space-y-4">
               <div className="h-6 w-48 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
               <div className="h-4 w-72 max-w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
@@ -236,67 +186,7 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
 
   return (
     <main className="min-h-screen bg-[#f5f7fb] dark:bg-zinc-950">
-      {/* mobile = flex stack (sidebar chip bar 위, content 아래).
-          lg+ = 2 col grid. 이전에 mobile에서도 `grid` 박혀 있어서 child의
-          `lg:col-start-2`가 일부 브라우저 implicit-grid 처리로 빈 column 만들어
-          content가 오른쪽으로 치우치는 보고 있었음 → mobile에선 grid 비활성. */}
-      <div className={`flex min-h-screen flex-col lg:grid ${sidebarCollapsed ? "lg:grid-cols-[44px_minmax(0,1fr)]" : "lg:grid-cols-[220px_minmax(0,1fr)]"} transition-[grid-template-columns] duration-200`}>
-        {/* Mobile: 상품 피드 우선. 탭 바는 숨기고 desktop sidebar 에서만 view 전환. */}
-        <aside className="hidden border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95 lg:sticky lg:top-[60px] lg:z-30 lg:row-span-2 lg:block lg:h-[calc(100dvh-60px)] lg:border-b-0 lg:border-r lg:bg-white lg:backdrop-blur-none xl:row-span-1">
-          <div className="flex h-full items-center px-3 py-1 lg:block lg:h-auto lg:px-2 lg:py-3">
-            {/* desktop only: collapse toggle 버튼 — 우측 정렬 (saas 표준 패턴) */}
-            <div className="hidden lg:flex lg:justify-end lg:mb-1.5">
-              <button
-                type="button"
-                onClick={toggleSidebar}
-                className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-600 hover:bg-[var(--brand-accent-soft)] hover:text-[var(--brand-accent-strong)] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-                aria-label={sidebarCollapsed ? "메뉴 펼치기" : "메뉴 접기"}
-                title={sidebarCollapsed ? "메뉴 펼치기" : "메뉴 접기"}
-              >
-                <span className="text-sm font-black leading-none">{sidebarCollapsed ? "»" : "«"}</span>
-              </button>
-            </div>
-            <div className={`hidden px-2 pb-3 lg:block ${sidebarCollapsed ? "lg:hidden" : ""}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-blue-400">
-                My Dashboard
-              </p>
-              <div className="mt-1 text-sm font-black text-zinc-950 dark:text-zinc-100">작업 메뉴</div>
-            </div>
-            <div className={`-mx-1 flex w-full items-center gap-1.5 overflow-x-auto px-1 lg:mx-0 lg:block lg:w-auto lg:space-y-1 lg:overflow-visible lg:px-0 ${sidebarCollapsed ? "lg:hidden" : ""}`}>
-              {/* 2026-05-17: "recommend" 메뉴 제거 — "나의 상품" 1 페이지 통합 + "더 찾아보기" 버튼으로 흡수. */}
-              {(["history", "guides", ...(isPro || effectiveAdmin ? (["hotdeal-alerts"] as const) : []), ...(effectiveAdmin || isBetaTester ? (["admin-pool"] as const) : []), ...(effectiveAdmin ? (["admin-classification"] as const) : [])] as const).map((v) => {
-                const label = v === "history" ? "나의 상품"
-                  : v === "guides" ? "공략집"
-                  : v === "hotdeal-alerts" ? "핫딜 알림"
-                  : v === "admin-classification" ? "분류 검증"
-                  : "운영자";
-                const lgLabel = v === "history" ? "나의 상품"
-                  : v === "guides" ? "공략집"
-                  : v === "hotdeal-alerts" ? "핫딜 알림"
-                  : v === "admin-classification" ? "🔧 운영자: 분류 검증"
-                  : "🔧 운영자: 풀 전체";
-                const active = activeView === v;
-                return (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => setActiveView(v)}
-                    className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-black transition lg:w-full lg:justify-between lg:rounded-xl lg:border lg:px-3 lg:py-2 lg:text-sm dark:text-zinc-100 dark:hover:bg-zinc-800 ${
-                      active
-                        ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] lg:border-blue-200 lg:bg-[var(--brand-accent-soft)] lg:text-[var(--brand-accent-strong)]"
-                        : "bg-transparent text-zinc-900 hover:bg-[var(--brand-accent-soft)] lg:border-transparent"
-                    }`}
-                  >
-                    <span className="lg:hidden">{label}</span>
-                    <span className="hidden lg:inline">{lgLabel}</span>
-                    <span className="hidden text-zinc-400 lg:inline">↘</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </aside>
-
+      <div className="min-h-screen">
         {activeView === "guides" ? (
           <GuideLibraryView />
         ) : activeView === "hotdeal-alerts" ? (
@@ -310,7 +200,7 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
           // welcome 4개 + UserRevealDashboard 폐기 → 30개 풀 + cooldown + sold out + 통계 + paywall 예고.
           // Wave 404: 수익/손실 회피 카운터는 PG 심사 톤에 맞지 않아 /me에서 제거.
           // "더 찾아보기" 버튼들 폐기 — ExploreClient의 "새 30개 받기" cooldown으로 대체.
-          <section className="w-full min-w-0 pb-4 lg:col-start-2">
+          <section className="w-full min-w-0 pb-4">
             <ExploreClient storageScope={user.id} showFirstFeedIntro={!effectiveAdmin} />
             <MyFeedbackActivity />
           </section>

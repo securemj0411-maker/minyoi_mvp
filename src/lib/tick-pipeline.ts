@@ -329,6 +329,7 @@ type MarketKeyInvalidationRow = {
   last_event_at?: string | null;
   affected_pid?: number | null;
   affected_source?: string | null;
+  claim_lane?: "priority" | "stale" | null;
 };
 
 type PoolWarmRow = {
@@ -357,6 +358,10 @@ const SELLER_WRITE_CHUNK_SIZE = 200;
 // Keep seller_uid=in.(...) URLs under common proxy/request-line limits.
 const SELLER_READ_CHUNK_SIZE = 80;
 const GENERAL_SCORE_SOURCES = ["bunjang"];
+const FASHION_SCORE_RESERVE_FILTERS = [
+  { filter: "&sku_id=gte.shoe-&sku_id=lt.shoe.", scanLimitMax: 40 },
+  { filter: "&sku_id=gte.clothing-&sku_id=lt.clothing.", scanLimitMax: 10 },
+] as const;
 const POOL_LOW_SELLER_RATING_REVIEW = 3.5;
 const SKU_MEDIAN_UNAVAILABLE_MARKET_REFRESH_COOLDOWN_MS = 6 * 60 * 60 * 1000;
 const DEFAULT_SELLER_SEARCH_REFRESH_MS = 3 * 60 * 60 * 1000;
@@ -2328,11 +2333,17 @@ async function loadScorableRows(limit: number, options: ScoreStageOptions = {}):
     `${tableUrl("mvp_raw_listings")}?select=pid,source${scorableBaseFilter}${extraFilter}&order=last_seen_at.desc&limit=${rowLimit}`;
   const buildDirtyScorableRowsByPidUrl = (pids: number[]) =>
     `${tableUrl("mvp_raw_listings")}?select=${columns}${dirtyFilter}&detail_status=eq.done&sku_id=not.is.null&listing_state=eq.active&pid=in.(${pids.join(",")})&limit=${pids.length}`;
-  const fetchScorableRows = async (extraFilter: string, rowLimit: number, seenPids = new Set<number>()) => {
+  const fetchScorableRows = async (
+    extraFilter: string,
+    rowLimit: number,
+    seenPids = new Set<number>(),
+    fetchOptions: { scanLimitMax?: number } = {},
+  ) => {
     const rows: ScorableRawRow[] = [];
-    const scanLimit = scoreDirtyAvailable
+    const defaultScanLimit = scoreDirtyAvailable
       ? scorableRpcLimitForRequest(rowLimit)
       : rowLimit;
+    const scanLimit = Math.max(1, Math.min(defaultScanLimit, fetchOptions.scanLimitMax ?? defaultScanLimit));
     const collect = (batch: ScorableRawRow[]) => {
       for (const row of batch) {
         if (scoreDirtyAvailable && !isScorableRawCandidate(row)) continue;
@@ -2470,16 +2481,30 @@ async function loadScorableRows(limit: number, options: ScoreStageOptions = {}):
   // Wave 768: 35% → 25% (당근 우선으로 quota 양보).
   const fashionReserveLimit = Math.min(remainingAfterDaangn, Math.max(50, Math.floor(limit * 0.25)));
   const fashionRows = await (async () => {
-    try {
-      return fetchScorableRows(
-        "&or=(sku_id.like.shoe-%2A,sku_id.like.clothing-%2A)",
-        fashionReserveLimit,
-        seenPids,
-      );
-    } catch (err) {
-      console.warn("loadScorableRows fashion reserve fetch failed (non-fatal)", err);
-      return [];
+    const rows: ScorableRawRow[] = [];
+    const perPrefixLimit = Math.max(1, Math.ceil(fashionReserveLimit / FASHION_SCORE_RESERVE_FILTERS.length));
+    for (const { filter: skuFilter, scanLimitMax } of FASHION_SCORE_RESERVE_FILTERS) {
+      if (rows.length >= fashionReserveLimit) break;
+      try {
+        rows.push(...await fetchScorableRows(skuFilter, Math.min(perPrefixLimit, fashionReserveLimit - rows.length), seenPids, {
+          scanLimitMax,
+        }));
+      } catch (err) {
+        console.warn("loadScorableRows fashion reserve prefix fetch failed (non-fatal)", { skuFilter, err });
+      }
     }
+    for (const { filter: skuFilter, scanLimitMax } of FASHION_SCORE_RESERVE_FILTERS) {
+      const remaining = fashionReserveLimit - rows.length;
+      if (remaining <= 0) break;
+      try {
+        rows.push(...await fetchScorableRows(skuFilter, remaining, seenPids, {
+          scanLimitMax,
+        }));
+      } catch (err) {
+        console.warn("loadScorableRows fashion reserve fill fetch failed (non-fatal)", { skuFilter, err });
+      }
+    }
+    return rows.slice(0, fashionReserveLimit);
   })();
   const remainingAfterFashion = Math.max(0, limit - poolRows.length - daangnRows.length - fashionRows.length);
   if (remainingAfterFashion === 0) return [...poolRows, ...daangnRows, ...fashionRows].slice(0, limit);
@@ -3460,6 +3485,7 @@ function pickMarketStatByCondition(
 
 const DEFAULT_MARKET_INVALIDATION_CLAIM_LIMIT = 500;
 const DEFAULT_MARKET_INVALIDATION_PRIORITY_WINDOW = 3000;
+const DEFAULT_MARKET_INVALIDATION_STALE_LANE_LIMIT = 40;
 const MARKET_INVALIDATION_READ_PAGE_SIZE = 1000;
 const MARKET_INVALIDATION_FAST_LANE_PREFIXES = new Set(["shoe", "clothing"]);
 const MARKET_INVALIDATION_PATCH_CHUNK_SIZE = 100;
@@ -3521,25 +3547,65 @@ async function loadPendingMarketInvalidations(limit = DEFAULT_MARKET_INVALIDATIO
       claimLimit,
       3000,
     );
+    const staleLaneLimit = boundedInt(
+      process.env.PIPELINE_MARKET_INVALIDATION_STALE_LANE_LIMIT ?? null,
+      Math.min(DEFAULT_MARKET_INVALIDATION_STALE_LANE_LIMIT, Math.max(0, Math.floor(claimLimit * 0.25))),
+      0,
+      claimLimit,
+    );
+    const priorityClaimLimit = Math.max(0, claimLimit - staleLaneLimit);
     const columns = "comparable_key,reason,priority,event_count,last_event_at,affected_pid";
-    const rows: MarketKeyInvalidationRow[] = [];
-    for (let offset = 0; offset < priorityWindow; offset += MARKET_INVALIDATION_READ_PAGE_SIZE) {
-      const pageLimit = Math.min(MARKET_INVALIDATION_READ_PAGE_SIZE, priorityWindow - offset);
-      const url = `${tableUrl("mvp_market_key_invalidation")}?select=${columns}&status=eq.pending&order=priority.desc,last_event_at.asc&limit=${pageLimit}&offset=${offset}`;
-      const res = await restFetch(url, { headers: serviceHeaders() });
-      const pageRows = (await res.json()) as MarketKeyInvalidationRow[];
-      rows.push(...pageRows);
-      if (pageRows.length < pageLimit) break;
-    }
-    const affectedSources = await loadAffectedSourcesForInvalidations(rows).catch((err) => {
+    const fetchPendingRows = async (orderBy: string, fetchLimit: number): Promise<MarketKeyInvalidationRow[]> => {
+      if (fetchLimit <= 0) return [];
+      const rows: MarketKeyInvalidationRow[] = [];
+      for (let offset = 0; offset < fetchLimit; offset += MARKET_INVALIDATION_READ_PAGE_SIZE) {
+        const pageLimit = Math.min(MARKET_INVALIDATION_READ_PAGE_SIZE, fetchLimit - offset);
+        const url = `${tableUrl("mvp_market_key_invalidation")}?select=${columns}&status=eq.pending&order=${orderBy}&limit=${pageLimit}&offset=${offset}`;
+        const res = await restFetch(url, { headers: serviceHeaders() });
+        const pageRows = (await res.json()) as MarketKeyInvalidationRow[];
+        rows.push(...pageRows);
+        if (pageRows.length < pageLimit) break;
+      }
+      return rows;
+    };
+    const [priorityRows, staleRows] = await Promise.all([
+      fetchPendingRows("priority.desc,last_event_at.asc", priorityWindow),
+      fetchPendingRows("last_event_at.asc", staleLaneLimit),
+    ]);
+    const affectedSources = await loadAffectedSourcesForInvalidations([...priorityRows, ...staleRows]).catch((err) => {
       console.error("load invalidation affected sources failed (non-fatal)", err);
       return new Map<number, string>();
     });
-    const enriched = rows.map((row) => ({
+    const enrich = (rows: MarketKeyInvalidationRow[], claimLane: "priority" | "stale") => rows.map((row) => ({
       ...row,
       affected_source: row.affected_pid ? affectedSources.get(Number(row.affected_pid)) ?? null : null,
+      claim_lane: claimLane,
     }));
-    return enriched.sort(compareMarketInvalidations).slice(0, claimLimit);
+    const priorityEnriched = enrich(priorityRows, "priority").sort(compareMarketInvalidations);
+    const staleEnriched = enrich(staleRows, "stale").sort((a, b) => {
+      const parsedATime = Date.parse(a.last_event_at ?? "");
+      const parsedBTime = Date.parse(b.last_event_at ?? "");
+      const aTime = Number.isFinite(parsedATime) ? parsedATime : Number.MAX_SAFE_INTEGER;
+      const bTime = Number.isFinite(parsedBTime) ? parsedBTime : Number.MAX_SAFE_INTEGER;
+      if (aTime !== bTime) return aTime - bTime;
+      return compareMarketInvalidations(a, b);
+    });
+    const selected: MarketKeyInvalidationRow[] = [];
+    const selectedKeys = new Set<string>();
+    const addRows = (rows: MarketKeyInvalidationRow[], rowLimit: number) => {
+      for (const row of rows) {
+        if (selected.length >= claimLimit) break;
+        if (rowLimit <= 0) break;
+        if (!row.comparable_key || selectedKeys.has(row.comparable_key)) continue;
+        selectedKeys.add(row.comparable_key);
+        selected.push(row);
+        rowLimit -= 1;
+      }
+    };
+    addRows(priorityEnriched, priorityClaimLimit);
+    addRows(staleEnriched, staleLaneLimit);
+    addRows(priorityEnriched, claimLimit - selected.length);
+    return selected.slice(0, claimLimit);
   } catch (err) {
     console.error("load pending market invalidations failed", err);
     return [];
@@ -5003,6 +5069,7 @@ export async function marketStatsStage(): Promise<StageStats> {
   stats.timingsMs = {
     ...(stats.timingsMs ?? {}),
     market_invalidation_claimed_keys: pendingInvalidations.length,
+    market_invalidation_claimed_stale_lane_keys: pendingInvalidations.filter((row) => row.claim_lane === "stale").length,
     market_invalidation_claimed_joongna_keys: pendingInvalidations.filter((row) => row.affected_source === "joongna").length,
     market_invalidation_claimed_shoe_keys: pendingPrefixCounts.shoe ?? 0,
     market_invalidation_claimed_clothing_keys: pendingPrefixCounts.clothing ?? 0,
@@ -8220,8 +8287,9 @@ export async function runPoolWarmerPipeline(): Promise<TickResult> {
 export async function recoveryStage(): Promise<StageStats> {
   const config = loadPipelineRuntimeConfig();
   const stats = emptyStats();
-  // launch-44: limit 250 → 500 (별 worker 라 시간 여유). 60s lease 안 충분.
-  const recoveryLimit = Math.min(Math.max(config.tickScoreLimit * 2, 250), 500);
+  // Wave 1034: recovery is not just a score write; it hydrates raw/listing/parsed
+  // rows and loads market stats. Keep it under the 60s route budget by default.
+  const recoveryLimit = config.recoveryLimit;
   const recoveredMarked = await markRecoveredMarketInvalidatedPoolRowsDirty(recoveryLimit);
   stats.upserted = recoveredMarked;
   stats.timingsMs = {

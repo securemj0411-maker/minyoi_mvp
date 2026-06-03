@@ -2935,93 +2935,96 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                   const itemConditionLabel = ourTier
                     ? (tierShortLabel(item.conditionTier) ?? "등급 정보 부족")
                     : (conditionShortLabel(item.conditionClass) ?? "상태 정보 부족");
+                  const sourceUrl = item.listingUrl || item.bunjangUrl;
                   return (
                     <li
                       key={item.pid}
-                      className={`flex items-center gap-3 px-3 py-3 ${needsBorder && !group.heading ? "border-t border-zinc-200 dark:border-zinc-800" : ""}`}
+                      className={needsBorder && !group.heading ? "border-t border-zinc-200 dark:border-zinc-800" : ""}
                     >
-                      <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[9px] bg-zinc-100 dark:bg-zinc-800">
-                        {item.thumbnailUrl ? (
-                          <>
-                            <Image src={item.thumbnailUrl} alt="" fill sizes="52px" unoptimized className="object-cover" />
-                            {/* Wave 751 (2026-05-25): 카테고리 워터마크 배지 (corner). */}
+                      <a
+                        href={sourceUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group flex min-h-[74px] items-center gap-3 px-3 py-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-900/60"
+                      >
+                        <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[9px] bg-zinc-100 dark:bg-zinc-800">
+                          {item.thumbnailUrl ? (
+                            <>
+                              <Image src={item.thumbnailUrl} alt="" fill sizes="52px" unoptimized className="object-cover" />
+                              {/* Wave 751 (2026-05-25): 카테고리 워터마크 배지 (corner). */}
+                              <CategoryWatermark
+                                comparableKey={card.marketBasis?.comparableKey ?? null}
+                                size={18}
+                                variant="corner"
+                              />
+                            </>
+                          ) : (
+                            // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder — 같은 SKU 비교 매물이므로 card 의 comparableKey 사용.
                             <CategoryWatermark
                               comparableKey={card.marketBasis?.comparableKey ?? null}
-                              size={18}
-                              variant="corner"
+                              size={32}
                             />
-                          </>
-                        ) : (
-                          // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder — 같은 SKU 비교 매물이므로 card 의 comparableKey 사용.
-                          <CategoryWatermark
-                            comparableKey={card.marketBasis?.comparableKey ?? null}
-                            size={32}
-                          />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="line-clamp-2 text-[12.5px] font-bold leading-tight tracking-tight text-zinc-700 dark:text-zinc-300">
-                          {item.name || "이름 없음"}
+                          )}
                         </div>
-                        {mode === "detailed" ? (
-                          <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                            <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                              {evidenceType}
-                            </span>
-                            {itemConditionLabel ? (
+                        <div className="min-w-0 flex-1">
+                          <div className="line-clamp-2 text-[12.5px] font-bold leading-tight tracking-tight text-zinc-700 group-hover:text-zinc-950 dark:text-zinc-300 dark:group-hover:text-zinc-100">
+                            {item.name || "이름 없음"}
+                          </div>
+                          {mode === "detailed" ? (
+                            <div className="mt-1.5 flex flex-wrap items-center gap-1">
                               <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                                {itemConditionLabel}
+                                {evidenceType}
                               </span>
-                            ) : null}
-                            {item.marketplaceLabel ? (
-                              <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                                {item.marketplaceLabel}
-                              </span>
-                            ) : null}
-                            {seenLabel ? (
-                              <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                                {seenLabel}
-                              </span>
-                            ) : null}
-                          </div>
-                        ) : null}
-                        {mode === "detailed" && item.conditionChips && item.conditionChips.length > 0 ? (
-                          <ConditionChipsList
-                            chips={item.conditionChips}
-                            max={2}
-                            className="mt-1.5 [&>span]:px-1.5 [&>span]:py-0.5 [&>span]:text-[9.5px]"
-                          />
-                        ) : null}
-                      </div>
-                      <div className="shrink-0 text-right">
-                        {statusBadge ? (
-                          <div className="mb-0.5">
-                            <span className={`inline-block rounded-full px-1.5 py-0.5 text-[9px] font-bold ${statusBadge.cls}`}>
-                              {statusBadge.label}
-                            </span>
-                          </div>
-                        ) : null}
-                        <div className="text-[14px] font-black tabular-nums tracking-tight text-zinc-900 dark:text-zinc-100">
-                          {krw(itemPrice)}
+                              {itemConditionLabel ? (
+                                <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                                  {itemConditionLabel}
+                                </span>
+                              ) : null}
+                              {item.marketplaceLabel ? (
+                                <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                                  {item.marketplaceLabel}
+                                </span>
+                              ) : null}
+                              {seenLabel ? (
+                                <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                                  {seenLabel}
+                                </span>
+                              ) : null}
+                            </div>
+                          ) : null}
+                          {mode === "detailed" && item.conditionChips && item.conditionChips.length > 0 ? (
+                            <ConditionChipsList
+                              chips={item.conditionChips}
+                              max={2}
+                              className="mt-1.5 [&>span]:px-1.5 [&>span]:py-0.5 [&>span]:text-[9.5px]"
+                            />
+                          ) : null}
                         </div>
-                        {!isSimilar ? (
-                          <div className={`mt-px text-[11px] font-extrabold tabular-nums ${isMoreExpensive ? "text-blue-600 dark:text-blue-400" : "text-rose-600 dark:text-rose-400"}`}>
-                            {isMoreExpensive ? `+${diffPct}%` : `${diffPct}%`}
+                        <div className="shrink-0 text-right">
+                          {statusBadge ? (
+                            <div className="mb-0.5">
+                              <span className={`inline-block rounded-full px-1.5 py-0.5 text-[9px] font-bold ${statusBadge.cls}`}>
+                                {statusBadge.label}
+                              </span>
+                            </div>
+                          ) : null}
+                          <div className="text-[14px] font-black tabular-nums tracking-tight text-zinc-900 dark:text-zinc-100">
+                            {krw(itemPrice)}
                           </div>
-                        ) : (
-                          <div className="mt-px text-[10px] font-medium text-zinc-400">비슷</div>
-                        )}
-                        {mode === "detailed" ? (
-                          <a
-                            href={item.listingUrl || item.bunjangUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="mt-1 inline-flex rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-black text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-                          >
-                            원문 보기
-                          </a>
-                        ) : null}
-                      </div>
+                          {!isSimilar ? (
+                            <div className={`mt-px text-[11px] font-extrabold tabular-nums ${isMoreExpensive ? "text-blue-600 dark:text-blue-400" : "text-rose-600 dark:text-rose-400"}`}>
+                              {isMoreExpensive ? `+${diffPct}%` : `${diffPct}%`}
+                            </div>
+                          ) : (
+                            <div className="mt-px text-[10px] font-medium text-zinc-400">비슷</div>
+                          )}
+                          {mode === "detailed" ? (
+                            <span className="mt-1 inline-flex rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-black text-zinc-600 transition group-hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:group-hover:bg-zinc-700">
+                              원문 열기
+                            </span>
+                          ) : null}
+                        </div>
+                      </a>
                     </li>
                   );
                 })}
@@ -7086,7 +7089,6 @@ function RelatedRevealStrip({
         >
           {visibleItems.map((item) => {
             const profitPct = item.price > 0 ? Math.round((item.expectedProfitMax / item.price) * 100) : 0;
-            const isLocked = item.locked === true;
             return (
               <button
                 key={item.pid}
@@ -7096,8 +7098,7 @@ function RelatedRevealStrip({
               >
                 <div className="relative aspect-square w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
                   {/* Wave 714d (2026-05-23 fix): 신발/의류는 기존 ConditionPhotoBadge 숨김. */}
-                  {/* Wave 752 (2026-05-25): 잠금 상태에선 condition 배지도 숨김 (정보 새지 않게). */}
-                  {!isLocked && !(item.marketBasis?.comparableKey?.startsWith("shoe|") || item.marketBasis?.comparableKey?.startsWith("clothing|")) && (
+                  {!(item.marketBasis?.comparableKey?.startsWith("shoe|") || item.marketBasis?.comparableKey?.startsWith("clothing|")) && (
                     <ConditionPhotoBadge conditionClass={item.marketBasis?.conditionClass ?? null} compact />
                   )}
                   {item.thumbnailUrl ? (
@@ -7108,28 +7109,14 @@ function RelatedRevealStrip({
                         fill
                         sizes="140px"
                         unoptimized
-                        className={`object-cover ${isLocked ? "scale-105 blur-[2px]" : ""}`}
+                        className="object-cover"
                       />
-                      {/* Wave 752 (2026-05-25): 잠금 상태면 카테고리 배지 + 어두운 overlay (feed lockedPreview 일관). */}
-                      {isLocked ? (
-                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gradient-to-br from-black/15 via-transparent to-black/25">
-                          <CategoryWatermark
-                            category={item.category}
-                            comparableKey={item.marketBasis?.comparableKey ?? null}
-                            size={48}
-                          />
-                          <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/58 px-1.5 py-0.5 text-[9px] font-black text-white backdrop-blur">
-                            상세에서 확인
-                          </span>
-                        </div>
-                      ) : (
-                        /* Wave 751 (2026-05-25): 언락 매물은 우하단 카테고리 워터마크 배지만. */
-                        <CategoryWatermark
-                          comparableKey={item.marketBasis?.comparableKey ?? null}
-                          size={28}
-                          variant="corner"
-                        />
-                      )}
+                      {/* Wave 751 (2026-05-25): 우하단 카테고리 워터마크 배지. */}
+                      <CategoryWatermark
+                        comparableKey={item.marketBasis?.comparableKey ?? null}
+                        size={28}
+                        variant="corner"
+                      />
                     </>
                   ) : (
                     // Wave 749 (2026-05-25): 카테고리 워터마크 placeholder.
@@ -7142,23 +7129,14 @@ function RelatedRevealStrip({
                 </div>
                 <div className="flex flex-1 flex-col px-2.5 py-2.5">
                   <div className="line-clamp-2 min-h-[32px] text-[11px] font-bold leading-tight text-zinc-700 dark:text-zinc-300">
-                    {isLocked ? "상세에서 공개" : item.name}
+                    {item.name}
                   </div>
-                  {isLocked ? (
-                    /* Wave 752 (2026-05-25): 잠금 매물은 차익/매입가 숨김 — 정보 누출 방지. */
-                    <div className="mt-1.5 text-[12px] font-black leading-none text-zinc-400 dark:text-zinc-500">
-                      상세에서 확인
-                    </div>
-                  ) : (
-                    <>
-                      <div className="mt-1.5 text-[13px] font-black leading-none tabular-nums tracking-tight text-blue-700 dark:text-blue-300">
-                        {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
-                      </div>
-                      <div className="mt-0.5 text-[10px] font-bold tabular-nums text-zinc-500 dark:text-zinc-400">
-                        매입 {krw(item.price)} · +{profitPct}%
-                      </div>
-                    </>
-                  )}
+                  <div className="mt-1.5 text-[13px] font-black leading-none tabular-nums tracking-tight text-blue-700 dark:text-blue-300">
+                    {profitRange(item.expectedProfitMin, item.expectedProfitMax)}
+                  </div>
+                  <div className="mt-0.5 text-[10px] font-bold tabular-nums text-zinc-500 dark:text-zinc-400">
+                    매입 {krw(item.price)} · +{profitPct}%
+                  </div>
                 </div>
               </button>
             );

@@ -25,7 +25,11 @@ test("fashion parser versions stay synced across parser, drift gate, and debug r
   assert.match(tickPipeline, /reason === `stale_parser_version_\$\{category\}`/);
   assert.match(tickPipeline, /reason === `stale_parser_version_\$\{category\}_residue`/);
   assert.match(tickPipeline, /fashionReserveLimit/);
-  assert.match(tickPipeline, /sku_id\.like\.shoe-%2A,sku_id\.like\.clothing-%2A/);
+  assert.match(tickPipeline, /FASHION_SCORE_RESERVE_FILTERS/);
+  assert.match(tickPipeline, /"&sku_id=gte\.shoe-&sku_id=lt\.shoe\."/);
+  assert.match(tickPipeline, /"&sku_id=gte\.clothing-&sku_id=lt\.clothing\."/);
+  assert.match(tickPipeline, /scanLimitMax:\s*40/);
+  assert.match(tickPipeline, /scanLimitMax:\s*10/);
   assert.match(tickPipeline, /PARSER_VERSION as OPTION_PARSER_VERSION/);
   for (const category of [
     "camera",

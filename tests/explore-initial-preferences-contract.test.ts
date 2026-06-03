@@ -62,3 +62,14 @@ test("MeDashboard scopes feed onboarding storage to the signed-in user", () => {
 
   assert.match(dashboard, /<ExploreClient storageScope=\{user\.id\} showFirstFeedIntro=\{!effectiveAdmin\} \/>/);
 });
+
+test("MeDashboard removes the unused work menu while keeping direct hotdeal view code", () => {
+  const dashboard = source("src/components/me-dashboard-client.tsx");
+
+  assert.doesNotMatch(dashboard, /작업 메뉴|My Dashboard|me_sidebar_collapsed|sidebarCollapsed|toggleSidebar/);
+  assert.doesNotMatch(dashboard, /\/api\/me\/subscription/);
+  assert.doesNotMatch(dashboard, /lg:grid-cols-\[220px_minmax\(0,1fr\)\]|lg:grid-cols-\[44px_minmax\(0,1fr\)\]/);
+  assert.match(dashboard, /type DashboardView = "recommend" \| "history" \| "guides" \| "hotdeal-alerts" \| "admin-pool" \| "admin-classification"/);
+  assert.match(dashboard, /activeView === "hotdeal-alerts"/);
+  assert.match(dashboard, /<HotdealAlertsView \/>/);
+});

@@ -218,7 +218,9 @@ test("beginner guide uses existing evidence without guaranteed-profit copy", () 
   assert.match(modal, /최대 매입가/);
   assert.match(modal, /이번에 정리한 근거/);
   assert.match(modal, /원본 매물과 계산값까지/);
-  assert.match(modal, /원문 보기/);
+  assert.match(modal, /href=\{sourceUrl\}/);
+  assert.match(modal, /원문 열기/);
+  assert.doesNotMatch(modal, /원문 보기/);
   assert.match(modal, /동일 기준/);
   assert.match(modal, /상태 유사/);
   assert.match(modal, /참고 매물/);

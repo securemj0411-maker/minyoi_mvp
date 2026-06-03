@@ -509,6 +509,7 @@ export type PipelineRuntimeConfig = {
   terminalLifecycleRecheckPreserveStatus: boolean;
   tickDetailLeaseSeconds: number;
   tickScoreLimit: number;
+  recoveryLimit: number;
   // Wave 159k (2026-05-17): score-stage에서 AI condition 호출 daily limit.
   // default 0 = 비활성 (현재 detail-worker만 trigger). 운영자가 env 변경해서 enable.
   scoreAiConditionDailyLimit: number;
@@ -637,6 +638,12 @@ export function loadPipelineRuntimeConfig(): PipelineRuntimeConfig {
     //   100 row 55s budget run scored=95 (95% drain rate). score worker route budget 55s 도달 가능 한도.
     //   2분마다 fire → 95/2min ≈ 68K/day throughput vs 기존 300 timeout 0 throughput.
     tickScoreLimit: envInt("PIPELINE_TICK_SCORE_LIMIT", 100, 10, 2000),
+    // Wave 1034 (2026-06-04): recovery-worker route maxDuration is 60s.
+    // Recovery hydrates pool/raw/listing/parsed rows and market stats, so the
+    // old implicit 250 candidate pass could outlive the function and become
+    // "stale running" instead of a clean failure. Keep default bounded; raise
+    // with PIPELINE_RECOVERY_LIMIT only after production timings prove safe.
+    recoveryLimit: envInt("PIPELINE_RECOVERY_LIMIT", 100, 10, 250),
     // Wave 159k (2026-05-17): score-stage condition AI 호출 daily limit.
     // 0 = 비활성 (default). 측정 결과 11,243건 trigger 대상이지만 실제 호출 0건.
     // 운영자가 enable 시 PIPELINE_SCORE_AI_CONDITION_DAILY_LIMIT=500 같이 박음.
