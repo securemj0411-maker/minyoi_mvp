@@ -34,6 +34,9 @@ test("telegram GET admin decisions require signed action tokens", () => {
 
   assert.match(manualDecide, /verifyAdminActionToken\("manual_deposit", id, decisionRaw, token\)/);
   assert.match(membershipDecide, /verifyAdminActionToken\("membership_application", id, decision, token\)/);
+  assert.match(membershipDecide, /decideApplication\(id, decision, "telegram", null\)/);
+  assert.match(membershipDecide, /telegram decision failed/);
+  assert.match(membershipDecide, /resultHtml\("처리 실패", "server_error"\)/);
   assert.match(feedbackDecide, /verifyAdminActionToken\("feedback", id, decision, token\)/);
   assert.match(manualSubmit, /signAdminAction\("manual_deposit", requestId, "approve"\)/);
   assert.match(manualSubmit, /signAdminAction\("manual_deposit", requestId, "reject"\)/);

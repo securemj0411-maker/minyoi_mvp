@@ -37,7 +37,17 @@ export async function GET(req: NextRequest) {
     return new NextResponse(actionGuardHtml(), { status: 403, headers: { "content-type": "text/html; charset=utf-8" } });
   }
 
-  const result = await decideApplication(id, decision, "telegram", null);
+  let result: Awaited<ReturnType<typeof decideApplication>>;
+  try {
+    result = await decideApplication(id, decision, "telegram", null);
+  } catch (err) {
+    console.error("[admin/membership-applications/decide] telegram decision failed", {
+      id,
+      decision,
+      message: err instanceof Error ? err.message : String(err),
+    });
+    return new NextResponse(resultHtml("처리 실패", "server_error"), { status: 500, headers: { "content-type": "text/html; charset=utf-8" } });
+  }
   if (!result.ok) {
     return new NextResponse(resultHtml("처리 실패", result.error ?? "unknown"), { headers: { "content-type": "text/html; charset=utf-8" } });
   }

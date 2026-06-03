@@ -56,27 +56,34 @@ export async function approveMembershipApplication(
   decisionSource: MembershipDecisionSource,
   decidedByUserId: string | null = null,
 ): Promise<MembershipApprovalResult> {
-  const application = await loadMembershipApplication(id);
+  let application: MembershipApplicationRow | null = null;
+  try {
+    application = await loadMembershipApplication(id);
+  } catch (err) {
+    console.error("[membership-application-approval] lookup failed", { id, message: err instanceof Error ? err.message : String(err) });
+    return { ok: false, activated: false, id, status: null, error: "lookup_failed" };
+  }
   if (!application) return { ok: false, activated: false, id, status: null, error: "not_found" };
 
   const selectedPlan = getMembershipPlan(application.product_key);
   const priceKrw = Number(application.price_krw ?? selectedPlan.priceKrw);
-  const res = await restFetch(rpcUrl("approve_mvp_membership_application"), {
-    method: "POST",
-    headers: serviceHeaders(),
-    body: jsonBody({
-      p_application_id: id,
-      p_decision_source: decisionSource,
-      p_decided_by: decidedByUserId,
-      p_plan_months: selectedPlan.months,
-      p_price_krw: Number.isFinite(priceKrw) ? priceKrw : selectedPlan.priceKrw,
-      p_product_key: selectedPlan.key,
-    }),
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    console.error("[membership-application-approval] rpc failed", { id, status: res.status, body: text.slice(0, 200) });
-    return { ok: false, activated: false, id, status: application.status, error: `rpc_${res.status}` };
+  let res: Response;
+  try {
+    res = await restFetch(rpcUrl("approve_mvp_membership_application"), {
+      method: "POST",
+      headers: serviceHeaders(),
+      body: jsonBody({
+        p_application_id: id,
+        p_decision_source: decisionSource,
+        p_decided_by: decidedByUserId,
+        p_plan_months: selectedPlan.months,
+        p_price_krw: Number.isFinite(priceKrw) ? priceKrw : selectedPlan.priceKrw,
+        p_product_key: selectedPlan.key,
+      }),
+    });
+  } catch (err) {
+    console.error("[membership-application-approval] rpc failed", { id, message: err instanceof Error ? err.message.slice(0, 240) : String(err).slice(0, 240) });
+    return { ok: false, activated: false, id, status: application.status, error: "rpc_failed" };
   }
 
   const rows = (await res.json()) as ApprovalRpcRow[];
@@ -103,25 +110,26 @@ export async function rejectMembershipApplication(
   adminNote: string | null = null,
 ): Promise<MembershipApprovalResult> {
   const nowIso = new Date().toISOString();
-  const res = await restFetch(
-    `${tableUrl("mvp_membership_applications")}?select=id,status,user_ref,auth_user_id,product_key,price_krw&id=eq.${id}&status=eq.pending`,
-    {
-      method: "PATCH",
-      headers: serviceHeaders("return=representation"),
-      body: jsonBody({
-        status: "rejected",
-        admin_note: adminNote || null,
-        decided_by: decidedByUserId,
-        decision_source: decisionSource,
-        decided_at: nowIso,
-        updated_at: nowIso,
-      }),
-    },
-  );
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    console.error("[membership-application-approval] reject failed", { id, status: res.status, body: text.slice(0, 200) });
-    return { ok: false, activated: false, id, status: null, error: `reject_${res.status}` };
+  let res: Response;
+  try {
+    res = await restFetch(
+      `${tableUrl("mvp_membership_applications")}?select=id,status,user_ref,auth_user_id,product_key,price_krw&id=eq.${id}&status=eq.pending`,
+      {
+        method: "PATCH",
+        headers: serviceHeaders("return=representation"),
+        body: jsonBody({
+          status: "rejected",
+          admin_note: adminNote || null,
+          decided_by: decidedByUserId,
+          decision_source: decisionSource,
+          decided_at: nowIso,
+          updated_at: nowIso,
+        }),
+      },
+    );
+  } catch (err) {
+    console.error("[membership-application-approval] reject failed", { id, message: err instanceof Error ? err.message.slice(0, 240) : String(err).slice(0, 240) });
+    return { ok: false, activated: false, id, status: null, error: "reject_failed" };
   }
 
   const rows = (await res.json()) as Array<{

@@ -18,6 +18,7 @@ test("operator members page is membership-application led, not manual-credit led
   const approvalHelper = source("src/lib/membership-application-approval.ts");
   const migration = source("supabase/migrations/20260603222750_wave1052_membership_deposit_approval_flow.sql");
   const renewalMigration = source("supabase/migrations/20260603224240_wave1053_membership_renewal_flow.sql");
+  const approvalFixMigration = source("supabase/migrations/20260603225314_wave1054_membership_approval_rpc_ambiguity_fix.sql");
   const membershipAutoCron = source("src/app/api/cron/membership-auto-approve/route.ts");
 
   assert.match(page, /MembershipApplicationsPanel/);
@@ -64,6 +65,9 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(decideRoute, /approveMembershipApplication/);
   assert.match(decideRoute, /rejectMembershipApplication/);
   assert.match(approvalHelper, /rpcUrl\("approve_mvp_membership_application"\)/);
+  assert.match(approvalHelper, /lookup failed/);
+  assert.match(approvalHelper, /rpc failed/);
+  assert.match(approvalHelper, /error: "rpc_failed"/);
   assert.match(migration, /create or replace function public\.approve_mvp_membership_application/);
   assert.match(migration, /insert into public\.mvp_user_plans/);
   assert.match(migration, /payment_key[\s\S]*membership_application_/);
@@ -73,6 +77,8 @@ test("operator members page is membership-application led, not manual-credit led
   assert.match(renewalMigration, /v_period_base := v_existing_plan\.current_period_end/);
   assert.match(renewalMigration, /v_period_end := v_period_base \+ make_interval/);
   assert.match(renewalMigration, /'application_kind', v_application\.application_kind/);
+  assert.match(approvalFixMigration, /on conflict on constraint mvp_user_plans_pkey/);
+  assert.match(approvalFixMigration, /ambiguous user_ref/);
   assert.match(membershipAutoCron, /membership_auto_approve/);
   assert.match(membershipAutoCron, /approveMembershipApplication\(row\.id, "auto"/);
   assert.match(approvalHelper, /status: "rejected"/);
