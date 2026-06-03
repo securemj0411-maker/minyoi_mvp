@@ -19,7 +19,6 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 import { getDetailAccessSnapshot } from "@/lib/detail-access";
 import { getProStatus, hasMembershipAccess } from "@/lib/user-subscription";
 import { teaserBudgetRangeLabel } from "@/lib/feed-price-display";
-import { fetchDaangnLiveState } from "@/lib/daangn";
 import { marketStatsConditionKey } from "@/lib/pack-open";
 
 // Wave 338 (Phase 1a — Freemium /explore):
@@ -39,7 +38,8 @@ import { marketStatsConditionKey } from "@/lib/pack-open";
 // }
 //
 // 액션 (POST 또는 ?refresh=1):
-//   새 teaser 매물 응답. 당근은 최종 노출 전 status 확인, 상세보기 진입 시 전체 source 실시간 검증 + 차감.
+//   새 teaser 매물 응답. 당근 생존 상태는 lifecycle worker가 DB에 반영하고,
+//   피드 요청 경로는 외부 원문을 직접 검증하지 않는다.
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -62,11 +62,8 @@ const PID_LOOKUP_CHUNK_SIZE = 400;
 const REFRESH_READY_CANDIDATE_LIMIT = 500;
 const INITIAL_READY_OVERFETCH = intEnv("FEED_INITIAL_READY_OVERFETCH", 600, 100, FETCH_POOL_OVERFETCH);
 const DAANGN_SOURCE_READY_OVERFETCH = intEnv("DAANGN_FEED_SOURCE_READY_OVERFETCH", 600, READY_SLOTS, FETCH_POOL_OVERFETCH);
-const DAANGN_POOL_LIVE_VERIFY_CONCURRENCY = 8;
-const DAANGN_POOL_LIVE_VERIFY_MAX_TARGETS = intEnv("DAANGN_POOL_LIVE_VERIFY_MAX_TARGETS", 4, 0, PAGE_SIZE);
-const DAANGN_POOL_LIVE_VERIFY_TIMEOUT_MS = intEnv("DAANGN_POOL_LIVE_VERIFY_TIMEOUT_MS", 900, 300, 3_000);
-const DAANGN_POOL_LIVE_VERIFY_SKIP_IF_LIFECYCLE_FRESH_MS = intEnv(
-  "DAANGN_POOL_LIVE_VERIFY_SKIP_IF_LIFECYCLE_FRESH_MS",
+const DAANGN_POOL_LIFECYCLE_FRESH_MS = intEnv(
+  "DAANGN_POOL_LIFECYCLE_FRESH_MS",
   5 * 60_000,
   0,
   30 * 60_000,
@@ -224,44 +221,9 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): 
   });
 }
 
-async function patchDaangnVisiblePoolTerminal(
-  pid: number,
-  state: "sold_confirmed" | "disappeared",
-  saleStatus: string | null,
-  reason: string,
-) {
-  const now = new Date().toISOString();
-  const rawPatch: Record<string, unknown> = {
-    listing_state: state,
-    updated_at: now,
-  };
-  if (saleStatus != null) rawPatch.sale_status = saleStatus;
-  if (state === "sold_confirmed") rawPatch.sold_detected_at = now;
-  if (state === "disappeared") {
-    rawPatch.disappeared_at = now;
-    rawPatch.last_missing_at = now;
-  }
-  await Promise.allSettled([
-    restFetch(`${tableUrl("mvp_raw_listings")}?pid=eq.${pid}`, {
-      method: "PATCH",
-      headers: serviceHeaders("return=minimal"),
-      body: JSON.stringify(rawPatch),
-    }),
-    restFetch(`${tableUrl("mvp_candidate_pool")}?pid=eq.${pid}&status=in.(ready,reserved)`, {
-      method: "PATCH",
-      headers: serviceHeaders("return=minimal"),
-      body: JSON.stringify({
-        status: "invalidated",
-        invalidated_reason: `pool_daangn_live_${reason}`.slice(0, 120),
-        updated_at: now,
-      }),
-    }),
-  ]);
-}
-
 async function loadDaangnLifecycleFreshness(headers: Record<string, string>): Promise<DaangnLifecycleFreshness> {
-  if (DAANGN_POOL_LIVE_VERIFY_SKIP_IF_LIFECYCLE_FRESH_MS <= 0) {
-    return { fresh: false, newestFinishedAt: null };
+  if (DAANGN_POOL_LIFECYCLE_FRESH_MS <= 0) {
+    return { fresh: true, newestFinishedAt: null };
   }
 
   const now = Date.now();
@@ -269,7 +231,7 @@ async function loadDaangnLifecycleFreshness(headers: Record<string, string>): Pr
     return daangnLifecycleFreshnessCache.value;
   }
 
-  const sinceIso = new Date(now - DAANGN_POOL_LIVE_VERIFY_SKIP_IF_LIFECYCLE_FRESH_MS).toISOString();
+  const sinceIso = new Date(now - DAANGN_POOL_LIFECYCLE_FRESH_MS).toISOString();
   try {
     const rows = await Promise.all(
       DAANGN_LIFECYCLE_WORKER_PATHS.map(async (path) => {
@@ -293,7 +255,7 @@ async function loadDaangnLifecycleFreshness(headers: Record<string, string>): Pr
       }
     }
 
-    const fresh = newestFinishedAt != null && Date.parse(newestFinishedAt) >= now - DAANGN_POOL_LIVE_VERIFY_SKIP_IF_LIFECYCLE_FRESH_MS;
+    const fresh = newestFinishedAt != null && Date.parse(newestFinishedAt) >= now - DAANGN_POOL_LIFECYCLE_FRESH_MS;
     const value = { fresh, newestFinishedAt };
     daangnLifecycleFreshnessCache = {
       expiresAt: now + DAANGN_LIFECYCLE_FRESHNESS_CACHE_TTL_MS,
@@ -301,7 +263,7 @@ async function loadDaangnLifecycleFreshness(headers: Record<string, string>): Pr
     };
     return value;
   } catch (err) {
-    console.warn("[pool] daangn lifecycle freshness lookup failed (live verify will run)", err instanceof Error ? err.message : String(err));
+    console.warn("[pool] daangn lifecycle freshness lookup failed (Daangn feed rows will be blocked)", err instanceof Error ? err.message : String(err));
     const value = { fresh: false, newestFinishedAt: null };
     daangnLifecycleFreshnessCache = {
       expiresAt: now + Math.min(10_000, DAANGN_LIFECYCLE_FRESHNESS_CACHE_TTL_MS),
@@ -311,7 +273,7 @@ async function loadDaangnLifecycleFreshness(headers: Record<string, string>): Pr
   }
 }
 
-async function liveVerifyDaangnVisiblePool(
+async function filterDaangnByLifecycleFreshness(
   pool: (PoolRow & { soldOut: boolean })[],
   raws: RawRow[],
   metas: RawListingMeta[],
@@ -326,54 +288,18 @@ async function liveVerifyDaangnVisiblePool(
     .filter((row) => !row.soldOut)
     .map((row) => ({ row, meta: metaByPid.get(row.pid) }))
     .filter((entry): entry is { row: PoolRow & { soldOut: boolean }; meta: RawListingMeta } => (
-      Boolean(entry.meta?.url) && isDaangnMarketplaceSource(entry.meta?.source ?? entry.meta?.seller_source)
+      isDaangnMarketplaceSource(entry.meta?.source ?? entry.meta?.seller_source)
     ));
-  if (targets.length === 0 || DAANGN_POOL_LIVE_VERIFY_MAX_TARGETS <= 0) return { pool, raws, metas };
-  const verifyTargets = targets.slice(0, DAANGN_POOL_LIVE_VERIFY_MAX_TARGETS);
+  if (targets.length === 0) return { pool, raws, metas };
 
   const lifecycleFreshness = await loadDaangnLifecycleFreshness(headers);
-  if (lifecycleFreshness.fresh) {
-    if (process.env.FEED_DEBUG_LOG === "1") {
-      console.info("[pool] daangn live verify skipped", {
-        reason: "lifecycle_fresh",
-        newestFinishedAt: lifecycleFreshness.newestFinishedAt,
-        targets: verifyTargets.length,
-      });
-    }
-    return { pool, raws, metas };
-  }
+  if (lifecycleFreshness.fresh) return { pool, raws, metas };
 
-  const blockedPids = new Set<number>();
-  let cursor = 0;
-  async function worker() {
-    while (cursor < verifyTargets.length) {
-      const index = cursor;
-      cursor += 1;
-      const target = verifyTargets[index];
-      if (!target?.meta.url) continue;
-      const live = await fetchDaangnLiveState(target.meta.url, DAANGN_POOL_LIVE_VERIFY_TIMEOUT_MS);
-      if (!live.ok) {
-        if (live.status === 404) {
-          blockedPids.add(target.row.pid);
-          await patchDaangnVisiblePoolTerminal(target.row.pid, "disappeared", null, "detail_404");
-        }
-        continue;
-      }
-      if (live.listingState !== "active") {
-        blockedPids.add(target.row.pid);
-        await patchDaangnVisiblePoolTerminal(target.row.pid, live.listingState, live.saleStatus, live.reason);
-      }
-    }
-  }
-
-  await Promise.all(Array.from({ length: Math.min(DAANGN_POOL_LIVE_VERIFY_CONCURRENCY, verifyTargets.length) }, () => worker()));
-  if (blockedPids.size > 0) {
-    console.warn("[pool] daangn live-state block", {
-      blocked: blockedPids.size,
-      checked: verifyTargets.length,
-      skipped: Math.max(0, targets.length - verifyTargets.length),
-    });
-  }
+  const blockedPids = new Set(targets.map((target) => target.row.pid));
+  console.warn("[pool] daangn lifecycle-stale block", {
+    blocked: blockedPids.size,
+    newestFinishedAt: lifecycleFreshness.newestFinishedAt,
+  });
   return {
     pool: pool.filter((r) => !blockedPids.has(r.pid)),
     raws: raws.filter((r) => !blockedPids.has(r.pid)),
@@ -1326,9 +1252,9 @@ async function loadPool(
   const filteredPool = pool.filter((r) => !blockedPids.has(r.pid));
   const filteredRaws = raws.filter((r) => !blockedPids.has(r.pid));
   const filteredMetas = metas.filter((m) => !blockedPids.has(m.pid));
-  const liveFiltered = await liveVerifyDaangnVisiblePool(filteredPool, filteredRaws, filteredMetas, headers);
+  const lifecycleFiltered = await filterDaangnByLifecycleFreshness(filteredPool, filteredRaws, filteredMetas, headers);
 
-  return { pool: liveFiltered.pool, raws: liveFiltered.raws, metas: liveFiltered.metas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, parsedGradingRows, nearbyDaangnStats: nearbyDaangnResult.stats };
+  return { pool: lifecycleFiltered.pool, raws: lifecycleFiltered.raws, metas: lifecycleFiltered.metas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, parsedGradingRows, nearbyDaangnStats: nearbyDaangnResult.stats };
 }
 
 function buildItems(
