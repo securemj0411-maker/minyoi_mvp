@@ -171,6 +171,29 @@ function pressureFill(pressure: number) {
   return "#2563eb";
 }
 
+function regionMapFill(key: string) {
+  const palette: Record<string, string> = {
+    seoul: "#ef4444",
+    incheon: "#f97316",
+    gyeonggi: "#a16207",
+    gangwon: "#2563eb",
+    chungbuk: "#16a34a",
+    chungnam: "#0f766e",
+    sejong: "#7c3aed",
+    daejeon: "#9333ea",
+    jeonbuk: "#1d4ed8",
+    gwangju: "#4f46e5",
+    jeonnam: "#0ea5e9",
+    gyeongbuk: "#059669",
+    daegu: "#dc2626",
+    ulsan: "#0891b2",
+    gyeongnam: "#15803d",
+    busan: "#be123c",
+    jeju: "#2563eb",
+  };
+  return palette[key] ?? "#64748b";
+}
+
 function pressureLabel(pressure: number) {
   if (pressure >= 0.82) return "과밀";
   if (pressure >= 0.72) return "마감 임박";
@@ -296,7 +319,7 @@ function KoreaSeatMap({
                 }
                 dangerouslySetInnerHTML={{ __html: regionSvg }}
                 style={{
-                  "--region-fill": pressureFill(region.pressure),
+                  "--region-fill": regionMapFill(region.key),
                   filter: active ? "url(#plans-region-pop)" : undefined,
                   opacity: selectedActive ? 1 : zoomed ? 0.22 : hoveredActive ? 0.96 : 0.76,
                   transform: hoveredActive && !zoomed ? "scale(1.03)" : "scale(1)",
@@ -328,14 +351,13 @@ function KoreaSeatMap({
           {REGIONS.map((region) => {
             const selectedActive = zoomed && region.key === selected.key;
             const hoveredActive = !zoomed && region.key === hoveredKey;
-            if (zoomed || selectedActive) return null;
-            if (!selectedActive && !hoveredActive) return null;
+            if (zoomed) return null;
             return (
               <g key={`${region.key}-label`}>
                 <circle
                   cx={region.x}
                   cy={region.y}
-                  r={selectedActive ? 20 : hoveredActive ? 34 : 30}
+                  r={selectedActive ? 20 : hoveredActive ? 42 : 38}
                   fill="rgba(15,23,42,0.84)"
                   stroke="rgba(255,255,255,0.94)"
                   strokeWidth={selectedActive ? 4 : 3}
@@ -347,7 +369,7 @@ function KoreaSeatMap({
                   textAnchor="middle"
                   className="select-none fill-white font-black"
                   style={{
-                    fontSize: selectedActive ? 7 : 22,
+                    fontSize: selectedActive ? 7 : 28,
                     paintOrder: "stroke",
                     stroke: "rgba(15,23,42,0.82)",
                     strokeWidth: selectedActive ? 3 : 4,
@@ -361,7 +383,7 @@ function KoreaSeatMap({
                   textAnchor="middle"
                   className="select-none fill-white font-black"
                   style={{
-                    fontSize: selectedActive ? 5.3 : 13,
+                    fontSize: selectedActive ? 5.3 : 15,
                     paintOrder: "stroke",
                     stroke: "rgba(15,23,42,0.82)",
                     strokeWidth: selectedActive ? 2 : 3,
@@ -502,16 +524,6 @@ export default function PlansApplicationFlow({
                       전국 보기
                     </button>
                   ) : null}
-                  <div className="pointer-events-none absolute right-2 top-2 z-10 rounded-2xl border border-zinc-200 bg-white/86 px-2.5 py-2 shadow-[0_10px_28px_rgba(15,23,42,0.16)] backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/78">
-                    <div className="text-[9px] font-black uppercase tracking-[0.13em] text-zinc-400">티오 밀도</div>
-                    <div className="mt-1.5 flex items-center gap-1.5">
-                      <div className="h-16 w-2 rounded-full bg-[linear-gradient(180deg,#ef4444,#f97316,#f59e0b,#10b981,#2563eb)]" />
-                      <div className="flex h-16 flex-col justify-between text-[9px] font-black leading-none">
-                        <span className="text-red-500 dark:text-red-300">과밀</span>
-                        <span className="text-blue-500 dark:text-blue-300">여유</span>
-                      </div>
-                    </div>
-                  </div>
                   <KoreaSeatMap
                     selected={selected}
                     selectedDistrict={selectedDistrict}
