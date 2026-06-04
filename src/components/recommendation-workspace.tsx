@@ -1459,8 +1459,30 @@ export default function RecommendationWorkspace({ initialInventory, showResultMo
       body: JSON.stringify({ pid }),
       cache: "no-store",
     });
-    const detailData = (await res.json()) as { detail?: RevealListingDetail; error?: string };
+    const detailData = (await res.json()) as {
+      detail?: RevealListingDetail;
+      analysis?: Partial<Pick<RevealCard, "marketBasis" | "velocityBasis" | "skuListingFlow" | "optionBaseAssumed">> | null;
+      error?: string;
+    };
     if (!res.ok || !detailData.detail) throw new Error(detailData.error ?? "상세 정보 요청 실패");
+    if (detailData.analysis) {
+      setResult((prev) => {
+        if (prev?.result !== "success") return prev;
+        return {
+          ...prev,
+          reveals: prev.reveals.map((card) => {
+            if (card.pid !== pid) return card;
+            return {
+              ...card,
+              marketBasis: detailData.analysis?.marketBasis ?? card.marketBasis,
+              velocityBasis: detailData.analysis?.velocityBasis ?? card.velocityBasis,
+              skuListingFlow: detailData.analysis?.skuListingFlow ?? card.skuListingFlow,
+              optionBaseAssumed: detailData.analysis?.optionBaseAssumed ?? card.optionBaseAssumed,
+            };
+          }),
+        };
+      });
+    }
     return detailData.detail;
   }, [userRef]);
 

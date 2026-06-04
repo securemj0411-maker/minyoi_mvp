@@ -2229,7 +2229,13 @@ export default function ExploreClient({
   // assertRevealAccess 우회 (pid 기반). 가져온 분석으로 selectedCard 갱신.
   const handleLoadDetail = useCallback(async (pid: number): Promise<RevealListingDetail> => {
     try {
-      const res = await fetch(`/api/packs/pool/analysis?pid=${pid}`, { cache: "no-store" });
+      const supabase = getSupabaseBrowserClient();
+      const { data: sessionData } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
+      const token = sessionData.session?.access_token;
+      const res = await fetch(`/api/packs/pool/analysis?pid=${pid}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        cache: "no-store",
+      });
       if (res.ok) {
         const data = (await res.json()) as { analysis?: { marketBasis: RevealCard["marketBasis"] | null; velocityBasis: RevealCard["velocityBasis"]; skuListingFlow: RevealCard["skuListingFlow"]; optionBaseAssumed: RevealCard["optionBaseAssumed"] } };
         if (data.analysis) {
@@ -2274,9 +2280,17 @@ export default function ExploreClient({
             };
           }));
         }
+      } else {
+        console.warn("[explore-client] detail analysis load failed", {
+          pid,
+          status: res.status,
+        });
       }
-    } catch {
-      // 분석 fetch 실패는 무시 (minimal로 모달 동작)
+    } catch (err) {
+      console.warn("[explore-client] detail analysis load failed", {
+        pid,
+        err: err instanceof Error ? err.message : String(err),
+      });
     }
     return {
       pid,

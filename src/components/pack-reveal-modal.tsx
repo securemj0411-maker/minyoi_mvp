@@ -67,6 +67,7 @@ import {
   type MarketplaceSafetyFacts,
 } from "@/lib/marketplace-safety";
 import type { DetailEventType } from "@/lib/detail-analytics";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type RevealResult =
   | {
@@ -782,12 +783,7 @@ function marketCompareGuideStep(card: RevealCard, context: BeginnerGuideStepCont
   const market = card.marketBasis;
   const median = market?.medianPrice ?? null;
   const sampleCount = market?.sampleCount ?? 0;
-  const analysisPending =
-    Boolean(context.analysisLoading) ||
-    (
-      sampleCount <= 0 &&
-      market?.computedAt == null
-    );
+  const analysisPending = Boolean(context.analysisLoading);
 
   if (analysisPending) {
     return {
@@ -797,7 +793,7 @@ function marketCompareGuideStep(card: RevealCard, context: BeginnerGuideStepCont
       metricLabel: market?.label ?? card.skuName,
       body: "같은 모델과 같은 상태의 비교 매물을 가져오는 중이에요. 로딩이 끝난 뒤에도 표본이 부족한 경우에만 부족하다고 표시합니다.",
       note: "잠시 후 시세 기준과 비교 매물이 채워집니다.",
-      valueNote: "분석 전 임시 카드의 0건 표본을 실제 표본 부족처럼 보여주지 않도록 분리했어요.",
+      valueNote: "상세 분석이 끝나면 실제 시세 기준과 비교 매물 수로 다시 판단해요.",
       tone: "market",
     };
   }
@@ -2726,6 +2722,18 @@ type ComparableListing = {
   conditionChips?: string[] | null;
 };
 
+async function fetchMarketSourceComparables(pid: number): Promise<{ comparables?: ComparableListing[] }> {
+  const supabase = getSupabaseBrowserClient();
+  const { data: sessionData } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
+  const token = sessionData.session?.access_token;
+  const res = await fetch(`/api/listings/${pid}/market-source`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return (await res.json()) as { comparables?: ComparableListing[] };
+}
+
 function isSameSourceComparableForCard(card: RevealCard, item: ComparableListing) {
   const cardSource = String(card.marketplaceSource ?? "").toLowerCase();
   if (cardSource !== "daangn") return true;
@@ -2829,8 +2837,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
     setError(null);
     // Wave 394.4.b: /api/listings/[pid]/market-source 호출 — admin 풀에서 사용하는 동일한 endpoint.
     // condition_class + comparable_key 정확 매칭, COMPARABLE_EXCLUDE_NOTES 적용 (위험 매물 제외).
-    fetch(`/api/listings/${card.pid}/market-source`, { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+    fetchMarketSourceComparables(card.pid)
       .then((j: { comparables?: ComparableListing[] }) => {
         if (!cancelled) {
           // disappeared 매물 제외, 가격 높은 순 정렬.
@@ -5395,8 +5402,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
     let cancelled = false;
     setLoading(true);
     setExpanded(false);
-    fetch(`/api/listings/${card.pid}/market-source`, { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+    fetchMarketSourceComparables(card.pid)
       .then((j: { comparables?: ComparableListing[] }) => {
         if (cancelled) return;
         const selected = selectComparableDisplayListings(card, j.comparables ?? [], 16);
