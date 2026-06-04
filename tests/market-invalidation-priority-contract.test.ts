@@ -9,6 +9,10 @@ test("market invalidation worker claims a larger prioritized window safely", () 
   assert.match(tickPipelineSource, /DEFAULT_MARKET_INVALIDATION_CLAIM_LIMIT\s*=\s*500/);
   assert.match(tickPipelineSource, /DEFAULT_MARKET_INVALIDATION_PRIORITY_WINDOW\s*=\s*3000/);
   assert.match(tickPipelineSource, /DEFAULT_MARKET_INVALIDATION_STALE_LANE_LIMIT\s*=\s*40/);
+  assert.match(tickPipelineSource, /DEFAULT_MARKET_INVALIDATION_KEY_CHUNK_SIZE\s*=\s*1/);
+  assert.match(tickPipelineSource, /DEFAULT_MARKET_INVALIDATION_PARSED_ROWS_PER_KEY_CHUNK\s*=\s*1000/);
+  assert.match(tickPipelineSource, /DEFAULT_MARKET_INVALIDATION_RESCUE_ROWS_PER_KEY\s*=\s*1000/);
+  assert.match(tickPipelineSource, /PIPELINE_MARKET_SCORE_DIRTY_BACKLOG_SKIP_LIMIT\s*\?\?\s*null,\s*\/\/ Market rows are the source of truth[\s\S]*?\n\s*0,/);
   assert.match(tickPipelineSource, /MARKET_INVALIDATION_READ_PAGE_SIZE\s*=\s*1000/);
   assert.match(tickPipelineSource, /PIPELINE_MARKET_INVALIDATION_CLAIM_LIMIT/);
   assert.match(tickPipelineSource, /PIPELINE_MARKET_INVALIDATION_PRIORITY_WINDOW/);

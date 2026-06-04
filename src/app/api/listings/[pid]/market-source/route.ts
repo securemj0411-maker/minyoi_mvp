@@ -70,9 +70,10 @@ function trimComparableOutlierRows(rows: Array<Record<string, unknown>>) {
 
 function trimComparableDisplayRows(
   rows: Array<Record<string, unknown>>,
-  marketBasis: { p25Price: number | null; p75Price: number | null } | null,
+  marketBasis: { medianPrice: number | null; p25Price: number | null; p75Price: number | null } | null,
 ) {
   const madRows = trimComparableOutlierRows(rows);
+  const median = Number(marketBasis?.medianPrice ?? 0);
   const p25 = Number(marketBasis?.p25Price ?? 0);
   const p75 = Number(marketBasis?.p75Price ?? 0);
   if (!Number.isFinite(p25) || !Number.isFinite(p75) || p25 <= 0 || p75 <= 0 || p75 < p25) {
@@ -82,15 +83,18 @@ function trimComparableDisplayRows(
   // Display is for user trust, not for recomputing market price. If the daily market row already has
   // a trusted middle band, show that band first so stale/aspirational high asks do not look like
   // the basis of the estimate.
+  const hasMedian = Number.isFinite(median) && median > 0;
+  const anchorLower = hasMedian ? Math.min(p25, median * 0.9) : p25;
+  const anchorUpper = hasMedian ? Math.max(p75, median * 1.15) : p75;
   const middleBandRows = madRows.filter((row) => {
     const price = Number(row.price ?? 0);
-    return Number.isFinite(price) && price >= p25 && price <= p75;
+    return Number.isFinite(price) && price >= anchorLower && price <= anchorUpper;
   });
   if (middleBandRows.length >= Math.min(5, madRows.length)) return middleBandRows;
 
   const iqr = Math.max(1, p75 - p25);
   const lowFence = Math.max(1, p25 - iqr * 1.5);
-  const highFence = p75 + iqr * 1.5;
+  const highFence = hasMedian ? Math.max(p75 + iqr * 1.5, median * 1.15) : p75 + iqr * 1.5;
   const fenceRows = madRows.filter((row) => {
     const price = Number(row.price ?? 0);
     return Number.isFinite(price) && price >= lowFence && price <= highFence;

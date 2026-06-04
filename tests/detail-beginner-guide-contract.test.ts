@@ -295,8 +295,13 @@ test("market source API trims price outliers before returning display comparable
   assert.match(route, /trimmed\.removed <= 0/);
   assert.match(route, /minAllowed/);
   assert.match(route, /maxAllowed/);
+  assert.match(route, /marketBasis: \{ medianPrice: number \| null; p25Price: number \| null; p75Price: number \| null \} \| null/);
+  assert.match(route, /const anchorUpper = hasMedian \? Math\.max\(p75, median \* 1\.15\) : p75/);
+  assert.match(route, /price >= anchorLower && price <= anchorUpper/);
+  assert.match(route, /Math\.max\(p75 \+ iqr \* 1\.5, median \* 1\.15\)/);
   assert.match(route, /const displayRows = trimComparableDisplayRows\(dedupedBySeller, displayMarketBasis\)/);
-  assert.match(route, /comparables = displayRows\.map/);
+  assert.match(route, /const proofRows = displayRows\.length > 0 \? displayRows : dedupedBySeller/);
+  assert.match(route, /comparables = proofRows\.map/);
 });
 
 test("market source API uses hard condition chips for visible comparison proof", () => {

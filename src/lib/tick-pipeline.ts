@@ -376,9 +376,9 @@ const SKU_MEDIAN_UNAVAILABLE_MARKET_REFRESH_COOLDOWN_MS = 6 * 60 * 60 * 1000;
 const DEFAULT_SELLER_SEARCH_REFRESH_MS = 3 * 60 * 60 * 1000;
 const PARSED_PID_READ_CHUNK_SIZE = 300;
 const REST_KEY_READ_CHUNK_SIZE = 50;
-const DEFAULT_MARKET_INVALIDATION_KEY_CHUNK_SIZE = 10;
-const DEFAULT_MARKET_INVALIDATION_PARSED_ROWS_PER_KEY_CHUNK = 300;
-const DEFAULT_MARKET_INVALIDATION_RESCUE_ROWS_PER_KEY = 80;
+const DEFAULT_MARKET_INVALIDATION_KEY_CHUNK_SIZE = 1;
+const DEFAULT_MARKET_INVALIDATION_PARSED_ROWS_PER_KEY_CHUNK = 1000;
+const DEFAULT_MARKET_INVALIDATION_RESCUE_ROWS_PER_KEY = 1000;
 const TERMINAL_LISTING_STATES = new Set(["sold_confirmed", "disappeared", "archived"]);
 
 export type ScoreStageOptions = {
@@ -2753,7 +2753,9 @@ function marketScoreDirtyRpcEnabled(): boolean {
 function marketScoreDirtyBacklogSkipLimit() {
   return boundedInt(
     process.env.PIPELINE_MARKET_SCORE_DIRTY_BACKLOG_SKIP_LIMIT ?? null,
-    1000,
+    // Market rows are the source of truth for listing/pool profit. Skipping dirty
+    // marks under backlog leaves stale sku_median/profit after a market recompute.
+    0,
     0,
     50000,
   );
