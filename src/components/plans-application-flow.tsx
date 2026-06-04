@@ -1,6 +1,7 @@
 "use client";
 
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
+import { CategoryWatermark } from "@/components/category-watermark";
 import MembershipApplicationClient from "@/components/membership-application-client";
 import {
   KOREA_ADMIN_MAP_VIEWBOX,
@@ -410,13 +411,6 @@ const VALUE_STEPS = [
   { label: "공개 제한", value: "같은 매물을 너무 많이 보면 기회가 깨져서 300명 안에서만 엽니다." },
 ];
 
-const ACCESS_ITEMS = [
-  { label: "원본 링크", value: "승인 후 바로 열림" },
-  { label: "매입가·시세", value: "한 화면에서 비교" },
-  { label: "판매 속도", value: "평균 며칠 내 판매" },
-  { label: "셀러 신뢰", value: "온도·후기 신호" },
-];
-
 function pressureFill(pressure: number) {
   if (pressure >= 0.82) return "#ef4444";
   if (pressure >= 0.72) return "#f97316";
@@ -507,6 +501,49 @@ function seatTone(seats: number, total: number) {
     bar: "bg-blue-600",
     badge: "bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/40 dark:text-blue-200 dark:ring-blue-800",
   };
+}
+
+function localSampleFor(district: DistrictSeat | null, region: RegionSeat) {
+  const seed = (district?.name ?? region.shortLabel).charCodeAt(0) + region.key.length;
+  const samples = [
+    {
+      title: "애플워치 SE2 44mm 미드나이트",
+      category: "smartwatch",
+      buy: 150_000,
+      market: 214_500,
+      profit: 64_500,
+      days: 4.5,
+    },
+    {
+      title: "에어팟 맥스 퍼플 미개봉",
+      category: "earphone",
+      buy: 510_000,
+      market: 626_600,
+      profit: 116_600,
+      days: 6.2,
+    },
+    {
+      title: "맥북 프로 14인치 M1 Pro",
+      category: "laptop",
+      buy: 980_000,
+      market: 1_185_000,
+      profit: 205_000,
+      days: 8.6,
+    },
+    {
+      title: "나이키 조던1 로우 265",
+      category: "shoe",
+      buy: 65_000,
+      market: 106_000,
+      profit: 41_000,
+      days: 5.5,
+    },
+  ];
+  return samples[seed % samples.length];
+}
+
+function formatKrw(value: number) {
+  return `${value.toLocaleString("ko-KR")}원`;
 }
 
 function regionZoomScale(key: string) {
@@ -810,6 +847,7 @@ export default function PlansApplicationFlow({
   );
   const selectedDistricts = useMemo(() => districtSeatsFor(selected), [selected]);
   const selectedDistrict = selectedDistricts.find((district) => district.name === selectedDistrictName) ?? selectedDistricts[0] ?? null;
+  const localSample = useMemo(() => localSampleFor(selectedDistrict, selected), [selectedDistrict, selected]);
   const visibleDistricts = useMemo(() => {
     if (!pinnedDistrictName) return selectedDistricts;
     const pinnedDistrict = selectedDistricts.find((district) => district.name === pinnedDistrictName);
@@ -1177,6 +1215,67 @@ export default function PlansApplicationFlow({
           ) : null}
 
           {step === 1 ? (
+            <div className="grid h-full min-h-0 gap-0 lg:grid-cols-[minmax(0,1fr)_360px]">
+              <div className="flex min-h-0 flex-col justify-center border-b border-zinc-200 p-5 dark:border-zinc-800 sm:p-9 lg:border-b-0 lg:border-r">
+                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-blue-300">
+                  local sample
+                </div>
+                <h1 className="mt-3 break-keep text-[32px] font-black leading-[1.02] tracking-tight sm:text-[58px]">
+                  {selectedDistrict?.name ?? selected.shortLabel}에서는
+                  <br />
+                  이런 매물만 추려요.
+                </h1>
+                <p className="mt-4 break-keep text-[14px] font-bold leading-6 text-zinc-500 dark:text-zinc-400 sm:max-w-[620px] sm:text-[16px] sm:leading-7">
+                  가까운 동네 매물 중 차익과 판매 속도가 같이 보이는 것만 남깁니다.
+                </p>
+                <div className="mt-6 grid grid-cols-3 gap-2">
+                  <div className="rounded-[22px] bg-blue-50 px-3 py-3 dark:bg-blue-950/28">
+                    <div className="text-[10px] font-black text-blue-500 dark:text-blue-300">예상 차익</div>
+                    <div className="mt-1 text-[18px] font-black text-blue-700 dark:text-blue-200">+{formatKrw(localSample.profit)}</div>
+                  </div>
+                  <div className="rounded-[22px] bg-zinc-100 px-3 py-3 dark:bg-zinc-950">
+                    <div className="text-[10px] font-black text-zinc-500">판매속도</div>
+                    <div className="mt-1 text-[18px] font-black">~{localSample.days}일</div>
+                  </div>
+                  <div className={`rounded-[22px] px-3 py-3 ring-1 ${seatTone(selectedDistrict?.seats ?? selected.seats, districtUsage(selectedDistrict ?? selected.districts[0]).total).badge}`}>
+                    <div className="text-[10px] font-black opacity-75">남은 자리</div>
+                    <div className="mt-1 text-[18px] font-black">{selectedDistrict?.seats ?? selected.seats}명</div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex min-h-0 flex-col justify-center p-4 sm:p-6">
+                <div className="rounded-[28px] border border-zinc-200 bg-[#fbfcff] p-4 shadow-[0_18px_50px_rgba(15,23,42,0.12)] dark:border-zinc-800 dark:bg-zinc-950/70">
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-[22px] bg-zinc-100 dark:bg-zinc-900">
+                      <CategoryWatermark category={localSample.category} size={66} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[12px] font-black text-zinc-500 dark:text-zinc-400">
+                        {selectedDistrict?.name ?? selected.shortLabel} · 샘플
+                      </div>
+                      <div className="mt-1 line-clamp-2 text-[17px] font-black leading-tight">
+                        {localSample.title}
+                      </div>
+                      <div className="mt-2 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
+                        매입 {formatKrw(localSample.buy)} · 시세 {formatKrw(localSample.market)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 rounded-[24px] bg-zinc-950 px-4 py-4 text-white dark:bg-white dark:text-zinc-950">
+                    <div className="text-[12px] font-black opacity-70">지금 이 지역 티오</div>
+                    <div className="mt-1 break-keep text-[24px] font-black leading-tight">
+                      {selectedDistrict?.name ?? selected.shortLabel} 자리는 {selectedDistrict?.seats ?? selected.seats}명 남았어요.
+                    </div>
+                    <div className="mt-2 break-keep text-[12px] font-bold leading-5 opacity-70">
+                      같은 동네에서 보는 사람이 많아지면 좋은 매물은 금방 사라져요.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {step === 2 ? (
             <div className="flex h-full flex-col justify-center p-5 sm:p-9">
               <div className="max-w-[720px]">
                 <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-blue-300">
@@ -1196,32 +1295,6 @@ export default function PlansApplicationFlow({
                   <div key={item.label} className="rounded-[24px] border border-zinc-200 bg-[#fbfcff] p-4 dark:border-zinc-800 dark:bg-zinc-950/60">
                     <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">{item.label}</div>
                     <div className="mt-3 break-keep text-[15px] font-black leading-6 sm:text-[17px]">{item.value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          {step === 2 ? (
-            <div className="flex h-full flex-col justify-center p-5 sm:p-9">
-              <div className="max-w-[760px]">
-                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-blue-300">
-                  멤버 공개 정보
-                </div>
-                <h1 className="mt-3 break-keep text-[32px] font-black leading-[1.02] tracking-tight sm:text-[58px]">
-                  승인된 멤버만
-                  <br />
-                  핵심 정보를 봅니다.
-                </h1>
-              </div>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {ACCESS_ITEMS.map((item) => (
-                  <div key={item.label} className="rounded-[26px] border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/60">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-[18px] font-black text-[#3182f6] dark:bg-blue-950/40 dark:text-blue-200">
-                      ✓
-                    </div>
-                    <div className="mt-4 text-[18px] font-black">{item.label}</div>
-                    <div className="mt-2 break-keep text-[13px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">{item.value}</div>
                   </div>
                 ))}
               </div>
