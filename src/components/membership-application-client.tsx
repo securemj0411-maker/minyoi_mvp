@@ -465,7 +465,7 @@ export default function MembershipApplicationClient({
               onClick={goToFeed}
               className="mt-5 flex h-12 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90"
             >
-              상품 피드로 이동
+              지금 바로 매물 보러가기
             </button>
           </div>
         </div>
