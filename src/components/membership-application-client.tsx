@@ -249,9 +249,7 @@ export default function MembershipApplicationClient({
       );
       return;
     }
-    const payload = (await res.json().catch(() => null)) as {
-      telegramSent?: boolean;
-    } | null;
+    await res.json().catch(() => null);
     setSubmittedPlan(plan);
     setReservationCancelled(false);
     setReservationExpiresAt(new Date(Date.now() + 7 * 60_000).toISOString());
@@ -259,9 +257,7 @@ export default function MembershipApplicationClient({
     setMessage(
       renewalMode
         ? `${plan.label} 연장 예약 완료. 아래 계좌로 송금한 뒤 입금했어요 버튼을 눌러주세요.`
-        : payload?.telegramSent === false
-          ? "자리를 확보했어요. 7분 내로 입금하지 않으면 자리 예약이 취소돼요."
-          : "자리를 확보했어요. 7분 내로 입금하지 않으면 자리 예약이 취소돼요.",
+        : null,
     );
   }
 
@@ -407,9 +403,8 @@ export default function MembershipApplicationClient({
     submittedPlan?.label ?? pendingApplication?.planLabel ?? "멤버십";
   const priceKrw =
     submittedPlan?.priceKrw ?? pendingApplication?.priceKrw ?? 99_000;
-  const defaultReservationMessage = renewalMode
-    ? "연장 예약이 잡혔습니다. 아래 계좌로 송금한 뒤 입금했어요 버튼을 누르면 운영자에게 바로 알림이 갑니다."
-    : "7분 내로 입금하지 않으면 자리 예약이 취소돼요. 입금 후 버튼을 누르면 운영자에게 바로 알림이 갑니다.";
+  const defaultReservationMessage =
+    "연장 예약이 잡혔습니다. 아래 계좌로 송금한 뒤 입금했어요 버튼을 누르면 운영자에게 바로 알림이 갑니다.";
   const autoApproveTargetMs = autoApproveAt ? Date.parse(autoApproveAt) : null;
   const autoApproveMsLeft =
     autoApproveTargetMs && Number.isFinite(autoApproveTargetMs)
@@ -465,79 +460,62 @@ export default function MembershipApplicationClient({
         </div>
       ) : null}
       {hasReservation ? (
-        <div className="overflow-hidden rounded-[30px] border border-blue-100 bg-white text-zinc-950 shadow-[0_26px_72px_rgba(49,130,246,0.14)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
-          <div className="relative bg-zinc-950 px-5 py-6 text-white dark:bg-white dark:text-zinc-950 sm:px-7 sm:py-8">
-            <div className="absolute right-0 top-0 h-44 w-44 rounded-bl-full bg-[#3182f6]/30 blur-2xl" />
+        <div className="overflow-hidden rounded-[24px] border border-blue-100 bg-white text-zinc-950 shadow-[0_18px_54px_rgba(49,130,246,0.13)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
+          <div className="relative border-b border-blue-100 bg-[#f5f8ff] px-4 py-4 dark:border-zinc-800 dark:bg-white/6 sm:px-7 sm:py-6">
             <div className="relative flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <div className="inline-flex rounded-full bg-white/10 px-3 py-1 text-[11px] font-black tracking-[0.04em] text-blue-100 ring-1 ring-white/15 dark:bg-zinc-950/8 dark:text-[#3182f6] dark:ring-zinc-950/10">
+                <div className="inline-flex rounded-full bg-white px-3 py-1 text-[11px] font-black tracking-[0.04em] text-[#3182f6] ring-1 ring-blue-100 dark:bg-zinc-950 dark:ring-zinc-800">
                   {renewalMode ? "연장 예약 완료" : "자리 확보 완료"}
                 </div>
-                <h2 className="mt-4 break-keep text-[31px] font-black leading-[1.02] tracking-tight sm:text-[46px]">
+                <h2 className="mt-3 break-keep text-[25px] font-black leading-tight tracking-tight sm:text-[40px]">
                   {renewalMode
                     ? `${planLabel} 연장 예약을 잡았어요.`
-                    : `${reservationRegion} 자리 1석을 확보했어요.`}
+                    : `${reservationRegion} 자리 예약됐어요.`}
                 </h2>
               </div>
               {!renewalMode ? (
-                <div className="shrink-0 rounded-[22px] bg-white px-4 py-3 text-center text-zinc-950 shadow-[0_18px_44px_rgba(49,130,246,0.28)] dark:bg-zinc-950 dark:text-white">
+                <div className="shrink-0 rounded-[18px] bg-white px-3 py-2.5 text-center text-zinc-950 shadow-[0_12px_30px_rgba(49,130,246,0.16)] ring-1 ring-blue-100 dark:bg-zinc-950 dark:text-white dark:ring-zinc-800">
                   <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-400">
                     남은 시간
                   </div>
-                  <div className="mt-1 font-mono text-[34px] font-black leading-none tabular-nums">
+                  <div className="mt-1 font-mono text-[26px] font-black leading-none tabular-nums">
                     {countdownLabel(reservationMsLeft)}
                   </div>
                 </div>
               ) : null}
             </div>
-            {!renewalMode ? (
-              <div className="relative mt-5 rounded-[20px] bg-white/10 px-4 py-3 ring-1 ring-white/12 dark:bg-zinc-950/8 dark:ring-zinc-950/10">
-                <div className="text-[13px] font-black text-blue-100 dark:text-[#3182f6]">
-                  7분 내 입금 필요
-                </div>
-                <p className="mt-1 break-keep text-[14px] font-bold leading-6 text-white/78 dark:text-zinc-600">
-                  7분 내로 입금하지 않으면 자리 예약이 취소돼요.
-                </p>
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/15 dark:bg-zinc-950/10">
-                  <div
-                    className="h-full rounded-full bg-[#3182f6] transition-[width] duration-500"
-                    style={{
-                      width: `${Math.max(0, Math.min(100, (reservationMsLeft / (7 * 60_000)) * 100))}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            ) : null}
           </div>
-          <div className="px-4 py-4 sm:px-5">
-            <div className="flex items-center justify-between gap-3 rounded-[18px] bg-[#f5f8ff] px-4 py-3 ring-1 ring-blue-100 dark:bg-white/8 dark:ring-white/10">
+          <div className="px-3 py-3 sm:px-5 sm:py-4">
+            <div className="flex items-center justify-between gap-3 rounded-[16px] bg-[#f5f8ff] px-3 py-2.5 ring-1 ring-blue-100 dark:bg-white/8 dark:ring-white/10">
               <div>
                 <div className="text-[11px] font-black text-zinc-400">
                   선택 기간
                 </div>
-                <div className="mt-1 text-[18px] font-black">{planLabel}</div>
+                <div className="mt-1 text-[16px] font-black">{planLabel}</div>
               </div>
               <div className="text-right">
                 <div className="text-[11px] font-black text-zinc-400">
                   입금 금액
                 </div>
-                <div className="mt-1 text-[22px] font-black tabular-nums text-[#3182f6] dark:text-blue-300">
+                <div className="mt-1 text-[20px] font-black tabular-nums text-[#3182f6] dark:text-blue-300">
                   {krw(priceKrw)}
                 </div>
               </div>
             </div>
-            <p
-              className={`mt-3 break-keep text-[12px] font-semibold leading-5 ${state === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}
-            >
-              {message ?? defaultReservationMessage}
-            </p>
-            <div className="mt-3 rounded-[12px] bg-[#f5f7fb] p-3 dark:bg-zinc-900/70">
+            {renewalMode || state === "error" ? (
+              <p
+                className={`mt-2 break-keep text-[12px] font-semibold leading-5 ${state === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}
+              >
+                {message ?? defaultReservationMessage}
+              </p>
+            ) : null}
+            <div className="mt-2 rounded-[16px] bg-[#f5f7fb] p-3 dark:bg-zinc-900/70">
               <div className="flex items-center justify-between gap-2">
                 <div>
                   <div className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
                     {BANK_NAME}
                   </div>
-                  <div className="mt-1 font-black tabular-nums text-[19px] tracking-tight text-zinc-950 dark:text-zinc-50">
+                  <div className="mt-1 font-black tabular-nums text-[18px] tracking-tight text-zinc-950 dark:text-zinc-50">
                     {ACCOUNT_NUMBER}
                   </div>
                   <div className="mt-1 text-[12px] font-bold text-zinc-700 dark:text-zinc-300">
@@ -551,13 +529,6 @@ export default function MembershipApplicationClient({
                 >
                   {copyOk ? "복사됨" : "계좌 복사"}
                 </button>
-              </div>
-              <div className="mt-2 rounded-[10px] border border-blue-100 bg-white px-3 py-2 text-[11px] font-bold leading-4 text-zinc-600 dark:border-blue-950/60 dark:bg-zinc-950 dark:text-zinc-300">
-                입금 금액:{" "}
-                <b className="text-[#3182f6] dark:text-blue-300">
-                  {krw(priceKrw)}
-                </b>{" "}
-                · 5분 내 승인 보장
               </div>
             </div>
             {showDepositCountdown ? (
@@ -588,14 +559,19 @@ export default function MembershipApplicationClient({
                 depositNotifyState === "sending" ||
                 depositNotifyState === "sent"
               }
-              className="mt-3 flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+              className="mt-2 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
             >
               {depositNotifyState === "sending"
                 ? "입금 확인 요청 중"
                 : depositNotifyState === "sent"
                   ? "입금 확인 요청 완료"
-                  : "입금했어요"}
+                  : "입금했어요 · 5분 내 자동 승인"}
             </button>
+            {depositNotifyState === "idle" ? (
+              <p className="mt-2 break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400">
+                입금 후 누르면 운영자 알림과 5분 자동 승인 카운트가 시작돼요.
+              </p>
+            ) : null}
             {depositNotifyMessage ? (
               <p
                 className={`mt-2 break-keep text-[11px] font-bold leading-4 ${depositNotifyState === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}
@@ -663,9 +639,6 @@ export default function MembershipApplicationClient({
                 </div>
               </div>
             </div>
-            <p className="mt-2 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300 sm:text-[13px]">
-              선택 즉시 1석을 7분 동안 예약하고, 그 안에 입금하면 됩니다.
-            </p>
           </div>
           <div className="px-3 py-3 sm:px-5 sm:py-5">
             <PlanGrid

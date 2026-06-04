@@ -2052,9 +2052,7 @@ export default function PlansApplicationFlow({
                   pendingApplication={pendingApplication}
                   suppressFixedCta
                   autoOpenSelector
-                  reservedRegionLabel={
-                    localSample?.regionName ?? selectedRegionLabel
-                  }
+                  reservedRegionLabel={selectedRegionLabel}
                 />
               </div>
             </div>
