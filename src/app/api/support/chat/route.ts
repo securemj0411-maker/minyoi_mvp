@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
       },
     );
 
-    void notifyAdminTelegram([
+    const notifyResult = await notifyAdminTelegram([
       "[득템잡이] 1:1 고객상담",
       `상담 ID: ${conversation.id}`,
       `이름: ${conversation.user_display_name ?? "이름 없음"}`,
@@ -154,9 +154,10 @@ export async function POST(req: NextRequest) {
       message,
       "",
       "처리: cau 운영자 페이지 고객센터에서 답장",
-    ].join("\n")).catch((err) => {
-      console.warn("[support/chat] telegram notify failed", err instanceof Error ? err.message : String(err));
-    });
+    ].join("\n"), { parseMode: null });
+    if (!notifyResult.ok) {
+      console.warn("[support/chat] telegram notify failed", notifyResult.reason ?? "unknown");
+    }
 
     return NextResponse.json({ conversation: { ...conversation, admin_unread_count: (conversation.admin_unread_count ?? 0) + 1, last_message_at: nowIso, last_user_message_at: nowIso, updated_at: nowIso }, message: inserted });
   } catch (err) {
