@@ -509,10 +509,48 @@ function velocitySignalLabel(row: MarketVelocityRow | null | undefined) {
   return `${prefix} ${Math.max(1, Math.round(medianHours / 24))}일 회전`;
 }
 
+function normalizedVelocityCondition(conditionClass: string | null | undefined): string | null {
+  const value = (conditionClass ?? "").trim();
+  if (!value || value === "unknown" || value === "all") return null;
+  return value;
+}
+
+function velocitySignalKey(comparableKey: string, conditionClass: string | null | undefined): string {
+  const condition = normalizedVelocityCondition(conditionClass);
+  return condition ? `${comparableKey}::${condition}` : comparableKey;
+}
+
+function velocityComputedMs(row: MarketVelocityRow) {
+  const ms = row.computed_at ? Date.parse(row.computed_at) : Number.NaN;
+  return Number.isFinite(ms) ? ms : 0;
+}
+
+function isUsableVelocitySignal(row: MarketVelocityRow | null | undefined): row is MarketVelocityRow {
+  return velocitySignalLabel(row) != null;
+}
+
+function shouldReplaceVelocitySignal(existing: MarketVelocityRow | undefined, candidate: MarketVelocityRow) {
+  if (!existing) return true;
+  const existingUsable = isUsableVelocitySignal(existing);
+  const candidateUsable = isUsableVelocitySignal(candidate);
+  if (existingUsable !== candidateUsable) return candidateUsable;
+
+  const existingComputed = velocityComputedMs(existing);
+  const candidateComputed = velocityComputedMs(candidate);
+  if (existingComputed !== candidateComputed) return candidateComputed > existingComputed;
+
+  const existingSold7d = Number(existing.sold_7d_count ?? 0);
+  const candidateSold7d = Number(candidate.sold_7d_count ?? 0);
+  if (existingSold7d !== candidateSold7d) return candidateSold7d > existingSold7d;
+
+  return Number(candidate.observed_sold_sample_count ?? 0) > Number(existing.observed_sold_sample_count ?? 0);
+}
+
 async function loadVelocitySignalsForPool(
   headers: Record<string, string>,
-  comparableKeys: string[],
-): Promise<Map<string, string>> {
+  poolRows: PoolRow[],
+): Promise<Map<number, string>> {
+  const comparableKeys = poolRows.map((row) => row.comparable_key).filter((key): key is string => Boolean(key));
   const unique = [...new Set(comparableKeys.filter((k): k is string => Boolean(k)))];
   if (unique.length === 0) return new Map();
   const cols = [
@@ -528,15 +566,24 @@ async function loadVelocitySignalsForPool(
   const encoded = unique.map((k) => encodeURIComponent(k)).join(",");
   try {
     const res = await restFetch(
-      `${tableUrl("mvp_market_velocity_daily")}?select=${cols}&comparable_key=in.(${encoded})&condition_class=eq.all&order=date.desc,computed_at.desc,observed_sold_sample_count.desc&limit=${Math.max(100, unique.length * 2)}`,
+      `${tableUrl("mvp_market_velocity_daily")}?select=${cols}&comparable_key=in.(${encoded})&order=date.desc,computed_at.desc,observed_sold_sample_count.desc&limit=${Math.max(200, unique.length * 10)}`,
       { headers },
     );
     const rows = (await res.json()) as MarketVelocityRow[];
-    const signals = new Map<string, string>();
+    const rowsByKey = new Map<string, MarketVelocityRow>();
     for (const row of rows) {
-      if (signals.has(row.comparable_key)) continue;
-      const label = velocitySignalLabel(row);
-      if (label) signals.set(row.comparable_key, label);
+      const key = velocitySignalKey(row.comparable_key, row.condition_class);
+      const existing = rowsByKey.get(key);
+      if (shouldReplaceVelocitySignal(existing, row)) rowsByKey.set(key, row);
+    }
+
+    const signals = new Map<number, string>();
+    for (const poolRow of poolRows) {
+      if (!poolRow.comparable_key) continue;
+      const conditionRow = rowsByKey.get(velocitySignalKey(poolRow.comparable_key, poolRow.condition_class));
+      const allRow = rowsByKey.get(poolRow.comparable_key);
+      const label = velocitySignalLabel(conditionRow) ?? velocitySignalLabel(allRow);
+      if (label) signals.set(poolRow.pid, label);
     }
     return signals;
   } catch (err) {
@@ -933,7 +980,7 @@ async function loadPool(
   marketBands: Map<string, Map<string, MarketBandRow>>;
   sourceMarketBands: Map<string, Map<string, Map<string, MarketBandRow>>>;
   v7SiblingPresence: V7SiblingPresenceMap;
-  velocitySignals: Map<string, string>;
+  velocitySignals: Map<number, string>;
   parsedGradingRows: Array<{
     pid: number;
     condition_tier: string | null;
@@ -1179,7 +1226,7 @@ async function loadPool(
     loadMarketBandsForPool(headers, comparableKeys),
     loadSourceMarketBandsForPool(headers, comparableKeys),
     loadV7SiblingPresence(headers, comparableKeys),
-    loadVelocitySignalsForPool(headers, comparableKeys),
+    loadVelocitySignalsForPool(headers, pool),
     // Wave 714k (2026-05-23): 신발/의류 5-tier grading + chips column fetch.
     restFetch(
       `${tableUrl("mvp_listing_parsed")}?select=pid,condition_tier,condition_cluster,condition_confidence,condition_flags,condition_notes,parsed_json&pid=in.(${pids.join(",")})`,
@@ -1237,7 +1284,7 @@ function buildItems(
   marketBands: Map<string, Map<string, MarketBandRow>>,
   sourceMarketBands: Map<string, Map<string, Map<string, MarketBandRow>>>,
   v7SiblingPresence: V7SiblingPresenceMap,
-  velocitySignals: Map<string, string>,
+  velocitySignals: Map<number, string>,
   userHomeRegion: { daangn_full_path: string | null } | null,
   parsedGradingRows: Array<{
     pid: number;
@@ -1418,7 +1465,7 @@ function buildItems(
         marketPriceBandLabel: priceBandLabel(skuMedianFinal),
         priceSignalLabel: relativeDiscountLabel(raw.price, skuMedianFinal),
         marketSignalLabel: confidenceSignalLabel(row.confidence),
-        velocitySignalLabel: row.comparable_key ? (velocitySignals.get(row.comparable_key) ?? null) : null,
+        velocitySignalLabel: velocitySignals.get(row.pid) ?? null,
       };
     })
     .filter((x): x is NonNullable<typeof x> => x != null);
