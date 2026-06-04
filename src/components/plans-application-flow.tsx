@@ -1332,37 +1332,68 @@ export default function PlansApplicationFlow({
           ) : null}
 
           {step === 2 ? (
-            <div className="flex h-full flex-col justify-center p-5 sm:p-9">
-              <div className="mx-auto w-full max-w-[780px]">
-                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-blue-300">
-                  member seat
-                </div>
-                <h1 className="mt-3 break-keep text-[32px] font-black leading-[1.02] tracking-tight sm:text-[58px]">
-                  지금 바로
-                  <br />
-                  {selectedRegionLabel} 자리를 차지하세요.
-                </h1>
-                <div className="mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_220px] sm:items-stretch">
-                  <div className="rounded-[28px] border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950/70">
-                    <p className="break-keep text-[18px] font-black leading-7 text-zinc-950 dark:text-zinc-50 sm:text-[23px] sm:leading-9">
-                      전체 중고 매물 중 시세 차익이 보이는 상품은 극소수입니다.
+            <div className="flex h-full flex-col justify-center p-4 sm:p-8">
+              <div className="mx-auto w-full max-w-[760px]">
+                <div className="overflow-hidden rounded-[30px] bg-zinc-950 text-white shadow-[0_28px_80px_rgba(15,23,42,0.28)] ring-1 ring-zinc-900/10 dark:ring-white/10">
+                  <div className="relative p-5 sm:p-7">
+                    <div className="absolute right-0 top-0 h-40 w-40 rounded-bl-full bg-[#3182f6]/30 blur-2xl" />
+                    <div className="relative flex items-start justify-between gap-4">
+                      <div>
+                        <div className="inline-flex rounded-full bg-white/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-blue-100 ring-1 ring-white/10">
+                          선착순 지역 티오
+                        </div>
+                        <h1 className="mt-4 break-keep text-[34px] font-black leading-[0.98] tracking-tight sm:text-[56px]">
+                          {selectedRegionLabel}
+                          <br />
+                          {selectedRemainingSeats}석 남았어요.
+                        </h1>
+                      </div>
+                      <div className="shrink-0 rounded-[22px] bg-white px-4 py-3 text-right text-zinc-950 shadow-[0_14px_36px_rgba(49,130,246,0.2)]">
+                        <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-400">
+                          seat
+                        </div>
+                        <div className="mt-1 text-[28px] font-black leading-none tabular-nums">
+                          {selectedRemainingSeats}/{selectedSeatUsage.total}
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="relative mt-5 max-w-[560px] break-keep text-[16px] font-bold leading-7 text-zinc-300 sm:text-[18px]">
+                      전체 중고 매물 중 시세 차익이 보이는 상품은 극소수예요. 같은 지역에서 너무 많이 보면 기회가 바로 사라집니다.
                     </p>
-                    <p className="mt-3 break-keep text-[18px] font-black leading-7 text-rose-600 dark:text-rose-300 sm:text-[23px] sm:leading-9">
-                      누구나 다 보면 돈 벌 기회가 사라집니다.
-                    </p>
+
+                    <div className="relative mt-6 rounded-[22px] bg-white/8 p-4 ring-1 ring-white/10">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-[11px] font-black uppercase tracking-[0.14em] text-zinc-400">
+                            현재 예약
+                          </div>
+                          <div className="mt-1 text-[20px] font-black tabular-nums text-white">
+                            {selectedSeatUsage.filled}/{selectedSeatUsage.total}명
+                          </div>
+                        </div>
+                        <div className="rounded-full bg-rose-500 px-3 py-1.5 text-[12px] font-black text-white shadow-[0_10px_24px_rgba(244,63,94,0.25)]">
+                          {selectedRemainingSeats <= 2 ? "마감 직전" : "마감 임박"}
+                        </div>
+                      </div>
+                      <div className="mt-4 h-3 overflow-hidden rounded-full bg-white/12">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-[#3182f6] via-sky-300 to-rose-400"
+                          style={{ width: `${Math.min(100, Math.max(0, (selectedSeatUsage.filled / selectedSeatUsage.total) * 100))}%` }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className={`flex flex-col justify-between rounded-[28px] p-5 ring-1 ${seatTone(selectedRemainingSeats, selectedSeatUsage.total).badge}`}>
-                    <div>
-                      <div className="text-[11px] font-black uppercase tracking-[0.14em] opacity-70">
-                        {selectedRegionLabel} 티오
-                      </div>
-                      <div className="mt-3 text-[42px] font-black leading-none tabular-nums">
-                        {selectedRemainingSeats}/{selectedSeatUsage.total}석
-                      </div>
-                    </div>
-                    <div className="mt-5 rounded-2xl bg-white/60 px-3 py-2 text-[15px] font-black dark:bg-black/20">
-                      {selectedRemainingSeats}석 남음
-                    </div>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <div className="rounded-[22px] border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+                    <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">희소성</div>
+                    <div className="mt-1 break-keep text-[14px] font-black leading-5">차익 후보만 추립니다</div>
+                  </div>
+                  <div className="rounded-[22px] border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+                    <div className="text-[11px] font-black text-rose-500 dark:text-rose-300">지역 제한</div>
+                    <div className="mt-1 break-keep text-[14px] font-black leading-5">같은 지역 접근을 줄입니다</div>
                   </div>
                 </div>
               </div>
