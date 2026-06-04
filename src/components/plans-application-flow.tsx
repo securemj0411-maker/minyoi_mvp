@@ -612,7 +612,7 @@ function KoreaSeatMap({
             );
           })}
         </g>
-        <g className="pointer-events-none">
+        <g>
           {REGIONS.map((region) => {
             const selectedActive = zoomed && region.key === selected.key;
             const hoveredActive = !zoomed && region.key === hoveredKey;
@@ -620,7 +620,27 @@ function KoreaSeatMap({
             const labelY = region.labelY ?? region.y;
             if (zoomed) return null;
             return (
-              <g key={`${region.key}-label`}>
+              <g
+                key={`${region.key}-label`}
+                role="button"
+                tabIndex={0}
+                aria-label={`${region.label} 티오 ${region.seats}석`}
+                className="cursor-pointer outline-none"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onSelect(region.key);
+                }}
+                onMouseEnter={() => onHover(region.key)}
+                onMouseLeave={() => onHover(null)}
+                onFocus={() => onHover(region.key)}
+                onBlur={() => onHover(null)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelect(region.key);
+                  }
+                }}
+              >
                 <circle
                   cx={labelX}
                   cy={labelY}
@@ -634,7 +654,7 @@ function KoreaSeatMap({
                   x={labelX}
                   y={labelY - 5}
                   textAnchor="middle"
-                  className="select-none fill-white font-black"
+                  className="pointer-events-none select-none fill-white font-black"
                   style={{
                     fontSize: selectedActive ? 7 : 28,
                     paintOrder: "stroke",
@@ -648,7 +668,7 @@ function KoreaSeatMap({
                   x={labelX}
                   y={labelY + (selectedActive ? 8 : 21)}
                   textAnchor="middle"
-                  className="select-none fill-white font-black"
+                  className="pointer-events-none select-none fill-white font-black"
                   style={{
                     fontSize: selectedActive ? 5.3 : 15,
                     paintOrder: "stroke",
