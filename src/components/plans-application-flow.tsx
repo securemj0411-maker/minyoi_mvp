@@ -201,7 +201,7 @@ function KoreaSeatMap({
   onSelect: (key: string) => void;
   onHover: (key: string | null) => void;
 }) {
-  const hoveredRegion = REGIONS.find((region) => region.key === hoveredKey);
+  const hoveredRegion = zoomed ? null : REGIONS.find((region) => region.key === hoveredKey);
   const activeRegion = hoveredRegion ?? (zoomed ? selected : null);
   const zoomScale = zoomed ? regionZoomScale(selected.key) : 1;
   const zoomX = zoomed ? 254.5 - selected.x * zoomScale : 0;
@@ -261,7 +261,7 @@ function KoreaSeatMap({
       >
         {REGIONS.map((region) => {
           const selectedActive = zoomed && region.key === selected.key;
-          const hoveredActive = region.key === hoveredKey;
+          const hoveredActive = !zoomed && region.key === hoveredKey;
           const active = selectedActive || hoveredActive;
           const regionSvg = KOREA_ADMIN_REGION_SVG[region.key];
           return (
@@ -307,7 +307,7 @@ function KoreaSeatMap({
         <g className="pointer-events-none">
           {REGIONS.map((region) => {
             const selectedActive = zoomed && region.key === selected.key;
-            const hoveredActive = region.key === hoveredKey;
+            const hoveredActive = !zoomed && region.key === hoveredKey;
             const regionSvg = KOREA_ADMIN_REGION_SVG[region.key];
             return (
               <g
@@ -324,7 +324,7 @@ function KoreaSeatMap({
         <g className="pointer-events-none">
           {REGIONS.map((region) => {
             const selectedActive = zoomed && region.key === selected.key;
-            const hoveredActive = region.key === hoveredKey;
+            const hoveredActive = !zoomed && region.key === hoveredKey;
             if (selectedActive) return null;
             if (zoomed && !selectedActive && !hoveredActive) return null;
             return (
