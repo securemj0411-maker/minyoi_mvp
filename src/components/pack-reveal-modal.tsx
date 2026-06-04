@@ -311,7 +311,7 @@ function incrementBeginnerGuideCounter(key: string) {
   } catch {}
 }
 
-function shouldAutoShowBeginnerGuide(pid: number | null) {
+function _shouldAutoShowBeginnerGuide(pid: number | null) {
   if (typeof window === "undefined") return false;
   if (pid == null || !Number.isFinite(pid)) return false;
   try {
@@ -3741,14 +3741,14 @@ function _SavedDetailMini({ card }: { card: RevealCard }) {
 // 거래 안전 타일 + RecommendationReason 안 셀러 후기가 분산 → 별도 카드로 통합.
 // savedDetail에 있는 데이터만 활용 (sellerReviewRating/sellerReviewCount/freeShipping).
 // is_proshop / last_seen_at 은 prop 부재 → 다음 wave (API 확장 필요).
-// Wave 393.6: 호출처 제거됨 (UpperFold tile + WhyTrust Q&A에 정보 있음).
-// 함수는 보존 — 추후 재활용 가능. ESLint _ prefix로 unused 허용.
-function _SellerTrustPanel({ card }: { card: RevealCard }) {
+// Wave 1077 (2026-06-04): 쉬운모드 제거 후 셀러 신뢰를 상세 단일 화면으로 승격.
+function SellerTrustPanel({ card }: { card: RevealCard }) {
   const detail = card.savedDetail;
   const safety = marketplaceSafetyForCard(card);
   const rating = detail?.sellerReviewRating ?? null;
   const reviewCount = detail?.sellerReviewCount ?? 0;
   const freeShipping = safety.shipping.allowFreeShippingBadge;
+  const mannerTemp = safety.sellerTrust.mannerTemperature ?? null;
 
   // 등급 판단 — 일반인 친화 4단계
   let trustLevel: "good" | "ok" | "caution" | "danger";
@@ -3756,7 +3756,17 @@ function _SellerTrustPanel({ card }: { card: RevealCard }) {
   let trustSub: string;
   // Wave 393.5: sub 단순화 — WhyTrustCollapse Q&A에 자세한 답 이미 있음.
   // 헤드라인은 등급 + 별점, sub은 "후기 N건 (수 충분/적음)" 단순 정보만.
-  if (safety.isJoongna) {
+  if (safety.isDaangn) {
+    if (mannerTemp != null && mannerTemp >= 40) {
+      trustLevel = "good";
+    } else if (mannerTemp != null && mannerTemp >= 36.5) {
+      trustLevel = "ok";
+    } else {
+      trustLevel = "caution";
+    }
+    trustHeadline = safety.sellerTrust.metric;
+    trustSub = safety.sellerTrust.metricLabel || safety.sellerTrust.tileSub || "당근 앱에서 매너온도 확인";
+  } else if (safety.isJoongna) {
     trustLevel = safety.sellerTrust.trustScore != null || reviewCount > 0 ? "ok" : "caution";
     trustHeadline = safety.sellerTrust.metric;
     trustSub = safety.sellerTrust.metricLabel || "중고나라 판매자 정보 확인";
@@ -3801,13 +3811,13 @@ function _SellerTrustPanel({ card }: { card: RevealCard }) {
       : AlertTriangleIcon;
 
   return (
-    <section className={`mt-3 border-t border-zinc-200 border-l-4 ${accentBorderClass} bg-white/0 py-3 pl-3 dark:border-zinc-800 sm:rounded-xl sm:border sm:bg-white sm:p-3 sm:dark:bg-zinc-900/40`}>
+    <section data-seller-trust-panel className={`mt-3 rounded-2xl border border-zinc-200 border-l-4 ${accentBorderClass} bg-white px-3.5 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2.5">
-          <TrustIcon className={`mt-3 h-6 w-6 shrink-0 ${valueColor}`} />
+          <TrustIcon className={`mt-1 h-6 w-6 shrink-0 ${valueColor}`} />
           <div className="min-w-0">
             <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              셀러 정보
+              판매자 신뢰
             </div>
             <div className={`mt-1 text-sm font-bold ${valueColor}`}>
               {trustHeadline}
@@ -3823,14 +3833,21 @@ function _SellerTrustPanel({ card }: { card: RevealCard }) {
               무료배송
             </span>
           ) : null}
-          <span className="rounded-full bg-zinc-50 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-            {safety.paymentLabel} 확인
-          </span>
+          {!safety.isDaangn ? (
+            <span className="rounded-full bg-zinc-50 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+              {safety.paymentLabel} 확인
+            </span>
+          ) : null}
         </div>
+      </div>
+      <div className="mt-2 border-t border-zinc-100 pt-2 text-[11px] font-medium leading-4 text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
+        {safety.sellerTrust.assessment || safety.sellerTrust.body}
       </div>
       {(trustLevel === "caution" || trustLevel === "danger") ? (
         <div className="mt-2 border-t border-zinc-100 pt-2 text-[11px] font-medium leading-4 text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
-          후기 적은 셀러는 원본 플랫폼 {safety.paymentLabel} 가능 여부 또는 직거래 검수를 먼저 확인하세요.
+          {safety.isDaangn
+            ? "당근은 원본 앱에서 셀러 프로필의 매너온도와 실물 인증 사진을 같이 확인하세요."
+            : `후기 적은 셀러는 원본 플랫폼 ${safety.paymentLabel} 가능 여부 또는 직거래 검수를 먼저 확인하세요.`}
         </div>
       ) : null}
     </section>
@@ -6365,7 +6382,6 @@ function RevealCardItem({
   analysisLoading = false,
   currentFeedbackType,
   photoRef,
-  onBeginnerGuideClick,
   reportPanelRef,
   reportShortcutSignal,
 }: {
@@ -6374,7 +6390,6 @@ function RevealCardItem({
   analysisLoading?: boolean;
   currentFeedbackType?: string | null;
   photoRef?: React.RefObject<HTMLDivElement | null>;
-  onBeginnerGuideClick?: () => void;
   reportPanelRef?: RefObject<HTMLDivElement | null>;
   reportShortcutSignal?: number;
 }) {
@@ -6383,7 +6398,7 @@ function RevealCardItem({
   // 디폴트 = simple (메모리 룰 일반인 친화). detailed = "디테일 펼침" (이미 있는 정보 더 자세히).
   // localStorage 기억 — 한 번 선택하면 다음 모달도 자동.
   // 본질 = 일반인 친화 단일 톤 유지 + "더 자세히 보고 싶은 사용자" 옵션. 전문가 통계 도구 X (별 wave).
-  const [mode, setMode] = useState<"simple" | "detailed">("simple");
+  const [mode, setMode] = useState<"simple" | "detailed">("detailed");
   const profitCalculationRef = useRef<HTMLDivElement | null>(null);
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
   const isDaangn = card.marketplaceSource === "daangn";
@@ -6505,17 +6520,6 @@ function RevealCardItem({
                     {card.name}
                   </div>
                 </div>
-                {onBeginnerGuideClick ? (
-                  <button
-                    type="button"
-                    onClick={onBeginnerGuideClick}
-                    data-beginner-guide-reopen
-                    className="mx-auto mt-3 flex min-h-10 w-full max-w-[180px] items-center justify-center gap-1.5 rounded-full border border-[#d7e6d5] bg-white/86 px-4 text-[12px] font-black text-[#1c64dd] shadow-sm transition hover:bg-[#f3faf5] active:scale-[0.98] dark:border-zinc-700 dark:bg-zinc-950/70 dark:text-blue-300 dark:hover:bg-zinc-900"
-                  >
-                    <ShieldIcon className="h-3.5 w-3.5" />
-                    <span>쉽게 보기</span>
-                  </button>
-                ) : null}
                 <PurchaseDecisionHeader card={card} />
               {/* Wave 395.1: PDF처럼 "예상 순익 + 계산식/비교매물 보기"만 독립 카드로 분리. */}
               <div
@@ -6599,6 +6603,7 @@ function RevealCardItem({
               </div>
 
               <UpperFoldFearReducers card={card} analysisLoading={analysisLoading} />
+              <SellerTrustPanel card={card} />
 
               {/* Wave launch-83 (사용자 결정): 데이터 부족 placeholder 안내 박스 보이는 게
                   미완성 사이트 인상 → 빈 상태면 섹션 전체 hide. DetailMarketGraphSection 내부에서
@@ -7275,10 +7280,7 @@ function DetailReportModeChoiceSheet({
             상세 숫자 리포트를 어떻게 볼까요?
           </h3>
           <p className="mt-2 break-keep text-[13px] font-semibold leading-5 text-[#667164] dark:text-zinc-400">
-            이번 매물만 숫자로 보거나, 앞으로 기본 화면을 상세 리포트로 바꿀 수 있어요.
-          </p>
-          <p className="mt-3 break-keep rounded-[16px] bg-zinc-50 px-3 py-2 text-[12px] font-bold leading-5 text-zinc-500 dark:bg-zinc-950/70 dark:text-zinc-400">
-            기본을 바꿔도 나중에 상단의 <span className="text-zinc-950 dark:text-zinc-100">쉽게 보기</span> 버튼으로 언제든 다시 볼 수 있어요.
+            이제 한 화면에서 구매 판단, 판매자 신뢰, 시세 근거를 같이 봅니다.
           </p>
         </div>
 
@@ -7302,7 +7304,7 @@ function DetailReportModeChoiceSheet({
             onClick={onCancel}
             className="mx-auto flex min-h-9 items-center justify-center px-3 text-[12px] font-black text-[#7b8378] underline-offset-4 hover:text-zinc-950 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
           >
-            계속 쉬운모드 볼래요
+            닫기
           </button>
         </div>
       </div>
@@ -7351,7 +7353,7 @@ export default function PackRevealModal({
   const activeRevealPid = activeRevealCard?.pid ?? null;
   const [savedPids, setSavedPids] = useState<Set<number>>(() => new Set());
   const activeRevealSaved = activeRevealPid != null && savedPids.has(activeRevealPid);
-  const [beginnerGuideVisible, setBeginnerGuideVisible] = useState(false);
+  const [, setBeginnerGuideVisible] = useState(false);
   const [beginnerGuideStep, setBeginnerGuideStep] = useState(0);
   const [reportShortcutSignal, setReportShortcutSignal] = useState(0);
   const [detailModeChoice, setDetailModeChoice] = useState<{
@@ -7371,7 +7373,8 @@ export default function PackRevealModal({
     activeRevealPid != null &&
     analysisLoadingPids.has(activeRevealPid) &&
     !activeAnalysisHasLoaded;
-  const guideModeActive = result?.result === "success" && activeRevealCard != null && beginnerGuideVisible;
+  // Wave 1077 (2026-06-04): 쉬운모드/상세보기 이중 UX 제거. 상세 단일 화면만 사용.
+  const guideModeActive = false;
 
   useEffect(() => {
     setDetailModeChoice(null);
@@ -7497,12 +7500,8 @@ export default function PackRevealModal({
     }
     requestRevealAnalysis(activeRevealPid);
     setBeginnerGuideStep(0);
-    const shouldShow = shouldAutoShowBeginnerGuide(activeRevealPid);
-    setBeginnerGuideVisible(shouldShow);
-    if (shouldShow) {
-      onTrackEvent?.(activeRevealPid, "easy_mode_started", { trigger: "auto" });
-    }
-  }, [open, loading, result?.result, activeRevealPid, onTrackEvent, requestRevealAnalysis]);
+    setBeginnerGuideVisible(false);
+  }, [open, loading, result?.result, activeRevealPid, requestRevealAnalysis]);
 
   useEffect(() => {
     if (!guideModeActive || !activeRevealCard || activeRevealPid == null) return;
@@ -7634,17 +7633,6 @@ export default function PackRevealModal({
     setPreviewGuideLoading(false);
     setPreviewGuideError(null);
   }, []);
-
-  const openBeginnerGuide = useCallback(() => {
-    if (!activeRevealCard) return;
-    closePreviewPanel();
-    requestRevealAnalysis(activeRevealCard.pid);
-    setBeginnerGuideStep(0);
-    setBeginnerGuideVisible(true);
-    onTrackEvent?.(activeRevealCard.pid, "easy_mode_reopened", { trigger: "easy_button" });
-    onTrackEvent?.(activeRevealCard.pid, "easy_mode_started", { trigger: "manual" });
-    window.requestAnimationFrame(() => resetDetailScroll("auto"));
-  }, [activeRevealCard, closePreviewPanel, onTrackEvent, requestRevealAnalysis, resetDetailScroll]);
 
   const handleClose = useCallback(() => {
     closePreviewPanel();
@@ -7967,7 +7955,6 @@ export default function PackRevealModal({
                         analysisLoading={idx === 0 ? activeAnalysisLoading : false}
                         currentFeedbackType={currentFeedbackType}
                         photoRef={idx === 0 ? photoRef : undefined}
-                        onBeginnerGuideClick={idx === 0 ? openBeginnerGuide : undefined}
                         reportPanelRef={idx === 0 ? reportPanelRef : undefined}
                         reportShortcutSignal={idx === 0 ? reportShortcutSignal : 0}
                       />

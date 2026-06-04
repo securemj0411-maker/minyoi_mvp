@@ -69,3 +69,15 @@ test("detail modal compacts source, condition, and location into one Korean meta
   assert.doesNotMatch(heroBlock, /거래 가능 동네:/);
   assert.doesNotMatch(heroBlock, /<ConditionTierChip/);
 });
+
+test("detail modal uses one report surface without easy mode CTA", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+
+  assert.match(modal, /const guideModeActive = false/);
+  assert.match(modal, /data-seller-trust-panel/);
+  assert.match(modal, /<SellerTrustPanel card=\{card\} \/>/);
+  assert.match(modal, /판매자 신뢰/);
+  assert.doesNotMatch(modal, /data-beginner-guide-reopen/);
+  assert.doesNotMatch(modal, />쉽게 보기<\/span>/);
+  assert.doesNotMatch(modal, /onBeginnerGuideClick=\{/);
+});
