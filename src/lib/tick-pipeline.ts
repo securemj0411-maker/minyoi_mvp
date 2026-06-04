@@ -29,6 +29,7 @@ import {
   percentileRank,
   trimmedSellerMarket,
 } from "@/lib/market-math";
+import { isMarketBlockedComparableKey } from "@/lib/market-key-policy";
 import { notifyOperationalAlerts, type OperationalAlert } from "@/lib/operational-notifier";
 import {
   PARSER_VERSION as OPTION_PARSER_VERSION,
@@ -4798,7 +4799,8 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     const comparableKeys = [
       parsed.comparable_key,
       shoeSizeAgnosticComparableKey(parsed.comparable_key),
-    ].filter((key): key is string => Boolean(key));
+    ].filter((key): key is string => Boolean(key) && !isMarketBlockedComparableKey(key));
+    if (comparableKeys.length === 0) continue;
     // Wave 803g (2026-05-30 사용자 결정): Wave 722 hotfix 박힌 후 1주일 plan "다음 cycle 재migration" 박혀있지 X.
     //   PK 4-col migration 박음 (date, comparable_key, condition_class, condition_tier).
     //   Polo 매물 모순 (시세 mint+B class layer 분리) 근본 차단.

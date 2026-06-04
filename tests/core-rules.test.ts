@@ -5,6 +5,7 @@ import { buildCandidatePoolRows, evaluatePoolGate } from "@/lib/candidate-pool-b
 import { CATALOG, ruleMatch } from "@/lib/catalog";
 import { CATEGORY_READINESS, LANE_READINESS } from "@/lib/category-readiness";
 import { parseGameConsoleListing } from "@/lib/game-console-parser";
+import { isMarketBlockedComparableKey } from "@/lib/market-key-policy";
 import { inferMarketplaceTransaction, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
 import { parseListingOptions } from "@/lib/option-parser";
 import { classifyListing } from "@/lib/pipeline";
@@ -2562,6 +2563,34 @@ test("risky clothing family lanes stay internal even when historical lane readin
   );
   assert.equal(allowed.canEnterPool, true);
   assert.equal(allowed.reason, "lane_ready_polo_oxford_shirt");
+});
+
+test("risky family comparable keys stay out of market samples", () => {
+  const blockedKeys = [
+    "sport_golf|odyssey_putter",
+    "sport_golf|odyssey_putter|some_future_axis",
+    "sport_golf|taylormade_iron_set",
+    "sport_golf|callaway_driver|loft_9",
+    "clothing|polo_pony_tee|tee|b_grade",
+    "clothing|polo_shirt_pattern|shirt|a_grade",
+    "clothing|polo_knit_sweater|knit|b_grade",
+    "clothing|mlb_cap|cap|b_grade",
+  ];
+
+  for (const key of blockedKeys) {
+    assert.equal(isMarketBlockedComparableKey(key), true, key);
+  }
+
+  const allowedKeys = [
+    "sport_golf|taylormade_qi10_driver|gen_tm_qi10|loft_9",
+    "titleist|titleist_t100_iron_set",
+    "clothing|polo_oxford_shirt|shirt|b_grade",
+    "clothing|lacoste_pique_polo|polo_shirt|a_grade",
+  ];
+
+  for (const key of allowedKeys) {
+    assert.equal(isMarketBlockedComparableKey(key), false, key);
+  }
 });
 
 test("low-purity clothing product-type lanes stay held out of the pool", () => {
