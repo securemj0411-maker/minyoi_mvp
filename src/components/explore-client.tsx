@@ -1611,10 +1611,7 @@ function FirstFeedOnboardingCard({
       className="fixed inset-0 z-[90] flex bg-[#f5f7fb] text-[#172019] dark:bg-zinc-950 dark:text-zinc-50"
     >
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-[520px] flex-col px-6 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-[calc(env(safe-area-inset-top)+18px)]">
-        <div className="flex items-center justify-between">
-          <div className="flex gap-1.5" aria-label="예산 선택">
-            <span className="h-1.5 w-7 rounded-full bg-[#3182f6]" />
-          </div>
+        <div className="flex items-center justify-end">
           <button
             type="button"
             onClick={onDismiss}
@@ -1789,7 +1786,7 @@ function FirstFeedOnboardingCard({
           </div>
         ) : (
           /* step === 2 — 예산. */
-          <div className="flex flex-1 flex-col justify-center pb-24">
+          <div className="flex flex-1 flex-col justify-start pb-36 pt-8">
             {/* Wave launch-104: "감당 가능한" + "후보" 어색 → "예산" + "상품" 친화 카피. */}
             <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">
               예산
@@ -1804,7 +1801,7 @@ function FirstFeedOnboardingCard({
               보여드려요. 예산은 위 필터에서 언제든 바꿀 수 있어요.
             </p>
 
-            <div className="mt-9 grid gap-2">
+            <div className="mt-7 grid gap-2 pb-20">
               {BUDGET_FILTER_OPTIONS.map((option) => {
                 const active = pendingBudget === option.value;
                 return (
