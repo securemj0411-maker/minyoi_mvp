@@ -4366,6 +4366,34 @@ export default function ExploreClient({
             - dots 흰색 + drop-shadow 로 다크 배경에서도 또렷 */}
       {/* Wave 746 (2026-05-24): 카톡 공유 토스트 BalanceToast (layout) 로 이동 — universal 통합. */}
 
+      {refreshing && detailAccessLoadingPid == null ? (
+        <div
+          className="fixed inset-0 z-[93] flex items-center justify-center bg-black/50 backdrop-blur-[1px]"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <div className="flex flex-col items-center gap-5">
+            <BrandLogo
+              size={56}
+              className="animate-detail-logo-breathe rounded-[12px] shadow-lg shadow-blue-500/40"
+            />
+            <div className="flex items-end gap-2.5">
+              <span className="h-3.5 w-3.5 animate-bounce-high rounded-full bg-[#ffffff] shadow-[0_2px_8px_rgba(255,255,255,0.4)] [animation-delay:-0.32s]" />
+              <span className="h-3.5 w-3.5 animate-bounce-high rounded-full bg-[#ffffff] shadow-[0_2px_8px_rgba(255,255,255,0.4)] [animation-delay:-0.16s]" />
+              <span className="h-3.5 w-3.5 animate-bounce-high rounded-full bg-[#ffffff] shadow-[0_2px_8px_rgba(255,255,255,0.4)]" />
+            </div>
+            <div className="text-center">
+              <div className="text-[15px] font-black text-white">
+                새 매물 가져오는 중이에요
+              </div>
+              <div className="mt-1 text-[12px] font-bold text-white/70">
+                현재 필터에 맞는 후보를 더 고르고 있어요
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {detailAccessLoadingPid != null ? (
         <div
           className="fixed inset-0 z-[94] flex items-center justify-center bg-black/55 backdrop-blur-[1px]"
