@@ -14,6 +14,7 @@ import {
 import { AccountPanel } from "@/components/account-panel";
 import { BrandLogo } from "@/components/brand-logo";
 import { displayNameForUser, isAdminUser } from "@/lib/auth-users";
+import { loadClientPlan, type ClientPlanState } from "@/lib/client-billing";
 import {
   hasClientAdminOverride,
   setClientAdminOverride,
@@ -279,11 +280,13 @@ export default function AppNav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [accountSheetOpen, setAccountSheetOpen] = useState(false);
+  const [clientPlan, setClientPlan] = useState<ClientPlanState | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [adminOverride, setAdminOverride] = useState(false);
   const [adminShadow, setAdminShadow] = useState(false);
   const adminClickCountRef = useRef(0);
   const adminClickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const userId = user?.id ?? null;
   const realAdmin = isAdminUser(user);
   // Wave 106: admin이지만 shadow mode면 일반 user UI. non-admin이지만 adminOverride면 admin UI.
   const admin = (realAdmin && !adminShadow) || (!realAdmin && adminOverride);
@@ -370,6 +373,24 @@ export default function AppNav() {
     setMobileDrawerOpen(false);
     setAccountSheetOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!userId) {
+      setClientPlan(null);
+      return;
+    }
+    let cancelled = false;
+    loadClientPlan()
+      .then((plan) => {
+        if (!cancelled) setClientPlan(plan);
+      })
+      .catch(() => {
+        if (!cancelled) setClientPlan(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
   useEffect(() => {
     if (!mobileDrawerOpen && !accountSheetOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -406,6 +427,10 @@ export default function AppNav() {
     ...(admin ? [{ href: "/debug", label: "운영 로그" }] : []),
   ];
   const mobileHomeHref = user ? "/me" : "/";
+  const membershipApproved =
+    clientPlan?.planKey === "pro" ||
+    clientPlan?.dailyLimit === -1 ||
+    clientPlan?.isAdmin === true;
   const mobileNavLinks = user
     ? [
         { href: "/me", label: "추천 피드", caption: "오늘 볼 만한 매물" },
@@ -415,7 +440,11 @@ export default function AppNav() {
           label: "시세 조회",
           caption: "URL 넣으면 시세·수익·비교매물",
         },
-        { href: "/plans", label: "멤버십 신청", caption: "선공개 300명" },
+        {
+          href: "/plans",
+          label: membershipApproved ? "멤버십 관리" : "멤버십 신청",
+          caption: membershipApproved ? "남은 기간 확인·연장" : "선공개 300명",
+        },
         {
           href: "/how-it-works",
           label: "서비스 안내",
@@ -688,21 +717,39 @@ export default function AppNav() {
           <div className="flex-1 overflow-y-auto px-3 py-4">
             {user ? (
               <Link
-                href="/plans"
+                href={membershipApproved ? "/me" : "/plans"}
                 onClick={() => setMobileDrawerOpen(false)}
-                className="mb-3 block rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                className={`mb-3 block rounded-2xl border px-4 py-3 transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800 ${
+                  membershipApproved
+                    ? "border-emerald-100 bg-emerald-50 dark:border-emerald-900/50 dark:bg-emerald-950/20"
+                    : "border-blue-100 bg-blue-50"
+                }`}
               >
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-400">
-                      선공개 멤버십
+                    <div
+                      className={`text-[10px] font-black uppercase tracking-[0.16em] ${
+                        membershipApproved
+                          ? "text-emerald-700 dark:text-emerald-300"
+                          : "text-[#3182f6] dark:text-blue-400"
+                      }`}
+                    >
+                      {membershipApproved ? "멤버십 활성화" : "선공개 멤버십"}
                     </div>
                     <div className="mt-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
-                      승인된 계정만 추천 피드 이용
+                      {membershipApproved
+                        ? "추천 피드와 상세 리포트 이용 가능"
+                        : "승인된 계정만 추천 피드 이용"}
                     </div>
                   </div>
-                  <div className="flex items-center rounded-full bg-white px-2.5 py-1.5 text-[11px] font-black text-[#3182f6] shadow-sm dark:bg-zinc-950 dark:text-blue-200">
-                    신청하기
+                  <div
+                    className={`flex items-center rounded-full bg-white px-2.5 py-1.5 text-[11px] font-black shadow-sm dark:bg-zinc-950 ${
+                      membershipApproved
+                        ? "text-emerald-700 dark:text-emerald-300"
+                        : "text-[#3182f6] dark:text-blue-200"
+                    }`}
+                  >
+                    {membershipApproved ? "피드 보기" : "신청하기"}
                   </div>
                 </div>
               </Link>

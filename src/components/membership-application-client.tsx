@@ -659,7 +659,7 @@ export default function MembershipApplicationClient({
               </div>
             </div>
           </div>
-          <div className="px-3 py-3 sm:px-5 sm:py-5">
+          <div className="px-3 pb-20 pt-3 sm:px-5 sm:py-5">
             <PlanGrid
               plans={plans}
               selectedKey={selectedKey}
@@ -670,7 +670,7 @@ export default function MembershipApplicationClient({
               type="button"
               onClick={() => void beginApplication(selectedPlan)}
               disabled={state === "submitting"}
-              className="mt-3 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[15px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.30)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+              className="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+10px)] z-[130] mx-auto flex h-12 max-w-[760px] items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[15px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.30)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70 sm:static sm:mt-3 sm:max-w-none"
             >
               {state === "submitting" ? (
                 <span className="inline-flex items-center gap-2">

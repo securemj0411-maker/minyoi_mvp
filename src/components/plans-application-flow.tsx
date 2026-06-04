@@ -1745,7 +1745,13 @@ export default function PlansApplicationFlow({
     <main className="fixed inset-0 z-[75] overflow-hidden bg-[#f4f7fb] text-zinc-950 dark:bg-zinc-950 dark:text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(49,130,246,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.18),transparent_34%)]" />
       <div className="relative mx-auto flex h-full w-full max-w-[1180px] flex-col px-3 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-[calc(env(safe-area-inset-top)+12px)] sm:px-5 sm:py-5">
-        <section className="relative min-h-0 flex-1 overflow-hidden rounded-[30px] border border-zinc-200 bg-white shadow-[0_24px_90px_rgba(15,23,42,0.14)] dark:border-zinc-800 dark:bg-zinc-900">
+        <section
+          className={`relative min-h-0 flex-1 overflow-hidden ${
+            step === 3
+              ? "bg-transparent shadow-none"
+              : "rounded-[30px] border border-zinc-200 bg-white shadow-[0_24px_90px_rgba(15,23,42,0.14)] dark:border-zinc-800 dark:bg-zinc-900"
+          }`}
+        >
           {step === 0 ? (
             <div className="grid h-full min-h-0 gap-0 lg:grid-cols-[minmax(0,1fr)_340px]">
               <div className="min-h-0 border-b border-zinc-200 p-4 pb-2 dark:border-zinc-800 sm:p-6 lg:border-b-0 lg:border-r">
@@ -2270,8 +2276,15 @@ export default function PlansApplicationFlow({
           ) : null}
 
           {step === 3 ? (
-            <div className="flex h-full min-h-0 flex-col justify-start overflow-y-auto px-4 py-3 sm:p-8">
-              <div className="mx-auto w-full max-w-[760px]">
+            <div className="flex h-full min-h-0 flex-col justify-start overflow-y-auto px-1 py-1 sm:p-8">
+              <div className="mx-auto w-full max-w-[760px] pb-2">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="mb-2 inline-flex h-10 items-center gap-2 rounded-full border border-zinc-200 bg-white/92 px-4 text-[13px] font-black text-zinc-700 shadow-[0_10px_24px_rgba(15,23,42,0.10)] backdrop-blur transition hover:bg-white dark:border-zinc-800 dark:bg-zinc-950/85 dark:text-zinc-200"
+                >
+                  ← 뒤로
+                </button>
                 <MembershipApplicationClient
                   isAuthed={isAuthed}
                   isMember={isMember}
