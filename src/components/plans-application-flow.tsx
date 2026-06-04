@@ -982,20 +982,7 @@ export default function PlansApplicationFlow({
                   </div>
                   {mapZoomed ? (
                     <div className="mt-2 flex min-h-0 flex-1 flex-col rounded-[24px] border border-zinc-200 bg-[#fbfcff] shadow-[0_14px_34px_rgba(15,23,42,0.12)] dark:border-zinc-800 dark:bg-zinc-950/80">
-                      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
-                        <div>
-                          <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
-                            {selected.shortLabel} 세부 티오
-                          </div>
-                          <div className="mt-0.5 text-[15px] font-black">
-                            {selectedDistrict?.name} {selectedDistrict?.seats}석 남음
-                          </div>
-                        </div>
-                        <span className="rounded-full bg-blue-600 px-3 py-1.5 text-[12px] font-black text-white">
-                          선택됨
-                        </span>
-                      </div>
-                      <div className="min-h-0 flex-1 overflow-y-auto p-2">
+                      <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
                         {selectedDistricts.map((district) => {
                           const active = district.name === selectedDistrict?.name;
                           const usage = districtUsage(district);
@@ -1004,30 +991,28 @@ export default function PlansApplicationFlow({
                               key={district.name}
                               type="button"
                               onClick={() => setSelectedDistrictName(district.name)}
-                              className={`mb-2 flex w-full items-center justify-between gap-3 rounded-[20px] border px-3 py-3 text-left transition ${
+                              className={`mb-1.5 grid w-full grid-cols-[minmax(0,1fr)_58px_74px] items-center gap-2 rounded-2xl border px-3 py-2 text-left transition ${
                                 active
-                                  ? "border-blue-400 bg-blue-50 shadow-[0_10px_24px_rgba(37,99,235,0.14)] dark:border-blue-500/70 dark:bg-blue-950/38"
+                                  ? "border-blue-400 bg-blue-50 shadow-[0_8px_18px_rgba(37,99,235,0.12)] dark:border-blue-500/70 dark:bg-blue-950/38"
                                   : "border-zinc-200 bg-white hover:border-blue-200 dark:border-zinc-800 dark:bg-zinc-900/78"
                               }`}
                             >
                               <div className="min-w-0">
-                                <div className="truncate text-[17px] font-black">{district.name}</div>
-                                <div className="mt-1 flex items-center gap-2 text-[12px] font-black text-zinc-500 dark:text-zinc-400">
-                                  <span className="tabular-nums">{usage.filled}/{usage.total}</span>
-                                  <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                                  <span>{pressureLabel(district.pressure)}</span>
-                                </div>
-                              </div>
-                              <div className="shrink-0 text-right">
-                                <div className="text-[18px] font-black text-blue-600 dark:text-blue-300">
-                                  {district.seats}석 남음
-                                </div>
-                                <div className="mt-1 h-2 w-24 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                                <div className="truncate text-[15px] font-black">{district.name}</div>
+                                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
                                   <div
                                     className="h-full rounded-full bg-blue-600"
                                     style={{ width: `${Math.min(100, Math.round((usage.filled / usage.total) * 100))}%` }}
                                   />
                                 </div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-[14px] font-black tabular-nums">{usage.filled}/{usage.total}</div>
+                                <div className="mt-0.5 text-[10px] font-black text-zinc-400">{pressureLabel(district.pressure)}</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-[15px] font-black text-blue-600 dark:text-blue-300">{district.seats}석</div>
+                                <div className="mt-0.5 text-[10px] font-black text-zinc-400">남음</div>
                               </div>
                             </button>
                           );
