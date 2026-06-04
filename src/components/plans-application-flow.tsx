@@ -33,6 +33,8 @@ type RegionSeat = {
   pressure: number;
   x: number;
   y: number;
+  labelX?: number;
+  labelY?: number;
   districts: DistrictSeat[];
 };
 
@@ -131,22 +133,22 @@ const DISTRICT_OVERRIDES: Record<string, DistrictSeat[]> = {
 };
 
 const REGIONS: RegionSeat[] = [
-  { key: "seoul", shortLabel: "서울", label: "서울특별시", seats: 38, pressure: 0.82, x: 160, y: 178, districts: [{ name: "강남구", seats: 2, pressure: 0.88 }, { name: "송파구", seats: 3, pressure: 0.8 }, { name: "관악구", seats: 3, pressure: 0.74 }, { name: "마포구", seats: 2, pressure: 0.86 }] },
-  { key: "incheon", shortLabel: "인천", label: "인천광역시", seats: 18, pressure: 0.67, x: 98, y: 176, districts: [{ name: "연수구", seats: 2, pressure: 0.78 }, { name: "부평구", seats: 2, pressure: 0.74 }, { name: "서구", seats: 3, pressure: 0.62 }, { name: "남동구", seats: 2, pressure: 0.69 }] },
-  { key: "gyeonggi", shortLabel: "경기", label: "경기도", seats: 46, pressure: 0.76, x: 184, y: 214, districts: [{ name: "성남시", seats: 3, pressure: 0.8 }, { name: "수원시", seats: 4, pressure: 0.73 }, { name: "용인시", seats: 4, pressure: 0.69 }, { name: "고양시", seats: 3, pressure: 0.78 }] },
+  { key: "seoul", shortLabel: "서울", label: "서울특별시", seats: 38, pressure: 0.82, x: 160, y: 178, labelX: 148, labelY: 136, districts: [{ name: "강남구", seats: 2, pressure: 0.88 }, { name: "송파구", seats: 3, pressure: 0.8 }, { name: "관악구", seats: 3, pressure: 0.74 }, { name: "마포구", seats: 2, pressure: 0.86 }] },
+  { key: "incheon", shortLabel: "인천", label: "인천광역시", seats: 18, pressure: 0.67, x: 98, y: 176, labelX: 70, labelY: 176, districts: [{ name: "연수구", seats: 2, pressure: 0.78 }, { name: "부평구", seats: 2, pressure: 0.74 }, { name: "서구", seats: 3, pressure: 0.62 }, { name: "남동구", seats: 2, pressure: 0.69 }] },
+  { key: "gyeonggi", shortLabel: "경기", label: "경기도", seats: 46, pressure: 0.76, x: 184, y: 214, labelX: 214, labelY: 220, districts: [{ name: "성남시", seats: 3, pressure: 0.8 }, { name: "수원시", seats: 4, pressure: 0.73 }, { name: "용인시", seats: 4, pressure: 0.69 }, { name: "고양시", seats: 3, pressure: 0.78 }] },
   { key: "gangwon", shortLabel: "강원", label: "강원특별자치도", seats: 20, pressure: 0.45, x: 314, y: 136, districts: [{ name: "춘천시", seats: 4, pressure: 0.48 }, { name: "원주시", seats: 4, pressure: 0.52 }, { name: "강릉시", seats: 3, pressure: 0.42 }, { name: "속초시", seats: 2, pressure: 0.38 }] },
-  { key: "chungbuk", shortLabel: "충북", label: "충청북도", seats: 19, pressure: 0.51, x: 260, y: 324, districts: [{ name: "청주시", seats: 4, pressure: 0.51 }, { name: "충주시", seats: 3, pressure: 0.44 }, { name: "제천시", seats: 2, pressure: 0.39 }, { name: "음성군", seats: 2, pressure: 0.43 }] },
-  { key: "chungnam", shortLabel: "충남", label: "충청남도", seats: 22, pressure: 0.56, x: 145, y: 337, districts: [{ name: "천안시", seats: 4, pressure: 0.55 }, { name: "아산시", seats: 3, pressure: 0.57 }, { name: "공주시", seats: 2, pressure: 0.46 }, { name: "당진시", seats: 2, pressure: 0.5 }] },
-  { key: "sejong", shortLabel: "세종", label: "세종특별자치시", seats: 9, pressure: 0.58, x: 190, y: 338, districts: [{ name: "새롬동", seats: 1, pressure: 0.62 }, { name: "도담동", seats: 1, pressure: 0.57 }, { name: "어진동", seats: 1, pressure: 0.52 }] },
-  { key: "daejeon", shortLabel: "대전", label: "대전광역시", seats: 13, pressure: 0.62, x: 200, y: 388, districts: [{ name: "서구", seats: 3, pressure: 0.62 }, { name: "유성구", seats: 2, pressure: 0.66 }, { name: "중구", seats: 2, pressure: 0.51 }] },
-  { key: "jeonbuk", shortLabel: "전북", label: "전북특별자치도", seats: 19, pressure: 0.49, x: 174, y: 456, districts: [{ name: "전주시", seats: 4, pressure: 0.49 }, { name: "군산시", seats: 3, pressure: 0.44 }, { name: "익산시", seats: 3, pressure: 0.46 }] },
-  { key: "gwangju", shortLabel: "광주", label: "광주광역시", seats: 12, pressure: 0.56, x: 132, y: 536, districts: [{ name: "북구", seats: 3, pressure: 0.56 }, { name: "광산구", seats: 2, pressure: 0.54 }, { name: "서구", seats: 2, pressure: 0.5 }] },
-  { key: "jeonnam", shortLabel: "전남", label: "전라남도", seats: 18, pressure: 0.42, x: 145, y: 586, districts: [{ name: "목포시", seats: 3, pressure: 0.41 }, { name: "여수시", seats: 3, pressure: 0.44 }, { name: "순천시", seats: 3, pressure: 0.43 }] },
+  { key: "chungbuk", shortLabel: "충북", label: "충청북도", seats: 19, pressure: 0.51, x: 260, y: 324, labelX: 285, labelY: 320, districts: [{ name: "청주시", seats: 4, pressure: 0.51 }, { name: "충주시", seats: 3, pressure: 0.44 }, { name: "제천시", seats: 2, pressure: 0.39 }, { name: "음성군", seats: 2, pressure: 0.43 }] },
+  { key: "chungnam", shortLabel: "충남", label: "충청남도", seats: 22, pressure: 0.56, x: 145, y: 337, labelX: 112, labelY: 330, districts: [{ name: "천안시", seats: 4, pressure: 0.55 }, { name: "아산시", seats: 3, pressure: 0.57 }, { name: "공주시", seats: 2, pressure: 0.46 }, { name: "당진시", seats: 2, pressure: 0.5 }] },
+  { key: "sejong", shortLabel: "세종", label: "세종특별자치시", seats: 9, pressure: 0.58, x: 190, y: 338, labelX: 190, labelY: 312, districts: [{ name: "새롬동", seats: 1, pressure: 0.62 }, { name: "도담동", seats: 1, pressure: 0.57 }, { name: "어진동", seats: 1, pressure: 0.52 }] },
+  { key: "daejeon", shortLabel: "대전", label: "대전광역시", seats: 13, pressure: 0.62, x: 200, y: 388, labelX: 205, labelY: 398, districts: [{ name: "서구", seats: 3, pressure: 0.62 }, { name: "유성구", seats: 2, pressure: 0.66 }, { name: "중구", seats: 2, pressure: 0.51 }] },
+  { key: "jeonbuk", shortLabel: "전북", label: "전북특별자치도", seats: 19, pressure: 0.49, x: 174, y: 456, labelX: 170, labelY: 470, districts: [{ name: "전주시", seats: 4, pressure: 0.49 }, { name: "군산시", seats: 3, pressure: 0.44 }, { name: "익산시", seats: 3, pressure: 0.46 }] },
+  { key: "gwangju", shortLabel: "광주", label: "광주광역시", seats: 12, pressure: 0.56, x: 132, y: 536, labelX: 118, labelY: 530, districts: [{ name: "북구", seats: 3, pressure: 0.56 }, { name: "광산구", seats: 2, pressure: 0.54 }, { name: "서구", seats: 2, pressure: 0.5 }] },
+  { key: "jeonnam", shortLabel: "전남", label: "전라남도", seats: 18, pressure: 0.42, x: 145, y: 586, labelX: 172, labelY: 594, districts: [{ name: "목포시", seats: 3, pressure: 0.41 }, { name: "여수시", seats: 3, pressure: 0.44 }, { name: "순천시", seats: 3, pressure: 0.43 }] },
   { key: "gyeongbuk", shortLabel: "경북", label: "경상북도", seats: 23, pressure: 0.53, x: 340, y: 360, districts: [{ name: "포항시", seats: 3, pressure: 0.52 }, { name: "구미시", seats: 3, pressure: 0.57 }, { name: "경산시", seats: 2, pressure: 0.55 }] },
-  { key: "daegu", shortLabel: "대구", label: "대구광역시", seats: 14, pressure: 0.7, x: 356, y: 448, districts: [{ name: "수성구", seats: 3, pressure: 0.7 }, { name: "달서구", seats: 2, pressure: 0.64 }, { name: "동구", seats: 2, pressure: 0.58 }] },
-  { key: "ulsan", shortLabel: "울산", label: "울산광역시", seats: 11, pressure: 0.66, x: 454, y: 496, districts: [{ name: "남구", seats: 3, pressure: 0.66 }, { name: "중구", seats: 2, pressure: 0.58 }, { name: "울주군", seats: 2, pressure: 0.5 }] },
-  { key: "gyeongnam", shortLabel: "경남", label: "경상남도", seats: 24, pressure: 0.59, x: 318, y: 535, districts: [{ name: "창원시", seats: 4, pressure: 0.58 }, { name: "김해시", seats: 3, pressure: 0.62 }, { name: "진주시", seats: 3, pressure: 0.49 }] },
-  { key: "busan", shortLabel: "부산", label: "부산광역시", seats: 22, pressure: 0.82, x: 424, y: 548, districts: [{ name: "해운대구", seats: 2, pressure: 0.88 }, { name: "수영구", seats: 2, pressure: 0.82 }, { name: "부산진구", seats: 3, pressure: 0.74 }] },
+  { key: "daegu", shortLabel: "대구", label: "대구광역시", seats: 14, pressure: 0.7, x: 356, y: 448, labelX: 365, labelY: 450, districts: [{ name: "수성구", seats: 3, pressure: 0.7 }, { name: "달서구", seats: 2, pressure: 0.64 }, { name: "동구", seats: 2, pressure: 0.58 }] },
+  { key: "ulsan", shortLabel: "울산", label: "울산광역시", seats: 11, pressure: 0.66, x: 454, y: 496, labelX: 466, labelY: 485, districts: [{ name: "남구", seats: 3, pressure: 0.66 }, { name: "중구", seats: 2, pressure: 0.58 }, { name: "울주군", seats: 2, pressure: 0.5 }] },
+  { key: "gyeongnam", shortLabel: "경남", label: "경상남도", seats: 24, pressure: 0.59, x: 318, y: 535, labelX: 318, labelY: 545, districts: [{ name: "창원시", seats: 4, pressure: 0.58 }, { name: "김해시", seats: 3, pressure: 0.62 }, { name: "진주시", seats: 3, pressure: 0.49 }] },
+  { key: "busan", shortLabel: "부산", label: "부산광역시", seats: 22, pressure: 0.82, x: 424, y: 548, labelX: 425, labelY: 568, districts: [{ name: "해운대구", seats: 2, pressure: 0.88 }, { name: "수영구", seats: 2, pressure: 0.82 }, { name: "부산진구", seats: 3, pressure: 0.74 }] },
   { key: "jeju", shortLabel: "제주", label: "제주특별자치도", seats: 8, pressure: 0.36, x: 432, y: 678, districts: [{ name: "제주시", seats: 4, pressure: 0.37 }, { name: "서귀포시", seats: 3, pressure: 0.32 }] },
 ];
 
@@ -351,12 +353,14 @@ function KoreaSeatMap({
           {REGIONS.map((region) => {
             const selectedActive = zoomed && region.key === selected.key;
             const hoveredActive = !zoomed && region.key === hoveredKey;
+            const labelX = region.labelX ?? region.x;
+            const labelY = region.labelY ?? region.y;
             if (zoomed) return null;
             return (
               <g key={`${region.key}-label`}>
                 <circle
-                  cx={region.x}
-                  cy={region.y}
+                  cx={labelX}
+                  cy={labelY}
                   r={selectedActive ? 20 : hoveredActive ? 42 : 38}
                   fill="rgba(15,23,42,0.84)"
                   stroke="rgba(255,255,255,0.94)"
@@ -364,8 +368,8 @@ function KoreaSeatMap({
                   className="transition-all duration-200"
                 />
                 <text
-                  x={region.x}
-                  y={region.y - 5}
+                  x={labelX}
+                  y={labelY - 5}
                   textAnchor="middle"
                   className="select-none fill-white font-black"
                   style={{
@@ -378,8 +382,8 @@ function KoreaSeatMap({
                   {region.shortLabel}
                 </text>
                 <text
-                  x={region.x}
-                  y={region.y + (selectedActive ? 8 : 21)}
+                  x={labelX}
+                  y={labelY + (selectedActive ? 8 : 21)}
                   textAnchor="middle"
                   className="select-none fill-white font-black"
                   style={{
