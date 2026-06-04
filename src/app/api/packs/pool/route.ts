@@ -123,6 +123,7 @@ type RawListingMeta = {
   pid: number;
   source: string | null;
   seller_source: string | null;
+  seller_uid: string | null;
   url: string | null;
   sku_id: string | null;
   sku_name: string | null;
@@ -1218,7 +1219,7 @@ async function loadPool(
   const [metaRes, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, parsedGradingRes] = await Promise.all([
     restFetch(
       // Wave launch-4: listing_state 컬럼 추가 select. 응답 후 ready 였지만 active 아닌 row 차단.
-      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,raw_json,daangn_region_id,daangn_region_name,daangn_manner_temperature,daangn_review_count,listing_state,detail_status&pid=in.(${pids.join(",")})`,
+      `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,seller_uid,url,sku_id,sku_name,free_shipping,last_seen_at,first_seen_at,shop_review_rating,shop_review_count,image_count,description_preview,raw_json,daangn_region_id,daangn_region_name,daangn_manner_temperature,daangn_review_count,listing_state,detail_status&pid=in.(${pids.join(",")})`,
       { headers },
     ),
     loadMarketBandsForPool(headers, comparableKeys),
@@ -1487,6 +1488,74 @@ function sortDaangnItemsByDistance<T extends ReturnType<typeof buildItems>[numbe
     .map(({ item }) => item);
 }
 
+function sameSellerProductDedupeKey(
+  row: PoolRow & { soldOut: boolean },
+  meta: RawListingMeta | undefined,
+) {
+  const sellerUid = meta?.seller_uid?.trim();
+  const source = normalizeMarketplaceSource(meta?.source ?? meta?.seller_source);
+  if (!sellerUid || !row.comparable_key) return null;
+  return [
+    row.soldOut ? "sold" : "ready",
+    source,
+    sellerUid,
+    row.comparable_key,
+    row.condition_class ?? "unknown",
+  ].join("|");
+}
+
+function shouldReplaceSellerDuplicate(
+  current: PoolRow & { soldOut: boolean },
+  candidate: PoolRow & { soldOut: boolean },
+  rawByPid: Map<number, RawRow>,
+) {
+  const currentPrice = rawByPid.get(current.pid)?.price ?? Number.POSITIVE_INFINITY;
+  const candidatePrice = rawByPid.get(candidate.pid)?.price ?? Number.POSITIVE_INFINITY;
+  if (candidatePrice !== currentPrice) return candidatePrice < currentPrice;
+  return Date.parse(candidate.last_verified_at ?? "") > Date.parse(current.last_verified_at ?? "");
+}
+
+function dedupeSameSellerProducts(
+  pool: (PoolRow & { soldOut: boolean })[],
+  raws: RawRow[],
+  metas: RawListingMeta[],
+) {
+  const rawByPid = new Map(raws.map((r) => [r.pid, r]));
+  const metaByPid = new Map(metas.map((m) => [m.pid, m]));
+  const bestByKey = new Map<string, PoolRow & { soldOut: boolean }>();
+  const keptUnkeyed: (PoolRow & { soldOut: boolean })[] = [];
+
+  for (const row of pool) {
+    const key = sameSellerProductDedupeKey(row, metaByPid.get(row.pid));
+    if (!key) {
+      keptUnkeyed.push(row);
+      continue;
+    }
+    const current = bestByKey.get(key);
+    if (!current || shouldReplaceSellerDuplicate(current, row, rawByPid)) {
+      bestByKey.set(key, row);
+    }
+  }
+
+  const keptPids = new Set([
+    ...keptUnkeyed.map((row) => row.pid),
+    ...Array.from(bestByKey.values()).map((row) => row.pid),
+  ]);
+  const nextPool = pool.filter((row) => keptPids.has(row.pid));
+  if (nextPool.length !== pool.length) {
+    console.warn("[pool] same seller duplicate suppressed", {
+      suppressed: pool.length - nextPool.length,
+      total: pool.length,
+    });
+  }
+
+  return {
+    pool: nextPool,
+    raws: raws.filter((row) => keptPids.has(row.pid)),
+    metas: metas.filter((row) => keptPids.has(row.pid)),
+  };
+}
+
 export async function GET(req: Request) {
   try {
     const auth = await requireSupabaseUser(req);
@@ -1569,8 +1638,9 @@ export async function GET(req: Request) {
       readyCandidateLimit,
       userHomeDaangnFullPath: userHomeRegion?.daangn_full_path ?? null,
     });
+    const deduped = dedupeSameSellerProducts(pool, raws, metas);
     const skuImageMap = await loadSkuImageMap();
-    items = buildItems(pool, raws, metas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, userHomeRegion, parsedGradingRows, skuImageMap);
+    items = buildItems(deduped.pool, deduped.raws, deduped.metas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, userHomeRegion, parsedGradingRows, skuImageMap);
 
     // Wave 373: 성향 정렬 — preference 따라 우선순위 재정렬.
     //   safe: 우수 셀러 (평점 4.5+ & 후기 10+) 우선
