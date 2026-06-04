@@ -86,6 +86,81 @@ type LocalSampleItem = {
   thumbnailUrl: string | null;
 };
 
+const SEAT_PROOF_NAMES = [
+  "김**님",
+  "박**님",
+  "최**님",
+  "정**님",
+  "강**님",
+  "윤**님",
+  "서**님",
+  "송**님",
+  "한**님",
+  "권**님",
+  "임**님",
+  "오**님",
+];
+
+function SeatProofToast({
+  active,
+  regionLabel,
+}: {
+  active: boolean;
+  regionLabel: string;
+}) {
+  const [index, setIndex] = useState(-1);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!active) {
+      setVisible(false);
+      return;
+    }
+    const timers: number[] = [];
+    const showNext = () => {
+      setIndex((prev) => (prev + 1) % SEAT_PROOF_NAMES.length);
+      setVisible(true);
+      timers.push(window.setTimeout(() => setVisible(false), 7200));
+    };
+
+    timers.push(window.setTimeout(showNext, 1600));
+    const interval = window.setInterval(showNext, 18_000);
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      window.clearInterval(interval);
+    };
+  }, [active]);
+
+  if (!active || index < 0) return null;
+
+  return (
+    <div
+      aria-live="polite"
+      className={`fixed left-3 right-3 top-[calc(env(safe-area-inset-top)+14px)] z-[120] mx-auto max-w-[460px] transition duration-500 sm:left-auto sm:right-8 sm:top-8 sm:mx-0 ${
+        visible
+          ? "translate-y-0 opacity-100"
+          : "-translate-y-3 opacity-0 pointer-events-none"
+      }`}
+    >
+      <div className="rounded-2xl border border-rose-200 bg-white/98 px-4 py-3.5 shadow-[0_20px_54px_rgba(244,63,94,0.24)] backdrop-blur dark:border-rose-400/30 dark:bg-zinc-950/96">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-500 text-[15px] font-black text-white shadow-[0_12px_28px_rgba(244,63,94,0.34)]">
+            1
+          </div>
+          <div className="min-w-0">
+            <div className="break-keep text-[13px] font-black leading-5 text-zinc-950 dark:text-white">
+              {SEAT_PROOF_NAMES[index]}이 멤버십에 가입해 1자리를 확보했어요.
+            </div>
+            <div className="mt-1 break-keep text-[11px] font-black text-rose-600 dark:text-rose-300">
+              {regionLabel} 티오가 줄어드는 중
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function makeDistrictSeats(
   names: string[],
   baseSeats: number,
@@ -1860,34 +1935,39 @@ export default function PlansApplicationFlow({
                     </div>
                   ) : null}
                   {locationConfirmDraft && !mapZoomed ? (
-                    <div className="absolute inset-x-2 bottom-2 z-20 rounded-[24px] border border-emerald-200 bg-white/96 p-3 shadow-[0_18px_44px_rgba(16,185,129,0.20)] backdrop-blur dark:border-emerald-900/70 dark:bg-zinc-950/94">
-                      <div className="text-[10px] font-black uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
-                        내 동네 확인
-                      </div>
-                      <div className="mt-1 break-keep text-[18px] font-black leading-6 text-zinc-950 dark:text-zinc-50">
-                        {locationConfirmDraft.draft.label} 맞나요?
-                      </div>
-                      <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-                        맞으면 이 동네 기준으로 세부 지역 티오를 확인합니다.
-                      </div>
-                      <div className="mt-3 grid grid-cols-[0.75fr_1.25fr] gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setLocationConfirmDraft(null);
-                            setShowManualSearch(true);
-                          }}
-                          className="h-11 rounded-2xl border border-zinc-200 bg-white text-[13px] font-black text-zinc-600 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
-                        >
-                          아니요
-                        </button>
-                        <button
-                          type="button"
-                          onClick={confirmLocationDraft}
-                          className="h-11 rounded-2xl bg-[#3182f6] text-[13px] font-black text-white shadow-[0_14px_34px_rgba(49,130,246,0.28)] transition hover:bg-[#1c64dd]"
-                        >
-                          맞아요, 티오 보기
-                        </button>
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/48 px-4 py-6 backdrop-blur-sm">
+                      <div className="w-full max-w-[360px] rounded-[28px] border border-emerald-200 bg-white p-5 text-left shadow-[0_28px_80px_rgba(15,23,42,0.28)] dark:border-emerald-400/25 dark:bg-zinc-950">
+                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-[22px] font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-800">
+                          ✓
+                        </div>
+                        <div className="text-center text-[10px] font-black uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300">
+                          내 동네 확인
+                        </div>
+                        <div className="mt-2 break-keep text-center text-[24px] font-black leading-tight text-zinc-950 dark:text-zinc-50">
+                          {locationConfirmDraft.draft.label} 맞나요?
+                        </div>
+                        <div className="mt-2 break-keep text-center text-[13px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+                          이 동네 기준으로 지역 티오를 확인합니다.
+                        </div>
+                        <div className="mt-5 grid grid-cols-[0.72fr_1.28fr] gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setLocationConfirmDraft(null);
+                              setShowManualSearch(true);
+                            }}
+                            className="h-12 rounded-2xl border border-zinc-200 bg-white text-[13px] font-black text-zinc-600 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                          >
+                            아니요
+                          </button>
+                          <button
+                            type="button"
+                            onClick={confirmLocationDraft}
+                            className="h-12 rounded-2xl bg-[#3182f6] text-[14px] font-black text-white shadow-[0_14px_34px_rgba(49,130,246,0.28)] transition hover:bg-[#1c64dd]"
+                          >
+                            맞아요
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ) : null}
@@ -2105,6 +2185,10 @@ export default function PlansApplicationFlow({
 
           {step === 2 ? (
             <div className="flex h-full flex-col justify-center p-4 sm:p-8">
+              <SeatProofToast
+                active={step === 2}
+                regionLabel={selectedRegionLabel}
+              />
               <div className="mx-auto w-full max-w-[760px]">
                 <div className="overflow-hidden rounded-[30px] border border-blue-100 bg-white text-zinc-950 shadow-[0_28px_80px_rgba(49,130,246,0.14)] ring-1 ring-blue-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:shadow-[0_28px_80px_rgba(15,23,42,0.34)] dark:ring-white/10">
                   <div className="relative p-5 sm:p-7">
