@@ -645,25 +645,33 @@ export default function MembershipApplicationClient({
           </button>
         </div>
       ) : showInlineSelector ? (
-        <div className="overflow-hidden rounded-[30px] border border-blue-100 bg-white text-zinc-950 shadow-[0_26px_72px_rgba(49,130,246,0.14)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
-          <div className="relative bg-zinc-950 px-5 py-6 text-white dark:bg-white dark:text-zinc-950 sm:px-7 sm:py-8">
-            <div className="absolute right-0 top-0 h-44 w-44 rounded-bl-full bg-[#3182f6]/30 blur-2xl" />
-            <div className="relative">
-              <div className="inline-flex rounded-full bg-white/10 px-3 py-1 text-[11px] font-black tracking-[0.04em] text-blue-100 ring-1 ring-white/15 dark:bg-zinc-950/8 dark:text-[#3182f6] dark:ring-zinc-950/10">
-                기간 선택
+        <div className="overflow-hidden rounded-[24px] border border-blue-100 bg-white text-zinc-950 shadow-[0_18px_48px_rgba(49,130,246,0.12)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
+          <div className="relative border-b border-blue-100 bg-[#f5f8ff] px-4 py-4 dark:border-zinc-800 dark:bg-white/6 sm:px-6 sm:py-5">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-[11px] font-black tracking-[0.12em] text-[#3182f6] dark:text-blue-300">
+                  MEMBERSHIP
+                </div>
+                <h2 className="mt-1 break-keep text-[25px] font-black leading-tight tracking-tight sm:text-[36px]">
+                  기간을 고르면
+                  <br />
+                  자리를 잡아둘게요.
+                </h2>
               </div>
-              <h2 className="mt-4 break-keep text-[31px] font-black leading-[1.02] tracking-tight sm:text-[48px]">
-                멤버십 기간을
-                <br />
-                선택하세요.
-              </h2>
-              <p className="mt-4 max-w-[520px] break-keep text-[14px] font-bold leading-6 text-white/72 dark:text-zinc-600 sm:text-[16px] sm:leading-7">
-                기간을 고르면 {reservationRegion} 자리 1석을 먼저 확보하고, 7분
-                입금 타이머가 시작됩니다.
-              </p>
+              <div className="shrink-0 rounded-2xl bg-white px-3 py-2 text-right ring-1 ring-blue-100 dark:bg-zinc-950 dark:ring-zinc-800">
+                <div className="text-[10px] font-black text-zinc-400">
+                  확보 지역
+                </div>
+                <div className="mt-0.5 max-w-[120px] truncate text-[13px] font-black text-[#3182f6] dark:text-blue-300">
+                  {reservationRegion}
+                </div>
+              </div>
             </div>
+            <p className="mt-3 break-keep text-[13px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+              선택 즉시 1석을 7분 동안 예약하고, 그 안에 입금하면 됩니다.
+            </p>
           </div>
-          <div className="px-4 py-4 sm:px-5">
+          <div className="px-3 py-3 sm:px-5 sm:py-5">
             <PlanGrid
               plans={plans}
               selectedKey={selectedKey}
@@ -674,7 +682,7 @@ export default function MembershipApplicationClient({
               type="button"
               onClick={() => void beginApplication(selectedPlan)}
               disabled={state === "submitting"}
-              className="mt-4 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[15px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.30)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+              className="sticky bottom-2 mt-3 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[15px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.30)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
             >
               {state === "submitting"
                 ? "자리 확보 중"
@@ -795,7 +803,7 @@ function PlanGrid({
             type="button"
             disabled={disabled}
             onClick={() => onSelect(plan.key)}
-            className={`rounded-[12px] border px-3.5 py-3 text-left transition disabled:cursor-default ${
+            className={`rounded-[18px] border px-3 py-2.5 text-left transition disabled:cursor-default sm:px-3.5 sm:py-3 ${
               active
                 ? "border-[#3182f6] bg-blue-50 shadow-[0_10px_24px_rgba(49,130,246,0.12)] dark:border-blue-700 dark:bg-blue-950/30"
                 : "border-zinc-200 bg-white hover:border-blue-200 hover:bg-[#fbfcff] dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-blue-900"
@@ -803,8 +811,8 @@ function PlanGrid({
           >
             <div className="flex items-start justify-between gap-2">
               <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[15px] font-black text-zinc-950 dark:text-zinc-50">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[18px] font-black text-zinc-950 dark:text-zinc-50 sm:text-[15px]">
                     {plan.label}
                   </span>
                   {plan.badge ? (
@@ -813,20 +821,20 @@ function PlanGrid({
                     </span>
                   ) : null}
                 </div>
-                <div className="mt-1 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+                <div className="mt-1 line-clamp-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400 sm:text-[11px]">
                   {plan.valueNote}
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-[14px] font-black text-zinc-950 dark:text-zinc-50">
+                <div className="text-[18px] font-black text-zinc-950 dark:text-zinc-50 sm:text-[14px]">
                   {krw(plan.priceKrw)}
                 </div>
-                <div className="mt-0.5 text-[10px] font-black text-zinc-400">
+                <div className="mt-0.5 whitespace-nowrap text-[11px] font-black text-zinc-400 sm:text-[10px]">
                   {plan.monthlyLabel}
                 </div>
               </div>
             </div>
-            <div className="mt-2 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+            <div className="mt-1.5 line-clamp-1 text-[12px] font-bold text-emerald-700 dark:text-emerald-300 sm:text-[11px]">
               {plan.paybackNote}
             </div>
           </button>

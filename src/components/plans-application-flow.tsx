@@ -2042,8 +2042,8 @@ export default function PlansApplicationFlow({
           ) : null}
 
           {step === 3 ? (
-            <div className="flex h-full min-h-0 flex-col justify-center p-4 sm:p-8">
-              <div className="mx-auto w-full max-w-[760px] rounded-[28px] border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-950/70 dark:bg-blue-950/20 sm:p-6">
+            <div className="flex h-full min-h-0 flex-col justify-start overflow-y-auto px-4 py-3 sm:p-8">
+              <div className="mx-auto w-full max-w-[760px]">
                 <MembershipApplicationClient
                   isAuthed={isAuthed}
                   isMember={isMember}
