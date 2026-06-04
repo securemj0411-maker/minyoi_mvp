@@ -23,6 +23,8 @@ type DistrictSeat = {
   name: string;
   seats: number;
   pressure: number;
+  x?: number;
+  y?: number;
 };
 
 type RegionSeat = {
@@ -132,6 +134,246 @@ const DISTRICT_OVERRIDES: Record<string, DistrictSeat[]> = {
   jeju: makeDistrictSeats(["제주시", "서귀포시"], 4, 0.37),
 };
 
+const DISTRICT_COORDS: Record<string, Record<string, [number, number]>> = {
+  seoul: {
+    강남구: [170, 190],
+    송파구: [178, 188],
+    관악구: [154, 194],
+    마포구: [147, 174],
+    성동구: [164, 177],
+    노원구: [171, 158],
+    서초구: [163, 190],
+    용산구: [156, 181],
+    영등포구: [146, 187],
+    동작구: [154, 189],
+    강서구: [133, 180],
+    강동구: [184, 179],
+    중구: [157, 175],
+    종로구: [156, 168],
+    은평구: [144, 160],
+    서대문구: [148, 169],
+    구로구: [139, 193],
+    금천구: [145, 199],
+    광진구: [171, 178],
+    동대문구: [165, 170],
+    중랑구: [174, 168],
+    성북구: [162, 164],
+    강북구: [160, 156],
+    도봉구: [165, 150],
+    양천구: [137, 187],
+  },
+  gyeonggi: {
+    수원시: [181, 244],
+    성남시: [185, 214],
+    용인시: [200, 242],
+    고양시: [134, 164],
+    화성시: [164, 263],
+    부천시: [128, 203],
+    남양주시: [194, 177],
+    안산시: [150, 234],
+    안양시: [158, 220],
+    평택시: [188, 286],
+    시흥시: [139, 222],
+    파주시: [122, 139],
+    김포시: [112, 176],
+    의정부시: [169, 154],
+    광주시: [205, 218],
+    하남시: [191, 204],
+    광명시: [145, 211],
+    군포시: [162, 231],
+    오산시: [178, 256],
+    이천시: [231, 254],
+    양주시: [158, 143],
+    구리시: [180, 177],
+    안성시: [214, 290],
+    포천시: [190, 131],
+    의왕시: [169, 224],
+    양평군: [237, 202],
+    여주시: [253, 239],
+    동두천시: [170, 131],
+    과천시: [165, 214],
+    가평군: [226, 153],
+    연천군: [160, 110],
+  },
+  incheon: {
+    연수구: [96, 210],
+    부평구: [111, 195],
+    서구: [102, 174],
+    남동구: [111, 207],
+    미추홀구: [102, 201],
+    계양구: [116, 184],
+    중구: [88, 199],
+    동구: [99, 196],
+    강화군: [81, 144],
+    옹진군: [69, 226],
+  },
+  busan: {
+    해운대구: [445, 554],
+    수영구: [435, 561],
+    부산진구: [424, 553],
+    동래구: [426, 543],
+    남구: [429, 566],
+    연제구: [429, 550],
+    사하구: [409, 573],
+    북구: [414, 540],
+    금정구: [424, 532],
+    강서구: [398, 553],
+    기장군: [449, 531],
+    중구: [417, 564],
+    서구: [413, 568],
+    동구: [421, 560],
+    영도구: [421, 575],
+    사상구: [410, 555],
+  },
+  daegu: {
+    수성구: [367, 461],
+    달서구: [348, 461],
+    동구: [371, 444],
+    중구: [358, 452],
+    서구: [351, 450],
+    남구: [358, 461],
+    북구: [355, 441],
+    달성군: [337, 475],
+    군위군: [365, 414],
+  },
+  daejeon: {
+    서구: [195, 395],
+    유성구: [190, 384],
+    중구: [205, 397],
+    동구: [213, 391],
+    대덕구: [207, 381],
+  },
+  gwangju: {
+    북구: [132, 523],
+    광산구: [115, 535],
+    서구: [128, 540],
+    동구: [139, 536],
+    남구: [133, 548],
+  },
+  ulsan: {
+    남구: [453, 500],
+    중구: [449, 492],
+    울주군: [440, 510],
+    동구: [463, 500],
+    북구: [456, 486],
+  },
+  sejong: {
+    새롬동: [187, 336],
+    도담동: [192, 332],
+    어진동: [191, 339],
+    나성동: [186, 341],
+    조치원읍: [190, 323],
+    반곡동: [196, 344],
+  },
+  gangwon: {
+    춘천시: [247, 155],
+    원주시: [253, 226],
+    강릉시: [360, 166],
+    속초시: [350, 98],
+    동해시: [371, 203],
+    삼척시: [378, 224],
+    태백시: [348, 235],
+    홍천군: [284, 176],
+    횡성군: [282, 215],
+    평창군: [323, 205],
+  },
+  chungbuk: {
+    청주시: [225, 341],
+    충주시: [263, 298],
+    제천시: [297, 293],
+    음성군: [238, 302],
+    진천군: [224, 315],
+    증평군: [235, 326],
+    옥천군: [236, 382],
+    영동군: [257, 405],
+    단양군: [318, 283],
+    보은군: [247, 361],
+    괴산군: [256, 326],
+  },
+  chungnam: {
+    천안시: [174, 308],
+    아산시: [153, 313],
+    공주시: [163, 358],
+    당진시: [121, 304],
+    서산시: [103, 331],
+    논산시: [165, 392],
+    보령시: [113, 375],
+    계룡시: [183, 389],
+    홍성군: [124, 357],
+    예산군: [142, 343],
+    부여군: [144, 384],
+    태안군: [81, 334],
+  },
+  jeonbuk: {
+    전주시: [172, 450],
+    군산시: [133, 432],
+    익산시: [153, 426],
+    완주군: [184, 442],
+    정읍시: [144, 472],
+    남원시: [204, 497],
+    김제시: [153, 454],
+    무주군: [224, 443],
+    고창군: [120, 492],
+    부안군: [121, 460],
+  },
+  jeonnam: {
+    목포시: [102, 596],
+    여수시: [218, 590],
+    순천시: [196, 570],
+    나주시: [138, 548],
+    광양시: [210, 564],
+    무안군: [104, 564],
+    해남군: [112, 630],
+    화순군: [162, 552],
+    고흥군: [189, 622],
+    영암군: [130, 589],
+  },
+  gyeongbuk: {
+    포항시: [408, 412],
+    구미시: [326, 405],
+    경산시: [367, 453],
+    경주시: [397, 448],
+    안동시: [342, 338],
+    김천시: [292, 408],
+    영주시: [321, 312],
+    상주시: [293, 363],
+    문경시: [293, 333],
+    칠곡군: [342, 423],
+  },
+  gyeongnam: {
+    창원시: [352, 552],
+    김해시: [394, 548],
+    진주시: [296, 548],
+    양산시: [411, 524],
+    거제시: [370, 600],
+    통영시: [334, 596],
+    사천시: [302, 576],
+    밀양시: [374, 516],
+    함안군: [334, 544],
+    창녕군: [343, 506],
+  },
+  jeju: {
+    제주시: [429, 676],
+    서귀포시: [439, 697],
+  },
+};
+
+function districtSeatsFor(region: RegionSeat): DistrictSeat[] {
+  const districts = DISTRICT_OVERRIDES[region.key] ?? region.districts;
+  const coords = DISTRICT_COORDS[region.key] ?? {};
+  return districts.map((district, index) => {
+    const coord = coords[district.name];
+    if (coord) return { ...district, x: coord[0], y: coord[1] };
+    const angle = (Math.PI * 2 * index) / Math.max(1, districts.length);
+    const radius = region.key === "seoul" ? 14 : 42;
+    return {
+      ...district,
+      x: region.x + Math.cos(angle) * radius,
+      y: region.y + Math.sin(angle) * radius,
+    };
+  });
+}
+
 const REGIONS: RegionSeat[] = [
   { key: "seoul", shortLabel: "서울", label: "서울특별시", seats: 38, pressure: 0.82, x: 160, y: 178, labelX: 148, labelY: 136, districts: [{ name: "강남구", seats: 2, pressure: 0.88 }, { name: "송파구", seats: 3, pressure: 0.8 }, { name: "관악구", seats: 3, pressure: 0.74 }, { name: "마포구", seats: 2, pressure: 0.86 }] },
   { key: "incheon", shortLabel: "인천", label: "인천광역시", seats: 18, pressure: 0.67, x: 98, y: 176, labelX: 70, labelY: 176, districts: [{ name: "연수구", seats: 2, pressure: 0.78 }, { name: "부평구", seats: 2, pressure: 0.74 }, { name: "서구", seats: 3, pressure: 0.62 }, { name: "남동구", seats: 2, pressure: 0.69 }] },
@@ -214,17 +456,21 @@ function regionZoomScale(key: string) {
 
 function KoreaSeatMap({
   selected,
+  selectedDistricts,
   selectedDistrict,
   hoveredKey,
   zoomed,
   onSelect,
+  onDistrictSelect,
   onHover,
 }: {
   selected: RegionSeat;
+  selectedDistricts: DistrictSeat[];
   selectedDistrict: DistrictSeat | null;
   hoveredKey: string | null;
   zoomed: boolean;
   onSelect: (key: string) => void;
+  onDistrictSelect: (name: string) => void;
   onHover: (key: string | null) => void;
 }) {
   const hoveredRegion = zoomed ? null : REGIONS.find((region) => region.key === hoveredKey);
@@ -232,8 +478,10 @@ function KoreaSeatMap({
   const zoomScale = zoomed ? regionZoomScale(selected.key) : 1;
   const zoomX = zoomed ? 254.5 - selected.x * zoomScale : 0;
   const zoomY = zoomed ? 358 - selected.y * zoomScale : 0;
-  const activeRegionX = activeRegion ? activeRegion.x * zoomScale + zoomX : 0;
-  const activeRegionY = activeRegion ? activeRegion.y * zoomScale + zoomY : 0;
+  const districtX = zoomed && selectedDistrict?.x ? selectedDistrict.x * zoomScale + zoomX : null;
+  const districtY = zoomed && selectedDistrict?.y ? selectedDistrict.y * zoomScale + zoomY : null;
+  const activeRegionX = districtX ?? (activeRegion ? activeRegion.x * zoomScale + zoomX : 0);
+  const activeRegionY = districtY ?? (activeRegion ? activeRegion.y * zoomScale + zoomY : 0);
   const calloutLabel = zoomed && selectedDistrict ? selectedDistrict.name : activeRegion?.label;
   const calloutSeats = zoomed && selectedDistrict ? selectedDistrict.seats : activeRegion?.seats;
 
@@ -400,7 +648,77 @@ function KoreaSeatMap({
           })}
         </g>
       </g>
-      {activeRegion && calloutLabel && calloutSeats !== undefined ? (
+      {zoomed ? (
+        <g>
+          {selectedDistricts.map((district) => {
+            if (district.x === undefined || district.y === undefined) return null;
+            const screenX = district.x * zoomScale + zoomX;
+            const screenY = district.y * zoomScale + zoomY;
+            const active = district.name === selectedDistrict?.name;
+            const compact = selected.key === "seoul" || selected.key === "busan" || selected.key === "daegu";
+            const label = active ? district.name : district.name.replace(/(특별자치시|특별자치도|광역시|시|군|구|읍|동)$/u, "");
+            const width = active ? (compact ? 86 : 104) : compact ? 56 : 68;
+            const height = active ? 50 : compact ? 40 : 44;
+            return (
+              <g
+                key={`${selected.key}-${district.name}-district-pin`}
+                role="button"
+                tabIndex={0}
+                aria-label={`${district.name} 티오 ${district.seats}자리`}
+                className="cursor-pointer outline-none"
+                onClick={() => onDistrictSelect(district.name)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onDistrictSelect(district.name);
+                  }
+                }}
+              >
+                <rect
+                  x={screenX - width / 2}
+                  y={screenY - height / 2}
+                  width={width}
+                  height={height}
+                  rx={active ? 20 : compact ? 16 : 18}
+                  fill={active ? "rgba(37,99,235,0.94)" : "rgba(15,23,42,0.88)"}
+                  stroke={active ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.72)"}
+                  strokeWidth={active ? 3 : 2}
+                  filter={active ? "url(#plans-region-pop)" : undefined}
+                />
+                <text
+                  x={screenX}
+                  y={screenY - (compact ? 3 : 4)}
+                  textAnchor="middle"
+                  className="pointer-events-none select-none fill-white font-black"
+                  style={{
+                    fontSize: active ? 15 : compact ? 12 : 14,
+                    paintOrder: "stroke",
+                    stroke: "rgba(15,23,42,0.72)",
+                    strokeWidth: 3,
+                  } as CSSProperties}
+                >
+                  {label}
+                </text>
+                <text
+                  x={screenX}
+                  y={screenY + (compact ? 13 : 14)}
+                  textAnchor="middle"
+                  className="pointer-events-none select-none fill-white font-black"
+                  style={{
+                    fontSize: active ? 12 : compact ? 10 : 11,
+                    paintOrder: "stroke",
+                    stroke: "rgba(15,23,42,0.72)",
+                    strokeWidth: 2.5,
+                  } as CSSProperties}
+                >
+                  {active ? `${district.seats}자리 남음` : `${district.seats}자리`}
+                </text>
+              </g>
+            );
+          })}
+        </g>
+      ) : null}
+      {!zoomed && activeRegion && calloutLabel && calloutSeats !== undefined ? (
         <g className="pointer-events-none">
           <rect
             x={Math.max(16, Math.min(268, activeRegionX - 120))}
@@ -461,7 +779,7 @@ export default function PlansApplicationFlow({
     () => REGIONS.find((region) => region.key === selectedKey) ?? REGIONS[0],
     [selectedKey],
   );
-  const selectedDistricts = DISTRICT_OVERRIDES[selected.key] ?? selected.districts;
+  const selectedDistricts = useMemo(() => districtSeatsFor(selected), [selected]);
   const selectedDistrict = selectedDistricts.find((district) => district.name === selectedDistrictName) ?? selectedDistricts[0] ?? null;
   const filledPct = Math.round((filled / capacity) * 100);
   const canGoBack = step > 0;
@@ -477,7 +795,7 @@ export default function PlansApplicationFlow({
 
   const handleRegionSelect = (key: string) => {
     const nextRegion = REGIONS.find((region) => region.key === key) ?? REGIONS[0];
-    const nextDistricts = DISTRICT_OVERRIDES[nextRegion.key] ?? nextRegion.districts;
+    const nextDistricts = districtSeatsFor(nextRegion);
     setSelectedKey(key);
     setSelectedDistrictName(nextDistricts[0]?.name ?? null);
     setHoveredKey(null);
@@ -530,43 +848,14 @@ export default function PlansApplicationFlow({
                   ) : null}
                   <KoreaSeatMap
                     selected={selected}
+                    selectedDistricts={selectedDistricts}
                     selectedDistrict={selectedDistrict}
                     hoveredKey={hoveredKey}
                     zoomed={mapZoomed}
                     onSelect={handleRegionSelect}
+                    onDistrictSelect={setSelectedDistrictName}
                     onHover={setHoveredKey}
                   />
-                  {mapZoomed ? (
-                    <div className="absolute inset-x-2 bottom-2 z-10 rounded-2xl border border-zinc-200 bg-white/90 p-2 shadow-[0_14px_34px_rgba(15,23,42,0.18)] backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/84">
-                      <div className="mb-1.5 flex items-center justify-between gap-2 px-1">
-                        <div className="text-[10px] font-black uppercase tracking-[0.13em] text-zinc-400">
-                          {selected.shortLabel} 세부 티오
-                        </div>
-                        <div className="text-[11px] font-black text-blue-600 dark:text-blue-300">
-                          {selectedDistrict?.name} {selectedDistrict?.seats}자리
-                        </div>
-                      </div>
-                      <div className="flex max-h-[88px] flex-wrap gap-1 overflow-y-auto pr-1">
-                        {selectedDistricts.map((district) => {
-                          const active = district.name === selectedDistrict?.name;
-                          return (
-                            <button
-                              key={district.name}
-                              type="button"
-                              onClick={() => setSelectedDistrictName(district.name)}
-                              className={`rounded-full border px-2.5 py-1.5 text-[11px] font-black transition ${
-                                active
-                                  ? "border-blue-400 bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.24)]"
-                                  : "border-zinc-200 bg-white text-zinc-700 hover:border-blue-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
-                              }`}
-                            >
-                              {district.name} {district.seats}자리
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : null}
                 </div>
               </div>
               <aside className="hidden min-h-0 flex-col p-4 sm:p-5 lg:flex">
