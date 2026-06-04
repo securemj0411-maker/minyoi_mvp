@@ -7,6 +7,7 @@ import {
   KOREA_ADMIN_REGION_SVG,
 } from "@/components/korea-admin-map-data";
 import type { MembershipPlan, MembershipPlanKey } from "@/lib/membership-plans";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type PendingApplication = {
   id: number;
@@ -17,6 +18,15 @@ type PendingApplication = {
   depositConfirmedAt: string | null;
   scheduledAutoApproveAt: string | null;
   createdAt: string;
+};
+
+type AddressOption = {
+  fullPath: string;
+  region1: string;
+  region2: string;
+  region3: string;
+  lat: number;
+  lng: number;
 };
 
 type DistrictSeat = {
@@ -438,6 +448,28 @@ function regionMapFill(key: string) {
   return palette[key] ?? "#64748b";
 }
 
+function regionKeyFromAddress(parts: Array<string | null | undefined>) {
+  const text = parts.filter(Boolean).join(" ");
+  if (/서울/.test(text)) return "seoul";
+  if (/인천/.test(text)) return "incheon";
+  if (/경기/.test(text)) return "gyeonggi";
+  if (/강원/.test(text)) return "gangwon";
+  if (/충청북|충북/.test(text)) return "chungbuk";
+  if (/충청남|충남/.test(text)) return "chungnam";
+  if (/세종/.test(text)) return "sejong";
+  if (/대전/.test(text)) return "daejeon";
+  if (/전라북|전북/.test(text)) return "jeonbuk";
+  if (/광주/.test(text)) return "gwangju";
+  if (/전라남|전남/.test(text)) return "jeonnam";
+  if (/경상북|경북/.test(text)) return "gyeongbuk";
+  if (/대구/.test(text)) return "daegu";
+  if (/울산/.test(text)) return "ulsan";
+  if (/경상남|경남/.test(text)) return "gyeongnam";
+  if (/부산/.test(text)) return "busan";
+  if (/제주/.test(text)) return "jeju";
+  return null;
+}
+
 function pressureLabel(pressure: number) {
   if (pressure >= 0.82) return "과밀";
   if (pressure >= 0.72) return "마감 임박";
@@ -742,6 +774,12 @@ export default function PlansApplicationFlow({
   const [selectedDistrictName, setSelectedDistrictName] = useState<string | null>(null);
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const [mapZoomed, setMapZoomed] = useState(false);
+  const [locationStatus, setLocationStatus] = useState<"idle" | "requesting" | "resolving" | "success" | "error">("idle");
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [manualQuery, setManualQuery] = useState("");
+  const [manualResults, setManualResults] = useState<AddressOption[]>([]);
+  const [manualSearching, setManualSearching] = useState(false);
+  const [showManualSearch, setShowManualSearch] = useState(false);
   const selected = useMemo(
     () => REGIONS.find((region) => region.key === selectedKey) ?? REGIONS[0],
     [selectedKey],
@@ -768,6 +806,121 @@ export default function PlansApplicationFlow({
     setHoveredKey(null);
     setMapZoomed(true);
   };
+
+  async function getAccessToken() {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return null;
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token ?? null;
+  }
+
+  function selectRegionFromAddress(parts: Array<string | null | undefined>, districtHint?: string | null) {
+    const key = regionKeyFromAddress(parts);
+    if (!key) {
+      setLocationStatus("error");
+      setLocationError("지역을 찾지 못했어요. 아래에서 직접 선택해주세요.");
+      setShowManualSearch(true);
+      return false;
+    }
+    const nextRegion = REGIONS.find((region) => region.key === key) ?? REGIONS[0];
+    const nextDistricts = districtSeatsFor(nextRegion);
+    const hint = districtHint ?? parts.filter(Boolean).at(-1) ?? "";
+    const matchedDistrict = nextDistricts.find((district) => hint.includes(district.name) || district.name.includes(hint));
+    setSelectedKey(key);
+    setSelectedDistrictName(matchedDistrict?.name ?? nextDistricts[0]?.name ?? null);
+    setHoveredKey(null);
+    setMapZoomed(true);
+    setLocationStatus("success");
+    setLocationError(null);
+    setShowManualSearch(false);
+    return true;
+  }
+
+  function handleLocationLoad() {
+    if (!navigator.geolocation) {
+      setLocationStatus("error");
+      setLocationError("이 브라우저는 위치 기능을 지원하지 않아요. 동네를 직접 입력해주세요.");
+      setShowManualSearch(true);
+      return;
+    }
+    setLocationStatus("requesting");
+    setLocationError(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        setLocationStatus("resolving");
+        try {
+          const token = await getAccessToken();
+          if (!token) {
+            window.location.href = loginHref;
+            return;
+          }
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const res = await fetch(`/api/user/home-region/reverse-geocode?lat=${lat}&lng=${lng}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const json = (await res.json()) as {
+            ok: boolean;
+            fullPath?: string;
+            region1?: string;
+            region2?: string;
+            region3?: string;
+            error?: string;
+          };
+          if (!json.ok) {
+            setLocationStatus("error");
+            setLocationError(json.error === "KAKAO_REST_API_KEY missing" ? "주소 변환 키가 설정되지 않았어요." : "위치를 동네로 바꾸지 못했어요. 직접 입력해주세요.");
+            setShowManualSearch(true);
+            return;
+          }
+          selectRegionFromAddress([json.region1, json.region2, json.region3, json.fullPath], json.region2 ?? json.region3 ?? null);
+        } catch {
+          setLocationStatus("error");
+          setLocationError("위치 확인 중 오류가 났어요. 동네를 직접 입력해주세요.");
+          setShowManualSearch(true);
+        }
+      },
+      (err) => {
+        setLocationStatus("error");
+        setShowManualSearch(true);
+        setLocationError(err.code === err.PERMISSION_DENIED ? "위치 권한이 거부됐어요. 동네를 직접 입력해주세요." : "위치를 가져오지 못했어요. 동네를 직접 입력해주세요.");
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60_000 },
+    );
+  }
+
+  async function handleManualSearch() {
+    const q = manualQuery.trim();
+    if (q.length < 2) {
+      setLocationError("동네 이름을 2글자 이상 입력해주세요.");
+      return;
+    }
+    setManualSearching(true);
+    setLocationError(null);
+    try {
+      const token = await getAccessToken();
+      if (!token) {
+        window.location.href = loginHref;
+        return;
+      }
+      const res = await fetch(`/api/user/home-region/search?q=${encodeURIComponent(q)}&limit=8`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const json = (await res.json()) as { ok: boolean; results?: AddressOption[]; error?: string };
+      if (!json.ok) {
+        setLocationError(json.error === "KAKAO_REST_API_KEY missing" ? "주소 검색 키가 설정되지 않았어요." : "주소 검색에 실패했어요.");
+        setManualResults([]);
+        return;
+      }
+      setManualResults(json.results ?? []);
+      if ((json.results ?? []).length === 0) setLocationError("검색 결과가 없어요. 다른 동네명으로 입력해주세요.");
+    } catch {
+      setLocationError("주소 검색 중 오류가 났어요.");
+      setManualResults([]);
+    } finally {
+      setManualSearching(false);
+    }
+  }
 
   return (
     <main className="fixed inset-0 z-[75] overflow-hidden bg-[#f4f7fb] text-zinc-950 dark:bg-zinc-950 dark:text-white">
@@ -880,6 +1033,51 @@ export default function PlansApplicationFlow({
                           );
                         })}
                       </div>
+                    </div>
+                  ) : null}
+                  {showManualSearch && !mapZoomed ? (
+                    <div className="absolute inset-x-2 bottom-2 z-20 rounded-[24px] border border-zinc-200 bg-white/94 p-3 shadow-[0_18px_44px_rgba(15,23,42,0.18)] backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/92">
+                      <div className="text-[12px] font-black text-zinc-500 dark:text-zinc-400">
+                        동네를 직접 입력해주세요
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        <input
+                          value={manualQuery}
+                          onChange={(event) => setManualQuery(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") void handleManualSearch();
+                          }}
+                          placeholder="예: 서초구, 상도동, 포항시"
+                          className="h-11 min-w-0 flex-1 rounded-2xl border border-zinc-200 bg-white px-3 text-[14px] font-bold outline-none transition focus:border-blue-400 dark:border-zinc-700 dark:bg-zinc-900"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void handleManualSearch()}
+                          disabled={manualSearching}
+                          className="h-11 shrink-0 rounded-2xl bg-zinc-950 px-4 text-[13px] font-black text-white disabled:opacity-55 dark:bg-white dark:text-zinc-950"
+                        >
+                          {manualSearching ? "검색 중" : "검색"}
+                        </button>
+                      </div>
+                      {locationError ? (
+                        <div className="mt-2 break-keep text-[12px] font-bold text-red-500">
+                          {locationError}
+                        </div>
+                      ) : null}
+                      {manualResults.length > 0 ? (
+                        <div className="mt-2 max-h-36 overflow-y-auto">
+                          {manualResults.map((result) => (
+                            <button
+                              key={`${result.fullPath}-${result.lat}-${result.lng}`}
+                              type="button"
+                              onClick={() => selectRegionFromAddress([result.region1, result.region2, result.region3, result.fullPath], result.region2 || result.region3)}
+                              className="mb-1.5 w-full rounded-2xl border border-zinc-200 bg-[#fbfcff] px-3 py-2 text-left text-[13px] font-black transition hover:border-blue-300 dark:border-zinc-800 dark:bg-zinc-900"
+                            >
+                              <span className="block truncate">{result.fullPath}</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>
@@ -1057,10 +1255,25 @@ export default function PlansApplicationFlow({
           {!isLast ? (
             <button
               type="button"
-              onClick={() => setStep((prev) => Math.min(3, prev + 1))}
+              onClick={() => {
+                if (step === 0 && !mapZoomed) {
+                  handleLocationLoad();
+                  return;
+                }
+                setStep((prev) => Math.min(3, prev + 1));
+              }}
+              disabled={step === 0 && (locationStatus === "requesting" || locationStatus === "resolving")}
               className="h-11 flex-1 rounded-2xl bg-[#3182f6] px-5 text-[15px] font-black text-white shadow-[0_18px_44px_rgba(49,130,246,0.28)] transition hover:bg-[#1c64dd] sm:flex-none sm:min-w-[240px]"
             >
-              다음
+              {step === 0
+                ? mapZoomed
+                  ? "이 지역으로 계속"
+                  : locationStatus === "requesting"
+                    ? "위치 권한 확인 중..."
+                    : locationStatus === "resolving"
+                      ? "동네 확인 중..."
+                      : "내 위치 불러오기"
+                : "다음"}
             </button>
           ) : (
             <div className="break-keep text-right text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
