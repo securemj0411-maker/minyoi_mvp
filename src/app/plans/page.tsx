@@ -1,6 +1,9 @@
 import Link from "next/link";
 import MembershipApplicationClient from "@/components/membership-application-client";
-import PlansSocialProofToasts, { type PlansSocialProofEvent } from "@/components/plans-social-proof-toasts";
+import PlansUrgencyCountdown from "@/components/plans-urgency-countdown";
+import PlansSocialProofToasts, {
+  type PlansSocialProofEvent,
+} from "@/components/plans-social-proof-toasts";
 import { getMembershipPlan, MEMBERSHIP_PLANS } from "@/lib/membership-plans";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
@@ -19,16 +22,182 @@ const FEATURES = [
 ];
 
 const PAYMENT_HELP = [
-  { label: "입금했어요 버튼", value: "송금 후 버튼을 누르면 운영자에게 입금 확인 알림이 바로 갑니다." },
-  { label: "5분 내 승인 보장", value: "운영자가 놓쳐도 5분이 지나면 자동 승인되어 추천 상품 피드가 열립니다." },
-  { label: "승인 전 변경 가능", value: "입금 전에는 기간/금액 변경이나 예약 취소를 직접 할 수 있습니다." },
+  {
+    label: "입금했어요 버튼",
+    value: "송금 후 버튼을 누르면 운영자에게 입금 확인 알림이 바로 갑니다.",
+  },
+  {
+    label: "5분 내 승인 보장",
+    value:
+      "운영자가 놓쳐도 5분이 지나면 자동 승인되어 추천 상품 피드가 열립니다.",
+  },
+  {
+    label: "승인 전 변경 가능",
+    value: "입금 전에는 기간/금액 변경이나 예약 취소를 직접 할 수 있습니다.",
+  },
 ];
 
 const SCARCITY_ROWS = [
-  { label: "희소성", value: "시세보다 충분히 싸고, 상태가 맞고, 셀러 리스크가 낮은 매물은 전체 매물 중 일부예요." },
-  { label: "지역성", value: "번개·중나는 전국 단위지만, 당근은 가까운 동네에 떠야 실전성이 생겨요." },
-  { label: "쿼터", value: "같은 매물을 너무 많은 사람이 보면 결국 아무도 안정적으로 돈을 못 벌어요." },
+  {
+    label: "희소성",
+    value:
+      "시세보다 충분히 싸고, 상태가 맞고, 셀러 리스크가 낮은 매물은 전체 매물 중 일부예요.",
+  },
+  {
+    label: "지역성",
+    value:
+      "번개·중나는 전국 단위지만, 당근은 가까운 동네에 떠야 실전성이 생겨요.",
+  },
+  {
+    label: "쿼터",
+    value:
+      "같은 매물을 너무 많은 사람이 보면 결국 아무도 안정적으로 돈을 못 벌어요.",
+  },
 ];
+
+function MarketSignalIllustration() {
+  return (
+    <svg
+      viewBox="0 0 520 360"
+      role="img"
+      aria-label="득템잡이 멤버십 시그널"
+      className="h-auto w-full"
+    >
+      <defs>
+        <linearGradient id="plansPulse" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stopColor="#3182f6" />
+          <stop offset="1" stopColor="#10b981" />
+        </linearGradient>
+        <linearGradient id="plansWarm" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0" stopColor="#f59e0b" />
+          <stop offset="1" stopColor="#ef4444" />
+        </linearGradient>
+      </defs>
+      <rect x="28" y="34" width="464" height="292" rx="28" fill="#0f172a" />
+      <rect x="52" y="62" width="170" height="42" rx="14" fill="#172554" />
+      <circle cx="78" cy="83" r="10" fill="#10b981" />
+      <path
+        d="M98 84h88"
+        stroke="#bfdbfe"
+        strokeWidth="10"
+        strokeLinecap="round"
+      />
+      <rect
+        x="242"
+        y="62"
+        width="196"
+        height="42"
+        rx="14"
+        fill="#111827"
+        stroke="#334155"
+      />
+      <path
+        d="M268 83h58M346 83h64"
+        stroke="#94a3b8"
+        strokeWidth="9"
+        strokeLinecap="round"
+      />
+      <path
+        d="M80 254c40-74 82-92 128-68 38 20 62 10 88-38 25-46 64-62 112-22"
+        fill="none"
+        stroke="url(#plansPulse)"
+        strokeWidth="14"
+        strokeLinecap="round"
+      />
+      <path
+        d="M78 256h364"
+        stroke="#334155"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <g>
+        <rect
+          x="70"
+          y="128"
+          width="108"
+          height="72"
+          rx="18"
+          fill="#020617"
+          stroke="#1d4ed8"
+        />
+        <path
+          d="M94 154h56M94 176h36"
+          stroke="#bfdbfe"
+          strokeWidth="8"
+          strokeLinecap="round"
+        />
+        <circle cx="154" cy="176" r="11" fill="#3182f6" />
+      </g>
+      <g>
+        <rect
+          x="206"
+          y="116"
+          width="118"
+          height="82"
+          rx="18"
+          fill="#052e16"
+          stroke="#16a34a"
+        />
+        <path
+          d="M230 145h48M230 169h68"
+          stroke="#bbf7d0"
+          strokeWidth="8"
+          strokeLinecap="round"
+        />
+        <path
+          d="M292 134l12 12 20-28"
+          fill="none"
+          stroke="#34d399"
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </g>
+      <g>
+        <rect
+          x="352"
+          y="126"
+          width="88"
+          height="66"
+          rx="18"
+          fill="#451a03"
+          stroke="#f59e0b"
+        />
+        <path
+          d="M376 154h40M376 174h26"
+          stroke="#fed7aa"
+          strokeWidth="8"
+          strokeLinecap="round"
+        />
+      </g>
+      <circle cx="110" cy="254" r="9" fill="#3182f6" />
+      <circle cx="226" cy="190" r="9" fill="#10b981" />
+      <circle cx="384" cy="126" r="9" fill="#f59e0b" />
+      <rect
+        x="272"
+        y="238"
+        width="158"
+        height="42"
+        rx="21"
+        fill="url(#plansWarm)"
+      />
+      <path
+        d="M300 259h78"
+        stroke="#fff7ed"
+        strokeWidth="9"
+        strokeLinecap="round"
+      />
+      <path
+        d="M394 249l12 10-12 10"
+        fill="none"
+        stroke="#fff7ed"
+        strokeWidth="7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 type PendingApplicationRow = {
   id: number;
@@ -55,7 +224,9 @@ type SocialProofApplicationRow = {
   created_at: string;
 };
 
-async function loadPendingApplication(authUserId: string): Promise<PendingApplicationRow | null> {
+async function loadPendingApplication(
+  authUserId: string,
+): Promise<PendingApplicationRow | null> {
   try {
     const res = await restFetch(
       `${tableUrl("mvp_membership_applications")}?select=id,application_kind,product_key,price_krw,deposit_confirmed_at,scheduled_auto_approve_at,created_at&auth_user_id=eq.${authUserId}&status=eq.pending&order=created_at.desc&limit=1`,
@@ -99,10 +270,15 @@ function loadSlotSnapshot(): SlotSnapshot {
   };
 }
 
-function maskedMemberLabel(row: Pick<SocialProofApplicationRow, "display_name" | "email">) {
+function maskedMemberLabel(
+  row: Pick<SocialProofApplicationRow, "display_name" | "email">,
+) {
   const name = String(row.display_name ?? "").trim();
   if (name) return `${name.slice(0, 1)}**님`;
-  const local = String(row.email ?? "").split("@")[0]?.trim() ?? "";
+  const local =
+    String(row.email ?? "")
+      .split("@")[0]
+      ?.trim() ?? "";
   if (local) return `${local.slice(0, 1)}**님`;
   return "이**님";
 }
@@ -127,8 +303,14 @@ async function loadSocialProofEvents(): Promise<PlansSocialProofEvent[]> {
         return {
           id: `application-${row.id}`,
           label: maskedMemberLabel(row),
-          minutesAgo: minutesAgo(row.decided_at ?? row.deposit_confirmed_at ?? row.created_at),
-          kind: approved ? "approved" : row.deposit_confirmed_at ? "reserved" : "seat_check",
+          minutesAgo: minutesAgo(
+            row.decided_at ?? row.deposit_confirmed_at ?? row.created_at,
+          ),
+          kind: approved
+            ? "approved"
+            : row.deposit_confirmed_at
+              ? "reserved"
+              : "seat_check",
         };
       })
       .filter((event) => event.minutesAgo <= 59)
@@ -140,78 +322,150 @@ async function loadSocialProofEvents(): Promise<PlansSocialProofEvent[]> {
 
 export default async function PlansPage() {
   const auth = await requireSupabaseUserFromCookies();
-  const membership = auth.ok ? await getProStatus(auth.user, userRefForAuthUser(auth.user.id)) : null;
-  const isMember = Boolean(membership?.isPro || membership?.isAdmin || membership?.isBetaTester);
-  const pendingApplication = auth.ok ? await loadPendingApplication(auth.user.id) : null;
-  const pendingPlan = pendingApplication ? getMembershipPlan(pendingApplication.product_key) : null;
+  const membership = auth.ok
+    ? await getProStatus(auth.user, userRefForAuthUser(auth.user.id))
+    : null;
+  const isMember = Boolean(
+    membership?.isPro || membership?.isAdmin || membership?.isBetaTester,
+  );
+  const pendingApplication = auth.ok
+    ? await loadPendingApplication(auth.user.id)
+    : null;
+  const pendingPlan = pendingApplication
+    ? getMembershipPlan(pendingApplication.product_key)
+    : null;
   const slotSnapshot = loadSlotSnapshot();
   const membershipEndAt = membership?.proUntil ?? null;
   const socialProofEvents = await loadSocialProofEvents();
 
   return (
-    <main className="min-h-screen bg-[#f5f7fb] px-3 py-4 dark:bg-zinc-950 sm:px-5 sm:py-8">
+    <main className="min-h-screen bg-[#f4f7fb] px-3 py-4 dark:bg-zinc-950 sm:px-5 sm:py-8">
       <PlansSocialProofToasts events={socialProofEvents} />
-      <div className="mx-auto w-full max-w-[760px]">
-        <section className="overflow-hidden rounded-[18px] border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="border-b border-zinc-200 px-4 py-6 dark:border-zinc-800 sm:px-6 sm:py-7">
-            <h1 className="break-keep text-[30px] font-black leading-tight tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[42px]">
-              {isMember ? "멤버십 이용 중" : "선공개 300명 멤버십"}
-            </h1>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {(isMember
-                ? ["활성 멤버", "남은 기간 확인", "기간 연장 가능"]
-                : ["선공개 300명", "내 지역 티오 조회", "운영자 입금 확인"]
-              ).map((label) => (
-                <span
-                  key={label}
-                  className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-[#3182f6] ring-1 ring-blue-100 dark:bg-blue-950/30 dark:text-blue-200 dark:ring-blue-900/60"
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
-            <p className="mt-5 max-w-[520px] break-keep text-[16px] font-black leading-7 text-zinc-900 dark:text-zinc-100 sm:text-[18px] sm:leading-8">
-              {isMember
-                ? "지금 멤버십이 활성화되어 있어요. 연장하면 남은 기간 뒤에 선택한 기간이 그대로 붙습니다."
-                : "하루에 올라오는 중고 매물 중 진짜 돈 되는 건 극소수예요. 아무나 보면 그마저도 사라집니다."}
-            </p>
-            <p className="mt-3 max-w-[480px] break-keep text-[13px] font-semibold leading-6 text-zinc-600 dark:text-zinc-300 sm:text-[14px]">
-              {isMember
-                ? "만료 전에 미리 연장해도 기존 남은 기간이 사라지지 않습니다. 연장 예약 후 계좌이체, 입금 확인, 5분 내 승인 흐름은 동일합니다."
-                : "신청자의 지역을 기준으로 남은 티오를 확인하고 자리를 예약합니다. 선공개 300명 기준으로 지역별로 티오를 관리하고, 계좌이체 입금 확인 후 승인된 분만 봅니다."}
-            </p>
-            <div className="mt-5 rounded-[14px] border border-blue-100 bg-blue-50/70 px-4 py-4 dark:border-blue-950/70 dark:bg-blue-950/20">
-              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-200">
-                {isMember ? "Membership active" : "Membership note"}
+      <div className="mx-auto grid w-full max-w-[1180px] gap-4 lg:grid-cols-[minmax(0,1.05fr)_420px] lg:items-start">
+        <section className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-[0_20px_80px_rgba(15,23,42,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_420px]">
+            <div className="px-5 py-6 sm:px-8 sm:py-8 lg:py-10">
+              <div className="flex flex-wrap gap-1.5">
+                {(isMember
+                  ? ["활성 멤버", "남은 기간 확인", "기간 연장 가능"]
+                  : ["선공개 300명", "지역 티오 확인", "5분 내 승인 보장"]
+                ).map((label) => (
+                  <span
+                    key={label}
+                    className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-[#3182f6] ring-1 ring-blue-100 dark:bg-blue-950/30 dark:text-blue-200 dark:ring-blue-900/60"
+                  >
+                    {label}
+                  </span>
+                ))}
               </div>
-              <div className="mt-1 text-[24px] font-black tracking-tight text-zinc-950 dark:text-zinc-50">
-                {isMember ? membershipRemainingLabel(membershipEndAt) : "월 33,000원꼴"}
-              </div>
-              <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+              <h1 className="mt-5 max-w-[640px] break-keep text-[36px] font-black leading-[0.96] tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[56px]">
                 {isMember
-                  ? `만료일 ${membershipEndLabel(membershipEndAt)} · 연장 예약 후 계좌이체`
-                  : "3개월 99,000원 · 자리 예약 후 계좌이체"}
-              </div>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                <div className="rounded-[12px] bg-white px-3 py-2 dark:bg-zinc-950/60">
-                  <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
-                    {isMember ? "현재 상태" : "선착순 현황"}
+                  ? "멤버십을 계속 유지하세요."
+                  : "돈 되는 매물은 오래 열려있지 않습니다."}
+              </h1>
+              <p className="mt-5 max-w-[600px] break-keep text-[15px] font-bold leading-7 text-zinc-600 dark:text-zinc-300 sm:text-[17px] sm:leading-8">
+                {isMember
+                  ? "연장하면 현재 만료일 뒤에 기간이 그대로 붙습니다. 매물 피드, 원본 링크, 시세 근거를 끊기지 않게 유지하세요."
+                  : "득템잡이는 당근·중고나라·번개장터에서 가격 차이, 판매 회전, 셀러 신호를 같이 보고 승인된 멤버에게만 원본 링크를 엽니다."}
+              </p>
+              <div className="mt-6 grid gap-2 sm:grid-cols-3">
+                {SCARCITY_ROWS.map((row) => (
+                  <div
+                    key={row.label}
+                    className="rounded-[16px] border border-zinc-200 bg-[#fbfcff] px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-950/50"
+                  >
+                    <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">
+                      {row.label}
+                    </div>
+                    <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+                      {row.value}
+                    </div>
                   </div>
-                  <div className="mt-1 text-[15px] font-black text-zinc-950 dark:text-zinc-50">
-                    {isMember ? "승인 완료" : `${slotSnapshot.capacity}명 중 ${slotSnapshot.filled}명 예약`}
+                ))}
+              </div>
+            </div>
+            <div className="border-t border-zinc-200 bg-zinc-950 px-4 py-5 dark:border-zinc-800 lg:border-l lg:border-t-0">
+              <MarketSignalIllustration />
+            </div>
+          </div>
+          <div className="grid gap-3 border-t border-zinc-200 px-5 py-5 dark:border-zinc-800 sm:grid-cols-3 sm:px-8">
+            {PAYMENT_HELP.map((item, index) => (
+              <div
+                key={item.label}
+                className="flex gap-3 rounded-[16px] bg-[#f5f7fb] px-3.5 py-3 dark:bg-zinc-950/70"
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-[12px] font-black text-[#3182f6] ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800">
+                  {index + 1}
+                </div>
+                <div>
+                  <div className="text-[12px] font-black text-zinc-950 dark:text-zinc-50">
+                    {item.label}
+                  </div>
+                  <div className="mt-1 break-keep text-[11.5px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
+                    {item.value}
                   </div>
                 </div>
-                <div className="rounded-[12px] bg-white px-3 py-2 dark:bg-zinc-950/60">
-                  <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
-                    {isMember ? "연장 적용" : "내 지역 티오"}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <aside className="order-first lg:sticky lg:top-5 lg:order-none">
+          <div className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-[0_20px_80px_rgba(15,23,42,0.1)] dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="border-b border-zinc-200 px-4 py-4 dark:border-zinc-800 sm:px-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-200">
+                    {isMember ? "Membership active" : "300 seat membership"}
                   </div>
-                  <div className="mt-1 text-[15px] font-black text-emerald-700 dark:text-emerald-300">
-                    {isMember ? "기존 만료일 뒤에 추가" : "신청 후 즉시 조회"}
+                  <div className="mt-1 text-[28px] font-black tracking-tight text-zinc-950 dark:text-zinc-50">
+                    {isMember
+                      ? membershipRemainingLabel(membershipEndAt)
+                      : "월 33,000원꼴"}
+                  </div>
+                  <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+                    {isMember
+                      ? `만료일 ${membershipEndLabel(membershipEndAt)}`
+                      : "3개월 99,000원 · 자리 예약 후 계좌이체"}
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-zinc-950 px-3 py-2 text-right text-white dark:bg-white dark:text-zinc-950">
+                  <div className="text-[9px] font-black uppercase tracking-[0.12em] opacity-70">
+                    {isMember ? "status" : "reserved"}
+                  </div>
+                  <div className="mt-0.5 text-[18px] font-black">
+                    {isMember
+                      ? "ACTIVE"
+                      : `${slotSnapshot.filled}/${slotSnapshot.capacity}`}
                   </div>
                 </div>
               </div>
-              <div className="mt-3 border-t border-blue-100 pt-3 dark:border-blue-950/70">
-                <div className="mb-2 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+              {!isMember ? (
+                <div className="mt-4">
+                  <div className="flex items-center justify-between text-[11px] font-black text-zinc-500 dark:text-zinc-400">
+                    <span>선공개 예약률</span>
+                    <span>
+                      {Math.round(
+                        (slotSnapshot.filled / slotSnapshot.capacity) * 100,
+                      )}
+                      %
+                    </span>
+                  </div>
+                  <div className="mt-2 h-2 rounded-full bg-zinc-100 dark:bg-zinc-800">
+                    <div
+                      className="h-full rounded-full bg-[#3182f6]"
+                      style={{
+                        width: `${Math.min(96, Math.max(24, (slotSnapshot.filled / slotSnapshot.capacity) * 100))}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : null}
+            </div>
+            <div className="grid gap-3 px-4 py-4 sm:px-5">
+              {!isMember ? <PlansUrgencyCountdown /> : null}
+              <div className="rounded-[18px] border border-blue-100 bg-blue-50/70 px-4 py-4 dark:border-blue-950/70 dark:bg-blue-950/20">
+                <div className="mb-3 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
                   {isMember
                     ? "연장 기간을 고르면 계좌가 열립니다. 송금 후 입금했어요 버튼을 누르면 5분 내 승인됩니다."
                     : "기간을 고르면 내 지역 티오 확인 후 계좌가 열립니다. 송금 후 입금했어요 버튼을 눌러주세요."}
@@ -219,63 +473,56 @@ export default async function PlansPage() {
                 <MembershipApplicationClient
                   isAuthed={auth.ok}
                   isMember={isMember}
-                  memberPlanEndAt={membershipEndAt}
-                  memberSource={membership?.source ?? null}
                   loginHref="/login?next=/plans"
                   plans={MEMBERSHIP_PLANS}
-                  pendingApplication={pendingApplication ? {
-                    id: pendingApplication.id,
-                    applicationKind: pendingApplication.application_kind ?? (isMember ? "renewal" : "new"),
-                    planKey: pendingPlan?.key ?? "limited_300_3mo",
-                    planLabel: pendingPlan?.label ?? "멤버십",
-                    priceKrw: Number(pendingApplication.price_krw ?? pendingPlan?.priceKrw ?? 99_000),
-                    depositConfirmedAt: pendingApplication.deposit_confirmed_at,
-                    scheduledAutoApproveAt: pendingApplication.scheduled_auto_approve_at,
-                    createdAt: pendingApplication.created_at,
-                  } : null}
+                  pendingApplication={
+                    pendingApplication
+                      ? {
+                          id: pendingApplication.id,
+                          applicationKind:
+                            pendingApplication.application_kind ??
+                            (isMember ? "renewal" : "new"),
+                          planKey: pendingPlan?.key ?? "limited_300_3mo",
+                          planLabel: pendingPlan?.label ?? "멤버십",
+                          priceKrw: Number(
+                            pendingApplication.price_krw ??
+                              pendingPlan?.priceKrw ??
+                              99_000,
+                          ),
+                          depositConfirmedAt:
+                            pendingApplication.deposit_confirmed_at,
+                          scheduledAutoApproveAt:
+                            pendingApplication.scheduled_auto_approve_at,
+                          createdAt: pendingApplication.created_at,
+                        }
+                      : null
+                  }
                 />
               </div>
+              <ul className="grid gap-2">
+                {FEATURES.map((feature) => (
+                  <li
+                    key={feature}
+                    className="flex items-start gap-2 break-keep text-[12.5px] font-bold leading-5 text-zinc-600 dark:text-zinc-300"
+                  >
+                    <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-[10px] text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+                      ✓
+                    </span>
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              {isMember ? (
+                <Link
+                  href="/me"
+                  className="flex h-11 items-center justify-center rounded-xl border border-zinc-200 bg-white text-[13px] font-black text-zinc-900 transition hover:bg-[#eef4ff] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                >
+                  내 상품 피드로 가기
+                </Link>
+              ) : null}
             </div>
           </div>
-
-          <div className="grid gap-3 px-4 py-4 sm:grid-cols-3 sm:px-6">
-            {PAYMENT_HELP.map((item) => (
-              <div key={item.label} className="rounded-[12px] border border-zinc-200 bg-[#fbfcff] px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/50">
-                <div className="text-[12px] font-black text-[#3182f6] dark:text-blue-300">{item.label}</div>
-                <div className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-zinc-600 dark:text-zinc-300">{item.value}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="px-4 pb-5 sm:px-6 sm:pb-6">
-            <div className="mb-3 grid gap-2.5">
-              {SCARCITY_ROWS.map((row) => (
-                <div key={row.label} className="rounded-[12px] border border-zinc-200 bg-[#fbfcff] px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-950/50">
-                  <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">{row.label}</div>
-                  <div className="mt-1 break-keep text-[12px] font-semibold leading-5 text-zinc-600 dark:text-zinc-300">{row.value}</div>
-                </div>
-              ))}
-            </div>
-
-            <ul className="mt-4 space-y-2.5">
-              {FEATURES.map((feature) => (
-                <li key={feature} className="flex items-start gap-2 break-keep text-[13px] font-semibold leading-5 text-zinc-600 dark:text-zinc-300">
-                  <span className="mt-px shrink-0 text-[#3182f6]">✓</span>
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-
-            {isMember ? (
-              <Link
-                href="/me"
-                className="mt-4 flex h-11 items-center justify-center rounded-xl border border-zinc-200 bg-white text-[13px] font-black text-zinc-900 transition hover:bg-[#eef4ff] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-800"
-              >
-                내 상품 피드로 가기
-              </Link>
-            ) : null}
-          </div>
-        </section>
+        </aside>
       </div>
     </main>
   );
