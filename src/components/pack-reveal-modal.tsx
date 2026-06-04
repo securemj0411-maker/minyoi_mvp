@@ -40,7 +40,6 @@ import {
   sellingFeeForMarketPrice,
 } from "@/lib/profit";
 import { buyPriceGuidance, verdictUiLabel } from "@/lib/buy-price-guidance";
-import { computeDealScore, type DealScore } from "@/lib/deal-score";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
 import {
   counterfeitChecklistFor,
@@ -871,9 +870,9 @@ function velocityGuideStep(card: RevealCard, context: BeginnerGuideStepContext =
     const dailySold = dailySoldCountLabel(velocity.sold7dCount);
     return {
       eyebrow: "5. 판매 속도",
-      title: `되팔면 보통 ${label} 안에 팔리는 편이에요`,
-      metric: label,
-      metricLabel: `동일 모델 하루 평균 판매량 ${dailySold}`,
+      title: averageSaleSpeedSentence(velocity.medianHoursToSold),
+      metric: `평균 ${label}`,
+      metricLabel: `최근 7일 판매 ${velocity.sold7dCount.toLocaleString("ko-KR")}건`,
       body: `같은 모델이 최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}개 거래됐어요. 하루로 나누면 동일 모델이 ${dailySold} 정도 팔려나간 셈이라, 매입 후 돈이 얼마나 오래 묶일지 가늠할 때 보는 정보예요.`,
       note: "과거 거래 기록이라 실제 판매일을 보장하지는 않습니다.",
       tone: "speed",
@@ -891,9 +890,9 @@ function velocityGuideStep(card: RevealCard, context: BeginnerGuideStepContext =
     return {
       eyebrow: "5. 판매 속도",
       title: hasHours
-        ? `판매 속도는 참고로 ${label} 정도예요`
+        ? averageSaleSpeedSentence(velocity.medianHoursToSold)
         : `최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}건 거래됐어요`,
-      metric: label,
+      metric: hasHours ? `평균 ${label}` : label,
       metricLabel: `7일 ${velocity.sold7dCount.toLocaleString("ko-KR")}건 — 표본 적음`,
       body: `같은 모델이 최근 7일 동안 ${velocity.sold7dCount.toLocaleString("ko-KR")}건만 거래돼서 추세 단정은 어려워요. 위 숫자는 참고용으로 보고, 매입가는 더 보수적으로 잡는 게 안전해요.`,
       note: "표본이 적은 모델은 판매가 늦어질 수 있어요. 시세와 셀러 신뢰도를 같이 보세요.",
@@ -1029,23 +1028,6 @@ function beginnerGuideSteps(card: RevealCard, context: BeginnerGuideStepContext 
 
 function displayProfitRange(card: RevealCard) {
   return profitRange(card.expectedProfitMin, card.expectedProfitMax);
-}
-
-// Wave 750 (2026-05-25): 득템 점수 통합 — `src/lib/deal-score.ts` 의 computeDealScore 사용.
-// 기존 base 50 + cap 30% 공식 (`pack-reveal-modal::calculateDealScore`) 폐기.
-// 사용자 보고: "100점 만점에 100점이 저렇게 많은건지" — 차익 27%+ 면 무조건 +40 cap → 풀 거의 다 100점.
-// 새 공식은 base 30 + profit cap 50% + 다단계 confidence/sample/seller. 100 = unicorn 만 도달.
-
-function calculateDealScore(card: RevealCard): DealScore {
-  return computeDealScore({
-    price: card.price,
-    expectedProfitMin: card.expectedProfitMin,
-    expectedProfitMax: card.expectedProfitMax,
-    confidence: card.confidence ?? null,
-    sampleCount: card.marketBasis?.sampleCount ?? null,
-    sellerReviewRating: card.savedDetail?.sellerReviewRating ?? null,
-    sellerReviewCount: card.savedDetail?.sellerReviewCount ?? null,
-  });
 }
 
 function krwRange(min: number, max: number) {
@@ -1482,6 +1464,16 @@ function velocityHoursLabel(value: number | null) {
   return `${Math.round((value / 24) * 10) / 10}일`;
 }
 
+function averageSaleSpeedSentence(hours: number | null | undefined) {
+  const label = velocityHoursLabel(hours ?? null);
+  return label === "-" ? "판매 속도 확인 중" : `평균 ${label} 내로 팔려요`;
+}
+
+function averageSaleSpeedNoun(hours: number | null | undefined) {
+  const label = velocityHoursLabel(hours ?? null);
+  return label === "-" ? "판매 속도 확인 중" : `평균 ${label} 내 판매`;
+}
+
 function dailySoldCountLabel(sold7dCount: number) {
   const avg = Math.max(0, sold7dCount / 7);
   // Wave launch-26: "확인 중" → "기록 없음" 정직 (sold7dCount=0 = 진짜 기록 없는 거).
@@ -1689,7 +1681,7 @@ function recommendationGoodSignals(card: RevealCard) {
       ? `셀러 후기 ${detail.sellerReviewRating.toFixed(1)}`
       : null,
     velocity?.medianHoursToSold != null && velocity.medianHoursToSold > 0 && velocity.sold7dCount > 0
-      ? `비슷한 상품 ${velocityHoursLabel(velocity.medianHoursToSold)} 안에 판매`
+      ? averageSaleSpeedNoun(velocity.medianHoursToSold)
       : null,
     market?.priceSource === "reference" ? "다나와 새 가격 확인" : `${marketConditionLabel(card)} 시세로 비교`,
     safety.shipping.allowFreeShippingBadge ? "무료배송" : safety.shipping.assumption === "included" ? "배송비 포함" : null,
@@ -1739,7 +1731,7 @@ function recommendationFeatureCards(card: RevealCard): RecommendationFeatureCard
   if (velocity?.medianHoursToSold != null && velocity.medianHoursToSold > 0 && velocity.sold7dCount > 0) {
     cards.push({
       icon: <ScaleIcon className="h-4 w-4" />,
-      title: `${velocityHoursLabel(velocity.medianHoursToSold)} 회전`,
+      title: averageSaleSpeedNoun(velocity.medianHoursToSold),
       body: `최근 7일 비슷한 상품 판매 ${velocity.sold7dCount.toLocaleString("ko-KR")}건을 같이 봤어요.`,
       tone: "speed",
     });
@@ -1902,8 +1894,8 @@ function ConfidenceBreakdown({ card }: { card: RevealCard }) {
   ) {
     const days = Math.round(velocity.medianHoursToSold / 24);
     lines.push({
-      label: "팔리는 속도",
-      value: days <= 0 ? "1일 이내" : `약 ${days}일`,
+      label: "평균 판매속도",
+      value: days <= 0 ? "평균 1일 이내" : `평균 ${days}일`,
       tone: days <= 3 ? "good" : days >= 14 ? "warn" : undefined,
       hint: "비슷한 매물이 평균 며칠 만에 거래되는지. 내가 사서 다시 팔 때 걸리는 시간 추정.",
     });
@@ -2198,28 +2190,6 @@ function revealRiskScoreInput(card: RevealCard): RiskScoreInput {
     daangnMannerTemperature: card.savedDetail?.daangnMannerTemperature ?? null,
     photoCount: card.savedDetail?.imageCount ?? null,
   };
-}
-
-// Wave 333: fixedSafetyCtaClass 제거 — FixedBunjangFooter에서 안전도 버튼 빠지면서 미사용.
-
-// Wave 359+361: 득템 점수 — 당근 Manner Meter 영감 (작고 우측).
-// 2026-05-21: 점수는 지표로만 사용한다. 확장 요약은 아래 상세 섹션과 중복되어 제거.
-function DealMeterButton({ card }: { card: RevealCard }) {
-  const { score, toneClass } = calculateDealScore(card);
-  return (
-    <div className="flex shrink-0 flex-col items-end whitespace-nowrap leading-tight" aria-label={`득템 점수 ${score}점`}>
-      <span className="mb-1 text-[9px] font-black uppercase tracking-[0.14em] text-[#1c64dd] dark:text-blue-300">
-        득템 점수
-      </span>
-      <span className="flex items-baseline gap-0.5">
-        <span className={`text-[28px] font-black tabular-nums tracking-[-0.03em] ${toneClass}`}>
-          {score}
-        </span>
-        <span className="text-[13px] font-bold text-zinc-400 dark:text-zinc-500">/100</span>
-      </span>
-      <span className="mt-1 h-[3px] w-[70px] rounded-full bg-gradient-to-r from-blue-500 to-blue-700" />
-    </div>
-  );
 }
 
 function PurchaseDecisionHeader({ card }: { card: RevealCard }) {
@@ -3165,7 +3135,7 @@ function UpperFoldFearReducers({ card, analysisLoading = false }: { card: Reveal
   const safety = safetyDisplay(card, risk);
   const speedTone: "good" | "info" | "warn" = speed.isSlow ? "warn" : speed.isFast ? "good" : "info";
   // Wave 2026-05-19 v2 (사용자 피드백): "현재성" 타일 제거 — 매입/시세 줄에 이미 검증 시점 있어 중복.
-  // 4 타일 → 3 타일 (오늘 물량 / 보통 N일 안에 팔림 / 거래 안전).
+  // 4 타일 → 3 타일 (오늘 물량 / 평균 N일 내 판매 / 거래 안전).
   const activityIconClass = `mt-1 h-5 w-5 ${upperFoldTileClass(activity.tone).value}`;
   const speedIconClass = `mt-1 h-5 w-5 ${upperFoldTileClass(speedTone).value}`;
   // Wave launch-84 (사용자 정정 — MVP audit): 표본 부족 타일 자체 제외 (일관성).
@@ -3194,15 +3164,23 @@ function UpperFoldFearReducers({ card, analysisLoading = false }: { card: Reveal
     });
   }
   if (speedTileAvailable) {
+    const speedValue = speed.analysisLoading
+      ? "확인 중"
+      : speed.hours != null
+        ? averageSaleSpeedSentence(speed.hours)
+        : speed.label;
+    const speedSub = speed.analysisLoading
+      ? "비교 기록 불러오는 중"
+      : VELOCITY_UI_TEST_ENABLED && speed.isFallback
+        ? "표본 부족 · UI 테스트 표시"
+        : speed.sold7dCount > 0
+          ? `최근 7일 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`
+          : "비슷한 거래 기록 기준";
     tiles.push({
       key: "speed",
-      label: "팔리는 속도",
-      value: speed.analysisLoading ? "확인 중" : speed.isFast ? "빠름" : speed.isSlow ? "느림" : "보통",
-      sub: speed.analysisLoading
-        ? "비교 기록 불러오는 중"
-        : VELOCITY_UI_TEST_ENABLED && speed.isFallback
-        ? `약 ${speed.label} · 표본 부족 (UI 테스트 표시)`
-        : `약 ${speed.label} · 최근 판매 ${speed.sold7dCount.toLocaleString("ko-KR")}건`,
+      label: "평균 판매속도",
+      value: speedValue,
+      sub: speedSub,
       tone: speedTone,
       icon: renderSpeedIcon(speed, speedIconClass),
     });
@@ -3227,13 +3205,14 @@ function UpperFoldFearReducers({ card, analysisLoading = false }: { card: Reveal
       <div className={`mt-3 grid ${gridColsClass} divide-x divide-zinc-200 dark:divide-zinc-800`}>
         {tiles.map((tile) => {
           const tone = upperFoldTileClass(tile.tone);
+          const isSpeedTile = tile.key === "speed";
           return (
             <div key={tile.key} className="flex flex-col items-center px-2 py-2.5 text-center">
               <div className="flex h-3 items-center justify-center text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 <span className="truncate">{tile.label}</span>
               </div>
               {tile.icon}
-              <div className={`mt-1 line-clamp-1 text-xs font-bold leading-tight tabular-nums ${tone.value}`}>
+              <div className={`mt-1 tabular-nums ${tone.value} ${isSpeedTile ? "line-clamp-2 min-h-[30px] text-[13px] font-black leading-[1.15]" : "line-clamp-1 text-xs font-bold leading-tight"}`}>
                 {tile.value}
               </div>
               <div className="mt-1 line-clamp-2 min-h-[24px] text-[10px] font-medium leading-3 text-zinc-500 dark:text-zinc-400">
@@ -5330,7 +5309,11 @@ function BeginnerGuideSpeedVisual({ card, analysisLoading = false }: { card: Rev
   const dailySoldValue = velocity?.sold7dCount ? dailySoldCountLabel(velocity.sold7dCount) : null;
   const basisLabel = velocity?.conditionSpecific ? "같은 상태" : "같은 모델 전체";
   // Wave 394.7.ab: "확인 중" → "표본 부족" — 정직 카피.
-  const speedValue = analysisLoading ? "확인 중" : speed.label;
+  const speedValue = analysisLoading
+    ? "확인 중"
+    : speed.hours != null
+      ? averageSaleSpeedSentence(speed.hours)
+      : speed.label;
   const sampleLabel = analysisLoading
     ? "분석 진행 중"
     : dailySoldValue ? "동일 모델 하루 판매량" : sampleCount > 0 ? "비슷한 거래 기록" : "거래 기록";
@@ -5343,8 +5326,8 @@ function BeginnerGuideSpeedVisual({ card, analysisLoading = false }: { card: Rev
           title 의 숫자만 강조 (파란색). sub metric (visual) 은 default 색으로 — 위계 일관. */}
       <div className="grid grid-cols-2 gap-2.5">
         <div className="rounded-[18px] bg-[#f5f9ff] px-3 py-3 ring-1 ring-blue-100 dark:bg-blue-950/24 dark:ring-blue-900/45">
-          <div className="break-keep text-[11px] font-bold text-[#6f7b73] dark:text-zinc-400">되팔 때 판매 주기</div>
-          <div className="mt-1 text-[20px] font-black leading-tight text-[#172019] dark:text-zinc-50">
+          <div className="break-keep text-[11px] font-bold text-[#6f7b73] dark:text-zinc-400">평균 판매속도</div>
+          <div className="mt-1 break-keep text-[18px] font-black leading-tight text-[#172019] dark:text-zinc-50">
             {speedValue}
           </div>
         </div>
@@ -6451,23 +6434,10 @@ function RevealCardItem({
           <div className="absolute left-1/2 top-2 h-1 w-9 -translate-x-1/2 rounded-full bg-[#d0c6b1]" />
           <div className="space-y-1.5">
             <div className="relative">
-              <div className="pr-[92px] text-[10.5px] font-semibold leading-4 text-zinc-500 dark:text-zinc-400">
+              <div className="text-[10.5px] font-semibold leading-4 text-zinc-500 dark:text-zinc-400">
                 <span className="mr-1.5 inline-flex align-middle">
                   <MarketplaceSourceBadge source={card.marketplaceSource} label={card.marketplaceLabel} />
                 </span>
-                {/* Wave 886.13 (2026-05-27): 당근 매물은 source badge 옆 동네 inline 표시 (거리 제약 핵심 정보). */}
-                {isDaangn && card.savedDetail?.directTradeLocation ? (
-                  <span className="mr-1.5 inline-flex items-center gap-0.5 align-middle text-orange-700 dark:text-orange-300">
-                    <svg viewBox="0 0 12 12" fill="currentColor" className="h-2.5 w-2.5" aria-hidden="true">
-                      <path d="M6 1a3.5 3.5 0 0 0-3.5 3.5c0 2.625 3.5 6.5 3.5 6.5s3.5-3.875 3.5-6.5A3.5 3.5 0 0 0 6 1zm0 4.7a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4z" />
-                    </svg>
-                    {card.savedDetail.directTradeLocation}
-                  </span>
-                ) : null}
-                AI 판단 · 매물 설명(텍스트) 기준 · 사진은 직접 확인 권장
-              </div>
-              <div className="absolute right-0 top-[-2px]">
-                <DealMeterButton card={card} />
               </div>
             </div>
             <div className="flex w-full items-start justify-between gap-3">
@@ -6491,13 +6461,9 @@ function RevealCardItem({
                     )}
                   </div>
                 )}
-                {/* Wave 359+361: 득템 점수 — 제목과 같은 행 우측 작게 (당근 36.8°C 톤). */}
                 <div className="flex items-start gap-3">
-                  <div className="min-w-0 flex-1 line-clamp-2 pr-[92px] text-[20px] font-black leading-[1.25] tracking-[-0.01em] text-[#111915] dark:text-zinc-50">
+                  <div className="min-w-0 flex-1 line-clamp-2 text-[20px] font-black leading-[1.25] tracking-[-0.01em] text-[#111915] dark:text-zinc-50">
                     {card.name}
-                  </div>
-                  <div className="hidden">
-                    <DealMeterButton card={card} />
                   </div>
                 </div>
                 {/* Wave 886.13 (2026-05-27): 당근 매물 거래 가능 동네 강조 chip — 거리 제약 핵심 정보. */}
@@ -6602,6 +6568,8 @@ function RevealCardItem({
 
               </div>
 
+              <UpperFoldFearReducers card={card} analysisLoading={analysisLoading} />
+
               {/* Wave launch-83 (사용자 결정): 데이터 부족 placeholder 안내 박스 보이는 게
                   미완성 사이트 인상 → 빈 상태면 섹션 전체 hide. DetailMarketGraphSection 내부에서
                   MarketHistoryChart 의 onState 콜백으로 데이터 여부 추적 + wrapper 가시성 제어. */}
@@ -6611,7 +6579,6 @@ function RevealCardItem({
               <ComparableListingsPanel card={card} mode={mode} />
               {/* Wave 392+393.2: "왜 싸지" 작은 inline note — 보조 정보 톤. */}
               <WhyCheapPanel card={card} />
-              <UpperFoldFearReducers card={card} analysisLoading={analysisLoading} />
               {/* Wave 394.6.b (외부 review #7): 정보 순서 재정렬 — 사용자 판단 흐름 따름.
                   "1. 사도 되나 → 2. 얼마 남나 → 3. 데이터 믿을 만? → 4. 위험? → 5. 깎기 → 6. 어디 팔까".
                   가품/리스크 위로 (구매 결정 핵심), 채널 비교 아래로 (판매 결정). */}
