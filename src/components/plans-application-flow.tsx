@@ -446,6 +446,14 @@ function pressureLabel(pressure: number) {
   return "여유";
 }
 
+function districtUsage(district: DistrictSeat) {
+  const total = district.seats + Math.max(1, Math.round(district.pressure * 3));
+  return {
+    filled: total - district.seats,
+    total,
+  };
+}
+
 function regionZoomScale(key: string) {
   if (key === "seoul") return 10.4;
   if (key === "busan") return 9.6;
@@ -458,20 +466,16 @@ function regionZoomScale(key: string) {
 function KoreaSeatMap({
   selected,
   selectedDistricts,
-  selectedDistrict,
   hoveredKey,
   zoomed,
   onSelect,
-  onDistrictSelect,
   onHover,
 }: {
   selected: RegionSeat;
   selectedDistricts: DistrictSeat[];
-  selectedDistrict: DistrictSeat | null;
   hoveredKey: string | null;
   zoomed: boolean;
   onSelect: (key: string) => void;
-  onDistrictSelect: (name: string) => void;
   onHover: (key: string | null) => void;
 }) {
   const hoveredRegion = zoomed ? null : REGIONS.find((region) => region.key === hoveredKey);
@@ -493,12 +497,10 @@ function KoreaSeatMap({
   const focusY = zoomed ? (districtBounds.minY + districtBounds.maxY) / 2 : selected.y;
   const zoomX = zoomed ? 254.5 - focusX * zoomScale : 0;
   const zoomY = zoomed ? 358 - focusY * zoomScale : 0;
-  const districtX = zoomed && selectedDistrict?.x ? selectedDistrict.x * zoomScale + zoomX : null;
-  const districtY = zoomed && selectedDistrict?.y ? selectedDistrict.y * zoomScale + zoomY : null;
-  const activeRegionX = districtX ?? (activeRegion ? activeRegion.x * zoomScale + zoomX : 0);
-  const activeRegionY = districtY ?? (activeRegion ? activeRegion.y * zoomScale + zoomY : 0);
-  const calloutLabel = zoomed && selectedDistrict ? selectedDistrict.name : activeRegion?.label;
-  const calloutSeats = zoomed && selectedDistrict ? selectedDistrict.seats : activeRegion?.seats;
+  const activeRegionX = activeRegion ? activeRegion.x * zoomScale + zoomX : 0;
+  const activeRegionY = activeRegion ? activeRegion.y * zoomScale + zoomY : 0;
+  const calloutLabel = activeRegion?.label;
+  const calloutSeats = activeRegion?.seats;
 
   return (
     <svg
@@ -683,76 +685,6 @@ function KoreaSeatMap({
           })}
         </g>
       </g>
-      {zoomed ? (
-        <g>
-          {selectedDistricts.map((district) => {
-            if (district.x === undefined || district.y === undefined) return null;
-            const screenX = district.x * zoomScale + zoomX;
-            const screenY = district.y * zoomScale + zoomY;
-            const active = district.name === selectedDistrict?.name;
-            const compact = selected.key === "seoul" || selected.key === "busan" || selected.key === "daegu";
-            const label = active ? district.name : district.name.replace(/(특별자치시|특별자치도|광역시|시|군|구|읍|동)$/u, "");
-            const width = active ? (compact ? 110 : 122) : compact ? 68 : 78;
-            const height = active ? 58 : compact ? 46 : 50;
-            return (
-              <g
-                key={`${selected.key}-${district.name}-district-pin`}
-                role="button"
-                tabIndex={0}
-                aria-label={`${district.name} 티오 ${district.seats}자리`}
-                className="cursor-pointer outline-none"
-                onClick={() => onDistrictSelect(district.name)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    onDistrictSelect(district.name);
-                  }
-                }}
-              >
-                <rect
-                  x={screenX - width / 2}
-                  y={screenY - height / 2}
-                  width={width}
-                  height={height}
-                  rx={active ? 20 : compact ? 16 : 18}
-                  fill={active ? "rgba(37,99,235,0.94)" : "rgba(15,23,42,0.88)"}
-                  stroke={active ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.72)"}
-                  strokeWidth={active ? 3 : 2}
-                  filter={active ? "url(#plans-region-pop)" : undefined}
-                />
-                <text
-                  x={screenX}
-                  y={screenY - (compact ? 3 : 4)}
-                  textAnchor="middle"
-                  className="pointer-events-none select-none fill-white font-black"
-                  style={{
-                    fontSize: active ? 16 : compact ? 13 : 15,
-                    paintOrder: "stroke",
-                    stroke: "rgba(15,23,42,0.72)",
-                    strokeWidth: 3,
-                  } as CSSProperties}
-                >
-                  {label}
-                </text>
-                <text
-                  x={screenX}
-                  y={screenY + (compact ? 13 : 14)}
-                  textAnchor="middle"
-                  className="pointer-events-none select-none fill-white font-black"
-                  style={{
-                    fontSize: active ? 13 : compact ? 11 : 12,
-                    paintOrder: "stroke",
-                    stroke: "rgba(15,23,42,0.72)",
-                    strokeWidth: 2.5,
-                  } as CSSProperties}
-                >
-                  {active ? `${district.seats}자리 남음` : `${district.seats}자리`}
-                </text>
-              </g>
-            );
-          })}
-        </g>
-      ) : null}
       {!zoomed && activeRegion && calloutLabel && calloutSeats !== undefined ? (
         <g className="pointer-events-none">
           <rect
@@ -871,26 +803,85 @@ export default function PlansApplicationFlow({
                     </span>
                   </div>
                 ) : null}
-                <div className="relative mx-auto mt-1 h-[350px] min-h-0 max-w-[620px] sm:h-[calc(100%-154px)] sm:min-h-[350px] sm:max-h-[590px] lg:mt-2 lg:h-[calc(100%-120px)]">
+                <div className={`relative mx-auto mt-1 min-h-0 max-w-[620px] lg:mt-2 ${
+                  mapZoomed
+                    ? "flex h-[calc(100%-118px)] min-h-[430px] flex-col"
+                    : "h-[350px] sm:h-[calc(100%-154px)] sm:min-h-[350px] sm:max-h-[590px] lg:h-[calc(100%-120px)]"
+                }`}>
+                  <div className={`relative min-h-0 ${mapZoomed ? "h-[48%] min-h-[220px] overflow-hidden rounded-[24px] border border-zinc-200 bg-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-950/50" : "h-full"}`}>
+                    {mapZoomed ? (
+                      <button
+                        type="button"
+                        onClick={() => setMapZoomed(false)}
+                        className="absolute left-2 top-2 z-10 rounded-full border border-zinc-200 bg-white/86 px-3 py-2 text-[12px] font-black text-zinc-700 shadow-[0_10px_28px_rgba(15,23,42,0.16)] backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/78 dark:text-zinc-100"
+                      >
+                        전국 보기
+                      </button>
+                    ) : null}
+                    <KoreaSeatMap
+                      selected={selected}
+                      selectedDistricts={selectedDistricts}
+                      hoveredKey={hoveredKey}
+                      zoomed={mapZoomed}
+                      onSelect={handleRegionSelect}
+                      onHover={setHoveredKey}
+                    />
+                  </div>
                   {mapZoomed ? (
-                    <button
-                      type="button"
-                      onClick={() => setMapZoomed(false)}
-                      className="absolute left-2 top-2 z-10 rounded-full border border-zinc-200 bg-white/86 px-3 py-2 text-[12px] font-black text-zinc-700 shadow-[0_10px_28px_rgba(15,23,42,0.16)] backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/78 dark:text-zinc-100"
-                    >
-                      전국 보기
-                    </button>
+                    <div className="mt-2 flex min-h-0 flex-1 flex-col rounded-[24px] border border-zinc-200 bg-[#fbfcff] shadow-[0_14px_34px_rgba(15,23,42,0.12)] dark:border-zinc-800 dark:bg-zinc-950/80">
+                      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
+                        <div>
+                          <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
+                            {selected.shortLabel} 세부 티오
+                          </div>
+                          <div className="mt-0.5 text-[15px] font-black">
+                            {selectedDistrict?.name} {selectedDistrict?.seats}석 남음
+                          </div>
+                        </div>
+                        <span className="rounded-full bg-blue-600 px-3 py-1.5 text-[12px] font-black text-white">
+                          선택됨
+                        </span>
+                      </div>
+                      <div className="min-h-0 flex-1 overflow-y-auto p-2">
+                        {selectedDistricts.map((district) => {
+                          const active = district.name === selectedDistrict?.name;
+                          const usage = districtUsage(district);
+                          return (
+                            <button
+                              key={district.name}
+                              type="button"
+                              onClick={() => setSelectedDistrictName(district.name)}
+                              className={`mb-2 flex w-full items-center justify-between gap-3 rounded-[20px] border px-3 py-3 text-left transition ${
+                                active
+                                  ? "border-blue-400 bg-blue-50 shadow-[0_10px_24px_rgba(37,99,235,0.14)] dark:border-blue-500/70 dark:bg-blue-950/38"
+                                  : "border-zinc-200 bg-white hover:border-blue-200 dark:border-zinc-800 dark:bg-zinc-900/78"
+                              }`}
+                            >
+                              <div className="min-w-0">
+                                <div className="truncate text-[17px] font-black">{district.name}</div>
+                                <div className="mt-1 flex items-center gap-2 text-[12px] font-black text-zinc-500 dark:text-zinc-400">
+                                  <span className="tabular-nums">{usage.filled}/{usage.total}</span>
+                                  <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                                  <span>{pressureLabel(district.pressure)}</span>
+                                </div>
+                              </div>
+                              <div className="shrink-0 text-right">
+                                <div className="text-[18px] font-black text-blue-600 dark:text-blue-300">
+                                  {district.seats}석 남음
+                                </div>
+                                <div className="mt-1 h-2 w-24 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                                  <div
+                                    className="h-full rounded-full bg-blue-600"
+                                    style={{ width: `${Math.min(100, Math.round((usage.filled / usage.total) * 100))}%` }}
+                                  />
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   ) : null}
-                  <KoreaSeatMap
-                    selected={selected}
-                    selectedDistricts={selectedDistricts}
-                    selectedDistrict={selectedDistrict}
-                    hoveredKey={hoveredKey}
-                    zoomed={mapZoomed}
-                    onSelect={handleRegionSelect}
-                    onDistrictSelect={setSelectedDistrictName}
-                    onHover={setHoveredKey}
-                  />
                 </div>
               </div>
               <aside className="hidden min-h-0 flex-col p-4 sm:p-5 lg:flex">
