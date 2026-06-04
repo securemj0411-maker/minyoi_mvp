@@ -9,7 +9,6 @@ import PlaybookOverview from "@/components/playbook-overview";
 // Wave 343: history view = ExploreClient. UserRevealDashboard / RecommendationWorkspace / PackageIcon / SearchIcon / userRefForAuthUser 미사용 제거.
 import ExploreClient from "@/components/explore-client";
 import PreviewMaskedDashboard from "@/components/preview-masked-dashboard";
-import { MyFeedbackActivity } from "@/components/my-feedback-activity";
 import { isAdminUser } from "@/lib/auth-users";
 import { hasAdminShadowClient } from "@/lib/admin-shadow-mode";
 import { MODEL_GUIDES } from "@/lib/model-guides";
@@ -202,7 +201,6 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
           // "더 찾아보기" 버튼들 폐기 — ExploreClient의 "새 30개 받기" cooldown으로 대체.
           <section className="w-full min-w-0 pb-4">
             <ExploreClient storageScope={user.id} showFirstFeedIntro={!effectiveAdmin} />
-            <MyFeedbackActivity />
           </section>
         )}
       </div>
