@@ -50,7 +50,12 @@ function marketGapPctLabel(price: number, gapMin: number, gapMax: number): strin
   const avg = (gapMin + gapMax) / 2;
   const pct = Math.round((avg / price) * 100);
   if (!Number.isFinite(pct)) return null;
-  return `${pct}% 낮음`;
+  return `+${pct}%`;
+}
+
+function normalizePriceSignalLabel(label: string): string {
+  if (label.includes("시세보다") && label.includes("낮음")) return "차익 후보";
+  return label;
 }
 
 function priceBandLabel(price: number): string {
@@ -172,7 +177,7 @@ export default async function PreviewMaskedDashboardServer() {
                 {items.map((item) => {
                   const signal = previewSignal(item);
                   const budgetLabel = priceBandLabel(item.price);
-                  const priceSignalLabel = item.priceSignalLabel ?? "시세 비교 완료";
+                  const priceSignalLabel = normalizePriceSignalLabel(item.priceSignalLabel ?? "시세 비교 완료");
                   const imageUrl = item.thumbnailUrl ?? item.blurredImage;
                   return (
                     <Link

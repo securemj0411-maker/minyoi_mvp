@@ -96,9 +96,7 @@ function relativeDiscountLabel(price: number | null | undefined, marketPrice: nu
   if (!Number.isFinite(buy) || buy <= 0 || !Number.isFinite(market) || market <= 0 || buy >= market) {
     return "시세 비교 완료";
   }
-  const discount = Math.max(1, Math.round(((market - buy) / market) * 100));
-  const rounded = discount >= 10 ? Math.round(discount / 5) * 5 : discount;
-  return `시세보다 약 ${rounded}% 낮음`;
+  return "차익 후보";
 }
 
 type PoolRow = {
