@@ -75,6 +75,55 @@ const MEMBER_PASS_SIGNALS = [
   { label: "연장 처리", value: "5분 내" },
 ];
 
+const SOCIAL_PROOF_SURNAMES = [
+  "김",
+  "박",
+  "최",
+  "정",
+  "강",
+  "조",
+  "윤",
+  "장",
+  "임",
+  "한",
+  "오",
+  "서",
+  "신",
+  "권",
+  "황",
+  "안",
+  "송",
+  "전",
+  "홍",
+  "유",
+  "고",
+  "문",
+  "양",
+  "손",
+  "배",
+  "백",
+  "허",
+  "남",
+  "심",
+  "노",
+  "하",
+  "곽",
+  "성",
+  "차",
+  "주",
+  "우",
+  "구",
+  "민",
+  "류",
+  "나",
+  "진",
+  "지",
+  "엄",
+  "채",
+  "원",
+  "천",
+];
+
 function MembershipCapPanel({
   filled,
   capacity,
@@ -171,22 +220,22 @@ function MembershipPassPanel() {
         {MEMBER_PASS_SIGNALS.map((signal) => (
           <div
             key={signal.label}
-            className="flex items-center justify-between rounded-[16px] border border-white/10 bg-white/[0.04] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+            className="flex items-center justify-between rounded-[16px] border border-zinc-200 bg-white/80 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] dark:border-white/10 dark:bg-white/[0.04] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
           >
-            <div className="text-[12px] font-black text-zinc-300">
+            <div className="text-[12px] font-black text-zinc-600 dark:text-zinc-300">
               {signal.label}
             </div>
-            <div className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-zinc-950">
+            <div className="rounded-full bg-zinc-950 px-2.5 py-1 text-[11px] font-black text-white dark:bg-white dark:text-zinc-950">
               {signal.value}
             </div>
           </div>
         ))}
       </div>
-      <div className="rounded-[18px] border border-blue-400/20 bg-blue-400/10 px-4 py-4">
-        <div className="text-[11px] font-black uppercase tracking-[0.16em] text-blue-200">
+      <div className="rounded-[18px] border border-blue-100 bg-blue-50 px-4 py-4 dark:border-blue-400/20 dark:bg-blue-400/10">
+        <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-200">
           pass benefit
         </div>
-        <div className="mt-2 break-keep text-[13px] font-black leading-6 text-white">
+        <div className="mt-2 break-keep text-[13px] font-black leading-6 text-zinc-700 dark:text-white">
           만료 전에 연장하면 지금 남은 기간 뒤에 그대로 붙어서 손실 없이
           이어집니다.
         </div>
@@ -276,13 +325,20 @@ function maskedMemberLabel(
       .split("@")[0]
       ?.trim() ?? "";
   if (local) return `${local.slice(0, 1)}**님`;
-  return "이**님";
+  const seed = `${row.email ?? ""}${row.display_name ?? ""}`;
+  const codeSum = Array.from(seed || "member").reduce(
+    (sum, char) => sum + char.charCodeAt(0),
+    0,
+  );
+  return `${SOCIAL_PROOF_SURNAMES[codeSum % SOCIAL_PROOF_SURNAMES.length]}**님`;
 }
 
 function minutesAgo(value: string | null | undefined) {
   const ms = value ? Date.parse(value) : Number.NaN;
-  if (!Number.isFinite(ms)) return 9;
-  return Math.max(2, Math.min(59, Math.round((Date.now() - ms) / 60_000)));
+  if (!Number.isFinite(ms)) return null;
+  const minutes = Math.round((Date.now() - ms) / 60_000);
+  if (minutes < 2 || minutes > 58) return null;
+  return minutes;
 }
 
 async function loadSocialProofEvents(): Promise<PlansSocialProofEvent[]> {
@@ -296,12 +352,13 @@ async function loadSocialProofEvents(): Promise<PlansSocialProofEvent[]> {
     return rows
       .map((row): PlansSocialProofEvent => {
         const approved = row.status === "approved";
+        const ago = minutesAgo(
+          row.decided_at ?? row.deposit_confirmed_at ?? row.created_at,
+        );
         return {
           id: `application-${row.id}`,
           label: maskedMemberLabel(row),
-          minutesAgo: minutesAgo(
-            row.decided_at ?? row.deposit_confirmed_at ?? row.created_at,
-          ),
+          minutesAgo: ago ?? 0,
           kind: approved
             ? "approved"
             : row.deposit_confirmed_at
@@ -309,7 +366,7 @@ async function loadSocialProofEvents(): Promise<PlansSocialProofEvent[]> {
               : "seat_check",
         };
       })
-      .filter((event) => event.minutesAgo <= 59)
+      .filter((event) => event.minutesAgo > 0)
       .slice(0, 5);
   } catch {
     return [];
@@ -378,7 +435,7 @@ export default async function PlansPage() {
                 ))}
               </div>
             </div>
-            <div className="border-t border-zinc-200 bg-zinc-950 px-4 py-5 dark:border-zinc-800 lg:border-l lg:border-t-0">
+            <div className="border-t border-zinc-200 bg-[#f8fbff] px-4 py-5 dark:border-zinc-800 dark:bg-zinc-950 lg:border-l lg:border-t-0">
               {isMember ? (
                 <MembershipPassPanel />
               ) : (
