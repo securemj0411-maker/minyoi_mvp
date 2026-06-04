@@ -431,6 +431,14 @@ function isFashionSkuId(skuId: string | null | undefined): boolean {
   return Boolean(skuId?.startsWith("clothing-") || skuId?.startsWith("shoe-") || skuId?.startsWith("bag-"));
 }
 
+function isRuleRevalidatedCategory(category: string | null | undefined): boolean {
+  return isFashionCategory(category) || category === "sport_golf";
+}
+
+function isRuleRevalidatedSkuId(skuId: string | null | undefined): boolean {
+  return Boolean(isFashionSkuId(skuId) || skuId?.startsWith("sport-golf-") || skuId?.startsWith("club-"));
+}
+
 function effectiveCatalogSkuForScorableRow(row: Pick<ScorableRawRow, "sku_id" | "name" | "description_preview">): Sku | null {
   const cacheKey = [
     row.sku_id ?? "",
@@ -440,10 +448,10 @@ function effectiveCatalogSkuForScorableRow(row: Pick<ScorableRawRow, "sku_id" | 
   if (effectiveSkuCache.has(cacheKey)) return effectiveSkuCache.get(cacheKey) ?? null;
   const stored = catalogById.get(row.sku_id ?? "") ?? null;
   let resolved: Sku | null;
-  if (isFashionCategory(stored?.category) || isFashionSkuId(row.sku_id)) {
-    // Wave 412: fashion broad/fallback rows are too risky to trust from stored raw sku_id.
+  if (isRuleRevalidatedCategory(stored?.category) || isRuleRevalidatedSkuId(row.sku_id)) {
+    // Wave 412/1080: broad/fallback rows are too risky to trust from stored raw sku_id.
     // Re-evaluate against the current catalog on every score parse; if the current catalog
-    // rejects it, do not let stale shoe/bag/clothing sku_ids keep pool access.
+    // rejects it, do not let stale shoe/bag/clothing/golf sku_ids keep pool access.
     resolved = ruleMatch(row.name, row.description_preview) ?? null;
   } else {
     resolved = stored ?? ruleMatch(row.name, row.description_preview) ?? null;

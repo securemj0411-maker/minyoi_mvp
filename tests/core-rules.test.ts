@@ -2503,6 +2503,36 @@ test("shoe broad SKUs stay internal even when broad lane readiness exists", () =
   assert.equal(allowed.reason, "lane_ready_adidas_samba_wales_bonner");
 });
 
+test("sport golf broad SKUs stay internal even when broad lane readiness exists", () => {
+  const broadSku = CATALOG.find((item) => item.id === "sport-golf-taylormade-iron-broad");
+  const legacyBroadSku = CATALOG.find((item) => item.id === "club-mizuno-jpx");
+  const narrowSku = CATALOG.find((item) => item.id === "sport-golf-ping-i230-iron");
+  assert.ok(broadSku, "expected TaylorMade broad golf iron SKU in catalog");
+  assert.ok(legacyBroadSku, "expected legacy Mizuno JPX broad golf SKU in catalog");
+  assert.ok(narrowSku, "expected Ping i230 narrow golf iron SKU in catalog");
+
+  const blocked = evaluatePoolGate(
+    { sku: broadSku, category: "sport_golf" },
+    { categoryReadiness: CATEGORY_READINESS, laneReadiness: LANE_READINESS },
+  );
+  assert.equal(blocked.canEnterPool, false);
+  assert.equal(blocked.reason, "category_internal_only_sport_golf_broad_lane_required");
+
+  const legacyBlocked = evaluatePoolGate(
+    { sku: legacyBroadSku, category: "sport_golf" },
+    { categoryReadiness: CATEGORY_READINESS, laneReadiness: LANE_READINESS },
+  );
+  assert.equal(legacyBlocked.canEnterPool, false);
+  assert.equal(legacyBlocked.reason, "category_internal_only_sport_golf_broad_lane_required");
+
+  const allowed = evaluatePoolGate(
+    { sku: narrowSku, category: "sport_golf" },
+    { categoryReadiness: CATEGORY_READINESS, laneReadiness: LANE_READINESS },
+  );
+  assert.equal(allowed.canEnterPool, true);
+  assert.equal(allowed.reason, "lane_ready_sport_golf_ping_i230_iron");
+});
+
 test("low-purity clothing product-type lanes stay held out of the pool", () => {
   const heldIds = [
     "clothing-polo-rrl-accessory",

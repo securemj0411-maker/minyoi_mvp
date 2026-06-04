@@ -65,6 +65,14 @@ const HIGH_PROFIT_WEAK_SIGNAL_ROI = 0.45;
 const HIGH_PROFIT_DEFAULT_ROI = 0.6;
 const HIGH_PROFIT_MARKETPLACE_VARIANCE_ROI = 0.7;
 
+const RISKY_SPORT_GOLF_PUBLIC_SKU_IDS = new Set([
+  // Legacy golf-club lanes predate the `sport-golf-*-broad` naming convention.
+  // They span multiple generations/series, so keep them as collection/search
+  // scaffolding until split into audited model-generation lanes.
+  "club-mizuno-jpx",
+  "club-mizuno-mx",
+]);
+
 const HIGH_PROFIT_ELECTRONICS_CATEGORIES = new Set<Sku["category"]>([
   "earphone",
   "smartwatch",
@@ -332,6 +340,15 @@ function sellerTrustReviewReason(input: {
   return null;
 }
 
+function isRiskySportGolfPublicSku(sku: Sku | null | undefined): boolean {
+  if (!sku || sku.category !== "sport_golf") return false;
+  return (
+    sku.id.endsWith("-broad") ||
+    sku.laneKey?.endsWith("_broad") === true ||
+    RISKY_SPORT_GOLF_PUBLIC_SKU_IDS.has(sku.id)
+  );
+}
+
 // Lane-aware pool gate. A SKU tagged with a `ready` laneKey enters the pool
 // even when its broader category is `internal_only`. SKUs without a lane (or
 // whose lane is itself blocked) fall back to the category gate.
@@ -339,8 +356,9 @@ export function evaluatePoolGate(
   input: { sku?: Sku | null; category: Sku["category"] | null },
   maps: { categoryReadiness?: CategoryReadinessMap; laneReadiness?: LaneReadinessMap } = {},
 ): CategoryReadinessDecision {
+  const sku = input.sku ?? null;
   const laneMap = maps.laneReadiness ?? LANE_READINESS;
-  const laneDecision = evaluateLaneReadinessForSku(input.sku ?? undefined, laneMap);
+  const laneDecision = evaluateLaneReadinessForSku(sku ?? undefined, laneMap);
   const categoryDecision = evaluateCategoryReadiness(input.category, maps.categoryReadiness);
 
   // Wave 809: shoe broad/fallback lanes are internal watch by default. The
@@ -348,10 +366,10 @@ export function evaluatePoolGate(
   // proof; exact/collab/model lanes may still release through LANE_READINESS.
   if (
     input.category === "shoe" &&
-    input.sku &&
+    sku &&
     (
-      input.sku.id.endsWith("-broad") ||
-      input.sku.laneKey?.endsWith("_broad")
+      sku.id.endsWith("-broad") ||
+      sku.laneKey?.endsWith("_broad")
     )
   ) {
     return {
@@ -359,7 +377,22 @@ export function evaluatePoolGate(
       status: "blocked",
       canEnterPool: false,
       reason: "category_internal_only_shoe_broad_lane_required",
-      laneKey: input.sku.laneKey,
+      laneKey: sku.laneKey,
+    };
+  }
+
+  // Wave 1080 (2026-06-04): golf club broad lanes are collection/search
+  // scaffolding, not public price lanes. A single brand×club-type key can mix
+  // single irons, full iron sets, driving irons, old/new generations, lofts,
+  // shafts, and putter/wedge sub-models. Let audited narrow lanes through, but
+  // never inherit broad golf readiness into the feed.
+  if (isRiskySportGolfPublicSku(sku)) {
+    return {
+      ...categoryDecision,
+      status: "blocked",
+      canEnterPool: false,
+      reason: "category_internal_only_sport_golf_broad_lane_required",
+      laneKey: sku?.laneKey,
     };
   }
 
