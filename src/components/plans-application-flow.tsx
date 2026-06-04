@@ -455,7 +455,7 @@ export default function PlansApplicationFlow({
           {step === 0 ? (
             <div className="grid h-full min-h-0 gap-0 lg:grid-cols-[minmax(0,1fr)_340px]">
               <div className="min-h-0 border-b border-zinc-200 p-4 pb-2 dark:border-zinc-800 sm:p-6 lg:border-b-0 lg:border-r">
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <h1 className="break-keep pr-10 text-[24px] font-black leading-[1.02] tracking-tight sm:text-[44px]">
                       우리 동네 매물을
@@ -463,16 +463,10 @@ export default function PlansApplicationFlow({
                       먼저 독점하세요.
                     </h1>
                   </div>
-                  <div className="mt-9 shrink-0 rounded-full bg-blue-600 px-3 py-2 text-right text-white shadow-[0_12px_34px_rgba(37,99,235,0.3)] sm:mt-0 sm:px-4">
+                  <div className="shrink-0 rounded-full bg-blue-600 px-3 py-2 text-right text-white shadow-[0_12px_34px_rgba(37,99,235,0.3)] sm:px-4">
                     <div className="text-[9px] font-black opacity-80">현재 예약</div>
                     <div className="text-[18px] font-black tabular-nums sm:text-[24px]">{filled}/{capacity}</div>
                   </div>
-                </div>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-300 dark:bg-zinc-700">
-                  <div
-                    className="h-full rounded-r-full bg-blue-600 dark:bg-blue-400"
-                    style={{ width: `${Math.min(96, Math.max(18, filledPct))}%` }}
-                  />
                 </div>
                 <div className="mt-2 flex items-center justify-between rounded-2xl border border-zinc-200 bg-[#fbfcff] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/60 lg:hidden">
                   {mapZoomed ? (
@@ -510,7 +504,7 @@ export default function PlansApplicationFlow({
                     </>
                   )}
                 </div>
-                <div className="relative mx-auto mt-1 h-[320px] min-h-0 max-w-[620px] sm:h-[calc(100%-184px)] sm:min-h-[320px] sm:max-h-[560px] lg:mt-2 lg:h-[calc(100%-148px)]">
+                <div className="relative mx-auto mt-1 h-[350px] min-h-0 max-w-[620px] sm:h-[calc(100%-154px)] sm:min-h-[350px] sm:max-h-[590px] lg:mt-2 lg:h-[calc(100%-120px)]">
                   <div className="pointer-events-none absolute right-2 top-2 z-10 rounded-2xl border border-zinc-200 bg-white/86 px-2.5 py-2 shadow-[0_10px_28px_rgba(15,23,42,0.16)] backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/78">
                     <div className="text-[9px] font-black uppercase tracking-[0.13em] text-zinc-400">티오 밀도</div>
                     <div className="mt-1.5 flex items-center gap-1.5">
