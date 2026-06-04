@@ -4,13 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import ReferralBanner from "@/components/referral-banner";
 import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
 import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, HourglassIcon, BookmarkIcon } from "@/components/icons";
 import { BrandLogo } from "@/components/brand-logo";
 import { ConditionPhotoBadge, ConditionTierPhotoBadge } from "@/components/condition-chip";
 import { CategoryWatermark } from "@/components/category-watermark";
-import KakaoLogo from "@/components/kakao-logo";
 import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { detectBrandDepth } from "@/lib/category-brand-depth";
@@ -187,6 +185,50 @@ function formatCooldown(sec: number): string {
     return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
   }
   return `0:${String(sec).padStart(2, "0")}`;
+}
+
+function FeedMembershipUpsellCard({ remainingSec }: { remainingSec: number }) {
+  const clamped = Math.max(0, remainingSec);
+  const discountPct = 40;
+  const expired = clamped <= 0;
+
+  return (
+    <section className="mb-3 overflow-hidden rounded-2xl border border-blue-200 bg-white shadow-sm dark:border-blue-900/50 dark:bg-zinc-900">
+      <div className="bg-gradient-to-r from-blue-600 to-zinc-950 px-4 py-3 text-white">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-blue-100">Member-only offer</div>
+            <div className="mt-0.5 break-keep text-[16px] font-black leading-5">3개월로 바꾸면 월 단가를 더 낮출 수 있어요</div>
+          </div>
+          <div className="shrink-0 rounded-xl bg-white/14 px-3 py-2 text-center ring-1 ring-white/20">
+            <div className="text-[10px] font-black text-blue-100">남은 시간</div>
+            <div className="mt-0.5 font-mono text-[17px] font-black tabular-nums">{expired ? "마감" : formatCooldown(clamped)}</div>
+          </div>
+        </div>
+      </div>
+      <div className="grid gap-3 px-4 py-3 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+              {discountPct}% 절감
+            </span>
+            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-black text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+              1개월보다 오래 보는 사람용
+            </span>
+          </div>
+          <p className="mt-2 break-keep text-[12.5px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+            피드에서 계속 볼 거면 짧게 끊는 것보다 3개월/6개월로 잡는 쪽이 단가가 낮아요. 자리 예약 전에 기간만 바꾸면 됩니다.
+          </p>
+        </div>
+        <Link
+          href="/plans?from=feed-upsell"
+          className="flex h-11 items-center justify-center rounded-xl bg-zinc-950 px-4 text-[13px] font-black text-white transition hover:bg-blue-700 dark:bg-white dark:text-zinc-950 dark:hover:bg-blue-100"
+        >
+          조건 다시 보기
+        </Link>
+      </div>
+    </section>
+  );
 }
 
 function profitAvg(item: PoolItem) {
@@ -1182,6 +1224,17 @@ export default function ExploreClient({
   const [scrapItems, setScrapItems] = useState<ScrappedPoolItem[]>([]);
   const [legacySavedPids, setLegacySavedPids] = useState<Set<number>>(() => new Set());
   const [now, setNow] = useState(Date.now());
+  const [feedUpsellExpiresAt] = useState(() => {
+    const fallback = Date.now() + 60 * 60 * 1000;
+    if (typeof window === "undefined") return fallback;
+    try {
+      const key = `minyoi:feed-upsell-expires-at:${storageScope}`;
+      const existing = Number(window.localStorage.getItem(key) ?? 0);
+      if (Number.isFinite(existing) && existing > Date.now()) return existing;
+      window.localStorage.setItem(key, String(fallback));
+    } catch {}
+    return fallback;
+  });
   const [selectedCard, setSelectedCard] = useState<RevealCard | null>(null);
   const detailSessionIdRef = useRef<string | null>(null);
   // Wave 346: refresh modal — 기다리기/충전 옵션
@@ -1523,6 +1576,10 @@ export default function ExploreClient({
     const ms = new Date(cooldown.nextAvailableAt).getTime() - now;
     return Math.max(0, Math.ceil(ms / 1000));
   }, [cooldown, now]);
+  const feedUpsellRemainingSec = useMemo(
+    () => Math.max(0, Math.ceil((feedUpsellExpiresAt - now) / 1000)),
+    [feedUpsellExpiresAt, now],
+  );
 
   const canRefresh = true;
 
@@ -2113,9 +2170,7 @@ export default function ExploreClient({
         />
       ) : null}
 
-      {/* Wave 805 (2026-05-30): 피드 상단 referral banner — 3일 dismiss cooldown.
-          노출 위치 = 피드 진입 시 가장 자주 보는 surface → referral 인지/진입 ↑. */}
-      <ReferralBanner />
+      <FeedMembershipUpsellCard remainingSec={feedUpsellRemainingSec} />
 
       {/* Wave 383+393: 6h lag 제거 + 사이트 핵심 가치 (band-aware 비교) 강조. */}
       <div className="mb-2 hidden rounded-xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40 sm:block">
@@ -2987,38 +3042,9 @@ export default function ExploreClient({
                               </span>
                             </Link>
 
-                            {/* 카카오 공유 보너스.
-                                - Kakao SDK Share.sendDefault → Kakao webhook → 서버가 24h cooldown 검증 후 지급
-                                - /api/packs/pool/share-bonus POST 즉시 지급 경로는 abuse 표면이라 폐기
-                                NEXT_PUBLIC_KAKAO_JS_KEY env 필요. 없으면 button disabled. */}
-                            <button
-                              type="button"
-                              disabled={kakaoShareLoading || !kakaoShareReady}
-                              onClick={handleKakaoShare}
-                              title={kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 공유할 수 있어요` : (kakaoShareReady ? "카톡으로 공유하기" : "카카오 공유 로딩 중...")}
-                              className={`mt-3 flex w-full items-center justify-between gap-3 rounded-2xl px-5 py-4 text-left transition ${
-                                kakaoShareReady && kakaoShareCooldownHours === 0
-                                  ? "bg-[#fbe300] shadow-[0_4px_14px_rgba(251,227,0,0.35)] hover:bg-[#fae100] active:scale-[0.99]"
-                                  : "cursor-not-allowed bg-[#fbe300]/40 opacity-70"
-                              }`}
-                            >
-                              <div className="flex min-w-0 items-center gap-2.5">
-                                <KakaoLogo className={`h-7 w-7 shrink-0 rounded-[8px] ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "" : "opacity-80"}`} />
-                                <div className="min-w-0">
-                                  <div className={`text-base font-bold ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]" : "text-[#3b1e1e]/80"}`}>
-                                    {kakaoShareCooldownHours > 0 ? "오늘은 이미 공유했어요" : kakaoShareLoading ? "공유 처리 중..." : "카톡으로 공유하기"}
-                                  </div>
-                                  <div className={`mt-0.5 text-[11px] font-medium ${kakaoShareReady && kakaoShareCooldownHours === 0 ? "text-[#3b1e1e]/70" : "text-[#3b1e1e]/60"}`}>
-                                    {kakaoShareCooldownHours > 0 ? `${kakaoShareCooldownHours}시간 후 다시 공유할 수 있어요` : "친구에게 득템잡이를 알려주세요"}
-                                  </div>
-                                </div>
-                              </div>
-                              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                                kakaoShareReady && kakaoShareCooldownHours === 0 ? "bg-[#3b1e1e] text-[#fbe300]" : "bg-[#3b1e1e]/70 text-[#fbe300]/90"
-                              }`}>
-                                {kakaoShareCooldownHours > 0 ? "내일" : "매물 2개 더"}
-                              </span>
-                            </button>
+                            <div className="mt-3">
+                              <FeedMembershipUpsellCard remainingSec={feedUpsellRemainingSec} />
+                            </div>
                           </>
                         ) : null}
             </div>

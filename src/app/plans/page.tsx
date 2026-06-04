@@ -1,5 +1,6 @@
 import Link from "next/link";
 import MembershipApplicationClient from "@/components/membership-application-client";
+import PlansSocialProofToasts, { type PlansSocialProofEvent } from "@/components/plans-social-proof-toasts";
 import { getMembershipPlan, MEMBERSHIP_PLANS } from "@/lib/membership-plans";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
@@ -42,6 +43,16 @@ type PendingApplicationRow = {
 type SlotSnapshot = {
   capacity: number;
   filled: number;
+};
+
+type SocialProofApplicationRow = {
+  id: number;
+  display_name: string | null;
+  email: string | null;
+  status: string | null;
+  decided_at: string | null;
+  deposit_confirmed_at: string | null;
+  created_at: string;
 };
 
 async function loadPendingApplication(authUserId: string): Promise<PendingApplicationRow | null> {
@@ -88,6 +99,45 @@ function loadSlotSnapshot(): SlotSnapshot {
   };
 }
 
+function maskedMemberLabel(row: Pick<SocialProofApplicationRow, "display_name" | "email">) {
+  const name = String(row.display_name ?? "").trim();
+  if (name) return `${name.slice(0, 1)}**님`;
+  const local = String(row.email ?? "").split("@")[0]?.trim() ?? "";
+  if (local) return `${local.slice(0, 1)}**님`;
+  return "이**님";
+}
+
+function minutesAgo(value: string | null | undefined) {
+  const ms = value ? Date.parse(value) : Number.NaN;
+  if (!Number.isFinite(ms)) return 9;
+  return Math.max(2, Math.min(59, Math.round((Date.now() - ms) / 60_000)));
+}
+
+async function loadSocialProofEvents(): Promise<PlansSocialProofEvent[]> {
+  try {
+    const res = await restFetch(
+      `${tableUrl("mvp_membership_applications")}?select=id,display_name,email,status,decided_at,deposit_confirmed_at,created_at&status=in.(approved,pending)&order=created_at.desc&limit=12`,
+      { headers: serviceHeaders(), cache: "no-store" },
+    );
+    if (!res.ok) return [];
+    const rows = (await res.json()) as SocialProofApplicationRow[];
+    return rows
+      .map((row): PlansSocialProofEvent => {
+        const approved = row.status === "approved";
+        return {
+          id: `application-${row.id}`,
+          label: maskedMemberLabel(row),
+          minutesAgo: minutesAgo(row.decided_at ?? row.deposit_confirmed_at ?? row.created_at),
+          kind: approved ? "approved" : row.deposit_confirmed_at ? "reserved" : "seat_check",
+        };
+      })
+      .filter((event) => event.minutesAgo <= 59)
+      .slice(0, 5);
+  } catch {
+    return [];
+  }
+}
+
 export default async function PlansPage() {
   const auth = await requireSupabaseUserFromCookies();
   const membership = auth.ok ? await getProStatus(auth.user, userRefForAuthUser(auth.user.id)) : null;
@@ -96,9 +146,11 @@ export default async function PlansPage() {
   const pendingPlan = pendingApplication ? getMembershipPlan(pendingApplication.product_key) : null;
   const slotSnapshot = loadSlotSnapshot();
   const membershipEndAt = membership?.proUntil ?? null;
+  const socialProofEvents = await loadSocialProofEvents();
 
   return (
     <main className="min-h-screen bg-[#f5f7fb] px-3 py-4 dark:bg-zinc-950 sm:px-5 sm:py-8">
+      <PlansSocialProofToasts events={socialProofEvents} />
       <div className="mx-auto w-full max-w-[760px]">
         <section className="overflow-hidden rounded-[18px] border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <div className="border-b border-zinc-200 px-4 py-6 dark:border-zinc-800 sm:px-6 sm:py-7">
