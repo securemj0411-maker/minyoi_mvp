@@ -2031,11 +2031,6 @@ export default function ExploreClient({
 
   const openItemDetail = useCallback(async (item: PoolItem, options?: { directTradeConfirmed?: boolean }) => {
     if (item.soldOut) return;
-    if (openedDetailPidsRef.current.has(item.pid)) {
-      setDetailAccessLimit(null);
-      beginDetailSession(item, { accessType: "already_opened_local" });
-      return;
-    }
     const hasDetailEntitlement = hasPaidOrFreeDetailAccess(detailAccessSnapshot, freeDetailRemaining);
     if (!options?.directTradeConfirmed && isDirectOnlyItem(item) && hasDetailEntitlement) {
       setDetailAccessLimit(null);

@@ -18,6 +18,7 @@ import { normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
+import { getProStatus } from "@/lib/user-subscription";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -195,7 +196,8 @@ export async function POST(req: Request) {
   // 차감 없이 매물 상세 정보 (description / imageUrls / metrics) 받기 가능했음.
   // hasDetailAccess = markOpenedPid 로 박힌 access 확인 (정상 흐름: detail-access POST 가 먼저
   // credit 차감 + markOpenedPid 박음 → 그 후 reveals/detail 호출).
-  const unlimitedAccess = isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
+  const membership = await getProStatus(auth.user, userRef);
+  const unlimitedAccess = membership.isPro || membership.isAdmin || membership.isBetaTester || isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
   if (!unlimitedAccess) {
     const hasAccess = await hasDetailAccess({ user: auth.user, userRef, pid, unlimited: false });
     if (!hasAccess) {

@@ -17,6 +17,7 @@ import { isAdminUser } from "@/lib/auth-users";
 import { isBetaTesterAuthId } from "@/lib/beta-tester";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
+import { getProStatus } from "@/lib/user-subscription";
 
 // Wave 339b: /explore 카드 클릭 시 marketBasis/velocityBasis lazy-fill.
 // pid 기반 — assertRevealAccess 우회 (사용자가 reveal 안 한 매물도 가능).
@@ -187,7 +188,8 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "invalid pid" }, { status: 400 });
     }
     const userRef = userRefForAuthUser(auth.user.id);
-    const unlimitedAccess = isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
+    const membership = await getProStatus(auth.user, userRef);
+    const unlimitedAccess = membership.isPro || membership.isAdmin || membership.isBetaTester || isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
     if (!(await hasDetailAccess({ user: auth.user, userRef, pid, unlimited: unlimitedAccess }))) {
       return NextResponse.json({ error: "detail_access_required" }, { status: 403 });
     }

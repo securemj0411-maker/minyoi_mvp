@@ -22,6 +22,7 @@ import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
 import { mergeConditionDisplayChips } from "@/lib/condition-display";
 import { hardSplitChipSignature, shouldUseExactHardChipComparison } from "@/lib/condition-chip-policy";
 import { madTrim } from "@/lib/market-math";
+import { getProStatus } from "@/lib/user-subscription";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -121,7 +122,8 @@ export async function GET(
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: "auth_required" }, { status: auth.status });
   const userRef = userRefForAuthUser(auth.user.id);
-  const unlimited = isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
+  const membership = await getProStatus(auth.user, userRef);
+  const unlimited = membership.isPro || membership.isAdmin || membership.isBetaTester || isAdminUser(auth.user) || (await isBetaTesterAuthId(auth.user.id));
   const allowed = await hasDetailAccess({ user: auth.user, userRef, pid, unlimited });
   if (!allowed) {
     return NextResponse.json(
