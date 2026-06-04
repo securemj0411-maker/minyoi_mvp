@@ -67,6 +67,11 @@ type VelocityRow = {
   confidence: string | null;
 };
 
+const SAMPLE_TARGET_MAX_BUY_PRICE = 150_000;
+const SAMPLE_TARGET_MIN_EXPECTED_PROFIT = 50_000;
+const SAMPLE_FALLBACK_MAX_BUY_PRICE = 300_000;
+const SAMPLE_FALLBACK_MIN_EXPECTED_PROFIT = 10_000;
+
 function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
 }
@@ -74,6 +79,14 @@ function clamp(n: number, min: number, max: number) {
 function toNumber(value: unknown) {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
+}
+
+function chunks<T>(items: T[], size: number) {
+  const result: T[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    result.push(items.slice(index, index + size));
+  }
+  return result;
 }
 
 function expectedProfit(row: PoolSampleRow) {
@@ -123,10 +136,12 @@ function candidateScore(input: {
   sold7d: number;
   sampleCount: number;
   medianDays: number | null;
+  targetHit: boolean;
 }) {
-  const accessiblePriceBonus = input.buyPrice <= 350_000 ? 18 : input.buyPrice <= 700_000 ? 8 : 0;
+  const accessiblePriceBonus = input.buyPrice <= 100_000 ? 24 : input.buyPrice <= 150_000 ? 18 : 4;
   const velocityBonus = input.medianDays ? clamp(12 - input.medianDays, 0, 12) : 0;
   return (
+    (input.targetHit ? 100 : 0) +
     clamp(input.profit / 10_000, 0, 24) +
     accessiblePriceBonus +
     clamp(input.sold7d, 0, 18) +
@@ -144,12 +159,7 @@ export async function readMembershipLocalSample(districtName: string): Promise<M
   const exactRows = (await exactRes.json()) as CacheRow[];
   if (exactRows[0]?.payload) return exactRows[0].payload;
 
-  const fallbackRes = await restFetch(
-    `${tableUrl("mvp_membership_local_samples")}?select=payload,updated_at&is_active=eq.true&order=updated_at.desc&limit=1`,
-    { headers: serviceHeaders() },
-  );
-  const fallbackRows = (await fallbackRes.json()) as CacheRow[];
-  return fallbackRows[0]?.payload ?? null;
+  return null;
 }
 
 export async function refreshMembershipLocalSampleCache() {
@@ -157,8 +167,8 @@ export async function refreshMembershipLocalSampleCache() {
     `${tableUrl("mvp_candidate_pool")}` +
       "?select=pid,expected_profit_min,expected_profit_max,profit_band,confidence,category,condition_class,comparable_key," +
       "raw:mvp_raw_listings!inner(pid,source,name,price,sku_id,sku_name,thumbnail_url,listing_state,daangn_region_id,daangn_region_name,last_seen_at)" +
-      "&status=eq.ready&expected_profit_max=gt.0&raw.source=eq.daangn&raw.listing_state=eq.active" +
-      "&order=expected_profit_max.desc&limit=700",
+      `&status=eq.ready&expected_profit_max=gte.${SAMPLE_FALLBACK_MIN_EXPECTED_PROFIT}&raw.price=lte.${SAMPLE_FALLBACK_MAX_BUY_PRICE}&raw.source=eq.daangn&raw.listing_state=eq.active` +
+      "&order=expected_profit_max.desc&limit=3000",
     { headers: serviceHeaders() },
   );
   const rows = ((await poolRes.json()) as PoolSampleRow[])
@@ -167,27 +177,31 @@ export async function refreshMembershipLocalSampleCache() {
 
   if (rows.length === 0) return { count: 0, districtCount: 0 };
 
-  const pids = rows.map((row) => row.pid).join(",");
-  const listingRes = await restFetch(
-    `${tableUrl("mvp_listings")}?select=pid,sku_median,thumbnail_url,sku_name&pid=in.(${pids})`,
-    { headers: serviceHeaders() },
-  );
-  const listings = (await listingRes.json()) as ListingRow[];
+  const listings: ListingRow[] = [];
+  for (const pidChunk of chunks(rows.map((row) => row.pid), 180)) {
+    const listingRes = await restFetch(
+      `${tableUrl("mvp_listings")}?select=pid,sku_median,thumbnail_url,sku_name&pid=in.(${pidChunk.join(",")})`,
+      { headers: serviceHeaders() },
+    );
+    listings.push(...((await listingRes.json()) as ListingRow[]));
+  }
   const listingByPid = new Map(listings.map((row) => [Number(row.pid), row]));
 
   const keys = Array.from(new Set(rows.map((row) => row.comparable_key).filter(Boolean) as string[]));
   const velocityByKey = new Map<string, VelocityRow>();
   if (keys.length > 0) {
-    const velocityRes = await restFetch(
-      `${tableUrl("mvp_market_velocity_daily")}` +
-        `?select=comparable_key,observed_sold_sample_count,sold_7d_count,median_hours_to_sold,confidence&comparable_key=in.(${keys.map(encodeURIComponent).join(",")})` +
-        "&condition_class=eq.all&order=date.desc,computed_at.desc,observed_sold_sample_count.desc&limit=1200",
-      { headers: serviceHeaders() },
-    );
-    const velocityRows = (await velocityRes.json()) as VelocityRow[];
-    for (const row of velocityRows) {
-      if (!row.comparable_key || velocityByKey.has(row.comparable_key)) continue;
-      velocityByKey.set(row.comparable_key, row);
+    for (const keyChunk of chunks(keys, 70)) {
+      const velocityRes = await restFetch(
+        `${tableUrl("mvp_market_velocity_daily")}` +
+          `?select=comparable_key,observed_sold_sample_count,sold_7d_count,median_hours_to_sold,confidence&comparable_key=in.(${keyChunk.map(encodeURIComponent).join(",")})` +
+          "&condition_class=eq.all&order=date.desc,computed_at.desc,observed_sold_sample_count.desc&limit=700",
+        { headers: serviceHeaders() },
+      );
+      const velocityRows = (await velocityRes.json()) as VelocityRow[];
+      for (const row of velocityRows) {
+        if (!row.comparable_key || velocityByKey.has(row.comparable_key)) continue;
+        velocityByKey.set(row.comparable_key, row);
+      }
     }
   }
 
@@ -198,6 +212,8 @@ export async function refreshMembershipLocalSampleCache() {
     if (!raw) continue;
     const buyPrice = toNumber(raw.price);
     const profit = expectedProfit(row);
+    if (buyPrice > SAMPLE_FALLBACK_MAX_BUY_PRICE || profit < SAMPLE_FALLBACK_MIN_EXPECTED_PROFIT) continue;
+    const targetHit = buyPrice <= SAMPLE_TARGET_MAX_BUY_PRICE && profit >= SAMPLE_TARGET_MIN_EXPECTED_PROFIT;
     const listing = listingByPid.get(row.pid);
     const marketPrice = marketPriceFor(buyPrice, listing, profit);
     if (buyPrice <= 0 || profit <= 0 || marketPrice <= buyPrice) continue;
@@ -210,7 +226,7 @@ export async function refreshMembershipLocalSampleCache() {
     const shortRegion = resolveDaangnShortRegion(raw.daangn_region_id, raw.daangn_region_name) ?? raw.daangn_region_name ?? null;
     const districtName = districtFromFullRegion(fullRegion, raw.daangn_region_name);
     const regionKey = regionKeyFromFullRegion(fullRegion);
-    const score = candidateScore({ profit, buyPrice, sold7d, sampleCount, medianDays });
+    const score = candidateScore({ profit, buyPrice, sold7d, sampleCount, medianDays, targetHit });
     const previous = bestByDistrict.get(districtName);
     if (previous && previous.score >= score) continue;
     const item: MembershipLocalSampleItem = {
@@ -249,6 +265,9 @@ export async function refreshMembershipLocalSampleCache() {
       buyPrice: value.item.buyPrice,
       marketPrice: value.item.marketPrice,
       expectedProfit: value.item.expectedProfit,
+      targetHit:
+        value.item.buyPrice <= SAMPLE_TARGET_MAX_BUY_PRICE &&
+        value.item.expectedProfit >= SAMPLE_TARGET_MIN_EXPECTED_PROFIT,
       fullRegionName: value.item.fullRegionName,
     },
   }));

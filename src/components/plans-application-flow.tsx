@@ -2,6 +2,7 @@
 
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { CategoryWatermark } from "@/components/category-watermark";
+import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import MembershipApplicationClient from "@/components/membership-application-client";
 import {
   KOREA_ADMIN_MAP_VIEWBOX,
@@ -425,12 +426,6 @@ const REGIONS: RegionSeat[] = [
   { key: "jeju", shortLabel: "제주", label: "제주특별자치도", seats: 8, pressure: 0.36, x: 432, y: 678, districts: [{ name: "제주시", seats: 4, pressure: 0.37 }, { name: "서귀포시", seats: 3, pressure: 0.32 }] },
 ];
 
-const VALUE_STEPS = [
-  { label: "희소성", value: "전체 중고 매물 중 시세 차익이 보이는 상품은 극소수입니다." },
-  { label: "지역성", value: "당근은 내 근처에 떠야 실전성이 생겨서 같은 지역 접근 수를 관리합니다." },
-  { label: "공개 제한", value: "같은 매물을 너무 많이 보면 기회가 깨져서 300명 안에서만 엽니다." },
-];
-
 function pressureFill(pressure: number) {
   if (pressure >= 0.82) return "#ef4444";
   if (pressure >= 0.72) return "#f97316";
@@ -832,6 +827,8 @@ export default function PlansApplicationFlow({
   const selectedDistricts = useMemo(() => districtSeatsFor(selected), [selected]);
   const selectedDistrict = selectedDistricts.find((district) => district.name === selectedDistrictName) ?? selectedDistricts[0] ?? null;
   const selectedRegionLabel = selectedDistrict?.name ?? selected.shortLabel;
+  const selectedSeatUsage = districtUsage(selectedDistrict ?? selected.districts[0]);
+  const selectedRemainingSeats = selectedDistrict?.seats ?? selected.seats;
   const visibleDistricts = useMemo(() => {
     if (!pinnedDistrictName) return selectedDistricts;
     const pinnedDistrict = selectedDistricts.find((district) => district.name === pinnedDistrictName);
@@ -878,17 +875,8 @@ export default function PlansApplicationFlow({
       setLocalSampleLoading(true);
       setLocalSampleError(null);
       try {
-        const token = await getAccessToken();
-        if (!token) {
-          if (!cancelled) {
-            setLocalSample(null);
-            setLocalSampleError("로그인 후 실제 추천 샘플을 볼 수 있어요.");
-          }
-          return;
-        }
         const params = new URLSearchParams({ district: selectedRegionLabel });
         const res = await fetch(`/api/membership/local-sample?${params.toString()}`, {
-          headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
         });
         const json = (await res.json().catch(() => null)) as { ok?: boolean; item?: LocalSampleItem | null; error?: string } | null;
@@ -1247,14 +1235,14 @@ export default function PlansApplicationFlow({
                       real feed sample
                     </div>
                     <h1 className="mt-2 break-keep text-[30px] font-black leading-[1.02] tracking-tight sm:text-[54px]">
-                      {selectedRegionLabel} 근처에
+                      지금 {selectedRegionLabel}에
                       <br />
-                      실제로 뜨는 후보예요.
+                      차익 매물이 있어요.
                     </h1>
                   </div>
-                  <div className={`rounded-[22px] px-4 py-3 text-right ring-1 ${seatTone(selectedDistrict?.seats ?? selected.seats, districtUsage(selectedDistrict ?? selected.districts[0]).total).badge}`}>
+                  <div className={`rounded-[22px] px-4 py-3 text-right ring-1 ${seatTone(selectedRemainingSeats, selectedSeatUsage.total).badge}`}>
                     <div className="text-[10px] font-black opacity-70">남은 자리</div>
-                    <div className="text-[24px] font-black leading-none">{selectedDistrict?.seats ?? selected.seats}석</div>
+                    <div className="text-[24px] font-black leading-none">{selectedRemainingSeats}석</div>
                   </div>
                 </div>
 
@@ -1283,9 +1271,7 @@ export default function PlansApplicationFlow({
                       </div>
                       <div className="min-w-0 py-1 sm:py-2">
                         <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-black sm:text-[11px]">
-                          <span className="rounded-full bg-orange-50 px-2 py-1 text-orange-700 ring-1 ring-orange-100 dark:bg-orange-950/30 dark:text-orange-200 dark:ring-orange-900">
-                            {localSample.sourceLabel}
-                          </span>
+                          <MarketplaceSourceBadge source="daangn" label={localSample.sourceLabel} />
                           {localSample.regionName ? (
                             <span className="rounded-full bg-zinc-100 px-2 py-1 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
                               {localSample.regionName}
@@ -1330,9 +1316,6 @@ export default function PlansApplicationFlow({
                               표본 {localSample.sampleCount}건
                             </span>
                           ) : null}
-                          <span className="rounded-full bg-rose-50 px-2 py-1 text-rose-700 dark:bg-rose-950/30 dark:text-rose-200">
-                            {selectedRegionLabel} {selectedDistrict?.seats ?? selected.seats}석 남음
-                          </span>
                         </div>
                       </div>
                     </div>
@@ -1344,66 +1327,60 @@ export default function PlansApplicationFlow({
                     </div>
                   )}
                 </div>
-
-                <p className="mt-4 break-keep text-[13px] font-bold leading-6 text-zinc-500 dark:text-zinc-400 sm:text-[15px]">
-                  신청 화면에는 원본 링크를 열지 않고, 실제 추천 풀에 들어온 당근 후보의 핵심 수익 신호만 먼저 보여줘요.
-                </p>
               </div>
             </div>
           ) : null}
 
           {step === 2 ? (
             <div className="flex h-full flex-col justify-center p-5 sm:p-9">
-              <div className="max-w-[720px]">
+              <div className="mx-auto w-full max-w-[780px]">
                 <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-blue-300">
-                  공개 제한 이유
+                  member seat
                 </div>
                 <h1 className="mt-3 break-keep text-[32px] font-black leading-[1.02] tracking-tight sm:text-[58px]">
-                  좋은 매물은
+                  지금 바로
                   <br />
-                  많이 보면 깨집니다.
+                  {selectedRegionLabel} 자리를 차지하세요.
                 </h1>
-                <p className="mt-4 break-keep text-[14px] font-bold leading-6 text-zinc-500 dark:text-zinc-400 sm:max-w-[620px] sm:text-[16px] sm:leading-7">
-                  득템잡이는 차익 예상 상품을 아무나 열람하게 두지 않고, 선착순 정원과 지역 접근 수를 같이 관리합니다.
-                </p>
-              </div>
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                {VALUE_STEPS.map((item) => (
-                  <div key={item.label} className="rounded-[24px] border border-zinc-200 bg-[#fbfcff] p-4 dark:border-zinc-800 dark:bg-zinc-950/60">
-                    <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">{item.label}</div>
-                    <div className="mt-3 break-keep text-[15px] font-black leading-6 sm:text-[17px]">{item.value}</div>
+                <div className="mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_220px] sm:items-stretch">
+                  <div className="rounded-[28px] border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950/70">
+                    <p className="break-keep text-[18px] font-black leading-7 text-zinc-950 dark:text-zinc-50 sm:text-[23px] sm:leading-9">
+                      전체 중고 매물 중 시세 차익이 보이는 상품은 극소수입니다.
+                    </p>
+                    <p className="mt-3 break-keep text-[18px] font-black leading-7 text-rose-600 dark:text-rose-300 sm:text-[23px] sm:leading-9">
+                      누구나 다 보면 돈 벌 기회가 사라집니다.
+                    </p>
                   </div>
-                ))}
+                  <div className={`flex flex-col justify-between rounded-[28px] p-5 ring-1 ${seatTone(selectedRemainingSeats, selectedSeatUsage.total).badge}`}>
+                    <div>
+                      <div className="text-[11px] font-black uppercase tracking-[0.14em] opacity-70">
+                        {selectedRegionLabel} 티오
+                      </div>
+                      <div className="mt-3 text-[42px] font-black leading-none tabular-nums">
+                        {selectedRemainingSeats}/{selectedSeatUsage.total}석
+                      </div>
+                    </div>
+                    <div className="mt-5 rounded-2xl bg-white/60 px-3 py-2 text-[15px] font-black dark:bg-black/20">
+                      {selectedRemainingSeats}석 남음
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           ) : null}
 
           {step === 3 ? (
-            <div className="grid h-full min-h-0 gap-0 lg:grid-cols-[minmax(0,1fr)_400px]">
-              <div className="flex min-h-0 flex-col justify-center border-b border-zinc-200 p-5 dark:border-zinc-800 sm:p-9 lg:border-b-0 lg:border-r">
-                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-blue-300">
-                  멤버십 신청
-                </div>
-                <h1 className="mt-3 break-keep text-[34px] font-black leading-[1.02] tracking-tight sm:text-[58px]">
-                  이제 지역 티오를
-                  <br />
-                  예약하세요.
-                </h1>
-                <p className="mt-4 break-keep text-[14px] font-bold leading-6 text-zinc-500 dark:text-zinc-400 sm:max-w-[620px] sm:text-[16px] sm:leading-7">
-                  로그인 후 기간을 고르면 계좌가 열립니다. 입금했어요 버튼을 누르면 5분 내 승인 흐름으로 처리됩니다.
-                </p>
-              </div>
-              <div className="flex min-h-0 flex-col justify-center p-4 sm:p-6">
-                <div className="rounded-[24px] border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-950/70 dark:bg-blue-950/20">
-                  <MembershipApplicationClient
-                    isAuthed={isAuthed}
-                    isMember={isMember}
-                    loginHref={loginHref}
-                    plans={plans}
-                    pendingApplication={pendingApplication}
-                    suppressFixedCta
-                  />
-                </div>
+            <div className="flex h-full min-h-0 flex-col justify-center p-4 sm:p-8">
+              <div className="mx-auto w-full max-w-[760px] rounded-[28px] border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-950/70 dark:bg-blue-950/20 sm:p-6">
+                <MembershipApplicationClient
+                  isAuthed={isAuthed}
+                  isMember={isMember}
+                  loginHref={loginHref}
+                  plans={plans}
+                  pendingApplication={pendingApplication}
+                  suppressFixedCta
+                  autoOpenSelector
+                />
               </div>
             </div>
           ) : null}
@@ -1440,12 +1417,12 @@ export default function PlansApplicationFlow({
                     : locationStatus === "resolving"
                       ? "동네 확인 중..."
                       : "내 위치 불러오기"
-                : "다음"}
+                : step === 2
+                  ? "지금 바로 자리 차지하기"
+                  : "다음"}
             </button>
           ) : (
-            <div className="break-keep text-right text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-              신청 버튼을 누르면 기간 선택으로 이어집니다.
-            </div>
+            <div />
           )}
         </footer>
       </div>

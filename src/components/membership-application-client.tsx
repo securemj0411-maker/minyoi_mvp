@@ -79,6 +79,7 @@ export default function MembershipApplicationClient({
   plans,
   pendingApplication,
   suppressFixedCta = false,
+  autoOpenSelector = false,
 }: {
   isAuthed: boolean;
   isMember: boolean;
@@ -86,6 +87,7 @@ export default function MembershipApplicationClient({
   plans: MembershipPlan[];
   pendingApplication: PendingApplication | null;
   suppressFixedCta?: boolean;
+  autoOpenSelector?: boolean;
 }) {
   const router = useRouter();
   const [selectorOpen, setSelectorOpen] = useState(false);
@@ -142,6 +144,11 @@ export default function MembershipApplicationClient({
   );
   const offerExpired = upsellExpiresAt !== null && offerMsLeft <= 0;
   const renewalMode = isMember;
+
+  useEffect(() => {
+    if (!autoOpenSelector || renewalMode || pendingApplication || reservationCancelled) return;
+    setSelectorOpen(true);
+  }, [autoOpenSelector, pendingApplication, renewalMode, reservationCancelled]);
 
   useEffect(() => {
     if (!upsellOpen && !autoApproveAt) return;
@@ -451,7 +458,7 @@ export default function MembershipApplicationClient({
           href={loginHref}
           className="flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90"
         >
-          로그인하고 신청하기
+          로그인하고 자리 차지하기
         </Link>
         {!suppressFixedCta ? (
           <Link
@@ -652,7 +659,7 @@ export default function MembershipApplicationClient({
             disabled={state === "submitting"}
             className="flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
           >
-            {state === "submitting" ? "자리 예약 중" : "멤버십 신청하기"}
+            {state === "submitting" ? "자리 예약 중" : "지금 바로 자리 차지하기"}
           </button>
           {!suppressFixedCta && !selectorOpen && !upsellOpen ? (
             <button
@@ -661,7 +668,7 @@ export default function MembershipApplicationClient({
               disabled={state === "submitting"}
               className="fixed inset-x-3 bottom-3 z-40 flex h-12 items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.34)] ring-1 ring-white/30 transition hover:opacity-90 disabled:cursor-default disabled:opacity-70 sm:hidden"
             >
-              {state === "submitting" ? "자리 예약 중" : "멤버십 신청하기"}
+              {state === "submitting" ? "자리 예약 중" : "지금 바로 자리 차지하기"}
             </button>
           ) : null}
         </>
@@ -674,22 +681,22 @@ export default function MembershipApplicationClient({
         </p>
       ) : null}
       {selectorOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 py-4 backdrop-blur-sm sm:items-center">
-          <div className="w-full max-w-[560px] rounded-[18px] border border-zinc-200 bg-white p-4 shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-3 py-4 backdrop-blur-sm">
+          <div className="flex max-h-[calc(100dvh-32px)] w-full max-w-[760px] flex-col overflow-y-auto rounded-[28px] border border-zinc-200 bg-white p-5 shadow-2xl dark:border-zinc-800 dark:bg-zinc-950 sm:p-7">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-200">
                   Membership select
                 </div>
-                <h2 className="mt-1 break-keep text-[22px] font-black leading-tight text-zinc-950 dark:text-zinc-50">
+                <h2 className="mt-1 break-keep text-[26px] font-black leading-tight text-zinc-950 dark:text-zinc-50 sm:text-[34px]">
                   {renewalMode
                     ? "연장 기간을 고르세요."
-                    : "신청 기간을 고르세요."}
+                    : "기간을 선택하세요."}
                 </h2>
                 <p className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
                   {renewalMode
                     ? "승인되면 기존 만료일 뒤에 선택한 기간이 붙습니다. 월 단가는 기간이 길수록 낮아집니다."
-                    : "신청자 기준 지역 티오를 확인한 뒤 가능하면 자리를 예약합니다. 월 단가는 기간이 길수록 낮아집니다."}
+                    : "기간이 길수록 월 단가가 낮아집니다."}
                 </p>
               </div>
               <button
