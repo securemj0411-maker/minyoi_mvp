@@ -70,6 +70,12 @@ const MEMBER_ROWS = [
   },
 ];
 
+const MEMBER_PASS_SIGNALS = [
+  { label: "원본 링크", value: "열림" },
+  { label: "시세 근거", value: "유지" },
+  { label: "연장 처리", value: "5분 내" },
+];
+
 function MarketSignalIllustration() {
   return (
     <svg
@@ -237,6 +243,38 @@ function MembershipPassBadge() {
       <div className="relative mt-3 flex items-center justify-between text-[11px] font-black text-zinc-600 dark:text-zinc-200">
         <span>득템잡이 멤버십</span>
         <span>승인 완료</span>
+      </div>
+    </div>
+  );
+}
+
+function MembershipPassPanel() {
+  return (
+    <div className="flex h-full min-h-[360px] flex-col justify-between gap-4">
+      <MembershipPassBadge />
+      <div className="grid gap-2">
+        {MEMBER_PASS_SIGNALS.map((signal) => (
+          <div
+            key={signal.label}
+            className="flex items-center justify-between rounded-[16px] border border-white/10 bg-white/[0.04] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+          >
+            <div className="text-[12px] font-black text-zinc-300">
+              {signal.label}
+            </div>
+            <div className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black text-zinc-950">
+              {signal.value}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-[18px] border border-blue-400/20 bg-blue-400/10 px-4 py-4">
+        <div className="text-[11px] font-black uppercase tracking-[0.16em] text-blue-200">
+          pass benefit
+        </div>
+        <div className="mt-2 break-keep text-[13px] font-black leading-6 text-white">
+          만료 전에 연장하면 지금 남은 기간 뒤에 그대로 붙어서 손실 없이
+          이어집니다.
+        </div>
       </div>
     </div>
   );
@@ -430,7 +468,7 @@ export default async function PlansPage() {
             </div>
             <div className="border-t border-zinc-200 bg-zinc-950 px-4 py-5 dark:border-zinc-800 lg:border-l lg:border-t-0">
               {isMember ? (
-                <MembershipPassBadge />
+                <MembershipPassPanel />
               ) : (
                 <MarketSignalIllustration />
               )}
