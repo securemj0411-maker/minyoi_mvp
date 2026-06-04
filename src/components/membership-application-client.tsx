@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import {
   getMembershipPlan,
   krw,
+  MEMBERSHIP_PLANS,
   UPSELL_PLANS_FROM_1MO,
   UPSELL_PLANS_FROM_3MO,
   type MembershipPlan,
@@ -46,6 +47,15 @@ function upsellPlansFor(plan: MembershipPlan): MembershipPlan[] {
   if (plan.key === "limited_300_1mo") return UPSELL_PLANS_FROM_1MO;
   if (plan.key === "limited_300_3mo") return UPSELL_PLANS_FROM_3MO;
   return [];
+}
+
+function regularPlanForMonths(months: number): MembershipPlan | null {
+  return MEMBERSHIP_PLANS.find((plan) => plan.months === months) ?? null;
+}
+
+function discountPercent(regularPrice: number, offerPrice: number): number {
+  if (regularPrice <= 0 || offerPrice >= regularPrice) return 0;
+  return Math.round(((regularPrice - offerPrice) / regularPrice) * 100);
 }
 
 function countdownLabel(ms: number) {
@@ -390,12 +400,20 @@ export default function MembershipApplicationClient({
 
   if (!isAuthed) {
     return (
-      <Link
-        href={loginHref}
-        className="flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90"
-      >
-        로그인하고 신청하기
-      </Link>
+      <>
+        <Link
+          href={loginHref}
+          className="flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90"
+        >
+          로그인하고 신청하기
+        </Link>
+        <Link
+          href={loginHref}
+          className="fixed inset-x-3 bottom-3 z-40 flex h-12 items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.34)] ring-1 ring-white/30 transition hover:opacity-90 sm:hidden"
+        >
+          로그인하고 내 지역 티오 확인
+        </Link>
+      </>
     );
   }
 
@@ -579,14 +597,26 @@ export default function MembershipApplicationClient({
           </button>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={openSelector}
-          disabled={state === "submitting"}
-          className="flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
-        >
-          {state === "submitting" ? "자리 예약 중" : "멤버십 신청하기"}
-        </button>
+        <>
+          <button
+            type="button"
+            onClick={openSelector}
+            disabled={state === "submitting"}
+            className="flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+          >
+            {state === "submitting" ? "자리 예약 중" : "멤버십 신청하기"}
+          </button>
+          {!selectorOpen && !upsellOpen ? (
+            <button
+              type="button"
+              onClick={openSelector}
+              disabled={state === "submitting"}
+              className="fixed inset-x-3 bottom-3 z-40 flex h-12 items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.34)] ring-1 ring-white/30 transition hover:opacity-90 disabled:cursor-default disabled:opacity-70 sm:hidden"
+            >
+              {state === "submitting" ? "자리 예약 중" : "멤버십 신청하기"}
+            </button>
+          ) : null}
+        </>
       )}
       {message && !hasReservation ? (
         <p
@@ -667,13 +697,26 @@ export default function MembershipApplicationClient({
                     지금 선택 흐름에서만 열리는 장기권 전환 조건
                   </div>
                 </div>
-                <div className="shrink-0 rounded-2xl bg-white px-3.5 py-2 text-center text-zinc-950 shadow-[0_12px_34px_rgba(245,158,11,0.28)]">
-                  <div className="text-[9px] font-black uppercase tracking-[0.12em] text-zinc-500">
-                    남은 시간
+                <div className="flex shrink-0 items-center gap-2">
+                  <div className="rounded-2xl bg-white px-3.5 py-2 text-center text-zinc-950 shadow-[0_12px_34px_rgba(245,158,11,0.28)]">
+                    <div className="text-[9px] font-black uppercase tracking-[0.12em] text-zinc-500">
+                      남은 시간
+                    </div>
+                    <div className="mt-0.5 font-mono text-[30px] font-black leading-none tabular-nums">
+                      {countdownLabel(offerMsLeft)}
+                    </div>
                   </div>
-                  <div className="mt-0.5 font-mono text-[30px] font-black leading-none tabular-nums">
-                    {countdownLabel(offerMsLeft)}
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUpsellOpen(false);
+                      setSelectorOpen(true);
+                    }}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-[18px] font-black text-white transition hover:bg-white/20"
+                    aria-label="다시 고르기"
+                  >
+                    ×
+                  </button>
                 </div>
               </div>
               <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/15">
@@ -694,6 +737,9 @@ export default function MembershipApplicationClient({
               <div className="mt-4 grid gap-2">
                 {upsellPlans.map((plan) => {
                   const active = plan.key === selectedUpsellKey;
+                  const regularPlan = regularPlanForMonths(plan.months);
+                  const regularPrice = regularPlan?.priceKrw ?? plan.priceKrw;
+                  const discount = discountPercent(regularPrice, plan.priceKrw);
                   return (
                     <button
                       key={plan.key}
@@ -708,15 +754,25 @@ export default function MembershipApplicationClient({
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <div className="text-[14px] font-black text-zinc-950 dark:text-zinc-50">
-                            {plan.label}
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <div className="text-[14px] font-black text-zinc-950 dark:text-zinc-50">
+                              {plan.label}
+                            </div>
+                            {discount > 0 ? (
+                              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+                                {discount}% 할인
+                              </span>
+                            ) : null}
                           </div>
                           <div className="mt-1 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
                             {plan.valueNote}
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-[15px] font-black text-[#3182f6]">
+                          <div className="text-[10px] font-black text-zinc-400 line-through">
+                            정가 {krw(regularPrice)}
+                          </div>
+                          <div className="mt-0.5 text-[16px] font-black text-[#3182f6]">
                             {krw(plan.priceKrw)}
                           </div>
                           <div className="mt-0.5 text-[10px] font-black text-zinc-400">
@@ -724,31 +780,22 @@ export default function MembershipApplicationClient({
                           </div>
                         </div>
                       </div>
-                      <div className="mt-2 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
-                        {plan.paybackNote}
+                      <div className="mt-2 break-keep text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+                        원래 {krw(regularPrice)}인데 10분 내 예약하면{" "}
+                        {krw(plan.priceKrw)}에 열립니다.
                       </div>
                     </button>
                   );
                 })}
               </div>
-              <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUpsellOpen(false);
-                    setSelectorOpen(true);
-                  }}
-                  className="h-10 rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
-                >
-                  다시 고르기
-                </button>
+              <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1.1fr]">
                 <button
                   type="button"
                   onClick={() => void submitApplication(selectedPlan)}
                   disabled={state === "submitting"}
                   className="h-10 rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-default disabled:opacity-70 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
                 >
-                  {selectedPlan.label} 그대로
+                  괜찮아요, 기존 걸로 진행할래요
                 </button>
                 <button
                   type="button"

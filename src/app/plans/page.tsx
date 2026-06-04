@@ -337,12 +337,8 @@ export default async function PlansPage() {
   const heroBadges = isMember
     ? ["활성 멤버", "남은 기간 확인", "기간 연장 가능"]
     : NON_MEMBER_BADGES;
-  const reservationRate = Math.round(
-    (slotSnapshot.filled / slotSnapshot.capacity) * 100,
-  );
-
   return (
-    <main className="min-h-screen bg-[#f4f7fb] px-3 py-4 dark:bg-zinc-950 sm:px-5 sm:py-8 lg:py-10">
+    <main className="min-h-screen bg-[#f4f7fb] px-3 pb-24 pt-4 dark:bg-zinc-950 sm:px-5 sm:py-8 lg:py-10">
       <PlansSocialProofToasts events={socialProofEvents} />
       <div className="mx-auto grid w-full max-w-[1100px] gap-5 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
         <section className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-[0_20px_80px_rgba(15,23,42,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
@@ -403,17 +399,17 @@ export default async function PlansPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-200">
-                    {isMember ? "Membership active" : "Seat check"}
+                    {isMember ? "Membership active" : "Membership application"}
                   </div>
                   <div className="mt-1 text-[28px] font-black tracking-tight text-zinc-950 dark:text-zinc-50">
                     {isMember
                       ? membershipRemainingLabel(membershipEndAt)
-                      : `${slotSnapshot.filled}/${slotSnapshot.capacity}명 예약`}
+                      : "멤버십 신청"}
                   </div>
                   <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
                     {isMember
                       ? `만료일 ${membershipEndLabel(membershipEndAt)}`
-                      : "기간 선택 전에 내 지역 티오부터 확인합니다."}
+                      : "신청 버튼을 누르면 내 지역 티오 확인 후 기간을 선택합니다."}
                   </div>
                 </div>
                 <div
@@ -424,29 +420,13 @@ export default async function PlansPage() {
                   }
                 >
                   <div className="text-[9px] font-black uppercase tracking-[0.12em] opacity-70">
-                    {isMember ? "premium" : "filled"}
+                    {isMember ? "premium" : "status"}
                   </div>
                   <div className="mt-0.5 text-[18px] font-black">
-                    {isMember ? "PASS" : `${reservationRate}%`}
+                    {isMember ? "PASS" : "OPEN"}
                   </div>
                 </div>
               </div>
-              {!isMember ? (
-                <div className="mt-4">
-                  <div className="flex items-center justify-between text-[11px] font-black text-zinc-500 dark:text-zinc-400">
-                    <span>선공개 예약률</span>
-                    <span>{reservationRate}%</span>
-                  </div>
-                  <div className="mt-2 h-2 rounded-full bg-zinc-100 dark:bg-zinc-800">
-                    <div
-                      className="h-full rounded-full bg-[#3182f6]"
-                      style={{
-                        width: `${Math.min(96, Math.max(24, (slotSnapshot.filled / slotSnapshot.capacity) * 100))}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              ) : null}
             </div>
             <div className="grid gap-3 px-4 py-4 sm:px-5">
               {!isMember && auth.ok ? <PlansUrgencyCountdown /> : null}
