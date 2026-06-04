@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { getMembershipPlan } from "@/lib/membership-plans";
+import {
+  getMembershipPlan,
+  UPSELL_PLANS_FROM_1MO,
+  UPSELL_PLANS_FROM_3MO,
+} from "@/lib/membership-plans";
+import { verifyMembershipOfferToken } from "@/lib/membership-offer-token";
 import { notifyAdminTelegram } from "@/lib/telegram-notify";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { getProStatus } from "@/lib/user-subscription";
@@ -8,6 +13,12 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+type ApprovedApplicationRow = {
+  product_key: string | null;
+  decided_at: string | null;
+  created_at: string | null;
+};
 
 function adminNoteLine(message: string) {
   return `[${new Date().toISOString()}] ${message}`;
@@ -24,10 +35,58 @@ async function updateApplicationAdminNote(applicationId: number | null, note: st
   });
 }
 
+function initialBaseKeysForOffer(offerProductKey: string) {
+  const keys: string[] = [];
+  if (UPSELL_PLANS_FROM_1MO.some((plan) => plan.key === offerProductKey)) {
+    keys.push("limited_300_1mo");
+  }
+  if (UPSELL_PLANS_FROM_3MO.some((plan) => plan.key === offerProductKey)) {
+    keys.push("limited_300_3mo");
+  }
+  return keys;
+}
+
+function renewalOfferKeysFor(activeProductKey: string | null | undefined): string[] {
+  const activePlan = getMembershipPlan(activeProductKey);
+  if (activePlan.months <= 1) {
+    return UPSELL_PLANS_FROM_1MO.map((plan) => plan.key);
+  }
+  if (activePlan.months <= 3) {
+    return UPSELL_PLANS_FROM_3MO.map((plan) => plan.key);
+  }
+  if (activePlan.months <= 6) {
+    return UPSELL_PLANS_FROM_3MO.filter((plan) => plan.months === 12).map(
+      (plan) => plan.key,
+    );
+  }
+  return [];
+}
+
+async function canUseRenewalOffer(authUserId: string, offerProductKey: string) {
+  const res = await restFetch(
+    `${tableUrl("mvp_membership_applications")}?select=product_key,decided_at,created_at&auth_user_id=eq.${authUserId}&status=eq.approved&order=decided_at.desc.nullslast,created_at.desc&limit=1`,
+    { headers: serviceHeaders(), cache: "no-store" },
+  ).catch(() => null);
+  const rows = res?.ok ? ((await res.json()) as ApprovedApplicationRow[]) : [];
+  const active = rows[0] ?? null;
+  if (!active) return false;
+  if (!renewalOfferKeysFor(active.product_key).includes(offerProductKey)) {
+    return false;
+  }
+  const activatedAt = active.decided_at ?? active.created_at;
+  if (!activatedAt) return false;
+  const expiresAt = new Date(activatedAt).getTime() + 60 * 60 * 1000;
+  return Number.isFinite(expiresAt) && expiresAt > Date.now();
+}
+
 export async function POST(req: Request) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const body = (await req.json().catch(() => ({}))) as { productKey?: string; intent?: string };
+  const body = (await req.json().catch(() => ({}))) as {
+    productKey?: string;
+    intent?: string;
+    offerToken?: string;
+  };
   const selectedPlan = getMembershipPlan(body.productKey);
 
   const userRef = userRefForAuthUser(auth.user.id);
@@ -36,6 +95,22 @@ export async function POST(req: Request) {
   const isRenewal = hasActiveMembership && body.intent === "renewal";
   if (hasActiveMembership && !isRenewal) {
     return NextResponse.json({ ok: true, alreadyMember: true });
+  }
+  if (selectedPlan.isUpsell) {
+    const validOffer = isRenewal
+      ? await canUseRenewalOffer(auth.user.id, selectedPlan.key)
+      : verifyMembershipOfferToken(body.offerToken, {
+          authUserId: auth.user.id,
+          intent: "new",
+          offerProductKey: selectedPlan.key,
+          allowedBaseProductKeys: initialBaseKeysForOffer(selectedPlan.key),
+        });
+    if (!validOffer) {
+      return NextResponse.json(
+        { error: "expired_or_invalid_offer" },
+        { status: 403 },
+      );
+    }
   }
 
   const email = auth.user.email ?? "email 없음";

@@ -43,6 +43,12 @@ type MembershipStatusResponse = {
   } | null;
 };
 
+type MembershipOfferTokenResponse = {
+  ok?: boolean;
+  expiresAt?: string | null;
+  offers?: Array<{ productKey?: string | null; token?: string | null }>;
+};
+
 function upsellPlansFor(plan: MembershipPlan): MembershipPlan[] {
   if (plan.key === "limited_300_1mo") return UPSELL_PLANS_FROM_1MO;
   if (plan.key === "limited_300_3mo") return UPSELL_PLANS_FROM_3MO;
@@ -112,22 +118,27 @@ export default function MembershipApplicationClient({
   const [approvalMessage, setApprovalMessage] = useState<string | null>(null);
   const [reservationCancelled, setReservationCancelled] = useState(false);
   const [upsellOpen, setUpsellOpen] = useState(false);
-  const [upsellStartedAt, setUpsellStartedAt] = useState<number | null>(null);
+  const [upsellExpiresAt, setUpsellExpiresAt] = useState<string | null>(null);
+  const [upsellOfferTokens, setUpsellOfferTokens] = useState<
+    Record<string, string>
+  >({});
   const [nowMs, setNowMs] = useState(() => Date.now());
   const selectedPlan = getMembershipPlan(selectedKey);
   const upsellPlans = upsellPlansFor(selectedPlan);
   const selectedUpsellPlan = selectedUpsellKey
     ? getMembershipPlan(selectedUpsellKey)
     : (upsellPlans[0] ?? null);
-  const offerMsLeft = upsellStartedAt
-    ? Math.max(0, 10 * 60_000 - (nowMs - upsellStartedAt))
+  const offerExpiresAtMs = upsellExpiresAt ? Date.parse(upsellExpiresAt) : null;
+  const offerMsLeft =
+    offerExpiresAtMs && Number.isFinite(offerExpiresAtMs)
+      ? Math.max(0, offerExpiresAtMs - nowMs)
     : 10 * 60_000;
   const offerMinutesLeft = Math.max(0, Math.ceil(offerMsLeft / 60_000));
   const offerProgressPct = Math.min(
     100,
     Math.max(0, 100 - (offerMsLeft / (10 * 60_000)) * 100),
   );
-  const offerExpired = upsellStartedAt !== null && offerMsLeft <= 0;
+  const offerExpired = upsellExpiresAt !== null && offerMsLeft <= 0;
   const renewalMode = isMember;
 
   useEffect(() => {
@@ -198,15 +209,47 @@ export default function MembershipApplicationClient({
     setSelectorOpen(true);
   }
 
-  function beginApplication(plan: MembershipPlan) {
+  async function beginApplication(plan: MembershipPlan) {
     if (state === "submitting") return;
     const nextUpsells = upsellPlansFor(plan);
     setSelectorOpen(false);
     if (!renewalMode && !plan.isUpsell && nextUpsells.length > 0) {
+      const supabase = getSupabaseBrowserClient();
+      const { data } = supabase
+        ? await supabase.auth.getSession()
+        : { data: null };
+      const token = data?.session?.access_token;
+      if (!token) {
+        setState("error");
+        setMessage("로그인 세션을 다시 확인해주세요.");
+        return;
+      }
+      const res = await fetch("/api/membership/offer-token", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ baseProductKey: plan.key }),
+      }).catch(() => null);
+      const payload = (await res
+        ?.json()
+        .catch(() => null)) as MembershipOfferTokenResponse | null;
+      if (!res?.ok || !payload?.ok || !payload.expiresAt) {
+        void submitApplication(plan);
+        return;
+      }
       const startedAt = Date.now();
       setNowMs(startedAt);
       setSelectedUpsellKey(nextUpsells[0]?.key ?? null);
-      setUpsellStartedAt(startedAt);
+      setUpsellExpiresAt(payload.expiresAt);
+      setUpsellOfferTokens(
+        Object.fromEntries(
+          (payload.offers ?? [])
+            .filter((offer) => offer.productKey && offer.token)
+            .map((offer) => [String(offer.productKey), String(offer.token)]),
+        ),
+      );
       setUpsellOpen(true);
       return;
     }
@@ -257,6 +300,7 @@ export default function MembershipApplicationClient({
         source: "plans",
         productKey: plan.key,
         intent: renewalMode ? "renewal" : "new",
+        offerToken: plan.isUpsell ? upsellOfferTokens[plan.key] : undefined,
       }),
     }).catch(() => null);
 
@@ -671,7 +715,7 @@ export default function MembershipApplicationClient({
               </button>
               <button
                 type="button"
-                onClick={() => beginApplication(selectedPlan)}
+                onClick={() => void beginApplication(selectedPlan)}
                 disabled={state === "submitting"}
                 className="h-11 rounded-xl bg-[var(--brand-accent-strong)] text-[12px] font-black text-[var(--brand-cream)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
               >
