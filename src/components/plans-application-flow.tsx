@@ -325,13 +325,14 @@ function KoreaSeatMap({
           {REGIONS.map((region) => {
             const selectedActive = zoomed && region.key === selected.key;
             const hoveredActive = region.key === hoveredKey;
+            if (selectedActive) return null;
             if (zoomed && !selectedActive && !hoveredActive) return null;
             return (
               <g key={`${region.key}-label`}>
                 <circle
                   cx={region.x}
                   cy={region.y}
-                  r={selectedActive ? 12 : hoveredActive ? 34 : 30}
+                  r={selectedActive ? 20 : hoveredActive ? 34 : 30}
                   fill="rgba(15,23,42,0.84)"
                   stroke="rgba(255,255,255,0.94)"
                   strokeWidth={selectedActive ? 4 : 3}
@@ -346,7 +347,7 @@ function KoreaSeatMap({
                     fontSize: selectedActive ? 7 : 22,
                     paintOrder: "stroke",
                     stroke: "rgba(15,23,42,0.82)",
-                    strokeWidth: selectedActive ? 2 : 4,
+                    strokeWidth: selectedActive ? 3 : 4,
                   } as CSSProperties}
                 >
                   {region.shortLabel}
@@ -360,7 +361,7 @@ function KoreaSeatMap({
                     fontSize: selectedActive ? 5.3 : 13,
                     paintOrder: "stroke",
                     stroke: "rgba(15,23,42,0.82)",
-                    strokeWidth: selectedActive ? 1.6 : 3,
+                    strokeWidth: selectedActive ? 2 : 3,
                   } as CSSProperties}
                 >
                   {region.seats}석
@@ -373,27 +374,29 @@ function KoreaSeatMap({
       {activeRegion ? (
         <g className="pointer-events-none">
           <rect
-            x={Math.max(16, Math.min(366, activeRegionX - 68))}
-            y={Math.max(16, activeRegionY - 82)}
-            width="136"
-            height="50"
-            rx="15"
+            x={Math.max(16, Math.min(268, activeRegionX - 120))}
+            y={Math.max(16, activeRegionY - 112)}
+            width="240"
+            height="92"
+            rx="24"
             fill="rgba(15,23,42,0.88)"
             stroke="rgba(255,255,255,0.24)"
           />
           <text
-            x={Math.max(16, Math.min(366, activeRegionX - 68)) + 68}
-            y={Math.max(16, activeRegionY - 82) + 19}
+            x={Math.max(16, Math.min(268, activeRegionX - 120)) + 120}
+            y={Math.max(16, activeRegionY - 112) + 34}
             textAnchor="middle"
-            className="fill-white text-[13px] font-black"
+            className="fill-white font-black"
+            style={{ fontSize: 25 }}
           >
-            {activeRegion.shortLabel}
+            {activeRegion.label}
           </text>
           <text
-            x={Math.max(16, Math.min(366, activeRegionX - 68)) + 68}
-            y={Math.max(16, activeRegionY - 82) + 39}
+            x={Math.max(16, Math.min(268, activeRegionX - 120)) + 120}
+            y={Math.max(16, activeRegionY - 112) + 74}
             textAnchor="middle"
-            className="fill-blue-100 text-[12px] font-black"
+            className="fill-blue-100 font-black"
+            style={{ fontSize: 30 }}
           >
             {activeRegion.seats}자리 남음
           </text>
@@ -468,43 +471,29 @@ export default function PlansApplicationFlow({
                     <div className="text-[18px] font-black tabular-nums sm:text-[24px]">{filled}/{capacity}</div>
                   </div>
                 </div>
-                <div className="mt-2 flex items-center justify-between rounded-2xl border border-zinc-200 bg-[#fbfcff] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/60 lg:hidden">
-                  {mapZoomed ? (
-                    <>
-                      <div>
-                        <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
-                          선택 지역
-                        </div>
-                        <div className="mt-0.5 flex items-end gap-2">
-                          <span className="text-[17px] font-black">{selected.label}</span>
-                          <span className="pb-0.5 text-[12px] font-black text-blue-600 dark:text-blue-300">
-                            {selected.seats}자리 남음
-                          </span>
-                        </div>
+                {!mapZoomed ? (
+                  <div className="mt-2 flex items-center justify-between rounded-2xl border border-zinc-200 bg-[#fbfcff] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/60 lg:hidden">
+                    <div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
+                        seat map
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setMapZoomed(false)}
-                        className="rounded-full border border-zinc-200 px-3 py-1.5 text-[11px] font-black text-zinc-600 dark:border-zinc-700 dark:text-zinc-200"
-                      >
-                        전국 보기
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div>
-                        <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
-                          seat map
-                        </div>
-                        <div className="mt-0.5 text-[15px] font-black">지도를 눌러 내 지역 티오 확인</div>
-                      </div>
-                      <span className="rounded-full bg-zinc-950 px-2.5 py-1 text-[11px] font-black text-white dark:bg-white dark:text-zinc-950">
-                        {capacity - filled}자리 남음
-                      </span>
-                    </>
-                  )}
-                </div>
+                      <div className="mt-0.5 text-[15px] font-black">지도를 눌러 내 지역 티오 확인</div>
+                    </div>
+                    <span className="rounded-full bg-zinc-950 px-2.5 py-1 text-[11px] font-black text-white dark:bg-white dark:text-zinc-950">
+                      {capacity - filled}자리 남음
+                    </span>
+                  </div>
+                ) : null}
                 <div className="relative mx-auto mt-1 h-[350px] min-h-0 max-w-[620px] sm:h-[calc(100%-154px)] sm:min-h-[350px] sm:max-h-[590px] lg:mt-2 lg:h-[calc(100%-120px)]">
+                  {mapZoomed ? (
+                    <button
+                      type="button"
+                      onClick={() => setMapZoomed(false)}
+                      className="absolute left-2 top-2 z-10 rounded-full border border-zinc-200 bg-white/86 px-3 py-2 text-[12px] font-black text-zinc-700 shadow-[0_10px_28px_rgba(15,23,42,0.16)] backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/78 dark:text-zinc-100"
+                    >
+                      전국 보기
+                    </button>
+                  ) : null}
                   <div className="pointer-events-none absolute right-2 top-2 z-10 rounded-2xl border border-zinc-200 bg-white/86 px-2.5 py-2 shadow-[0_10px_28px_rgba(15,23,42,0.16)] backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/78">
                     <div className="text-[9px] font-black uppercase tracking-[0.13em] text-zinc-400">티오 밀도</div>
                     <div className="mt-1.5 flex items-center gap-1.5">
