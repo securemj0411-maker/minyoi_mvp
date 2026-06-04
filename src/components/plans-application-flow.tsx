@@ -486,6 +486,29 @@ function districtUsage(district: DistrictSeat) {
   };
 }
 
+function seatTone(seats: number, total: number) {
+  const ratio = total > 0 ? seats / total : 1;
+  if (seats <= 2) {
+    return {
+      text: "text-red-600 dark:text-red-300",
+      bar: "bg-red-500",
+      badge: "bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-800",
+    };
+  }
+  if (ratio <= 0.5) {
+    return {
+      text: "text-amber-600 dark:text-amber-300",
+      bar: "bg-amber-500",
+      badge: "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-800",
+    };
+  }
+  return {
+    text: "text-blue-600 dark:text-blue-300",
+    bar: "bg-blue-600",
+    badge: "bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/40 dark:text-blue-200 dark:ring-blue-800",
+  };
+}
+
 function regionZoomScale(key: string) {
   if (key === "seoul") return 10.4;
   if (key === "busan") return 9.6;
@@ -780,6 +803,7 @@ export default function PlansApplicationFlow({
   const [manualResults, setManualResults] = useState<AddressOption[]>([]);
   const [manualSearching, setManualSearching] = useState(false);
   const [showManualSearch, setShowManualSearch] = useState(false);
+  const [pinnedDistrictName, setPinnedDistrictName] = useState<string | null>(null);
   const selected = useMemo(
     () => REGIONS.find((region) => region.key === selectedKey) ?? REGIONS[0],
     [selectedKey],
@@ -787,12 +811,14 @@ export default function PlansApplicationFlow({
   const selectedDistricts = useMemo(() => districtSeatsFor(selected), [selected]);
   const selectedDistrict = selectedDistricts.find((district) => district.name === selectedDistrictName) ?? selectedDistricts[0] ?? null;
   const visibleDistricts = useMemo(() => {
-    if (!selectedDistrict?.name) return selectedDistricts;
+    if (!pinnedDistrictName) return selectedDistricts;
+    const pinnedDistrict = selectedDistricts.find((district) => district.name === pinnedDistrictName);
+    if (!pinnedDistrict) return selectedDistricts;
     return [
-      selectedDistrict,
-      ...selectedDistricts.filter((district) => district.name !== selectedDistrict.name),
+      pinnedDistrict,
+      ...selectedDistricts.filter((district) => district.name !== pinnedDistrict.name),
     ];
-  }, [selectedDistrict, selectedDistricts]);
+  }, [pinnedDistrictName, selectedDistricts]);
   const filledPct = Math.round((filled / capacity) * 100);
   const canGoBack = step > 0;
   const isLast = step === 3;
@@ -810,6 +836,7 @@ export default function PlansApplicationFlow({
     const nextDistricts = districtSeatsFor(nextRegion);
     setSelectedKey(key);
     setSelectedDistrictName(nextDistricts[0]?.name ?? null);
+    setPinnedDistrictName(null);
     setHoveredKey(null);
     setMapZoomed(true);
   };
@@ -833,8 +860,10 @@ export default function PlansApplicationFlow({
     const nextDistricts = districtSeatsFor(nextRegion);
     const hint = districtHint ?? parts.filter(Boolean).at(-1) ?? "";
     const matchedDistrict = nextDistricts.find((district) => hint.includes(district.name) || district.name.includes(hint));
+    const nextDistrictName = matchedDistrict?.name ?? nextDistricts[0]?.name ?? null;
     setSelectedKey(key);
-    setSelectedDistrictName(matchedDistrict?.name ?? nextDistricts[0]?.name ?? null);
+    setSelectedDistrictName(nextDistrictName);
+    setPinnedDistrictName(nextDistrictName);
     setHoveredKey(null);
     setMapZoomed(true);
     setLocationStatus("success");
@@ -993,6 +1022,8 @@ export default function PlansApplicationFlow({
                         {visibleDistricts.map((district) => {
                           const active = district.name === selectedDistrict?.name;
                           const usage = districtUsage(district);
+                          const tone = seatTone(district.seats, usage.total);
+                          const pinned = district.name === pinnedDistrictName;
                           return (
                             <button
                               key={district.name}
@@ -1000,25 +1031,34 @@ export default function PlansApplicationFlow({
                               onClick={() => setSelectedDistrictName(district.name)}
                               className={`mb-1.5 grid w-full grid-cols-[minmax(0,1fr)_58px_74px] items-center gap-2 rounded-2xl border px-3 py-2 text-left transition ${
                                 active
-                                  ? "border-blue-400 bg-blue-50 shadow-[0_8px_18px_rgba(37,99,235,0.12)] dark:border-blue-500/70 dark:bg-blue-950/38"
+                                  ? "border-blue-500 bg-blue-50 shadow-[0_8px_18px_rgba(37,99,235,0.16)] ring-2 ring-blue-500/35 dark:border-blue-300 dark:bg-blue-950/50 dark:ring-blue-300/45"
                                   : "border-zinc-200 bg-white hover:border-blue-200 dark:border-zinc-800 dark:bg-zinc-900/78"
                               }`}
                             >
                               <div className="min-w-0">
-                                <div className="truncate text-[15px] font-black">{district.name}</div>
+                                <div className="flex min-w-0 items-center gap-1.5">
+                                  <span className="truncate text-[15px] font-black">{district.name}</span>
+                                  {pinned ? (
+                                    <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-black text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-800">
+                                      내 위치
+                                    </span>
+                                  ) : null}
+                                </div>
                                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
                                   <div
-                                    className="h-full rounded-full bg-blue-600"
+                                    className={`h-full rounded-full ${tone.bar}`}
                                     style={{ width: `${Math.min(100, Math.round((usage.filled / usage.total) * 100))}%` }}
                                   />
                                 </div>
                               </div>
                               <div className="text-center">
-                                <div className="text-[14px] font-black tabular-nums">{usage.filled}/{usage.total}</div>
+                                <div className={`inline-flex min-w-[46px] justify-center rounded-full px-2 py-1 text-[13px] font-black tabular-nums ring-1 ${tone.badge}`}>
+                                  {usage.filled}/{usage.total}
+                                </div>
                                 <div className="mt-0.5 text-[10px] font-black text-zinc-400">{pressureLabel(district.pressure)}</div>
                               </div>
                               <div className="text-right">
-                                <div className="text-[15px] font-black text-blue-600 dark:text-blue-300">{district.seats}석</div>
+                                <div className={`text-[15px] font-black ${tone.text}`}>{district.seats}석</div>
                                 <div className="mt-0.5 text-[10px] font-black text-zinc-400">남음</div>
                               </div>
                             </button>
