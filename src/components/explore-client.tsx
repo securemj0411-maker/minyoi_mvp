@@ -172,12 +172,26 @@ type MembershipStatusSnapshot = {
   ok?: boolean;
   isMember?: boolean;
   activePlan?: {
+    applicationId?: number | null;
     planKey?: string | null;
     planLabel?: string | null;
     months?: number | null;
     priceKrw?: number | null;
+    applicationKind?: string | null;
     activatedAt?: string | null;
     memberOfferExpiresAt?: string | null;
+  } | null;
+  application?: {
+    id?: number | null;
+    status?: string | null;
+    applicationKind?: string | null;
+    planKey?: string | null;
+    planLabel?: string | null;
+    priceKrw?: number | null;
+    depositConfirmedAt?: string | null;
+    scheduledAutoApproveAt?: string | null;
+    decidedAt?: string | null;
+    createdAt?: string | null;
   } | null;
   planEndAt?: string | null;
 };
@@ -304,9 +318,11 @@ function feedOfferPlansFor(remainingDays: number | null): MembershipPlan[] {
 function FeedMembershipUpsellCard({
   remainingSec,
   planEndAt,
+  onMembershipStatusChange,
 }: {
   remainingSec: number;
   planEndAt: string | null;
+  onMembershipStatusChange?: (status: MembershipStatusSnapshot) => void;
 }) {
   const clamped = Math.max(0, remainingSec);
   const expired = clamped <= 0;
@@ -325,9 +341,16 @@ function FeedMembershipUpsellCard({
     useState<string | null>(null);
   const [offerModalOpen, setOfferModalOpen] = useState(false);
   const [requestState, setRequestState] = useState<
-    "idle" | "submitting" | "reserved" | "depositing" | "deposit_sent" | "error"
+    | "idle"
+    | "submitting"
+    | "reserved"
+    | "depositing"
+    | "deposit_sent"
+    | "approved"
+    | "error"
   >("idle");
   const [message, setMessage] = useState<string | null>(null);
+  const [approvalToast, setApprovalToast] = useState<string | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const selectedPlan = selectedKey
     ? getMembershipPlan(selectedKey)
@@ -345,8 +368,6 @@ function FeedMembershipUpsellCard({
     const id = window.setInterval(() => setNowMs(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, []);
-
-  if (!offerPlans.length || expired) return null;
 
   async function getAccessToken() {
     const supabase = getSupabaseBrowserClient();
@@ -433,6 +454,70 @@ function FeedMembershipUpsellCard({
     setMessage("입금 확인 요청 완료. 5분 내 자동 승인까지 같이 걸렸어요.");
   }
 
+  useEffect(() => {
+    if (
+      requestState !== "deposit_sent" ||
+      !reservation?.applicationId ||
+      approvalToast
+    ) {
+      return;
+    }
+    let alive = true;
+
+    async function checkApproval() {
+      const token = await getAccessToken();
+      if (!token || !alive) return;
+      const res = await fetch("/api/membership/status", {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      }).catch(() => null);
+      if (!res?.ok || !alive) return;
+      const payload = (await res
+        .json()
+        .catch(() => null)) as MembershipStatusSnapshot | null;
+      if (!payload || !alive) return;
+
+      onMembershipStatusChange?.(payload);
+      const latestApplication = payload.application ?? null;
+      const activeApplicationId = payload.activePlan?.applicationId ?? null;
+      const approved =
+        latestApplication?.id === reservation.applicationId &&
+        latestApplication.status === "approved";
+      const activeApproved = activeApplicationId === reservation.applicationId;
+
+      if (payload.isMember && (approved || activeApproved)) {
+        setRequestState("approved");
+        setMessage("멤버십 연장 완료. 기간이 추가됐어요.");
+        setApprovalToast("멤버십 연장 완료. 기간이 추가됐어요.");
+        setOfferModalOpen(false);
+      } else if (
+        latestApplication?.id === reservation.applicationId &&
+        latestApplication.status === "rejected"
+      ) {
+        setRequestState("error");
+        setMessage("연장 예약이 거절됐어요. 고객센터로 문의해주세요.");
+      }
+    }
+
+    void checkApproval();
+    const id = window.setInterval(() => void checkApproval(), 2000);
+    return () => {
+      alive = false;
+      window.clearInterval(id);
+    };
+  }, [
+    approvalToast,
+    onMembershipStatusChange,
+    requestState,
+    reservation?.applicationId,
+  ]);
+
+  useEffect(() => {
+    if (!approvalToast) return;
+    const id = window.setTimeout(() => setApprovalToast(null), 5200);
+    return () => window.clearTimeout(id);
+  }, [approvalToast]);
+
   const selectedTargetLabel = selectedPlan
     ? upgradeTargetLabel(selectedPlan)
     : "장기 무제한 멤버십";
@@ -455,8 +540,15 @@ function FeedMembershipUpsellCard({
       : 5 * 60_000;
   const showDepositCountdown = requestState === "deposit_sent";
 
+  if ((!offerPlans.length || expired) && !approvalToast) return null;
+
   return (
     <section className="mb-3 overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-[0_16px_45px_rgba(245,158,11,0.13)] dark:border-amber-900/50 dark:bg-zinc-900">
+      {approvalToast ? (
+        <div className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+18px)] z-[120] w-[calc(100vw-28px)] max-w-[420px] -translate-x-1/2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] font-black text-emerald-800 shadow-2xl shadow-emerald-950/18 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-100">
+          {approvalToast}
+        </div>
+      ) : null}
       <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-zinc-950 px-4 py-3 text-white">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
@@ -4144,6 +4236,7 @@ export default function ExploreClient({
                     <FeedMembershipUpsellCard
                       planEndAt={membershipStatus?.planEndAt ?? null}
                       remainingSec={feedUpsellRemainingSec}
+                      onMembershipStatusChange={setMembershipStatus}
                     />
                   </div>
                 </>
