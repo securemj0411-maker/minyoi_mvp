@@ -2745,6 +2745,30 @@ function finitePositivePrice(value: number | null | undefined) {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+function normalizedComparableStatus(value: string | null | undefined) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function isComparableSold(item: Pick<ComparableListing, "listingState" | "saleStatus">) {
+  const state = normalizedComparableStatus(item.listingState);
+  const status = normalizedComparableStatus(item.saleStatus);
+  return (
+    state === "sold" ||
+    state === "sold_confirmed" ||
+    status === "sold" ||
+    status === "sold_out" ||
+    status === "closed" ||
+    status === "joongna_sold_page" ||
+    status.startsWith("joongna_status_")
+  );
+}
+
+function isComparableReserved(item: Pick<ComparableListing, "listingState" | "saleStatus">) {
+  const state = normalizedComparableStatus(item.listingState);
+  const status = normalizedComparableStatus(item.saleStatus);
+  return state === "reserved" || status === "reserved" || status === "예약중";
+}
+
 function comparableDisplayBounds(card: RevealCard): { lower: number; upper: number } | null {
   const median = finitePositivePrice(card.marketBasis?.medianPrice);
   if (!median) return null;
@@ -2982,8 +3006,8 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                   const diffPct = card.price && itemPrice ? Math.round((priceDiff / card.price) * 100) : 0;
                   const isSimilar = Math.abs(diffPct) <= 2;
                   const isMoreExpensive = !isSimilar && priceDiff > 0;
-                  const isSold = item.listingState === "sold" || item.saleStatus === "SOLD_OUT" || item.saleStatus === "sold";
-                  const isReserved = item.saleStatus === "reserved" || item.saleStatus === "RESERVED" || item.saleStatus === "예약중";
+                  const isSold = isComparableSold(item);
+                  const isReserved = isComparableReserved(item);
                   const evidenceType = isSold ? "판매완료" : isReserved ? "예약중" : "판매중";
                   const seenLabel = seenAgoLabel(item.lastSeenAt);
                   const statusBadge = isSold
@@ -5510,7 +5534,7 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
                 {group.items.map((item) => {
                   const diff = item.price - card.price;
                   const diffLabel = diff > 0 ? `이 매물보다 ${krw(diff)} 비쌈` : diff < 0 ? `이 매물보다 ${krw(Math.abs(diff))} 쌈` : "비슷한 가격";
-                  const isSold = item.listingState === "sold" || item.saleStatus === "SOLD_OUT" || item.saleStatus === "sold";
+                  const isSold = isComparableSold(item);
                   const itemConditionLabel = ourTier
                     ? tierShortLabel(item.conditionTier)
                     : conditionShortLabel(item.conditionClass);
