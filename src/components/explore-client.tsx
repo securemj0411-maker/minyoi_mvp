@@ -540,15 +540,28 @@ function FeedMembershipUpsellCard({
       : 5 * 60_000;
   const showDepositCountdown = requestState === "deposit_sent";
 
-  if ((!offerPlans.length || expired) && !approvalToast) return null;
+  if (approvalToast) {
+    return (
+      <div className="fixed left-1/2 top-1/2 z-[120] flex w-[calc(100vw-32px)] max-w-[430px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[24px] border border-emerald-200 bg-white px-5 py-5 text-center shadow-[0_24px_80px_rgba(4,120,87,0.28)] dark:border-emerald-400/25 dark:bg-zinc-950">
+        <div>
+          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-[22px] font-black text-white">
+            ✓
+          </div>
+          <div className="mt-3 break-keep text-[18px] font-black text-zinc-950 dark:text-white">
+            {approvalToast}
+          </div>
+          <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+            연장 기간이 멤버십에 반영됐어요.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!offerPlans.length || expired) return null;
 
   return (
     <section className="mb-3 overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-[0_16px_45px_rgba(245,158,11,0.13)] dark:border-amber-900/50 dark:bg-zinc-900">
-      {approvalToast ? (
-        <div className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+18px)] z-[120] w-[calc(100vw-28px)] max-w-[420px] -translate-x-1/2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] font-black text-emerald-800 shadow-2xl shadow-emerald-950/18 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-100">
-          {approvalToast}
-        </div>
-      ) : null}
       <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-zinc-950 px-4 py-3 text-white">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
@@ -2461,12 +2474,20 @@ export default function ExploreClient({
     return Math.max(0, Math.ceil(ms / 1000));
   }, [cooldown, now]);
   const feedUpsellRemainingSec = useMemo(() => {
+    if (membershipStatus?.activePlan?.applicationKind === "renewal") return 0;
+    if (
+      membershipStatus?.application?.applicationKind === "renewal" &&
+      (membershipStatus.application.status === "approved" ||
+        membershipStatus.application.status === "pending")
+    ) {
+      return 0;
+    }
     const expiresAt = membershipStatus?.activePlan?.memberOfferExpiresAt;
     if (!expiresAt) return 0;
     const expiresAtMs = Date.parse(expiresAt);
     if (!Number.isFinite(expiresAtMs)) return 0;
     return Math.max(0, Math.ceil((expiresAtMs - now) / 1000));
-  }, [membershipStatus?.activePlan?.memberOfferExpiresAt, now]);
+  }, [membershipStatus, now]);
 
   const canRefresh = true;
 
@@ -3244,6 +3265,7 @@ export default function ExploreClient({
       <FeedMembershipUpsellCard
         planEndAt={membershipStatus?.planEndAt ?? null}
         remainingSec={feedUpsellRemainingSec}
+        onMembershipStatusChange={setMembershipStatus}
       />
 
       {/* 필터/정렬 — sticky bar (당근식). Wave 370: 마진/패딩 압축 (모바일 화면 좁음).
