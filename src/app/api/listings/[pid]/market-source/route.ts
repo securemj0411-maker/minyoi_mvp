@@ -27,10 +27,10 @@ import { getProStatus } from "@/lib/user-subscription";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// 2026-05-16 (사용자 코멘트 #96 pid 407759980): 비교군 list 에 active 만 보이고 sold 안 보임.
-// raw 에 sale_status/listing_state 있는데 limit 30 으로 잘림 → active 가 다 차지하면 sold 0건.
-// limit 80 으로 늘려 active + sold + disappeared 다 표시. UI 가 saleStatus 표시 이미 있음.
+// 2026-06-04 Wave 1085: 비교군 list 는 "호가"보다 "판매완료 근거"가 우선.
+// active 최신순이 앞 슬롯을 먹으면 sold velocity 는 있는데 화면 근거가 active 뿐이라 신뢰가 깨진다.
 const MAX_COMPARABLES = 80;
+const MAX_PARSED_COMPARABLE_CANDIDATES = 1000;
 
 type Comparable = {
   pid: number;
@@ -53,6 +53,38 @@ type Comparable = {
   conditionChips?: string[] | null;
   conditionClass?: string | null;
 };
+
+function normalizedComparableStatus(value: unknown) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function comparableSoldRank(row: Record<string, unknown>) {
+  const state = normalizedComparableStatus(row.listing_state);
+  const status = normalizedComparableStatus(row.sale_status);
+  if (state === "sold_confirmed" || state === "sold" || status === "sold" || status === "sold_out") return 0;
+  if (status === "closed" || status === "joongna_sold_page" || status.startsWith("joongna_status_")) return 1;
+  if (state === "disappeared") return 2;
+  if (state === "reserved" || status === "reserved" || status === "예약중") return 3;
+  return 4;
+}
+
+function comparableLastSeenMs(row: Record<string, unknown>) {
+  const ms = Date.parse(String(row.last_seen_at ?? ""));
+  return Number.isFinite(ms) ? ms : 0;
+}
+
+function sortMarketProofRows(rows: Array<Record<string, unknown>>) {
+  return [...rows].sort((a, b) => {
+    const soldRankDiff = comparableSoldRank(a) - comparableSoldRank(b);
+    if (soldRankDiff !== 0) return soldRankDiff;
+
+    const aPrice = Number(a.price ?? 0);
+    const bPrice = Number(b.price ?? 0);
+    if (aPrice !== bPrice) return bPrice - aPrice;
+
+    return comparableLastSeenMs(b) - comparableLastSeenMs(a);
+  });
+}
 
 function trimComparableOutlierRows(rows: Array<Record<string, unknown>>) {
   const prices = rows
@@ -234,13 +266,13 @@ export async function GET(
       // Wave 818b revert (2026-05-30): detail_status 필터 시도했으나 컬럼이 mvp_raw_listings 에만 있어서
       //   PostgREST 400. raw_listings 쪽에서 filter 후 join 필요 — 별도 wave.
       const sameKeyPidsRes = await restFetch(
-        `${tableUrl("mvp_listing_parsed")}?select=pid&comparable_key=eq.${encodeURIComponent(comparableKey)}&needs_review=eq.false&limit=${MAX_COMPARABLES * 6}`,
+        `${tableUrl("mvp_listing_parsed")}?select=pid&comparable_key=eq.${encodeURIComponent(comparableKey)}&needs_review=eq.false&limit=${MAX_PARSED_COMPARABLE_CANDIDATES}`,
         { headers: serviceHeaders() },
       );
       const sameKeyPids = ((await sameKeyPidsRes.json()) as Array<{ pid: number }>)
         .map((r) => Number(r.pid))
         .filter((p) => Number.isFinite(p) && p !== pid)
-        .slice(0, MAX_COMPARABLES * 6);
+        .slice(0, MAX_PARSED_COMPARABLE_CANDIDATES);
       if (sameKeyPids.length > 0) {
         // Wave 90: listing_type=normal + risk_hits=0 + 새상품 제외 필터.
         const [rawListRes, analysisRes, parsedRes2] = await Promise.all([
@@ -432,7 +464,7 @@ export async function GET(
           return [...bestPerSeller.values(), ...noSellerRows];
         })();
         const displayRows = trimComparableDisplayRows(dedupedBySeller, displayMarketBasis);
-        const proofRows = displayRows.length > 0 ? displayRows : dedupedBySeller;
+        const proofRows = sortMarketProofRows(displayRows.length > 0 ? displayRows : dedupedBySeller).slice(0, MAX_COMPARABLES);
         comparables = proofRows.map((row) => {
           const rowPid = Number(row.pid);
           const marketplaceSource = normalizeMarketplaceSource((row.source as string | null) ?? (row.seller_source as string | null));

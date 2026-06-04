@@ -2661,7 +2661,15 @@ function filterDisplayComparableListings(card: RevealCard, items: ComparableList
 type ComparableDisplayScope = "strict" | "price_relaxed" | "source_relaxed";
 
 function sortComparableDisplayListings(items: ComparableListing[]) {
-  return [...items].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+  return [...items].sort((a, b) => {
+    const soldDiff = Number(isComparableSold(b)) - Number(isComparableSold(a));
+    if (soldDiff !== 0) return soldDiff;
+
+    const reservedDiff = Number(isComparableReserved(b)) - Number(isComparableReserved(a));
+    if (reservedDiff !== 0) return reservedDiff;
+
+    return (b.price ?? 0) - (a.price ?? 0);
+  });
 }
 
 function selectComparableDisplayListings(

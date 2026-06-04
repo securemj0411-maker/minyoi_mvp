@@ -297,7 +297,18 @@ export function MarketSourceDebug({
     return Math.abs(ourIdx - sampleIdx);
   };
   const ourTier = data?.ourListing.conditionTier ?? null;
+  const statusRank = (item: Comparable) => {
+    const state = String(item.listingState ?? "").trim().toLowerCase();
+    const status = String(item.saleStatus ?? "").trim().toLowerCase();
+    if (state === "sold_confirmed" || state === "sold" || status === "sold" || status === "sold_out") return 0;
+    if (status === "closed" || status === "joongna_sold_page" || status.startsWith("joongna_status_")) return 1;
+    if (state === "disappeared") return 2;
+    if (state === "reserved" || status === "reserved" || status === "예약중") return 3;
+    return 4;
+  };
   const sorted = data?.comparables ? [...data.comparables].sort((a, b) => {
+    const statusDiff = statusRank(a) - statusRank(b);
+    if (statusDiff !== 0) return statusDiff;
     if (ourTier) {
       const da = tierDistance(a.conditionTier);
       const db = tierDistance(b.conditionTier);
