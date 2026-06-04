@@ -164,17 +164,28 @@ const ACCESS_ITEMS = [
 ];
 
 function pressureFill(pressure: number) {
-  if (pressure >= 0.78) return "#2563eb";
-  if (pressure >= 0.64) return "#0ea5e9";
-  if (pressure >= 0.52) return "#14b8a6";
-  return "#94a3b8";
+  if (pressure >= 0.82) return "#ef4444";
+  if (pressure >= 0.72) return "#f97316";
+  if (pressure >= 0.62) return "#f59e0b";
+  if (pressure >= 0.5) return "#10b981";
+  return "#2563eb";
 }
 
 function pressureLabel(pressure: number) {
-  if (pressure >= 0.78) return "과밀";
-  if (pressure >= 0.64) return "마감 임박";
-  if (pressure >= 0.52) return "보통";
+  if (pressure >= 0.82) return "과밀";
+  if (pressure >= 0.72) return "마감 임박";
+  if (pressure >= 0.62) return "주의";
+  if (pressure >= 0.5) return "보통";
   return "여유";
+}
+
+function regionZoomScale(key: string) {
+  if (["seoul", "incheon", "busan", "daegu", "daejeon", "gwangju", "ulsan", "sejong"].includes(key)) {
+    return 5.2;
+  }
+  if (key === "jeju") return 2.45;
+  if (key === "gyeonggi") return 1.95;
+  return 1.72;
 }
 
 function KoreaSeatMap({
@@ -192,7 +203,7 @@ function KoreaSeatMap({
 }) {
   const hoveredRegion = REGIONS.find((region) => region.key === hoveredKey);
   const activeRegion = hoveredRegion ?? (zoomed ? selected : null);
-  const zoomScale = zoomed ? 1.72 : 1;
+  const zoomScale = zoomed ? regionZoomScale(selected.key) : 1;
   const zoomX = zoomed ? 254.5 - selected.x * zoomScale : 0;
   const zoomY = zoomed ? 358 - selected.y * zoomScale : 0;
   const activeRegionX = activeRegion ? activeRegion.x * zoomScale + zoomX : 0;
@@ -285,25 +296,27 @@ function KoreaSeatMap({
                   <circle
                     cx={region.x}
                     cy={region.y}
-                    r={selectedActive ? 24 : hoveredActive ? 21 : 15}
+                    r={selectedActive ? 12 : hoveredActive ? 28 : 22}
                     fill="rgba(15,23,42,0.68)"
                     stroke="rgba(255,255,255,0.78)"
-                    strokeWidth={selectedActive ? 3 : 1.8}
+                    strokeWidth={selectedActive ? 4 : 2.4}
                     className="transition-all duration-200"
                   />
                   <text
                     x={region.x}
-                    y={region.y - 2}
+                    y={region.y - 4}
                     textAnchor="middle"
-                    className="pointer-events-none select-none fill-white text-[13px] font-black"
+                    className="pointer-events-none select-none fill-white font-black"
+                    style={{ fontSize: selectedActive ? 7 : 17 }}
                   >
                     {region.shortLabel}
                   </text>
                   <text
                     x={region.x}
-                    y={region.y + 13}
+                    y={region.y + 17}
                     textAnchor="middle"
-                    className="pointer-events-none select-none fill-white/90 text-[10px] font-black"
+                    className="pointer-events-none select-none fill-white/90 font-black"
+                    style={{ fontSize: selectedActive ? 5.3 : 12 }}
                   >
                     {region.seats}석
                   </text>
@@ -416,9 +429,15 @@ export default function PlansApplicationFlow({
                 </div>
                 <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
                   <div
-                    className="h-full rounded-r-full bg-[linear-gradient(90deg,#10b981,#3182f6,#1d4ed8)]"
+                    className="h-full rounded-r-full bg-[linear-gradient(90deg,#2563eb,#10b981,#f59e0b,#f97316,#ef4444)]"
                     style={{ width: `${Math.min(96, Math.max(18, filledPct))}%` }}
                   />
+                </div>
+                <div className="mt-2 flex items-center gap-2 text-[10px] font-black text-zinc-500 dark:text-zinc-400">
+                  <span className="shrink-0 text-blue-500 dark:text-blue-300">여유</span>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-[linear-gradient(90deg,#2563eb,#10b981,#f59e0b,#f97316,#ef4444)] shadow-inner" />
+                  <span className="shrink-0 text-red-500 dark:text-red-300">과밀</span>
+                  <span className="hidden shrink-0 text-zinc-400 sm:inline">티오가 찰수록 붉어져요</span>
                 </div>
                 <div className="mt-2 flex items-center justify-between rounded-2xl border border-zinc-200 bg-[#fbfcff] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/60 lg:hidden">
                   {mapZoomed ? (
