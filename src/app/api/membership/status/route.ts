@@ -50,6 +50,13 @@ export async function GET(req: Request) {
   const activePlan = activeApplication
     ? getMembershipPlan(activeApplication.product_key)
     : null;
+  const activePlanActivatedAt =
+    activeApplication?.decided_at ?? activeApplication?.created_at ?? null;
+  const memberOfferExpiresAt = activePlanActivatedAt
+    ? new Date(
+        new Date(activePlanActivatedAt).getTime() + 60 * 60 * 1000,
+      ).toISOString()
+    : null;
 
   return NextResponse.json({
     ok: true,
@@ -63,6 +70,8 @@ export async function GET(req: Request) {
           months: activePlan.months,
           priceKrw: Number(activeApplication?.price_krw ?? activePlan.priceKrw),
           applicationKind: activeApplication?.application_kind ?? "new",
+          activatedAt: activePlanActivatedAt,
+          memberOfferExpiresAt,
         }
       : null,
     application: application

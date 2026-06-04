@@ -152,6 +152,8 @@ type MembershipStatusSnapshot = {
     planLabel?: string | null;
     months?: number | null;
     priceKrw?: number | null;
+    activatedAt?: string | null;
+    memberOfferExpiresAt?: string | null;
   } | null;
 };
 
@@ -246,7 +248,7 @@ function FeedMembershipUpsellCard({ remainingSec, activePlanKey }: { remainingSe
     }
   }, [offerPlans, selectedKey]);
 
-  if (!offerPlans.length) return null;
+  if (!offerPlans.length || expired) return null;
 
   async function getAccessToken() {
     const supabase = getSupabaseBrowserClient();
@@ -1390,17 +1392,6 @@ export default function ExploreClient({
   const [legacySavedPids, setLegacySavedPids] = useState<Set<number>>(() => new Set());
   const [now, setNow] = useState(Date.now());
   const [membershipStatus, setMembershipStatus] = useState<MembershipStatusSnapshot | null>(null);
-  const [feedUpsellExpiresAt] = useState(() => {
-    const fallback = Date.now() + 60 * 60 * 1000;
-    if (typeof window === "undefined") return fallback;
-    try {
-      const key = `minyoi:feed-upsell-expires-at:${storageScope}`;
-      const existing = Number(window.localStorage.getItem(key) ?? 0);
-      if (Number.isFinite(existing) && existing > Date.now()) return existing;
-      window.localStorage.setItem(key, String(fallback));
-    } catch {}
-    return fallback;
-  });
   const [selectedCard, setSelectedCard] = useState<RevealCard | null>(null);
   const detailSessionIdRef = useRef<string | null>(null);
   // Wave 346: refresh modal — 기다리기/충전 옵션
@@ -1760,10 +1751,13 @@ export default function ExploreClient({
     const ms = new Date(cooldown.nextAvailableAt).getTime() - now;
     return Math.max(0, Math.ceil(ms / 1000));
   }, [cooldown, now]);
-  const feedUpsellRemainingSec = useMemo(
-    () => Math.max(0, Math.ceil((feedUpsellExpiresAt - now) / 1000)),
-    [feedUpsellExpiresAt, now],
-  );
+  const feedUpsellRemainingSec = useMemo(() => {
+    const expiresAt = membershipStatus?.activePlan?.memberOfferExpiresAt;
+    if (!expiresAt) return 0;
+    const expiresAtMs = Date.parse(expiresAt);
+    if (!Number.isFinite(expiresAtMs)) return 0;
+    return Math.max(0, Math.ceil((expiresAtMs - now) / 1000));
+  }, [membershipStatus?.activePlan?.memberOfferExpiresAt, now]);
 
   const canRefresh = true;
 
