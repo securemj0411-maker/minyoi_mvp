@@ -255,6 +255,22 @@ function upgradeTargetLabel(plan: MembershipPlan) {
     : `${targetMonths}개월 무제한 멤버십`;
 }
 
+function upgradeRegularPrice(plan: MembershipPlan) {
+  const targetMonths = plan.upgradeTargetMonths ?? plan.months;
+  if (targetMonths >= 12) return 299_000;
+  if (targetMonths >= 6) return 169_000;
+  if (targetMonths >= 3) return 99_000;
+  return 49_000;
+}
+
+function upgradeSavings(plan: MembershipPlan) {
+  const regularPrice = upgradeRegularPrice(plan);
+  const savedKrw = Math.max(0, regularPrice - plan.priceKrw);
+  const discountPct =
+    regularPrice > 0 ? Math.round((savedKrw / regularPrice) * 100) : 0;
+  return { regularPrice, savedKrw, discountPct };
+}
+
 function remainingMembershipDays(planEndAt: string | null | undefined) {
   if (!planEndAt) return null;
   const endMs = Date.parse(planEndAt);
@@ -420,6 +436,7 @@ function FeedMembershipUpsellCard({
   const selectedTargetLabel = selectedPlan
     ? upgradeTargetLabel(selectedPlan)
     : "장기 무제한 멤버십";
+  const selectedSavings = selectedPlan ? upgradeSavings(selectedPlan) : null;
   const headline = selectedPlan
     ? `단 ${membershipKrw(selectedPlan.priceKrw)}으로 ${selectedTargetLabel} 업그레이드`
     : "멤버십 업그레이드 1시간 특가";
@@ -449,6 +466,16 @@ function FeedMembershipUpsellCard({
             <div className="mt-0.5 break-keep text-[16px] font-black leading-5">
               {headline}
             </div>
+            {selectedSavings ? (
+              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-black text-amber-50">
+                <span className="line-through opacity-70">
+                  정가 {membershipKrw(selectedSavings.regularPrice)}
+                </span>
+                <span className="rounded-full bg-white/16 px-2 py-0.5 ring-1 ring-white/20">
+                  {selectedSavings.discountPct}% 할인
+                </span>
+              </div>
+            ) : null}
           </div>
           <div className="shrink-0 rounded-xl bg-white/14 px-3 py-2 text-center ring-1 ring-white/20">
             <div className="text-[10px] font-black text-amber-50">
@@ -540,6 +567,15 @@ function FeedMembershipUpsellCard({
                 </div>
                 <div className="mt-1 text-[26px] font-black text-zinc-950 dark:text-zinc-50">
                   {membershipKrw(selectedPlan.priceKrw)}
+                </div>
+                <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-black">
+                  <span className="text-zinc-400 line-through">
+                    정가{" "}
+                    {membershipKrw(upgradeSavings(selectedPlan).regularPrice)}
+                  </span>
+                  <span className="rounded-full bg-white px-2 py-0.5 text-amber-700 ring-1 ring-amber-100 dark:bg-zinc-950 dark:text-amber-300 dark:ring-amber-900">
+                    {membershipKrw(upgradeSavings(selectedPlan).savedKrw)} 절약
+                  </span>
                 </div>
                 <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
                   단 {membershipKrw(selectedPlan.priceKrw)}으로{" "}
