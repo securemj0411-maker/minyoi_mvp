@@ -1495,12 +1495,13 @@ export function marketBasisForCandidate(
 export function velocityBasisForCandidate(
   comparableKey: string | null,
   velocityStats: Map<string, MarketVelocityRow>,
-  readinessMap: Awaited<ReturnType<typeof loadCategoryReadinessMap>>,
+  _readinessMap: Awaited<ReturnType<typeof loadCategoryReadinessMap>>,
   conditionClass?: string | null,
 ): RevealVelocityBasis | null {
   if (!comparableKey) return null;
-  const category = categoryFromComparableKey(comparableKey);
-  if (!category || readinessMap[category]?.status !== "ready") return null;
+  // Visibility/readiness belongs to pool entry selection. Velocity display should
+  // use the actual aggregated row when it exists, including audited narrow lanes
+  // under broader internal-only categories such as laptop.
   const conditionStat = velocityStats.get(velocityStatsConditionKey(comparableKey, conditionClass));
   const allStat = velocityStats.get(comparableKey);
   const stat = isUsableConditionVelocity(conditionStat) ? conditionStat : allStat;
