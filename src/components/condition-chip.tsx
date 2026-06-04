@@ -260,6 +260,25 @@ export function UnopenedPhotoBadge(props: Parameters<typeof ConditionPhotoBadge>
   return <ConditionPhotoBadge {...props} />;
 }
 
+type NormalizedConditionTier = "S" | "A" | "B" | "C" | "D" | "UNKNOWN";
+
+export function normalizeConditionTier(tier: string | null | undefined): NormalizedConditionTier | null {
+  const raw = String(tier ?? "").trim();
+  if (!raw) return null;
+  const upper = raw.toUpperCase();
+  if (upper === "S" || upper === "A" || upper === "B" || upper === "C" || upper === "D" || upper === "UNKNOWN") {
+    return upper;
+  }
+  const lower = raw.toLowerCase();
+  if (lower === "s_grade") return "S";
+  if (lower === "a_grade") return "A";
+  if (lower === "b_grade") return "B";
+  if (lower === "c_grade") return "C";
+  if (lower === "d_grade" || lower === "reject") return "D";
+  if (lower === "unknown_condition") return "UNKNOWN";
+  return null;
+}
+
 // Wave 714q (2026-05-23): 신발/의류 5-tier 전용 사진 위 뱃지.
 //   기존 ConditionPhotoBadge 는 옛 conditionClass (mint/unopened) 기반.
 //   신발/의류는 새 tier (S/A/B/C/D) 사용 — 다른 component 로 분리.
@@ -322,10 +341,11 @@ export function ConditionTierPhotoBadge({
   // Wave 714r/760d: 의류만 desc 분리. 신발/게임기/골프는 공통 tier desc 사용.
   category?: "shoe" | "clothing" | "game_console" | "sport_golf" | null;
 }) {
-  if (!tier || tier === "UNKNOWN") return null;
-  const style = TIER_PHOTO_BADGE_STYLES[tier];
+  const normalizedTier = normalizeConditionTier(tier);
+  if (!normalizedTier || normalizedTier === "UNKNOWN") return null;
+  const style = TIER_PHOTO_BADGE_STYLES[normalizedTier];
   if (!style) return null;
-  const desc = category === "clothing" ? (TIER_PHOTO_DESC_CLOTHING[tier] ?? style.desc) : style.desc;
+  const desc = category === "clothing" ? (TIER_PHOTO_DESC_CLOTHING[normalizedTier] ?? style.desc) : style.desc;
   return (
     <span
       title={desc}
@@ -534,12 +554,13 @@ export function ConditionTierChip({
   category?: "shoe" | "clothing" | null;
 }) {
   const [open, setOpen] = useState(false);
-  if (!tier) return null;
-  const style = TIER_STYLES[tier];
+  const normalizedTier = normalizeConditionTier(tier);
+  if (!normalizedTier) return null;
+  const style = TIER_STYLES[normalizedTier];
   if (!style) {
     return (
       <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-[11px] font-bold text-zinc-700 ring-1 ring-zinc-300 dark:bg-zinc-700 dark:text-zinc-300 dark:ring-zinc-600">
-        {tier}
+        상태 확인
       </span>
     );
   }
@@ -572,11 +593,11 @@ export function ConditionTierChip({
                     // Wave 714r: category 별 desc 분리 — 신발/의류 axis 다름.
                     const desc = category === "clothing" ? (TIER_DESC_CLOTHING[k] ?? s.desc) : s.desc;
                     return (
-                      <div key={k} className="flex gap-2">
-                        <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${s.bg} ${s.text}`}>
+                      <div key={k} className="flex items-stretch gap-2">
+                        <span className={`flex min-w-[52px] shrink-0 items-center justify-center self-stretch rounded-full px-2 py-1 text-center text-[10px] font-bold leading-none ${s.bg} ${s.text}`}>
                           {s.label}
                         </span>
-                        <span className="text-zinc-600 dark:text-zinc-400">{desc}</span>
+                        <span className="min-w-0 leading-5 text-zinc-600 dark:text-zinc-400">{desc}</span>
                       </div>
                     );
                   })}

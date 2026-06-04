@@ -5,10 +5,17 @@ import { createPortal } from "react-dom";
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import MarketHistoryChart, { type ChartState as MarketChartState } from "@/components/market-history-chart";
 import ModelGuidePanel from "@/components/model-guide-panel";
-import { ConditionChip, ConditionPhotoBadge, ConditionTierChip, ConditionChipsList } from "@/components/condition-chip";
+import {
+  ConditionChip,
+  ConditionPhotoBadge,
+  ConditionTierChip,
+  ConditionChipsList,
+  conditionChipDisplayLabel,
+  normalizeConditionTier,
+} from "@/components/condition-chip";
 import { CategoryWatermark } from "@/components/category-watermark";
 import { RiskScoreBar } from "@/components/risk-score-bar";
-import { BunjangLogo, DanawaLogo, JoongnaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
+import { BunjangLogo, DanawaLogo, JoongnaLogo } from "@/components/market-brand-logo";
 import { SkuImageLockBadge } from "@/components/sku-image-lock-badge";
 import {
   ActivityIcon,
@@ -955,7 +962,7 @@ function finalMoneyGuideStep(card: RevealCard): BeginnerGuideStep {
     eyebrow: "1. 숫자 요약",
     title: "정확한 숫자부터 볼게요",
     metric: displayProfitRange(card),
-    metricLabel: isDaangn ? "당근 수수료 0원 · 직거래 기준" : "배송비·수수료·안전버퍼 반영",
+    metricLabel: isDaangn ? "당근 수수료 0원 기준" : "배송비·수수료·안전버퍼 반영",
     body: "",
     note: isDaangn
       ? "당근 기준 판매 수수료와 재배송비는 0원으로 봐요. 네고·이동·거래 불발 리스크는 구매 전 따로 확인하세요."
@@ -970,15 +977,15 @@ function finalMoneyGuideStep(card: RevealCard): BeginnerGuideStep {
 function channelGuideStep(card: RevealCard): BeginnerGuideStep {
   const daangnProfit = sourceAwareProfitAverage(card, "daangn");
   const marketplaceProfit = sourceAwareProfitAverage(card, card.marketplaceSource ?? "bunjang");
-  const betterChannel = daangnProfit > marketplaceProfit ? "당근 직거래가 더 남을 수 있지만" : "중고 마켓 재판매는";
+  const betterChannel = daangnProfit > marketplaceProfit ? "당근 판매가 더 남을 수 있지만" : "중고 마켓 재판매는";
 
   return {
     eyebrow: "3. 되팔 곳",
     title: "팔 곳에 따라 남는 돈이 달라요",
     metric: displayProfitRange(card),
     metricLabel: "중고 마켓 기준 예상 차익",
-    body: `${betterChannel}, 거래 범위와 네고 부담이 달라요. 그래서 번개장터, 중고나라, 당근 직거래를 나눠서 보여드릴게요.`,
-    note: "당근은 수수료가 적을 수 있지만 지역/직거래/네고 부담이 있고, 중고 마켓은 전국 거래와 플랫폼 결제 흐름이 장점이에요.",
+    body: `${betterChannel}, 거래 범위와 네고 부담이 달라요. 그래서 번개장터, 중고나라, 당근을 나눠서 보여드릴게요.`,
+    note: "당근은 수수료가 적을 수 있지만 지역과 네고 부담이 있고, 중고 마켓은 전국 거래와 플랫폼 결제 흐름이 장점이에요.",
     tone: "channel",
   };
 }
@@ -1402,6 +1409,26 @@ function seenAgoLabel(iso: string | null | undefined): string | null {
   return `${Math.round(seconds / 86400)}일 전 확인`;
 }
 
+function compactTradeLocationLabel(location: string | null | undefined): string | null {
+  const cleaned = String(location ?? "").replace(/\s+/g, " ").trim();
+  if (!cleaned) return null;
+  const primary = cleaned.split(/\s*[·,]\s*/).map((part) => part.trim()).filter(Boolean)[0] ?? cleaned;
+  const tokens = primary.split(/\s+/).filter(Boolean);
+  const localToken = [...tokens].reverse().find((token) => /[가-힣]+(?:동|읍|면|리|가)$/u.test(token));
+  return localToken ?? tokens.at(-1) ?? primary;
+}
+
+function revealHeaderConditionLabel(card: RevealCard): string | null {
+  const tierLabel = tierShortLabel(card.conditionTier);
+  if (tierLabel) return tierLabel;
+  const chipLabel = card.conditionChips
+    ?.map((chip) => conditionChipDisplayLabel(chip))
+    .find((label): label is string => Boolean(label));
+  if (chipLabel) return chipLabel;
+  const conditionClass = card.marketBasis?.conditionClass ?? null;
+  return conditionClass ? conditionFriendlyText(conditionClass) : null;
+}
+
 // Wave 393.7: 신선도 chip + Pro link 제거 (사용자 짚음 — 모달엔 불필요).
 // ConditionChip(friendly)만 노출. 신선도는 매입/시세 메타 라인의 freshLabel에 이미 있음.
 // Wave 394.2 (외부 review #20): 사진 분석 부재 한계 명시 — "AI가 사진 봤겠지" 오해 차단.
@@ -1448,6 +1475,8 @@ function LastVerifiedAtBadge({ card }: { card: RevealCard }) {
 }
 
 function conditionFriendlyText(conditionClass: string | null | undefined) {
+  const tierLabel = tierShortLabel(conditionClass);
+  if (tierLabel) return tierLabel;
   if (conditionClass === "unopened") return "미개봉";
   if (conditionClass === "mint") return "거의 새것";
   if (conditionClass === "clean") return "깨끗한 편";
@@ -1500,28 +1529,32 @@ function isShoeOrClothingCard(card: RevealCard): boolean {
 }
 
 function tierGroupLabel(tier: string | null | undefined): string | null {
-  if (!tier) return null;
-  if (tier === "S") return "S급 상품";
-  if (tier === "A") return "A급 상품";
-  if (tier === "B") return "B급 상품";
-  if (tier === "C") return "C급 상품";
-  if (tier === "D") return "D급 상품";
-  if (tier === "UNKNOWN") return "정보 부족 상품";
+  const normalizedTier = normalizeConditionTier(tier);
+  if (!normalizedTier) return null;
+  if (normalizedTier === "S") return "S급 상품";
+  if (normalizedTier === "A") return "A급 상품";
+  if (normalizedTier === "B") return "B급 상품";
+  if (normalizedTier === "C") return "C급 상품";
+  if (normalizedTier === "D") return "D급 상품";
+  if (normalizedTier === "UNKNOWN") return "정보 부족 상품";
   return null;
 }
 
 function tierShortLabel(tier: string | null | undefined): string | null {
-  if (!tier) return null;
-  if (tier === "S") return "S급";
-  if (tier === "A") return "A급";
-  if (tier === "B") return "B급";
-  if (tier === "C") return "C급";
-  if (tier === "D") return "D급";
-  if (tier === "UNKNOWN") return "정보 부족";
+  const normalizedTier = normalizeConditionTier(tier);
+  if (!normalizedTier) return null;
+  if (normalizedTier === "S") return "S급";
+  if (normalizedTier === "A") return "A급";
+  if (normalizedTier === "B") return "B급";
+  if (normalizedTier === "C") return "C급";
+  if (normalizedTier === "D") return "D급";
+  if (normalizedTier === "UNKNOWN") return "정보 부족";
   return null;
 }
 
 function conditionShortLabel(conditionClass: string | null | undefined): string | null {
+  const tierLabel = tierShortLabel(conditionClass);
+  if (tierLabel) return tierLabel;
   if (conditionClass === "unopened") return "미개봉";
   if (conditionClass === "mint") return "S급";
   if (conditionClass === "clean") return "A급";
@@ -2982,10 +3015,10 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                   const isMoreExpensive = !isSimilar && priceDiff > 0;
                   const isSold = isComparableSold(item);
                   const isReserved = isComparableReserved(item);
-                  const evidenceType = isSold ? "판매완료" : isReserved ? "예약중" : "판매중";
+                  const evidenceType = isReserved ? "예약중" : "판매중";
                   const seenLabel = seenAgoLabel(item.lastSeenAt);
                   const statusBadge = isSold
-                    ? { label: "판매완료", cls: "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-200" }
+                    ? { label: "판매완료", cls: "bg-blue-600 text-white shadow-sm ring-1 ring-blue-700/20 dark:bg-blue-500 dark:text-white dark:ring-blue-300/30" }
                     : isReserved
                       ? { label: "예약중", cls: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-200" }
                       : null;
@@ -3031,9 +3064,11 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                           </div>
                           {mode === "detailed" ? (
                             <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                              <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                                {evidenceType}
-                              </span>
+                              {!statusBadge ? (
+                                <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                                  {evidenceType}
+                                </span>
+                              ) : null}
                               {itemConditionLabel ? (
                                 <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                                   {itemConditionLabel}
@@ -3062,7 +3097,7 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                         <div className="shrink-0 text-right">
                           {statusBadge ? (
                             <div className="mb-0.5">
-                              <span className={`inline-block rounded-full px-1.5 py-0.5 text-[9px] font-bold ${statusBadge.cls}`}>
+                              <span className={`inline-block rounded-full px-2 py-1 text-[10px] font-black ${statusBadge.cls}`}>
                                 {statusBadge.label}
                               </span>
                             </div>
@@ -3687,7 +3722,7 @@ function _SavedDetailMini({ card }: { card: RevealCard }) {
             {safety.isJoongna ? "거래후기" : "리뷰"} {detail.sellerReviewCount.toLocaleString("ko-KR")}개
           </span>
         ) : null}
-        {safety.shipping.allowFreeShippingBadge || safety.shipping.assumption === "included" || safety.shipping.assumption === "direct_only" ? (
+        {safety.shipping.allowFreeShippingBadge || safety.shipping.assumption === "included" || (!safety.isDaangn && safety.shipping.assumption === "direct_only") ? (
           <span className="rounded-full bg-blue-50 px-2 py-0.5 font-black text-zinc-900 dark:bg-zinc-900 dark:text-zinc-200">
             {safety.shipping.assumption === "direct_only" ? "직거래만" : safety.shipping.assumption === "included" ? "배송비 포함" : "무료배송"}
           </span>
@@ -4352,7 +4387,7 @@ function PlatformProfitCompare({ card }: { card: RevealCard }) {
             <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[#ff6f0f]">
               <DaangnLogo className="h-3.5 w-3.5" />
             </span>
-            <span className="text-[12px] font-bold text-zinc-900 dark:text-zinc-100">당근 직거래</span>
+            <span className="text-[12px] font-bold text-zinc-900 dark:text-zinc-100">당근</span>
           </div>
           <div className="text-[19px] font-black tracking-tight text-amber-700 tabular-nums dark:text-amber-300">
             +{krw(daangnProfit)}
@@ -4415,7 +4450,7 @@ function CostAssurancePanel({ card }: { card: RevealCard }) {
     {
       label: isDaangn ? "재판매 수수료" : "안전결제 수수료",
       value: isDaangn ? "0원" : snapshot.sellingFee == null ? feeRateLabel : `${feeRateLabel} · ${krw(snapshot.sellingFee)}`,
-      note: isDaangn ? "당근 직거래 재판매 기준" : "셀러가 부담 (시세 대비 차감)",
+      note: isDaangn ? "당근 재판매 기준" : "셀러가 부담 (시세 대비 차감)",
     },
     ...(snapshot.conditionAdjustment > 0
       ? [{
@@ -5552,6 +5587,11 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <span className="line-clamp-1 text-[12px] font-black text-[#172019] dark:text-zinc-100">{item.name || "비교 매물"}</span>
+                          {isSold ? (
+                            <span className="shrink-0 rounded-full bg-blue-600 px-2 py-0.5 text-[9.5px] font-black text-white shadow-sm ring-1 ring-blue-700/20 dark:bg-blue-500 dark:ring-blue-300/30">
+                              판매완료
+                            </span>
+                          ) : null}
                           {itemConditionLabel ? (
                             <span className="shrink-0 rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                               {itemConditionLabel}
@@ -5573,7 +5613,6 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
                         ) : null}
                       </div>
                       <div className="shrink-0 text-right">
-                        {isSold ? <div className="mb-0.5 text-[9px] font-black text-blue-600 dark:text-blue-300">판매완료</div> : null}
                         <div className="text-[14px] font-black tabular-nums text-[#172019] dark:text-zinc-100">{krw(item.price)}</div>
                       </div>
                     </>
@@ -5797,7 +5836,7 @@ function BeginnerGuideChannelVisual({ card }: { card: RevealCard }) {
           ) : null}
           <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:gap-2">
             <DaangnLogo className="h-6 w-6 rounded-full sm:h-7 sm:w-7" />
-            <div className="text-[10.5px] font-black leading-tight text-[#172019] dark:text-zinc-50 sm:text-[13px]">당근 직거래</div>
+            <div className="text-[10.5px] font-black leading-tight text-[#172019] dark:text-zinc-50 sm:text-[13px]">당근</div>
           </div>
           <div className="mt-2 text-[15px] font-black leading-tight tabular-nums text-amber-700 dark:text-amber-200 sm:mt-3 sm:text-[22px]">+{krw(daangnProfit)}</div>
           <div className="mt-1 flex min-h-[28px] items-start break-keep text-[9px] font-bold leading-[1.35] text-[#7b8378] dark:text-zinc-400 sm:min-h-[34px] sm:text-[11px]">수수료 0원 가정</div>
@@ -6348,6 +6387,14 @@ function RevealCardItem({
   const profitCalculationRef = useRef<HTMLDivElement | null>(null);
   const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
   const isDaangn = card.marketplaceSource === "daangn";
+  const directTradeLocation = isDaangn ? card.savedDetail?.directTradeLocation?.trim() : null;
+  const compactTradeLocation = compactTradeLocationLabel(directTradeLocation);
+  const headerConditionLabel = revealHeaderConditionLabel(card);
+  const headerMetaParts = [
+    marketplaceLabelForCard(card),
+    headerConditionLabel,
+    compactTradeLocation,
+  ].filter((part): part is string => Boolean(part));
   const netPct = netProfitPercent(card);
   // Wave 394.7.f (외부 review 2라운드 #3): brand 가품 위험 큰 카테고리는 "조건부 매입 OK".
   // 사용자 짚음 — "매입 OK + 가품 위험 큼" 충돌. 정품 확인 필요 명시.
@@ -6433,48 +6480,33 @@ function RevealCardItem({
         <div className="relative z-10 -mt-4 min-w-0 w-full space-y-3 rounded-t-[22px] bg-[#f5f7fb] px-4 pb-2 pt-7 dark:bg-zinc-900">
           <div className="absolute left-1/2 top-2 h-1 w-9 -translate-x-1/2 rounded-full bg-[#d0c6b1]" />
           <div className="space-y-1.5">
-            <div className="relative">
-              <div className="text-[10.5px] font-semibold leading-4 text-zinc-500 dark:text-zinc-400">
-                <span className="mr-1.5 inline-flex align-middle">
-                  <MarketplaceSourceBadge source={card.marketplaceSource} label={card.marketplaceLabel} />
-                </span>
-              </div>
-            </div>
             <div className="flex w-full items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 {/* Wave 392.2: 신선도 강조 — 매우 신선 매물 즉시 인지 + Pro USP hint. */}
                 <div className="hidden">
                   <LastVerifiedAtBadge card={card} />
                 </div>
-                {/* Wave 714s (2026-05-23): 상세보기 매물명 위 등급 chip + chips. 데이터 없으면 hide. */}
-                {(card.conditionTier || (card.conditionChips && card.conditionChips.length > 0)) && (
-                  <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                    {card.conditionTier && (
-                      <ConditionTierChip
-                        tier={card.conditionTier}
-                        showHelp
-                        category={card.marketBasis?.comparableKey?.startsWith("clothing|") ? "clothing" : "shoe"}
-                      />
-                    )}
-                    {card.conditionChips && card.conditionChips.length > 0 && (
-                      <ConditionChipsList chips={card.conditionChips} max={6} />
-                    )}
-                  </div>
-                )}
+                {/* Wave 1070 (2026-06-04): source / 상태 / 위치를 진짜 한 줄 텍스트 메타로 압축. */}
+                <div
+                  className="mb-2 flex min-w-0 items-center overflow-hidden text-[12px] font-black leading-5 text-zinc-500 dark:text-zinc-400"
+                  title={directTradeLocation ? `${marketplaceLabelForCard(card)} · ${headerConditionLabel ?? "상태 확인"} · ${directTradeLocation}` : undefined}
+                >
+                  <span className="min-w-0 truncate">
+                    {headerMetaParts.map((part, index) => (
+                      <Fragment key={`${part}-${index}`}>
+                        {index > 0 ? <span className="mx-1 text-zinc-300 dark:text-zinc-600">·</span> : null}
+                        <span className={part === compactTradeLocation ? "text-orange-600 dark:text-orange-300" : undefined}>
+                          {part}
+                        </span>
+                      </Fragment>
+                    ))}
+                  </span>
+                </div>
                 <div className="flex items-start gap-3">
                   <div className="min-w-0 flex-1 line-clamp-2 text-[20px] font-black leading-[1.25] tracking-[-0.01em] text-[#111915] dark:text-zinc-50">
                     {card.name}
                   </div>
                 </div>
-                {/* Wave 886.13 (2026-05-27): 당근 매물 거래 가능 동네 강조 chip — 거리 제약 핵심 정보. */}
-                {isDaangn && card.savedDetail?.directTradeLocation ? (
-                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-[11.5px] font-bold text-orange-700 dark:border-orange-900/60 dark:bg-orange-950/30 dark:text-orange-300">
-                    <svg viewBox="0 0 14 14" fill="currentColor" className="h-3 w-3 shrink-0" aria-hidden="true">
-                      <path d="M7 1a4 4 0 0 0-4 4c0 3 4 7.5 4 7.5s4-4.5 4-7.5a4 4 0 0 0-4-4zm0 5.4a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8z" />
-                    </svg>
-                    <span>거래 가능 동네: {card.savedDetail.directTradeLocation}</span>
-                  </div>
-                ) : null}
                 {onBeginnerGuideClick ? (
                   <button
                     type="button"
