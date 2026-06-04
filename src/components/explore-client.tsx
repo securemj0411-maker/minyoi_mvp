@@ -4,17 +4,37 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import PackRevealModal, { type RevealResult } from "@/components/pack-reveal-modal";
-import { ZapIcon, ClockIcon, TrophyIcon, CategoryIcon, SearchIcon, GiftIcon, HourglassIcon, BookmarkIcon } from "@/components/icons";
+import PackRevealModal, {
+  type RevealResult,
+} from "@/components/pack-reveal-modal";
+import {
+  ZapIcon,
+  ClockIcon,
+  TrophyIcon,
+  CategoryIcon,
+  SearchIcon,
+  GiftIcon,
+  HourglassIcon,
+  BookmarkIcon,
+} from "@/components/icons";
 import { BrandLogo } from "@/components/brand-logo";
-import { ConditionPhotoBadge, ConditionTierPhotoBadge } from "@/components/condition-chip";
+import {
+  ConditionPhotoBadge,
+  ConditionTierPhotoBadge,
+} from "@/components/condition-chip";
 import { CategoryWatermark } from "@/components/category-watermark";
 import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { detectBrandDepth } from "@/lib/category-brand-depth";
 import type { DetailEventType } from "@/lib/detail-analytics";
 import { isDaangnMarketplaceSource } from "@/lib/marketplace-source";
-import { getMembershipPlan, krw as membershipKrw, RENEWAL_UPGRADE_PLANS, type MembershipPlan, type MembershipPlanKey } from "@/lib/membership-plans";
+import {
+  getMembershipPlan,
+  krw as membershipKrw,
+  RENEWAL_UPGRADE_PLANS,
+  type MembershipPlan,
+  type MembershipPlanKey,
+} from "@/lib/membership-plans";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -95,7 +115,11 @@ type ScrappedPoolItem = PoolItem & {
 
 type PoolResponse = {
   items: PoolItem[];
-  cooldown: { canRefresh: boolean; remainingSec: number; nextAvailableAt: string | null };
+  cooldown: {
+    canRefresh: boolean;
+    remainingSec: number;
+    nextAvailableAt: string | null;
+  };
   feedMode?: "membership" | "free" | "credit";
   creditFeed?: boolean;
   appliedBudget?: "150k" | "300k" | "500k" | "unlimited";
@@ -167,7 +191,11 @@ type FeedRenewalReservation = {
 // Wave launch-14 (사용자 짚음): error 종류 따라 다른 모달 톤.
 // paywall = 멤버십 승인 필요, sold = 매물 거래완료/사라짐 (새로고침), verify_fail = 일시 통신 (재시도).
 // Wave launch-106 (2026-05-24): profit_lost = active 매물인데 시세 떨어져 차익 -. "판매완료" 라벨 사용 금지.
-type DetailAccessLimitVariant = "paywall" | "sold" | "verify_fail" | "profit_lost";
+type DetailAccessLimitVariant =
+  | "paywall"
+  | "sold"
+  | "verify_fail"
+  | "profit_lost";
 type DetailAccessLimitModal = {
   variant: DetailAccessLimitVariant;
   title: string;
@@ -222,7 +250,9 @@ const ACCOUNT_HOLDER = "더빙나우";
 
 function upgradeTargetLabel(plan: MembershipPlan) {
   const targetMonths = plan.upgradeTargetMonths ?? plan.months;
-  return targetMonths >= 12 ? "1년 무제한 멤버십" : `${targetMonths}개월 무제한 멤버십`;
+  return targetMonths >= 12
+    ? "1년 무제한 멤버십"
+    : `${targetMonths}개월 무제한 멤버십`;
 }
 
 function remainingMembershipDays(planEndAt: string | null | undefined) {
@@ -235,30 +265,57 @@ function remainingMembershipDays(planEndAt: string | null | undefined) {
 function feedOfferPlansFor(remainingDays: number | null): MembershipPlan[] {
   if (remainingDays === null || remainingDays <= 0) return [];
   if (remainingDays <= 45) {
-    return RENEWAL_UPGRADE_PLANS.filter((plan) => ["limited_300_upgrade_to_6mo_50", "limited_300_upgrade_to_12mo_100"].includes(plan.key));
+    return RENEWAL_UPGRADE_PLANS.filter((plan) =>
+      [
+        "limited_300_upgrade_to_6mo_50",
+        "limited_300_upgrade_to_12mo_100",
+      ].includes(plan.key),
+    );
   }
   if (remainingDays <= 140) {
-    return RENEWAL_UPGRADE_PLANS.filter((plan) => plan.key === "limited_300_upgrade_to_12mo_70");
+    return RENEWAL_UPGRADE_PLANS.filter(
+      (plan) => plan.key === "limited_300_upgrade_to_12mo_70",
+    );
   }
   if (remainingDays < 320) {
-    return RENEWAL_UPGRADE_PLANS.filter((plan) => plan.key === "limited_300_upgrade_to_12mo_50");
+    return RENEWAL_UPGRADE_PLANS.filter(
+      (plan) => plan.key === "limited_300_upgrade_to_12mo_50",
+    );
   }
   return [];
 }
 
-function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: number; planEndAt: string | null }) {
+function FeedMembershipUpsellCard({
+  remainingSec,
+  planEndAt,
+}: {
+  remainingSec: number;
+  planEndAt: string | null;
+}) {
   const clamped = Math.max(0, remainingSec);
   const expired = clamped <= 0;
   const remainingDays = remainingMembershipDays(planEndAt);
-  const offerPlans = useMemo(() => feedOfferPlansFor(remainingDays), [remainingDays]);
-  const [selectedKey, setSelectedKey] = useState<MembershipPlanKey | null>(offerPlans[0]?.key ?? null);
-  const [reservation, setReservation] = useState<FeedRenewalReservation | null>(null);
-  const [depositFallbackAutoApproveAt, setDepositFallbackAutoApproveAt] = useState<string | null>(null);
+  const offerPlans = useMemo(
+    () => feedOfferPlansFor(remainingDays),
+    [remainingDays],
+  );
+  const [selectedKey, setSelectedKey] = useState<MembershipPlanKey | null>(
+    offerPlans[0]?.key ?? null,
+  );
+  const [reservation, setReservation] = useState<FeedRenewalReservation | null>(
+    null,
+  );
+  const [depositFallbackAutoApproveAt, setDepositFallbackAutoApproveAt] =
+    useState<string | null>(null);
   const [offerModalOpen, setOfferModalOpen] = useState(false);
-  const [requestState, setRequestState] = useState<"idle" | "submitting" | "reserved" | "depositing" | "deposit_sent" | "error">("idle");
+  const [requestState, setRequestState] = useState<
+    "idle" | "submitting" | "reserved" | "depositing" | "deposit_sent" | "error"
+  >("idle");
   const [message, setMessage] = useState<string | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
-  const selectedPlan = selectedKey ? getMembershipPlan(selectedKey) : offerPlans[0];
+  const selectedPlan = selectedKey
+    ? getMembershipPlan(selectedKey)
+    : offerPlans[0];
 
   useEffect(() => {
     if (!offerPlans.length) return;
@@ -277,7 +334,9 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
 
   async function getAccessToken() {
     const supabase = getSupabaseBrowserClient();
-    const { data } = supabase ? await supabase.auth.getSession() : { data: null };
+    const { data } = supabase
+      ? await supabase.auth.getSession()
+      : { data: null };
     return data?.session?.access_token ?? null;
   }
 
@@ -292,16 +351,27 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
     }
     const res = await fetch("/api/membership/apply", {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ productKey: plan.key, intent: "renewal" }),
     }).catch(() => null);
-    const payload = (await res?.json().catch(() => null)) as { ok?: boolean; applicationId?: number | null; scheduledAutoApproveAt?: string | null } | null;
+    const payload = (await res?.json().catch(() => null)) as {
+      ok?: boolean;
+      applicationId?: number | null;
+      scheduledAutoApproveAt?: string | null;
+    } | null;
     if (!res?.ok || !payload?.ok) {
       setRequestState("error");
       setMessage("제안을 수락하지 못했어요. 잠시 후 다시 눌러주세요.");
       return;
     }
-    setReservation({ applicationId: payload.applicationId ?? null, plan, scheduledAutoApproveAt: payload.scheduledAutoApproveAt ?? null });
+    setReservation({
+      applicationId: payload.applicationId ?? null,
+      plan,
+      scheduledAutoApproveAt: payload.scheduledAutoApproveAt ?? null,
+    });
     setRequestState("reserved");
     setMessage("제안이 수락됐어요. 계좌로 송금 후 입금했어요를 누르면 됩니다.");
   }
@@ -319,30 +389,53 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     }).catch(() => null);
-    const payload = (await res?.json().catch(() => null)) as { ok?: boolean; scheduledAutoApproveAt?: string | null } | null;
+    const payload = (await res?.json().catch(() => null)) as {
+      ok?: boolean;
+      scheduledAutoApproveAt?: string | null;
+    } | null;
     if (!res?.ok || !payload?.ok) {
       setRequestState("error");
       setMessage("입금 확인 요청을 보내지 못했어요. 잠시 후 다시 눌러주세요.");
       return;
     }
-    const fallbackAutoApproveAt = new Date(Date.now() + 5 * 60_000).toISOString();
+    const fallbackAutoApproveAt = new Date(
+      Date.now() + 5 * 60_000,
+    ).toISOString();
     setDepositFallbackAutoApproveAt(fallbackAutoApproveAt);
-    setReservation((current) => current ? { ...current, scheduledAutoApproveAt: payload.scheduledAutoApproveAt ?? current.scheduledAutoApproveAt ?? fallbackAutoApproveAt } : current);
+    setReservation((current) =>
+      current
+        ? {
+            ...current,
+            scheduledAutoApproveAt:
+              payload.scheduledAutoApproveAt ??
+              current.scheduledAutoApproveAt ??
+              fallbackAutoApproveAt,
+          }
+        : current,
+    );
     setRequestState("deposit_sent");
     setMessage("입금 확인 요청 완료. 5분 내 자동 승인까지 같이 걸렸어요.");
   }
 
-  const selectedTargetLabel = selectedPlan ? upgradeTargetLabel(selectedPlan) : "장기 무제한 멤버십";
+  const selectedTargetLabel = selectedPlan
+    ? upgradeTargetLabel(selectedPlan)
+    : "장기 무제한 멤버십";
   const headline = selectedPlan
     ? `단 ${membershipKrw(selectedPlan.priceKrw)}으로 ${selectedTargetLabel} 업그레이드`
     : "멤버십 업그레이드 1시간 특가";
-  const supportLine = remainingDays !== null && remainingDays > 0 ? `남은 ${remainingDays}일 유지` : "멤버 전용 1시간 조건";
+  const supportLine =
+    remainingDays !== null && remainingDays > 0
+      ? `남은 ${remainingDays}일 유지`
+      : "멤버 전용 1시간 조건";
   const autoApproveTargetMs = reservation?.scheduledAutoApproveAt
     ? Date.parse(reservation.scheduledAutoApproveAt)
-    : (depositFallbackAutoApproveAt ? Date.parse(depositFallbackAutoApproveAt) : null);
-  const autoApproveMsLeft = autoApproveTargetMs && Number.isFinite(autoApproveTargetMs)
-    ? Math.max(0, autoApproveTargetMs - nowMs)
-    : 5 * 60_000;
+    : depositFallbackAutoApproveAt
+      ? Date.parse(depositFallbackAutoApproveAt)
+      : null;
+  const autoApproveMsLeft =
+    autoApproveTargetMs && Number.isFinite(autoApproveTargetMs)
+      ? Math.max(0, autoApproveTargetMs - nowMs)
+      : 5 * 60_000;
   const showDepositCountdown = requestState === "deposit_sent";
 
   return (
@@ -350,12 +443,20 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
       <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-zinc-950 px-4 py-3 text-white">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-50">Member-only event</div>
-            <div className="mt-0.5 break-keep text-[16px] font-black leading-5">{headline}</div>
+            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-50">
+              Member-only event
+            </div>
+            <div className="mt-0.5 break-keep text-[16px] font-black leading-5">
+              {headline}
+            </div>
           </div>
           <div className="shrink-0 rounded-xl bg-white/14 px-3 py-2 text-center ring-1 ring-white/20">
-            <div className="text-[10px] font-black text-amber-50">남은 시간</div>
-            <div className="mt-0.5 font-mono text-[17px] font-black tabular-nums">{expired ? "마감" : formatCooldown(clamped)}</div>
+            <div className="text-[10px] font-black text-amber-50">
+              남은 시간
+            </div>
+            <div className="mt-0.5 font-mono text-[17px] font-black tabular-nums">
+              {expired ? "마감" : formatCooldown(clamped)}
+            </div>
           </div>
         </div>
       </div>
@@ -399,7 +500,9 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
           </div>
         ) : null}
         {message ? (
-          <p className={`break-keep text-[11px] font-bold leading-4 ${requestState === "error" ? "text-red-500" : "text-emerald-700 dark:text-emerald-300"}`}>
+          <p
+            className={`break-keep text-[11px] font-bold leading-4 ${requestState === "error" ? "text-red-500" : "text-emerald-700 dark:text-emerald-300"}`}
+          >
             {message}
           </p>
         ) : null}
@@ -439,7 +542,8 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
                   {membershipKrw(selectedPlan.priceKrw)}
                 </div>
                 <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
-                  단 {membershipKrw(selectedPlan.priceKrw)}으로 {upgradeTargetLabel(selectedPlan)}으로 업그레이드됩니다.
+                  단 {membershipKrw(selectedPlan.priceKrw)}으로{" "}
+                  {upgradeTargetLabel(selectedPlan)}으로 업그레이드됩니다.
                 </div>
               </div>
               {!reservation ? (
@@ -449,7 +553,9 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
                   disabled={requestState === "submitting" || expired}
                   className="flex h-12 items-center justify-center rounded-xl bg-zinc-950 px-4 text-[14px] font-black text-white transition hover:bg-amber-700 disabled:cursor-default disabled:opacity-60 dark:bg-white dark:text-zinc-950"
                 >
-                  {requestState === "submitting" ? "수락 처리 중" : "제안 수락하고 계좌 보기"}
+                  {requestState === "submitting"
+                    ? "수락 처리 중"
+                    : "제안 수락하고 계좌 보기"}
                 </button>
               ) : (
                 <div className="grid gap-3 rounded-[14px] border border-emerald-200 bg-emerald-50 px-3 py-3 dark:border-emerald-900/70 dark:bg-emerald-950/20">
@@ -469,10 +575,17 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
                   <button
                     type="button"
                     onClick={() => void notifyDepositDone()}
-                    disabled={requestState === "depositing" || requestState === "deposit_sent"}
+                    disabled={
+                      requestState === "depositing" ||
+                      requestState === "deposit_sent"
+                    }
                     className="flex h-11 items-center justify-center rounded-xl bg-emerald-700 px-4 text-[13px] font-black text-white transition hover:bg-emerald-800 disabled:cursor-default disabled:opacity-60"
                   >
-                    {requestState === "depositing" ? "요청 중" : requestState === "deposit_sent" ? "입금 확인 요청 완료" : "입금했어요"}
+                    {requestState === "depositing"
+                      ? "요청 중"
+                      : requestState === "deposit_sent"
+                        ? "입금 확인 요청 완료"
+                        : "입금했어요"}
                   </button>
                   {showDepositCountdown ? (
                     <div className="rounded-[12px] border border-emerald-200 bg-white px-3 py-3 dark:border-emerald-900/70 dark:bg-zinc-950">
@@ -486,7 +599,9 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
                           </div>
                         </div>
                         <div className="shrink-0 rounded-[10px] bg-emerald-50 px-3 py-2 text-[22px] font-black tabular-nums text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900">
-                          {autoApproveMsLeft > 0 ? countdownLabel(autoApproveMsLeft) : "0:00"}
+                          {autoApproveMsLeft > 0
+                            ? countdownLabel(autoApproveMsLeft)
+                            : "0:00"}
                         </div>
                       </div>
                     </div>
@@ -494,7 +609,9 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
                 </div>
               )}
               {message ? (
-                <p className={`break-keep text-[11px] font-bold leading-4 ${requestState === "error" ? "text-red-500" : "text-emerald-700 dark:text-emerald-300"}`}>
+                <p
+                  className={`break-keep text-[11px] font-bold leading-4 ${requestState === "error" ? "text-red-500" : "text-emerald-700 dark:text-emerald-300"}`}
+                >
                   {message}
                 </p>
               ) : null}
@@ -515,16 +632,34 @@ function profitPct(item: PoolItem) {
   return Math.round((profitAvg(item) / item.price) * 100);
 }
 
-function buyerShippingForPoolItem(item: Pick<PoolItem, "freeShipping" | "transactionMode" | "shippingAssumption">) {
+function buyerShippingForPoolItem(
+  item: Pick<
+    PoolItem,
+    "freeShipping" | "transactionMode" | "shippingAssumption"
+  >,
+) {
   if (item.transactionMode === "direct_only") return 0;
-  if (item.shippingAssumption === "included" || item.shippingAssumption === "free_shipping") return 0;
+  if (
+    item.shippingAssumption === "included" ||
+    item.shippingAssumption === "free_shipping"
+  )
+    return 0;
   return item.freeShipping ? 0 : 3500;
 }
 
 function recomputePoolProfit(
   price: number,
   marketPrice: number | null | undefined,
-  item: Pick<PoolItem, "freeShipping" | "transactionMode" | "shippingAssumption" | "marketplaceSource" | "conditionChips" | "conditionClass" | "conditionTier">,
+  item: Pick<
+    PoolItem,
+    | "freeShipping"
+    | "transactionMode"
+    | "shippingAssumption"
+    | "marketplaceSource"
+    | "conditionChips"
+    | "conditionClass"
+    | "conditionTier"
+  >,
 ) {
   if (!marketPrice || marketPrice <= 0 || !price || price <= 0) return null;
   const buyShipping = buyerShippingForPoolItem(item);
@@ -662,8 +797,19 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
       productTradeType: item.productTradeType ?? null,
       parcelFeeYn: item.parcelFeeYn ?? null,
       tradeLabels: item.tradeLabels ?? [],
-      transactionMode: item.transactionMode === "direct_only" || item.transactionMode === "shipping_only" || item.transactionMode === "direct_and_shipping" ? item.transactionMode : "unknown",
-      shippingAssumption: item.shippingAssumption === "direct_only" || item.shippingAssumption === "included" || item.shippingAssumption === "separate" || item.shippingAssumption === "free_shipping" ? item.shippingAssumption : "unknown",
+      transactionMode:
+        item.transactionMode === "direct_only" ||
+        item.transactionMode === "shipping_only" ||
+        item.transactionMode === "direct_and_shipping"
+          ? item.transactionMode
+          : "unknown",
+      shippingAssumption:
+        item.shippingAssumption === "direct_only" ||
+        item.shippingAssumption === "included" ||
+        item.shippingAssumption === "separate" ||
+        item.shippingAssumption === "free_shipping"
+          ? item.shippingAssumption
+          : "unknown",
       directTradeLocation: item.directTradeLocation ?? null,
     },
     skuListingFlow: item.skuListingFlow ?? null,
@@ -710,7 +856,12 @@ const LOCKED_CATEGORY_LABELS: Record<string, string> = {
 
 type TierBadgeCategory = "shoe" | "clothing" | "game_console" | "sport_golf";
 
-const LATEST_TIER_PREVIEW_CATEGORIES = new Set<string>(["shoe", "clothing", "game_console", "sport_golf"]);
+const LATEST_TIER_PREVIEW_CATEGORIES = new Set<string>([
+  "shoe",
+  "clothing",
+  "game_console",
+  "sport_golf",
+]);
 
 const CONDITION_PREVIEW_LABELS: Record<string, string> = {
   unopened: "미개봉",
@@ -736,15 +887,29 @@ function usesLatestTierPreviewCategory(category: string | null | undefined) {
 }
 
 function tierBadgeCategoryForItem(item: PoolItem): TierBadgeCategory | null {
-  if (item.category === "clothing" || item.comparableKey?.startsWith("clothing|")) return "clothing";
-  if (item.category === "shoe" || item.comparableKey?.startsWith("shoe|")) return "shoe";
-  if (item.category === "game_console" || item.comparableKey?.startsWith("game_console|")) return "game_console";
-  if (item.category === "sport_golf" || item.comparableKey?.startsWith("sport_golf|")) return "sport_golf";
+  if (
+    item.category === "clothing" ||
+    item.comparableKey?.startsWith("clothing|")
+  )
+    return "clothing";
+  if (item.category === "shoe" || item.comparableKey?.startsWith("shoe|"))
+    return "shoe";
+  if (
+    item.category === "game_console" ||
+    item.comparableKey?.startsWith("game_console|")
+  )
+    return "game_console";
+  if (
+    item.category === "sport_golf" ||
+    item.comparableKey?.startsWith("sport_golf|")
+  )
+    return "sport_golf";
   return null;
 }
 
 function lockedPreviewTitle(item: PoolItem) {
-  if (usesLatestTierPreviewCategory(item.category)) return `${lockedPreviewCategoryLabel(item)} 후보`;
+  if (usesLatestTierPreviewCategory(item.category))
+    return `${lockedPreviewCategoryLabel(item)} 후보`;
   return `${lockedPreviewCategoryLabel(item)} · ${conditionPreviewLabel(item.conditionClass)} 후보`;
 }
 
@@ -768,7 +933,12 @@ const SOURCE_OPTIONS: Array<{ value: SourceOption; label: string }> = [
   { value: "daangn", label: "당근" },
 ];
 
-const BUDGET_FILTER_OPTIONS: Array<{ value: BudgetFilterOption; label: string; shortLabel: string; max: number | null }> = [
+const BUDGET_FILTER_OPTIONS: Array<{
+  value: BudgetFilterOption;
+  label: string;
+  shortLabel: string;
+  max: number | null;
+}> = [
   { value: "all", label: "상관없음", shortLabel: "예산 전체", max: null },
   { value: "150000", label: "15만원 이하", shortLabel: "15만원↓", max: 150000 },
   { value: "300000", label: "30만원 이하", shortLabel: "30만원↓", max: 300000 },
@@ -785,31 +955,51 @@ function scopedStorageKey(baseKey: string, storageScope: string) {
   return `${baseKey}:${storageScope || "anonymous"}`;
 }
 
-function isBudgetFilterOption(value: string | null): value is BudgetFilterOption {
-  return value === "all" || value === "150000" || value === "300000" || value === "500000";
+function isBudgetFilterOption(
+  value: string | null,
+): value is BudgetFilterOption {
+  return (
+    value === "all" ||
+    value === "150000" ||
+    value === "300000" ||
+    value === "500000"
+  );
 }
 
 function readBudgetFilterOption(storageScope: string): BudgetFilterOption {
   if (typeof window === "undefined") return "all";
   try {
-    const raw = window.localStorage.getItem(scopedStorageKey(FEED_BUDGET_FILTER_STORAGE_KEY, storageScope));
+    const raw = window.localStorage.getItem(
+      scopedStorageKey(FEED_BUDGET_FILTER_STORAGE_KEY, storageScope),
+    );
     return isBudgetFilterOption(raw) ? raw : "all";
   } catch {
     return "all";
   }
 }
 
-function writeBudgetFilterOption(storageScope: string, value: BudgetFilterOption) {
+function writeBudgetFilterOption(
+  storageScope: string,
+  value: BudgetFilterOption,
+) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(scopedStorageKey(FEED_BUDGET_FILTER_STORAGE_KEY, storageScope), value);
+    window.localStorage.setItem(
+      scopedStorageKey(FEED_BUDGET_FILTER_STORAGE_KEY, storageScope),
+      value,
+    );
   } catch {
     // ignore
   }
 }
 
 function defaultDetailAccessSnapshot(): DetailAccessSnapshot {
-  return { creditBalance: null, freeUsed: 0, freeLimit: DEFAULT_FREE_DETAIL_ACCESS_LIMIT, unlimited: false };
+  return {
+    creditBalance: null,
+    freeUsed: 0,
+    freeLimit: DEFAULT_FREE_DETAIL_ACCESS_LIMIT,
+    unlimited: false,
+  };
 }
 
 function normalizeDetailAccessSnapshot(
@@ -818,18 +1008,32 @@ function normalizeDetailAccessSnapshot(
 ): DetailAccessSnapshot | null {
   if (!value || typeof value !== "object") return null;
   const record = value as Partial<DetailAccessSnapshot>;
-  const rawFreeLimit = Number(record.freeLimit ?? DEFAULT_FREE_DETAIL_ACCESS_LIMIT);
+  const rawFreeLimit = Number(
+    record.freeLimit ?? DEFAULT_FREE_DETAIL_ACCESS_LIMIT,
+  );
   const normalizedFreeLimit = Math.max(0, Math.floor(rawFreeLimit));
   const freeLimit = options.trustServerLimit
     ? normalizedFreeLimit
     : Math.min(normalizedFreeLimit, DEFAULT_FREE_DETAIL_ACCESS_LIMIT);
   const freeUsed = Number(record.freeUsed ?? 0);
-  const creditBalance = record.creditBalance == null ? null : Number(record.creditBalance);
+  const creditBalance =
+    record.creditBalance == null ? null : Number(record.creditBalance);
   const unlimited = record.unlimited === true;
-  if (!Number.isFinite(rawFreeLimit) || !Number.isFinite(freeLimit) || freeLimit < 0 || !Number.isFinite(freeUsed)) return null;
+  if (
+    !Number.isFinite(rawFreeLimit) ||
+    !Number.isFinite(freeLimit) ||
+    freeLimit < 0 ||
+    !Number.isFinite(freeUsed)
+  )
+    return null;
   return {
-    creditBalance: creditBalance != null && Number.isFinite(creditBalance) ? creditBalance : null,
-    freeUsed: unlimited ? freeLimit : Math.min(Math.max(0, freeUsed), freeLimit),
+    creditBalance:
+      creditBalance != null && Number.isFinite(creditBalance)
+        ? creditBalance
+        : null,
+    freeUsed: unlimited
+      ? freeLimit
+      : Math.min(Math.max(0, freeUsed), freeLimit),
     freeLimit,
     unlimited,
   };
@@ -838,7 +1042,9 @@ function normalizeDetailAccessSnapshot(
 function readDetailAccessSnapshot(storageScope: string): DetailAccessSnapshot {
   if (typeof window === "undefined") return defaultDetailAccessSnapshot();
   try {
-    const raw = window.localStorage.getItem(scopedStorageKey(DETAIL_ACCESS_SNAPSHOT_STORAGE_KEY, storageScope));
+    const raw = window.localStorage.getItem(
+      scopedStorageKey(DETAIL_ACCESS_SNAPSHOT_STORAGE_KEY, storageScope),
+    );
     const parsed = raw ? normalizeDetailAccessSnapshot(JSON.parse(raw)) : null;
     return parsed ?? defaultDetailAccessSnapshot();
   } catch {
@@ -846,7 +1052,10 @@ function readDetailAccessSnapshot(storageScope: string): DetailAccessSnapshot {
   }
 }
 
-function writeDetailAccessSnapshot(storageScope: string, value: DetailAccessSnapshot) {
+function writeDetailAccessSnapshot(
+  storageScope: string,
+  value: DetailAccessSnapshot,
+) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(
@@ -859,10 +1068,15 @@ function writeDetailAccessSnapshot(storageScope: string, value: DetailAccessSnap
 }
 
 function budgetFilterOption(value: BudgetFilterOption) {
-  return BUDGET_FILTER_OPTIONS.find((option) => option.value === value) ?? BUDGET_FILTER_OPTIONS[0];
+  return (
+    BUDGET_FILTER_OPTIONS.find((option) => option.value === value) ??
+    BUDGET_FILTER_OPTIONS[0]
+  );
 }
 
-function nextBudgetFilterOption(value: BudgetFilterOption): BudgetFilterOption | null {
+function nextBudgetFilterOption(
+  value: BudgetFilterOption,
+): BudgetFilterOption | null {
   if (value === "150000") return "300000";
   if (value === "300000") return "500000";
   if (value === "500000") return "all";
@@ -877,7 +1091,10 @@ function budgetApiParam(value: BudgetFilterOption) {
 }
 
 function sourceOptionLabel(value: SourceOption) {
-  return SOURCE_OPTIONS.find((option) => option.value === value)?.label ?? "출처 전체";
+  return (
+    SOURCE_OPTIONS.find((option) => option.value === value)?.label ??
+    "출처 전체"
+  );
 }
 
 function poolItemSource(item: PoolItem): SourceOption {
@@ -906,7 +1123,9 @@ function loadScrapSnapshots(): ScrappedPoolItem[] {
     if (!Array.isArray(parsed)) return [];
     return parsed
       .filter(isScrappedPoolItem)
-      .sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime())
+      .sort(
+        (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime(),
+      )
       .slice(0, MAX_LOCAL_SCRAP_SNAPSHOTS);
   } catch {
     return [];
@@ -920,13 +1139,24 @@ async function fetchServerScraps(): Promise<ScrappedPoolItem[] | null> {
   try {
     const res = await fetch("/api/packs/scraps", { cache: "no-store" });
     if (!res.ok) return null;
-    const data = (await res.json()) as { items?: Array<{ pid: number; pool_item: unknown; updated_at?: string; created_at?: string }> };
+    const data = (await res.json()) as {
+      items?: Array<{
+        pid: number;
+        pool_item: unknown;
+        updated_at?: string;
+        created_at?: string;
+      }>;
+    };
     if (!data.items) return [];
     return data.items
       .map((row) => {
         const item = row.pool_item as Record<string, unknown> | null;
         if (!item || typeof item !== "object") return null;
-        const candidate = { ...item, pid: row.pid, savedAt: row.updated_at ?? row.created_at ?? new Date().toISOString() };
+        const candidate = {
+          ...item,
+          pid: row.pid,
+          savedAt: row.updated_at ?? row.created_at ?? new Date().toISOString(),
+        };
         return isScrappedPoolItem(candidate) ? candidate : null;
       })
       .filter((item): item is ScrappedPoolItem => item != null);
@@ -956,13 +1186,17 @@ async function deleteScrapFromServer(pid: number): Promise<void> {
   }
 }
 
-async function importLocalScrapsToServer(items: ScrappedPoolItem[]): Promise<boolean> {
+async function importLocalScrapsToServer(
+  items: ScrappedPoolItem[],
+): Promise<boolean> {
   if (items.length === 0) return true;
   try {
     const res = await fetch("/api/packs/scraps", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ items: items.map((item) => ({ pid: item.pid, pool_item: item })) }),
+      body: JSON.stringify({
+        items: items.map((item) => ({ pid: item.pid, pool_item: item })),
+      }),
     });
     return res.ok;
   } catch {
@@ -985,7 +1219,9 @@ function saveScrapSnapshots(items: ScrappedPoolItem[]) {
 function readLocalSavedPidSet() {
   if (typeof window === "undefined") return new Set<number>();
   try {
-    const raw = window.localStorage.getItem(LEGACY_SAVED_REVEAL_PIDS_STORAGE_KEY);
+    const raw = window.localStorage.getItem(
+      LEGACY_SAVED_REVEAL_PIDS_STORAGE_KEY,
+    );
     if (!raw) return new Set<number>();
     const parsed: unknown = JSON.parse(raw);
     if (Array.isArray(parsed)) {
@@ -1049,8 +1285,10 @@ function revealCardToPoolItem(card: RevealCard): PoolItem {
     sellerReviewRating: card.savedDetail?.sellerReviewRating ?? null,
     sellerReviewCount: card.savedDetail?.sellerReviewCount ?? 0,
     joongnaTrustScore: card.savedDetail?.joongnaTrustScore ?? null,
-    joongnaSafeOrderSalesCount: card.savedDetail?.joongnaSafeOrderSalesCount ?? null,
-    joongnaSafeOrderSalesText: card.savedDetail?.joongnaSafeOrderSalesText ?? null,
+    joongnaSafeOrderSalesCount:
+      card.savedDetail?.joongnaSafeOrderSalesCount ?? null,
+    joongnaSafeOrderSalesText:
+      card.savedDetail?.joongnaSafeOrderSalesText ?? null,
     daangnMannerTemperature: card.savedDetail?.daangnMannerTemperature ?? null,
     daangnReviewCount: card.savedDetail?.daangnReviewCount ?? null,
     productTradeType: card.savedDetail?.productTradeType ?? null,
@@ -1091,8 +1329,14 @@ function DetailAccessPaywallModal({
   void kakaoShareCooldownHours;
   void onKakaoShare;
   const variant = state.variant ?? "paywall";
-  const freeLimit = state.freeLimit && state.freeLimit > 0 ? state.freeLimit : DEFAULT_FREE_DETAIL_ACCESS_LIMIT;
-  const freeUsed = Math.min(freeLimit, Math.max(0, state.freeUsed ?? freeLimit));
+  const freeLimit =
+    state.freeLimit && state.freeLimit > 0
+      ? state.freeLimit
+      : DEFAULT_FREE_DETAIL_ACCESS_LIMIT;
+  const freeUsed = Math.min(
+    freeLimit,
+    Math.max(0, state.freeUsed ?? freeLimit),
+  );
   const segments = Math.min(3, Math.max(1, freeLimit));
   const creditBalance = Math.max(0, Number(state.creditBalance ?? 0));
   void creditBalance;
@@ -1105,18 +1349,27 @@ function DetailAccessPaywallModal({
   const isSold = variant === "sold";
   const isProfitLost = variant === "profit_lost";
   const isVerifyFail = variant === "verify_fail";
-  const iconBg = isPaywall ? "bg-[#eef6ff] text-[#3182f6] dark:bg-blue-950/50 dark:text-blue-300"
-    : isSold ? "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300"
-    : isProfitLost ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
-    : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
-  const eyebrowText = isPaywall ? "멤버십 상세보기"
-    : isSold ? "방금 거래된 상품"
-    : isProfitLost ? "시세 하락"
-    : "잠시 후 다시 시도";
-  const eyebrowCls = isPaywall ? "text-[#3182f6] dark:text-blue-300"
-    : isSold ? "text-rose-600 dark:text-rose-300"
-    : isProfitLost ? "text-amber-700 dark:text-amber-300"
-    : "text-amber-700 dark:text-amber-300";
+  const iconBg = isPaywall
+    ? "bg-[#eef6ff] text-[#3182f6] dark:bg-blue-950/50 dark:text-blue-300"
+    : isSold
+      ? "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300"
+      : isProfitLost
+        ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+        : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
+  const eyebrowText = isPaywall
+    ? "멤버십 상세보기"
+    : isSold
+      ? "방금 거래된 상품"
+      : isProfitLost
+        ? "시세 하락"
+        : "잠시 후 다시 시도";
+  const eyebrowCls = isPaywall
+    ? "text-[#3182f6] dark:text-blue-300"
+    : isSold
+      ? "text-rose-600 dark:text-rose-300"
+      : isProfitLost
+        ? "text-amber-700 dark:text-amber-300"
+        : "text-amber-700 dark:text-amber-300";
 
   return (
     <div
@@ -1133,22 +1386,48 @@ function DetailAccessPaywallModal({
       >
         <div className="px-5 pb-5 pt-5 sm:px-6 sm:pt-6">
           <div className="flex items-start justify-between gap-4">
-            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] ${iconBg}`}>
+            <div
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] ${iconBg}`}
+            >
               {/* variant 별 아이콘 — paywall=번개, sold=원 안 X, profit_lost=↓ 화살표, verify_fail=시계 */}
               {isPaywall ? (
                 <ZapIcon className="h-6 w-6" />
               ) : isSold ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-6 w-6"
+                >
                   <circle cx="12" cy="12" r="9" />
                   <path d="M9 9l6 6M15 9l-6 6" />
                 </svg>
               ) : isProfitLost ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-6 w-6"
+                >
                   <path d="M3 7l6 6 4-4 8 8" />
                   <path d="M21 17v-6h-6" />
                 </svg>
               ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-6 w-6"
+                >
                   <circle cx="12" cy="12" r="9" />
                   <path d="M12 7v5l3 2" />
                 </svg>
@@ -1164,7 +1443,9 @@ function DetailAccessPaywallModal({
           </div>
 
           <div className="mt-5">
-            <p className={`text-[13px] font-black ${eyebrowCls}`}>{eyebrowText}</p>
+            <p className={`text-[13px] font-black ${eyebrowCls}`}>
+              {eyebrowText}
+            </p>
             <h2 className="mt-2 break-keep text-[25px] font-black leading-[1.18] tracking-tight text-zinc-950 dark:text-zinc-50">
               {state.title}
             </h2>
@@ -1184,14 +1465,28 @@ function DetailAccessPaywallModal({
             <div className="mt-4 rounded-[18px] bg-zinc-50 p-3 dark:bg-zinc-900/70">
               <div className="flex items-center justify-between text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
                 {freeLimit > 0 ? (
-                  <span>무료 {freeUsed.toLocaleString("ko-KR")}/{freeLimit.toLocaleString("ko-KR")} 사용</span>
+                  <span>
+                    무료 {freeUsed.toLocaleString("ko-KR")}/
+                    {freeLimit.toLocaleString("ko-KR")} 사용
+                  </span>
                 ) : (
-                  <span>지금까지 매물 <b className="text-zinc-700 dark:text-zinc-200">{summary?.openedCount ?? 0}개</b> 자세히 봄</span>
+                  <span>
+                    지금까지 매물{" "}
+                    <b className="text-zinc-700 dark:text-zinc-200">
+                      {summary?.openedCount ?? 0}개
+                    </b>{" "}
+                    자세히 봄
+                  </span>
                 )}
                 <span>승인 후 이용 가능</span>
               </div>
               {freeLimit > 0 ? (
-                <div className="mt-2 grid gap-1" style={{ gridTemplateColumns: `repeat(${segments}, minmax(0, 1fr))` }}>
+                <div
+                  className="mt-2 grid gap-1"
+                  style={{
+                    gridTemplateColumns: `repeat(${segments}, minmax(0, 1fr))`,
+                  }}
+                >
                   {Array.from({ length: segments }).map((_, idx) => (
                     <div
                       key={idx}
@@ -1204,10 +1499,13 @@ function DetailAccessPaywallModal({
           ) : null}
 
           {/* sold / verify_fail variant 의 action button — "새로고침해서 다른 매물 보기" */}
-          {(isSold || isVerifyFail) ? (
+          {isSold || isVerifyFail ? (
             <button
               type="button"
-              onClick={() => { onClose(); if (typeof window !== "undefined") window.location.reload(); }}
+              onClick={() => {
+                onClose();
+                if (typeof window !== "undefined") window.location.reload();
+              }}
               className="mt-5 flex h-12 w-full items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-sm font-black text-white shadow-sm transition active:scale-[0.98] hover:bg-[#1c6fe8]"
             >
               {isSold ? "새로고침해서 다른 매물 보기" : "다시 시도하기"}
@@ -1217,21 +1515,27 @@ function DetailAccessPaywallModal({
           {/* Wave launch-129 (2026-05-25): summary 3-col 카드 → 1줄 압축 (모달 세로 길이 줄이기). */}
           {isPaywall && summary && summary.openedCount > 0 ? (
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[14px] bg-[#f5f9ff] px-3.5 py-2.5 dark:bg-blue-950/24">
-              <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">방금 확인한 것</span>
-              <span className="text-[12px] font-black text-[#3182f6] dark:text-blue-300">{summary.openedCount.toLocaleString("ko-KR")}건 분석</span>
+              <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+                방금 확인한 것
+              </span>
+              <span className="text-[12px] font-black text-[#3182f6] dark:text-blue-300">
+                {summary.openedCount.toLocaleString("ko-KR")}건 분석
+              </span>
               <span className="text-zinc-300 dark:text-zinc-700">·</span>
-              <span className="text-[12px] font-black text-emerald-600 dark:text-emerald-400">예상수익 +{krw(summary.expectedProfitTotal)}</span>
+              <span className="text-[12px] font-black text-emerald-600 dark:text-emerald-400">
+                예상수익 +{krw(summary.expectedProfitTotal)}
+              </span>
             </div>
           ) : null}
 
           <div className="mt-5 grid gap-2">
             {isPaywall ? (
-                <Link
-                  href="/plans"
-                  className="flex min-h-12 w-full items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-sm font-black text-white shadow-sm transition hover:bg-[#1c6fe8] active:scale-[0.98]"
-                >
-                  멤버십 신청하기
-                </Link>
+              <Link
+                href="/plans"
+                className="flex min-h-12 w-full items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-sm font-black text-white shadow-sm transition hover:bg-[#1c6fe8] active:scale-[0.98]"
+              >
+                멤버십 신청하기
+              </Link>
             ) : null}
             <button
               type="button"
@@ -1256,8 +1560,9 @@ function FirstFeedOnboardingCard({
   onSelectBudget: (value: BudgetFilterOption) => void;
   onDismiss: () => void;
 }) {
-  const [step, setStep] = useState(0);
-  const [pendingBudget, setPendingBudget] = useState<BudgetFilterOption>(selectedBudget);
+  const [step, setStep] = useState(2);
+  const [pendingBudget, setPendingBudget] =
+    useState<BudgetFilterOption>(selectedBudget);
   const pendingBudgetOption = budgetFilterOption(pendingBudget);
 
   useEffect(() => {
@@ -1271,14 +1576,8 @@ function FirstFeedOnboardingCard({
     >
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-[520px] flex-col px-6 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-[calc(env(safe-area-inset-top)+18px)]">
         <div className="flex items-center justify-between">
-          {/* Wave 905 (2026-05-28): 풀 통계 step 제거. 3 step = 의심 → 비교 예시 → 예산. */}
-          <div className="flex gap-1.5" aria-label={`${step + 1}/3`}>
-            {[0, 1, 2].map((idx) => (
-              <span
-                key={idx}
-                className={`h-1.5 rounded-full transition-all ${idx === step ? "w-7 bg-[#3182f6]" : "w-1.5 bg-zinc-300 dark:bg-zinc-700"}`}
-              />
-            ))}
+          <div className="flex gap-1.5" aria-label="예산 선택">
+            <span className="h-1.5 w-7 rounded-full bg-[#3182f6]" />
           </div>
           <button
             type="button"
@@ -1292,7 +1591,9 @@ function FirstFeedOnboardingCard({
         {step === 0 ? (
           /* Wave launch-125b (2026-05-25): 의심 mirror — 카드 1개 + 사용자 머릿속 의심 그대로. */
           <div className="flex flex-1 flex-col justify-center pb-24">
-            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">의심 한 번 짚고 갈게요</div>
+            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">
+              의심 한 번 짚고 갈게요
+            </div>
 
             {/* 예시 매물 카드 1개 (의심 trigger 용). 사진은 public/intro/airpods-pro-2.jpg 박혀야 path 동작. */}
             <div className="mt-4 flex items-center gap-3 rounded-[18px] border border-zinc-200 bg-white px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-900/60">
@@ -1303,12 +1604,20 @@ function FirstFeedOnboardingCard({
                 className="h-[80px] w-[80px] shrink-0 rounded-[14px] bg-zinc-100 object-cover dark:bg-zinc-800"
               />
               <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">A급 · 무료배송</div>
-                <div className="mt-0.5 truncate text-[15px] font-black text-zinc-950 dark:text-zinc-50">에어팟 프로 2세대</div>
+                <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-500">
+                  A급 · 무료배송
+                </div>
+                <div className="mt-0.5 truncate text-[15px] font-black text-zinc-950 dark:text-zinc-50">
+                  에어팟 프로 2세대
+                </div>
                 {/* Wave launch-125c: 중고 시세 폰트 11→13. */}
                 <div className="mt-1.5 flex items-baseline gap-1.5">
-                  <span className="text-[18px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">5만원</span>
-                  <span className="text-[13px] font-bold text-zinc-500">중고 시세 15만</span>
+                  <span className="text-[18px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">
+                    5만원
+                  </span>
+                  <span className="text-[13px] font-bold text-zinc-500">
+                    중고 시세 15만
+                  </span>
                 </div>
               </div>
             </div>
@@ -1316,7 +1625,8 @@ function FirstFeedOnboardingCard({
             <h2 className="mt-6 break-keep text-[22px] font-black leading-[1.32] tracking-tight">
               이 매물 중고 시세 15만원인데
               <br />
-              <span className="text-[#3182f6] dark:text-blue-300">5만원</span>에 나왔다고…?
+              <span className="text-[#3182f6] dark:text-blue-300">5만원</span>에
+              나왔다고…?
             </h2>
             {/* Wave launch-125c: "사람들은 보통 이렇게 생각" 줄 제거 (밑 인용박스로 의도 명확). 인용 폰트 16→22. */}
             <div className="mt-5 rounded-[18px] border-l-4 border-zinc-300 bg-white/60 px-4 py-5 text-[22px] font-black italic leading-[1.4] text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
@@ -1329,11 +1639,15 @@ function FirstFeedOnboardingCard({
                신규 step 1 = 1페이지 에어팟 5만원 본 매물 + 같은 노캔 고장 상태 비교군 4개 (2열 grid).
                "다 같이 노캔 고장났는데도 다른 매물은 8-12만. 이 매물만 5만 = 진짜 싼 거다" 정면 반박. */
           <div className="flex flex-1 flex-col justify-center pb-24">
-            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">근데 좀 이상한 거 잡았어요</div>
+            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">
+              근데 좀 이상한 거 잡았어요
+            </div>
             <h2 className="mt-3 break-keep text-[22px] font-black leading-[1.28] tracking-tight">
-              <span className="text-[#3182f6] dark:text-blue-300">같은 노캔 고장</span> 매물들인데
-              <br />
-              이 매물만 유독 싸요.
+              <span className="text-[#3182f6] dark:text-blue-300">
+                같은 노캔 고장
+              </span>{" "}
+              매물들인데
+              <br />이 매물만 유독 싸요.
             </h2>
 
             {/* 본 매물 (1페이지 에어팟 5만원) 다시 강조. Wave launch-126b: 노캔 고장 chip 가독성 ↑. */}
@@ -1351,30 +1665,59 @@ function FirstFeedOnboardingCard({
                       <span aria-hidden>⚠</span>
                       노캔 고장
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.1em] text-[#3182f6] dark:text-blue-300">이 매물</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.1em] text-[#3182f6] dark:text-blue-300">
+                      이 매물
+                    </span>
                   </div>
-                  <div className="mt-1 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">에어팟 프로 2세대</div>
+                  <div className="mt-1 truncate text-[14px] font-black text-zinc-950 dark:text-zinc-50">
+                    에어팟 프로 2세대
+                  </div>
                   <div className="mt-1 flex items-baseline gap-1.5">
-                    <span className="text-[16px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">5만원</span>
-                    <span className="text-[10px] font-bold text-zinc-500">매입가 5만 · 시세 11만</span>
+                    <span className="text-[16px] font-black tabular-nums text-emerald-600 dark:text-emerald-400">
+                      5만원
+                    </span>
+                    <span className="text-[10px] font-bold text-zinc-500">
+                      매입가 5만 · 시세 11만
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-3 text-[11px] font-black uppercase tracking-[0.12em] text-zinc-500">같은 상태 비교 매물 4개</div>
+            <div className="mt-3 text-[11px] font-black uppercase tracking-[0.12em] text-zinc-500">
+              같은 상태 비교 매물 4개
+            </div>
             {/* Wave launch-126b (2026-05-26 사용자 정정):
                  - 사진 가로 너무 김 → aspect-square 정사각형 비율
                  - "노캔 고장" 라벨 가독성 ↑ — 빨간 chip + 아이콘
                  - public/노캔고장/ 폴더에 실제 비교 매물 사진 4개 박힘 (mock 통일성 ↑) */}
             <div className="mt-2 grid grid-cols-2 gap-2">
               {[
-                { price: "8만원", note: "매입가 8만 · 시세 11만", img: "/%EB%85%B8%EC%BA%94%EA%B3%A0%EC%9E%A5/293736980_1_1728653235_w360.webp" },
-                { price: "9만원", note: "매입가 9만 · 시세 11만", img: "/%EB%85%B8%EC%BA%94%EA%B3%A0%EC%9E%A5/338081393_1_1749305909_w360.webp" },
-                { price: "11만원", note: "매입가 11만 · 시세 11만", img: "/%EB%85%B8%EC%BA%94%EA%B3%A0%EC%9E%A5/408223471_1_1778837408_w360.webp" },
-                { price: "12만원", note: "매입가 12만 · 시세 11만", img: "/%EB%85%B8%EC%BA%94%EA%B3%A0%EC%9E%A5/art_1667266173.jpg" },
+                {
+                  price: "8만원",
+                  note: "매입가 8만 · 시세 11만",
+                  img: "/%EB%85%B8%EC%BA%94%EA%B3%A0%EC%9E%A5/293736980_1_1728653235_w360.webp",
+                },
+                {
+                  price: "9만원",
+                  note: "매입가 9만 · 시세 11만",
+                  img: "/%EB%85%B8%EC%BA%94%EA%B3%A0%EC%9E%A5/338081393_1_1749305909_w360.webp",
+                },
+                {
+                  price: "11만원",
+                  note: "매입가 11만 · 시세 11만",
+                  img: "/%EB%85%B8%EC%BA%94%EA%B3%A0%EC%9E%A5/408223471_1_1778837408_w360.webp",
+                },
+                {
+                  price: "12만원",
+                  note: "매입가 12만 · 시세 11만",
+                  img: "/%EB%85%B8%EC%BA%94%EA%B3%A0%EC%9E%A5/art_1667266173.jpg",
+                },
               ].map((item, idx) => (
-                <div key={idx} className="flex gap-2 rounded-[14px] border border-zinc-200 bg-white p-2 dark:border-zinc-800 dark:bg-zinc-900/60">
+                <div
+                  key={idx}
+                  className="flex gap-2 rounded-[14px] border border-zinc-200 bg-white p-2 dark:border-zinc-800 dark:bg-zinc-900/60"
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={item.img}
@@ -1386,15 +1729,23 @@ function FirstFeedOnboardingCard({
                       <span aria-hidden>⚠</span>
                       노캔 고장
                     </div>
-                    <div className="mt-1 text-[14px] font-black tabular-nums text-zinc-900 dark:text-zinc-100">{item.price}</div>
-                    <div className="mt-0.5 text-[10px] font-bold leading-tight text-zinc-500">{item.note}</div>
+                    <div className="mt-1 text-[14px] font-black tabular-nums text-zinc-900 dark:text-zinc-100">
+                      {item.price}
+                    </div>
+                    <div className="mt-0.5 text-[10px] font-bold leading-tight text-zinc-500">
+                      {item.note}
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
 
             <p className="mt-4 break-keep text-[13px] font-bold leading-5 text-zinc-600 dark:text-zinc-400">
-              <span className="font-black text-[#3182f6] dark:text-blue-300">결함은 다 같음</span> — 그런데 이 매물만 절반 가격. <span className="font-black">진짜 싼 매물이라는 뜻</span>이에요.
+              <span className="font-black text-[#3182f6] dark:text-blue-300">
+                결함은 다 같음
+              </span>{" "}
+              — 그런데 이 매물만 절반 가격.{" "}
+              <span className="font-black">진짜 싼 매물이라는 뜻</span>이에요.
             </p>
             <p className="mt-2 text-[11px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
               ※ 예시 매물. 실제 추천은 다음 화면부터.
@@ -1404,14 +1755,17 @@ function FirstFeedOnboardingCard({
           /* step === 2 — 예산. */
           <div className="flex flex-1 flex-col justify-center pb-24">
             {/* Wave launch-104: "감당 가능한" + "후보" 어색 → "예산" + "상품" 친화 카피. */}
-            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">예산</div>
+            <div className="text-[13px] font-black text-[#3182f6] dark:text-blue-300">
+              예산
+            </div>
             <h2 className="mt-3 break-keep text-[34px] font-black leading-[1.12] tracking-tight sm:text-[42px]">
               중고 상품
               <br />
               금액대는 어떤 게 좋아요?
             </h2>
             <p className="mt-5 break-keep text-[16px] font-bold leading-7 text-zinc-600 dark:text-zinc-300">
-              해당 금액대 상품이 적으면 좋은 걸 놓치지 않게 전체 상품도 같이 보여드려요. 예산은 위 필터에서 언제든 바꿀 수 있어요.
+              해당 금액대 상품이 적으면 좋은 걸 놓치지 않게 전체 상품도 같이
+              보여드려요. 예산은 위 필터에서 언제든 바꿀 수 있어요.
             </p>
 
             <div className="mt-9 grid gap-2">
@@ -1430,7 +1784,11 @@ function FirstFeedOnboardingCard({
                     }`}
                   >
                     <span>{option.label}</span>
-                    <span className={active ? "text-white/80" : "text-zinc-300"}>→</span>
+                    <span
+                      className={active ? "text-white/80" : "text-zinc-300"}
+                    >
+                      →
+                    </span>
                   </button>
                 );
               })}
@@ -1463,7 +1821,9 @@ function FirstFeedOnboardingCard({
                 onClick={() => onSelectBudget(pendingBudget)}
                 className="flex min-h-[56px] w-full items-center justify-center rounded-[20px] bg-zinc-950 text-[16px] font-black text-white shadow-[0_14px_34px_rgba(24,24,27,0.18)] active:scale-[0.99] dark:bg-white dark:text-zinc-950"
               >
-                {pendingBudgetOption.value === "all" ? "전체 피드로 시작하기" : `${pendingBudgetOption.shortLabel}로 확인하고 보기`}
+                {pendingBudgetOption.value === "all"
+                  ? "전체 피드로 시작하기"
+                  : `${pendingBudgetOption.shortLabel}로 확인하고 보기`}
               </button>
             )}
           </div>
@@ -1483,36 +1843,64 @@ export default function ExploreClient({
   const [items, setItems] = useState<PoolItem[]>([]);
   // Wave 391: loadPool에서 items deps에 박으면 infinite loop. ref로 fresh 접근.
   const itemsRef = useRef<PoolItem[]>([]);
-  useEffect(() => { itemsRef.current = items; }, [items]);
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
   // Wave 394.7.j (사용자 짚음): 더 찾아보기 append 후 새 매물 시작점으로 자동 스크롤.
   const [scrollTargetPid, setScrollTargetPid] = useState<number | null>(null);
   const cardRefs = useRef<Map<number, HTMLElement>>(new Map());
-  const [cooldown, setCooldown] = useState<PoolResponse["cooldown"] | null>(null);
+  const [cooldown, setCooldown] = useState<PoolResponse["cooldown"] | null>(
+    null,
+  );
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [detailAccessSnapshot, setDetailAccessSnapshot] = useState<DetailAccessSnapshot>(() => readDetailAccessSnapshot(storageScope));
+  const [detailAccessSnapshot, setDetailAccessSnapshot] =
+    useState<DetailAccessSnapshot>(() =>
+      readDetailAccessSnapshot(storageScope),
+    );
   const [feedExhausted, setFeedExhausted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [detailAccessLimit, setDetailAccessLimit] = useState<DetailAccessLimitModal | null>(null);
+  const [detailAccessLimit, setDetailAccessLimit] =
+    useState<DetailAccessLimitModal | null>(null);
   // Wave launch-93: paywall 노출 이력은 모달 가치 요약/후속 CTA에만 사용한다.
   const [, setHasSeenPaywall] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
-    try { return window.localStorage.getItem(`minyoi:has-seen-paywall:${storageScope}`) === "1"; } catch { return false; }
+    try {
+      return (
+        window.localStorage.getItem(
+          `minyoi:has-seen-paywall:${storageScope}`,
+        ) === "1"
+      );
+    } catch {
+      return false;
+    }
   });
   const markPaywallSeen = useCallback(() => {
     setHasSeenPaywall(true);
     if (typeof window === "undefined") return;
-    try { window.localStorage.setItem(`minyoi:has-seen-paywall:${storageScope}`, "1"); } catch {}
+    try {
+      window.localStorage.setItem(
+        `minyoi:has-seen-paywall:${storageScope}`,
+        "1",
+      );
+    } catch {}
   }, [storageScope]);
-  const [detailAccessLoadingPid, setDetailAccessLoadingPid] = useState<number | null>(null);
+  const [detailAccessLoadingPid, setDetailAccessLoadingPid] = useState<
+    number | null
+  >(null);
   const openedDetailPidsRef = useRef<Set<number>>(new Set());
-  const [openedDetailPids, setOpenedDetailPids] = useState<Set<number>>(() => new Set());
+  const [openedDetailPids, setOpenedDetailPids] = useState<Set<number>>(
+    () => new Set(),
+  );
   const detailAccessValueRef = useRef<DetailAccessValueSummary | null>(null);
   const [scrapItems, setScrapItems] = useState<ScrappedPoolItem[]>([]);
-  const [legacySavedPids, setLegacySavedPids] = useState<Set<number>>(() => new Set());
+  const [legacySavedPids, setLegacySavedPids] = useState<Set<number>>(
+    () => new Set(),
+  );
   const [now, setNow] = useState(Date.now());
-  const [membershipStatus, setMembershipStatus] = useState<MembershipStatusSnapshot | null>(null);
+  const [membershipStatus, setMembershipStatus] =
+    useState<MembershipStatusSnapshot | null>(null);
   const [selectedCard, setSelectedCard] = useState<RevealCard | null>(null);
   const detailSessionIdRef = useRef<string | null>(null);
   // Wave 346: refresh modal — 기다리기/충전 옵션
@@ -1525,7 +1913,8 @@ export default function ExploreClient({
   const [kakaoShareLoading, setKakaoShareLoading] = useState(false);
   // Wave launch-53 (사용자 짚음 "하루 1번이면 button 비활성/알림"):
   //   cooldown 상태 mount 시 fetch. cooldown 안이면 button 비활성 + "N시간 후 다시" 카피.
-  const [kakaoShareCooldownHours, setKakaoShareCooldownHours] = useState<number>(0);
+  const [kakaoShareCooldownHours, setKakaoShareCooldownHours] =
+    useState<number>(0);
   // Wave 738 (2026-05-24): 카톡 공유 → webhook → DB UPDATE → Supabase Realtime → 토스트.
   //   legacy balance toast path. 멤버십 모델에서는 user-facing credit badge 를 노출하지 않는다.
   // Wave 746 (2026-05-24): 카톡 공유 토스트는 BalanceToast (layout.tsx) 가 universal 처리.
@@ -1536,10 +1925,18 @@ export default function ExploreClient({
     if (typeof window === "undefined") return;
     void (async () => {
       try {
-        const res = await fetch("/api/packs/pool/share-bonus", { cache: "no-store" });
+        const res = await fetch("/api/packs/pool/share-bonus", {
+          cache: "no-store",
+        });
         if (!res.ok) return;
-        const data = await res.json() as { canShare?: boolean; remainingHours?: number };
-        if (data.canShare === false && typeof data.remainingHours === "number") {
+        const data = (await res.json()) as {
+          canShare?: boolean;
+          remainingHours?: number;
+        };
+        if (
+          data.canShare === false &&
+          typeof data.remainingHours === "number"
+        ) {
           setKakaoShareCooldownHours(data.remainingHours);
         } else {
           setKakaoShareCooldownHours(0);
@@ -1554,7 +1951,9 @@ export default function ExploreClient({
     let alive = true;
     void (async () => {
       const supabase = getSupabaseBrowserClient();
-      const { data } = supabase ? await supabase.auth.getSession() : { data: null };
+      const { data } = supabase
+        ? await supabase.auth.getSession()
+        : { data: null };
       const token = data?.session?.access_token;
       if (!token) return;
       const res = await fetch("/api/membership/status", {
@@ -1562,10 +1961,14 @@ export default function ExploreClient({
         cache: "no-store",
       }).catch(() => null);
       if (!res?.ok || !alive) return;
-      const payload = (await res.json().catch(() => null)) as MembershipStatusSnapshot | null;
+      const payload = (await res
+        .json()
+        .catch(() => null)) as MembershipStatusSnapshot | null;
       if (alive) setMembershipStatus(payload);
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, []);
 
   // Wave 746 (2026-05-24): cooldown UI 갱신만 — BalanceToast 가 last_share_bonus_at 변경 감지 시
@@ -1574,23 +1977,32 @@ export default function ExploreClient({
     if (typeof window === "undefined") return;
     const handler = () => setKakaoShareCooldownHours(24);
     window.addEventListener("minyoi:share-bonus-received", handler);
-    return () => window.removeEventListener("minyoi:share-bonus-received", handler);
+    return () =>
+      window.removeEventListener("minyoi:share-bonus-received", handler);
   }, []);
 
   // SDK init — script tag 로드 끝나면 window.Kakao 사용 가능. polling 으로 확인 (script async).
   useEffect(() => {
     if (typeof window === "undefined") return;
     const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
-    if (!jsKey) return;  // env 없으면 button disabled 유지
+    if (!jsKey) return; // env 없으면 button disabled 유지
 
     let attempts = 0;
-    const maxAttempts = 50;  // 5초 timeout (100ms × 50)
+    const maxAttempts = 50; // 5초 timeout (100ms × 50)
     const poll = window.setInterval(() => {
       attempts += 1;
-      const kakao = (window as unknown as { Kakao?: { isInitialized: () => boolean; init: (key: string) => void } }).Kakao;
+      const kakao = (
+        window as unknown as {
+          Kakao?: { isInitialized: () => boolean; init: (key: string) => void };
+        }
+      ).Kakao;
       if (kakao) {
         if (!kakao.isInitialized()) {
-          try { kakao.init(jsKey); } catch (err) { console.warn("Kakao init failed", err); }
+          try {
+            kakao.init(jsKey);
+          } catch (err) {
+            console.warn("Kakao init failed", err);
+          }
         }
         setKakaoShareReady(kakao.isInitialized());
         window.clearInterval(poll);
@@ -1606,22 +2018,29 @@ export default function ExploreClient({
     if (typeof window === "undefined" || kakaoShareLoading) return;
     // Wave launch-53: cooldown 안이면 카카오 다이얼로그 띄우지 X. alert 으로 안내.
     if (kakaoShareCooldownHours > 0) {
-      window.alert(`오늘은 이미 받았어요! ${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요`);
+      window.alert(
+        `오늘은 이미 받았어요! ${kakaoShareCooldownHours}시간 후 다시 받을 수 있어요`,
+      );
       return;
     }
-    const kakao = (window as unknown as {
-      Kakao?: {
-        isInitialized: () => boolean;
-        Share?: {
-          sendDefault: (config: Record<string, unknown>) => void;
+    const kakao = (
+      window as unknown as {
+        Kakao?: {
+          isInitialized: () => boolean;
+          Share?: {
+            sendDefault: (config: Record<string, unknown>) => void;
+          };
         };
-      };
-    }).Kakao;
+      }
+    ).Kakao;
     if (!kakao?.Share?.sendDefault || !kakao.isInitialized()) {
       return;
     }
 
-    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://minyoi-mvp.vercel.app";
+    const baseUrl =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "https://minyoi-mvp.vercel.app";
     const shareUrl = `${baseUrl}?ref=kakao_share`;
 
     try {
@@ -1632,7 +2051,8 @@ export default function ExploreClient({
         objectType: "feed",
         content: {
           title: "지금 팔면 바로 돈 되는 중고 상품이 있어요",
-          description: "AI 가 매일 찾아주는 차익 상품, 지금 무료로 확인해보세요!",
+          description:
+            "AI 가 매일 찾아주는 차익 상품, 지금 무료로 확인해보세요!",
           imageUrl,
           link: {
             mobileWebUrl: shareUrl,
@@ -1649,7 +2069,8 @@ export default function ExploreClient({
           },
         ],
         serverCallbackArgs: {
-          user_id: storageScope && storageScope !== "anonymous" ? storageScope : "",
+          user_id:
+            storageScope && storageScope !== "anonymous" ? storageScope : "",
         },
       });
 
@@ -1704,24 +2125,36 @@ export default function ExploreClient({
   const searchParams = useSearchParams();
 
   // 초기값 URL에서 파싱
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(() => {
-    const raw = searchParams.get("categories");
-    return raw ? new Set(raw.split(",").filter(Boolean)) : new Set();
-  });
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
+    () => {
+      const raw = searchParams.get("categories");
+      return raw ? new Set(raw.split(",").filter(Boolean)) : new Set();
+    },
+  );
   const [sort, setSort] = useState<SortOption>(() => {
     const raw = searchParams.get("sort");
-    return raw === "latest" || raw === "price_asc" || raw === "distance" ? raw : "profit_desc";
+    return raw === "latest" || raw === "price_asc" || raw === "distance"
+      ? raw
+      : "profit_desc";
   });
   const [source, setSource] = useState<SourceOption>(() => {
     const raw = searchParams.get("source");
-    return raw === "bunjang" || raw === "joongna" || raw === "daangn" ? raw : "all";
+    return raw === "bunjang" || raw === "joongna" || raw === "daangn"
+      ? raw
+      : "all";
   });
-  const [budgetFilter, setBudgetFilter] = useState<BudgetFilterOption>(() => readBudgetFilterOption(storageScope));
+  const [budgetFilter, setBudgetFilter] = useState<BudgetFilterOption>(() =>
+    readBudgetFilterOption(storageScope),
+  );
   const budgetOption = budgetFilterOption(budgetFilter);
   const nextBudgetValue = nextBudgetFilterOption(budgetFilter);
-  const nextBudgetOption = nextBudgetValue ? budgetFilterOption(nextBudgetValue) : null;
+  const nextBudgetOption = nextBudgetValue
+    ? budgetFilterOption(nextBudgetValue)
+    : null;
   const [showFirstFeedOnboarding, setShowFirstFeedOnboarding] = useState(false);
-  const [scrapOnly, setScrapOnly] = useState(() => searchParams.get("view") === "scrap");
+  const [scrapOnly, setScrapOnly] = useState(
+    () => searchParams.get("view") === "scrap",
+  );
   const categoryScrollRef = useRef<HTMLDivElement | null>(null);
   const [canScrollCategoriesPrev, setCanScrollCategoriesPrev] = useState(false);
   const [canScrollCategoriesNext, setCanScrollCategoriesNext] = useState(false);
@@ -1734,11 +2167,14 @@ export default function ExploreClient({
     sourceRef.current = source;
   }, [source]);
 
-  const updateBudgetFilter = useCallback((value: BudgetFilterOption) => {
-    setBudgetFilter(value);
-    setFeedExhausted(false);
-    writeBudgetFilterOption(storageScope, value);
-  }, [storageScope]);
+  const updateBudgetFilter = useCallback(
+    (value: BudgetFilterOption) => {
+      setBudgetFilter(value);
+      setFeedExhausted(false);
+      writeBudgetFilterOption(storageScope, value);
+    },
+    [storageScope],
+  );
 
   // Wave launch-49: scrap localStorage → DB hybrid.
   //   1) localStorage 의 기존 scrap 으로 즉시 표시 (빠른 mount, offline)
@@ -1756,27 +2192,36 @@ export default function ExploreClient({
     // Background DB sync — server source 가 진짜.
     void (async () => {
       const serverScraps = await fetchServerScraps();
-      if (serverScraps == null) return;  // auth fail 또는 network — localStorage 유지
+      if (serverScraps == null) return; // auth fail 또는 network — localStorage 유지
       // localStorage 에만 있던 매물 import (server 누락분 backfill)
       const serverPidSet = new Set(serverScraps.map((item) => item.pid));
-      const localOnly = loadedScraps.filter((item) => !serverPidSet.has(item.pid));
+      const localOnly = loadedScraps.filter(
+        (item) => !serverPidSet.has(item.pid),
+      );
       if (localOnly.length > 0) {
         await importLocalScrapsToServer(localOnly);
         // import 후 다시 fetch 해서 server 가 진짜 source
         const reFetched = await fetchServerScraps();
         if (reFetched) {
           setScrapItems(reFetched);
-          saveScrapSnapshots(reFetched);  // localStorage cache 동기화
-          reFetched.forEach((item) => openedDetailPidsRef.current.add(item.pid));
+          saveScrapSnapshots(reFetched); // localStorage cache 동기화
+          reFetched.forEach((item) =>
+            openedDetailPidsRef.current.add(item.pid),
+          );
           setOpenedDetailPids(new Set(openedDetailPidsRef.current));
         }
         return;
       }
       // server 매물이 더 많거나 다름 → server 가 진짜
-      if (serverScraps.length !== loadedScraps.length || serverScraps.some((it, idx) => loadedScraps[idx]?.pid !== it.pid)) {
+      if (
+        serverScraps.length !== loadedScraps.length ||
+        serverScraps.some((it, idx) => loadedScraps[idx]?.pid !== it.pid)
+      ) {
         setScrapItems(serverScraps);
         saveScrapSnapshots(serverScraps);
-        serverScraps.forEach((item) => openedDetailPidsRef.current.add(item.pid));
+        serverScraps.forEach((item) =>
+          openedDetailPidsRef.current.add(item.pid),
+        );
         setOpenedDetailPids(new Set(openedDetailPidsRef.current));
       }
     })();
@@ -1800,7 +2245,9 @@ export default function ExploreClient({
     const node = categoryScrollRef.current;
     if (!node) return;
     updateCategoryScrollButtons();
-    node.addEventListener("scroll", updateCategoryScrollButtons, { passive: true });
+    node.addEventListener("scroll", updateCategoryScrollButtons, {
+      passive: true,
+    });
     window.addEventListener("resize", updateCategoryScrollButtons);
     return () => {
       node.removeEventListener("scroll", updateCategoryScrollButtons);
@@ -1808,16 +2255,19 @@ export default function ExploreClient({
     };
   }, [updateCategoryScrollButtons]);
 
-  const scrollCategories = useCallback((direction: "prev" | "next") => {
-    const node = categoryScrollRef.current;
-    if (!node) return;
-    const distance = Math.min(Math.max(node.clientWidth * 0.72, 180), 360);
-    node.scrollBy({
-      left: direction === "next" ? distance : -distance,
-      behavior: "smooth",
-    });
-    window.setTimeout(updateCategoryScrollButtons, 240);
-  }, [updateCategoryScrollButtons]);
+  const scrollCategories = useCallback(
+    (direction: "prev" | "next") => {
+      const node = categoryScrollRef.current;
+      if (!node) return;
+      const distance = Math.min(Math.max(node.clientWidth * 0.72, 180), 360);
+      node.scrollBy({
+        left: direction === "next" ? distance : -distance,
+        behavior: "smooth",
+      });
+      window.setTimeout(updateCategoryScrollButtons, 240);
+    },
+    [updateCategoryScrollButtons],
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1828,7 +2278,11 @@ export default function ExploreClient({
     try {
       setBudgetFilter(readBudgetFilterOption(storageScope));
       setDetailAccessSnapshot(readDetailAccessSnapshot(storageScope));
-      setShowFirstFeedOnboarding(window.localStorage.getItem(scopedStorageKey(FIRST_FEED_ONBOARDING_STORAGE_KEY, storageScope)) !== "1");
+      setShowFirstFeedOnboarding(
+        window.localStorage.getItem(
+          scopedStorageKey(FIRST_FEED_ONBOARDING_STORAGE_KEY, storageScope),
+        ) !== "1",
+      );
     } catch {
       setShowFirstFeedOnboarding(false);
     }
@@ -1837,7 +2291,10 @@ export default function ExploreClient({
   const dismissFirstFeedOnboarding = useCallback(() => {
     if (typeof window !== "undefined") {
       try {
-        window.localStorage.setItem(scopedStorageKey(FIRST_FEED_ONBOARDING_STORAGE_KEY, storageScope), "1");
+        window.localStorage.setItem(
+          scopedStorageKey(FIRST_FEED_ONBOARDING_STORAGE_KEY, storageScope),
+          "1",
+        );
       } catch {
         // ignore
       }
@@ -1845,20 +2302,26 @@ export default function ExploreClient({
     setShowFirstFeedOnboarding(false);
   }, [storageScope]);
 
-  const selectFirstFeedBudget = useCallback((value: BudgetFilterOption) => {
-    updateBudgetFilter(value);
-    dismissFirstFeedOnboarding();
-  }, [dismissFirstFeedOnboarding, updateBudgetFilter]);
+  const selectFirstFeedBudget = useCallback(
+    (value: BudgetFilterOption) => {
+      updateBudgetFilter(value);
+      dismissFirstFeedOnboarding();
+    },
+    [dismissFirstFeedOnboarding, updateBudgetFilter],
+  );
 
   // 필터/정렬 변경 시 URL 갱신
   useEffect(() => {
     const params = new URLSearchParams();
     if (scrapOnly) params.set("view", "scrap");
-    else if (selectedCategories.size > 0) params.set("categories", Array.from(selectedCategories).join(","));
+    else if (selectedCategories.size > 0)
+      params.set("categories", Array.from(selectedCategories).join(","));
     if (sort !== "profit_desc") params.set("sort", sort);
     if (source !== "all") params.set("source", source);
     const queryString = params.toString();
-    router.replace(`${pathname}${queryString ? `?${queryString}` : ""}`, { scroll: false });
+    router.replace(`${pathname}${queryString ? `?${queryString}` : ""}`, {
+      scroll: false,
+    });
   }, [selectedCategories, scrapOnly, sort, source, router, pathname]);
 
   // Cooldown tick (매초 갱신)
@@ -1882,124 +2345,157 @@ export default function ExploreClient({
 
   const canRefresh = true;
 
-  const trackDetailEvent = useCallback((
-    pid: number,
-    eventType: DetailEventType,
-    metadata?: Record<string, unknown>,
-    sessionId = detailSessionIdRef.current,
-  ) => {
-    if (!Number.isFinite(pid)) return;
-    const body = {
-      pid,
-      eventType,
-      sessionId,
-      metadata: metadata ?? {},
-    };
-    void fetch("/api/packs/reveals/events", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      cache: "no-store",
-      keepalive: JSON.stringify(body).length < 6000,
-    }).catch(() => {});
-  }, []);
+  const trackDetailEvent = useCallback(
+    (
+      pid: number,
+      eventType: DetailEventType,
+      metadata?: Record<string, unknown>,
+      sessionId = detailSessionIdRef.current,
+    ) => {
+      if (!Number.isFinite(pid)) return;
+      const body = {
+        pid,
+        eventType,
+        sessionId,
+        metadata: metadata ?? {},
+      };
+      void fetch("/api/packs/reveals/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        cache: "no-store",
+        keepalive: JSON.stringify(body).length < 6000,
+      }).catch(() => {});
+    },
+    [],
+  );
 
-  const beginDetailSession = useCallback((
-    item: PoolItem,
-    metadata: Record<string, unknown>,
-  ) => {
-    const sessionId = createDetailSessionId(item.pid);
-    detailSessionIdRef.current = sessionId;
-    setSelectedCard(poolItemToRevealCard(item));
-    trackDetailEvent(item.pid, "detail_opened", {
-      source: item.marketplaceSource ?? "bunjang",
-      category: item.category,
-      conditionClass: item.conditionClass,
-      price: item.price,
-      expectedProfit: profitAvg(item),
-      ...metadata,
-    }, sessionId);
-  }, [trackDetailEvent]);
+  const beginDetailSession = useCallback(
+    (item: PoolItem, metadata: Record<string, unknown>) => {
+      const sessionId = createDetailSessionId(item.pid);
+      detailSessionIdRef.current = sessionId;
+      setSelectedCard(poolItemToRevealCard(item));
+      trackDetailEvent(
+        item.pid,
+        "detail_opened",
+        {
+          source: item.marketplaceSource ?? "bunjang",
+          category: item.category,
+          conditionClass: item.conditionClass,
+          price: item.price,
+          expectedProfit: profitAvg(item),
+          ...metadata,
+        },
+        sessionId,
+      );
+    },
+    [trackDetailEvent],
+  );
 
   // Wave 894 (2026-05-28): source/sort/category는 현재 로드된 피드 snapshot 안에서만 적용한다.
   // 예산만 서버 재조회 — 사용자가 "지금 보고 있는 매물"을 정렬/출처 필터한다고 느끼기 때문.
   // "더 찾아보기"에서만 serverSource를 받아 현재 출처 조건의 추가 후보를 더 가져올 수 있게 한다.
-  const loadPool = useCallback(async (
-    refresh: boolean,
-    options?: LoadPoolOptions,
-  ) => {
-    if (refresh) setRefreshing(true);
-    else {
-      setLoading(true);
-      setFeedExhausted(false);
-    }
-    setError(null);
-    try {
-      const params = new URLSearchParams();
-      if (refresh) params.set("refresh", "1");
-      const serverSource = options?.serverSource ?? sourceRef.current;
-      if (serverSource !== "all") params.set("source", serverSource);
-      const serverSort = options?.serverSort ?? (sortRef.current === "distance" ? "distance" : null);
-      if (serverSort === "distance") params.set("sort", "distance");
-      const budgetParam = budgetApiParam(budgetFilter);
-      if (budgetParam) params.set("budget", budgetParam);
-      // Wave 391: refresh 시 이미 본 pids 전달 → 백엔드가 제외하고 다른 매물 fetch.
-      // 안 그러면 같은 풀에서 같은 30개 다양화 결과 → frontend dedupe 후 0개 추가.
-      // itemsRef로 fresh 접근 (deps에 items 박으면 infinite loop).
-      const currentItems = itemsRef.current;
-      if (refresh && currentItems.length > 0) {
-        const excludePids = currentItems.filter((it) => !it.accessToken).map((it) => it.pid).join(",");
-        const excludeTokens = currentItems.map((it) => it.accessToken).filter((t): t is string => Boolean(t)).join(",");
-        if (excludePids) params.set("excludePids", excludePids);
-        if (excludeTokens) params.set("excludeTokens", excludeTokens);
+  const loadPool = useCallback(
+    async (refresh: boolean, options?: LoadPoolOptions) => {
+      if (refresh) setRefreshing(true);
+      else {
+        setLoading(true);
+        setFeedExhausted(false);
       }
-      const url = `/api/packs/pool${params.toString() ? `?${params.toString()}` : ""}`;
-      const res = await fetch(url, { cache: "no-store" });
-      const data = (await res.json()) as PoolResponse;
-      if (res.ok) {
-        if (data.items != null) {
-          // Wave 371: refresh = append + pid dedupe (기존 매물 유지하면서 새 매물 추가).
-          // 사용자 의도 — 더 둘러보고 싶어서 "다른 매물 찾기" 누르는데 기존이 사라지면 X.
-          // 초기 load (refresh=false)는 덮어쓰기 (첫 데이터).
-          if (refresh) {
-            const existingPids = new Set(itemsRef.current.map((it) => it.pid));
-            const incomingFresh = data.items.filter((it) => !existingPids.has(it.pid));
-            setFeedExhausted(incomingFresh.length === 0);
-            setItems((prev) => {
-              const latestExistingPids = new Set(prev.map((it) => it.pid));
-              const fresh = data.items!.filter((it) => !latestExistingPids.has(it.pid));
-              // Wave 394.7.j: 새 매물 첫 pid 저장 — useEffect 가 mount 후 scroll.
-              if (fresh.length > 0 && options?.autoScrollNew !== false) setScrollTargetPid(fresh[0].pid);
-              return [...prev, ...fresh];
-            });
-          } else {
-            setItems(data.items);
-            setFeedExhausted(data.items.length === 0);
+      setError(null);
+      try {
+        const params = new URLSearchParams();
+        if (refresh) params.set("refresh", "1");
+        const serverSource = options?.serverSource ?? sourceRef.current;
+        if (serverSource !== "all") params.set("source", serverSource);
+        const serverSort =
+          options?.serverSort ??
+          (sortRef.current === "distance" ? "distance" : null);
+        if (serverSort === "distance") params.set("sort", "distance");
+        const budgetParam = budgetApiParam(budgetFilter);
+        if (budgetParam) params.set("budget", budgetParam);
+        // Wave 391: refresh 시 이미 본 pids 전달 → 백엔드가 제외하고 다른 매물 fetch.
+        // 안 그러면 같은 풀에서 같은 30개 다양화 결과 → frontend dedupe 후 0개 추가.
+        // itemsRef로 fresh 접근 (deps에 items 박으면 infinite loop).
+        const currentItems = itemsRef.current;
+        if (refresh && currentItems.length > 0) {
+          const excludePids = currentItems
+            .filter((it) => !it.accessToken)
+            .map((it) => it.pid)
+            .join(",");
+          const excludeTokens = currentItems
+            .map((it) => it.accessToken)
+            .filter((t): t is string => Boolean(t))
+            .join(",");
+          if (excludePids) params.set("excludePids", excludePids);
+          if (excludeTokens) params.set("excludeTokens", excludeTokens);
+        }
+        const url = `/api/packs/pool${params.toString() ? `?${params.toString()}` : ""}`;
+        const res = await fetch(url, { cache: "no-store" });
+        const data = (await res.json()) as PoolResponse;
+        if (res.ok) {
+          if (data.items != null) {
+            // Wave 371: refresh = append + pid dedupe (기존 매물 유지하면서 새 매물 추가).
+            // 사용자 의도 — 더 둘러보고 싶어서 "다른 매물 찾기" 누르는데 기존이 사라지면 X.
+            // 초기 load (refresh=false)는 덮어쓰기 (첫 데이터).
+            if (refresh) {
+              const existingPids = new Set(
+                itemsRef.current.map((it) => it.pid),
+              );
+              const incomingFresh = data.items.filter(
+                (it) => !existingPids.has(it.pid),
+              );
+              setFeedExhausted(incomingFresh.length === 0);
+              setItems((prev) => {
+                const latestExistingPids = new Set(prev.map((it) => it.pid));
+                const fresh = data.items!.filter(
+                  (it) => !latestExistingPids.has(it.pid),
+                );
+                // Wave 394.7.j: 새 매물 첫 pid 저장 — useEffect 가 mount 후 scroll.
+                if (fresh.length > 0 && options?.autoScrollNew !== false)
+                  setScrollTargetPid(fresh[0].pid);
+                return [...prev, ...fresh];
+              });
+            } else {
+              setItems(data.items);
+              setFeedExhausted(data.items.length === 0);
+            }
           }
+          setCooldown(data.cooldown);
+          if (data.detailAccess) {
+            const nextDetailAccess =
+              normalizeDetailAccessSnapshot(data.detailAccess, {
+                trustServerLimit: true,
+              }) ?? defaultDetailAccessSnapshot();
+            setDetailAccessSnapshot(nextDetailAccess);
+            writeDetailAccessSnapshot(storageScope, nextDetailAccess);
+          }
+        } else {
+          // Wave launch-39 (사용자 짚음): "빨간 위에 뭐 깜빡깜빡". error 가 set 되어도
+          // feedExhausted 안 박혀서 IntersectionObserver 가 sentinel 보고 또 loadPool(true)
+          // → 또 error → 빨간 box 들였다 사라졌다 반복. error 발생 시도 feedExhausted=true
+          // 박아서 자동 retry 자체 차단. 사용자가 직접 새로고침 누르도록.
+          setError(
+            data.message ??
+              "매물을 잠시 못 가져왔어요. 잠시 후 다시 시도해주세요.",
+          );
+          setFeedExhausted(true);
         }
-        setCooldown(data.cooldown);
-        if (data.detailAccess) {
-          const nextDetailAccess = normalizeDetailAccessSnapshot(data.detailAccess, { trustServerLimit: true }) ?? defaultDetailAccessSnapshot();
-          setDetailAccessSnapshot(nextDetailAccess);
-          writeDetailAccessSnapshot(storageScope, nextDetailAccess);
-        }
-      } else {
-        // Wave launch-39 (사용자 짚음): "빨간 위에 뭐 깜빡깜빡". error 가 set 되어도
-        // feedExhausted 안 박혀서 IntersectionObserver 가 sentinel 보고 또 loadPool(true)
-        // → 또 error → 빨간 box 들였다 사라졌다 반복. error 발생 시도 feedExhausted=true
-        // 박아서 자동 retry 자체 차단. 사용자가 직접 새로고침 누르도록.
-        setError(data.message ?? "매물을 잠시 못 가져왔어요. 잠시 후 다시 시도해주세요.");
+      } catch (e) {
+        // 네트워크 끊김도 동일 — 무한 retry 차단.
+        setError(
+          e instanceof Error && e.message
+            ? e.message
+            : "네트워크가 잠시 불안정해요. 잠시 후 다시 시도해주세요.",
+        );
         setFeedExhausted(true);
+      } finally {
+        setRefreshing(false);
+        setLoading(false);
       }
-    } catch (e) {
-      // 네트워크 끊김도 동일 — 무한 retry 차단.
-      setError(e instanceof Error && e.message ? e.message : "네트워크가 잠시 불안정해요. 잠시 후 다시 시도해주세요.");
-      setFeedExhausted(true);
-    } finally {
-      setRefreshing(false);
-      setLoading(false);
-    }
-  }, [budgetFilter, storageScope]);
+    },
+    [budgetFilter, storageScope],
+  );
 
   const loadStats = useCallback(async () => {
     try {
@@ -2043,14 +2539,20 @@ export default function ExploreClient({
   // category가 null이면 selectedCategories 활성 시 제외 (안전).
   const displayItems = useMemo(() => {
     if (scrapOnly) return scrapItems;
-    const categoryFiltered = selectedCategories.size === 0
-      ? items
-      : items.filter((it) => it.category != null && selectedCategories.has(it.category));
-    const sourceFiltered = source === "all"
-      ? categoryFiltered
-      : categoryFiltered.filter((it) => poolItemSource(it) === source);
+    const categoryFiltered =
+      selectedCategories.size === 0
+        ? items
+        : items.filter(
+            (it) => it.category != null && selectedCategories.has(it.category),
+          );
+    const sourceFiltered =
+      source === "all"
+        ? categoryFiltered
+        : categoryFiltered.filter((it) => poolItemSource(it) === source);
     const budgetFiltered = budgetOption.max
-      ? sourceFiltered.filter((it) => it.price > 0 && it.price <= budgetOption.max!)
+      ? sourceFiltered.filter(
+          (it) => it.price > 0 && it.price <= budgetOption.max!,
+        )
       : sourceFiltered;
 
     // Wave launch-47 (사용자 짚음 "매입단가순인데 뒤에 더 싼게 나옴"):
@@ -2087,7 +2589,15 @@ export default function ExploreClient({
       });
     }
     return budgetFiltered;
-  }, [budgetOption.max, items, scrapItems, scrapOnly, selectedCategories, sort, source]);
+  }, [
+    budgetOption.max,
+    items,
+    scrapItems,
+    scrapOnly,
+    selectedCategories,
+    sort,
+    source,
+  ]);
 
   const currentServerSourceFilter = source !== "all" ? source : null;
   const currentViewFilterLabel = useMemo(() => {
@@ -2097,7 +2607,13 @@ export default function ExploreClient({
     if (selectedCategories.size > 0) labels.push("선택 카테고리");
     if (budgetFilter !== "all") labels.push(budgetOption.label);
     return labels.join(" · ");
-  }, [budgetFilter, budgetOption.label, scrapOnly, selectedCategories.size, source]);
+  }, [
+    budgetFilter,
+    budgetOption.label,
+    scrapOnly,
+    selectedCategories.size,
+    source,
+  ]);
   const isDaangnFocusedView = source === "daangn" || sort === "distance";
   const loadingCopy = isDaangnFocusedView
     ? {
@@ -2132,10 +2648,23 @@ export default function ExploreClient({
       return;
     }
     setLoadingStage(1);
-    const t1 = setTimeout(() => setLoadingStage(2), isDaangnFocusedView ? 1200 : 700);
-    const t2 = setTimeout(() => setLoadingStage(3), isDaangnFocusedView ? 2800 : 1800);
-    const t3 = setTimeout(() => setLoadingStage(4), isDaangnFocusedView ? 4500 : 3200);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    const t1 = setTimeout(
+      () => setLoadingStage(2),
+      isDaangnFocusedView ? 1200 : 700,
+    );
+    const t2 = setTimeout(
+      () => setLoadingStage(3),
+      isDaangnFocusedView ? 2800 : 1800,
+    );
+    const t3 = setTimeout(
+      () => setLoadingStage(4),
+      isDaangnFocusedView ? 4500 : 3200,
+    );
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
   }, [loading, isDaangnFocusedView]);
 
   // PackRevealModal용 result wrapper (single card)
@@ -2155,17 +2684,28 @@ export default function ExploreClient({
   const relatedItems = useMemo(() => {
     if (!selectedCard) return [];
     const currentPid = selectedCard.pid;
-    const currentCategory = items.find((it) => it.pid === currentPid)?.category ?? null;
-    const candidates = items.filter((it) => it.pid !== currentPid && !it.soldOut);
+    const currentCategory =
+      items.find((it) => it.pid === currentPid)?.category ?? null;
+    const candidates = items.filter(
+      (it) => it.pid !== currentPid && !it.soldOut,
+    );
     // 같은 카테고리 우선 정렬
-    const sameCategory = candidates.filter((it) => it.category === currentCategory);
-    const otherCategory = candidates.filter((it) => it.category !== currentCategory);
+    const sameCategory = candidates.filter(
+      (it) => it.category === currentCategory,
+    );
+    const otherCategory = candidates.filter(
+      (it) => it.category !== currentCategory,
+    );
     const ordered = [...sameCategory, ...otherCategory].slice(0, 8);
     // Wave 366: marketBasis null → minimal로 채워서 시세 표시되도록.
     return ordered.map((it) => {
       // Wave 752 (2026-05-25): feed 카드 lockedPreview 와 동일 로직.
       const teaserLocked = isFeedTeaserLocked(it);
-      const exactUnlocked = !teaserLocked || scrapOnly || savedPidSet.has(it.pid) || openedDetailPids.has(it.pid);
+      const exactUnlocked =
+        !teaserLocked ||
+        scrapOnly ||
+        savedPidSet.has(it.pid) ||
+        openedDetailPids.has(it.pid);
       const locked = !exactUnlocked;
       return {
         pid: it.pid,
@@ -2189,7 +2729,8 @@ export default function ExploreClient({
               confidence: null,
               priceSource: "market" as const,
               basisSource: it.marketplaceSource === "daangn" ? "daangn" : null,
-              basisSourceLabel: it.marketplaceSource === "daangn" ? "당근마켓" : null,
+              basisSourceLabel:
+                it.marketplaceSource === "daangn" ? "당근마켓" : null,
               sourceFallbackUsed: false,
               sourceSampleCount: null,
               computedAt: null,
@@ -2207,255 +2748,361 @@ export default function ExploreClient({
     });
   }, [items, selectedCard, scrapOnly, savedPidSet, openedDetailPids]);
 
-  const openItemDetail = useCallback(async (item: PoolItem) => {
-    if (item.soldOut) return;
-    setDetailAccessLoadingPid(item.pid);
-    setDetailAccessLimit(null);
-    try {
-      const res = await fetch("/api/packs/pool/detail-access", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-minyoi-user-action": "1" },
-        body: JSON.stringify(item.accessToken ? { accessToken: item.accessToken } : { pid: item.pid }),
-        cache: "no-store",
-      });
-      const data = (await res.json()) as DetailAccessResponse;
-      if (!res.ok) {
-        const freeLimit = Number.isFinite(Number(data.freeLimit)) ? Number(data.freeLimit) : null;
-        const freeUsed = Number.isFinite(Number(data.freeUsed)) ? Number(data.freeUsed) : null;
-        const creditBalance = Number.isFinite(Number(data.creditBalance)) ? Number(data.creditBalance) : null;
-        if (freeLimit != null && freeUsed != null) {
-          const nextDetailAccess = normalizeDetailAccessSnapshot(
-            { creditBalance, freeUsed, freeLimit },
-            { trustServerLimit: true },
-          ) ?? defaultDetailAccessSnapshot();
+  const openItemDetail = useCallback(
+    async (item: PoolItem) => {
+      if (item.soldOut) return;
+      setDetailAccessLoadingPid(item.pid);
+      setDetailAccessLimit(null);
+      try {
+        const res = await fetch("/api/packs/pool/detail-access", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-minyoi-user-action": "1",
+          },
+          body: JSON.stringify(
+            item.accessToken
+              ? { accessToken: item.accessToken }
+              : { pid: item.pid },
+          ),
+          cache: "no-store",
+        });
+        const data = (await res.json()) as DetailAccessResponse;
+        if (!res.ok) {
+          const freeLimit = Number.isFinite(Number(data.freeLimit))
+            ? Number(data.freeLimit)
+            : null;
+          const freeUsed = Number.isFinite(Number(data.freeUsed))
+            ? Number(data.freeUsed)
+            : null;
+          const creditBalance = Number.isFinite(Number(data.creditBalance))
+            ? Number(data.creditBalance)
+            : null;
+          if (freeLimit != null && freeUsed != null) {
+            const nextDetailAccess =
+              normalizeDetailAccessSnapshot(
+                { creditBalance, freeUsed, freeLimit },
+                { trustServerLimit: true },
+              ) ?? defaultDetailAccessSnapshot();
+            setDetailAccessSnapshot(nextDetailAccess);
+            writeDetailAccessSnapshot(storageScope, nextDetailAccess);
+          }
+          // Wave launch-14: error code 따라 다른 variant.
+          // - membership_required / insufficient_credits / free_limit_exhausted = membership paywall
+          // - not_ready (매물 거래완료/사라짐/검증 실패) = sold variant ("방금 거래된 상품이에요" 톤)
+          // - live_verify_unavailable = verify_fail variant ("잠시 통신 불안정" 톤)
+          // - detail_access_required (보관함 race) = paywall variant
+          // Wave launch-106 (2026-05-24): not_ready + reason="profit_lost" = profit_lost variant
+          //   (active 매물인데 시세 갱신으로 차익이 - 가 된 케이스. "판매완료" 라벨 절대 X.)
+          const isMembershipRequired = data.error === "membership_required";
+          const isCreditShort = data.error === "insufficient_credits";
+          const isLiveVerifyFail = data.error === "live_verify_unavailable";
+          const isNotReady = data.error === "not_ready";
+          const isProfitLost = isNotReady && data.reason === "profit_lost";
+          const variant: DetailAccessLimitVariant = isCreditShort
+            ? "paywall"
+            : isLiveVerifyFail
+              ? "verify_fail"
+              : isProfitLost
+                ? "profit_lost"
+                : isNotReady
+                  ? "sold"
+                  : "paywall"; // detail_access_required 등 기타 = paywall fallback
+          const titleByVariant =
+            variant === "paywall"
+              ? isMembershipRequired
+                ? "멤버십 승인이 필요해요"
+                : isCreditShort
+                  ? "멤버십 신청이 필요해요"
+                  : "상세보기를 열 수 없어요"
+              : variant === "sold"
+                ? "방금 거래된 상품이에요"
+                : variant === "profit_lost"
+                  ? "시세가 떨어져서 차익이 사라졌어요"
+                  : "잠시 통신이 불안정해요";
+          // Wave launch-128 (2026-05-25): paywall 메시지 가치 포지셔닝 강화.
+          const defaultMessageByVariant =
+            variant === "paywall"
+              ? "선공개 멤버십 승인 후 시세 비교, 비용 계산, 원본 링크까지 볼 수 있어요."
+              : variant === "sold"
+                ? "이 매물은 방금 다른 곳에서 거래되었거나 셀러가 내린 것 같아요. 새로고침하면 다른 매물을 보여드릴게요."
+                : variant === "profit_lost"
+                  ? "지금 사면 손해예요. 새로고침하면 다른 매물 보여드릴게요."
+                  : "원본 매물 확인이 잠시 실패했어요. 상세 이용에는 영향 없어요. 잠시 후 다시 시도해주세요.";
+          setDetailAccessLimit({
+            variant,
+            title: titleByVariant,
+            message: data.message ?? defaultMessageByVariant,
+            creditBalance,
+            freeUsed,
+            freeLimit,
+            valueSummary: detailAccessValueRef.current,
+          });
+          // Wave launch-93: paywall variant 시 잠금 trigger. sold/verify_fail 은 카드 잠금 X (다른 issue).
+          if (variant === "paywall") markPaywallSeen();
+          trackDetailEvent(
+            item.pid,
+            "free_limit_paywall_shown",
+            {
+              reason: data.error ?? "detail_access_failed",
+              freeUsed,
+              freeLimit,
+              creditBalance,
+            },
+            createDetailSessionId(item.pid),
+          );
+          return;
+        }
+        if (
+          Number(data.creditSpent ?? 0) > 0 &&
+          typeof window !== "undefined"
+        ) {
+          window.dispatchEvent(new Event("minyoi:credits-changed"));
+        }
+        if (data.freeLimit != null && data.freeUsed != null) {
+          const nextDetailAccess =
+            normalizeDetailAccessSnapshot(
+              {
+                creditBalance: data.creditBalance ?? null,
+                freeUsed: data.freeUsed,
+                freeLimit: data.freeLimit,
+                unlimited: data.unlimited,
+              },
+              { trustServerLimit: true },
+            ) ?? defaultDetailAccessSnapshot();
           setDetailAccessSnapshot(nextDetailAccess);
           writeDetailAccessSnapshot(storageScope, nextDetailAccess);
         }
-        // Wave launch-14: error code 따라 다른 variant.
-        // - membership_required / insufficient_credits / free_limit_exhausted = membership paywall
-        // - not_ready (매물 거래완료/사라짐/검증 실패) = sold variant ("방금 거래된 상품이에요" 톤)
-        // - live_verify_unavailable = verify_fail variant ("잠시 통신 불안정" 톤)
-        // - detail_access_required (보관함 race) = paywall variant
-        // Wave launch-106 (2026-05-24): not_ready + reason="profit_lost" = profit_lost variant
-        //   (active 매물인데 시세 갱신으로 차익이 - 가 된 케이스. "판매완료" 라벨 절대 X.)
-        const isMembershipRequired = data.error === "membership_required";
-        const isCreditShort = data.error === "insufficient_credits";
-        const isLiveVerifyFail = data.error === "live_verify_unavailable";
-        const isNotReady = data.error === "not_ready";
-        const isProfitLost = isNotReady && data.reason === "profit_lost";
-        const variant: DetailAccessLimitVariant = isCreditShort
-          ? "paywall"
-          : isLiveVerifyFail
-            ? "verify_fail"
-            : isProfitLost
-              ? "profit_lost"
-              : isNotReady
-                ? "sold"
-                : "paywall"; // detail_access_required 등 기타 = paywall fallback
-        const titleByVariant =
-          variant === "paywall"     ? (isMembershipRequired ? "멤버십 승인이 필요해요" : isCreditShort ? "멤버십 신청이 필요해요" : "상세보기를 열 수 없어요") :
-          variant === "sold"        ? "방금 거래된 상품이에요" :
-          variant === "profit_lost" ? "시세가 떨어져서 차익이 사라졌어요" :
-                                      "잠시 통신이 불안정해요";
-        // Wave launch-128 (2026-05-25): paywall 메시지 가치 포지셔닝 강화.
-        const defaultMessageByVariant =
-          variant === "paywall"     ? "선공개 멤버십 승인 후 시세 비교, 비용 계산, 원본 링크까지 볼 수 있어요." :
-          variant === "sold"        ? "이 매물은 방금 다른 곳에서 거래되었거나 셀러가 내린 것 같아요. 새로고침하면 다른 매물을 보여드릴게요." :
-          variant === "profit_lost" ? "지금 사면 손해예요. 새로고침하면 다른 매물 보여드릴게요." :
-                                      "원본 매물 확인이 잠시 실패했어요. 상세 이용에는 영향 없어요. 잠시 후 다시 시도해주세요.";
+        const exactItem = data.item ?? item;
+        if (data.item) {
+          setItems((prev) =>
+            prev.map((candidate) =>
+              candidate.pid === item.pid ? data.item! : candidate,
+            ),
+          );
+        }
+        // Wave 766 (2026-05-26 사용자 결정): FREE_CREDIT_GRANT=2 통일 후 accessType="free" 가 사라짐.
+        //   기존 분기: accessType === "free" → valueSummary 누적 (paywall 첫 도달 design "방금 확인한 것" 박스).
+        //   신규 분기: 누적 reveal ≤ 2 (첫 2개 reveal) → valueSummary 누적 (스크린샷 #1 design 보존).
+        const cumulativeReveals = openedDetailPidsRef.current.size;
+        const isInitialPhase = cumulativeReveals < 2;
+        if (!data.alreadyOpened && isInitialPhase) {
+          detailAccessValueRef.current = mergeAccessValueSummary(
+            detailAccessValueRef.current,
+            accessValueForItem(exactItem),
+          );
+        }
+        openedDetailPidsRef.current.add(item.pid);
+        openedDetailPidsRef.current.add(exactItem.pid);
+        setOpenedDetailPids(new Set(openedDetailPidsRef.current));
+        beginDetailSession(exactItem, {
+          accessType: data.accessType ?? "unknown",
+          alreadyOpened: Boolean(data.alreadyOpened),
+          creditSpent: Number(data.creditSpent ?? 0),
+          creditBalance: data.creditBalance ?? null,
+        });
+      } catch (err) {
+        // Wave launch-14: network 에러 = verify_fail variant.
         setDetailAccessLimit({
-          variant,
-          title: titleByVariant,
-          message: data.message ?? defaultMessageByVariant,
-          creditBalance,
-          freeUsed,
-          freeLimit,
+          variant: "verify_fail",
+          title: "상세보기 요청이 잠시 막혔어요",
+          message:
+            err instanceof Error ? err.message : "잠시 후 다시 시도해주세요.",
+          creditBalance: null,
+          freeUsed: null,
+          freeLimit: null,
           valueSummary: detailAccessValueRef.current,
         });
-        // Wave launch-93: paywall variant 시 잠금 trigger. sold/verify_fail 은 카드 잠금 X (다른 issue).
-        if (variant === "paywall") markPaywallSeen();
-        trackDetailEvent(item.pid, "free_limit_paywall_shown", {
-          reason: data.error ?? "detail_access_failed",
-          freeUsed,
-          freeLimit,
-          creditBalance,
-        }, createDetailSessionId(item.pid));
-        return;
+      } finally {
+        setDetailAccessLoadingPid((prev) => (prev === item.pid ? null : prev));
       }
-      if (Number(data.creditSpent ?? 0) > 0 && typeof window !== "undefined") {
-        window.dispatchEvent(new Event("minyoi:credits-changed"));
-      }
-      if (data.freeLimit != null && data.freeUsed != null) {
-        const nextDetailAccess = normalizeDetailAccessSnapshot(
-          {
-            creditBalance: data.creditBalance ?? null,
-            freeUsed: data.freeUsed,
-            freeLimit: data.freeLimit,
-            unlimited: data.unlimited,
-          },
-          { trustServerLimit: true },
-        ) ?? defaultDetailAccessSnapshot();
-        setDetailAccessSnapshot(nextDetailAccess);
-        writeDetailAccessSnapshot(storageScope, nextDetailAccess);
-      }
-      const exactItem = data.item ?? item;
-      if (data.item) {
-        setItems((prev) => prev.map((candidate) => (candidate.pid === item.pid ? data.item! : candidate)));
-      }
-      // Wave 766 (2026-05-26 사용자 결정): FREE_CREDIT_GRANT=2 통일 후 accessType="free" 가 사라짐.
-      //   기존 분기: accessType === "free" → valueSummary 누적 (paywall 첫 도달 design "방금 확인한 것" 박스).
-      //   신규 분기: 누적 reveal ≤ 2 (첫 2개 reveal) → valueSummary 누적 (스크린샷 #1 design 보존).
-      const cumulativeReveals = openedDetailPidsRef.current.size;
-      const isInitialPhase = cumulativeReveals < 2;
-      if (!data.alreadyOpened && isInitialPhase) {
-        detailAccessValueRef.current = mergeAccessValueSummary(
-          detailAccessValueRef.current,
-          accessValueForItem(exactItem),
-        );
-      }
-      openedDetailPidsRef.current.add(item.pid);
-      openedDetailPidsRef.current.add(exactItem.pid);
-      setOpenedDetailPids(new Set(openedDetailPidsRef.current));
-      beginDetailSession(exactItem, {
-        accessType: data.accessType ?? "unknown",
-        alreadyOpened: Boolean(data.alreadyOpened),
-        creditSpent: Number(data.creditSpent ?? 0),
-        creditBalance: data.creditBalance ?? null,
-      });
-    } catch (err) {
-      // Wave launch-14: network 에러 = verify_fail variant.
-      setDetailAccessLimit({
-        variant: "verify_fail",
-        title: "상세보기 요청이 잠시 막혔어요",
-        message: err instanceof Error ? err.message : "잠시 후 다시 시도해주세요.",
-        creditBalance: null,
-        freeUsed: null,
-        freeLimit: null,
-        valueSummary: detailAccessValueRef.current,
-      });
-    } finally {
-      setDetailAccessLoadingPid((prev) => (prev === item.pid ? null : prev));
-    }
-  }, [beginDetailSession, markPaywallSeen, storageScope, trackDetailEvent]);
+    },
+    [beginDetailSession, markPaywallSeen, storageScope, trackDetailEvent],
+  );
 
   // 다른 매물 클릭 시 modal 전환
-  const handleOpenRelatedItem = useCallback((pid: number) => {
-    if (selectedCard) {
-      trackDetailEvent(selectedCard.pid, "related_clicked", { targetPid: pid });
-    }
-    const item = items.find((it) => it.pid === pid);
-    if (item) void openItemDetail(item);
-  }, [items, openItemDetail, selectedCard, trackDetailEvent]);
-
-  const handleScrapToggle = useCallback((pid: number, saved: boolean) => {
-    trackDetailEvent(pid, saved ? "scrap_saved" : "scrap_removed");
-    writeLocalSavedPid(pid, saved);
-    setLegacySavedPids((prev) => {
-      const next = new Set(prev);
-      if (saved) next.add(pid);
-      else next.delete(pid);
-      return next;
-    });
-    setScrapItems((prev) => {
-      const withoutTarget = prev.filter((item) => item.pid !== pid);
-      if (!saved) {
-        saveScrapSnapshots(withoutTarget);
-        // Wave launch-49: DB sync — fire and forget, localStorage 가 fallback
-        void deleteScrapFromServer(pid);
-        return withoutTarget;
+  const handleOpenRelatedItem = useCallback(
+    (pid: number) => {
+      if (selectedCard) {
+        trackDetailEvent(selectedCard.pid, "related_clicked", {
+          targetPid: pid,
+        });
       }
+      const item = items.find((it) => it.pid === pid);
+      if (item) void openItemDetail(item);
+    },
+    [items, openItemDetail, selectedCard, trackDetailEvent],
+  );
 
-      const sourceItem =
-        items.find((item) => item.pid === pid) ??
-        prev.find((item) => item.pid === pid) ??
-        (selectedCard?.pid === pid ? revealCardToPoolItem(selectedCard) : null);
-      if (!sourceItem) return prev;
+  const handleScrapToggle = useCallback(
+    (pid: number, saved: boolean) => {
+      trackDetailEvent(pid, saved ? "scrap_saved" : "scrap_removed");
+      writeLocalSavedPid(pid, saved);
+      setLegacySavedPids((prev) => {
+        const next = new Set(prev);
+        if (saved) next.add(pid);
+        else next.delete(pid);
+        return next;
+      });
+      setScrapItems((prev) => {
+        const withoutTarget = prev.filter((item) => item.pid !== pid);
+        if (!saved) {
+          saveScrapSnapshots(withoutTarget);
+          // Wave launch-49: DB sync — fire and forget, localStorage 가 fallback
+          void deleteScrapFromServer(pid);
+          return withoutTarget;
+        }
 
-      openedDetailPidsRef.current.add(pid);
-      setOpenedDetailPids(new Set(openedDetailPidsRef.current));
-      const newScrap: ScrappedPoolItem = { ...sourceItem, savedAt: new Date().toISOString() };
-      const next = [newScrap, ...withoutTarget].slice(0, MAX_LOCAL_SCRAP_SNAPSHOTS);
-      saveScrapSnapshots(next);
-      // Wave launch-49: DB sync — fire and forget
-      void postScrapToServer(newScrap);
-      return next;
-    });
-  }, [items, selectedCard, trackDetailEvent]);
+        const sourceItem =
+          items.find((item) => item.pid === pid) ??
+          prev.find((item) => item.pid === pid) ??
+          (selectedCard?.pid === pid
+            ? revealCardToPoolItem(selectedCard)
+            : null);
+        if (!sourceItem) return prev;
+
+        openedDetailPidsRef.current.add(pid);
+        setOpenedDetailPids(new Set(openedDetailPidsRef.current));
+        const newScrap: ScrappedPoolItem = {
+          ...sourceItem,
+          savedAt: new Date().toISOString(),
+        };
+        const next = [newScrap, ...withoutTarget].slice(
+          0,
+          MAX_LOCAL_SCRAP_SNAPSHOTS,
+        );
+        saveScrapSnapshots(next);
+        // Wave launch-49: DB sync — fire and forget
+        void postScrapToServer(newScrap);
+        return next;
+      });
+    },
+    [items, selectedCard, trackDetailEvent],
+  );
 
   // Wave 339b: /api/packs/pool/analysis로 marketBasis/velocityBasis lazy-fill.
   // assertRevealAccess 우회 (pid 기반). 가져온 분석으로 selectedCard 갱신.
-  const handleLoadDetail = useCallback(async (pid: number): Promise<RevealListingDetail> => {
-    try {
-      const supabase = getSupabaseBrowserClient();
-      const { data: sessionData } = supabase ? await supabase.auth.getSession() : { data: { session: null } };
-      const token = sessionData.session?.access_token;
-      const res = await fetch(`/api/packs/pool/analysis?pid=${pid}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        cache: "no-store",
-      });
-      if (res.ok) {
-        const data = (await res.json()) as { analysis?: { marketBasis: RevealCard["marketBasis"] | null; velocityBasis: RevealCard["velocityBasis"]; skuListingFlow: RevealCard["skuListingFlow"]; optionBaseAssumed: RevealCard["optionBaseAssumed"] } };
-        if (data.analysis) {
-          const marketBasis = data.analysis.marketBasis ?? null;
-          setSelectedCard((prev) => {
-            if (!prev || prev.pid !== pid) return prev;
-            const recomputedProfit = recomputePoolProfit(prev.price, marketBasis?.medianPrice, {
-              freeShipping: prev.savedDetail?.freeShipping ?? false,
-              transactionMode: prev.savedDetail?.transactionMode ?? null,
-              shippingAssumption: prev.savedDetail?.shippingAssumption ?? null,
-              marketplaceSource: prev.marketplaceSource ?? null,
-              conditionChips: prev.conditionChips ?? null,
-              conditionClass: prev.marketBasis?.conditionClass ?? null,
-              conditionTier: prev.conditionTier ?? null,
+  const handleLoadDetail = useCallback(
+    async (pid: number): Promise<RevealListingDetail> => {
+      try {
+        const supabase = getSupabaseBrowserClient();
+        const { data: sessionData } = supabase
+          ? await supabase.auth.getSession()
+          : { data: { session: null } };
+        const token = sessionData.session?.access_token;
+        const res = await fetch(`/api/packs/pool/analysis?pid=${pid}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const data = (await res.json()) as {
+            analysis?: {
+              marketBasis: RevealCard["marketBasis"] | null;
+              velocityBasis: RevealCard["velocityBasis"];
+              skuListingFlow: RevealCard["skuListingFlow"];
+              optionBaseAssumed: RevealCard["optionBaseAssumed"];
+            };
+          };
+          if (data.analysis) {
+            const marketBasis = data.analysis.marketBasis ?? null;
+            setSelectedCard((prev) => {
+              if (!prev || prev.pid !== pid) return prev;
+              const recomputedProfit = recomputePoolProfit(
+                prev.price,
+                marketBasis?.medianPrice,
+                {
+                  freeShipping: prev.savedDetail?.freeShipping ?? false,
+                  transactionMode: prev.savedDetail?.transactionMode ?? null,
+                  shippingAssumption:
+                    prev.savedDetail?.shippingAssumption ?? null,
+                  marketplaceSource: prev.marketplaceSource ?? null,
+                  conditionChips: prev.conditionChips ?? null,
+                  conditionClass: prev.marketBasis?.conditionClass ?? null,
+                  conditionTier: prev.conditionTier ?? null,
+                },
+              );
+              const strictSourceMissing = isDaangnMarketBasisMissing(
+                prev.marketplaceSource,
+                marketBasis,
+              );
+              return {
+                ...prev,
+                expectedProfitMin: strictSourceMissing
+                  ? 0
+                  : (recomputedProfit?.min ?? prev.expectedProfitMin),
+                expectedProfitMax: strictSourceMissing
+                  ? 0
+                  : (recomputedProfit?.max ?? prev.expectedProfitMax),
+                marketBasis: marketBasis ?? prev.marketBasis,
+                velocityBasis:
+                  data.analysis!.velocityBasis ?? prev.velocityBasis,
+                skuListingFlow:
+                  data.analysis!.skuListingFlow ?? prev.skuListingFlow,
+                optionBaseAssumed:
+                  data.analysis!.optionBaseAssumed ?? prev.optionBaseAssumed,
+              };
             });
-            const strictSourceMissing = isDaangnMarketBasisMissing(prev.marketplaceSource, marketBasis);
-            return {
-              ...prev,
-              expectedProfitMin: strictSourceMissing ? 0 : (recomputedProfit?.min ?? prev.expectedProfitMin),
-              expectedProfitMax: strictSourceMissing ? 0 : (recomputedProfit?.max ?? prev.expectedProfitMax),
-              marketBasis: marketBasis ?? prev.marketBasis,
-              velocityBasis: data.analysis!.velocityBasis ?? prev.velocityBasis,
-              skuListingFlow: data.analysis!.skuListingFlow ?? prev.skuListingFlow,
-              optionBaseAssumed: data.analysis!.optionBaseAssumed ?? prev.optionBaseAssumed,
-            };
+            setItems((prev) =>
+              prev.map((item) => {
+                if (item.pid !== pid) return item;
+                const recomputedProfit = recomputePoolProfit(
+                  item.price,
+                  marketBasis?.medianPrice,
+                  item,
+                );
+                const strictSourceMissing = isDaangnMarketBasisMissing(
+                  item.marketplaceSource,
+                  marketBasis,
+                );
+                return {
+                  ...item,
+                  skuMedian: marketBasis?.medianPrice ?? item.skuMedian,
+                  conditionClass:
+                    marketBasis?.conditionClass ?? item.conditionClass,
+                  comparableKey:
+                    marketBasis?.comparableKey ?? item.comparableKey,
+                  expectedProfitMin: strictSourceMissing
+                    ? 0
+                    : (recomputedProfit?.min ?? item.expectedProfitMin),
+                  expectedProfitMax: strictSourceMissing
+                    ? 0
+                    : (recomputedProfit?.max ?? item.expectedProfitMax),
+                  marketBasis: marketBasis ?? item.marketBasis ?? null,
+                  velocityBasis:
+                    data.analysis!.velocityBasis ?? item.velocityBasis ?? null,
+                  skuListingFlow:
+                    data.analysis!.skuListingFlow ??
+                    item.skuListingFlow ??
+                    null,
+                  optionBaseAssumed:
+                    data.analysis!.optionBaseAssumed ??
+                    item.optionBaseAssumed ??
+                    null,
+                };
+              }),
+            );
+          }
+        } else {
+          console.warn("[explore-client] detail analysis load failed", {
+            pid,
+            status: res.status,
           });
-          setItems((prev) => prev.map((item) => {
-            if (item.pid !== pid) return item;
-            const recomputedProfit = recomputePoolProfit(item.price, marketBasis?.medianPrice, item);
-            const strictSourceMissing = isDaangnMarketBasisMissing(item.marketplaceSource, marketBasis);
-            return {
-              ...item,
-              skuMedian: marketBasis?.medianPrice ?? item.skuMedian,
-              conditionClass: marketBasis?.conditionClass ?? item.conditionClass,
-              comparableKey: marketBasis?.comparableKey ?? item.comparableKey,
-              expectedProfitMin: strictSourceMissing ? 0 : (recomputedProfit?.min ?? item.expectedProfitMin),
-              expectedProfitMax: strictSourceMissing ? 0 : (recomputedProfit?.max ?? item.expectedProfitMax),
-              marketBasis: marketBasis ?? item.marketBasis ?? null,
-              velocityBasis: data.analysis!.velocityBasis ?? item.velocityBasis ?? null,
-              skuListingFlow: data.analysis!.skuListingFlow ?? item.skuListingFlow ?? null,
-              optionBaseAssumed: data.analysis!.optionBaseAssumed ?? item.optionBaseAssumed ?? null,
-            };
-          }));
         }
-      } else {
+      } catch (err) {
         console.warn("[explore-client] detail analysis load failed", {
           pid,
-          status: res.status,
+          err: err instanceof Error ? err.message : String(err),
         });
       }
-    } catch (err) {
-      console.warn("[explore-client] detail analysis load failed", {
+      return {
         pid,
-        err: err instanceof Error ? err.message : String(err),
-      });
-    }
-    return {
-      pid,
-      description: "",
-      saleStatus: "",
-      conditionLabel: null,
-    } as RevealListingDetail;
-  }, []);
+        description: "",
+        saleStatus: "",
+        conditionLabel: null,
+      } as RevealListingDetail;
+    },
+    [],
+  );
 
   // 2026-05-19: pb-24 → pb-4. 이전 fixed FAB 시절 sticky 영역 확보 padding이었는데
   // sticky 통일 후 의미 없어짐 → button과 footer 사이 큰 빈 공간 제거.
@@ -2515,10 +3162,20 @@ export default function ExploreClient({
                   : "border-zinc-200 bg-white text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400"
               }`}
             >
-              <BookmarkIcon className="h-3.5 w-3.5 shrink-0" strokeWidth={2} fill={scrapOnly ? "currentColor" : "none"} />
+              <BookmarkIcon
+                className="h-3.5 w-3.5 shrink-0"
+                strokeWidth={2}
+                fill={scrapOnly ? "currentColor" : "none"}
+              />
               스크랩
               {scrapItems.length > 0 ? (
-                <span className={scrapOnly ? "text-white/70 dark:text-zinc-950/70" : "text-zinc-400"}>
+                <span
+                  className={
+                    scrapOnly
+                      ? "text-white/70 dark:text-zinc-950/70"
+                      : "text-zinc-400"
+                  }
+                >
                   {scrapItems.length.toLocaleString("ko-KR")}
                 </span>
               ) : null}
@@ -2545,12 +3202,20 @@ export default function ExploreClient({
                   }`}
                 >
                   {/* 2026-05-19: SF Symbol 스타일 라인 아이콘 추가. 텍스트만 칩 촌스러움 해소. */}
-                  <CategoryIcon category={opt.value} className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
+                  <CategoryIcon
+                    category={opt.value}
+                    className="h-3.5 w-3.5 shrink-0"
+                    strokeWidth={1.75}
+                  />
                   {opt.label}
                 </button>
               );
             })}
-            {selectedCategories.size > 0 || scrapOnly || budgetFilter !== "all" || source !== "all" || sort !== "profit_desc" ? (
+            {selectedCategories.size > 0 ||
+            scrapOnly ||
+            budgetFilter !== "all" ||
+            source !== "all" ||
+            sort !== "profit_desc" ? (
               <button
                 type="button"
                 onClick={() => {
@@ -2579,7 +3244,9 @@ export default function ExploreClient({
             aria-label="예산 필터"
           >
             {BUDGET_FILTER_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>{option.shortLabel}</option>
+              <option key={option.value} value={option.value}>
+                {option.shortLabel}
+              </option>
             ))}
           </select>
           <select
@@ -2591,19 +3258,23 @@ export default function ExploreClient({
               if (nextSource === "daangn") {
                 void loadPool(false, {
                   serverSource: "daangn",
-                  serverSort: sortRef.current === "distance" ? "distance" : null,
+                  serverSort:
+                    sortRef.current === "distance" ? "distance" : null,
                 });
               } else if (source === "daangn") {
                 void loadPool(false, {
                   serverSource: nextSource,
-                  serverSort: sortRef.current === "distance" ? "distance" : null,
+                  serverSort:
+                    sortRef.current === "distance" ? "distance" : null,
                 });
               }
             }}
             className="min-w-0 rounded-lg border border-zinc-200 bg-white px-2 py-2 text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300 sm:w-auto sm:shrink-0 sm:rounded-md sm:py-1 sm:text-[10px] sm:font-medium"
           >
             {SOURCE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
             ))}
           </select>
           <select
@@ -2614,9 +3285,15 @@ export default function ExploreClient({
               setSort(nextSort);
               setScrapOnly(false);
               if (nextSort === "distance") {
-                void loadPool(false, { serverSource: source, serverSort: "distance" });
+                void loadPool(false, {
+                  serverSource: source,
+                  serverSort: "distance",
+                });
               } else if (wasDistance) {
-                void loadPool(false, { serverSource: source, serverSort: null });
+                void loadPool(false, {
+                  serverSource: source,
+                  serverSort: null,
+                });
               }
             }}
             className="min-w-0 rounded-lg border border-zinc-200 bg-white px-2 py-2 text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300 sm:w-auto sm:shrink-0 sm:rounded-md sm:py-1 sm:text-[10px] sm:font-medium"
@@ -2638,8 +3315,12 @@ export default function ExploreClient({
                 <SearchIcon className="h-4 w-4 animate-pulse" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-black text-zinc-950 dark:text-zinc-50">{loadingCopy.title}</p>
-                <p className="mt-0.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">{loadingCopy.description}</p>
+                <p className="text-sm font-black text-zinc-950 dark:text-zinc-50">
+                  {loadingCopy.title}
+                </p>
+                <p className="mt-0.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  {loadingCopy.description}
+                </p>
               </div>
             </div>
             {/* Wave 801: progress bar + 4 stage 표시 */}
@@ -2685,7 +3366,8 @@ export default function ExploreClient({
             </ul>
             {isDaangnFocusedView ? (
               <p className="mt-2 break-keep text-[10.5px] font-semibold leading-4 text-zinc-400 dark:text-zinc-500">
-                💡 당근 매물은 가까운 동네 순으로 정렬해서 평소보다 시간이 좀 더 걸려요.
+                💡 당근 매물은 가까운 동네 순으로 정렬해서 평소보다 시간이 좀 더
+                걸려요.
               </p>
             ) : null}
           </div>
@@ -2726,7 +3408,11 @@ export default function ExploreClient({
           </p>
           <button
             type="button"
-            onClick={() => { setError(null); setFeedExhausted(false); void loadPool(false); }}
+            onClick={() => {
+              setError(null);
+              setFeedExhausted(false);
+              void loadPool(false);
+            }}
             className="mt-4 inline-flex h-10 items-center justify-center rounded-full bg-zinc-900 px-4 text-[13px] font-bold text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
             다시 시도하기
@@ -2736,7 +3422,9 @@ export default function ExploreClient({
         <div className="rounded-2xl border border-amber-200 bg-amber-50/60 px-5 py-8 text-center dark:border-amber-900/40 dark:bg-amber-950/20">
           <HourglassIcon className="mx-auto h-8 w-8 text-amber-600 dark:text-amber-300" />
           <p className="mt-3 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-            {budgetFilter !== "all" ? `${budgetOption.label} 조건은 아직 후보가 적어요` : "잠시 후 다시 와주세요"}
+            {budgetFilter !== "all"
+              ? `${budgetOption.label} 조건은 아직 후보가 적어요`
+              : "잠시 후 다시 와주세요"}
           </p>
           <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
             {budgetFilter !== "all"
@@ -2754,20 +3442,24 @@ export default function ExploreClient({
               <ul className="mt-3 space-y-2 text-[12.5px] leading-5 text-zinc-600 dark:text-zinc-400">
                 {stats.scannedToday ? (
                   <li>
-                    오늘 AI 가 <b className="font-bold text-zinc-900 dark:text-zinc-100">{stats.scannedToday.toLocaleString("ko-KR")}건</b>을 살펴봤어요
+                    오늘 AI 가{" "}
+                    <b className="font-bold text-zinc-900 dark:text-zinc-100">
+                      {stats.scannedToday.toLocaleString("ko-KR")}건
+                    </b>
+                    을 살펴봤어요
                   </li>
                 ) : null}
-                <li>
-                  가품·어그로·중복 셀러를 빼고 보여드려요
-                </li>
+                <li>가품·어그로·중복 셀러를 빼고 보여드려요</li>
                 {stats.caughtToday ? (
                   <li>
-                    오늘 <b className="font-bold text-zinc-900 dark:text-zinc-100">{stats.caughtToday.toLocaleString("ko-KR")}건</b>은 이미 거래됐어요
+                    오늘{" "}
+                    <b className="font-bold text-zinc-900 dark:text-zinc-100">
+                      {stats.caughtToday.toLocaleString("ko-KR")}건
+                    </b>
+                    은 이미 거래됐어요
                   </li>
                 ) : null}
-                <li>
-                  잠시 후 다시 와보세요. 매물은 실시간으로 갱신돼요
-                </li>
+                <li>잠시 후 다시 와보세요. 매물은 실시간으로 갱신돼요</li>
               </ul>
             </div>
           ) : null}
@@ -2779,7 +3471,9 @@ export default function ExploreClient({
                   onClick={() => updateBudgetFilter(nextBudgetOption.value)}
                   className="rounded-full bg-[#3182f6] px-3 py-1.5 text-xs font-black text-white"
                 >
-                  {nextBudgetOption.value === "all" ? "가격 제한 풀기" : `${nextBudgetOption.label}로 넓히기`}
+                  {nextBudgetOption.value === "all"
+                    ? "가격 제한 풀기"
+                    : `${nextBudgetOption.label}로 넓히기`}
                 </button>
               ) : null}
               <button
@@ -2803,7 +3497,9 @@ export default function ExploreClient({
                 : "현재 피드에 맞는 매물이 없어요"}
           </p>
           <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">
-            {scrapOnly ? "상세보기에서 북마크를 누르면 여기에 모여요." : "필터를 초기화하거나, 조건에 맞는 매물을 더 찾아볼게요."}
+            {scrapOnly
+              ? "상세보기에서 북마크를 누르면 여기에 모여요."
+              : "필터를 초기화하거나, 조건에 맞는 매물을 더 찾아볼게요."}
           </p>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
             <button
@@ -2824,15 +3520,16 @@ export default function ExploreClient({
                 type="button"
                 onClick={() => {
                   if (canRefresh) {
-                    void loadPool(true, { serverSource: currentServerSourceFilter });
+                    void loadPool(true, {
+                      serverSource: currentServerSourceFilter,
+                    });
                   } else {
                     setRefreshModalOpen(true);
                   }
                 }}
                 className="rounded-full bg-amber-600 px-3 py-1.5 text-xs font-bold text-white"
               >
-                <SearchIcon className="mr-1 inline h-3 w-3" />
-                더 찾아보기
+                <SearchIcon className="mr-1 inline h-3 w-3" />더 찾아보기
               </button>
             ) : null}
           </div>
@@ -2846,19 +3543,28 @@ export default function ExploreClient({
             const pct = profitPct(item);
             const isJoongna = item.marketplaceSource === "joongna";
             const isDaangn = isDaangnMarketplaceSource(item.marketplaceSource);
-            const isPremiumSeller = !isJoongna && (item.sellerReviewRating ?? 0) >= 4.8 && item.sellerReviewCount >= 30;
-            const shippingChip = isDaangn && item.transactionMode === "direct_only"
-              ? null
-              : item.transactionMode === "direct_only"
-              ? "직거래만"
-              : item.shippingAssumption === "included"
-                ? "배송비 포함"
-                : item.freeShipping ? "무료배송" : null;
+            const isPremiumSeller =
+              !isJoongna &&
+              (item.sellerReviewRating ?? 0) >= 4.8 &&
+              item.sellerReviewCount >= 30;
+            const shippingChip =
+              isDaangn && item.transactionMode === "direct_only"
+                ? null
+                : item.transactionMode === "direct_only"
+                  ? "직거래만"
+                  : item.shippingAssumption === "included"
+                    ? "배송비 포함"
+                    : item.freeShipping
+                      ? "무료배송"
+                      : null;
             const isSoldOut = item.soldOut;
             const tierBadgeCategory = tierBadgeCategoryForItem(item);
-            const legacyBadgeCondition = tierBadgeCategory ? null : item.conditionClass;
+            const legacyBadgeCondition = tierBadgeCategory
+              ? null
+              : item.conditionClass;
             const fullLocked = false;
-            const previewImageUrl = item.thumbnailUrl ?? item.genericImageUrl ?? null;
+            const previewImageUrl =
+              item.thumbnailUrl ?? item.genericImageUrl ?? null;
             return (
               <button
                 key={item.pid}
@@ -2876,7 +3582,8 @@ export default function ExploreClient({
                     setDetailAccessLimit({
                       variant: "paywall",
                       title: "멤버십 승인이 필요해요",
-                      message: "선공개 멤버십 승인 후 시세 비교, 비용 계산, 원본 링크까지 볼 수 있어요.",
+                      message:
+                        "선공개 멤버십 승인 후 시세 비교, 비용 계산, 원본 링크까지 볼 수 있어요.",
                       creditBalance: detailAccessSnapshot.creditBalance ?? 0,
                       freeUsed: detailAccessSnapshot.freeUsed ?? 0,
                       freeLimit: detailAccessSnapshot.freeLimit ?? 0,
@@ -2892,10 +3599,12 @@ export default function ExploreClient({
                     ? "cursor-not-allowed sm:border-zinc-200 sm:bg-zinc-50 dark:sm:border-zinc-800 dark:sm:bg-zinc-900/30"
                     : detailAccessLoadingPid === item.pid
                       ? "cursor-wait sm:border-blue-200 sm:bg-blue-50/50 dark:sm:border-blue-900 dark:sm:bg-blue-950/20"
-                    : "active:bg-zinc-50 dark:active:bg-zinc-900/40 sm:border-zinc-200 sm:bg-white sm:hover:border-blue-300 sm:hover:shadow-md dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40 dark:sm:hover:border-blue-700"
+                      : "active:bg-zinc-50 dark:active:bg-zinc-900/40 sm:border-zinc-200 sm:bg-white sm:hover:border-blue-300 sm:hover:shadow-md dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40 dark:sm:hover:border-blue-700"
                 }`}
               >
-                <div className={`relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 ${isSoldOut ? "grayscale" : ""}`}>
+                <div
+                  className={`relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 ${isSoldOut ? "grayscale" : ""}`}
+                >
                   {previewImageUrl ? (
                     <Image
                       src={previewImageUrl}
@@ -2925,7 +3634,10 @@ export default function ExploreClient({
                       category={tierBadgeCategory}
                     />
                   ) : !isSoldOut && legacyBadgeCondition ? (
-                    <ConditionPhotoBadge conditionClass={legacyBadgeCondition} compact />
+                    <ConditionPhotoBadge
+                      conditionClass={legacyBadgeCondition}
+                      compact
+                    />
                   ) : null}
                   {isSoldOut ? (
                     // Wave 357 → launch-5 (사용자 짚음): "다른 분이 잡았어요" = 우리 사이트 사용자가
@@ -2952,14 +3664,17 @@ export default function ExploreClient({
                     {item.name || lockedPreviewTitle(item)}
                   </div>
 
-
                   <div className="mt-1.5 flex items-baseline gap-1.5">
                     {/* Wave launch-117b (2026-05-24): 수익 = emerald (사용자 정정, light+dark 둘 다). */}
-                    <span className={`text-lg font-bold tabular-nums ${isSoldOut ? "text-zinc-500 line-through dark:text-zinc-500" : "text-emerald-600 dark:text-emerald-400"}`}>
+                    <span
+                      className={`text-lg font-bold tabular-nums ${isSoldOut ? "text-zinc-500 line-through dark:text-zinc-500" : "text-emerald-600 dark:text-emerald-400"}`}
+                    >
                       +{krw(profitAvg(item))}
                     </span>
                     {pct != null ? (
-                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${isSoldOut ? "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500" : "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-200"}`}>
+                      <span
+                        className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${isSoldOut ? "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500" : "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-200"}`}
+                      >
                         +{pct}%
                       </span>
                     ) : null}
@@ -2973,7 +3688,9 @@ export default function ExploreClient({
                     </span>
                     {item.skuMedian ? (
                       <>
-                        <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                        <span className="text-zinc-300 dark:text-zinc-700">
+                          ·
+                        </span>
                         <span>
                           시세{" "}
                           <span className="font-bold tabular-nums">
@@ -2999,8 +3716,12 @@ export default function ExploreClient({
                             : hoursAgoLabel(item.lastVerifiedAt)}
                         </span>
                         {/* Wave 886.2 (2026-05-27): 잠금 카드도 source 로고 노출 (일반 이미지로 leak 차단된 후). */}
-                        <MarketplaceSourceBadge source={item.marketplaceSource} label={item.marketplaceLabel} />
-                        {item.marketplaceSource === "daangn" && item.daangnDistanceLabel ? (
+                        <MarketplaceSourceBadge
+                          source={item.marketplaceSource}
+                          label={item.marketplaceLabel}
+                        />
+                        {item.marketplaceSource === "daangn" &&
+                        item.daangnDistanceLabel ? (
                           <span className="rounded-full bg-orange-50 px-1.5 py-0.5 font-bold text-orange-700 dark:bg-orange-950/40 dark:text-orange-200">
                             {item.daangnDistanceLabel}
                           </span>
@@ -3017,13 +3738,19 @@ export default function ExploreClient({
                         ) : null}
                         {/* Wave launch-17: 가품 위험 chip — 메인 feed 카드에서도 1차 노출 (사용자 보호). */}
                         {(() => {
-                          const category = categoryFromComparableKey(item.comparableKey ?? null);
+                          const category = categoryFromComparableKey(
+                            item.comparableKey ?? null,
+                          );
                           const brandDepth = detectBrandDepth(category, {
                             skuId: item.skuId ?? null,
                             skuName: item.skuName ?? null,
                             name: item.name ?? null,
                           });
-                          if (!brandDepth || brandDepth.brand.counterfeitRisk !== "high") return null;
+                          if (
+                            !brandDepth ||
+                            brandDepth.brand.counterfeitRisk !== "high"
+                          )
+                            return null;
                           return (
                             <span
                               className="flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 font-bold text-amber-900 ring-1 ring-amber-300 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900/60"
@@ -3044,14 +3771,20 @@ export default function ExploreClient({
                         {(() => {
                           if (isPremiumSeller) return null;
                           if (item.sellerReviewCount > 0) return null;
-                          const category = categoryFromComparableKey(item.comparableKey ?? null);
+                          const category = categoryFromComparableKey(
+                            item.comparableKey ?? null,
+                          );
                           const brandDepth = detectBrandDepth(category, {
                             skuId: item.skuId ?? null,
                             skuName: item.skuName ?? null,
                             name: item.name ?? null,
                           });
                           // 고위험 카테고리 (가품 위험 high) 만 chip — 일반 카테고리는 신규 셀러 OK
-                          if (!brandDepth || brandDepth.brand.counterfeitRisk !== "high") return null;
+                          if (
+                            !brandDepth ||
+                            brandDepth.brand.counterfeitRisk !== "high"
+                          )
+                            return null;
                           return (
                             <span
                               className="flex items-center gap-0.5 rounded-full bg-rose-50 px-1.5 py-0.5 font-bold text-rose-700 ring-1 ring-rose-200 dark:bg-rose-950/40 dark:text-rose-200 dark:ring-rose-900/60"
@@ -3107,7 +3840,9 @@ export default function ExploreClient({
                       onClick={() => updateBudgetFilter(nextBudgetOption.value)}
                       className="rounded-full bg-[#3182f6] px-3 py-1.5 text-[11px] font-black text-white transition hover:bg-[#1c6fe8]"
                     >
-                      {nextBudgetOption.value === "all" ? "가격 제한 풀고 보기" : `${nextBudgetOption.label}로 넓히기`}
+                      {nextBudgetOption.value === "all"
+                        ? "가격 제한 풀고 보기"
+                        : `${nextBudgetOption.label}로 넓히기`}
                     </button>
                   ) : null}
                   <button
@@ -3122,7 +3857,9 @@ export default function ExploreClient({
               {/* Wave launch-33 (사용자 짚음): feed exhausted 상태에도 신뢰 메시지.
                * 사용자가 끝까지 스크롤하고 "왜 이것밖에 없냐" 의문 → 우리 시스템이 얼마나
                * 빡세게 거른 후 보여주는지 사회적 증명 + 정직. */}
-              {feedExhausted && stats && (stats.scannedToday || stats.caughtToday) ? (
+              {feedExhausted &&
+              stats &&
+              (stats.scannedToday || stats.caughtToday) ? (
                 <div className="mt-4 rounded-xl border border-zinc-200 bg-white px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/60">
                   <div className="text-[12px] font-bold text-zinc-900 dark:text-zinc-100">
                     지금 살만한 매물만 모은 결과예요
@@ -3130,20 +3867,24 @@ export default function ExploreClient({
                   <ul className="mt-2.5 space-y-2 text-[12px] leading-5 text-zinc-600 dark:text-zinc-400">
                     {stats.scannedToday ? (
                       <li>
-                        오늘 AI 가 <b className="font-bold text-zinc-900 dark:text-zinc-100">{stats.scannedToday.toLocaleString("ko-KR")}건</b>을 살펴봤어요
+                        오늘 AI 가{" "}
+                        <b className="font-bold text-zinc-900 dark:text-zinc-100">
+                          {stats.scannedToday.toLocaleString("ko-KR")}건
+                        </b>
+                        을 살펴봤어요
                       </li>
                     ) : null}
-                    <li>
-                      가품·어그로·중복 셀러를 빼고 보여드려요
-                    </li>
+                    <li>가품·어그로·중복 셀러를 빼고 보여드려요</li>
                     {stats.caughtToday ? (
                       <li>
-                        오늘 <b className="font-bold text-zinc-900 dark:text-zinc-100">{stats.caughtToday.toLocaleString("ko-KR")}건</b>은 이미 거래됐어요
+                        오늘{" "}
+                        <b className="font-bold text-zinc-900 dark:text-zinc-100">
+                          {stats.caughtToday.toLocaleString("ko-KR")}건
+                        </b>
+                        은 이미 거래됐어요
                       </li>
                     ) : null}
-                    <li>
-                      잠시 후 다시 와보세요. 매물은 실시간으로 갱신돼요
-                    </li>
+                    <li>잠시 후 다시 와보세요. 매물은 실시간으로 갱신돼요</li>
                   </ul>
                 </div>
               ) : null}
@@ -3169,7 +3910,9 @@ export default function ExploreClient({
             type="button"
             onClick={() => {
               if (canRefresh) {
-                void loadPool(true, { serverSource: currentServerSourceFilter });
+                void loadPool(true, {
+                  serverSource: currentServerSourceFilter,
+                });
               } else {
                 setRefreshModalOpen(true);
               }
@@ -3207,7 +3950,9 @@ export default function ExploreClient({
               <div className="mb-5 flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                    {canRefresh ? "새 상품 30개 받기" : "조금만 기다리면 새 상품이 열려요"}
+                    {canRefresh
+                      ? "새 상품 30개 받기"
+                      : "조금만 기다리면 새 상품이 열려요"}
                   </div>
                   <div className="mt-1 text-sm font-medium text-zinc-500 dark:text-zinc-400">
                     {canRefresh
@@ -3221,7 +3966,15 @@ export default function ExploreClient({
                   className="-mr-2 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
                   aria-label="닫기"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-5 w-5"
+                  >
                     <path d="M18 6 6 18M6 6l12 12" />
                   </svg>
                 </button>
@@ -3231,7 +3984,9 @@ export default function ExploreClient({
                 type="button"
                 onClick={() => {
                   if (canRefresh) {
-                    void loadPool(true, { serverSource: currentServerSourceFilter });
+                    void loadPool(true, {
+                      serverSource: currentServerSourceFilter,
+                    });
                     closeRefreshModal();
                   }
                 }}
@@ -3245,20 +4000,40 @@ export default function ExploreClient({
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      {canRefresh ? <GiftIcon className="h-5 w-5" /> : <HourglassIcon className="h-5 w-5" />}
+                      {canRefresh ? (
+                        <GiftIcon className="h-5 w-5" />
+                      ) : (
+                        <HourglassIcon className="h-5 w-5" />
+                      )}
                       <span className="text-base font-bold">
-                        {canRefresh ? "새 상품 30개 받기" : `${formatCooldown(remainingSec)} 후 새 상품 보기`}
+                        {canRefresh
+                          ? "새 상품 30개 받기"
+                          : `${formatCooldown(remainingSec)} 후 새 상품 보기`}
                       </span>
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${canRefresh ? "bg-white/20 text-[var(--brand-cream)]" : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"}`}>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${canRefresh ? "bg-white/20 text-[var(--brand-cream)]" : "bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"}`}
+                      >
                         무료
                       </span>
                     </div>
-                    <div className={`mt-1.5 text-xs font-medium ${canRefresh ? "text-[var(--brand-cream)]/75" : "text-zinc-500 dark:text-zinc-500"}`}>
-                      {canRefresh ? "필터 없이 더 넓게 골라드려요" : "잠시 후 다음 라운드가 열려요"}
+                    <div
+                      className={`mt-1.5 text-xs font-medium ${canRefresh ? "text-[var(--brand-cream)]/75" : "text-zinc-500 dark:text-zinc-500"}`}
+                    >
+                      {canRefresh
+                        ? "필터 없이 더 넓게 골라드려요"
+                        : "잠시 후 다음 라운드가 열려요"}
                     </div>
                   </div>
                   {canRefresh ? (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 shrink-0 transition group-hover:translate-x-0.5">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-5 w-5 shrink-0 transition group-hover:translate-x-0.5"
+                    >
                       <path d="M5 12h14M13 5l7 7-7 7" />
                     </svg>
                   ) : null}
@@ -3277,56 +4052,69 @@ export default function ExploreClient({
                           멤버십 승인 후 피드 계속 보기
                         </div>
                         <div className="mt-1 text-[12px] font-bold leading-5 text-blue-800/80 dark:text-blue-200/80">
-                          승인된 계정은 추천 피드와 상세 리포트를 계속 볼 수 있어요.
+                          승인된 계정은 추천 피드와 상세 리포트를 계속 볼 수
+                          있어요.
                         </div>
                       </div>
                     </div>
                     <div className="mt-3 grid grid-cols-3 gap-2">
                       <div className="rounded-xl bg-white/80 px-2 py-2 text-center dark:bg-zinc-900/50">
-                        <div className="text-[11px] font-black text-[#008f5f] dark:text-blue-300">무료</div>
-                        <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">신청</div>
+                        <div className="text-[11px] font-black text-[#008f5f] dark:text-blue-300">
+                          무료
+                        </div>
+                        <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+                          신청
+                        </div>
                       </div>
                       <div className="rounded-xl bg-white/80 px-2 py-2 text-center dark:bg-zinc-900/50">
-                        <div className="text-[11px] font-black text-[#008f5f] dark:text-blue-300">검토</div>
-                        <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">운영자 확인</div>
+                        <div className="text-[11px] font-black text-[#008f5f] dark:text-blue-300">
+                          검토
+                        </div>
+                        <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+                          운영자 확인
+                        </div>
                       </div>
                       <div className="rounded-xl bg-white/80 px-2 py-2 text-center dark:bg-zinc-900/50">
-                        <div className="text-[11px] font-black text-[#008f5f] dark:text-blue-300">승인</div>
-                        <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">계정 오픈</div>
+                        <div className="text-[11px] font-black text-[#008f5f] dark:text-blue-300">
+                          승인
+                        </div>
+                        <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+                          계정 오픈
+                        </div>
                       </div>
                     </div>
-                            </div>
+                  </div>
 
-                            <Link
-                              href="/plans"
-                              className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl bg-blue-500 px-5 py-4 text-left shadow-[0_4px_14px_rgba(16,185,129,0.35)] transition hover:bg-blue-600 active:scale-[0.99]"
-                            >
-                              <div className="flex min-w-0 items-center gap-2.5">
-                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-white/20">
-                                  <ZapIcon className="h-4 w-4 text-white" />
-                                </span>
-                                <div className="min-w-0">
-                                  <div className="text-base font-bold text-white">
-                                    멤버십 신청하러 가기
-                                  </div>
-                                  <div className="mt-0.5 text-[11px] font-medium text-white/85">
-                                    선공개 300명
-                                  </div>
-                                </div>
-                              </div>
-                              <span className="shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">
-                                신청하기
-                              </span>
-                            </Link>
+                  <Link
+                    href="/plans"
+                    className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl bg-blue-500 px-5 py-4 text-left shadow-[0_4px_14px_rgba(16,185,129,0.35)] transition hover:bg-blue-600 active:scale-[0.99]"
+                  >
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-white/20">
+                        <ZapIcon className="h-4 w-4 text-white" />
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-base font-bold text-white">
+                          멤버십 신청하러 가기
+                        </div>
+                        <div className="mt-0.5 text-[11px] font-medium text-white/85">
+                          선공개 300명
+                        </div>
+                      </div>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">
+                      신청하기
+                    </span>
+                  </Link>
 
-                            <div className="mt-3">
-                              <FeedMembershipUpsellCard
-                                planEndAt={membershipStatus?.planEndAt ?? null}
-                                remainingSec={feedUpsellRemainingSec}
-                              />
-                            </div>
-                          </>
-                        ) : null}
+                  <div className="mt-3">
+                    <FeedMembershipUpsellCard
+                      planEndAt={membershipStatus?.planEndAt ?? null}
+                      remainingSec={feedUpsellRemainingSec}
+                    />
+                  </div>
+                </>
+              ) : null}
             </div>
           </div>
         </div>
@@ -3350,15 +4138,22 @@ export default function ExploreClient({
         >
           {/* Wave launch-122 (2026-05-24): brand mark 자연스럽게 (subtle pulse — 기존 dots/텍스트 keep). */}
           <div className="flex flex-col items-center gap-5">
-            <BrandLogo size={56} className="rounded-[12px] shadow-lg shadow-blue-500/40 animate-pulse" />
+            <BrandLogo
+              size={56}
+              className="rounded-[12px] shadow-lg shadow-blue-500/40 animate-pulse"
+            />
             <div className="flex items-end gap-2.5">
               <span className="h-3.5 w-3.5 animate-bounce-high rounded-full bg-[#ffffff] shadow-[0_2px_8px_rgba(255,255,255,0.4)] [animation-delay:-0.32s]" />
               <span className="h-3.5 w-3.5 animate-bounce-high rounded-full bg-[#ffffff] shadow-[0_2px_8px_rgba(255,255,255,0.4)] [animation-delay:-0.16s]" />
               <span className="h-3.5 w-3.5 animate-bounce-high rounded-full bg-[#ffffff] shadow-[0_2px_8px_rgba(255,255,255,0.4)]" />
             </div>
             <div className="text-center">
-              <div className="text-[15px] font-black text-white">상품을 확인 중이에요</div>
-              <div className="mt-1 text-[12px] font-bold text-white/70">시세·재고·셀러 정보를 가져오는 중...</div>
+              <div className="text-[15px] font-black text-white">
+                상품을 확인 중이에요
+              </div>
+              <div className="mt-1 text-[12px] font-bold text-white/70">
+                시세·재고·셀러 정보를 가져오는 중...
+              </div>
             </div>
           </div>
         </div>
@@ -3391,7 +4186,9 @@ export default function ExploreClient({
         onRetry={() => {}}
         relatedItems={relatedItems}
         onOpenRelatedItem={handleOpenRelatedItem}
-        currentSaved={selectedCard ? savedPidSet.has(selectedCard.pid) : undefined}
+        currentSaved={
+          selectedCard ? savedPidSet.has(selectedCard.pid) : undefined
+        }
         onSaveToggle={handleScrapToggle}
       />
     </div>
