@@ -2400,7 +2400,8 @@ function marketActivityDisplay(card: RevealCard) {
     ? null
     : demandRatio >= 0.5 ? "active" : demandRatio >= 0.2 ? "ok" : "weak";
 
-  // 복합 평가 — 수요가 우선, 공급은 secondary
+  // 복합 평가 — 판매완료 감지가 우선, 공급은 secondary.
+  // 찜/채팅 신호는 현재 수집하지 않으므로 "수요" 단정 대신 판매감지 기준으로 표시한다.
   let value: string;
   let tone: "good" | "info" | "warn";
 
@@ -2408,16 +2409,16 @@ function marketActivityDisplay(card: RevealCard) {
     value = "데이터 부족";
     tone = "warn";
   } else if (demandLevel === "active") {
-    value = supplyLevel === "low" ? "수요 활발 · 공급 부족" : "수요 활발";
+    value = supplyLevel === "low" ? "최근 판매감지 활발 · 공급 부족" : "최근 판매감지 활발";
     tone = "good";
   } else if (demandLevel === "weak") {
-    value = "수요 약함";
+    value = "최근 판매감지 적음";
     tone = "warn";
   } else if (demandLevel === "ok") {
-    value = supplyLevel === "high" ? "수요 보통 · 공급 많음" : "수요 보통";
+    value = supplyLevel === "high" ? "최근 판매감지 보통 · 공급 많음" : "최근 판매감지 보통";
     tone = "info";
   } else if (supplyLevel === "high") {
-    value = "공급 많음 · 거래 데이터 부족";
+    value = "공급 많음 · 판매감지 부족";
     tone = "info";
   } else if (supplyLevel === "low") {
     value = "매물 적음";
@@ -2431,7 +2432,7 @@ function marketActivityDisplay(card: RevealCard) {
   const subParts: string[] = [];
   if (supply24h > 0) subParts.push(`오늘 매물 ${supply24h}건`);
   if (supplyAvg > 0) subParts.push(`평균 ${supplyAvg}건/일`);
-  if (soldRecent > 0) subParts.push(`최근 거래 ${soldRecent}건`);
+  if (soldRecent > 0) subParts.push(`최근 판매감지 ${soldRecent}건`);
   // 2026-05-20 P0-Demand-B: 표본 부족(<5)이면 명시. 사용자가 "왜 데이터 부족인지" 즉시 인지.
   if (demandSampleSize > 0 && !demandSampleSufficient) {
     subParts.push(`표본 ${demandSampleSize}건 — 누적 중`);
