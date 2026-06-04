@@ -208,6 +208,14 @@ function formatCooldown(sec: number): string {
   return `0:${String(sec).padStart(2, "0")}`;
 }
 
+function countdownLabel(ms: number) {
+  const safeMs = Math.max(0, ms);
+  const totalSec = Math.ceil(safeMs / 1000);
+  const minutes = Math.floor(totalSec / 60);
+  const seconds = totalSec % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
 const BANK_NAME = "우리은행";
 const ACCOUNT_NUMBER = "1002-367-160511";
 const ACCOUNT_HOLDER = "이민제";
@@ -245,9 +253,11 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
   const offerPlans = useMemo(() => feedOfferPlansFor(remainingDays), [remainingDays]);
   const [selectedKey, setSelectedKey] = useState<MembershipPlanKey | null>(offerPlans[0]?.key ?? null);
   const [reservation, setReservation] = useState<FeedRenewalReservation | null>(null);
+  const [depositFallbackAutoApproveAt, setDepositFallbackAutoApproveAt] = useState<string | null>(null);
   const [offerModalOpen, setOfferModalOpen] = useState(false);
   const [requestState, setRequestState] = useState<"idle" | "submitting" | "reserved" | "depositing" | "deposit_sent" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
+  const [nowMs, setNowMs] = useState(() => Date.now());
   const selectedPlan = selectedKey ? getMembershipPlan(selectedKey) : offerPlans[0];
 
   useEffect(() => {
@@ -256,6 +266,12 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
       setSelectedKey(offerPlans[0].key);
     }
   }, [offerPlans, selectedKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const id = window.setInterval(() => setNowMs(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
 
   if (!offerPlans.length || expired) return null;
 
@@ -309,7 +325,9 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
       setMessage("입금 확인 요청을 보내지 못했어요. 잠시 후 다시 눌러주세요.");
       return;
     }
-    setReservation((current) => current ? { ...current, scheduledAutoApproveAt: payload.scheduledAutoApproveAt ?? current.scheduledAutoApproveAt } : current);
+    const fallbackAutoApproveAt = new Date(Date.now() + 5 * 60_000).toISOString();
+    setDepositFallbackAutoApproveAt(fallbackAutoApproveAt);
+    setReservation((current) => current ? { ...current, scheduledAutoApproveAt: payload.scheduledAutoApproveAt ?? current.scheduledAutoApproveAt ?? fallbackAutoApproveAt } : current);
     setRequestState("deposit_sent");
     setMessage("입금 확인 요청 완료. 5분 내 자동 승인까지 같이 걸렸어요.");
   }
@@ -319,6 +337,13 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
     ? `단 ${membershipKrw(selectedPlan.priceKrw)}으로 ${selectedTargetLabel} 업그레이드`
     : "멤버십 업그레이드 1시간 특가";
   const supportLine = remainingDays !== null && remainingDays > 0 ? `남은 ${remainingDays}일 유지` : "멤버 전용 1시간 조건";
+  const autoApproveTargetMs = reservation?.scheduledAutoApproveAt
+    ? Date.parse(reservation.scheduledAutoApproveAt)
+    : (depositFallbackAutoApproveAt ? Date.parse(depositFallbackAutoApproveAt) : null);
+  const autoApproveMsLeft = autoApproveTargetMs && Number.isFinite(autoApproveTargetMs)
+    ? Math.max(0, autoApproveTargetMs - nowMs)
+    : 5 * 60_000;
+  const showDepositCountdown = requestState === "deposit_sent";
 
   return (
     <section className="mb-3 overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-[0_16px_45px_rgba(245,158,11,0.13)] dark:border-amber-900/50 dark:bg-zinc-900">
@@ -449,6 +474,23 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
                   >
                     {requestState === "depositing" ? "요청 중" : requestState === "deposit_sent" ? "입금 확인 요청 완료" : "입금했어요"}
                   </button>
+                  {showDepositCountdown ? (
+                    <div className="rounded-[12px] border border-emerald-200 bg-white px-3 py-3 dark:border-emerald-900/70 dark:bg-zinc-950">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">
+                            자동 승인 대기 중
+                          </div>
+                          <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+                            운영자가 놓쳐도 시간이 지나면 자동으로 열립니다.
+                          </div>
+                        </div>
+                        <div className="shrink-0 rounded-[10px] bg-emerald-50 px-3 py-2 text-[22px] font-black tabular-nums text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900">
+                          {autoApproveMsLeft > 0 ? countdownLabel(autoApproveMsLeft) : "0:00"}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               )}
               {message ? (
