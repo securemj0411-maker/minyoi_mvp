@@ -2002,6 +2002,7 @@ export default function ExploreClient({
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [velocityHelpOpen, setVelocityHelpOpen] = useState(false);
   const [detailAccessSnapshot, setDetailAccessSnapshot] =
     useState<DetailAccessSnapshot>(() =>
       readDetailAccessSnapshot(storageScope),
@@ -3926,8 +3927,20 @@ export default function ExploreClient({
                           </span>
                         ) : null}
                         {item.velocitySignalLabel ? (
-                          <span className="rounded-full bg-violet-50 px-1.5 py-0.5 font-bold text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
-                            {item.velocitySignalLabel}
+                          <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-1.5 py-0.5 font-bold text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
+                            <span>{item.velocitySignalLabel}</span>
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                setVelocityHelpOpen(true);
+                              }}
+                              className="grid h-3.5 w-3.5 place-items-center rounded-full bg-violet-100 text-[9px] font-black text-violet-700 ring-1 ring-violet-200 dark:bg-violet-900/70 dark:text-violet-100 dark:ring-violet-700"
+                              aria-label="평균 회전 설명 보기"
+                            >
+                              ?
+                            </button>
                           </span>
                         ) : null}
                         {/* Wave launch-17: 가품 위험 chip — 메인 feed 카드에서도 1차 노출 (사용자 보호). */}
@@ -4115,8 +4128,36 @@ export default function ExploreClient({
             className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-6 py-3.5 text-base font-bold text-[var(--brand-cream)] shadow-[0_20px_44px_rgba(15,23,42,0.38),0_4px_12px_rgba(15,23,42,0.20)] ring-1 ring-white/10 transition active:scale-[0.97] hover:translate-y-[-1px] hover:shadow-[0_24px_48px_rgba(15,23,42,0.42)] sm:min-h-0 sm:py-3 sm:text-sm sm:shadow-[0_16px_34px_rgba(15,23,42,0.32)]"
           >
             <SearchIcon className="h-4 w-4" />
-            {refreshing ? "받는 중..." : "더 찾아보기"}
+            {refreshing ? "가져오는 중..." : "더 찾아보기"}
           </button>
+        </div>
+      ) : null}
+
+      {velocityHelpOpen ? (
+        <div
+          className="fixed inset-0 z-[96] flex items-center justify-center bg-black/55 px-5 backdrop-blur-sm"
+          onClick={() => setVelocityHelpOpen(false)}
+        >
+          <div
+            className="w-full max-w-[320px] rounded-2xl border border-zinc-200 bg-white p-5 text-left shadow-2xl dark:border-zinc-800 dark:bg-zinc-950"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="text-[15px] font-black text-zinc-950 dark:text-zinc-50">
+              평균 회전이 뭐예요?
+            </div>
+            <p className="mt-2 text-[13px] font-bold leading-relaxed text-zinc-600 dark:text-zinc-300">
+              비슷한 모델이 최근 판매완료되기까지 걸린 시간을 평균으로 본
+              값이에요. 실제 판매 시간은 가격, 상태, 지역, 네고에 따라 달라질 수
+              있어요.
+            </p>
+            <button
+              type="button"
+              onClick={() => setVelocityHelpOpen(false)}
+              className="mt-4 w-full rounded-xl bg-[#3182f6] px-4 py-3 text-[14px] font-black text-white"
+            >
+              확인
+            </button>
+          </div>
         </div>
       ) : null}
 

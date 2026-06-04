@@ -2868,10 +2868,6 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                 ) : null}
                 {group.items.map((item) => {
                   const itemPrice = item.price > 0 ? item.price : 0;
-                  const priceDiff = card.price && itemPrice ? itemPrice - card.price : 0;
-                  const diffPct = card.price && itemPrice ? Math.round((priceDiff / card.price) * 100) : 0;
-                  const isSimilar = Math.abs(diffPct) <= 2;
-                  const isMoreExpensive = !isSimilar && priceDiff > 0;
                   const isSold = isComparableSold(item);
                   const isReserved = isComparableReserved(item);
                   const evidenceType = isReserved ? "예약중" : "판매중";
@@ -2964,13 +2960,6 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                           <div className="text-[14px] font-black tabular-nums tracking-tight text-zinc-900 dark:text-zinc-100">
                             {krw(itemPrice)}
                           </div>
-                          {!isSimilar ? (
-                            <div className={`mt-px text-[11px] font-extrabold tabular-nums ${isMoreExpensive ? "text-blue-600 dark:text-blue-400" : "text-rose-600 dark:text-rose-400"}`}>
-                              {isMoreExpensive ? `+${diffPct}%` : `${diffPct}%`}
-                            </div>
-                          ) : (
-                            <div className="mt-px text-[10px] font-medium text-zinc-400">비슷</div>
-                          )}
                           {mode === "detailed" ? (
                             <span className="mt-1 inline-flex rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-black text-zinc-600 transition group-hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:group-hover:bg-zinc-700">
                               원문 열기
@@ -3010,13 +2999,6 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
             <>같은 모델 매물 비교.</>
           )}
         </div>
-        {listings && listings.length > 0 ? (
-          // Wave 394.6.b.fix3: 사용자 짚음 — "현재 매입가 대비 몇 % 싸거나 비싼지". 비교 매물 기준 표현.
-          <div>
-            <span className="text-blue-600 dark:text-blue-400">+%</span> 비교 매물 비쌈 (이 매물 더 쌈) ·{" "}
-            <span className="text-rose-600 dark:text-rose-400">−%</span> 비교 매물 쌈 (이 매물 더 비쌈)
-          </div>
-        ) : null}
       </div>
     </div>
   );

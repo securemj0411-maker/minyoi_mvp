@@ -499,14 +499,12 @@ function velocitySignalLabel(row: MarketVelocityRow | null | undefined) {
   const medianHours = Number(row?.median_hours_to_sold ?? 0);
   const sold7d = Number(row?.sold_7d_count ?? 0);
   const soldSample = Number(row?.observed_sold_sample_count ?? 0);
-  const confidence = typeof row?.confidence === "string" ? row.confidence : null;
   if (!Number.isFinite(medianHours) || medianHours <= 0) return null;
   if (sold7d <= 0 || soldSample < 3) return null;
-  const prefix = confidence === "high" || confidence === "medium" ? "평균" : "참고";
   if (medianHours < 24) {
-    return `${prefix} ${Math.max(1, Math.round(medianHours))}시간 회전`;
+    return `평균 ${Math.max(1, Math.round(medianHours))}시간 회전`;
   }
-  return `${prefix} ${Math.max(1, Math.round(medianHours / 24))}일 회전`;
+  return `평균 ${Math.max(1, Math.round(medianHours / 24))}일 회전`;
 }
 
 function normalizedVelocityCondition(conditionClass: string | null | undefined): string | null {
