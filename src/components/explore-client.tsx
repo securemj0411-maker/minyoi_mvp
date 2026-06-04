@@ -539,6 +539,19 @@ function recomputePoolProfit(
   });
 }
 
+function isDaangnMarketBasisMissing(
+  marketplaceSource: string | null | undefined,
+  marketBasis: RevealCard["marketBasis"] | null | undefined,
+) {
+  if (!isDaangnMarketplaceSource(marketplaceSource)) return false;
+  return (
+    !marketBasis?.medianPrice ||
+    marketBasis.medianPrice <= 0 ||
+    marketBasis.sourceSampleUsed !== true ||
+    Number(marketBasis.sourceSampleCount ?? marketBasis.sampleCount ?? 0) < 3
+  );
+}
+
 function accessValueForItem(item: PoolItem): DetailAccessValueSummary {
   const cautionCount = [
     item.sellerReviewCount < 10,
@@ -2395,7 +2408,7 @@ export default function ExploreClient({
               conditionClass: prev.marketBasis?.conditionClass ?? null,
               conditionTier: prev.conditionTier ?? null,
             });
-            const strictSourceMissing = marketBasis?.sourceFallbackUsed === true && marketBasis.medianPrice == null;
+            const strictSourceMissing = isDaangnMarketBasisMissing(prev.marketplaceSource, marketBasis);
             return {
               ...prev,
               expectedProfitMin: strictSourceMissing ? 0 : (recomputedProfit?.min ?? prev.expectedProfitMin),
@@ -2409,7 +2422,7 @@ export default function ExploreClient({
           setItems((prev) => prev.map((item) => {
             if (item.pid !== pid) return item;
             const recomputedProfit = recomputePoolProfit(item.price, marketBasis?.medianPrice, item);
-            const strictSourceMissing = marketBasis?.sourceFallbackUsed === true && marketBasis.medianPrice == null;
+            const strictSourceMissing = isDaangnMarketBasisMissing(item.marketplaceSource, marketBasis);
             return {
               ...item,
               skuMedian: marketBasis?.medianPrice ?? item.skuMedian,

@@ -943,6 +943,8 @@ export async function GET(req: Request) {
       const marketStale = marketGapKrw != null
         ? marketGapKrw <= 0 || daangnMarketBasisMissing
         : dbMarketInvalidatedAt != null;
+      const displayProfitMin = marketGapKrw ?? dbCurrentProfitMin ?? 0;
+      const displayProfitMax = marketGapKrwMax ?? marketGapKrw ?? dbCurrentProfitMax ?? displayProfitMin;
       return {
         pid: Number(reveal.pid),
         name: raw?.name ?? `PID ${reveal.pid}`,
@@ -976,8 +978,8 @@ export async function GET(req: Request) {
         comparableKey,
         listingState: raw?.listing_state ?? "unknown",
         saleStatus: raw?.sale_status ?? "",
-        expectedProfitMin: Number(reveal.expected_profit_min ?? 0),
-        expectedProfitMax: Number(reveal.expected_profit_max ?? 0),
+        expectedProfitMin: Number(displayProfitMin ?? 0),
+        expectedProfitMax: Number(displayProfitMax ?? 0),
         confidence: Number(reveal.confidence ?? 0),
         band: reveal.source === "hotdeal"
           ? (bandByHotdealPid.get(Number(reveal.pid)) ?? 3)
