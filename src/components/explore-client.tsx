@@ -14,7 +14,7 @@ import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { detectBrandDepth } from "@/lib/category-brand-depth";
 import type { DetailEventType } from "@/lib/detail-analytics";
 import { isDaangnMarketplaceSource } from "@/lib/marketplace-source";
-import { getMembershipPlan, krw as membershipKrw, MEMBERSHIP_PLANS, RENEWAL_UPGRADE_PLANS, type MembershipPlan, type MembershipPlanKey } from "@/lib/membership-plans";
+import { getMembershipPlan, krw as membershipKrw, RENEWAL_UPGRADE_PLANS, type MembershipPlan, type MembershipPlanKey } from "@/lib/membership-plans";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -212,8 +212,9 @@ const BANK_NAME = "우리은행";
 const ACCOUNT_NUMBER = "1002-367-160511";
 const ACCOUNT_HOLDER = "이민제";
 
-function regularPlanForMonths(months: number): MembershipPlan | null {
-  return MEMBERSHIP_PLANS.find((plan) => plan.months === months) ?? null;
+function upgradeTargetLabel(plan: MembershipPlan) {
+  const targetMonths = plan.upgradeTargetMonths ?? plan.months;
+  return targetMonths >= 12 ? "1년 무제한 멤버십" : `${targetMonths}개월 무제한 멤버십`;
 }
 
 function remainingMembershipDays(planEndAt: string | null | undefined) {
@@ -313,10 +314,13 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
     setMessage("입금 확인 요청 완료. 5분 내 자동 승인까지 같이 걸렸어요.");
   }
 
-  const headline = "남은 기간을 1년권으로 전환";
+  const selectedTargetLabel = selectedPlan ? upgradeTargetLabel(selectedPlan) : "장기 무제한 멤버십";
+  const headline = selectedPlan
+    ? `단 ${membershipKrw(selectedPlan.priceKrw)}으로 ${selectedTargetLabel} 업그레이드`
+    : "멤버십 업그레이드 1시간 특가";
   const subHeadline = remainingDays !== null && remainingDays <= 45
-    ? "1개월 체험권을 고른 사람에게만 열리는 차액 조건이에요. 몇 만원만 더 내고 6개월/12개월권으로 바꿀 수 있어요."
-    : `이미 남은 ${remainingDays ?? 0}일은 그대로 살리고, 부족한 기간만 차액으로 채워 1년권에 가깝게 맞춥니다.`;
+    ? "방금 멤버십을 시작한 사람에게만 열리는 1시간 업그레이드 조건이에요."
+    : `이미 남은 ${remainingDays ?? 0}일은 그대로 유지하고, 오늘 결제하면 ${selectedTargetLabel}으로 올려드립니다.`;
 
   return (
     <section className="mb-3 overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-[0_16px_45px_rgba(245,158,11,0.13)] dark:border-amber-900/50 dark:bg-zinc-900">
@@ -345,7 +349,7 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
                   disabled={expired || requestState === "submitting"}
                   className={`rounded-full px-2.5 py-1 text-[11px] font-black transition disabled:opacity-50 ${active ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-200"}`}
                 >
-                  {plan.label} · 차액 {membershipKrw(plan.priceKrw)}
+                  {upgradeTargetLabel(plan)} · {membershipKrw(plan.priceKrw)}
                 </button>
               );
             })}
@@ -358,10 +362,10 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
           <div className="rounded-xl border border-amber-100 bg-amber-50/70 px-3 py-3 dark:border-amber-950/70 dark:bg-amber-950/20">
             <div className="flex flex-wrap items-end justify-between gap-2">
               <div>
-                <div className="text-[11px] font-black text-amber-700 dark:text-amber-300">{selectedPlan.label} 1시간 전환 조건</div>
+                <div className="text-[11px] font-black text-amber-700 dark:text-amber-300">{upgradeTargetLabel(selectedPlan)} 1시간 특가</div>
                 <div className="mt-1 text-[20px] font-black text-zinc-950 dark:text-zinc-50">{membershipKrw(selectedPlan.priceKrw)}</div>
                 <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
-                  정가 {membershipKrw(regularPlanForMonths(selectedPlan.upgradeTargetMonths ?? selectedPlan.months)?.priceKrw ?? selectedPlan.priceKrw)}까지 다시 내는 게 아니라 차액만 받습니다.
+                  지금 수락하면 {selectedTargetLabel}으로 업그레이드됩니다.
                 </div>
               </div>
               <button
@@ -394,7 +398,7 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
                     1시간 전환 제안
                   </div>
                   <div className="mt-1 break-keep text-[20px] font-black leading-tight">
-                    {selectedPlan.label}으로 전환
+                    {upgradeTargetLabel(selectedPlan)} 업그레이드
                   </div>
                   <div className="mt-1 text-[12px] font-bold text-white/80">
                     남은 시간 {formatCooldown(clamped)}
@@ -413,13 +417,13 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
             <div className="grid gap-3 px-4 py-4">
               <div className="rounded-[14px] border border-amber-100 bg-amber-50 px-3 py-3 dark:border-amber-950/70 dark:bg-amber-950/20">
                 <div className="text-[11px] font-black text-amber-700 dark:text-amber-300">
-                  오늘 차액
+                  오늘 업그레이드 금액
                 </div>
                 <div className="mt-1 text-[26px] font-black text-zinc-950 dark:text-zinc-50">
                   {membershipKrw(selectedPlan.priceKrw)}
                 </div>
                 <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
-                  기존 기간은 버리지 않고, 목표 기간까지 부족한 기간만 채우는 전환 조건입니다.
+                  단 {membershipKrw(selectedPlan.priceKrw)}으로 {upgradeTargetLabel(selectedPlan)}으로 업그레이드됩니다.
                 </div>
               </div>
               {!reservation ? (
