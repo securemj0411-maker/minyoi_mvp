@@ -2769,6 +2769,10 @@ function isComparableReserved(item: Pick<ComparableListing, "listingState" | "sa
   return state === "reserved" || status === "reserved" || status === "예약중";
 }
 
+function comparableSourceUrl(item: Pick<ComparableListing, "listingUrl" | "bunjangUrl">) {
+  return item.listingUrl || item.bunjangUrl || null;
+}
+
 function comparableDisplayBounds(card: RevealCard): { lower: number; upper: number } | null {
   const median = finitePositivePrice(card.marketBasis?.medianPrice);
   if (!median) return null;
@@ -3020,14 +3024,14 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
                   const itemConditionLabel = ourTier
                     ? (tierShortLabel(item.conditionTier) ?? "등급 정보 부족")
                     : (conditionShortLabel(item.conditionClass) ?? "상태 정보 부족");
-                  const sourceUrl = item.listingUrl || item.bunjangUrl;
+                  const sourceUrl = comparableSourceUrl(item);
                   return (
                     <li
                       key={item.pid}
                       className={needsBorder && !group.heading ? "border-t border-zinc-200 dark:border-zinc-800" : ""}
                     >
                       <a
-                        href={sourceUrl}
+                        href={sourceUrl ?? undefined}
                         target="_blank"
                         rel="noreferrer"
                         className="group flex min-h-[74px] items-center gap-3 px-3 py-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-900/60"
@@ -5540,8 +5544,9 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
                     : conditionShortLabel(item.conditionClass);
                   const seenLabel = seenAgoLabel(item.lastSeenAt);
                   const sourceLabel = item.marketplaceLabel ?? null;
-                  return (
-                    <div key={item.pid} className="flex items-center gap-3 px-4 py-3">
+                  const sourceUrl = comparableSourceUrl(item);
+                  const rowContent = (
+                    <>
                       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[12px] bg-zinc-100 dark:bg-zinc-800">
                         {item.thumbnailUrl ? (
                           <>
@@ -5588,6 +5593,23 @@ function BeginnerGuideComparablePreview({ card }: { card: RevealCard }) {
                         {isSold ? <div className="mb-0.5 text-[9px] font-black text-blue-600 dark:text-blue-300">판매완료</div> : null}
                         <div className="text-[14px] font-black tabular-nums text-[#172019] dark:text-zinc-100">{krw(item.price)}</div>
                       </div>
+                    </>
+                  );
+                  const rowClassName = "group flex items-center gap-3 px-4 py-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-900/60";
+                  return sourceUrl ? (
+                    <a
+                      key={item.pid}
+                      href={sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`${item.name || "비교 매물"} 원문 열기`}
+                      className={rowClassName}
+                    >
+                      {rowContent}
+                    </a>
+                  ) : (
+                    <div key={item.pid} className="flex items-center gap-3 px-4 py-3">
+                      {rowContent}
                     </div>
                   );
                 })}
