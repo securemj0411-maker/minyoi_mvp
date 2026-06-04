@@ -55,6 +55,21 @@ const SCARCITY_ROWS = [
   },
 ];
 
+const MEMBER_ROWS = [
+  {
+    label: "패스 유지",
+    value: "만료 전에 연장해도 남은 기간 뒤에 그대로 붙습니다.",
+  },
+  {
+    label: "피드 접근",
+    value: "추천 상품, 원본 링크, 시세 근거를 계속 열어볼 수 있습니다.",
+  },
+  {
+    label: "연장 예약",
+    value: "기간 선택 후 입금하면 5분 내 승인 흐름으로 처리됩니다.",
+  },
+];
+
 function MarketSignalIllustration() {
   return (
     <svg
@@ -199,6 +214,34 @@ function MarketSignalIllustration() {
   );
 }
 
+function MembershipPassBadge() {
+  return (
+    <div className="relative overflow-hidden rounded-[22px] border border-amber-200/60 bg-[linear-gradient(135deg,#fff7ed_0%,#dbeafe_44%,#ecfeff_100%)] p-4 shadow-[0_22px_55px_rgba(49,130,246,0.18)] dark:border-amber-300/20 dark:bg-[linear-gradient(135deg,#172554_0%,#111827_46%,#052e16_100%)]">
+      <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-white/40 blur-2xl dark:bg-blue-300/20" />
+      <div className="relative flex items-center justify-between gap-3">
+        <div>
+          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-700 dark:text-amber-200">
+            premium pass
+          </div>
+          <div className="mt-1 text-[24px] font-black tracking-tight text-zinc-950 dark:text-white">
+            ACTIVE
+          </div>
+        </div>
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-950 text-[20px] font-black text-white shadow-[0_14px_30px_rgba(15,23,42,0.28)] dark:bg-white dark:text-zinc-950">
+          M
+        </div>
+      </div>
+      <div className="relative mt-5 h-1.5 overflow-hidden rounded-full bg-white/60 dark:bg-white/15">
+        <div className="h-full w-[82%] rounded-full bg-[linear-gradient(90deg,#f59e0b,#3182f6,#10b981)]" />
+      </div>
+      <div className="relative mt-3 flex items-center justify-between text-[11px] font-black text-zinc-600 dark:text-zinc-200">
+        <span>득템잡이 멤버십</span>
+        <span>승인 완료</span>
+      </div>
+    </div>
+  );
+}
+
 type PendingApplicationRow = {
   id: number;
   application_kind: "new" | "renewal" | null;
@@ -337,14 +380,15 @@ export default async function PlansPage() {
   const slotSnapshot = loadSlotSnapshot();
   const membershipEndAt = membership?.proUntil ?? null;
   const socialProofEvents = await loadSocialProofEvents();
+  const infoRows = isMember ? MEMBER_ROWS : SCARCITY_ROWS;
 
   return (
-    <main className="min-h-screen bg-[#f4f7fb] px-3 py-4 dark:bg-zinc-950 sm:px-5 sm:py-8">
+    <main className="min-h-screen bg-[#f4f7fb] px-3 py-4 dark:bg-zinc-950 sm:px-5 sm:py-8 lg:py-10">
       <PlansSocialProofToasts events={socialProofEvents} />
-      <div className="mx-auto grid w-full max-w-[1180px] gap-4 lg:grid-cols-[minmax(0,1.05fr)_420px] lg:items-start">
+      <div className="mx-auto grid w-full max-w-[1100px] gap-5 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
         <section className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-[0_20px_80px_rgba(15,23,42,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_420px]">
-            <div className="px-5 py-6 sm:px-8 sm:py-8 lg:py-10">
+          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="px-5 py-6 sm:px-8 sm:py-8 lg:px-9 lg:py-9">
               <div className="flex flex-wrap gap-1.5">
                 {(isMember
                   ? ["활성 멤버", "남은 기간 확인", "기간 연장 가능"]
@@ -358,18 +402,18 @@ export default async function PlansPage() {
                   </span>
                 ))}
               </div>
-              <h1 className="mt-5 max-w-[640px] break-keep text-[36px] font-black leading-[0.96] tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[56px]">
+              <h1 className="mt-5 max-w-[560px] break-keep text-[34px] font-black leading-[1.02] tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[50px]">
                 {isMember
-                  ? "멤버십을 계속 유지하세요."
+                  ? "멤버십 패스 활성화"
                   : "돈 되는 매물은 오래 열려있지 않습니다."}
               </h1>
-              <p className="mt-5 max-w-[600px] break-keep text-[15px] font-bold leading-7 text-zinc-600 dark:text-zinc-300 sm:text-[17px] sm:leading-8">
+              <p className="mt-5 max-w-[560px] break-keep text-[15px] font-bold leading-7 text-zinc-600 dark:text-zinc-300 sm:text-[16px] sm:leading-8">
                 {isMember
                   ? "연장하면 현재 만료일 뒤에 기간이 그대로 붙습니다. 매물 피드, 원본 링크, 시세 근거를 끊기지 않게 유지하세요."
                   : "득템잡이는 당근·중고나라·번개장터에서 가격 차이, 판매 회전, 셀러 신호를 같이 보고 승인된 멤버에게만 원본 링크를 엽니다."}
               </p>
               <div className="mt-6 grid gap-2 sm:grid-cols-3">
-                {SCARCITY_ROWS.map((row) => (
+                {infoRows.map((row) => (
                   <div
                     key={row.label}
                     className="rounded-[16px] border border-zinc-200 bg-[#fbfcff] px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-950/50"
@@ -385,7 +429,11 @@ export default async function PlansPage() {
               </div>
             </div>
             <div className="border-t border-zinc-200 bg-zinc-950 px-4 py-5 dark:border-zinc-800 lg:border-l lg:border-t-0">
-              <MarketSignalIllustration />
+              {isMember ? (
+                <MembershipPassBadge />
+              ) : (
+                <MarketSignalIllustration />
+              )}
             </div>
           </div>
           <div className="grid gap-3 border-t border-zinc-200 px-5 py-5 dark:border-zinc-800 sm:grid-cols-3 sm:px-8">
@@ -429,13 +477,19 @@ export default async function PlansPage() {
                       : "3개월 99,000원 · 자리 예약 후 계좌이체"}
                   </div>
                 </div>
-                <div className="rounded-2xl bg-zinc-950 px-3 py-2 text-right text-white dark:bg-white dark:text-zinc-950">
+                <div
+                  className={
+                    isMember
+                      ? "rounded-2xl border border-amber-200/70 bg-[linear-gradient(135deg,#fef3c7,#dbeafe)] px-3.5 py-2.5 text-right text-zinc-950 shadow-[0_12px_30px_rgba(245,158,11,0.18)] dark:border-amber-300/20 dark:bg-[linear-gradient(135deg,#1e3a8a,#052e16)] dark:text-white"
+                      : "rounded-2xl bg-zinc-950 px-3 py-2 text-right text-white dark:bg-white dark:text-zinc-950"
+                  }
+                >
                   <div className="text-[9px] font-black uppercase tracking-[0.12em] opacity-70">
-                    {isMember ? "status" : "reserved"}
+                    {isMember ? "premium" : "reserved"}
                   </div>
                   <div className="mt-0.5 text-[18px] font-black">
                     {isMember
-                      ? "ACTIVE"
+                      ? "PASS"
                       : `${slotSnapshot.filled}/${slotSnapshot.capacity}`}
                   </div>
                 </div>
