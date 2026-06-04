@@ -315,17 +315,16 @@ test("/me reveal detail keeps Bunjang fixed while sibling listings stay cached a
   assert.match(dashboard, /openItem\(nextItem, "listing", \{ pushUrl: true \}\)/);
 });
 
-test("/me reveal detail hides operator memo and pushes generic disclaimer to the bottom", () => {
+test("/me reveal detail hides operator memo and removes generic bottom disclaimer", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
   const relatedIndex = modal.indexOf("<RelatedRevealStrip");
   const footerIndex = modal.indexOf("<ModalActionFooter", relatedIndex);
-  const disclaimerIndex = modal.indexOf("시세 추천 유의사항", footerIndex);
 
   assert.doesNotMatch(modal, /검증 메모 · 추천 평가/);
   assert.doesNotMatch(modal, /매물 검증 결과 \/ 의심점 \/ 추천 품질 평가 자유 기록/);
-  assert.match(modal, /<summary className="cursor-pointer list-none font-black text-\[#647064\]/);
-  assert.match(modal, /AI 기반 시세 추천이며 수익을 보장하지 않습니다/);
-  assert.ok(relatedIndex >= 0 && footerIndex > relatedIndex && disclaimerIndex > footerIndex);
+  assert.doesNotMatch(modal, /시세 추천 유의사항/);
+  assert.doesNotMatch(modal, /AI 기반 시세 추천이며 수익을 보장하지 않습니다/);
+  assert.ok(relatedIndex >= 0 && footerIndex > relatedIndex);
 });
 
 test("/me shows every condition grade as a photo badge and removes duplicate plain grade chips", () => {
@@ -522,7 +521,7 @@ test("/me delete action soft-hides reveals without deleting feedback history", (
   assert.match(schema, /hidden_at timestamptz/);
 });
 
-test("/me modal exposes transaction state feedback actions", () => {
+test("/me modal removes transaction state controls while keeping feedback plumbing", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
   const dashboard = source("src/components/user-reveal-dashboard.tsx");
   const feedbackRoute = source("src/app/api/packs/reveals/feedback/route.ts");
@@ -530,10 +529,10 @@ test("/me modal exposes transaction state feedback actions", () => {
   const packOpen = source("src/lib/pack-open.ts");
   const meRoute = source("src/app/api/packs/me/route.ts");
 
-  assert.match(modal, /거래 상태/);
-  assert.match(modal, /문의했어요/);
-  assert.match(modal, /매수했어요/);
-  assert.match(modal, /포기했어요/);
+  assert.doesNotMatch(modal, /거래 상태/);
+  assert.doesNotMatch(modal, /문의했어요/);
+  assert.doesNotMatch(modal, /매수했어요/);
+  assert.doesNotMatch(modal, /포기했어요/);
   assert.match(dashboard, /currentFeedbackType=\{\s*selectedItem\?\.transactionFeedbackType/);
   assert.match(dashboard, /거래 상태 · \{TRANSACTION_FEEDBACK_LABEL/);
   assert.match(feedbackRoute, /"contacted"/);
@@ -546,17 +545,21 @@ test("/me modal exposes transaction state feedback actions", () => {
   assert.match(meRoute, /passed: 35/);
 });
 
-test("/me modal supports post-buy follow-up states", () => {
+test("/me keeps post-buy follow-up states in data plumbing, not the detail modal", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
+  const footer = modal.slice(
+    modal.indexOf("function ModalActionFooter"),
+    modal.indexOf("// Wave launch-69"),
+  );
   const feedbackRoute = source("src/app/api/packs/reveals/feedback/route.ts");
   const migration = source("supabase/migrations/20260518103853_reveal_feedback_post_buy_states.sql");
   const packOpen = source("src/lib/pack-open.ts");
   const meRoute = source("src/app/api/packs/me/route.ts");
 
-  assert.match(modal, /매수 후 진행/);
-  assert.match(modal, /검수 완료/);
-  assert.match(modal, /판매 등록/);
-  assert.match(modal, /판매 완료/);
+  assert.doesNotMatch(footer, /매수 후 진행/);
+  assert.doesNotMatch(footer, /검수 완료/);
+  assert.doesNotMatch(footer, /판매 등록/);
+  assert.doesNotMatch(footer, /판매 완료/);
   assert.match(feedbackRoute, /"inspected"/);
   assert.match(feedbackRoute, /"listed"/);
   assert.match(feedbackRoute, /"resold"/);
