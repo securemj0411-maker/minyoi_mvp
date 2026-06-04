@@ -101,13 +101,9 @@ const SEAT_PROOF_NAMES = [
   "오**님",
 ];
 
-function SeatProofToast({
-  active,
-  regionLabel,
-}: {
-  active: boolean;
-  regionLabel: string;
-}) {
+const SEAT_PROOF_MINUTES = [8, 17];
+
+function SeatProofToast({ active }: { active: boolean }) {
   const [index, setIndex] = useState(-1);
   const [visible, setVisible] = useState(false);
 
@@ -117,42 +113,39 @@ function SeatProofToast({
       return;
     }
     const timers: number[] = [];
-    const showNext = () => {
-      setIndex((prev) => (prev + 1) % SEAT_PROOF_NAMES.length);
+    const showAt = (nextIndex: number) => {
+      setIndex(nextIndex);
       setVisible(true);
-      timers.push(window.setTimeout(() => setVisible(false), 7200));
+      timers.push(window.setTimeout(() => setVisible(false), 7600));
     };
 
-    timers.push(window.setTimeout(showNext, 1600));
-    const interval = window.setInterval(showNext, 18_000);
+    timers.push(window.setTimeout(() => showAt(0), 1800));
+    timers.push(window.setTimeout(() => showAt(1), 16_800));
     return () => {
       timers.forEach((timer) => window.clearTimeout(timer));
-      window.clearInterval(interval);
     };
   }, [active]);
 
-  if (!active || index < 0) return null;
+  if (!active || index < 0 || index >= SEAT_PROOF_MINUTES.length) return null;
 
   return (
     <div
       aria-live="polite"
-      className={`fixed left-3 right-3 top-[calc(env(safe-area-inset-top)+14px)] z-[120] mx-auto max-w-[460px] transition duration-500 sm:left-auto sm:right-8 sm:top-8 sm:mx-0 ${
+      className={`fixed left-3 right-3 top-[calc(env(safe-area-inset-top)+14px)] z-[120] mx-auto max-w-[460px] transition-all duration-700 ease-out sm:left-auto sm:right-8 sm:top-8 sm:mx-0 ${
         visible
-          ? "translate-y-0 opacity-100"
-          : "-translate-y-3 opacity-0 pointer-events-none"
+          ? "translate-y-0 scale-100 opacity-100"
+          : "-translate-y-4 scale-[0.98] opacity-0 pointer-events-none"
       }`}
     >
       <div className="rounded-2xl border border-rose-200 bg-white/98 px-4 py-3.5 shadow-[0_20px_54px_rgba(244,63,94,0.24)] backdrop-blur dark:border-rose-400/30 dark:bg-zinc-950/96">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-500 text-[15px] font-black text-white shadow-[0_12px_28px_rgba(244,63,94,0.34)]">
-            1
+            ✓
           </div>
           <div className="min-w-0">
             <div className="break-keep text-[13px] font-black leading-5 text-zinc-950 dark:text-white">
-              {SEAT_PROOF_NAMES[index]}이 멤버십에 가입해 1자리를 확보했어요.
-            </div>
-            <div className="mt-1 break-keep text-[11px] font-black text-rose-600 dark:text-rose-300">
-              {regionLabel} 티오가 줄어드는 중
+              {SEAT_PROOF_NAMES[index]}이 {SEAT_PROOF_MINUTES[index]}분 전에
+              멤버십에 가입해 1자리를 확보했어요.
             </div>
           </div>
         </div>
@@ -1869,75 +1862,83 @@ export default function PlansApplicationFlow({
                     </div>
                   ) : null}
                   {showManualSearch && !mapZoomed ? (
-                    <div className="absolute inset-x-2 bottom-2 z-20 rounded-[24px] border border-zinc-200 bg-white/94 p-3 shadow-[0_18px_44px_rgba(15,23,42,0.18)] backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/92">
-                      <div className="text-[12px] font-black text-zinc-500 dark:text-zinc-400">
-                        동네를 직접 입력해주세요
-                      </div>
-                      <div className="mt-2 flex gap-2">
-                        <input
-                          value={manualQuery}
-                          onChange={(event) =>
-                            setManualQuery(event.target.value)
-                          }
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter")
-                              void handleManualSearch();
-                          }}
-                          placeholder="예: 서초구, 상도동, 포항시"
-                          className="h-11 min-w-0 flex-1 rounded-2xl border border-zinc-200 bg-white px-3 text-[14px] font-bold outline-none transition focus:border-blue-400 dark:border-zinc-700 dark:bg-zinc-900"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => void handleManualSearch()}
-                          disabled={manualSearching}
-                          className="h-11 shrink-0 rounded-2xl bg-zinc-950 px-4 text-[13px] font-black text-white disabled:opacity-55 dark:bg-white dark:text-zinc-950"
-                        >
-                          {manualSearching ? "검색 중" : "검색"}
-                        </button>
-                      </div>
-                      {locationError ? (
-                        <div className="mt-2 break-keep text-[12px] font-bold text-red-500">
-                          {locationError}
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/48 px-4 py-6 backdrop-blur-sm">
+                      <div className="w-full max-w-[360px] rounded-[28px] border border-zinc-200 bg-white p-5 text-left shadow-[0_28px_80px_rgba(15,23,42,0.28)] dark:border-zinc-800 dark:bg-zinc-950">
+                        <div className="text-center text-[10px] font-black uppercase tracking-[0.14em] text-[#3182f6] dark:text-blue-300">
+                          수동 입력
                         </div>
-                      ) : null}
-                      {manualResults.length > 0 ? (
-                        <div className="mt-2 max-h-36 overflow-y-auto">
-                          {manualResults.map((result) => (
-                            <button
-                              key={`${result.fullPath}-${result.lat}-${result.lng}`}
-                              type="button"
-                              onClick={() => {
-                                const selectedOk = selectRegionFromAddress(
-                                  [
-                                    result.region1,
-                                    result.region2,
-                                    result.region3,
-                                    result.fullPath,
-                                  ],
-                                  result.region2 || result.region3,
-                                );
-                                if (selectedOk) {
-                                  setHomeRegionDraft({
-                                    lat: result.lat,
-                                    lng: result.lng,
-                                    fullPath: result.fullPath,
-                                    label:
-                                      [result.region2, result.region3]
-                                        .filter(Boolean)
-                                        .join(" ") || result.fullPath,
-                                    source: "manual",
-                                  });
-                                }
-                              }}
-                              className="mb-1.5 w-full rounded-2xl border border-zinc-200 bg-[#fbfcff] px-3 py-2 text-left text-[13px] font-black transition hover:border-blue-300 dark:border-zinc-800 dark:bg-zinc-900"
-                            >
-                              <span className="block truncate">
-                                {result.fullPath}
-                              </span>
-                            </button>
-                          ))}
+                        <div className="mt-2 break-keep text-center text-[24px] font-black leading-tight text-zinc-950 dark:text-zinc-50">
+                          동네를 직접 입력해주세요.
                         </div>
-                      ) : null}
+                        <div className="mt-2 break-keep text-center text-[13px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+                          예: 서초구, 상도동, 포항시
+                        </div>
+                        <div className="mt-5 flex gap-2">
+                          <input
+                            value={manualQuery}
+                            onChange={(event) =>
+                              setManualQuery(event.target.value)
+                            }
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter")
+                                void handleManualSearch();
+                            }}
+                            placeholder="예: 서초구, 상도동, 포항시"
+                            className="h-11 min-w-0 flex-1 rounded-2xl border border-zinc-200 bg-white px-3 text-[14px] font-bold outline-none transition focus:border-blue-400 dark:border-zinc-700 dark:bg-zinc-900"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => void handleManualSearch()}
+                            disabled={manualSearching}
+                            className="h-11 shrink-0 rounded-2xl bg-zinc-950 px-4 text-[13px] font-black text-white disabled:opacity-55 dark:bg-white dark:text-zinc-950"
+                          >
+                            {manualSearching ? "검색 중" : "검색"}
+                          </button>
+                        </div>
+                        {locationError ? (
+                          <div className="mt-2 break-keep text-[12px] font-bold text-red-500">
+                            {locationError}
+                          </div>
+                        ) : null}
+                        {manualResults.length > 0 ? (
+                          <div className="mt-2 max-h-36 overflow-y-auto">
+                            {manualResults.map((result) => (
+                              <button
+                                key={`${result.fullPath}-${result.lat}-${result.lng}`}
+                                type="button"
+                                onClick={() => {
+                                  const selectedOk = selectRegionFromAddress(
+                                    [
+                                      result.region1,
+                                      result.region2,
+                                      result.region3,
+                                      result.fullPath,
+                                    ],
+                                    result.region2 || result.region3,
+                                  );
+                                  if (selectedOk) {
+                                    setHomeRegionDraft({
+                                      lat: result.lat,
+                                      lng: result.lng,
+                                      fullPath: result.fullPath,
+                                      label:
+                                        [result.region2, result.region3]
+                                          .filter(Boolean)
+                                          .join(" ") || result.fullPath,
+                                      source: "manual",
+                                    });
+                                  }
+                                }}
+                                className="mb-1.5 w-full rounded-2xl border border-zinc-200 bg-[#fbfcff] px-3 py-2 text-left text-[13px] font-black transition hover:border-blue-300 dark:border-zinc-800 dark:bg-zinc-900"
+                              >
+                                <span className="block truncate">
+                                  {result.fullPath}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
                   ) : null}
                   {locationConfirmDraft && !mapZoomed ? (
@@ -2191,10 +2192,7 @@ export default function PlansApplicationFlow({
 
           {step === 2 ? (
             <div className="flex h-full flex-col justify-center p-4 sm:p-8">
-              <SeatProofToast
-                active={step === 2}
-                regionLabel={selectedRegionLabel}
-              />
+              <SeatProofToast active={step === 2} />
               <div className="mx-auto w-full max-w-[760px]">
                 <div className="overflow-hidden rounded-[30px] border border-blue-100 bg-white text-zinc-950 shadow-[0_28px_80px_rgba(49,130,246,0.14)] ring-1 ring-blue-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white dark:shadow-[0_28px_80px_rgba(15,23,42,0.34)] dark:ring-white/10">
                   <div className="relative p-5 sm:p-7">

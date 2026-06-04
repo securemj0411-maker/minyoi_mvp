@@ -586,8 +586,8 @@ export default function MembershipApplicationClient({
             ) : null}
             {depositNotifyState === "idle" ? (
               <p className="mt-2 break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400">
-                입금 후 입금했어요 버튼을 누르면 5분 내로 멤버십이 자동
-                완료됩니다.
+                입금 후 입금했어요 버튼을 누르면 5분 내로 멤버십에 자동
+                가입됩니다.
               </p>
             ) : null}
             {depositNotifyMessage ? (
