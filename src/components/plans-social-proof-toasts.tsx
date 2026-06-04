@@ -9,13 +9,36 @@ export type PlansSocialProofEvent = {
   kind: "approved" | "seat_check" | "reserved";
 };
 
-const FALLBACK_EVENTS: PlansSocialProofEvent[] = [
-  { id: "fallback-1", label: "이**님", minutesAgo: 9, kind: "seat_check" },
-  { id: "fallback-2", label: "김**님", minutesAgo: 14, kind: "reserved" },
-  { id: "fallback-3", label: "박**님", minutesAgo: 21, kind: "seat_check" },
-  { id: "fallback-4", label: "최**님", minutesAgo: 27, kind: "reserved" },
-  { id: "fallback-5", label: "정**님", minutesAgo: 36, kind: "seat_check" },
+const FALLBACK_SURNAMES = [
+  "김", "이", "박", "최", "정", "강", "조", "윤", "장", "임",
+  "한", "오", "서", "신", "권", "황", "안", "송", "전", "홍",
+  "유", "고", "문", "양", "손", "배", "백", "허", "남", "심",
+  "노", "하", "곽", "성", "차", "주", "우", "구", "민", "류",
+  "나", "진", "지", "엄", "채", "원", "천", "방", "공", "현",
 ];
+
+const FALLBACK_MINUTES = [
+  4, 7, 9, 12, 14, 16, 18, 21, 24, 27,
+  29, 31, 34, 36, 39, 42, 44, 47, 51, 56,
+];
+
+function buildFallbackEvents(): PlansSocialProofEvent[] {
+  return FALLBACK_SURNAMES.map((surname, index) => {
+    const minute = FALLBACK_MINUTES[index % FALLBACK_MINUTES.length];
+    const kind: PlansSocialProofEvent["kind"] =
+      index % 5 === 0 ? "reserved" :
+      index % 3 === 0 ? "seat_check" :
+      "reserved";
+    return {
+      id: `fallback-${index + 1}`,
+      label: `${surname}**님`,
+      minutesAgo: minute,
+      kind,
+    };
+  });
+}
+
+const FALLBACK_EVENTS = buildFallbackEvents();
 
 function proofCopy(event: PlansSocialProofEvent) {
   if (event.kind === "approved") {
@@ -30,7 +53,7 @@ function proofCopy(event: PlansSocialProofEvent) {
 export default function PlansSocialProofToasts({ events }: { events: PlansSocialProofEvent[] }) {
   const queue = useMemo(() => {
     const merged = [...events, ...FALLBACK_EVENTS];
-    return merged.slice(0, Math.max(3, Math.min(8, merged.length)));
+    return merged.slice(0, Math.max(12, Math.min(32, merged.length)));
   }, [events]);
   const [index, setIndex] = useState(-1);
   const [visible, setVisible] = useState(false);
