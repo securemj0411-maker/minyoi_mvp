@@ -16,9 +16,9 @@ export const revalidate = 0;
 const SLOT_CAPACITY = 300;
 
 const FEATURES = [
-  "승인된 계정만 원본 링크, 시세 근거, 예상 수익, 셀러 신뢰 신호를 한 화면에서 봅니다.",
-  "당근은 내 근처에 떠야 실전성이 생겨서, 지역별 티오를 먼저 확인합니다.",
-  "돈 되는 매물은 적고 오래 남지 않아서, 보는 사람 수를 무제한으로 열지 않습니다.",
+  "승인된 멤버만 원본 링크, 시세 근거, 예상 수익, 셀러 신뢰 신호를 한 화면에서 봅니다.",
+  "당근은 내 근처에 떠야 실전성이 생기기 때문에 지역별 티오를 먼저 확인합니다.",
+  "좋은 매물은 보는 사람이 많아질수록 바로 사라져서, 공개 범위를 일부러 좁게 유지합니다.",
 ];
 
 const PAYMENT_HELP = [
@@ -39,21 +39,23 @@ const PAYMENT_HELP = [
 
 const SCARCITY_ROWS = [
   {
-    label: "희소성",
+    label: "아무나 안 받음",
     value:
-      "시세보다 충분히 싸고, 상태가 맞고, 셀러 리스크가 낮은 매물은 전체 매물 중 일부예요.",
+      "돈 되는 매물은 전체 중고 매물 중 극소수라서, 무제한 공개하면 기회가 바로 깨집니다.",
   },
   {
-    label: "지역성",
+    label: "지역별 티오",
     value:
-      "번개·중나는 전국 단위지만, 당근은 가까운 동네에 떠야 실전성이 생겨요.",
+      "당근은 내 근처에 떠야 의미가 있어서, 같은 지역에 너무 많이 열지 않습니다.",
   },
   {
-    label: "쿼터",
+    label: "시장 교란 방지",
     value:
-      "같은 매물을 너무 많은 사람이 보면 결국 아무도 안정적으로 돈을 못 벌어요.",
+      "같은 매물을 모두가 보면 가격도 속도도 망가져서, 소수만 안정적으로 보게 합니다.",
   },
 ];
+
+const NON_MEMBER_BADGES = ["선공개 300명", "선착순 티오", "승인 후 원본 공개"];
 
 const MEMBER_ROWS = [
   {
@@ -419,6 +421,12 @@ export default async function PlansPage() {
   const membershipEndAt = membership?.proUntil ?? null;
   const socialProofEvents = await loadSocialProofEvents();
   const infoRows = isMember ? MEMBER_ROWS : SCARCITY_ROWS;
+  const heroBadges = isMember
+    ? ["활성 멤버", "남은 기간 확인", "기간 연장 가능"]
+    : NON_MEMBER_BADGES;
+  const reservationRate = Math.round(
+    (slotSnapshot.filled / slotSnapshot.capacity) * 100,
+  );
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] px-3 py-4 dark:bg-zinc-950 sm:px-5 sm:py-8 lg:py-10">
@@ -428,10 +436,7 @@ export default async function PlansPage() {
           <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_340px]">
             <div className="px-5 py-6 sm:px-8 sm:py-8 lg:px-9 lg:py-9">
               <div className="flex flex-wrap gap-1.5">
-                {(isMember
-                  ? ["활성 멤버", "남은 기간 확인", "기간 연장 가능"]
-                  : ["선공개 300명", "지역 티오 확인", "5분 내 승인 보장"]
-                ).map((label) => (
+                {heroBadges.map((label) => (
                   <span
                     key={label}
                     className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-black text-[#3182f6] ring-1 ring-blue-100 dark:bg-blue-950/30 dark:text-blue-200 dark:ring-blue-900/60"
@@ -443,13 +448,24 @@ export default async function PlansPage() {
               <h1 className="mt-5 max-w-[560px] break-keep text-[34px] font-black leading-[1.02] tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[50px]">
                 {isMember
                   ? "멤버십 패스 활성화"
-                  : "돈 되는 매물은 오래 열려있지 않습니다."}
+                  : "아무나 보면, 아무도 못 법니다."}
               </h1>
               <p className="mt-5 max-w-[560px] break-keep text-[15px] font-bold leading-7 text-zinc-600 dark:text-zinc-300 sm:text-[16px] sm:leading-8">
                 {isMember
                   ? "연장하면 현재 만료일 뒤에 기간이 그대로 붙습니다. 매물 피드, 원본 링크, 시세 근거를 끊기지 않게 유지하세요."
-                  : "득템잡이는 당근·중고나라·번개장터에서 가격 차이, 판매 회전, 셀러 신호를 같이 보고 승인된 멤버에게만 원본 링크를 엽니다."}
+                  : "득템잡이는 시세보다 싼 매물을 모두에게 뿌리지 않습니다. 선착순 티오와 지역별 접근 수를 관리해서, 실제로 움직일 수 있는 소수 멤버만 원본 링크와 시세 근거를 봅니다."}
               </p>
+              {!isMember ? (
+                <div className="mt-5 rounded-[18px] border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/60 dark:bg-amber-950/20">
+                  <div className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-700 dark:text-amber-300">
+                    member cap
+                  </div>
+                  <div className="mt-1 break-keep text-[13px] font-black leading-6 text-zinc-800 dark:text-zinc-100">
+                    지금은 선공개 {SLOT_CAPACITY}명만 받습니다. 지역이 겹치면
+                    티오가 먼저 닫힐 수 있어요.
+                  </div>
+                </div>
+              ) : null}
               <div className="mt-6 grid gap-2 sm:grid-cols-3">
                 {infoRows.map((row) => (
                   <div
@@ -496,23 +512,25 @@ export default async function PlansPage() {
           </div>
         </section>
 
-        <aside className="order-first lg:sticky lg:top-5 lg:order-none">
+        <aside
+          className={`${isMember ? "order-first lg:order-none" : ""} lg:sticky lg:top-5`}
+        >
           <div className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-[0_20px_80px_rgba(15,23,42,0.1)] dark:border-zinc-800 dark:bg-zinc-900">
             <div className="border-b border-zinc-200 px-4 py-4 dark:border-zinc-800 sm:px-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-200">
-                    {isMember ? "Membership active" : "300 seat membership"}
+                    {isMember ? "Membership active" : "Seat check"}
                   </div>
                   <div className="mt-1 text-[28px] font-black tracking-tight text-zinc-950 dark:text-zinc-50">
                     {isMember
                       ? membershipRemainingLabel(membershipEndAt)
-                      : "월 33,000원꼴"}
+                      : `${slotSnapshot.filled}/${slotSnapshot.capacity}명 예약`}
                   </div>
                   <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
                     {isMember
                       ? `만료일 ${membershipEndLabel(membershipEndAt)}`
-                      : "3개월 99,000원 · 자리 예약 후 계좌이체"}
+                      : "기간 선택 전에 내 지역 티오부터 확인합니다."}
                   </div>
                 </div>
                 <div
@@ -523,12 +541,10 @@ export default async function PlansPage() {
                   }
                 >
                   <div className="text-[9px] font-black uppercase tracking-[0.12em] opacity-70">
-                    {isMember ? "premium" : "reserved"}
+                    {isMember ? "premium" : "filled"}
                   </div>
                   <div className="mt-0.5 text-[18px] font-black">
-                    {isMember
-                      ? "PASS"
-                      : `${slotSnapshot.filled}/${slotSnapshot.capacity}`}
+                    {isMember ? "PASS" : `${reservationRate}%`}
                   </div>
                 </div>
               </div>
@@ -536,12 +552,7 @@ export default async function PlansPage() {
                 <div className="mt-4">
                   <div className="flex items-center justify-between text-[11px] font-black text-zinc-500 dark:text-zinc-400">
                     <span>선공개 예약률</span>
-                    <span>
-                      {Math.round(
-                        (slotSnapshot.filled / slotSnapshot.capacity) * 100,
-                      )}
-                      %
-                    </span>
+                    <span>{reservationRate}%</span>
                   </div>
                   <div className="mt-2 h-2 rounded-full bg-zinc-100 dark:bg-zinc-800">
                     <div
@@ -555,12 +566,14 @@ export default async function PlansPage() {
               ) : null}
             </div>
             <div className="grid gap-3 px-4 py-4 sm:px-5">
-              {!isMember ? <PlansUrgencyCountdown /> : null}
+              {!isMember && auth.ok ? <PlansUrgencyCountdown /> : null}
               <div className="rounded-[18px] border border-blue-100 bg-blue-50/70 px-4 py-4 dark:border-blue-950/70 dark:bg-blue-950/20">
                 <div className="mb-3 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
                   {isMember
                     ? "연장 기간을 고르면 계좌가 열립니다. 송금 후 입금했어요 버튼을 누르면 5분 내 승인됩니다."
-                    : "기간을 고르면 내 지역 티오 확인 후 계좌가 열립니다. 송금 후 입금했어요 버튼을 눌러주세요."}
+                    : auth.ok
+                      ? "티오가 열려 있으면 기간을 고른 뒤 계좌가 열립니다. 이 페이지는 결제 페이지가 아니라 자리 확인 페이지입니다."
+                      : "카카오 로그인 후 내 지역 티오를 확인합니다. 가격은 티오 확인 뒤 기간 선택 단계에서 고릅니다."}
                 </div>
                 <MembershipApplicationClient
                   isAuthed={auth.ok}
