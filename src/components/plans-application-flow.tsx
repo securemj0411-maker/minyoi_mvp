@@ -968,7 +968,7 @@ export default function PlansApplicationFlow({
               <div className="min-h-0 border-b border-zinc-200 p-4 pb-2 dark:border-zinc-800 sm:p-6 lg:border-b-0 lg:border-r">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <h1 className="break-keep pr-10 text-[24px] font-black leading-[1.02] tracking-tight sm:text-[44px]">
+                    <h1 className="break-keep pr-6 text-[30px] font-black leading-[1.01] tracking-tight sm:text-[44px]">
                       우리 동네 매물을
                       <br />
                       먼저 독점하세요.
@@ -979,23 +979,10 @@ export default function PlansApplicationFlow({
                     <div className="text-[18px] font-black tabular-nums sm:text-[24px]">{filled}/{capacity}</div>
                   </div>
                 </div>
-                {!mapZoomed ? (
-                  <div className="mt-2 flex items-center justify-between rounded-2xl border border-zinc-200 bg-[#fbfcff] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/60 lg:hidden">
-                    <div>
-                      <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
-                        seat map
-                      </div>
-                      <div className="mt-0.5 text-[15px] font-black">지도를 눌러 내 지역 티오 확인</div>
-                    </div>
-                    <span className="rounded-full bg-zinc-950 px-2.5 py-1 text-[11px] font-black text-white dark:bg-white dark:text-zinc-950">
-                      {capacity - filled}자리 남음
-                    </span>
-                  </div>
-                ) : null}
                 <div className={`relative mx-auto mt-1 min-h-0 max-w-[620px] lg:mt-2 ${
                   mapZoomed
                     ? "flex h-[calc(100%-118px)] min-h-[430px] flex-col"
-                    : "h-[350px] sm:h-[calc(100%-154px)] sm:min-h-[350px] sm:max-h-[590px] lg:h-[calc(100%-120px)]"
+                    : "h-[390px] sm:h-[calc(100%-154px)] sm:min-h-[350px] sm:max-h-[590px] lg:h-[calc(100%-120px)]"
                 }`}>
                   <div className={`relative min-h-0 ${mapZoomed ? "h-[48%] min-h-[220px] overflow-hidden rounded-[24px] border border-zinc-200 bg-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-950/50" : "h-full"}`}>
                     {mapZoomed ? (
@@ -1281,9 +1268,7 @@ export default function PlansApplicationFlow({
             >
               이전
             </button>
-          ) : (
-            <div className="h-11 w-16" />
-          )}
+          ) : null}
           {!isLast ? (
             <button
               type="button"
@@ -1295,7 +1280,7 @@ export default function PlansApplicationFlow({
                 setStep((prev) => Math.min(3, prev + 1));
               }}
               disabled={step === 0 && (locationStatus === "requesting" || locationStatus === "resolving")}
-              className="h-11 flex-1 rounded-2xl bg-[#3182f6] px-5 text-[15px] font-black text-white shadow-[0_18px_44px_rgba(49,130,246,0.28)] transition hover:bg-[#1c64dd] sm:flex-none sm:min-w-[240px]"
+              className="h-11 flex-1 rounded-2xl bg-[#3182f6] px-5 text-[15px] font-black text-white shadow-[0_18px_44px_rgba(49,130,246,0.28)] transition hover:bg-[#1c64dd] sm:min-w-[240px]"
             >
               {step === 0
                 ? mapZoomed
