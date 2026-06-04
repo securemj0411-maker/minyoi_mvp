@@ -645,29 +645,25 @@ export default function MembershipApplicationClient({
           </button>
         </div>
       ) : showInlineSelector ? (
-        <div className="overflow-hidden rounded-[24px] border border-blue-100 bg-white text-zinc-950 shadow-[0_18px_48px_rgba(49,130,246,0.12)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
-          <div className="relative border-b border-blue-100 bg-[#f5f8ff] px-4 py-4 dark:border-zinc-800 dark:bg-white/6 sm:px-6 sm:py-5">
+        <div className="overflow-hidden rounded-[22px] border border-blue-100 bg-white text-zinc-950 shadow-[0_18px_48px_rgba(49,130,246,0.12)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
+          <div className="relative border-b border-blue-100 bg-[#f5f8ff] px-3 py-3 dark:border-zinc-800 dark:bg-white/6 sm:px-6 sm:py-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-[11px] font-black tracking-[0.12em] text-[#3182f6] dark:text-blue-300">
                   MEMBERSHIP
                 </div>
-                <h2 className="mt-1 break-keep text-[25px] font-black leading-tight tracking-tight sm:text-[36px]">
-                  기간을 고르면
-                  <br />
-                  자리를 잡아둘게요.
+                <h2 className="mt-1 break-keep text-[22px] font-black leading-tight tracking-tight sm:text-[36px]">
+                  기간 선택
                 </h2>
               </div>
-              <div className="shrink-0 rounded-2xl bg-white px-3 py-2 text-right ring-1 ring-blue-100 dark:bg-zinc-950 dark:ring-zinc-800">
-                <div className="text-[10px] font-black text-zinc-400">
-                  확보 지역
-                </div>
-                <div className="mt-0.5 max-w-[120px] truncate text-[13px] font-black text-[#3182f6] dark:text-blue-300">
+              <div className="shrink-0 rounded-2xl bg-white px-2.5 py-2 text-right ring-1 ring-blue-100 dark:bg-zinc-950 dark:ring-zinc-800">
+                <div className="text-[9px] font-black text-zinc-400">지역</div>
+                <div className="mt-0.5 max-w-[106px] truncate text-[12px] font-black text-[#3182f6] dark:text-blue-300 sm:max-w-[150px] sm:text-[13px]">
                   {reservationRegion}
                 </div>
               </div>
             </div>
-            <p className="mt-3 break-keep text-[13px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+            <p className="mt-2 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300 sm:text-[13px]">
               선택 즉시 1석을 7분 동안 예약하고, 그 안에 입금하면 됩니다.
             </p>
           </div>
@@ -682,7 +678,7 @@ export default function MembershipApplicationClient({
               type="button"
               onClick={() => void beginApplication(selectedPlan)}
               disabled={state === "submitting"}
-              className="sticky bottom-2 mt-3 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[15px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.30)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+              className="mt-3 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[15px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.30)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
             >
               {state === "submitting"
                 ? "자리 확보 중"
@@ -794,7 +790,7 @@ function PlanGrid({
   disabled?: boolean;
 }) {
   return (
-    <div className="grid gap-2 sm:grid-cols-2">
+    <div className="grid grid-cols-2 gap-2">
       {plans.map((plan) => {
         const active = plan.key === selectedKey;
         return (
@@ -803,38 +799,38 @@ function PlanGrid({
             type="button"
             disabled={disabled}
             onClick={() => onSelect(plan.key)}
-            className={`rounded-[18px] border px-3 py-2.5 text-left transition disabled:cursor-default sm:px-3.5 sm:py-3 ${
+            className={`rounded-[16px] border px-2.5 py-2 text-left transition disabled:cursor-default sm:rounded-[18px] sm:px-3.5 sm:py-3 ${
               active
                 ? "border-[#3182f6] bg-blue-50 shadow-[0_10px_24px_rgba(49,130,246,0.12)] dark:border-blue-700 dark:bg-blue-950/30"
                 : "border-zinc-200 bg-white hover:border-blue-200 hover:bg-[#fbfcff] dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-blue-900"
             }`}
           >
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex min-h-[72px] flex-col justify-between gap-2 sm:min-h-0">
               <div>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[18px] font-black text-zinc-950 dark:text-zinc-50 sm:text-[15px]">
+                <div className="flex flex-wrap items-center gap-1">
+                  <span className="text-[20px] font-black leading-none text-zinc-950 dark:text-zinc-50 sm:text-[15px]">
                     {plan.label}
                   </span>
                   {plan.badge ? (
-                    <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-black text-[#3182f6] ring-1 ring-blue-100 dark:bg-zinc-900 dark:ring-blue-900">
+                    <span className="rounded-full bg-white px-1.5 py-0.5 text-[9px] font-black text-[#3182f6] ring-1 ring-blue-100 dark:bg-zinc-900 dark:ring-blue-900 sm:px-2 sm:text-[10px]">
                       {plan.badge}
                     </span>
                   ) : null}
                 </div>
-                <div className="mt-1 line-clamp-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400 sm:text-[11px]">
+                <div className="mt-1 hidden text-[11px] font-bold text-zinc-500 dark:text-zinc-400 sm:block">
                   {plan.valueNote}
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-[18px] font-black text-zinc-950 dark:text-zinc-50 sm:text-[14px]">
+              <div>
+                <div className="text-[17px] font-black leading-none text-zinc-950 dark:text-zinc-50 sm:text-[14px]">
                   {krw(plan.priceKrw)}
                 </div>
-                <div className="mt-0.5 whitespace-nowrap text-[11px] font-black text-zinc-400 sm:text-[10px]">
+                <div className="mt-1 whitespace-nowrap text-[10px] font-black text-zinc-400">
                   {plan.monthlyLabel}
                 </div>
               </div>
             </div>
-            <div className="mt-1.5 line-clamp-1 text-[12px] font-bold text-emerald-700 dark:text-emerald-300 sm:text-[11px]">
+            <div className="mt-1.5 hidden text-[11px] font-bold text-emerald-700 dark:text-emerald-300 sm:block">
               {plan.paybackNote}
             </div>
           </button>

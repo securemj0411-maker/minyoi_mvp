@@ -2061,17 +2061,17 @@ export default function PlansApplicationFlow({
           ) : null}
         </section>
 
-        <footer className="mt-2 flex h-12 shrink-0 items-center justify-between gap-3">
-          {canGoBack ? (
-            <button
-              type="button"
-              onClick={() => setStep((prev) => Math.max(0, prev - 1))}
-              className="h-11 rounded-2xl border border-zinc-200 bg-white px-5 text-[14px] font-black text-zinc-600 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
-            >
-              이전
-            </button>
-          ) : null}
-          {!isLast ? (
+        {!isLast ? (
+          <footer className="mt-2 flex h-12 shrink-0 items-center justify-between gap-3">
+            {canGoBack ? (
+              <button
+                type="button"
+                onClick={() => setStep((prev) => Math.max(0, prev - 1))}
+                className="h-11 rounded-2xl border border-zinc-200 bg-white px-5 text-[14px] font-black text-zinc-600 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+              >
+                이전
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={() => {
@@ -2100,10 +2100,8 @@ export default function PlansApplicationFlow({
                   ? "지금 바로 자리 차지하기"
                   : "다음"}
             </button>
-          ) : (
-            <div />
-          )}
-        </footer>
+          </footer>
+        ) : null}
       </div>
     </main>
   );
