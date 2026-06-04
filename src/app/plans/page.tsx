@@ -1,5 +1,6 @@
 import Link from "next/link";
 import MembershipApplicationClient from "@/components/membership-application-client";
+import PlansSeatMap from "@/components/plans-seat-map";
 import PlansUrgencyCountdown from "@/components/plans-urgency-countdown";
 import PlansSocialProofToasts, {
   type PlansSocialProofEvent,
@@ -112,42 +113,6 @@ const SOCIAL_PROOF_SURNAMES = [
   "공",
   "현",
 ];
-
-function SeatStatusBar({
-  filled,
-  capacity,
-}: {
-  filled: number;
-  capacity: number;
-}) {
-  const percent = Math.round((filled / capacity) * 100);
-  return (
-    <div className="rounded-[18px] border border-emerald-200 bg-emerald-50/80 px-4 py-3 dark:border-emerald-900/60 dark:bg-emerald-950/20">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">
-            선착순 멤버십
-          </div>
-          <div className="mt-1 text-[13px] font-black text-zinc-950 dark:text-zinc-50">
-            현재 예약 {filled}/{capacity}명
-          </div>
-        </div>
-        <div className="rounded-full bg-zinc-950 px-3 py-1.5 text-[12px] font-black text-white dark:bg-white dark:text-zinc-950">
-          {percent}% 예약
-        </div>
-      </div>
-      <div className="mt-2 h-2 overflow-hidden rounded-full bg-white dark:bg-zinc-900">
-        <div
-          className="h-full rounded-r-full bg-[linear-gradient(90deg,#10b981,#3182f6)]"
-          style={{ width: `${Math.min(96, Math.max(24, percent))}%` }}
-        />
-      </div>
-      <div className="mt-2 break-keep text-[11.5px] font-bold leading-5 text-emerald-800/80 dark:text-emerald-200/80">
-        내 지역 티오가 열려 있으면 기간 선택 후 바로 계좌가 열립니다.
-      </div>
-    </div>
-  );
-}
 
 function MembershipAccessPanel() {
   return (
@@ -385,7 +350,13 @@ export default async function PlansPage() {
       <PlansSocialProofToasts events={socialProofEvents} />
       <div className="mx-auto grid w-full max-w-[1100px] gap-5 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
         <section className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-[0_20px_80px_rgba(15,23,42,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div
+            className={
+              isMember
+                ? "grid gap-0 lg:grid-cols-[minmax(0,1fr)_340px]"
+                : "grid gap-0"
+            }
+          >
             <div className="px-5 py-6 sm:px-8 sm:py-8 lg:px-9 lg:py-9">
               <div className="flex flex-wrap gap-1.5">
                 {heroBadges.map((label) => (
@@ -405,6 +376,12 @@ export default async function PlansPage() {
                   ? "연장하면 현재 만료일 뒤에 기간이 그대로 붙습니다. 매물 피드, 원본 링크, 시세 근거를 끊기지 않게 유지하세요."
                   : "득템잡이는 차익 예상 중고 상품을 선착순 티오와 지역별 접근 수로 관리해서, 실제로 움직일 수 있는 소수 멤버십 회원에게만 제공합니다."}
               </p>
+              {!isMember ? (
+                <PlansSeatMap
+                  filled={slotSnapshot.filled}
+                  capacity={slotSnapshot.capacity}
+                />
+              ) : null}
               {isMember ? (
                 <div className="mt-6 grid gap-2 sm:grid-cols-3">
                   {MEMBER_ROWS.map((row) => (
@@ -469,12 +446,6 @@ export default async function PlansPage() {
               </div>
             </div>
             <div className="grid gap-3 px-4 py-4 sm:px-5">
-              {!isMember ? (
-                <SeatStatusBar
-                  filled={slotSnapshot.filled}
-                  capacity={slotSnapshot.capacity}
-                />
-              ) : null}
               {!isMember && auth.ok ? <PlansUrgencyCountdown /> : null}
               <div className="rounded-[18px] border border-blue-100 bg-blue-50/70 px-4 py-4 dark:border-blue-950/70 dark:bg-blue-950/20">
                 <div className="mb-3 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
