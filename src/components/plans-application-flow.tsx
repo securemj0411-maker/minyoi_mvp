@@ -1343,7 +1343,7 @@ export default function PlansApplicationFlow({
                           선착순 지역 티오
                         </div>
                         <h1 className="mt-4 break-keep text-[31px] font-black leading-[1.02] tracking-tight sm:text-[54px]">
-                          지금 바로
+                          지금 바로{" "}
                           <br className="hidden sm:block" />
                           {selectedRegionLabel} 자리를 차지하세요.
                         </h1>
@@ -1369,7 +1369,7 @@ export default function PlansApplicationFlow({
                             현재 예약
                           </div>
                           <div className="mt-1 text-[20px] font-black tabular-nums text-zinc-950 dark:text-white">
-                            {selectedSeatUsage.filled}명
+                            {selectedSeatUsage.filled}/{selectedSeatUsage.total}명
                           </div>
                         </div>
                         <div className="rounded-full bg-rose-500 px-3 py-1.5 text-[12px] font-black text-white shadow-[0_10px_24px_rgba(244,63,94,0.25)]">
