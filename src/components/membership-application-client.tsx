@@ -424,6 +424,19 @@ export default function MembershipApplicationClient({
 
   return (
     <div>
+      {state === "submitting" ? (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/38 px-4 backdrop-blur-sm">
+          <div className="flex w-full max-w-[300px] flex-col items-center rounded-[24px] border border-blue-100 bg-white px-5 py-6 text-center shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
+            <span className="h-9 w-9 animate-spin rounded-full border-4 border-blue-100 border-t-[#3182f6] dark:border-zinc-800 dark:border-t-blue-300" />
+            <div className="mt-4 break-keep text-[18px] font-black text-zinc-950 dark:text-zinc-50">
+              {renewalMode ? "연장 예약 중" : "자리 확보 중"}
+            </div>
+            <p className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+              선택한 기간으로 예약을 만들고 있어요.
+            </p>
+          </div>
+        </div>
+      ) : null}
       {approvalMessage ? (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/55 px-4 py-6 backdrop-blur-sm">
           <div
@@ -659,9 +672,14 @@ export default function MembershipApplicationClient({
               disabled={state === "submitting"}
               className="mt-3 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[15px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.30)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
             >
-              {state === "submitting"
-                ? "자리 확보 중"
-                : `${selectedPlan.label}로 자리 확보하기`}
+              {state === "submitting" ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/35 border-t-white" />
+                  자리 확보 중
+                </span>
+              ) : (
+                `${selectedPlan.label}로 자리 확보하기`
+              )}
             </button>
           </div>
         </div>
@@ -746,8 +764,17 @@ export default function MembershipApplicationClient({
                 disabled={state === "submitting"}
                 className="h-11 rounded-xl bg-[var(--brand-accent-strong)] text-[12px] font-black text-[var(--brand-cream)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
               >
-                {selectedPlan.label}{" "}
-                {renewalMode ? "연장 예약하기" : "자리 예약하기"}
+                {state === "submitting" ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/35 border-t-white" />
+                    처리 중
+                  </span>
+                ) : (
+                  <>
+                    {selectedPlan.label}{" "}
+                    {renewalMode ? "연장 예약하기" : "자리 예약하기"}
+                  </>
+                )}
               </button>
             </div>
           </div>

@@ -39,6 +39,12 @@ type HomeRegionDraft = {
   source: "gps" | "manual";
 };
 
+type LocationConfirmDraft = {
+  draft: HomeRegionDraft;
+  parts: Array<string | null | undefined>;
+  districtHint: string | null;
+};
+
 type DistrictSeat = {
   name: string;
   seats: number;
@@ -1317,6 +1323,8 @@ export default function PlansApplicationFlow({
   const [showManualSearch, setShowManualSearch] = useState(false);
   const [homeRegionDraft, setHomeRegionDraft] =
     useState<HomeRegionDraft | null>(null);
+  const [locationConfirmDraft, setLocationConfirmDraft] =
+    useState<LocationConfirmDraft | null>(null);
   const [pinnedDistrictName, setPinnedDistrictName] = useState<string | null>(
     null,
   );
@@ -1375,6 +1383,7 @@ export default function PlansApplicationFlow({
     setSelectedDistrictName(nextDistricts[0]?.name ?? null);
     setPinnedDistrictName(null);
     setHomeRegionDraft(null);
+    setLocationConfirmDraft(null);
     setHoveredKey(null);
     setMapZoomed(true);
   };
@@ -1465,7 +1474,19 @@ export default function PlansApplicationFlow({
     setLocationStatus("success");
     setLocationError(null);
     setShowManualSearch(false);
+    setLocationConfirmDraft(null);
     return true;
+  }
+
+  function confirmLocationDraft() {
+    if (!locationConfirmDraft) return;
+    const selectedOk = selectRegionFromAddress(
+      locationConfirmDraft.parts,
+      locationConfirmDraft.districtHint,
+    );
+    if (!selectedOk) return;
+    setHomeRegionDraft(locationConfirmDraft.draft);
+    setLocationConfirmDraft(null);
   }
 
   async function saveHomeRegionDraft() {
@@ -1520,6 +1541,7 @@ export default function PlansApplicationFlow({
     }
     setLocationStatus("requesting");
     setLocationError(null);
+    setLocationConfirmDraft(null);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         setLocationStatus("resolving");
@@ -1555,12 +1577,14 @@ export default function PlansApplicationFlow({
             setShowManualSearch(true);
             return;
           }
-          const selectedOk = selectRegionFromAddress(
-            [json.region1, json.region2, json.region3, json.fullPath],
-            json.region2 ?? json.region3 ?? null,
-          );
-          if (selectedOk && json.fullPath) {
-            setHomeRegionDraft({
+          if (json.fullPath) {
+            const parts = [
+              json.region1,
+              json.region2,
+              json.region3,
+              json.fullPath,
+            ];
+            const draft = {
               lat,
               lng,
               fullPath: json.fullPath,
@@ -1568,7 +1592,13 @@ export default function PlansApplicationFlow({
                 [json.region2, json.region3].filter(Boolean).join(" ") ||
                 json.fullPath,
               source: "gps",
+            } satisfies HomeRegionDraft;
+            setLocationConfirmDraft({
+              draft,
+              parts,
+              districtHint: json.region2 ?? json.region3 ?? null,
             });
+            setLocationStatus("success");
           }
         } catch {
           setLocationStatus("error");
@@ -1829,16 +1859,35 @@ export default function PlansApplicationFlow({
                       ) : null}
                     </div>
                   ) : null}
-                  {homeRegionDraft && mapZoomed ? (
-                    <div className="mt-2 rounded-[20px] border border-emerald-200 bg-emerald-50 px-3 py-2 text-left shadow-[0_10px_24px_rgba(16,185,129,0.12)] dark:border-emerald-900/70 dark:bg-emerald-950/25">
+                  {locationConfirmDraft && !mapZoomed ? (
+                    <div className="absolute inset-x-2 bottom-2 z-20 rounded-[24px] border border-emerald-200 bg-white/96 p-3 shadow-[0_18px_44px_rgba(16,185,129,0.20)] backdrop-blur dark:border-emerald-900/70 dark:bg-zinc-950/94">
                       <div className="text-[10px] font-black uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
                         내 동네 확인
                       </div>
-                      <div className="mt-0.5 break-keep text-[14px] font-black leading-5 text-zinc-950 dark:text-zinc-50">
-                        {homeRegionDraft.label} 맞나요?
+                      <div className="mt-1 break-keep text-[18px] font-black leading-6 text-zinc-950 dark:text-zinc-50">
+                        {locationConfirmDraft.draft.label} 맞나요?
                       </div>
-                      <div className="mt-0.5 break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400">
-                        계속 누르면 이 동네를 피드 추천 기준으로 저장합니다.
+                      <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+                        맞으면 이 동네 기준으로 세부 지역 티오를 확인합니다.
+                      </div>
+                      <div className="mt-3 grid grid-cols-[0.75fr_1.25fr] gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLocationConfirmDraft(null);
+                            setShowManualSearch(true);
+                          }}
+                          className="h-11 rounded-2xl border border-zinc-200 bg-white text-[13px] font-black text-zinc-600 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                        >
+                          아니요
+                        </button>
+                        <button
+                          type="button"
+                          onClick={confirmLocationDraft}
+                          className="h-11 rounded-2xl bg-[#3182f6] text-[13px] font-black text-white shadow-[0_14px_34px_rgba(49,130,246,0.28)] transition hover:bg-[#1c64dd]"
+                        >
+                          맞아요, 티오 보기
+                        </button>
                       </div>
                     </div>
                   ) : null}
@@ -2169,6 +2218,10 @@ export default function PlansApplicationFlow({
               type="button"
               onClick={async () => {
                 if (step === 0 && !mapZoomed) {
+                  if (locationConfirmDraft) {
+                    confirmLocationDraft();
+                    return;
+                  }
                   handleLocationLoad();
                   return;
                 }
@@ -2189,13 +2242,15 @@ export default function PlansApplicationFlow({
               {step === 0
                 ? mapZoomed
                   ? "이 지역으로 계속"
-                  : locationStatus === "requesting"
-                    ? "위치 권한 확인 중..."
-                    : locationStatus === "resolving"
-                      ? "동네 확인 중..."
-                      : locationStatus === "saving"
-                        ? "동네 저장 중..."
-                        : "내 위치 불러오기"
+                  : locationConfirmDraft
+                    ? "맞아요, 세부 지역 보기"
+                    : locationStatus === "requesting"
+                      ? "위치 권한 확인 중..."
+                      : locationStatus === "resolving"
+                        ? "동네 확인 중..."
+                        : locationStatus === "saving"
+                          ? "동네 저장 중..."
+                          : "내 위치 불러오기"
                 : step === 2
                   ? "지금 바로 자리 차지하기"
                   : "다음"}

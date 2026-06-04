@@ -154,6 +154,8 @@ export async function POST(req: Request) {
 
   const adminNote = [
     previousAdminNote,
+    adminNoteLine(`telegram_action_token:approve:${approveToken}`),
+    adminNoteLine(`telegram_action_token:reject:${rejectToken}`),
     adminNoteLine("user_deposit_confirmed"),
     notifyResult.ok
       ? adminNoteLine("telegram_deposit_notified")

@@ -9,12 +9,40 @@ import {
   rejectMembershipApplication,
   type MembershipDecisionSource,
 } from "@/lib/membership-application-approval";
+import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type Decision = "approve" | "reject";
+
+async function verifyTelegramDecisionToken(
+  id: number,
+  decision: Decision,
+  token: string | null,
+) {
+  if (verifyAdminActionToken("membership_application", id, decision, token)) {
+    return true;
+  }
+  if (!token) return false;
+
+  const res = await restFetch(
+    `${tableUrl("mvp_membership_applications")}?select=admin_note&id=eq.${id}&limit=1`,
+    { headers: serviceHeaders(), cache: "no-store" },
+  ).catch(() => null);
+  if (!res?.ok) return false;
+
+  const rows = (await res.json().catch(() => [])) as Array<{
+    admin_note?: string | null;
+  }>;
+  const adminNote = rows[0]?.admin_note ?? "";
+  return adminNote
+    .split("\n")
+    .some((line) =>
+      line.includes(`telegram_action_token:${decision}:${token}`),
+    );
+}
 
 async function decideApplication(
   id: number,
@@ -38,7 +66,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "invalid_id" }, { status: 400 });
   if (decision !== "approve" && decision !== "reject")
     return NextResponse.json({ error: "invalid_decision" }, { status: 400 });
-  if (!verifyAdminActionToken("membership_application", id, decision, token)) {
+  if (!(await verifyTelegramDecisionToken(id, decision, token))) {
     return new NextResponse(actionGuardHtml(), {
       status: 403,
       headers: { "content-type": "text/html; charset=utf-8" },
@@ -100,7 +128,7 @@ async function handleTelegramTokenPost(
     return NextResponse.json({ error: "invalid_id" }, { status: 400 });
   if (decision !== "approve" && decision !== "reject")
     return NextResponse.json({ error: "invalid_decision" }, { status: 400 });
-  if (!verifyAdminActionToken("membership_application", id, decision, token)) {
+  if (!(await verifyTelegramDecisionToken(id, decision, token))) {
     return new NextResponse(actionGuardHtml(), {
       status: 403,
       headers: { "content-type": "text/html; charset=utf-8" },
@@ -229,7 +257,7 @@ function htmlShell(title: string, body: string): string {
 function actionGuardHtml(): string {
   return htmlShell(
     "보안 확인 필요",
-    `<h1>보안 확인 필요</h1><p>이전 링크이거나 유효하지 않은 승인 링크예요.<br/>관리자 페이지에서 다시 처리해주세요.</p>`,
+    `<h1>보안 확인 필요</h1><p>이전 링크이거나 유효하지 않은 승인 링크예요.<br/>새 입금 확인 알림에서 다시 눌러주세요.</p>`,
   );
 }
 
