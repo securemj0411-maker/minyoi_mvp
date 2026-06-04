@@ -15,6 +15,10 @@ export type MembershipApplicationRow = {
   deposit_confirmed_at: string | null;
 };
 
+type UserPlanRow = {
+  current_period_end: string | null;
+};
+
 export type MembershipApprovalResult = {
   ok: boolean;
   activated: boolean;
@@ -52,6 +56,35 @@ async function loadMembershipApplication(id: number): Promise<MembershipApplicat
   return rows[0] ?? null;
 }
 
+async function loadCurrentMembershipEnd(userRef: string, authUserId: string) {
+  const res = await restFetch(
+    `${tableUrl("mvp_user_plans")}?select=current_period_end&user_ref=eq.${encodeURIComponent(userRef)}&auth_user_id=eq.${authUserId}&limit=1`,
+    { headers: serviceHeaders(), cache: "no-store" },
+  ).catch(() => null);
+  if (!res?.ok) return null;
+  const rows = (await res.json()) as UserPlanRow[];
+  return rows[0]?.current_period_end ?? null;
+}
+
+function renewalUpgradeMonthsToAdd(
+  productKey: string,
+  currentPeriodEnd: string | null,
+) {
+  const selectedPlan = getMembershipPlan(productKey);
+  if (!selectedPlan.upgradeTargetMonths || !currentPeriodEnd) {
+    return selectedPlan.months;
+  }
+  const endMs = Date.parse(currentPeriodEnd);
+  if (!Number.isFinite(endMs) || endMs <= Date.now()) {
+    return selectedPlan.upgradeTargetMonths;
+  }
+  const remainingDays = Math.max(0, (endMs - Date.now()) / 86_400_000);
+  const targetDays = selectedPlan.upgradeTargetMonths * 30.4375;
+  const daysToAdd = Math.max(0, targetDays - remainingDays);
+  if (daysToAdd <= 0) return 0;
+  return Math.max(1, Math.ceil(daysToAdd / 30.4375));
+}
+
 export async function approveMembershipApplication(
   id: number,
   decisionSource: MembershipDecisionSource,
@@ -71,6 +104,23 @@ export async function approveMembershipApplication(
 
   const selectedPlan = getMembershipPlan(application.product_key);
   const priceKrw = Number(application.price_krw ?? selectedPlan.priceKrw);
+  const currentPeriodEnd = await loadCurrentMembershipEnd(
+    application.user_ref,
+    application.auth_user_id,
+  );
+  const planMonths = renewalUpgradeMonthsToAdd(
+    selectedPlan.key,
+    currentPeriodEnd,
+  );
+  if (planMonths <= 0) {
+    return {
+      ok: false,
+      activated: false,
+      id,
+      status: application.status,
+      error: "upgrade_target_already_met",
+    };
+  }
   let res: Response;
   try {
     res = await restFetch(rpcUrl("approve_mvp_membership_application"), {
@@ -80,7 +130,7 @@ export async function approveMembershipApplication(
         p_application_id: id,
         p_decision_source: decisionSource,
         p_decided_by: decidedByUserId,
-        p_plan_months: selectedPlan.months,
+        p_plan_months: planMonths,
         p_price_krw: Number.isFinite(priceKrw) ? priceKrw : selectedPlan.priceKrw,
         p_product_key: selectedPlan.key,
       }),

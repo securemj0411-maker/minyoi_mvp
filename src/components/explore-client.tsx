@@ -14,7 +14,7 @@ import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { detectBrandDepth } from "@/lib/category-brand-depth";
 import type { DetailEventType } from "@/lib/detail-analytics";
 import { isDaangnMarketplaceSource } from "@/lib/marketplace-source";
-import { getMembershipPlan, krw as membershipKrw, MEMBERSHIP_PLANS, UPSELL_PLANS_FROM_1MO, UPSELL_PLANS_FROM_3MO, type MembershipPlan, type MembershipPlanKey } from "@/lib/membership-plans";
+import { getMembershipPlan, krw as membershipKrw, MEMBERSHIP_PLANS, RENEWAL_UPGRADE_PLANS, type MembershipPlan, type MembershipPlanKey } from "@/lib/membership-plans";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -155,6 +155,7 @@ type MembershipStatusSnapshot = {
     activatedAt?: string | null;
     memberOfferExpiresAt?: string | null;
   } | null;
+  planEndAt?: string | null;
 };
 
 type FeedRenewalReservation = {
@@ -215,26 +216,32 @@ function regularPlanForMonths(months: number): MembershipPlan | null {
   return MEMBERSHIP_PLANS.find((plan) => plan.months === months) ?? null;
 }
 
-function membershipDiscountPercent(plan: MembershipPlan): number {
-  const regularPlan = regularPlanForMonths(plan.months);
-  if (!regularPlan || regularPlan.priceKrw <= plan.priceKrw) return 0;
-  return Math.round(((regularPlan.priceKrw - plan.priceKrw) / regularPlan.priceKrw) * 100);
+function remainingMembershipDays(planEndAt: string | null | undefined) {
+  if (!planEndAt) return null;
+  const endMs = Date.parse(planEndAt);
+  if (!Number.isFinite(endMs)) return null;
+  return Math.max(0, Math.ceil((endMs - Date.now()) / 86_400_000));
 }
 
-function feedOfferPlansFor(activePlanKey: string | null): MembershipPlan[] {
-  if (!activePlanKey) return [];
-  const activePlan = getMembershipPlan(activePlanKey);
-  if (activePlan.months <= 1) return UPSELL_PLANS_FROM_1MO;
-  if (activePlan.months <= 3) return UPSELL_PLANS_FROM_3MO;
-  if (activePlan.months <= 6) return UPSELL_PLANS_FROM_3MO.filter((plan) => plan.months === 12);
+function feedOfferPlansFor(remainingDays: number | null): MembershipPlan[] {
+  if (remainingDays === null || remainingDays <= 0) return [];
+  if (remainingDays <= 45) {
+    return RENEWAL_UPGRADE_PLANS.filter((plan) => ["limited_300_upgrade_to_6mo_50", "limited_300_upgrade_to_12mo_100"].includes(plan.key));
+  }
+  if (remainingDays <= 140) {
+    return RENEWAL_UPGRADE_PLANS.filter((plan) => plan.key === "limited_300_upgrade_to_12mo_70");
+  }
+  if (remainingDays < 320) {
+    return RENEWAL_UPGRADE_PLANS.filter((plan) => plan.key === "limited_300_upgrade_to_12mo_50");
+  }
   return [];
 }
 
-function FeedMembershipUpsellCard({ remainingSec, activePlanKey }: { remainingSec: number; activePlanKey: string | null }) {
+function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: number; planEndAt: string | null }) {
   const clamped = Math.max(0, remainingSec);
   const expired = clamped <= 0;
-  const activePlan = getMembershipPlan(activePlanKey);
-  const offerPlans = useMemo(() => feedOfferPlansFor(activePlanKey), [activePlanKey]);
+  const remainingDays = remainingMembershipDays(planEndAt);
+  const offerPlans = useMemo(() => feedOfferPlansFor(remainingDays), [remainingDays]);
   const [selectedKey, setSelectedKey] = useState<MembershipPlanKey | null>(offerPlans[0]?.key ?? null);
   const [reservation, setReservation] = useState<FeedRenewalReservation | null>(null);
   const [requestState, setRequestState] = useState<"idle" | "submitting" | "reserved" | "depositing" | "deposit_sent" | "error">("idle");
@@ -305,10 +312,10 @@ function FeedMembershipUpsellCard({ remainingSec, activePlanKey }: { remainingSe
     setMessage("입금 확인 요청 완료. 5분 내 자동 승인까지 같이 걸렸어요.");
   }
 
-  const headline = activePlan.months <= 1 ? "1시간 한정 첫 연장 특가" : `${activePlan.label} 멤버 전용 1시간 특가`;
-  const subHeadline = activePlan.months <= 1
-    ? "지금 늘리면 3개월/6개월을 신규 정가보다 크게 낮춰 잡을 수 있어요."
-    : "이미 신청한 기간은 유지하고, 추가 기간만 이벤트가로 뒤에 붙입니다.";
+  const headline = "남은 기간을 1년권으로 전환";
+  const subHeadline = remainingDays !== null && remainingDays <= 45
+    ? "1개월 체험권을 고른 사람에게만 열리는 차액 조건이에요. 몇 만원만 더 내고 6개월/12개월권으로 바꿀 수 있어요."
+    : `이미 남은 ${remainingDays ?? 0}일은 그대로 살리고, 부족한 기간만 차액으로 채워 1년권에 가깝게 맞춥니다.`;
 
   return (
     <section className="mb-3 overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-[0_16px_45px_rgba(245,158,11,0.13)] dark:border-amber-900/50 dark:bg-zinc-900">
@@ -328,7 +335,6 @@ function FeedMembershipUpsellCard({ remainingSec, activePlanKey }: { remainingSe
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
             {offerPlans.map((plan) => {
-              const discount = membershipDiscountPercent(plan);
               const active = selectedPlan?.key === plan.key;
               return (
                 <button
@@ -338,7 +344,7 @@ function FeedMembershipUpsellCard({ remainingSec, activePlanKey }: { remainingSe
                   disabled={expired || requestState === "submitting"}
                   className={`rounded-full px-2.5 py-1 text-[11px] font-black transition disabled:opacity-50 ${active ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-200"}`}
                 >
-                  {plan.label} · {discount}% 할인
+                  {plan.label} · 차액 {membershipKrw(plan.priceKrw)}
                 </button>
               );
             })}
@@ -351,10 +357,10 @@ function FeedMembershipUpsellCard({ remainingSec, activePlanKey }: { remainingSe
           <div className="rounded-xl border border-amber-100 bg-amber-50/70 px-3 py-3 dark:border-amber-950/70 dark:bg-amber-950/20">
             <div className="flex flex-wrap items-end justify-between gap-2">
               <div>
-                <div className="text-[11px] font-black text-amber-700 dark:text-amber-300">{selectedPlan.label} 1시간 조건</div>
+                <div className="text-[11px] font-black text-amber-700 dark:text-amber-300">{selectedPlan.label} 1시간 전환 조건</div>
                 <div className="mt-1 text-[20px] font-black text-zinc-950 dark:text-zinc-50">{membershipKrw(selectedPlan.priceKrw)}</div>
                 <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
-                  정가 {membershipKrw(regularPlanForMonths(selectedPlan.months)?.priceKrw ?? selectedPlan.priceKrw)} · {membershipDiscountPercent(selectedPlan)}% 할인 · {selectedPlan.monthlyLabel}
+                  정가 {membershipKrw(regularPlanForMonths(selectedPlan.upgradeTargetMonths ?? selectedPlan.months)?.priceKrw ?? selectedPlan.priceKrw)}까지 다시 내는 게 아니라 차액만 받습니다.
                 </div>
               </div>
               <button
@@ -363,7 +369,7 @@ function FeedMembershipUpsellCard({ remainingSec, activePlanKey }: { remainingSe
                 disabled={expired || requestState === "submitting"}
                 className="flex h-10 items-center justify-center rounded-xl bg-zinc-950 px-4 text-[12px] font-black text-white transition hover:bg-amber-700 disabled:cursor-default disabled:opacity-50 dark:bg-white dark:text-zinc-950"
               >
-                {requestState === "submitting" ? "예약 중" : expired ? "이벤트 마감" : "이 특가로 예약"}
+                {requestState === "submitting" ? "예약 중" : expired ? "이벤트 마감" : "이 전환가로 예약"}
               </button>
             </div>
           </div>
@@ -2349,7 +2355,7 @@ export default function ExploreClient({
       ) : null}
 
       <FeedMembershipUpsellCard
-        activePlanKey={membershipStatus?.activePlan?.planKey ?? null}
+        planEndAt={membershipStatus?.planEndAt ?? null}
         remainingSec={feedUpsellRemainingSec}
       />
 
@@ -3225,7 +3231,7 @@ export default function ExploreClient({
 
                             <div className="mt-3">
                               <FeedMembershipUpsellCard
-                                activePlanKey={membershipStatus?.activePlan?.planKey ?? null}
+                                planEndAt={membershipStatus?.planEndAt ?? null}
                                 remainingSec={feedUpsellRemainingSec}
                               />
                             </div>

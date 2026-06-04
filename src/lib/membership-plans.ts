@@ -7,7 +7,11 @@ export type MembershipPlanKey =
   | "limited_300_upsell_6mo_109"
   | "limited_300_upsell_12mo_199"
   | "limited_300_upsell_6mo_139"
-  | "limited_300_upsell_12mo_249";
+  | "limited_300_upsell_12mo_249"
+  | "limited_300_upgrade_to_6mo_50"
+  | "limited_300_upgrade_to_12mo_100"
+  | "limited_300_upgrade_to_12mo_70"
+  | "limited_300_upgrade_to_12mo_50";
 
 export type MembershipPlan = {
   key: MembershipPlanKey;
@@ -19,6 +23,7 @@ export type MembershipPlan = {
   valueNote: string;
   paybackNote: string;
   isUpsell?: boolean;
+  upgradeTargetMonths?: number;
 };
 
 export const MEMBERSHIP_PLANS: MembershipPlan[] = [
@@ -125,10 +130,62 @@ export const UPSELL_PLANS_FROM_3MO: MembershipPlan[] = [
   },
 ];
 
+export const RENEWAL_UPGRADE_PLANS: MembershipPlan[] = [
+  {
+    key: "limited_300_upgrade_to_6mo_50",
+    months: 6,
+    priceKrw: 50_000,
+    label: "6개월 전환",
+    monthlyLabel: "차액 50,000원",
+    badge: "1시간 한정",
+    valueNote: "1개월권을 6개월권으로 바꾸는 차액 조건",
+    paybackNote: "기존 기간에 단순 추가가 아니라 목표 기간까지 전환",
+    isUpsell: true,
+    upgradeTargetMonths: 6,
+  },
+  {
+    key: "limited_300_upgrade_to_12mo_100",
+    months: 12,
+    priceKrw: 100_000,
+    label: "12개월 전환",
+    monthlyLabel: "차액 100,000원",
+    badge: "최대 전환",
+    valueNote: "1개월권을 12개월권으로 바꾸는 차액 조건",
+    paybackNote: "1년권 정가보다 낮은 전환 조건",
+    isUpsell: true,
+    upgradeTargetMonths: 12,
+  },
+  {
+    key: "limited_300_upgrade_to_12mo_70",
+    months: 12,
+    priceKrw: 70_000,
+    label: "12개월 전환",
+    monthlyLabel: "차액 70,000원",
+    badge: "3개월 멤버 전용",
+    valueNote: "3개월권을 12개월권으로 바꾸는 차액 조건",
+    paybackNote: "몇 만원만 더 내고 1년권으로 고정",
+    isUpsell: true,
+    upgradeTargetMonths: 12,
+  },
+  {
+    key: "limited_300_upgrade_to_12mo_50",
+    months: 12,
+    priceKrw: 50_000,
+    label: "12개월 전환",
+    monthlyLabel: "차액 50,000원",
+    badge: "장기 멤버 전용",
+    valueNote: "6개월권 이상 멤버를 12개월권으로 바꾸는 차액 조건",
+    paybackNote: "남은 기간을 1년권으로 맞추는 전환 조건",
+    isUpsell: true,
+    upgradeTargetMonths: 12,
+  },
+];
+
 export const ALL_MEMBERSHIP_PLANS = [
   ...MEMBERSHIP_PLANS,
   ...UPSELL_PLANS_FROM_1MO,
   ...UPSELL_PLANS_FROM_3MO,
+  ...RENEWAL_UPGRADE_PLANS,
 ];
 
 export function getMembershipPlan(key: string | null | undefined): MembershipPlan {

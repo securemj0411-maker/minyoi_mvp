@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   getMembershipPlan,
+  RENEWAL_UPGRADE_PLANS,
   UPSELL_PLANS_FROM_1MO,
   UPSELL_PLANS_FROM_3MO,
 } from "@/lib/membership-plans";
@@ -46,23 +47,34 @@ function initialBaseKeysForOffer(offerProductKey: string) {
   return keys;
 }
 
-function renewalOfferKeysFor(activeProductKey: string | null | undefined): string[] {
-  const activePlan = getMembershipPlan(activeProductKey);
-  if (activePlan.months <= 1) {
-    return UPSELL_PLANS_FROM_1MO.map((plan) => plan.key);
+function remainingMembershipDays(planEndAt: string | null | undefined) {
+  if (!planEndAt) return null;
+  const endMs = Date.parse(planEndAt);
+  if (!Number.isFinite(endMs)) return null;
+  return Math.max(0, Math.ceil((endMs - Date.now()) / 86_400_000));
+}
+
+function renewalOfferKeysFor(remainingDays: number | null): string[] {
+  if (remainingDays === null || remainingDays <= 0) return [];
+  if (remainingDays <= 45) {
+    return ["limited_300_upgrade_to_6mo_50", "limited_300_upgrade_to_12mo_100"];
   }
-  if (activePlan.months <= 3) {
-    return UPSELL_PLANS_FROM_3MO.map((plan) => plan.key);
-  }
-  if (activePlan.months <= 6) {
-    return UPSELL_PLANS_FROM_3MO.filter((plan) => plan.months === 12).map(
-      (plan) => plan.key,
-    );
-  }
+  if (remainingDays <= 140) return ["limited_300_upgrade_to_12mo_70"];
+  if (remainingDays < 320) return ["limited_300_upgrade_to_12mo_50"];
   return [];
 }
 
-async function canUseRenewalOffer(authUserId: string, offerProductKey: string) {
+async function canUseRenewalOffer(
+  authUserId: string,
+  offerProductKey: string,
+  planEndAt: string | null | undefined,
+) {
+  if (!RENEWAL_UPGRADE_PLANS.some((plan) => plan.key === offerProductKey)) {
+    return false;
+  }
+  if (!renewalOfferKeysFor(remainingMembershipDays(planEndAt)).includes(offerProductKey)) {
+    return false;
+  }
   const res = await restFetch(
     `${tableUrl("mvp_membership_applications")}?select=product_key,decided_at,created_at&auth_user_id=eq.${authUserId}&status=eq.approved&order=decided_at.desc.nullslast,created_at.desc&limit=1`,
     { headers: serviceHeaders(), cache: "no-store" },
@@ -70,9 +82,6 @@ async function canUseRenewalOffer(authUserId: string, offerProductKey: string) {
   const rows = res?.ok ? ((await res.json()) as ApprovedApplicationRow[]) : [];
   const active = rows[0] ?? null;
   if (!active) return false;
-  if (!renewalOfferKeysFor(active.product_key).includes(offerProductKey)) {
-    return false;
-  }
   const activatedAt = active.decided_at ?? active.created_at;
   if (!activatedAt) return false;
   const expiresAt = new Date(activatedAt).getTime() + 60 * 60 * 1000;
@@ -98,7 +107,7 @@ export async function POST(req: Request) {
   }
   if (selectedPlan.isUpsell) {
     const validOffer = isRenewal
-      ? await canUseRenewalOffer(auth.user.id, selectedPlan.key)
+      ? await canUseRenewalOffer(auth.user.id, selectedPlan.key, status.proUntil)
       : verifyMembershipOfferToken(body.offerToken, {
           authUserId: auth.user.id,
           intent: "new",
