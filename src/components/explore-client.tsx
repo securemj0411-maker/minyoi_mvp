@@ -3844,15 +3844,6 @@ export default function ExploreClient({
                       </span>
                     </div>
                   ) : null}
-                  {/* Wave 751 (2026-05-25): 사진 위 우하단 카테고리 워터마크 배지 (HTML 레퍼런스). */}
-                  {previewImageUrl ? (
-                    <CategoryWatermark
-                      category={item.category}
-                      comparableKey={item.comparableKey ?? null}
-                      size={24}
-                      variant="corner"
-                    />
-                  ) : null}
                 </div>
                 <div className={`min-w-0 ${isSoldOut ? "opacity-60" : ""}`}>
                   <div className="line-clamp-2 text-sm font-bold leading-tight text-zinc-900 dark:text-zinc-100">
