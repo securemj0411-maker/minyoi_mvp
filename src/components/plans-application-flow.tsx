@@ -232,6 +232,16 @@ function KoreaSeatMap({
           vector-effect: non-scaling-stroke;
           transition: opacity 160ms ease, stroke 160ms ease, stroke-width 160ms ease, filter 160ms ease;
         }
+        .korea-region-boundary .korea-region-piece {
+          fill: none;
+          stroke: rgba(255,255,255,0.5);
+          stroke-width: 0.72;
+          vector-effect: non-scaling-stroke;
+        }
+        .korea-region-boundary-active .korea-region-piece {
+          stroke: rgba(255,255,255,0.96);
+          stroke-width: 1.25;
+        }
         .korea-region-active .korea-region-piece {
           stroke: rgba(255,255,255,0.58);
           stroke-width: 0.9;
@@ -291,40 +301,74 @@ function KoreaSeatMap({
                   transformOrigin: "center",
                 } as CSSProperties}
               />
-              {(!zoomed || selectedActive || hoveredActive) ? (
-                <>
-                  <circle
-                    cx={region.x}
-                    cy={region.y}
-                    r={selectedActive ? 12 : hoveredActive ? 28 : 22}
-                    fill="rgba(15,23,42,0.68)"
-                    stroke="rgba(255,255,255,0.78)"
-                    strokeWidth={selectedActive ? 4 : 2.4}
-                    className="transition-all duration-200"
-                  />
-                  <text
-                    x={region.x}
-                    y={region.y - 4}
-                    textAnchor="middle"
-                    className="pointer-events-none select-none fill-white font-black"
-                    style={{ fontSize: selectedActive ? 7 : 17 }}
-                  >
-                    {region.shortLabel}
-                  </text>
-                  <text
-                    x={region.x}
-                    y={region.y + 17}
-                    textAnchor="middle"
-                    className="pointer-events-none select-none fill-white/90 font-black"
-                    style={{ fontSize: selectedActive ? 5.3 : 12 }}
-                  >
-                    {region.seats}석
-                  </text>
-                </>
-              ) : null}
             </g>
           );
         })}
+        <g className="pointer-events-none">
+          {REGIONS.map((region) => {
+            const selectedActive = zoomed && region.key === selected.key;
+            const hoveredActive = region.key === hoveredKey;
+            const regionSvg = KOREA_ADMIN_REGION_SVG[region.key];
+            return (
+              <g
+                key={`${region.key}-boundary`}
+                className={selectedActive || hoveredActive ? "korea-region-boundary korea-region-boundary-active" : "korea-region-boundary"}
+                dangerouslySetInnerHTML={{ __html: regionSvg }}
+                style={{
+                  opacity: selectedActive ? 1 : zoomed ? 0.42 : 0.86,
+                } as CSSProperties}
+              />
+            );
+          })}
+        </g>
+        <g className="pointer-events-none">
+          {REGIONS.map((region) => {
+            const selectedActive = zoomed && region.key === selected.key;
+            const hoveredActive = region.key === hoveredKey;
+            if (zoomed && !selectedActive && !hoveredActive) return null;
+            return (
+              <g key={`${region.key}-label`}>
+                <circle
+                  cx={region.x}
+                  cy={region.y}
+                  r={selectedActive ? 12 : hoveredActive ? 34 : 30}
+                  fill="rgba(15,23,42,0.84)"
+                  stroke="rgba(255,255,255,0.94)"
+                  strokeWidth={selectedActive ? 4 : 3}
+                  className="transition-all duration-200"
+                />
+                <text
+                  x={region.x}
+                  y={region.y - 5}
+                  textAnchor="middle"
+                  className="select-none fill-white font-black"
+                  style={{
+                    fontSize: selectedActive ? 7 : 22,
+                    paintOrder: "stroke",
+                    stroke: "rgba(15,23,42,0.82)",
+                    strokeWidth: selectedActive ? 2 : 4,
+                  } as CSSProperties}
+                >
+                  {region.shortLabel}
+                </text>
+                <text
+                  x={region.x}
+                  y={region.y + (selectedActive ? 8 : 21)}
+                  textAnchor="middle"
+                  className="select-none fill-white font-black"
+                  style={{
+                    fontSize: selectedActive ? 5.3 : 13,
+                    paintOrder: "stroke",
+                    stroke: "rgba(15,23,42,0.82)",
+                    strokeWidth: selectedActive ? 1.6 : 3,
+                  } as CSSProperties}
+                >
+                  {region.seats}석
+                </text>
+              </g>
+            );
+          })}
+        </g>
       </g>
       {activeRegion ? (
         <g className="pointer-events-none">
