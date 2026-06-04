@@ -37,21 +37,6 @@ const PAYMENT_HELP = [
   },
 ];
 
-const SCARCITY_ROWS = [
-  {
-    label: "선착순 티오",
-    value: "전체 회원 수와 지역별 접근 수를 같이 관리합니다.",
-  },
-  {
-    label: "지역 접근 수",
-    value: "당근은 가까운 동네에 떠야 실전성이 생겨서 지역 겹침을 봅니다.",
-  },
-  {
-    label: "소수 멤버십",
-    value: "차익 예상 매물을 실제로 움직일 수 있는 멤버에게만 제공합니다.",
-  },
-];
-
 const NON_MEMBER_BADGES = ["선공개 300명", "선착순 티오", "승인 후 원본 공개"];
 
 const MEMBER_ROWS = [
@@ -166,7 +151,7 @@ function SeatStatusBar({
 
 function MembershipAccessPanel() {
   return (
-    <div className="flex h-full min-h-[300px] flex-col justify-between gap-4 rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(49,130,246,0.24),transparent_36%),linear-gradient(135deg,#020617,#111827_52%,#052e16)] p-5 shadow-[0_22px_60px_rgba(15,23,42,0.28)]">
+    <div className="rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(49,130,246,0.24),transparent_36%),linear-gradient(135deg,#020617,#111827_52%,#052e16)] p-5 shadow-[0_22px_60px_rgba(15,23,42,0.18)]">
       <div>
         <div className="text-[11px] font-black uppercase tracking-[0.18em] text-blue-200">
           member access
@@ -178,7 +163,7 @@ function MembershipAccessPanel() {
           지역 티오를 확인한 멤버에게만 추천 상품, 매입가, 시세 근거를 엽니다.
         </div>
       </div>
-      <div className="grid gap-2">
+      <div className="mt-5 grid gap-2 sm:grid-cols-3">
         {["지역 티오 확인", "기간 선택", "입금 후 활성"].map((label) => (
           <div
             key={label}
@@ -392,7 +377,6 @@ export default async function PlansPage() {
   const slotSnapshot = loadSlotSnapshot();
   const membershipEndAt = membership?.proUntil ?? null;
   const socialProofEvents = await loadSocialProofEvents();
-  const infoRows = isMember ? MEMBER_ROWS : SCARCITY_ROWS;
   const heroBadges = isMember
     ? ["활성 멤버", "남은 기간 확인", "기간 연장 가능"]
     : NON_MEMBER_BADGES;
@@ -421,29 +405,29 @@ export default async function PlansPage() {
                   ? "연장하면 현재 만료일 뒤에 기간이 그대로 붙습니다. 매물 피드, 원본 링크, 시세 근거를 끊기지 않게 유지하세요."
                   : "득템잡이는 차익 예상 중고 상품을 선착순 티오와 지역별 접근 수로 관리해서, 실제로 움직일 수 있는 소수 멤버십 회원에게만 제공합니다."}
               </p>
-              <div className="mt-6 grid gap-2 sm:grid-cols-3">
-                {infoRows.map((row) => (
-                  <div
-                    key={row.label}
-                    className="rounded-[16px] border border-zinc-200 bg-[#fbfcff] px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-950/50"
-                  >
-                    <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">
-                      {row.label}
-                    </div>
-                    <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
-                      {row.value}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="border-t border-zinc-200 bg-[#f8fbff] px-4 py-5 dark:border-zinc-800 dark:bg-zinc-950 lg:border-l lg:border-t-0">
               {isMember ? (
-                <MembershipPassPanel />
-              ) : (
-                <MembershipAccessPanel />
-              )}
+                <div className="mt-6 grid gap-2 sm:grid-cols-3">
+                  {MEMBER_ROWS.map((row) => (
+                    <div
+                      key={row.label}
+                      className="rounded-[16px] border border-zinc-200 bg-[#fbfcff] px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-950/50"
+                    >
+                      <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">
+                        {row.label}
+                      </div>
+                      <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+                        {row.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
+            {isMember ? (
+              <div className="border-t border-zinc-200 bg-[#f8fbff] px-4 py-5 dark:border-zinc-800 dark:bg-zinc-950 lg:border-l lg:border-t-0">
+                <MembershipPassPanel />
+              </div>
+            ) : null}
           </div>
         </section>
 
@@ -554,6 +538,11 @@ export default async function PlansPage() {
           </div>
         </aside>
       </div>
+      {!isMember ? (
+        <div className="mx-auto mt-5 w-full max-w-[1100px]">
+          <MembershipAccessPanel />
+        </div>
+      ) : null}
       <div className="mx-auto mt-5 grid w-full max-w-[1100px] gap-3 sm:grid-cols-3">
         {PAYMENT_HELP.map((item, index) => (
           <div
