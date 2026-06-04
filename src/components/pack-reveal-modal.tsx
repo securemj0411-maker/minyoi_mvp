@@ -7185,10 +7185,10 @@ export default function PackRevealModal({
     });
     void onLoadDetail(pid)
       .catch((err) => {
-        requestedAnalysisPidsRef.current.delete(pid);
         console.error("[pack-reveal-modal] lazy detail analysis load failed", err);
       })
       .finally(() => {
+        requestedAnalysisPidsRef.current.delete(pid);
         setAnalysisLoadingPids((prev) => {
           const next = new Set(prev);
           next.delete(pid);
@@ -7203,10 +7203,20 @@ export default function PackRevealModal({
       setBeginnerGuideStep(0);
       return;
     }
-    requestRevealAnalysis(activeRevealPid);
+    if (!activeAnalysisHasLoaded || !activeRevealCard?.velocityBasis) {
+      requestRevealAnalysis(activeRevealPid);
+    }
     setBeginnerGuideStep(0);
     setBeginnerGuideVisible(false);
-  }, [open, loading, result?.result, activeRevealPid, requestRevealAnalysis]);
+  }, [
+    activeAnalysisHasLoaded,
+    activeRevealCard?.velocityBasis,
+    activeRevealPid,
+    loading,
+    open,
+    requestRevealAnalysis,
+    result?.result,
+  ]);
 
   useEffect(() => {
     if (!guideModeActive || !activeRevealCard || activeRevealPid == null) return;

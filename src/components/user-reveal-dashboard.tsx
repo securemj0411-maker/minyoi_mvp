@@ -297,6 +297,17 @@ function applySavedState(item: RevealItem, saved: boolean): RevealItem {
   };
 }
 
+function preserveLoadedAnalysis(next: RevealItem, previous: RevealItem | null | undefined): RevealItem {
+  if (!previous || previous.pid !== next.pid) return next;
+  return {
+    ...next,
+    marketBasis: next.marketBasis ?? previous.marketBasis,
+    velocityBasis: next.velocityBasis ?? previous.velocityBasis,
+    skuListingFlow: next.skuListingFlow ?? previous.skuListingFlow,
+    optionBaseAssumed: next.optionBaseAssumed ?? previous.optionBaseAssumed,
+  };
+}
+
 export default function UserRevealDashboard({ userRef, welcomePending = false }: { userRef: string; welcomePending?: boolean }) {
   const [items, setItems] = useState<RevealItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -359,7 +370,16 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       const dashboardData = (await res.json()) as DashboardResponse | { error?: string };
       if (!res.ok) throw new Error("error" in dashboardData ? dashboardData.error : "내 후보 로드 실패");
       const nextData = dashboardData as DashboardResponse;
-      setItems(nextData.reveals ?? []);
+      const incomingReveals = nextData.reveals ?? [];
+      setItems((prev) => {
+        const previousByPid = new Map(prev.map((item) => [item.pid, item]));
+        return incomingReveals.map((item) => preserveLoadedAnalysis(item, previousByPid.get(item.pid)));
+      });
+      setSelectedItem((prev) => {
+        if (!prev) return prev;
+        const incoming = incomingReveals.find((item) => item.pid === prev.pid);
+        return incoming ? preserveLoadedAnalysis(incoming, prev) : prev;
+      });
       setTotal(Number(nextData.total ?? 0));
       setTotalPages(Math.max(1, Number(nextData.totalPages ?? 1)));
       if (Number.isFinite(nextData.page) && nextData.page !== page) setPage(nextData.page);
