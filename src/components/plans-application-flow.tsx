@@ -462,26 +462,17 @@ export default function PlansApplicationFlow({
                       <br />
                       먼저 독점하세요.
                     </h1>
-                    <p className="mt-2 max-w-[520px] break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400 sm:text-[15px] sm:leading-6">
-                      먼저 광역 단위로 보고, 내 지역을 누르면 구·시 단위로 확대됩니다.
-                    </p>
                   </div>
                   <div className="mt-9 shrink-0 rounded-full bg-blue-600 px-3 py-2 text-right text-white shadow-[0_12px_34px_rgba(37,99,235,0.3)] sm:mt-0 sm:px-4">
                     <div className="text-[9px] font-black opacity-80">현재 예약</div>
                     <div className="text-[18px] font-black tabular-nums sm:text-[24px]">{filled}/{capacity}</div>
                   </div>
                 </div>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-300 dark:bg-zinc-700">
                   <div
-                    className="h-full rounded-r-full bg-[linear-gradient(90deg,#2563eb,#10b981,#f59e0b,#f97316,#ef4444)]"
+                    className="h-full rounded-r-full bg-blue-600 dark:bg-blue-400"
                     style={{ width: `${Math.min(96, Math.max(18, filledPct))}%` }}
                   />
-                </div>
-                <div className="mt-2 flex items-center gap-2 text-[10px] font-black text-zinc-500 dark:text-zinc-400">
-                  <span className="shrink-0 text-blue-500 dark:text-blue-300">여유</span>
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-[linear-gradient(90deg,#2563eb,#10b981,#f59e0b,#f97316,#ef4444)] shadow-inner" />
-                  <span className="shrink-0 text-red-500 dark:text-red-300">과밀</span>
-                  <span className="hidden shrink-0 text-zinc-400 sm:inline">티오가 찰수록 붉어져요</span>
                 </div>
                 <div className="mt-2 flex items-center justify-between rounded-2xl border border-zinc-200 bg-[#fbfcff] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/60 lg:hidden">
                   {mapZoomed ? (
@@ -519,7 +510,17 @@ export default function PlansApplicationFlow({
                     </>
                   )}
                 </div>
-                <div className="mx-auto mt-1 h-[320px] min-h-0 max-w-[620px] sm:h-[calc(100%-184px)] sm:min-h-[320px] sm:max-h-[560px] lg:mt-2 lg:h-[calc(100%-148px)]">
+                <div className="relative mx-auto mt-1 h-[320px] min-h-0 max-w-[620px] sm:h-[calc(100%-184px)] sm:min-h-[320px] sm:max-h-[560px] lg:mt-2 lg:h-[calc(100%-148px)]">
+                  <div className="pointer-events-none absolute right-2 top-2 z-10 rounded-2xl border border-zinc-200 bg-white/86 px-2.5 py-2 shadow-[0_10px_28px_rgba(15,23,42,0.16)] backdrop-blur dark:border-zinc-700 dark:bg-zinc-950/78">
+                    <div className="text-[9px] font-black uppercase tracking-[0.13em] text-zinc-400">티오 밀도</div>
+                    <div className="mt-1.5 flex items-center gap-1.5">
+                      <div className="h-16 w-2 rounded-full bg-[linear-gradient(180deg,#ef4444,#f97316,#f59e0b,#10b981,#2563eb)]" />
+                      <div className="flex h-16 flex-col justify-between text-[9px] font-black leading-none">
+                        <span className="text-red-500 dark:text-red-300">과밀</span>
+                        <span className="text-blue-500 dark:text-blue-300">여유</span>
+                      </div>
+                    </div>
+                  </div>
                   <KoreaSeatMap
                     selected={selected}
                     hoveredKey={hoveredKey}
@@ -597,7 +598,7 @@ export default function PlansApplicationFlow({
                   <div className="mt-2 break-keep text-[12px] font-black leading-5">
                     {mapZoomed
                       ? selectedDistricts.map((district) => district.name).join(" · ")
-                      : "광역 단위로 먼저 보고, 클릭한 지역만 구·시 단위로 확대합니다."}
+                      : "지도에서 지역을 선택하면 남은 티오를 확인합니다."}
                   </div>
                 </div>
               </aside>
