@@ -325,8 +325,8 @@ function KoreaSeatMap({
           {REGIONS.map((region) => {
             const selectedActive = zoomed && region.key === selected.key;
             const hoveredActive = !zoomed && region.key === hoveredKey;
-            if (selectedActive) return null;
-            if (zoomed && !selectedActive && !hoveredActive) return null;
+            if (zoomed || selectedActive) return null;
+            if (!selectedActive && !hoveredActive) return null;
             return (
               <g key={`${region.key}-label`}>
                 <circle
