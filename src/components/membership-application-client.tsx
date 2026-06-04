@@ -204,7 +204,7 @@ export default function MembershipApplicationClient({
     if (state === "submitting") return;
     if (depositNotifyState === "sent") {
       setMessage(
-        "입금 확인 요청 후에는 기간/금액 변경이 막혀요. 필요하면 운영자에게 알려주세요.",
+        "입금 확인 중에는 기간/금액 변경이 막혀요. 필요하면 고객센터로 알려주세요.",
       );
       return;
     }
@@ -316,7 +316,7 @@ export default function MembershipApplicationClient({
     if (state === "submitting") return;
     if (depositNotifyState === "sent") {
       setMessage(
-        "입금 확인 요청 후에는 예약 취소가 막혀요. 운영자에게 환불/취소를 요청해주세요.",
+        "입금 확인 중에는 예약 취소가 막혀요. 필요하면 고객센터로 알려주세요.",
       );
       return;
     }
@@ -400,7 +400,7 @@ export default function MembershipApplicationClient({
   const priceKrw =
     submittedPlan?.priceKrw ?? pendingApplication?.priceKrw ?? 99_000;
   const defaultReservationMessage =
-    "연장 예약이 잡혔습니다. 아래 계좌로 송금한 뒤 입금했어요 버튼을 누르면 운영자에게 바로 알림이 갑니다.";
+    "연장 예약이 잡혔습니다. 아래 계좌로 송금한 뒤 입금했어요 버튼을 눌러주세요.";
   const autoApproveTargetMs = autoApproveAt ? Date.parse(autoApproveAt) : null;
   const autoApproveMsLeft =
     autoApproveTargetMs && Number.isFinite(autoApproveTargetMs)
@@ -545,11 +545,10 @@ export default function MembershipApplicationClient({
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">
-                      입금 확인 진행 중
+                      멤버십 승인 중
                     </div>
                     <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
-                      5분 내 운영자가 확인합니다. 시간이 지나면 자동으로
-                      승인돼요.
+                      5분 내로 멤버십이 자동 승인됩니다.
                     </div>
                   </div>
                   <div className="shrink-0 rounded-[10px] bg-white px-3 py-2 text-[22px] font-black tabular-nums text-emerald-700 ring-1 ring-emerald-100 dark:bg-zinc-950 dark:text-emerald-300 dark:ring-emerald-900">
@@ -560,25 +559,22 @@ export default function MembershipApplicationClient({
                 </div>
               </div>
             ) : null}
-            <button
-              type="button"
-              onClick={() => void notifyDepositDone()}
-              disabled={
-                state === "submitting" ||
-                depositNotifyState === "sending" ||
-                depositNotifyState === "sent"
-              }
-              className="mt-2 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
-            >
-              {depositNotifyState === "sending"
-                ? "입금 확인 요청 중"
-                : depositNotifyState === "sent"
-                  ? "입금 확인 요청 완료"
-                  : "입금했어요 · 5분 내 자동 승인"}
-            </button>
+            {depositNotifyState !== "sent" ? (
+              <button
+                type="button"
+                onClick={() => void notifyDepositDone()}
+                disabled={
+                  state === "submitting" || depositNotifyState === "sending"
+                }
+                className="mt-2 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+              >
+                {depositNotifyState === "sending" ? "확인 중" : "입금했어요"}
+              </button>
+            ) : null}
             {depositNotifyState === "idle" ? (
               <p className="mt-2 break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400">
-                입금 후 누르면 운영자 알림과 5분 자동 승인 카운트가 시작돼요.
+                입금 후 입금했어요 버튼을 누르면 5분 내로 멤버십이 자동
+                완료됩니다.
               </p>
             ) : null}
             {depositNotifyMessage ? (
@@ -628,16 +624,19 @@ export default function MembershipApplicationClient({
           </button>
         </div>
       ) : showInlineSelector ? (
-        <div className="overflow-hidden rounded-[22px] border border-blue-100 bg-white text-zinc-950 shadow-[0_18px_48px_rgba(49,130,246,0.12)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
-          <div className="relative border-b border-blue-100 bg-[#f5f8ff] px-3 py-3 dark:border-zinc-800 dark:bg-white/6 sm:px-6 sm:py-5">
+        <div className="overflow-hidden rounded-[26px] border border-blue-100 bg-white text-zinc-950 shadow-[0_24px_70px_rgba(49,130,246,0.16)] ring-1 ring-blue-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:ring-white/10">
+          <div className="relative border-b border-blue-100 bg-[linear-gradient(135deg,#f8fbff_0%,#eaf3ff_100%)] px-4 py-4 dark:border-zinc-800 dark:bg-none dark:bg-white/6 sm:px-6 sm:py-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-[11px] font-black tracking-[0.12em] text-[#3182f6] dark:text-blue-300">
-                  MEMBERSHIP
+                <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-300">
+                  Membership
                 </div>
-                <h2 className="mt-1 break-keep text-[22px] font-black leading-tight tracking-tight sm:text-[36px]">
-                  기간 선택
+                <h2 className="mt-1 break-keep text-[26px] font-black leading-tight tracking-tight sm:text-[36px]">
+                  멤버십 기간 선택
                 </h2>
+                <p className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+                  기간을 고르면 지역 티오를 먼저 잡아둡니다.
+                </p>
               </div>
               <div className="shrink-0 rounded-2xl bg-white px-2.5 py-2 text-right ring-1 ring-blue-100 dark:bg-zinc-950 dark:ring-zinc-800">
                 <div className="text-[9px] font-black text-zinc-400">지역</div>
@@ -705,10 +704,10 @@ export default function MembershipApplicationClient({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-200">
-                  Membership select
+                  Membership
                 </div>
                 <h2 className="mt-1 break-keep text-[26px] font-black leading-tight text-zinc-950 dark:text-zinc-50 sm:text-[34px]">
-                  {renewalMode ? "연장 기간을 고르세요." : "기간을 선택하세요."}
+                  {renewalMode ? "멤버십 연장 기간 선택" : "멤버십 기간 선택"}
                 </h2>
                 <p className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
                   {renewalMode
@@ -779,33 +778,56 @@ function PlanGrid({
             type="button"
             disabled={disabled}
             onClick={() => onSelect(plan.key)}
-            className={`rounded-[16px] border px-2.5 py-2 text-left transition disabled:cursor-default sm:rounded-[18px] sm:px-3.5 sm:py-3 ${
+            className={`relative overflow-hidden rounded-[18px] border px-3 py-3 text-left transition disabled:cursor-default sm:px-3.5 sm:py-3 ${
               active
-                ? "border-[#3182f6] bg-blue-50 shadow-[0_10px_24px_rgba(49,130,246,0.12)] dark:border-blue-700 dark:bg-blue-950/30"
-                : "border-zinc-200 bg-white hover:border-blue-200 hover:bg-[#fbfcff] dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-blue-900"
+                ? "border-[#3182f6] bg-zinc-950 text-white shadow-[0_16px_34px_rgba(49,130,246,0.22)] ring-1 ring-[#3182f6]/30 dark:border-blue-400 dark:bg-white dark:text-zinc-950"
+                : "border-zinc-200 bg-white text-zinc-950 shadow-[0_10px_26px_rgba(15,23,42,0.05)] hover:border-blue-200 hover:bg-[#fbfcff] dark:border-zinc-800 dark:bg-zinc-950/50 dark:text-zinc-50 dark:hover:border-blue-900"
             }`}
           >
-            <div className="flex min-h-[72px] flex-col justify-between gap-2 sm:min-h-0">
+            {active ? (
+              <div className="absolute right-2 top-2 rounded-full bg-[#3182f6] px-2 py-0.5 text-[9px] font-black text-white">
+                선택됨
+              </div>
+            ) : null}
+            <div className="flex min-h-[82px] flex-col justify-between gap-2 sm:min-h-0">
               <div>
-                <div className="flex flex-wrap items-center gap-1">
-                  <span className="text-[20px] font-black leading-none text-zinc-950 dark:text-zinc-50 sm:text-[15px]">
+                <div className="flex flex-wrap items-center gap-1 pr-9">
+                  <span className="text-[20px] font-black leading-none sm:text-[15px]">
                     {plan.label}
                   </span>
                   {plan.badge ? (
-                    <span className="rounded-full bg-white px-1.5 py-0.5 text-[9px] font-black text-[#3182f6] ring-1 ring-blue-100 dark:bg-zinc-900 dark:ring-blue-900 sm:px-2 sm:text-[10px]">
+                    <span
+                      className={`rounded-full px-1.5 py-0.5 text-[9px] font-black ring-1 sm:px-2 sm:text-[10px] ${
+                        active
+                          ? "bg-white/10 text-blue-100 ring-white/20 dark:bg-zinc-950/8 dark:text-[#3182f6] dark:ring-zinc-950/10"
+                          : "bg-white text-[#3182f6] ring-blue-100 dark:bg-zinc-900 dark:ring-blue-900"
+                      }`}
+                    >
                       {plan.badge}
                     </span>
                   ) : null}
                 </div>
-                <div className="mt-1 hidden text-[11px] font-bold text-zinc-500 dark:text-zinc-400 sm:block">
+                <div
+                  className={`mt-1 hidden text-[11px] font-bold sm:block ${
+                    active
+                      ? "text-white/58 dark:text-zinc-500"
+                      : "text-zinc-500 dark:text-zinc-400"
+                  }`}
+                >
                   {plan.valueNote}
                 </div>
               </div>
               <div>
-                <div className="text-[17px] font-black leading-none text-zinc-950 dark:text-zinc-50 sm:text-[14px]">
+                <div className="text-[19px] font-black leading-none sm:text-[14px]">
                   {krw(plan.priceKrw)}
                 </div>
-                <div className="mt-1 whitespace-nowrap text-[10px] font-black text-zinc-400">
+                <div
+                  className={`mt-1 whitespace-nowrap text-[10px] font-black ${
+                    active
+                      ? "text-white/58 dark:text-zinc-500"
+                      : "text-zinc-400"
+                  }`}
+                >
                   {plan.monthlyLabel}
                 </div>
               </div>
