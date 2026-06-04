@@ -11,6 +11,7 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 import MembersTable, { type MemberRow } from "./members-table";
 import FeedbackPanel from "./feedback-panel";
 import MembershipApplicationsPanel, { type MembershipApplicationRow } from "./membership-applications-panel";
+import SupportChatPanel from "./support-chat-panel";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -269,6 +270,7 @@ export default async function MembersPage() {
       </header>
 
       <MembershipApplicationsPanel initialRows={applications} />
+      <SupportChatPanel />
       <FeedbackPanel />
       <section className="mb-4 rounded-sm border border-emerald-800 bg-emerald-950/30 p-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
