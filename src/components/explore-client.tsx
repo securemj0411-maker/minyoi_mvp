@@ -4331,11 +4331,11 @@ export default function ExploreClient({
           aria-live="polite"
           aria-busy="true"
         >
-          {/* Wave launch-122 (2026-05-24): brand mark 자연스럽게 (subtle pulse — 기존 dots/텍스트 keep). */}
+          {/* Wave 1133: detail 진입 로딩 로고도 scale breathing — 점 3개와 같이 살아 움직이게. */}
           <div className="flex flex-col items-center gap-5">
             <BrandLogo
               size={56}
-              className="rounded-[12px] shadow-lg shadow-blue-500/40 animate-pulse"
+              className="animate-detail-logo-breathe rounded-[12px] shadow-lg shadow-blue-500/40"
             />
             <div className="flex items-end gap-2.5">
               <span className="h-3.5 w-3.5 animate-bounce-high rounded-full bg-[#ffffff] shadow-[0_2px_8px_rgba(255,255,255,0.4)] [animation-delay:-0.32s]" />

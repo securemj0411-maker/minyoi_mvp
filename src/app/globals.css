@@ -170,10 +170,24 @@ a {
   }
 }
 
+@keyframes detail-logo-breathe {
+  0%, 100% {
+    transform: scale(0.94);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-bounce-high {
+  .animate-bounce-high,
+  .animate-detail-logo-breathe {
     animation: none;
   }
+}
+
+.animate-detail-logo-breathe {
+  animation: detail-logo-breathe 1.15s ease-in-out infinite;
 }
 
 /* Wave 531: Toss-like light mode.
