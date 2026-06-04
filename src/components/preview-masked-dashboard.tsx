@@ -48,8 +48,8 @@ function krw(value: number) {
 }
 
 function marketGapLabel(min: number, max: number): string {
-  if (Math.round(min) === Math.round(max)) return `${Math.round(min).toLocaleString("ko-KR")}원 낮음`;
-  return `${Math.round(min).toLocaleString("ko-KR")}~${Math.round(max).toLocaleString("ko-KR")}원 낮음`;
+  if (Math.round(min) === Math.round(max)) return `+${Math.round(min).toLocaleString("ko-KR")}원`;
+  return `+${Math.round(min).toLocaleString("ko-KR")}~${Math.round(max).toLocaleString("ko-KR")}원`;
 }
 
 function marketGapPctLabel(price: number, gapMin: number, gapMax: number): string | null {
@@ -149,13 +149,12 @@ export default function PreviewMaskedDashboard() {
             빨리 사라지는 중고 매물
           </div>
           <h1 className="mt-1 break-keep text-[28px] font-black leading-[1.05] tracking-tight text-[var(--rd-ink)] dark:text-zinc-50 sm:mt-5 sm:text-[44px] lg:text-[52px]">
-            팔리는 속도까지 보고
+            돈 되는 중고 상품만
             <br />
-            극소수만 남깁니다.
+            추천해줍니다.
           </h1>
           <p className="mt-2 max-w-[460px] break-keep text-[13px] font-semibold leading-5 text-[#5f6a60] dark:text-zinc-300 sm:mt-4 sm:text-[15px] sm:leading-7">
-            시세보다 싼 매물은 오래 남지 않아요. 가격 차이와 판매 회전 속도를 같이 보고,
-            실제로 빨리 거래되는 상품군만 조용히 추려요.
+            득템잡이는 시세 차익과 판매 회전 속도를 같이 보고, 실제로 빨리 거래되는 상품군만 추려요.
           </p>
           <p className="mt-1.5 max-w-[460px] break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400 sm:text-[12px]">
             로그인 후 승인된 멤버만 지금 진행 중인 추천 매물과 원본 링크를 볼 수 있어요.
@@ -216,6 +215,7 @@ export default function PreviewMaskedDashboard() {
                   <div className="flex items-center gap-3">
                     <div className="relative flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 sm:h-[104px] sm:w-[104px]">
                       {imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={imageUrl}
                           alt={item.name ?? item.previewTitle ?? "추천 매물"}
