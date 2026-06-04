@@ -22,7 +22,8 @@ type ApplicationStatusRow = {
 
 export async function GET(req: Request) {
   const auth = await requireSupabaseUser(req);
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.ok)
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const userRef = userRefForAuthUser(auth.user.id);
   const membership = await getProStatus(auth.user, userRef);
@@ -34,23 +35,51 @@ export async function GET(req: Request) {
   ).catch(() => null);
   const rows = res?.ok ? ((await res.json()) as ApplicationStatusRow[]) : [];
   const application = rows[0] ?? null;
-  const selectedPlan = application ? getMembershipPlan(application.product_key) : null;
+  const selectedPlan = application
+    ? getMembershipPlan(application.product_key)
+    : null;
+
+  const activeRes = await restFetch(
+    `${tableUrl("mvp_membership_applications")}?select=id,application_kind,product_key,price_krw,status,deposit_confirmed_at,scheduled_auto_approve_at,decided_at,created_at&auth_user_id=eq.${auth.user.id}&status=eq.approved&order=decided_at.desc.nullslast,created_at.desc&limit=1`,
+    { headers: serviceHeaders(), cache: "no-store" },
+  ).catch(() => null);
+  const activeRows = activeRes?.ok
+    ? ((await activeRes.json()) as ApplicationStatusRow[])
+    : [];
+  const activeApplication = activeRows[0] ?? null;
+  const activePlan = activeApplication
+    ? getMembershipPlan(activeApplication.product_key)
+    : null;
 
   return NextResponse.json({
     ok: true,
     isMember,
     planEndAt: membership.proUntil ?? null,
-    application: application ? {
-      id: application.id,
-      status: application.status,
-      applicationKind: application.application_kind ?? "new",
-      planKey: selectedPlan?.key ?? application.product_key,
-      planLabel: selectedPlan?.label ?? "멤버십",
-      priceKrw: Number(application.price_krw ?? selectedPlan?.priceKrw ?? 0),
-      depositConfirmedAt: application.deposit_confirmed_at,
-      scheduledAutoApproveAt: application.scheduled_auto_approve_at,
-      decidedAt: application.decided_at,
-      createdAt: application.created_at,
-    } : null,
+    activePlan: activePlan
+      ? {
+          applicationId: activeApplication?.id ?? null,
+          planKey: activePlan.key,
+          planLabel: activePlan.label,
+          months: activePlan.months,
+          priceKrw: Number(activeApplication?.price_krw ?? activePlan.priceKrw),
+          applicationKind: activeApplication?.application_kind ?? "new",
+        }
+      : null,
+    application: application
+      ? {
+          id: application.id,
+          status: application.status,
+          applicationKind: application.application_kind ?? "new",
+          planKey: selectedPlan?.key ?? application.product_key,
+          planLabel: selectedPlan?.label ?? "멤버십",
+          priceKrw: Number(
+            application.price_krw ?? selectedPlan?.priceKrw ?? 0,
+          ),
+          depositConfirmedAt: application.deposit_confirmed_at,
+          scheduledAutoApproveAt: application.scheduled_auto_approve_at,
+          decidedAt: application.decided_at,
+          createdAt: application.created_at,
+        }
+      : null,
   });
 }

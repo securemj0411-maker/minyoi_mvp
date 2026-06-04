@@ -14,6 +14,7 @@ import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { detectBrandDepth } from "@/lib/category-brand-depth";
 import type { DetailEventType } from "@/lib/detail-analytics";
 import { isDaangnMarketplaceSource } from "@/lib/marketplace-source";
+import { getMembershipPlan, krw as membershipKrw, MEMBERSHIP_PLANS, UPSELL_PLANS_FROM_1MO, UPSELL_PLANS_FROM_3MO, type MembershipPlan, type MembershipPlanKey } from "@/lib/membership-plans";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -143,6 +144,23 @@ type DetailAccessResponse = {
   item?: PoolItem | null;
 };
 
+type MembershipStatusSnapshot = {
+  ok?: boolean;
+  isMember?: boolean;
+  activePlan?: {
+    planKey?: string | null;
+    planLabel?: string | null;
+    months?: number | null;
+    priceKrw?: number | null;
+  } | null;
+};
+
+type FeedRenewalReservation = {
+  applicationId: number | null;
+  plan: MembershipPlan;
+  scheduledAutoApproveAt: string | null;
+};
+
 // Wave launch-14 (사용자 짚음): error 종류 따라 다른 모달 톤.
 // paywall = 멤버십 승인 필요, sold = 매물 거래완료/사라짐 (새로고침), verify_fail = 일시 통신 (재시도).
 // Wave launch-106 (2026-05-24): profit_lost = active 매물인데 시세 떨어져 차익 -. "판매완료" 라벨 사용 금지.
@@ -187,45 +205,192 @@ function formatCooldown(sec: number): string {
   return `0:${String(sec).padStart(2, "0")}`;
 }
 
-function FeedMembershipUpsellCard({ remainingSec }: { remainingSec: number }) {
+const BANK_NAME = "우리은행";
+const ACCOUNT_NUMBER = "1002-367-160511";
+const ACCOUNT_HOLDER = "이민제";
+
+function regularPlanForMonths(months: number): MembershipPlan | null {
+  return MEMBERSHIP_PLANS.find((plan) => plan.months === months) ?? null;
+}
+
+function membershipDiscountPercent(plan: MembershipPlan): number {
+  const regularPlan = regularPlanForMonths(plan.months);
+  if (!regularPlan || regularPlan.priceKrw <= plan.priceKrw) return 0;
+  return Math.round(((regularPlan.priceKrw - plan.priceKrw) / regularPlan.priceKrw) * 100);
+}
+
+function feedOfferPlansFor(activePlanKey: string | null): MembershipPlan[] {
+  if (!activePlanKey) return [];
+  const activePlan = getMembershipPlan(activePlanKey);
+  if (activePlan.months <= 1) return UPSELL_PLANS_FROM_1MO;
+  if (activePlan.months <= 3) return UPSELL_PLANS_FROM_3MO;
+  if (activePlan.months <= 6) return UPSELL_PLANS_FROM_3MO.filter((plan) => plan.months === 12);
+  return [];
+}
+
+function FeedMembershipUpsellCard({ remainingSec, activePlanKey }: { remainingSec: number; activePlanKey: string | null }) {
   const clamped = Math.max(0, remainingSec);
-  const discountPct = 40;
   const expired = clamped <= 0;
+  const activePlan = getMembershipPlan(activePlanKey);
+  const offerPlans = useMemo(() => feedOfferPlansFor(activePlanKey), [activePlanKey]);
+  const [selectedKey, setSelectedKey] = useState<MembershipPlanKey | null>(offerPlans[0]?.key ?? null);
+  const [reservation, setReservation] = useState<FeedRenewalReservation | null>(null);
+  const [requestState, setRequestState] = useState<"idle" | "submitting" | "reserved" | "depositing" | "deposit_sent" | "error">("idle");
+  const [message, setMessage] = useState<string | null>(null);
+  const selectedPlan = selectedKey ? getMembershipPlan(selectedKey) : offerPlans[0];
+
+  useEffect(() => {
+    if (!offerPlans.length) return;
+    if (!selectedKey || !offerPlans.some((plan) => plan.key === selectedKey)) {
+      setSelectedKey(offerPlans[0].key);
+    }
+  }, [offerPlans, selectedKey]);
+
+  if (!offerPlans.length) return null;
+
+  async function getAccessToken() {
+    const supabase = getSupabaseBrowserClient();
+    const { data } = supabase ? await supabase.auth.getSession() : { data: null };
+    return data?.session?.access_token ?? null;
+  }
+
+  async function reserveOffer(plan: MembershipPlan) {
+    setRequestState("submitting");
+    setMessage(null);
+    const token = await getAccessToken();
+    if (!token) {
+      setRequestState("error");
+      setMessage("로그인 세션을 다시 확인해주세요.");
+      return;
+    }
+    const res = await fetch("/api/membership/apply", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ productKey: plan.key, intent: "renewal" }),
+    }).catch(() => null);
+    const payload = (await res?.json().catch(() => null)) as { ok?: boolean; applicationId?: number | null; scheduledAutoApproveAt?: string | null } | null;
+    if (!res?.ok || !payload?.ok) {
+      setRequestState("error");
+      setMessage("특가 예약을 만들지 못했어요. 잠시 후 다시 눌러주세요.");
+      return;
+    }
+    setReservation({ applicationId: payload.applicationId ?? null, plan, scheduledAutoApproveAt: payload.scheduledAutoApproveAt ?? null });
+    setRequestState("reserved");
+    setMessage("특가 예약이 잡혔어요. 아래 계좌로 송금 후 입금했어요를 누르면 됩니다.");
+  }
+
+  async function notifyDepositDone() {
+    setRequestState("depositing");
+    setMessage(null);
+    const token = await getAccessToken();
+    if (!token) {
+      setRequestState("error");
+      setMessage("로그인 세션을 다시 확인해주세요.");
+      return;
+    }
+    const res = await fetch("/api/membership/deposit-notify", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+    const payload = (await res?.json().catch(() => null)) as { ok?: boolean; scheduledAutoApproveAt?: string | null } | null;
+    if (!res?.ok || !payload?.ok) {
+      setRequestState("error");
+      setMessage("입금 확인 요청을 보내지 못했어요. 잠시 후 다시 눌러주세요.");
+      return;
+    }
+    setReservation((current) => current ? { ...current, scheduledAutoApproveAt: payload.scheduledAutoApproveAt ?? current.scheduledAutoApproveAt } : current);
+    setRequestState("deposit_sent");
+    setMessage("입금 확인 요청 완료. 5분 내 자동 승인까지 같이 걸렸어요.");
+  }
+
+  const headline = activePlan.months <= 1 ? "1시간 한정 첫 연장 특가" : `${activePlan.label} 멤버 전용 1시간 특가`;
+  const subHeadline = activePlan.months <= 1
+    ? "지금 늘리면 3개월/6개월을 신규 정가보다 크게 낮춰 잡을 수 있어요."
+    : "이미 신청한 기간은 유지하고, 추가 기간만 이벤트가로 뒤에 붙입니다.";
 
   return (
-    <section className="mb-3 overflow-hidden rounded-2xl border border-blue-200 bg-white shadow-sm dark:border-blue-900/50 dark:bg-zinc-900">
-      <div className="bg-gradient-to-r from-blue-600 to-zinc-950 px-4 py-3 text-white">
+    <section className="mb-3 overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-[0_16px_45px_rgba(245,158,11,0.13)] dark:border-amber-900/50 dark:bg-zinc-900">
+      <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-zinc-950 px-4 py-3 text-white">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-blue-100">Member-only offer</div>
-            <div className="mt-0.5 break-keep text-[16px] font-black leading-5">3개월로 바꾸면 월 단가를 더 낮출 수 있어요</div>
+            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-50">Member-only event</div>
+            <div className="mt-0.5 break-keep text-[16px] font-black leading-5">{headline}</div>
           </div>
           <div className="shrink-0 rounded-xl bg-white/14 px-3 py-2 text-center ring-1 ring-white/20">
-            <div className="text-[10px] font-black text-blue-100">남은 시간</div>
+            <div className="text-[10px] font-black text-amber-50">남은 시간</div>
             <div className="mt-0.5 font-mono text-[17px] font-black tabular-nums">{expired ? "마감" : formatCooldown(clamped)}</div>
           </div>
         </div>
       </div>
-      <div className="grid gap-3 px-4 py-3 sm:grid-cols-[1fr_auto] sm:items-center">
+      <div className="grid gap-3 px-4 py-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-              {discountPct}% 절감
-            </span>
-            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-black text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-              1개월보다 오래 보는 사람용
-            </span>
+            {offerPlans.map((plan) => {
+              const discount = membershipDiscountPercent(plan);
+              const active = selectedPlan?.key === plan.key;
+              return (
+                <button
+                  key={plan.key}
+                  type="button"
+                  onClick={() => setSelectedKey(plan.key)}
+                  disabled={expired || requestState === "submitting"}
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-black transition disabled:opacity-50 ${active ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-200"}`}
+                >
+                  {plan.label} · {discount}% 할인
+                </button>
+              );
+            })}
           </div>
           <p className="mt-2 break-keep text-[12.5px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
-            피드에서 계속 볼 거면 짧게 끊는 것보다 3개월/6개월로 잡는 쪽이 단가가 낮아요. 자리 예약 전에 기간만 바꾸면 됩니다.
+            {subHeadline}
           </p>
         </div>
-        <Link
-          href="/plans?from=feed-upsell"
-          className="flex h-11 items-center justify-center rounded-xl bg-zinc-950 px-4 text-[13px] font-black text-white transition hover:bg-blue-700 dark:bg-white dark:text-zinc-950 dark:hover:bg-blue-100"
-        >
-          조건 다시 보기
-        </Link>
+        {selectedPlan ? (
+          <div className="rounded-xl border border-amber-100 bg-amber-50/70 px-3 py-3 dark:border-amber-950/70 dark:bg-amber-950/20">
+            <div className="flex flex-wrap items-end justify-between gap-2">
+              <div>
+                <div className="text-[11px] font-black text-amber-700 dark:text-amber-300">{selectedPlan.label} 1시간 조건</div>
+                <div className="mt-1 text-[20px] font-black text-zinc-950 dark:text-zinc-50">{membershipKrw(selectedPlan.priceKrw)}</div>
+                <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+                  정가 {membershipKrw(regularPlanForMonths(selectedPlan.months)?.priceKrw ?? selectedPlan.priceKrw)} · {membershipDiscountPercent(selectedPlan)}% 할인 · {selectedPlan.monthlyLabel}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => void reserveOffer(selectedPlan)}
+                disabled={expired || requestState === "submitting"}
+                className="flex h-10 items-center justify-center rounded-xl bg-zinc-950 px-4 text-[12px] font-black text-white transition hover:bg-amber-700 disabled:cursor-default disabled:opacity-50 dark:bg-white dark:text-zinc-950"
+              >
+                {requestState === "submitting" ? "예약 중" : expired ? "이벤트 마감" : "이 특가로 예약"}
+              </button>
+            </div>
+          </div>
+        ) : null}
+        {reservation ? (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 dark:border-emerald-900/70 dark:bg-emerald-950/20">
+            <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">특가 예약 완료 · 계좌이체 대기</div>
+            <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center">
+              <div className="rounded-lg bg-white px-3 py-2 text-[12px] font-bold text-zinc-700 dark:bg-zinc-950 dark:text-zinc-200">
+                {BANK_NAME} <b className="font-black">{ACCOUNT_NUMBER}</b> · 예금주 {ACCOUNT_HOLDER}
+                <br />
+                입금 금액 <b className="text-emerald-700 dark:text-emerald-300">{membershipKrw(reservation.plan.priceKrw)}</b>
+              </div>
+              <button
+                type="button"
+                onClick={() => void notifyDepositDone()}
+                disabled={requestState === "depositing" || requestState === "deposit_sent"}
+                className="flex h-10 items-center justify-center rounded-xl bg-emerald-700 px-4 text-[12px] font-black text-white transition hover:bg-emerald-800 disabled:cursor-default disabled:opacity-60"
+              >
+                {requestState === "depositing" ? "요청 중" : requestState === "deposit_sent" ? "입금 확인 요청 완료" : "입금했어요"}
+              </button>
+            </div>
+          </div>
+        ) : null}
+        {message ? (
+          <p className={`break-keep text-[11px] font-bold leading-4 ${requestState === "error" ? "text-red-500" : "text-emerald-700 dark:text-emerald-300"}`}>
+            {message}
+          </p>
+        ) : null}
       </div>
     </section>
   );
@@ -1224,6 +1389,7 @@ export default function ExploreClient({
   const [scrapItems, setScrapItems] = useState<ScrappedPoolItem[]>([]);
   const [legacySavedPids, setLegacySavedPids] = useState<Set<number>>(() => new Set());
   const [now, setNow] = useState(Date.now());
+  const [membershipStatus, setMembershipStatus] = useState<MembershipStatusSnapshot | null>(null);
   const [feedUpsellExpiresAt] = useState(() => {
     const fallback = Date.now() + 60 * 60 * 1000;
     if (typeof window === "undefined") return fallback;
@@ -1270,6 +1436,24 @@ export default function ExploreClient({
         // ignore — button 활성 유지
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    void (async () => {
+      const supabase = getSupabaseBrowserClient();
+      const { data } = supabase ? await supabase.auth.getSession() : { data: null };
+      const token = data?.session?.access_token;
+      if (!token) return;
+      const res = await fetch("/api/membership/status", {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      }).catch(() => null);
+      if (!res?.ok || !alive) return;
+      const payload = (await res.json().catch(() => null)) as MembershipStatusSnapshot | null;
+      if (alive) setMembershipStatus(payload);
+    })();
+    return () => { alive = false; };
   }, []);
 
   // Wave 746 (2026-05-24): cooldown UI 갱신만 — BalanceToast 가 last_share_bonus_at 변경 감지 시
@@ -2170,7 +2354,10 @@ export default function ExploreClient({
         />
       ) : null}
 
-      <FeedMembershipUpsellCard remainingSec={feedUpsellRemainingSec} />
+      <FeedMembershipUpsellCard
+        activePlanKey={membershipStatus?.activePlan?.planKey ?? null}
+        remainingSec={feedUpsellRemainingSec}
+      />
 
       {/* Wave 383+393: 6h lag 제거 + 사이트 핵심 가치 (band-aware 비교) 강조. */}
       <div className="mb-2 hidden rounded-xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40 sm:block">
@@ -3043,7 +3230,10 @@ export default function ExploreClient({
                             </Link>
 
                             <div className="mt-3">
-                              <FeedMembershipUpsellCard remainingSec={feedUpsellRemainingSec} />
+                              <FeedMembershipUpsellCard
+                                activePlanKey={membershipStatus?.activePlan?.planKey ?? null}
+                                remainingSec={feedUpsellRemainingSec}
+                              />
                             </div>
                           </>
                         ) : null}
