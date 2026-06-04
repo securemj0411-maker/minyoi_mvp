@@ -128,7 +128,7 @@ const SOCIAL_PROOF_SURNAMES = [
   "현",
 ];
 
-function MembershipCapPanel({
+function SeatStatusBar({
   filled,
   capacity,
 }: {
@@ -137,52 +137,57 @@ function MembershipCapPanel({
 }) {
   const percent = Math.round((filled / capacity) * 100);
   return (
-    <div className="flex h-full min-h-[300px] flex-col justify-between gap-4 rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(49,130,246,0.26),transparent_35%),linear-gradient(135deg,#020617,#111827_54%,#052e16)] p-5 shadow-[0_22px_60px_rgba(15,23,42,0.28)]">
-      <div>
-        <div className="text-[11px] font-black uppercase tracking-[0.18em] text-blue-200">
-          membership cap
-        </div>
-        <div className="mt-4 flex items-end gap-2">
-          <div className="font-mono text-[78px] font-black leading-none text-white tabular-nums">
-            {capacity}
+    <div className="rounded-[18px] border border-emerald-200 bg-emerald-50/80 px-4 py-3 dark:border-emerald-900/60 dark:bg-emerald-950/20">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">
+            선착순 멤버십
           </div>
-          <div className="pb-2 text-[18px] font-black text-zinc-300">명</div>
+          <div className="mt-1 text-[13px] font-black text-zinc-950 dark:text-zinc-50">
+            현재 예약 {filled}/{capacity}명
+          </div>
         </div>
-        <div className="mt-3 break-keep text-[14px] font-black leading-6 text-zinc-200">
-          선착순 정원 안에서만 추천 상품과 원본 링크를 엽니다.
+        <div className="rounded-full bg-zinc-950 px-3 py-1.5 text-[12px] font-black text-white dark:bg-white dark:text-zinc-950">
+          {percent}% 예약
         </div>
       </div>
+      <div className="mt-2 h-2 overflow-hidden rounded-full bg-white dark:bg-zinc-900">
+        <div
+          className="h-full rounded-r-full bg-[linear-gradient(90deg,#10b981,#3182f6)]"
+          style={{ width: `${Math.min(96, Math.max(24, percent))}%` }}
+        />
+      </div>
+      <div className="mt-2 break-keep text-[11.5px] font-bold leading-5 text-emerald-800/80 dark:text-emerald-200/80">
+        내 지역 티오가 열려 있으면 기간 선택 후 바로 계좌가 열립니다.
+      </div>
+    </div>
+  );
+}
+
+function MembershipAccessPanel() {
+  return (
+    <div className="flex h-full min-h-[300px] flex-col justify-between gap-4 rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(49,130,246,0.24),transparent_36%),linear-gradient(135deg,#020617,#111827_52%,#052e16)] p-5 shadow-[0_22px_60px_rgba(15,23,42,0.28)]">
       <div>
-        <div className="flex items-center justify-between text-[12px] font-black text-zinc-300">
-          <span>현재 예약</span>
-          <span>
-            {filled}/{capacity}
-          </span>
+        <div className="text-[11px] font-black uppercase tracking-[0.18em] text-blue-200">
+          member access
         </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+        <div className="mt-4 text-[30px] font-black leading-tight tracking-tight text-white">
+          원본 링크와 시세 근거는 승인 후 공개
+        </div>
+        <div className="mt-3 break-keep text-[13px] font-bold leading-6 text-zinc-300">
+          지역 티오를 확인한 멤버에게만 추천 상품, 매입가, 시세 근거를 엽니다.
+        </div>
+      </div>
+      <div className="grid gap-2">
+        {["지역 티오 확인", "기간 선택", "입금 후 활성"].map((label) => (
           <div
-            className="h-full rounded-r-full bg-[linear-gradient(90deg,#10b981,#3182f6)]"
-            style={{ width: `${Math.min(96, Math.max(24, percent))}%` }}
-          />
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <div className="rounded-[14px] border border-white/10 bg-white/[0.04] px-3 py-3">
-            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
-              access
-            </div>
-            <div className="mt-1 text-[13px] font-black text-white">
-              승인 후 공개
-            </div>
+            key={label}
+            className="flex items-center justify-between rounded-[14px] border border-white/10 bg-white/[0.05] px-3 py-3"
+          >
+            <span className="text-[12px] font-black text-white">{label}</span>
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
           </div>
-          <div className="rounded-[14px] border border-white/10 bg-white/[0.04] px-3 py-3">
-            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
-              region
-            </div>
-            <div className="mt-1 text-[13px] font-black text-white">
-              티오 확인
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );
@@ -436,10 +441,7 @@ export default async function PlansPage() {
               {isMember ? (
                 <MembershipPassPanel />
               ) : (
-                <MembershipCapPanel
-                  filled={slotSnapshot.filled}
-                  capacity={slotSnapshot.capacity}
-                />
+                <MembershipAccessPanel />
               )}
             </div>
           </div>
@@ -463,7 +465,7 @@ export default async function PlansPage() {
                   <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
                     {isMember
                       ? `만료일 ${membershipEndLabel(membershipEndAt)}`
-                      : "신청 버튼을 누르면 내 지역 티오 확인 후 기간을 선택합니다."}
+                      : "내 지역 티오를 확인하고 기간을 선택합니다."}
                   </div>
                 </div>
                 <div
@@ -483,14 +485,20 @@ export default async function PlansPage() {
               </div>
             </div>
             <div className="grid gap-3 px-4 py-4 sm:px-5">
+              {!isMember ? (
+                <SeatStatusBar
+                  filled={slotSnapshot.filled}
+                  capacity={slotSnapshot.capacity}
+                />
+              ) : null}
               {!isMember && auth.ok ? <PlansUrgencyCountdown /> : null}
               <div className="rounded-[18px] border border-blue-100 bg-blue-50/70 px-4 py-4 dark:border-blue-950/70 dark:bg-blue-950/20">
                 <div className="mb-3 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
                   {isMember
                     ? "연장 기간을 고르면 계좌가 열립니다. 송금 후 입금했어요 버튼을 누르면 5분 내 승인됩니다."
                     : auth.ok
-                      ? "티오가 열려 있으면 기간을 고른 뒤 계좌가 열립니다. 이 페이지는 결제 페이지가 아니라 자리 확인 페이지입니다."
-                      : "카카오 로그인 후 내 지역 티오를 확인합니다. 가격은 티오 확인 뒤 기간 선택 단계에서 고릅니다."}
+                      ? "티오가 열려 있으면 기간 선택 후 계좌가 열립니다."
+                      : "로그인 후 내 지역 티오를 확인하고 기간을 선택합니다."}
                 </div>
                 <MembershipApplicationClient
                   isAuthed={auth.ok}

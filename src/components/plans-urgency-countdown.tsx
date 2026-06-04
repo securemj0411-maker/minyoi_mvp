@@ -44,10 +44,10 @@ export default function PlansUrgencyCountdown({
       <div className="flex items-center justify-between gap-3 px-4 py-3">
         <div className="min-w-0">
           <div className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-700 dark:text-amber-300">
-            Reserved seat timer
+            자리 확인 타이머
           </div>
           <div className="mt-1 break-keep text-[13px] font-black text-zinc-950 dark:text-zinc-50">
-            지금 신청 흐름에서만 보이는 장기권 전환 조건
+            지금 신청하면 장기권 특가 조건이 유지돼요
           </div>
         </div>
         <div className="shrink-0 rounded-2xl bg-zinc-950 px-3 py-2 text-center text-white dark:bg-white dark:text-zinc-950">
