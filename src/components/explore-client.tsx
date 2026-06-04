@@ -318,9 +318,7 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
   const headline = selectedPlan
     ? `단 ${membershipKrw(selectedPlan.priceKrw)}으로 ${selectedTargetLabel} 업그레이드`
     : "멤버십 업그레이드 1시간 특가";
-  const subHeadline = remainingDays !== null && remainingDays <= 45
-    ? "방금 멤버십을 시작한 사람에게만 열리는 1시간 업그레이드 조건이에요."
-    : `이미 남은 ${remainingDays ?? 0}일은 그대로 유지하고, 오늘 결제하면 ${selectedTargetLabel}으로 올려드립니다.`;
+  const supportLine = remainingDays !== null && remainingDays > 0 ? `남은 ${remainingDays}일 유지` : "멤버 전용 1시간 조건";
 
   return (
     <section className="mb-3 overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-[0_16px_45px_rgba(245,158,11,0.13)] dark:border-amber-900/50 dark:bg-zinc-900">
@@ -336,50 +334,43 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
           </div>
         </div>
       </div>
-      <div className="grid gap-3 px-4 py-3">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-1.5">
-            {offerPlans.map((plan) => {
-              const active = selectedPlan?.key === plan.key;
-              return (
-                <button
-                  key={plan.key}
-                  type="button"
-                  onClick={() => setSelectedKey(plan.key)}
-                  disabled={expired || requestState === "submitting"}
-                  className={`rounded-full px-2.5 py-1 text-[11px] font-black transition disabled:opacity-50 ${active ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-200"}`}
-                >
-                  {upgradeTargetLabel(plan)} · {membershipKrw(plan.priceKrw)}
-                </button>
-              );
-            })}
-          </div>
-          <p className="mt-2 break-keep text-[12.5px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
-            {subHeadline}
-          </p>
-        </div>
-        {selectedPlan ? (
-          <div className="rounded-xl border border-amber-100 bg-amber-50/70 px-3 py-3 dark:border-amber-950/70 dark:bg-amber-950/20">
-            <div className="flex flex-wrap items-end justify-between gap-2">
-              <div>
-                <div className="text-[11px] font-black text-amber-700 dark:text-amber-300">{upgradeTargetLabel(selectedPlan)} 1시간 특가</div>
-                <div className="mt-1 text-[20px] font-black text-zinc-950 dark:text-zinc-50">{membershipKrw(selectedPlan.priceKrw)}</div>
-                <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
-                  지금 수락하면 {selectedTargetLabel}으로 업그레이드됩니다.
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setOfferModalOpen(true);
-                  setMessage(null);
-                }}
-                disabled={expired || requestState === "submitting"}
-                className="flex h-10 items-center justify-center rounded-xl bg-zinc-950 px-4 text-[12px] font-black text-white transition hover:bg-amber-700 disabled:cursor-default disabled:opacity-50 dark:bg-white dark:text-zinc-950"
-              >
-                {expired ? "이벤트 마감" : "제안 수락"}
-              </button>
+      <div className="grid gap-2 px-4 py-3">
+        {offerPlans.length > 1 ? (
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {offerPlans.map((plan) => {
+                const active = selectedPlan?.key === plan.key;
+                return (
+                  <button
+                    key={plan.key}
+                    type="button"
+                    onClick={() => setSelectedKey(plan.key)}
+                    disabled={expired || requestState === "submitting"}
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-black transition disabled:opacity-50 ${active ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-200"}`}
+                  >
+                    {upgradeTargetLabel(plan)} · {membershipKrw(plan.priceKrw)}
+                  </button>
+                );
+              })}
             </div>
+          </div>
+        ) : null}
+        {selectedPlan ? (
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-black text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+              {supportLine}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setOfferModalOpen(true);
+                setMessage(null);
+              }}
+              disabled={expired || requestState === "submitting"}
+              className="flex h-10 flex-1 items-center justify-center rounded-xl bg-zinc-950 px-4 text-[12px] font-black text-white transition hover:bg-amber-700 disabled:cursor-default disabled:opacity-50 dark:bg-white dark:text-zinc-950 sm:flex-none"
+            >
+              {expired ? "이벤트 마감" : "제안 수락"}
+            </button>
           </div>
         ) : null}
         {message ? (
