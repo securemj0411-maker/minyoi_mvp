@@ -55,16 +55,17 @@ test("detail modal keeps expected profit typography compact and dark-mode aware"
 test("detail modal compacts source, condition, and location into one Korean meta line", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
   const heroBlock = modal.slice(
-    modal.indexOf("const headerMetaParts = ["),
+    modal.indexOf("const directTradeLocation ="),
     modal.indexOf("<PurchaseDecisionHeader card={card} />"),
   );
 
   assert.match(modal, /function compactTradeLocationLabel/);
   assert.match(modal, /function revealHeaderConditionLabel/);
-  assert.match(modal, /const headerMetaParts = \[/);
   assert.match(modal, /\{marketplaceLabelForCard\(card\)\} · \$\{headerConditionLabel \?\? "상태 확인"\} · \$\{directTradeLocation\}/);
-  assert.match(heroBlock, /text-\[12px\] font-black leading-5/);
-  assert.doesNotMatch(heroBlock, /MarketplaceSourceBadge/);
+  assert.match(heroBlock, /flex min-w-0 flex-nowrap items-center gap-1\.5 overflow-hidden/);
+  assert.match(heroBlock, /<MarketplaceSourceBadge source=\{card\.marketplaceSource\} label=\{card\.marketplaceLabel\}/);
+  assert.match(heroBlock, /rounded-full bg-zinc-100 px-2 py-0\.5 text-\[10px\] font-black/);
+  assert.match(heroBlock, /rounded-full border border-orange-200 bg-orange-50 px-2 py-0\.5 text-\[10px\] font-black/);
   assert.doesNotMatch(heroBlock, /거래 가능 동네:/);
   assert.doesNotMatch(heroBlock, /<ConditionTierChip/);
 });

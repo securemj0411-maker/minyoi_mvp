@@ -15,7 +15,7 @@ import {
 } from "@/components/condition-chip";
 import { CategoryWatermark } from "@/components/category-watermark";
 import { RiskScoreBar } from "@/components/risk-score-bar";
-import { BunjangLogo, DanawaLogo, JoongnaLogo } from "@/components/market-brand-logo";
+import { BunjangLogo, DanawaLogo, JoongnaLogo, MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { SkuImageLockBadge } from "@/components/sku-image-lock-badge";
 import {
   ActivityIcon,
@@ -6390,11 +6390,6 @@ function RevealCardItem({
   const directTradeLocation = isDaangn ? card.savedDetail?.directTradeLocation?.trim() : null;
   const compactTradeLocation = compactTradeLocationLabel(directTradeLocation);
   const headerConditionLabel = revealHeaderConditionLabel(card);
-  const headerMetaParts = [
-    marketplaceLabelForCard(card),
-    headerConditionLabel,
-    compactTradeLocation,
-  ].filter((part): part is string => Boolean(part));
   const netPct = netProfitPercent(card);
   // Wave 394.7.f (외부 review 2라운드 #3): brand 가품 위험 큰 카테고리는 "조건부 매입 OK".
   // 사용자 짚음 — "매입 OK + 가품 위험 큼" 충돌. 정품 확인 필요 명시.
@@ -6486,21 +6481,24 @@ function RevealCardItem({
                 <div className="hidden">
                   <LastVerifiedAtBadge card={card} />
                 </div>
-                {/* Wave 1070 (2026-06-04): source / 상태 / 위치를 진짜 한 줄 텍스트 메타로 압축. */}
+                {/* Wave 1071 (2026-06-04): 세로 stack 제거, 단 한 줄 안에서 아이콘/뱃지 가시성은 유지. */}
                 <div
-                  className="mb-2 flex min-w-0 items-center overflow-hidden text-[12px] font-black leading-5 text-zinc-500 dark:text-zinc-400"
+                  className="mb-2 flex min-w-0 flex-nowrap items-center gap-1.5 overflow-hidden"
                   title={directTradeLocation ? `${marketplaceLabelForCard(card)} · ${headerConditionLabel ?? "상태 확인"} · ${directTradeLocation}` : undefined}
                 >
-                  <span className="min-w-0 truncate">
-                    {headerMetaParts.map((part, index) => (
-                      <Fragment key={`${part}-${index}`}>
-                        {index > 0 ? <span className="mx-1 text-zinc-300 dark:text-zinc-600">·</span> : null}
-                        <span className={part === compactTradeLocation ? "text-orange-600 dark:text-orange-300" : undefined}>
-                          {part}
-                        </span>
-                      </Fragment>
-                    ))}
+                  <span className="shrink-0">
+                    <MarketplaceSourceBadge source={card.marketplaceSource} label={card.marketplaceLabel} />
                   </span>
+                  {headerConditionLabel ? (
+                    <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-black leading-4 text-zinc-700 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700">
+                      {headerConditionLabel}
+                    </span>
+                  ) : null}
+                  {compactTradeLocation ? (
+                    <span className="min-w-0 truncate rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-[10px] font-black leading-4 text-orange-700 dark:border-orange-900/60 dark:bg-orange-950/30 dark:text-orange-300">
+                      {compactTradeLocation}
+                    </span>
+                  ) : null}
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="min-w-0 flex-1 line-clamp-2 text-[20px] font-black leading-[1.25] tracking-[-0.01em] text-[#111915] dark:text-zinc-50">
