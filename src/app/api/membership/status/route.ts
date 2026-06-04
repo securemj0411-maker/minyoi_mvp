@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { getMembershipPlan } from "@/lib/membership-plans";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { getProStatus, hasMembershipAccess } from "@/lib/user-subscription";
-import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import {
+  jsonBody,
+  restFetch,
+  serviceHeaders,
+  tableUrl,
+} from "@/lib/supabase-rest";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
@@ -20,6 +25,33 @@ type ApplicationStatusRow = {
   created_at: string;
 };
 
+function adminNoteLine(message: string) {
+  return `[${new Date().toISOString()}] ${message}`;
+}
+
+async function expireUnpaidReservationsForUser(authUserId: string) {
+  const nowIso = new Date().toISOString();
+  const cutoffIso = new Date(Date.now() - 7 * 60_000).toISOString();
+  await restFetch(
+    `${tableUrl("mvp_membership_applications")}?auth_user_id=eq.${authUserId}&status=eq.pending&deposit_confirmed_at=is.null&created_at=lt.${encodeURIComponent(cutoffIso)}`,
+    {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: jsonBody({
+        status: "rejected",
+        decided_at: nowIso,
+        updated_at: nowIso,
+        admin_note: adminNoteLine("auto_expired_unpaid_reservation_7m"),
+      }),
+    },
+  ).catch((err) => {
+    console.warn(
+      "[membership/status] expire unpaid reservation failed",
+      err instanceof Error ? err.message : String(err),
+    );
+  });
+}
+
 export async function GET(req: Request) {
   const auth = await requireSupabaseUser(req);
   if (!auth.ok)
@@ -28,6 +60,7 @@ export async function GET(req: Request) {
   const userRef = userRefForAuthUser(auth.user.id);
   const membership = await getProStatus(auth.user, userRef);
   const isMember = hasMembershipAccess(membership);
+  await expireUnpaidReservationsForUser(auth.user.id);
 
   const res = await restFetch(
     `${tableUrl("mvp_membership_applications")}?select=id,application_kind,product_key,price_krw,status,deposit_confirmed_at,scheduled_auto_approve_at,decided_at,created_at&auth_user_id=eq.${auth.user.id}&order=created_at.desc&limit=1`,

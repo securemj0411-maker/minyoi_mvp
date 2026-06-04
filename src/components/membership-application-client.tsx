@@ -6,9 +6,6 @@ import { useEffect, useState } from "react";
 import {
   getMembershipPlan,
   krw,
-  MEMBERSHIP_PLANS,
-  UPSELL_PLANS_FROM_1MO,
-  UPSELL_PLANS_FROM_3MO,
   type MembershipPlan,
   type MembershipPlanKey,
 } from "@/lib/membership-plans";
@@ -43,33 +40,19 @@ type MembershipStatusResponse = {
   } | null;
 };
 
-type MembershipOfferTokenResponse = {
-  ok?: boolean;
-  expiresAt?: string | null;
-  offers?: Array<{ productKey?: string | null; token?: string | null }>;
-};
-
-function upsellPlansFor(plan: MembershipPlan): MembershipPlan[] {
-  if (plan.key === "limited_300_1mo") return UPSELL_PLANS_FROM_1MO;
-  if (plan.key === "limited_300_3mo") return UPSELL_PLANS_FROM_3MO;
-  return [];
-}
-
-function regularPlanForMonths(months: number): MembershipPlan | null {
-  return MEMBERSHIP_PLANS.find((plan) => plan.months === months) ?? null;
-}
-
-function discountPercent(regularPrice: number, offerPrice: number): number {
-  if (regularPrice <= 0 || offerPrice >= regularPrice) return 0;
-  return Math.round(((regularPrice - offerPrice) / regularPrice) * 100);
-}
-
 function countdownLabel(ms: number) {
   const safeMs = Math.max(0, ms);
   const totalSec = Math.ceil(safeMs / 1000);
   const minutes = Math.floor(totalSec / 60);
   const seconds = totalSec % 60;
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function reservationExpiryFromCreatedAt(createdAt: string | null | undefined) {
+  if (!createdAt) return null;
+  const createdMs = Date.parse(createdAt);
+  if (!Number.isFinite(createdMs)) return null;
+  return new Date(createdMs + 7 * 60_000).toISOString();
 }
 
 export default function MembershipApplicationClient({
@@ -80,6 +63,7 @@ export default function MembershipApplicationClient({
   pendingApplication,
   suppressFixedCta = false,
   autoOpenSelector = false,
+  reservedRegionLabel,
 }: {
   isAuthed: boolean;
   isMember: boolean;
@@ -88,14 +72,13 @@ export default function MembershipApplicationClient({
   pendingApplication: PendingApplication | null;
   suppressFixedCta?: boolean;
   autoOpenSelector?: boolean;
+  reservedRegionLabel?: string | null;
 }) {
   const router = useRouter();
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [selectedKey, setSelectedKey] = useState<MembershipPlanKey>(
     getMembershipPlan(pendingApplication?.planKey ?? plans[1]?.key).key,
   );
-  const [selectedUpsellKey, setSelectedUpsellKey] =
-    useState<MembershipPlanKey | null>(null);
   const [submittedPlan, setSubmittedPlan] = useState<MembershipPlan | null>(
     null,
   );
@@ -121,40 +104,27 @@ export default function MembershipApplicationClient({
   const [approvalDetected, setApprovalDetected] = useState(false);
   const [approvalMessage, setApprovalMessage] = useState<string | null>(null);
   const [reservationCancelled, setReservationCancelled] = useState(false);
-  const [upsellOpen, setUpsellOpen] = useState(false);
-  const [upsellExpiresAt, setUpsellExpiresAt] = useState<string | null>(null);
-  const [upsellOfferTokens, setUpsellOfferTokens] = useState<
-    Record<string, string>
-  >({});
+  const [reservationExpiresAt, setReservationExpiresAt] = useState<
+    string | null
+  >(
+    pendingApplication && !pendingApplication.depositConfirmedAt
+      ? reservationExpiryFromCreatedAt(pendingApplication.createdAt)
+      : null,
+  );
   const [nowMs, setNowMs] = useState(() => Date.now());
   const selectedPlan = getMembershipPlan(selectedKey);
-  const upsellPlans = upsellPlansFor(selectedPlan);
-  const selectedUpsellPlan = selectedUpsellKey
-    ? getMembershipPlan(selectedUpsellKey)
-    : (upsellPlans[0] ?? null);
-  const offerExpiresAtMs = upsellExpiresAt ? Date.parse(upsellExpiresAt) : null;
-  const offerMsLeft =
-    offerExpiresAtMs && Number.isFinite(offerExpiresAtMs)
-      ? Math.max(0, offerExpiresAtMs - nowMs)
-    : 10 * 60_000;
-  const offerMinutesLeft = Math.max(0, Math.ceil(offerMsLeft / 60_000));
-  const offerProgressPct = Math.min(
-    100,
-    Math.max(0, 100 - (offerMsLeft / (10 * 60_000)) * 100),
-  );
-  const offerExpired = upsellExpiresAt !== null && offerMsLeft <= 0;
   const renewalMode = isMember;
+  const showInlineSelector =
+    autoOpenSelector &&
+    !renewalMode &&
+    !pendingApplication &&
+    !reservationCancelled;
 
   useEffect(() => {
-    if (!autoOpenSelector || renewalMode || pendingApplication || reservationCancelled) return;
-    setSelectorOpen(true);
-  }, [autoOpenSelector, pendingApplication, renewalMode, reservationCancelled]);
-
-  useEffect(() => {
-    if (!upsellOpen && !autoApproveAt) return;
+    if (!autoApproveAt && !reservationExpiresAt) return;
     const id = window.setInterval(() => setNowMs(Date.now()), 1000);
     return () => window.clearInterval(id);
-  }, [autoApproveAt, upsellOpen]);
+  }, [autoApproveAt, reservationExpiresAt]);
 
   useEffect(() => {
     if (!autoApproveAt || approvalDetected || reservationCancelled) return;
@@ -220,48 +190,7 @@ export default function MembershipApplicationClient({
 
   async function beginApplication(plan: MembershipPlan) {
     if (state === "submitting") return;
-    const nextUpsells = upsellPlansFor(plan);
     setSelectorOpen(false);
-    if (!renewalMode && !plan.isUpsell && nextUpsells.length > 0) {
-      const supabase = getSupabaseBrowserClient();
-      const { data } = supabase
-        ? await supabase.auth.getSession()
-        : { data: null };
-      const token = data?.session?.access_token;
-      if (!token) {
-        setState("error");
-        setMessage("로그인 세션을 다시 확인해주세요.");
-        return;
-      }
-      const res = await fetch("/api/membership/offer-token", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ baseProductKey: plan.key }),
-      }).catch(() => null);
-      const payload = (await res
-        ?.json()
-        .catch(() => null)) as MembershipOfferTokenResponse | null;
-      if (!res?.ok || !payload?.ok || !payload.expiresAt) {
-        void submitApplication(plan);
-        return;
-      }
-      const startedAt = Date.now();
-      setNowMs(startedAt);
-      setSelectedUpsellKey(nextUpsells[0]?.key ?? null);
-      setUpsellExpiresAt(payload.expiresAt);
-      setUpsellOfferTokens(
-        Object.fromEntries(
-          (payload.offers ?? [])
-            .filter((offer) => offer.productKey && offer.token)
-            .map((offer) => [String(offer.productKey), String(offer.token)]),
-        ),
-      );
-      setUpsellOpen(true);
-      return;
-    }
     void submitApplication(plan);
   }
 
@@ -286,7 +215,6 @@ export default function MembershipApplicationClient({
     setState("submitting");
     setMessage(null);
     setSelectorOpen(false);
-    setUpsellOpen(false);
 
     const supabase = getSupabaseBrowserClient();
     const { data } = supabase
@@ -309,7 +237,6 @@ export default function MembershipApplicationClient({
         source: "plans",
         productKey: plan.key,
         intent: renewalMode ? "renewal" : "new",
-        offerToken: plan.isUpsell ? upsellOfferTokens[plan.key] : undefined,
       }),
     }).catch(() => null);
 
@@ -327,13 +254,14 @@ export default function MembershipApplicationClient({
     } | null;
     setSubmittedPlan(plan);
     setReservationCancelled(false);
+    setReservationExpiresAt(new Date(Date.now() + 7 * 60_000).toISOString());
     setState("sent");
     setMessage(
       renewalMode
         ? `${plan.label} 연장 예약 완료. 아래 계좌로 송금한 뒤 입금했어요 버튼을 눌러주세요.`
         : payload?.telegramSent === false
-          ? "내 지역 티오 확인 후 자리는 예약됐어요. 아래 계좌로 송금한 뒤 입금했어요 버튼을 눌러주세요."
-          : `${plan.label} 내 지역 티오 확인 완료. 아래 계좌로 송금한 뒤 입금했어요 버튼을 눌러주세요.`,
+          ? "자리를 확보했어요. 7분 내로 입금하지 않으면 자리 예약이 취소돼요."
+          : "자리를 확보했어요. 7분 내로 입금하지 않으면 자리 예약이 취소돼요.",
     );
   }
 
@@ -410,7 +338,6 @@ export default function MembershipApplicationClient({
     setState("submitting");
     setMessage(null);
     setSelectorOpen(false);
-    setUpsellOpen(false);
 
     const supabase = getSupabaseBrowserClient();
     const { data } = supabase
@@ -440,6 +367,7 @@ export default function MembershipApplicationClient({
     setDepositNotifyState("idle");
     setDepositNotifyMessage(null);
     setAutoApproveAt(null);
+    setReservationExpiresAt(null);
     setApprovalDetected(false);
     setApprovalMessage(null);
     setReservationCancelled(true);
@@ -479,17 +407,22 @@ export default function MembershipApplicationClient({
     submittedPlan?.label ?? pendingApplication?.planLabel ?? "멤버십";
   const priceKrw =
     submittedPlan?.priceKrw ?? pendingApplication?.priceKrw ?? 99_000;
-  const reservationTitle = renewalMode
-    ? "연장 예약 완료 · 입금 대기"
-    : "내 지역 티오 확인 완료 · 입금 대기";
   const defaultReservationMessage = renewalMode
     ? "연장 예약이 잡혔습니다. 아래 계좌로 송금한 뒤 입금했어요 버튼을 누르면 운영자에게 바로 알림이 갑니다."
-    : "자리가 예약됐습니다. 아래 계좌로 송금한 뒤 입금했어요 버튼을 누르면 운영자에게 바로 알림이 갑니다.";
+    : "7분 내로 입금하지 않으면 자리 예약이 취소돼요. 입금 후 버튼을 누르면 운영자에게 바로 알림이 갑니다.";
   const autoApproveTargetMs = autoApproveAt ? Date.parse(autoApproveAt) : null;
   const autoApproveMsLeft =
     autoApproveTargetMs && Number.isFinite(autoApproveTargetMs)
       ? Math.max(0, autoApproveTargetMs - nowMs)
       : 5 * 60_000;
+  const reservationTargetMs = reservationExpiresAt
+    ? Date.parse(reservationExpiresAt)
+    : null;
+  const reservationMsLeft =
+    reservationTargetMs && Number.isFinite(reservationTargetMs)
+      ? Math.max(0, reservationTargetMs - nowMs)
+      : 7 * 60_000;
+  const reservationRegion = reservedRegionLabel?.trim() || "내 지역";
   const showDepositCountdown = hasReservation && depositNotifyState === "sent";
 
   function goToFeed() {
@@ -532,106 +465,166 @@ export default function MembershipApplicationClient({
         </div>
       ) : null}
       {hasReservation ? (
-        <div className="rounded-[12px] border border-blue-100 bg-white px-3.5 py-3 dark:border-blue-950/70 dark:bg-zinc-950/50">
-          <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">
-            {reservationTitle}
-          </div>
-          <div className="mt-1 text-[15px] font-black text-zinc-950 dark:text-zinc-50">
-            {planLabel} · {krw(priceKrw)}
-          </div>
-          <p
-            className={`mt-1.5 break-keep text-[12px] font-semibold leading-5 ${state === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}
-          >
-            {message ?? defaultReservationMessage}
-          </p>
-          <div className="mt-3 rounded-[12px] bg-[#f5f7fb] p-3 dark:bg-zinc-900/70">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <div className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
-                  {BANK_NAME}
+        <div className="overflow-hidden rounded-[30px] border border-blue-100 bg-white text-zinc-950 shadow-[0_26px_72px_rgba(49,130,246,0.14)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
+          <div className="relative bg-zinc-950 px-5 py-6 text-white dark:bg-white dark:text-zinc-950 sm:px-7 sm:py-8">
+            <div className="absolute right-0 top-0 h-44 w-44 rounded-bl-full bg-[#3182f6]/30 blur-2xl" />
+            <div className="relative flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div className="inline-flex rounded-full bg-white/10 px-3 py-1 text-[11px] font-black tracking-[0.04em] text-blue-100 ring-1 ring-white/15 dark:bg-zinc-950/8 dark:text-[#3182f6] dark:ring-zinc-950/10">
+                  {renewalMode ? "연장 예약 완료" : "자리 확보 완료"}
                 </div>
-                <div className="mt-1 font-black tabular-nums text-[19px] tracking-tight text-zinc-950 dark:text-zinc-50">
-                  {ACCOUNT_NUMBER}
+                <h2 className="mt-4 break-keep text-[31px] font-black leading-[1.02] tracking-tight sm:text-[46px]">
+                  {renewalMode
+                    ? `${planLabel} 연장 예약을 잡았어요.`
+                    : `${reservationRegion} 자리 1석을 확보했어요.`}
+                </h2>
+              </div>
+              {!renewalMode ? (
+                <div className="shrink-0 rounded-[22px] bg-white px-4 py-3 text-center text-zinc-950 shadow-[0_18px_44px_rgba(49,130,246,0.28)] dark:bg-zinc-950 dark:text-white">
+                  <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-400">
+                    남은 시간
+                  </div>
+                  <div className="mt-1 font-mono text-[34px] font-black leading-none tabular-nums">
+                    {countdownLabel(reservationMsLeft)}
+                  </div>
                 </div>
-                <div className="mt-1 text-[12px] font-bold text-zinc-700 dark:text-zinc-300">
-                  예금주 {ACCOUNT_HOLDER}
+              ) : null}
+            </div>
+            {!renewalMode ? (
+              <div className="relative mt-5 rounded-[20px] bg-white/10 px-4 py-3 ring-1 ring-white/12 dark:bg-zinc-950/8 dark:ring-zinc-950/10">
+                <div className="text-[13px] font-black text-blue-100 dark:text-[#3182f6]">
+                  7분 내 입금 필요
+                </div>
+                <p className="mt-1 break-keep text-[14px] font-bold leading-6 text-white/78 dark:text-zinc-600">
+                  7분 내로 입금하지 않으면 자리 예약이 취소돼요.
+                </p>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/15 dark:bg-zinc-950/10">
+                  <div
+                    className="h-full rounded-full bg-[#3182f6] transition-[width] duration-500"
+                    style={{
+                      width: `${Math.max(0, Math.min(100, (reservationMsLeft / (7 * 60_000)) * 100))}%`,
+                    }}
+                  />
                 </div>
               </div>
+            ) : null}
+          </div>
+          <div className="px-4 py-4 sm:px-5">
+            <div className="flex items-center justify-between gap-3 rounded-[18px] bg-[#f5f8ff] px-4 py-3 ring-1 ring-blue-100 dark:bg-white/8 dark:ring-white/10">
+              <div>
+                <div className="text-[11px] font-black text-zinc-400">
+                  선택 기간
+                </div>
+                <div className="mt-1 text-[18px] font-black">{planLabel}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[11px] font-black text-zinc-400">
+                  입금 금액
+                </div>
+                <div className="mt-1 text-[22px] font-black tabular-nums text-[#3182f6] dark:text-blue-300">
+                  {krw(priceKrw)}
+                </div>
+              </div>
+            </div>
+            <p
+              className={`mt-3 break-keep text-[12px] font-semibold leading-5 ${state === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}
+            >
+              {message ?? defaultReservationMessage}
+            </p>
+            <div className="mt-3 rounded-[12px] bg-[#f5f7fb] p-3 dark:bg-zinc-900/70">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <div className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+                    {BANK_NAME}
+                  </div>
+                  <div className="mt-1 font-black tabular-nums text-[19px] tracking-tight text-zinc-950 dark:text-zinc-50">
+                    {ACCOUNT_NUMBER}
+                  </div>
+                  <div className="mt-1 text-[12px] font-bold text-zinc-700 dark:text-zinc-300">
+                    예금주 {ACCOUNT_HOLDER}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void copyAccountNumber()}
+                  className="flex h-10 shrink-0 items-center justify-center rounded-xl bg-white px-3 text-[11px] font-black text-[#3182f6] ring-1 ring-zinc-200 transition hover:bg-[#ebf2ff] dark:bg-zinc-950 dark:text-blue-300 dark:ring-zinc-700 dark:hover:bg-blue-950/40"
+                >
+                  {copyOk ? "복사됨" : "계좌 복사"}
+                </button>
+              </div>
+              <div className="mt-2 rounded-[10px] border border-blue-100 bg-white px-3 py-2 text-[11px] font-bold leading-4 text-zinc-600 dark:border-blue-950/60 dark:bg-zinc-950 dark:text-zinc-300">
+                입금 금액:{" "}
+                <b className="text-[#3182f6] dark:text-blue-300">
+                  {krw(priceKrw)}
+                </b>{" "}
+                · 5분 내 승인 보장
+              </div>
+            </div>
+            {showDepositCountdown ? (
+              <div className="mt-3 rounded-[12px] border border-emerald-200 bg-emerald-50 px-3 py-3 dark:border-emerald-900/70 dark:bg-emerald-950/20">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">
+                      입금 확인 진행 중
+                    </div>
+                    <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+                      5분 내 운영자가 확인합니다. 시간이 지나면 자동으로
+                      승인돼요.
+                    </div>
+                  </div>
+                  <div className="shrink-0 rounded-[10px] bg-white px-3 py-2 text-[22px] font-black tabular-nums text-emerald-700 ring-1 ring-emerald-100 dark:bg-zinc-950 dark:text-emerald-300 dark:ring-emerald-900">
+                    {autoApproveMsLeft > 0
+                      ? countdownLabel(autoApproveMsLeft)
+                      : "0:00"}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => void notifyDepositDone()}
+              disabled={
+                state === "submitting" ||
+                depositNotifyState === "sending" ||
+                depositNotifyState === "sent"
+              }
+              className="mt-3 flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+            >
+              {depositNotifyState === "sending"
+                ? "입금 확인 요청 중"
+                : depositNotifyState === "sent"
+                  ? "입금 확인 요청 완료"
+                  : "입금했어요"}
+            </button>
+            {depositNotifyMessage ? (
+              <p
+                className={`mt-2 break-keep text-[11px] font-bold leading-4 ${depositNotifyState === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}
+              >
+                {depositNotifyMessage}
+              </p>
+            ) : null}
+            <div className="mt-3 grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => void copyAccountNumber()}
-                className="flex h-10 shrink-0 items-center justify-center rounded-xl bg-white px-3 text-[11px] font-black text-[#3182f6] ring-1 ring-zinc-200 transition hover:bg-[#ebf2ff] dark:bg-zinc-950 dark:text-blue-300 dark:ring-zinc-700 dark:hover:bg-blue-950/40"
+                onClick={openSelector}
+                disabled={
+                  state === "submitting" || depositNotifyState === "sent"
+                }
+                className="h-10 rounded-xl border border-blue-100 bg-blue-50 text-[12px] font-black text-[#3182f6] transition hover:bg-[#ebf2ff] disabled:cursor-default disabled:opacity-60 dark:border-blue-950/70 dark:bg-blue-950/30 dark:text-blue-200"
               >
-                {copyOk ? "복사됨" : "계좌 복사"}
+                {renewalMode ? "연장 기간 변경" : "기간/금액 변경"}
+              </button>
+              <button
+                type="button"
+                onClick={() => void cancelReservation()}
+                disabled={
+                  state === "submitting" || depositNotifyState === "sent"
+                }
+                className="h-10 rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-600 transition hover:bg-zinc-50 disabled:cursor-default disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300"
+              >
+                {renewalMode ? "연장 취소" : "예약 취소"}
               </button>
             </div>
-            <div className="mt-2 rounded-[10px] border border-blue-100 bg-white px-3 py-2 text-[11px] font-bold leading-4 text-zinc-600 dark:border-blue-950/60 dark:bg-zinc-950 dark:text-zinc-300">
-              입금 금액:{" "}
-              <b className="text-[#3182f6] dark:text-blue-300">
-                {krw(priceKrw)}
-              </b>{" "}
-              · 5분 내 승인 보장
-            </div>
-          </div>
-          {showDepositCountdown ? (
-            <div className="mt-3 rounded-[12px] border border-emerald-200 bg-emerald-50 px-3 py-3 dark:border-emerald-900/70 dark:bg-emerald-950/20">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">
-                    입금 확인 진행 중
-                  </div>
-                  <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
-                    5분 내 운영자가 확인합니다. 시간이 지나면 자동으로 승인돼요.
-                  </div>
-                </div>
-                <div className="shrink-0 rounded-[10px] bg-white px-3 py-2 text-[22px] font-black tabular-nums text-emerald-700 ring-1 ring-emerald-100 dark:bg-zinc-950 dark:text-emerald-300 dark:ring-emerald-900">
-                  {autoApproveMsLeft > 0
-                    ? countdownLabel(autoApproveMsLeft)
-                    : "0:00"}
-                </div>
-              </div>
-            </div>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => void notifyDepositDone()}
-            disabled={
-              state === "submitting" ||
-              depositNotifyState === "sending" ||
-              depositNotifyState === "sent"
-            }
-            className="mt-3 flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
-          >
-            {depositNotifyState === "sending"
-              ? "입금 확인 요청 중"
-              : depositNotifyState === "sent"
-                ? "입금 확인 요청 완료"
-                : "입금했어요"}
-          </button>
-          {depositNotifyMessage ? (
-            <p
-              className={`mt-2 break-keep text-[11px] font-bold leading-4 ${depositNotifyState === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}
-            >
-              {depositNotifyMessage}
-            </p>
-          ) : null}
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={openSelector}
-              disabled={state === "submitting" || depositNotifyState === "sent"}
-              className="h-10 rounded-xl border border-blue-100 bg-blue-50 text-[12px] font-black text-[#3182f6] transition hover:bg-[#ebf2ff] disabled:cursor-default disabled:opacity-60 dark:border-blue-950/70 dark:bg-blue-950/30 dark:text-blue-200"
-            >
-              {renewalMode ? "연장 기간 변경" : "기간/금액 변경"}
-            </button>
-            <button
-              type="button"
-              onClick={() => void cancelReservation()}
-              disabled={state === "submitting" || depositNotifyState === "sent"}
-              className="h-10 rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-600 transition hover:bg-zinc-50 disabled:cursor-default disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300"
-            >
-              {renewalMode ? "연장 취소" : "예약 취소"}
-            </button>
           </div>
         </div>
       ) : renewalMode ? (
@@ -651,6 +644,44 @@ export default function MembershipApplicationClient({
             {state === "submitting" ? "연장 예약 중" : "멤버십 연장하기"}
           </button>
         </div>
+      ) : showInlineSelector ? (
+        <div className="overflow-hidden rounded-[30px] border border-blue-100 bg-white text-zinc-950 shadow-[0_26px_72px_rgba(49,130,246,0.14)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
+          <div className="relative bg-zinc-950 px-5 py-6 text-white dark:bg-white dark:text-zinc-950 sm:px-7 sm:py-8">
+            <div className="absolute right-0 top-0 h-44 w-44 rounded-bl-full bg-[#3182f6]/30 blur-2xl" />
+            <div className="relative">
+              <div className="inline-flex rounded-full bg-white/10 px-3 py-1 text-[11px] font-black tracking-[0.04em] text-blue-100 ring-1 ring-white/15 dark:bg-zinc-950/8 dark:text-[#3182f6] dark:ring-zinc-950/10">
+                기간 선택
+              </div>
+              <h2 className="mt-4 break-keep text-[31px] font-black leading-[1.02] tracking-tight sm:text-[48px]">
+                멤버십 기간을
+                <br />
+                선택하세요.
+              </h2>
+              <p className="mt-4 max-w-[520px] break-keep text-[14px] font-bold leading-6 text-white/72 dark:text-zinc-600 sm:text-[16px] sm:leading-7">
+                기간을 고르면 {reservationRegion} 자리 1석을 먼저 확보하고, 7분
+                입금 타이머가 시작됩니다.
+              </p>
+            </div>
+          </div>
+          <div className="px-4 py-4 sm:px-5">
+            <PlanGrid
+              plans={plans}
+              selectedKey={selectedKey}
+              onSelect={setSelectedKey}
+              disabled={state === "submitting"}
+            />
+            <button
+              type="button"
+              onClick={() => void beginApplication(selectedPlan)}
+              disabled={state === "submitting"}
+              className="mt-4 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[15px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.30)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+            >
+              {state === "submitting"
+                ? "자리 확보 중"
+                : `${selectedPlan.label}로 자리 확보하기`}
+            </button>
+          </div>
+        </div>
       ) : (
         <>
           <button
@@ -659,16 +690,20 @@ export default function MembershipApplicationClient({
             disabled={state === "submitting"}
             className="flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
           >
-            {state === "submitting" ? "자리 예약 중" : "지금 바로 자리 차지하기"}
+            {state === "submitting"
+              ? "자리 예약 중"
+              : "지금 바로 자리 차지하기"}
           </button>
-          {!suppressFixedCta && !selectorOpen && !upsellOpen ? (
+          {!suppressFixedCta && !selectorOpen ? (
             <button
               type="button"
               onClick={openSelector}
               disabled={state === "submitting"}
               className="fixed inset-x-3 bottom-3 z-40 flex h-12 items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.34)] ring-1 ring-white/30 transition hover:opacity-90 disabled:cursor-default disabled:opacity-70 sm:hidden"
             >
-              {state === "submitting" ? "자리 예약 중" : "지금 바로 자리 차지하기"}
+              {state === "submitting"
+                ? "자리 예약 중"
+                : "지금 바로 자리 차지하기"}
             </button>
           ) : null}
         </>
@@ -689,9 +724,7 @@ export default function MembershipApplicationClient({
                   Membership select
                 </div>
                 <h2 className="mt-1 break-keep text-[26px] font-black leading-tight text-zinc-950 dark:text-zinc-50 sm:text-[34px]">
-                  {renewalMode
-                    ? "연장 기간을 고르세요."
-                    : "기간을 선택하세요."}
+                  {renewalMode ? "연장 기간을 고르세요." : "기간을 선택하세요."}
                 </h2>
                 <p className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
                   {renewalMode
@@ -733,144 +766,6 @@ export default function MembershipApplicationClient({
                 {selectedPlan.label}{" "}
                 {renewalMode ? "연장 예약하기" : "자리 예약하기"}
               </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-      {upsellOpen && !renewalMode ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-3 py-4 backdrop-blur-sm sm:items-center">
-          <div className="w-full max-w-[540px] overflow-hidden rounded-[22px] border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
-            <div className="bg-zinc-950 px-4 py-4 text-white">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="inline-flex rounded-full bg-amber-400/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-amber-200">
-                    {offerExpired
-                      ? "offer expired"
-                      : `reserved ${offerMinutesLeft}분 조건`}
-                  </div>
-                  <div className="mt-2 break-keep text-[16px] font-black leading-tight">
-                    지금 선택 흐름에서만 열리는 장기권 전환 조건
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <div className="rounded-2xl bg-white px-3.5 py-2 text-center text-zinc-950 shadow-[0_12px_34px_rgba(245,158,11,0.28)]">
-                    <div className="text-[9px] font-black uppercase tracking-[0.12em] text-zinc-500">
-                      남은 시간
-                    </div>
-                    <div className="mt-0.5 font-mono text-[30px] font-black leading-none tabular-nums">
-                      {countdownLabel(offerMsLeft)}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUpsellOpen(false);
-                      setSelectorOpen(true);
-                    }}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-[18px] font-black text-white transition hover:bg-white/20"
-                    aria-label="다시 고르기"
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-              <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/15">
-                <div
-                  className="h-full rounded-r-full bg-amber-400 transition-[width] duration-500"
-                  style={{ width: `${offerProgressPct}%` }}
-                />
-              </div>
-            </div>
-            <div className="p-4">
-              <h2 className="break-keep text-[22px] font-black leading-tight text-zinc-950 dark:text-zinc-50">
-                지금 기간을 늘리면 월 단가를 더 낮출 수 있어요.
-              </h2>
-              <p className="mt-2 break-keep text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
-                아래 카드는 선택만 됩니다. 마지막 예약 버튼을 눌러야 입금 안내가
-                열립니다.
-              </p>
-              <div className="mt-4 grid gap-2">
-                {upsellPlans.map((plan) => {
-                  const active = plan.key === selectedUpsellKey;
-                  const regularPlan = regularPlanForMonths(plan.months);
-                  const regularPrice = regularPlan?.priceKrw ?? plan.priceKrw;
-                  const discount = discountPercent(regularPrice, plan.priceKrw);
-                  return (
-                    <button
-                      key={plan.key}
-                      type="button"
-                      onClick={() => setSelectedUpsellKey(plan.key)}
-                      disabled={state === "submitting" || offerExpired}
-                      className={`rounded-[12px] border px-3.5 py-3 text-left transition disabled:cursor-default disabled:opacity-50 ${
-                        active
-                          ? "border-[#3182f6] bg-blue-50 shadow-[0_10px_24px_rgba(49,130,246,0.12)] dark:border-blue-700 dark:bg-blue-950/30"
-                          : "border-blue-100 bg-blue-50/70 hover:border-[#3182f6] hover:bg-blue-50 dark:border-blue-950/70 dark:bg-blue-950/20"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <div className="text-[14px] font-black text-zinc-950 dark:text-zinc-50">
-                              {plan.label}
-                            </div>
-                            {discount > 0 ? (
-                              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
-                                {discount}% 할인
-                              </span>
-                            ) : null}
-                          </div>
-                          <div className="mt-1 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
-                            {plan.valueNote}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-[10px] font-black text-zinc-400 line-through">
-                            정가 {krw(regularPrice)}
-                          </div>
-                          <div className="mt-0.5 text-[16px] font-black text-[#3182f6]">
-                            {krw(plan.priceKrw)}
-                          </div>
-                          <div className="mt-0.5 text-[10px] font-black text-zinc-400">
-                            {plan.monthlyLabel}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-2 break-keep text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
-                        원래 {krw(regularPrice)}인데 10분 내 예약하면{" "}
-                        {krw(plan.priceKrw)}에 열립니다.
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1.1fr]">
-                <button
-                  type="button"
-                  onClick={() => void submitApplication(selectedPlan)}
-                  disabled={state === "submitting"}
-                  className="h-10 rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-default disabled:opacity-70 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
-                >
-                  괜찮아요, 기존 걸로 진행할래요
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    selectedUpsellPlan
-                      ? void submitApplication(selectedUpsellPlan)
-                      : undefined
-                  }
-                  disabled={
-                    state === "submitting" ||
-                    offerExpired ||
-                    !selectedUpsellPlan
-                  }
-                  className="h-10 rounded-xl bg-zinc-900 px-3 text-[12px] font-black text-white transition hover:bg-zinc-700 disabled:cursor-default disabled:opacity-50 dark:bg-white dark:text-zinc-950"
-                >
-                  {offerExpired
-                    ? "특별 조건 만료"
-                    : `${selectedUpsellPlan?.label ?? "특별가"}로 예약`}
-                </button>
-              </div>
             </div>
           </div>
         </div>

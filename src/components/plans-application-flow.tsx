@@ -72,7 +72,11 @@ type LocalSampleItem = {
   thumbnailUrl: string | null;
 };
 
-function makeDistrictSeats(names: string[], baseSeats: number, basePressure: number): DistrictSeat[] {
+function makeDistrictSeats(
+  names: string[],
+  baseSeats: number,
+  basePressure: number,
+): DistrictSeat[] {
   return names.map((name, index) => ({
     name,
     seats: Math.max(1, baseSeats - (index % 3)),
@@ -149,20 +153,190 @@ const DISTRICT_OVERRIDES: Record<string, DistrictSeat[]> = {
     4,
     0.78,
   ),
-  incheon: makeDistrictSeats(["연수구", "부평구", "서구", "남동구", "미추홀구", "계양구", "중구", "동구", "강화군", "옹진군"], 3, 0.72),
-  busan: makeDistrictSeats(["해운대구", "수영구", "부산진구", "동래구", "남구", "연제구", "사하구", "북구", "금정구", "강서구", "기장군", "중구", "서구", "동구", "영도구", "사상구"], 3, 0.82),
-  daegu: makeDistrictSeats(["수성구", "달서구", "동구", "중구", "서구", "남구", "북구", "달성군", "군위군"], 3, 0.7),
-  daejeon: makeDistrictSeats(["서구", "유성구", "중구", "동구", "대덕구"], 3, 0.62),
-  gwangju: makeDistrictSeats(["북구", "광산구", "서구", "동구", "남구"], 3, 0.56),
+  incheon: makeDistrictSeats(
+    [
+      "연수구",
+      "부평구",
+      "서구",
+      "남동구",
+      "미추홀구",
+      "계양구",
+      "중구",
+      "동구",
+      "강화군",
+      "옹진군",
+    ],
+    3,
+    0.72,
+  ),
+  busan: makeDistrictSeats(
+    [
+      "해운대구",
+      "수영구",
+      "부산진구",
+      "동래구",
+      "남구",
+      "연제구",
+      "사하구",
+      "북구",
+      "금정구",
+      "강서구",
+      "기장군",
+      "중구",
+      "서구",
+      "동구",
+      "영도구",
+      "사상구",
+    ],
+    3,
+    0.82,
+  ),
+  daegu: makeDistrictSeats(
+    [
+      "수성구",
+      "달서구",
+      "동구",
+      "중구",
+      "서구",
+      "남구",
+      "북구",
+      "달성군",
+      "군위군",
+    ],
+    3,
+    0.7,
+  ),
+  daejeon: makeDistrictSeats(
+    ["서구", "유성구", "중구", "동구", "대덕구"],
+    3,
+    0.62,
+  ),
+  gwangju: makeDistrictSeats(
+    ["북구", "광산구", "서구", "동구", "남구"],
+    3,
+    0.56,
+  ),
   ulsan: makeDistrictSeats(["남구", "중구", "울주군", "동구", "북구"], 3, 0.66),
-  sejong: makeDistrictSeats(["새롬동", "도담동", "어진동", "나성동", "조치원읍", "반곡동"], 2, 0.58),
-  gangwon: makeDistrictSeats(["춘천시", "원주시", "강릉시", "속초시", "동해시", "삼척시", "태백시", "홍천군", "횡성군", "평창군"], 4, 0.48),
-  chungbuk: makeDistrictSeats(["청주시", "충주시", "제천시", "음성군", "진천군", "증평군", "옥천군", "영동군", "단양군", "보은군", "괴산군"], 4, 0.51),
-  chungnam: makeDistrictSeats(["천안시", "아산시", "공주시", "당진시", "서산시", "논산시", "보령시", "계룡시", "홍성군", "예산군", "부여군", "태안군"], 4, 0.56),
-  jeonbuk: makeDistrictSeats(["전주시", "군산시", "익산시", "완주군", "정읍시", "남원시", "김제시", "무주군", "고창군", "부안군"], 4, 0.49),
-  jeonnam: makeDistrictSeats(["목포시", "여수시", "순천시", "나주시", "광양시", "무안군", "해남군", "화순군", "고흥군", "영암군"], 3, 0.43),
-  gyeongbuk: makeDistrictSeats(["포항시", "구미시", "경산시", "경주시", "안동시", "김천시", "영주시", "상주시", "문경시", "칠곡군"], 3, 0.55),
-  gyeongnam: makeDistrictSeats(["창원시", "김해시", "진주시", "양산시", "거제시", "통영시", "사천시", "밀양시", "함안군", "창녕군"], 4, 0.59),
+  sejong: makeDistrictSeats(
+    ["새롬동", "도담동", "어진동", "나성동", "조치원읍", "반곡동"],
+    2,
+    0.58,
+  ),
+  gangwon: makeDistrictSeats(
+    [
+      "춘천시",
+      "원주시",
+      "강릉시",
+      "속초시",
+      "동해시",
+      "삼척시",
+      "태백시",
+      "홍천군",
+      "횡성군",
+      "평창군",
+    ],
+    4,
+    0.48,
+  ),
+  chungbuk: makeDistrictSeats(
+    [
+      "청주시",
+      "충주시",
+      "제천시",
+      "음성군",
+      "진천군",
+      "증평군",
+      "옥천군",
+      "영동군",
+      "단양군",
+      "보은군",
+      "괴산군",
+    ],
+    4,
+    0.51,
+  ),
+  chungnam: makeDistrictSeats(
+    [
+      "천안시",
+      "아산시",
+      "공주시",
+      "당진시",
+      "서산시",
+      "논산시",
+      "보령시",
+      "계룡시",
+      "홍성군",
+      "예산군",
+      "부여군",
+      "태안군",
+    ],
+    4,
+    0.56,
+  ),
+  jeonbuk: makeDistrictSeats(
+    [
+      "전주시",
+      "군산시",
+      "익산시",
+      "완주군",
+      "정읍시",
+      "남원시",
+      "김제시",
+      "무주군",
+      "고창군",
+      "부안군",
+    ],
+    4,
+    0.49,
+  ),
+  jeonnam: makeDistrictSeats(
+    [
+      "목포시",
+      "여수시",
+      "순천시",
+      "나주시",
+      "광양시",
+      "무안군",
+      "해남군",
+      "화순군",
+      "고흥군",
+      "영암군",
+    ],
+    3,
+    0.43,
+  ),
+  gyeongbuk: makeDistrictSeats(
+    [
+      "포항시",
+      "구미시",
+      "경산시",
+      "경주시",
+      "안동시",
+      "김천시",
+      "영주시",
+      "상주시",
+      "문경시",
+      "칠곡군",
+    ],
+    3,
+    0.55,
+  ),
+  gyeongnam: makeDistrictSeats(
+    [
+      "창원시",
+      "김해시",
+      "진주시",
+      "양산시",
+      "거제시",
+      "통영시",
+      "사천시",
+      "밀양시",
+      "함안군",
+      "창녕군",
+    ],
+    4,
+    0.59,
+  ),
   jeju: makeDistrictSeats(["제주시", "서귀포시"], 4, 0.37),
 };
 
@@ -407,23 +581,277 @@ function districtSeatsFor(region: RegionSeat): DistrictSeat[] {
 }
 
 const REGIONS: RegionSeat[] = [
-  { key: "seoul", shortLabel: "서울", label: "서울특별시", seats: 38, pressure: 0.82, x: 160, y: 178, labelX: 148, labelY: 136, districts: [{ name: "강남구", seats: 2, pressure: 0.88 }, { name: "송파구", seats: 3, pressure: 0.8 }, { name: "관악구", seats: 3, pressure: 0.74 }, { name: "마포구", seats: 2, pressure: 0.86 }] },
-  { key: "incheon", shortLabel: "인천", label: "인천광역시", seats: 18, pressure: 0.67, x: 98, y: 176, labelX: 70, labelY: 176, districts: [{ name: "연수구", seats: 2, pressure: 0.78 }, { name: "부평구", seats: 2, pressure: 0.74 }, { name: "서구", seats: 3, pressure: 0.62 }, { name: "남동구", seats: 2, pressure: 0.69 }] },
-  { key: "gyeonggi", shortLabel: "경기", label: "경기도", seats: 46, pressure: 0.76, x: 184, y: 214, labelX: 214, labelY: 220, districts: [{ name: "성남시", seats: 3, pressure: 0.8 }, { name: "수원시", seats: 4, pressure: 0.73 }, { name: "용인시", seats: 4, pressure: 0.69 }, { name: "고양시", seats: 3, pressure: 0.78 }] },
-  { key: "gangwon", shortLabel: "강원", label: "강원특별자치도", seats: 20, pressure: 0.45, x: 314, y: 136, districts: [{ name: "춘천시", seats: 4, pressure: 0.48 }, { name: "원주시", seats: 4, pressure: 0.52 }, { name: "강릉시", seats: 3, pressure: 0.42 }, { name: "속초시", seats: 2, pressure: 0.38 }] },
-  { key: "chungbuk", shortLabel: "충북", label: "충청북도", seats: 19, pressure: 0.51, x: 260, y: 324, labelX: 285, labelY: 320, districts: [{ name: "청주시", seats: 4, pressure: 0.51 }, { name: "충주시", seats: 3, pressure: 0.44 }, { name: "제천시", seats: 2, pressure: 0.39 }, { name: "음성군", seats: 2, pressure: 0.43 }] },
-  { key: "chungnam", shortLabel: "충남", label: "충청남도", seats: 22, pressure: 0.56, x: 145, y: 337, labelX: 112, labelY: 330, districts: [{ name: "천안시", seats: 4, pressure: 0.55 }, { name: "아산시", seats: 3, pressure: 0.57 }, { name: "공주시", seats: 2, pressure: 0.46 }, { name: "당진시", seats: 2, pressure: 0.5 }] },
-  { key: "sejong", shortLabel: "세종", label: "세종특별자치시", seats: 9, pressure: 0.58, x: 190, y: 338, labelX: 190, labelY: 312, districts: [{ name: "새롬동", seats: 1, pressure: 0.62 }, { name: "도담동", seats: 1, pressure: 0.57 }, { name: "어진동", seats: 1, pressure: 0.52 }] },
-  { key: "daejeon", shortLabel: "대전", label: "대전광역시", seats: 13, pressure: 0.62, x: 200, y: 388, labelX: 205, labelY: 398, districts: [{ name: "서구", seats: 3, pressure: 0.62 }, { name: "유성구", seats: 2, pressure: 0.66 }, { name: "중구", seats: 2, pressure: 0.51 }] },
-  { key: "jeonbuk", shortLabel: "전북", label: "전북특별자치도", seats: 19, pressure: 0.49, x: 174, y: 456, labelX: 170, labelY: 470, districts: [{ name: "전주시", seats: 4, pressure: 0.49 }, { name: "군산시", seats: 3, pressure: 0.44 }, { name: "익산시", seats: 3, pressure: 0.46 }] },
-  { key: "gwangju", shortLabel: "광주", label: "광주광역시", seats: 12, pressure: 0.56, x: 132, y: 536, labelX: 118, labelY: 530, districts: [{ name: "북구", seats: 3, pressure: 0.56 }, { name: "광산구", seats: 2, pressure: 0.54 }, { name: "서구", seats: 2, pressure: 0.5 }] },
-  { key: "jeonnam", shortLabel: "전남", label: "전라남도", seats: 18, pressure: 0.42, x: 145, y: 586, labelX: 172, labelY: 594, districts: [{ name: "목포시", seats: 3, pressure: 0.41 }, { name: "여수시", seats: 3, pressure: 0.44 }, { name: "순천시", seats: 3, pressure: 0.43 }] },
-  { key: "gyeongbuk", shortLabel: "경북", label: "경상북도", seats: 23, pressure: 0.53, x: 340, y: 360, districts: [{ name: "포항시", seats: 3, pressure: 0.52 }, { name: "구미시", seats: 3, pressure: 0.57 }, { name: "경산시", seats: 2, pressure: 0.55 }] },
-  { key: "daegu", shortLabel: "대구", label: "대구광역시", seats: 14, pressure: 0.7, x: 356, y: 448, labelX: 365, labelY: 450, districts: [{ name: "수성구", seats: 3, pressure: 0.7 }, { name: "달서구", seats: 2, pressure: 0.64 }, { name: "동구", seats: 2, pressure: 0.58 }] },
-  { key: "ulsan", shortLabel: "울산", label: "울산광역시", seats: 11, pressure: 0.66, x: 454, y: 496, labelX: 466, labelY: 485, districts: [{ name: "남구", seats: 3, pressure: 0.66 }, { name: "중구", seats: 2, pressure: 0.58 }, { name: "울주군", seats: 2, pressure: 0.5 }] },
-  { key: "gyeongnam", shortLabel: "경남", label: "경상남도", seats: 24, pressure: 0.59, x: 318, y: 535, labelX: 318, labelY: 545, districts: [{ name: "창원시", seats: 4, pressure: 0.58 }, { name: "김해시", seats: 3, pressure: 0.62 }, { name: "진주시", seats: 3, pressure: 0.49 }] },
-  { key: "busan", shortLabel: "부산", label: "부산광역시", seats: 22, pressure: 0.82, x: 424, y: 548, labelX: 425, labelY: 568, districts: [{ name: "해운대구", seats: 2, pressure: 0.88 }, { name: "수영구", seats: 2, pressure: 0.82 }, { name: "부산진구", seats: 3, pressure: 0.74 }] },
-  { key: "jeju", shortLabel: "제주", label: "제주특별자치도", seats: 8, pressure: 0.36, x: 432, y: 678, districts: [{ name: "제주시", seats: 4, pressure: 0.37 }, { name: "서귀포시", seats: 3, pressure: 0.32 }] },
+  {
+    key: "seoul",
+    shortLabel: "서울",
+    label: "서울특별시",
+    seats: 38,
+    pressure: 0.82,
+    x: 160,
+    y: 178,
+    labelX: 148,
+    labelY: 136,
+    districts: [
+      { name: "강남구", seats: 2, pressure: 0.88 },
+      { name: "송파구", seats: 3, pressure: 0.8 },
+      { name: "관악구", seats: 3, pressure: 0.74 },
+      { name: "마포구", seats: 2, pressure: 0.86 },
+    ],
+  },
+  {
+    key: "incheon",
+    shortLabel: "인천",
+    label: "인천광역시",
+    seats: 18,
+    pressure: 0.67,
+    x: 98,
+    y: 176,
+    labelX: 70,
+    labelY: 176,
+    districts: [
+      { name: "연수구", seats: 2, pressure: 0.78 },
+      { name: "부평구", seats: 2, pressure: 0.74 },
+      { name: "서구", seats: 3, pressure: 0.62 },
+      { name: "남동구", seats: 2, pressure: 0.69 },
+    ],
+  },
+  {
+    key: "gyeonggi",
+    shortLabel: "경기",
+    label: "경기도",
+    seats: 46,
+    pressure: 0.76,
+    x: 184,
+    y: 214,
+    labelX: 214,
+    labelY: 220,
+    districts: [
+      { name: "성남시", seats: 3, pressure: 0.8 },
+      { name: "수원시", seats: 4, pressure: 0.73 },
+      { name: "용인시", seats: 4, pressure: 0.69 },
+      { name: "고양시", seats: 3, pressure: 0.78 },
+    ],
+  },
+  {
+    key: "gangwon",
+    shortLabel: "강원",
+    label: "강원특별자치도",
+    seats: 20,
+    pressure: 0.45,
+    x: 314,
+    y: 136,
+    districts: [
+      { name: "춘천시", seats: 4, pressure: 0.48 },
+      { name: "원주시", seats: 4, pressure: 0.52 },
+      { name: "강릉시", seats: 3, pressure: 0.42 },
+      { name: "속초시", seats: 2, pressure: 0.38 },
+    ],
+  },
+  {
+    key: "chungbuk",
+    shortLabel: "충북",
+    label: "충청북도",
+    seats: 19,
+    pressure: 0.51,
+    x: 260,
+    y: 324,
+    labelX: 285,
+    labelY: 320,
+    districts: [
+      { name: "청주시", seats: 4, pressure: 0.51 },
+      { name: "충주시", seats: 3, pressure: 0.44 },
+      { name: "제천시", seats: 2, pressure: 0.39 },
+      { name: "음성군", seats: 2, pressure: 0.43 },
+    ],
+  },
+  {
+    key: "chungnam",
+    shortLabel: "충남",
+    label: "충청남도",
+    seats: 22,
+    pressure: 0.56,
+    x: 145,
+    y: 337,
+    labelX: 112,
+    labelY: 330,
+    districts: [
+      { name: "천안시", seats: 4, pressure: 0.55 },
+      { name: "아산시", seats: 3, pressure: 0.57 },
+      { name: "공주시", seats: 2, pressure: 0.46 },
+      { name: "당진시", seats: 2, pressure: 0.5 },
+    ],
+  },
+  {
+    key: "sejong",
+    shortLabel: "세종",
+    label: "세종특별자치시",
+    seats: 9,
+    pressure: 0.58,
+    x: 190,
+    y: 338,
+    labelX: 190,
+    labelY: 312,
+    districts: [
+      { name: "새롬동", seats: 1, pressure: 0.62 },
+      { name: "도담동", seats: 1, pressure: 0.57 },
+      { name: "어진동", seats: 1, pressure: 0.52 },
+    ],
+  },
+  {
+    key: "daejeon",
+    shortLabel: "대전",
+    label: "대전광역시",
+    seats: 13,
+    pressure: 0.62,
+    x: 200,
+    y: 388,
+    labelX: 205,
+    labelY: 398,
+    districts: [
+      { name: "서구", seats: 3, pressure: 0.62 },
+      { name: "유성구", seats: 2, pressure: 0.66 },
+      { name: "중구", seats: 2, pressure: 0.51 },
+    ],
+  },
+  {
+    key: "jeonbuk",
+    shortLabel: "전북",
+    label: "전북특별자치도",
+    seats: 19,
+    pressure: 0.49,
+    x: 174,
+    y: 456,
+    labelX: 170,
+    labelY: 470,
+    districts: [
+      { name: "전주시", seats: 4, pressure: 0.49 },
+      { name: "군산시", seats: 3, pressure: 0.44 },
+      { name: "익산시", seats: 3, pressure: 0.46 },
+    ],
+  },
+  {
+    key: "gwangju",
+    shortLabel: "광주",
+    label: "광주광역시",
+    seats: 12,
+    pressure: 0.56,
+    x: 132,
+    y: 536,
+    labelX: 118,
+    labelY: 530,
+    districts: [
+      { name: "북구", seats: 3, pressure: 0.56 },
+      { name: "광산구", seats: 2, pressure: 0.54 },
+      { name: "서구", seats: 2, pressure: 0.5 },
+    ],
+  },
+  {
+    key: "jeonnam",
+    shortLabel: "전남",
+    label: "전라남도",
+    seats: 18,
+    pressure: 0.42,
+    x: 145,
+    y: 586,
+    labelX: 172,
+    labelY: 594,
+    districts: [
+      { name: "목포시", seats: 3, pressure: 0.41 },
+      { name: "여수시", seats: 3, pressure: 0.44 },
+      { name: "순천시", seats: 3, pressure: 0.43 },
+    ],
+  },
+  {
+    key: "gyeongbuk",
+    shortLabel: "경북",
+    label: "경상북도",
+    seats: 23,
+    pressure: 0.53,
+    x: 340,
+    y: 360,
+    districts: [
+      { name: "포항시", seats: 3, pressure: 0.52 },
+      { name: "구미시", seats: 3, pressure: 0.57 },
+      { name: "경산시", seats: 2, pressure: 0.55 },
+    ],
+  },
+  {
+    key: "daegu",
+    shortLabel: "대구",
+    label: "대구광역시",
+    seats: 14,
+    pressure: 0.7,
+    x: 356,
+    y: 448,
+    labelX: 365,
+    labelY: 450,
+    districts: [
+      { name: "수성구", seats: 3, pressure: 0.7 },
+      { name: "달서구", seats: 2, pressure: 0.64 },
+      { name: "동구", seats: 2, pressure: 0.58 },
+    ],
+  },
+  {
+    key: "ulsan",
+    shortLabel: "울산",
+    label: "울산광역시",
+    seats: 11,
+    pressure: 0.66,
+    x: 454,
+    y: 496,
+    labelX: 466,
+    labelY: 485,
+    districts: [
+      { name: "남구", seats: 3, pressure: 0.66 },
+      { name: "중구", seats: 2, pressure: 0.58 },
+      { name: "울주군", seats: 2, pressure: 0.5 },
+    ],
+  },
+  {
+    key: "gyeongnam",
+    shortLabel: "경남",
+    label: "경상남도",
+    seats: 24,
+    pressure: 0.59,
+    x: 318,
+    y: 535,
+    labelX: 318,
+    labelY: 545,
+    districts: [
+      { name: "창원시", seats: 4, pressure: 0.58 },
+      { name: "김해시", seats: 3, pressure: 0.62 },
+      { name: "진주시", seats: 3, pressure: 0.49 },
+    ],
+  },
+  {
+    key: "busan",
+    shortLabel: "부산",
+    label: "부산광역시",
+    seats: 22,
+    pressure: 0.82,
+    x: 424,
+    y: 548,
+    labelX: 425,
+    labelY: 568,
+    districts: [
+      { name: "해운대구", seats: 2, pressure: 0.88 },
+      { name: "수영구", seats: 2, pressure: 0.82 },
+      { name: "부산진구", seats: 3, pressure: 0.74 },
+    ],
+  },
+  {
+    key: "jeju",
+    shortLabel: "제주",
+    label: "제주특별자치도",
+    seats: 8,
+    pressure: 0.36,
+    x: 432,
+    y: 678,
+    districts: [
+      { name: "제주시", seats: 4, pressure: 0.37 },
+      { name: "서귀포시", seats: 3, pressure: 0.32 },
+    ],
+  },
 ];
 
 function pressureFill(pressure: number) {
@@ -501,20 +929,23 @@ function seatTone(seats: number, total: number) {
     return {
       text: "text-red-600 dark:text-red-300",
       bar: "bg-red-500",
-      badge: "bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-800",
+      badge:
+        "bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-800",
     };
   }
   if (ratio <= 0.5) {
     return {
       text: "text-amber-600 dark:text-amber-300",
       bar: "bg-amber-500",
-      badge: "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-800",
+      badge:
+        "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-800",
     };
   }
   return {
     text: "text-blue-600 dark:text-blue-300",
     bar: "bg-blue-600",
-    badge: "bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/40 dark:text-blue-200 dark:ring-blue-800",
+    badge:
+      "bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/40 dark:text-blue-200 dark:ring-blue-800",
   };
 }
 
@@ -525,7 +956,10 @@ function formatKrw(value: number) {
 function regionZoomScale(key: string) {
   if (key === "seoul") return 10.4;
   if (key === "busan") return 9.6;
-  if (["incheon", "daegu", "daejeon", "gwangju", "ulsan", "sejong"].includes(key)) return 8.8;
+  if (
+    ["incheon", "daegu", "daejeon", "gwangju", "ulsan", "sejong"].includes(key)
+  )
+    return 8.8;
   if (key === "jeju") return 3.5;
   if (key === "gyeonggi") return 2.65;
   return 2.1;
@@ -546,7 +980,9 @@ function KoreaSeatMap({
   onSelect: (key: string) => void;
   onHover: (key: string | null) => void;
 }) {
-  const hoveredRegion = zoomed ? null : REGIONS.find((region) => region.key === hoveredKey);
+  const hoveredRegion = zoomed
+    ? null
+    : REGIONS.find((region) => region.key === hoveredKey);
   const activeRegion = hoveredRegion ?? (zoomed ? selected : null);
   const zoomScale = zoomed ? regionZoomScale(selected.key) : 1;
   const districtBounds = selectedDistricts.reduce(
@@ -561,8 +997,12 @@ function KoreaSeatMap({
     },
     { minX: selected.x, maxX: selected.x, minY: selected.y, maxY: selected.y },
   );
-  const focusX = zoomed ? (districtBounds.minX + districtBounds.maxX) / 2 : selected.x;
-  const focusY = zoomed ? (districtBounds.minY + districtBounds.maxY) / 2 : selected.y;
+  const focusX = zoomed
+    ? (districtBounds.minX + districtBounds.maxX) / 2
+    : selected.x;
+  const focusY = zoomed
+    ? (districtBounds.minY + districtBounds.maxY) / 2
+    : selected.y;
   const zoomX = zoomed ? 254.5 - focusX * zoomScale : 0;
   const zoomY = zoomed ? 358 - focusY * zoomScale : 0;
   const activeRegionX = activeRegion ? activeRegion.x * zoomScale + zoomX : 0;
@@ -578,11 +1018,35 @@ function KoreaSeatMap({
       className="h-full w-full overflow-visible"
     >
       <defs>
-        <filter id="plans-korea-shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="14" stdDeviation="12" floodColor="#020617" floodOpacity="0.2" />
+        <filter
+          id="plans-korea-shadow"
+          x="-20%"
+          y="-20%"
+          width="140%"
+          height="140%"
+        >
+          <feDropShadow
+            dx="0"
+            dy="14"
+            stdDeviation="12"
+            floodColor="#020617"
+            floodOpacity="0.2"
+          />
         </filter>
-        <filter id="plans-region-pop" x="-40%" y="-40%" width="180%" height="180%">
-          <feDropShadow dx="0" dy="10" stdDeviation="9" floodColor="#2563eb" floodOpacity="0.28" />
+        <filter
+          id="plans-region-pop"
+          x="-40%"
+          y="-40%"
+          width="180%"
+          height="180%"
+        >
+          <feDropShadow
+            dx="0"
+            dy="10"
+            stdDeviation="9"
+            floodColor="#2563eb"
+            floodOpacity="0.28"
+          />
         </filter>
       </defs>
       <style>{`
@@ -613,12 +1077,14 @@ function KoreaSeatMap({
         }
       `}</style>
       <g
-        style={{
-          transform: `translate(${zoomX}px, ${zoomY}px) scale(${zoomScale})`,
-          transformBox: "view-box",
-          transformOrigin: "0 0",
-          transition: "transform 320ms cubic-bezier(0.22, 1, 0.36, 1)",
-        } as CSSProperties}
+        style={
+          {
+            transform: `translate(${zoomX}px, ${zoomY}px) scale(${zoomScale})`,
+            transformBox: "view-box",
+            transformOrigin: "0 0",
+            transition: "transform 320ms cubic-bezier(0.22, 1, 0.36, 1)",
+          } as CSSProperties
+        }
       >
         {REGIONS.map((region) => {
           const selectedActive = zoomed && region.key === selected.key;
@@ -653,34 +1119,51 @@ function KoreaSeatMap({
                       : undefined
                 }
                 dangerouslySetInnerHTML={{ __html: regionSvg }}
-                style={{
-                  "--region-fill": regionMapFill(region.key),
-                  filter: active ? "url(#plans-region-pop)" : undefined,
-                  opacity: selectedActive ? 1 : zoomed ? 0.07 : hoveredActive ? 0.96 : 0.76,
-                  transform: hoveredActive && !zoomed ? "scale(1.03)" : "scale(1)",
-                  transformBox: "fill-box",
-                  transformOrigin: "center",
-                } as CSSProperties}
+                style={
+                  {
+                    "--region-fill": regionMapFill(region.key),
+                    filter: active ? "url(#plans-region-pop)" : undefined,
+                    opacity: selectedActive
+                      ? 1
+                      : zoomed
+                        ? 0.07
+                        : hoveredActive
+                          ? 0.96
+                          : 0.76,
+                    transform:
+                      hoveredActive && !zoomed ? "scale(1.03)" : "scale(1)",
+                    transformBox: "fill-box",
+                    transformOrigin: "center",
+                  } as CSSProperties
+                }
               />
             </g>
           );
         })}
         <g className="pointer-events-none">
-          {zoomed ? REGIONS.map((region) => {
-            const selectedActive = zoomed && region.key === selected.key;
-            const hoveredActive = !zoomed && region.key === hoveredKey;
-            const regionSvg = KOREA_ADMIN_REGION_SVG[region.key];
-            return (
-              <g
-                key={`${region.key}-boundary`}
-                className={selectedActive || hoveredActive ? "korea-region-boundary korea-region-boundary-active" : "korea-region-boundary"}
-                dangerouslySetInnerHTML={{ __html: regionSvg }}
-                style={{
-                  opacity: selectedActive ? 1 : zoomed ? 0.08 : 0.86,
-                } as CSSProperties}
-              />
-            );
-          }) : null}
+          {zoomed
+            ? REGIONS.map((region) => {
+                const selectedActive = zoomed && region.key === selected.key;
+                const hoveredActive = !zoomed && region.key === hoveredKey;
+                const regionSvg = KOREA_ADMIN_REGION_SVG[region.key];
+                return (
+                  <g
+                    key={`${region.key}-boundary`}
+                    className={
+                      selectedActive || hoveredActive
+                        ? "korea-region-boundary korea-region-boundary-active"
+                        : "korea-region-boundary"
+                    }
+                    dangerouslySetInnerHTML={{ __html: regionSvg }}
+                    style={
+                      {
+                        opacity: selectedActive ? 1 : zoomed ? 0.08 : 0.86,
+                      } as CSSProperties
+                    }
+                  />
+                );
+              })
+            : null}
         </g>
         <g>
           {REGIONS.map((region) => {
@@ -725,12 +1208,14 @@ function KoreaSeatMap({
                   y={labelY - 5}
                   textAnchor="middle"
                   className="pointer-events-none select-none fill-white font-black"
-                  style={{
-                    fontSize: selectedActive ? 7 : 28,
-                    paintOrder: "stroke",
-                    stroke: "rgba(15,23,42,0.82)",
-                    strokeWidth: selectedActive ? 3 : 4,
-                  } as CSSProperties}
+                  style={
+                    {
+                      fontSize: selectedActive ? 7 : 28,
+                      paintOrder: "stroke",
+                      stroke: "rgba(15,23,42,0.82)",
+                      strokeWidth: selectedActive ? 3 : 4,
+                    } as CSSProperties
+                  }
                 >
                   {region.shortLabel}
                 </text>
@@ -739,12 +1224,14 @@ function KoreaSeatMap({
                   y={labelY + (selectedActive ? 8 : 21)}
                   textAnchor="middle"
                   className="pointer-events-none select-none fill-white font-black"
-                  style={{
-                    fontSize: selectedActive ? 5.3 : 15,
-                    paintOrder: "stroke",
-                    stroke: "rgba(15,23,42,0.82)",
-                    strokeWidth: selectedActive ? 2 : 3,
-                  } as CSSProperties}
+                  style={
+                    {
+                      fontSize: selectedActive ? 5.3 : 15,
+                      paintOrder: "stroke",
+                      stroke: "rgba(15,23,42,0.82)",
+                      strokeWidth: selectedActive ? 2 : 3,
+                    } as CSSProperties
+                  }
                 >
                   {region.seats}석
                 </text>
@@ -807,16 +1294,22 @@ export default function PlansApplicationFlow({
 }) {
   const [step, setStep] = useState(0);
   const [selectedKey, setSelectedKey] = useState("seoul");
-  const [selectedDistrictName, setSelectedDistrictName] = useState<string | null>(null);
+  const [selectedDistrictName, setSelectedDistrictName] = useState<
+    string | null
+  >(null);
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const [mapZoomed, setMapZoomed] = useState(false);
-  const [locationStatus, setLocationStatus] = useState<"idle" | "requesting" | "resolving" | "success" | "error">("idle");
+  const [locationStatus, setLocationStatus] = useState<
+    "idle" | "requesting" | "resolving" | "success" | "error"
+  >("idle");
   const [locationError, setLocationError] = useState<string | null>(null);
   const [manualQuery, setManualQuery] = useState("");
   const [manualResults, setManualResults] = useState<AddressOption[]>([]);
   const [manualSearching, setManualSearching] = useState(false);
   const [showManualSearch, setShowManualSearch] = useState(false);
-  const [pinnedDistrictName, setPinnedDistrictName] = useState<string | null>(null);
+  const [pinnedDistrictName, setPinnedDistrictName] = useState<string | null>(
+    null,
+  );
   const [localSample, setLocalSample] = useState<LocalSampleItem | null>(null);
   const [localSampleLoading, setLocalSampleLoading] = useState(false);
   const [localSampleError, setLocalSampleError] = useState<string | null>(null);
@@ -824,18 +1317,32 @@ export default function PlansApplicationFlow({
     () => REGIONS.find((region) => region.key === selectedKey) ?? REGIONS[0],
     [selectedKey],
   );
-  const selectedDistricts = useMemo(() => districtSeatsFor(selected), [selected]);
-  const selectedDistrict = selectedDistricts.find((district) => district.name === selectedDistrictName) ?? selectedDistricts[0] ?? null;
+  const selectedDistricts = useMemo(
+    () => districtSeatsFor(selected),
+    [selected],
+  );
+  const selectedDistrict =
+    selectedDistricts.find(
+      (district) => district.name === selectedDistrictName,
+    ) ??
+    selectedDistricts[0] ??
+    null;
   const selectedRegionLabel = selectedDistrict?.name ?? selected.shortLabel;
-  const selectedSeatUsage = districtUsage(selectedDistrict ?? selected.districts[0]);
+  const selectedSeatUsage = districtUsage(
+    selectedDistrict ?? selected.districts[0],
+  );
   const selectedRemainingSeats = selectedDistrict?.seats ?? selected.seats;
   const visibleDistricts = useMemo(() => {
     if (!pinnedDistrictName) return selectedDistricts;
-    const pinnedDistrict = selectedDistricts.find((district) => district.name === pinnedDistrictName);
+    const pinnedDistrict = selectedDistricts.find(
+      (district) => district.name === pinnedDistrictName,
+    );
     if (!pinnedDistrict) return selectedDistricts;
     return [
       pinnedDistrict,
-      ...selectedDistricts.filter((district) => district.name !== pinnedDistrict.name),
+      ...selectedDistricts.filter(
+        (district) => district.name !== pinnedDistrict.name,
+      ),
     ];
   }, [pinnedDistrictName, selectedDistricts]);
   const filledPct = Math.round((filled / capacity) * 100);
@@ -851,7 +1358,8 @@ export default function PlansApplicationFlow({
   }, []);
 
   const handleRegionSelect = (key: string) => {
-    const nextRegion = REGIONS.find((region) => region.key === key) ?? REGIONS[0];
+    const nextRegion =
+      REGIONS.find((region) => region.key === key) ?? REGIONS[0];
     const nextDistricts = districtSeatsFor(nextRegion);
     setSelectedKey(key);
     setSelectedDistrictName(nextDistricts[0]?.name ?? null);
@@ -863,7 +1371,9 @@ export default function PlansApplicationFlow({
   async function getAccessToken() {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return null;
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     return session?.access_token ?? null;
   }
 
@@ -876,16 +1386,26 @@ export default function PlansApplicationFlow({
       setLocalSampleError(null);
       try {
         const params = new URLSearchParams({ district: selectedRegionLabel });
-        const res = await fetch(`/api/membership/local-sample?${params.toString()}`, {
-          cache: "no-store",
-        });
-        const json = (await res.json().catch(() => null)) as { ok?: boolean; item?: LocalSampleItem | null; error?: string } | null;
-        if (!res.ok || !json?.ok) throw new Error(json?.error || "sample_load_failed");
+        const res = await fetch(
+          `/api/membership/local-sample?${params.toString()}`,
+          {
+            cache: "no-store",
+          },
+        );
+        const json = (await res.json().catch(() => null)) as {
+          ok?: boolean;
+          item?: LocalSampleItem | null;
+          error?: string;
+        } | null;
+        if (!res.ok || !json?.ok)
+          throw new Error(json?.error || "sample_load_failed");
         if (!cancelled) setLocalSample(json.item ?? null);
       } catch {
         if (!cancelled) {
           setLocalSample(null);
-          setLocalSampleError("실제 추천 샘플을 불러오지 못했어요. 잠시 후 다시 확인해주세요.");
+          setLocalSampleError(
+            "실제 추천 샘플을 불러오지 못했어요. 잠시 후 다시 확인해주세요.",
+          );
         }
       } finally {
         if (!cancelled) setLocalSampleLoading(false);
@@ -898,7 +1418,10 @@ export default function PlansApplicationFlow({
     };
   }, [step, selectedRegionLabel]);
 
-  function selectRegionFromAddress(parts: Array<string | null | undefined>, districtHint?: string | null) {
+  function selectRegionFromAddress(
+    parts: Array<string | null | undefined>,
+    districtHint?: string | null,
+  ) {
     const key = regionKeyFromAddress(parts);
     if (!key) {
       setLocationStatus("error");
@@ -906,11 +1429,16 @@ export default function PlansApplicationFlow({
       setShowManualSearch(true);
       return false;
     }
-    const nextRegion = REGIONS.find((region) => region.key === key) ?? REGIONS[0];
+    const nextRegion =
+      REGIONS.find((region) => region.key === key) ?? REGIONS[0];
     const nextDistricts = districtSeatsFor(nextRegion);
     const hint = districtHint ?? parts.filter(Boolean).at(-1) ?? "";
-    const matchedDistrict = nextDistricts.find((district) => hint.includes(district.name) || district.name.includes(hint));
-    const nextDistrictName = matchedDistrict?.name ?? nextDistricts[0]?.name ?? null;
+    const matchedDistrict = nextDistricts.find(
+      (district) =>
+        hint.includes(district.name) || district.name.includes(hint),
+    );
+    const nextDistrictName =
+      matchedDistrict?.name ?? nextDistricts[0]?.name ?? null;
     setSelectedKey(key);
     setSelectedDistrictName(nextDistrictName);
     setPinnedDistrictName(nextDistrictName);
@@ -925,7 +1453,9 @@ export default function PlansApplicationFlow({
   function handleLocationLoad() {
     if (!navigator.geolocation) {
       setLocationStatus("error");
-      setLocationError("이 브라우저는 위치 기능을 지원하지 않아요. 동네를 직접 입력해주세요.");
+      setLocationError(
+        "이 브라우저는 위치 기능을 지원하지 않아요. 동네를 직접 입력해주세요.",
+      );
       setShowManualSearch(true);
       return;
     }
@@ -942,9 +1472,12 @@ export default function PlansApplicationFlow({
           }
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
-          const res = await fetch(`/api/user/home-region/reverse-geocode?lat=${lat}&lng=${lng}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const res = await fetch(
+            `/api/user/home-region/reverse-geocode?lat=${lat}&lng=${lng}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
           const json = (await res.json()) as {
             ok: boolean;
             fullPath?: string;
@@ -955,21 +1488,34 @@ export default function PlansApplicationFlow({
           };
           if (!json.ok) {
             setLocationStatus("error");
-            setLocationError(json.error === "KAKAO_REST_API_KEY missing" ? "주소 변환 키가 설정되지 않았어요." : "위치를 동네로 바꾸지 못했어요. 직접 입력해주세요.");
+            setLocationError(
+              json.error === "KAKAO_REST_API_KEY missing"
+                ? "주소 변환 키가 설정되지 않았어요."
+                : "위치를 동네로 바꾸지 못했어요. 직접 입력해주세요.",
+            );
             setShowManualSearch(true);
             return;
           }
-          selectRegionFromAddress([json.region1, json.region2, json.region3, json.fullPath], json.region2 ?? json.region3 ?? null);
+          selectRegionFromAddress(
+            [json.region1, json.region2, json.region3, json.fullPath],
+            json.region2 ?? json.region3 ?? null,
+          );
         } catch {
           setLocationStatus("error");
-          setLocationError("위치 확인 중 오류가 났어요. 동네를 직접 입력해주세요.");
+          setLocationError(
+            "위치 확인 중 오류가 났어요. 동네를 직접 입력해주세요.",
+          );
           setShowManualSearch(true);
         }
       },
       (err) => {
         setLocationStatus("error");
         setShowManualSearch(true);
-        setLocationError(err.code === err.PERMISSION_DENIED ? "위치 권한이 거부됐어요. 동네를 직접 입력해주세요." : "위치를 가져오지 못했어요. 동네를 직접 입력해주세요.");
+        setLocationError(
+          err.code === err.PERMISSION_DENIED
+            ? "위치 권한이 거부됐어요. 동네를 직접 입력해주세요."
+            : "위치를 가져오지 못했어요. 동네를 직접 입력해주세요.",
+        );
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 60_000 },
     );
@@ -989,17 +1535,29 @@ export default function PlansApplicationFlow({
         window.location.href = loginHref;
         return;
       }
-      const res = await fetch(`/api/user/home-region/search?q=${encodeURIComponent(q)}&limit=8`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const json = (await res.json()) as { ok: boolean; results?: AddressOption[]; error?: string };
+      const res = await fetch(
+        `/api/user/home-region/search?q=${encodeURIComponent(q)}&limit=8`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      const json = (await res.json()) as {
+        ok: boolean;
+        results?: AddressOption[];
+        error?: string;
+      };
       if (!json.ok) {
-        setLocationError(json.error === "KAKAO_REST_API_KEY missing" ? "주소 검색 키가 설정되지 않았어요." : "주소 검색에 실패했어요.");
+        setLocationError(
+          json.error === "KAKAO_REST_API_KEY missing"
+            ? "주소 검색 키가 설정되지 않았어요."
+            : "주소 검색에 실패했어요.",
+        );
         setManualResults([]);
         return;
       }
       setManualResults(json.results ?? []);
-      if ((json.results ?? []).length === 0) setLocationError("검색 결과가 없어요. 다른 동네명으로 입력해주세요.");
+      if ((json.results ?? []).length === 0)
+        setLocationError("검색 결과가 없어요. 다른 동네명으로 입력해주세요.");
     } catch {
       setLocationError("주소 검색 중 오류가 났어요.");
       setManualResults([]);
@@ -1025,16 +1583,24 @@ export default function PlansApplicationFlow({
                     </h1>
                   </div>
                   <div className="shrink-0 rounded-full bg-blue-600 px-3 py-2 text-right text-white shadow-[0_12px_34px_rgba(37,99,235,0.3)] sm:px-4">
-                    <div className="text-[9px] font-black opacity-80">현재 예약</div>
-                    <div className="text-[18px] font-black tabular-nums sm:text-[24px]">{filled}/{capacity}</div>
+                    <div className="text-[9px] font-black opacity-80">
+                      현재 예약
+                    </div>
+                    <div className="text-[18px] font-black tabular-nums sm:text-[24px]">
+                      {filled}/{capacity}
+                    </div>
                   </div>
                 </div>
-                <div className={`relative mx-auto mt-1 min-h-0 max-w-[620px] lg:mt-2 ${
-                  mapZoomed
-                    ? "flex h-[calc(100%-118px)] min-h-[430px] flex-col"
-                    : "h-[390px] sm:h-[calc(100%-154px)] sm:min-h-[350px] sm:max-h-[590px] lg:h-[calc(100%-120px)]"
-                }`}>
-                  <div className={`relative min-h-0 ${mapZoomed ? "h-[48%] min-h-[220px] overflow-hidden rounded-[24px] border border-zinc-200 bg-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-950/50" : "h-full"}`}>
+                <div
+                  className={`relative mx-auto mt-1 min-h-0 max-w-[620px] lg:mt-2 ${
+                    mapZoomed
+                      ? "flex h-[calc(100%-118px)] min-h-[430px] flex-col"
+                      : "h-[390px] sm:h-[calc(100%-154px)] sm:min-h-[350px] sm:max-h-[590px] lg:h-[calc(100%-120px)]"
+                  }`}
+                >
+                  <div
+                    className={`relative min-h-0 ${mapZoomed ? "h-[48%] min-h-[220px] overflow-hidden rounded-[24px] border border-zinc-200 bg-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-950/50" : "h-full"}`}
+                  >
                     {mapZoomed ? (
                       <button
                         type="button"
@@ -1057,7 +1623,8 @@ export default function PlansApplicationFlow({
                     <div className="mt-2 flex min-h-0 flex-1 flex-col rounded-[24px] border border-zinc-200 bg-[#fbfcff] shadow-[0_14px_34px_rgba(15,23,42,0.12)] dark:border-zinc-800 dark:bg-zinc-950/80">
                       <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
                         {visibleDistricts.map((district) => {
-                          const active = district.name === selectedDistrict?.name;
+                          const active =
+                            district.name === selectedDistrict?.name;
                           const usage = districtUsage(district);
                           const tone = seatTone(district.seats, usage.total);
                           const pinned = district.name === pinnedDistrictName;
@@ -1065,7 +1632,9 @@ export default function PlansApplicationFlow({
                             <button
                               key={district.name}
                               type="button"
-                              onClick={() => setSelectedDistrictName(district.name)}
+                              onClick={() =>
+                                setSelectedDistrictName(district.name)
+                              }
                               className={`mb-1.5 grid w-full grid-cols-[minmax(0,1fr)_58px_74px] items-center gap-2 rounded-2xl border px-3 py-2 text-left transition ${
                                 active
                                   ? "border-blue-500 bg-blue-50 shadow-[0_8px_18px_rgba(37,99,235,0.16)] ring-2 ring-blue-500/35 dark:border-blue-300 dark:bg-blue-950/50 dark:ring-blue-300/45"
@@ -1074,7 +1643,9 @@ export default function PlansApplicationFlow({
                             >
                               <div className="min-w-0">
                                 <div className="flex min-w-0 items-center gap-1.5">
-                                  <span className="truncate text-[15px] font-black">{district.name}</span>
+                                  <span className="truncate text-[15px] font-black">
+                                    {district.name}
+                                  </span>
                                   {pinned ? (
                                     <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-black text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-800">
                                       내 위치
@@ -1084,19 +1655,31 @@ export default function PlansApplicationFlow({
                                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
                                   <div
                                     className={`h-full rounded-full ${tone.bar}`}
-                                    style={{ width: `${Math.min(100, Math.round((usage.filled / usage.total) * 100))}%` }}
+                                    style={{
+                                      width: `${Math.min(100, Math.round((usage.filled / usage.total) * 100))}%`,
+                                    }}
                                   />
                                 </div>
                               </div>
                               <div className="text-center">
-                                <div className={`inline-flex min-w-[46px] justify-center rounded-full px-2 py-1 text-[13px] font-black tabular-nums ring-1 ${tone.badge}`}>
+                                <div
+                                  className={`inline-flex min-w-[46px] justify-center rounded-full px-2 py-1 text-[13px] font-black tabular-nums ring-1 ${tone.badge}`}
+                                >
                                   {usage.filled}/{usage.total}
                                 </div>
-                                <div className="mt-0.5 text-[10px] font-black text-zinc-400">{pressureLabel(district.pressure)}</div>
+                                <div className="mt-0.5 text-[10px] font-black text-zinc-400">
+                                  {pressureLabel(district.pressure)}
+                                </div>
                               </div>
                               <div className="text-right">
-                                <div className={`text-[15px] font-black ${tone.text}`}>{district.seats}석</div>
-                                <div className="mt-0.5 text-[10px] font-black text-zinc-400">남음</div>
+                                <div
+                                  className={`text-[15px] font-black ${tone.text}`}
+                                >
+                                  {district.seats}석
+                                </div>
+                                <div className="mt-0.5 text-[10px] font-black text-zinc-400">
+                                  남음
+                                </div>
                               </div>
                             </button>
                           );
@@ -1112,9 +1695,12 @@ export default function PlansApplicationFlow({
                       <div className="mt-2 flex gap-2">
                         <input
                           value={manualQuery}
-                          onChange={(event) => setManualQuery(event.target.value)}
+                          onChange={(event) =>
+                            setManualQuery(event.target.value)
+                          }
                           onKeyDown={(event) => {
-                            if (event.key === "Enter") void handleManualSearch();
+                            if (event.key === "Enter")
+                              void handleManualSearch();
                           }}
                           placeholder="예: 서초구, 상도동, 포항시"
                           className="h-11 min-w-0 flex-1 rounded-2xl border border-zinc-200 bg-white px-3 text-[14px] font-bold outline-none transition focus:border-blue-400 dark:border-zinc-700 dark:bg-zinc-900"
@@ -1139,10 +1725,22 @@ export default function PlansApplicationFlow({
                             <button
                               key={`${result.fullPath}-${result.lat}-${result.lng}`}
                               type="button"
-                              onClick={() => selectRegionFromAddress([result.region1, result.region2, result.region3, result.fullPath], result.region2 || result.region3)}
+                              onClick={() =>
+                                selectRegionFromAddress(
+                                  [
+                                    result.region1,
+                                    result.region2,
+                                    result.region3,
+                                    result.fullPath,
+                                  ],
+                                  result.region2 || result.region3,
+                                )
+                              }
                               className="mb-1.5 w-full rounded-2xl border border-zinc-200 bg-[#fbfcff] px-3 py-2 text-left text-[13px] font-black transition hover:border-blue-300 dark:border-zinc-800 dark:bg-zinc-900"
                             >
-                              <span className="block truncate">{result.fullPath}</span>
+                              <span className="block truncate">
+                                {result.fullPath}
+                              </span>
                             </button>
                           ))}
                         </div>
@@ -1164,7 +1762,9 @@ export default function PlansApplicationFlow({
                   {mapZoomed ? (
                     <span
                       className="rounded-full px-3 py-1.5 text-[11px] font-black text-white"
-                      style={{ backgroundColor: pressureFill(selected.pressure) }}
+                      style={{
+                        backgroundColor: pressureFill(selected.pressure),
+                      }}
                     >
                       {pressureLabel(selected.pressure)}
                     </span>
@@ -1180,9 +1780,14 @@ export default function PlansApplicationFlow({
                     </div>
                   </div>
                   <div className="rounded-2xl bg-[#f5f7fb] px-3 py-3 dark:bg-zinc-950">
-                    <div className="text-[10px] font-black text-zinc-400">예약률</div>
+                    <div className="text-[10px] font-black text-zinc-400">
+                      예약률
+                    </div>
                     <div className="mt-1 text-[28px] font-black">
-                      {mapZoomed ? Math.round(selected.pressure * 100) : filledPct}%
+                      {mapZoomed
+                        ? Math.round(selected.pressure * 100)
+                        : filledPct}
+                      %
                     </div>
                   </div>
                 </div>
@@ -1240,9 +1845,15 @@ export default function PlansApplicationFlow({
                       차익 매물이 있어요.
                     </h1>
                   </div>
-                  <div className={`rounded-[22px] px-4 py-3 text-right ring-1 ${seatTone(selectedRemainingSeats, selectedSeatUsage.total).badge}`}>
-                    <div className="text-[10px] font-black opacity-70">남은 자리</div>
-                    <div className="text-[24px] font-black leading-none">{selectedRemainingSeats}석</div>
+                  <div
+                    className={`rounded-[22px] px-4 py-3 text-right ring-1 ${seatTone(selectedRemainingSeats, selectedSeatUsage.total).badge}`}
+                  >
+                    <div className="text-[10px] font-black opacity-70">
+                      남은 자리
+                    </div>
+                    <div className="text-[24px] font-black leading-none">
+                      {selectedRemainingSeats}석
+                    </div>
                   </div>
                 </div>
 
@@ -1250,10 +1861,13 @@ export default function PlansApplicationFlow({
                   {localSample ? (
                     <div className="grid grid-cols-[128px_minmax(0,1fr)] gap-3 p-3 text-left sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-5 sm:p-5">
                       <div className="relative aspect-square overflow-hidden rounded-[20px] bg-zinc-100 dark:bg-zinc-900">
-                        {localSample.thumbnailUrl || localSample.genericImageUrl ? (
+                        {localSample.thumbnailUrl ||
+                        localSample.genericImageUrl ? (
                           <div
                             className="h-full w-full bg-cover bg-center"
-                            style={{ backgroundImage: `url(${localSample.thumbnailUrl ?? localSample.genericImageUrl})` }}
+                            style={{
+                              backgroundImage: `url(${localSample.thumbnailUrl ?? localSample.genericImageUrl})`,
+                            }}
                           />
                         ) : (
                           <CategoryWatermark
@@ -1271,7 +1885,10 @@ export default function PlansApplicationFlow({
                       </div>
                       <div className="min-w-0 py-1 sm:py-2">
                         <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-black sm:text-[11px]">
-                          <MarketplaceSourceBadge source="daangn" label={localSample.sourceLabel} />
+                          <MarketplaceSourceBadge
+                            source="daangn"
+                            label={localSample.sourceLabel}
+                          />
                           {localSample.regionName ? (
                             <span className="rounded-full bg-zinc-100 px-2 py-1 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
                               {localSample.regionName}
@@ -1298,11 +1915,19 @@ export default function PlansApplicationFlow({
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400 sm:text-[13px]">
                           <span>
-                            매입가 <span className="tabular-nums text-zinc-950 dark:text-zinc-50">{formatKrw(localSample.buyPrice)}</span>
+                            매입가{" "}
+                            <span className="tabular-nums text-zinc-950 dark:text-zinc-50">
+                              {formatKrw(localSample.buyPrice)}
+                            </span>
                           </span>
-                          <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                          <span className="text-zinc-300 dark:text-zinc-700">
+                            ·
+                          </span>
                           <span>
-                            시세 <span className="tabular-nums text-zinc-950 dark:text-zinc-50">{formatKrw(localSample.marketPrice)}</span>
+                            시세{" "}
+                            <span className="tabular-nums text-zinc-950 dark:text-zinc-50">
+                              {formatKrw(localSample.marketPrice)}
+                            </span>
                           </span>
                         </div>
                         <div className="mt-3 flex flex-wrap gap-1.5 text-[10px] font-bold sm:text-[11px]">
@@ -1322,7 +1947,10 @@ export default function PlansApplicationFlow({
                   ) : (
                     <div className="p-6">
                       <div className="rounded-[22px] bg-zinc-100 px-4 py-5 text-sm font-black text-zinc-500 dark:bg-zinc-900 dark:text-zinc-300">
-                        {localSampleLoading ? "실제 피드 샘플을 불러오는 중" : localSampleError ?? "이 지역 샘플 캐시를 준비 중이에요."}
+                        {localSampleLoading
+                          ? "실제 피드 샘플을 불러오는 중"
+                          : (localSampleError ??
+                            "이 지역 샘플 캐시를 준비 중이에요.")}
                       </div>
                     </div>
                   )}
@@ -1343,8 +1971,7 @@ export default function PlansApplicationFlow({
                           선착순 지역 티오
                         </div>
                         <h1 className="mt-4 break-keep text-[31px] font-black leading-[1.02] tracking-tight sm:text-[54px]">
-                          지금 바로{" "}
-                          <br className="hidden sm:block" />
+                          지금 바로 <br className="hidden sm:block" />
                           {selectedRegionLabel} 자리를 차지하세요.
                         </h1>
                       </div>
@@ -1359,7 +1986,8 @@ export default function PlansApplicationFlow({
                     </div>
 
                     <p className="relative mt-5 max-w-[590px] break-keep text-[16px] font-bold leading-7 text-zinc-600 dark:text-zinc-300 sm:text-[18px]">
-                      전체 중고 매물 중 시세 차익이 보이는 상품은 극소수예요. 같은 지역에서 너무 많이 보면 기회가 바로 사라집니다.
+                      전체 중고 매물 중 시세 차익이 보이는 상품은 극소수예요.
+                      같은 지역에서 너무 많이 보면 기회가 바로 사라집니다.
                     </p>
 
                     <div className="relative mt-6 rounded-[22px] bg-[#f5f8ff] p-4 ring-1 ring-blue-100 dark:bg-white/8 dark:ring-white/10">
@@ -1369,17 +1997,22 @@ export default function PlansApplicationFlow({
                             현재 예약
                           </div>
                           <div className="mt-1 text-[20px] font-black tabular-nums text-zinc-950 dark:text-white">
-                            {selectedSeatUsage.filled}/{selectedSeatUsage.total}명
+                            {selectedSeatUsage.filled}/{selectedSeatUsage.total}
+                            명
                           </div>
                         </div>
                         <div className="rounded-full bg-rose-500 px-3 py-1.5 text-[12px] font-black text-white shadow-[0_10px_24px_rgba(244,63,94,0.25)]">
-                          {selectedRemainingSeats <= 2 ? "마감 직전" : "마감 임박"}
+                          {selectedRemainingSeats <= 2
+                            ? "마감 직전"
+                            : "마감 임박"}
                         </div>
                       </div>
                       <div className="mt-4 h-3 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/12">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-[#3182f6] via-sky-300 to-rose-400"
-                          style={{ width: `${Math.min(100, Math.max(0, (selectedSeatUsage.filled / selectedSeatUsage.total) * 100))}%` }}
+                          style={{
+                            width: `${Math.min(100, Math.max(0, (selectedSeatUsage.filled / selectedSeatUsage.total) * 100))}%`,
+                          }}
                         />
                       </div>
                     </div>
@@ -1388,12 +2021,20 @@ export default function PlansApplicationFlow({
 
                 <div className="mt-3 grid grid-cols-2 gap-3">
                   <div className="rounded-[22px] border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950">
-                    <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">희소성</div>
-                    <div className="mt-1 break-keep text-[14px] font-black leading-5">차익 후보만 추립니다</div>
+                    <div className="text-[11px] font-black text-[#3182f6] dark:text-blue-300">
+                      희소성
+                    </div>
+                    <div className="mt-1 break-keep text-[14px] font-black leading-5">
+                      차익 후보만 추립니다
+                    </div>
                   </div>
                   <div className="rounded-[22px] border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950">
-                    <div className="text-[11px] font-black text-rose-500 dark:text-rose-300">지역 제한</div>
-                    <div className="mt-1 break-keep text-[14px] font-black leading-5">같은 지역 접근을 줄입니다</div>
+                    <div className="text-[11px] font-black text-rose-500 dark:text-rose-300">
+                      지역 제한
+                    </div>
+                    <div className="mt-1 break-keep text-[14px] font-black leading-5">
+                      같은 지역 접근을 줄입니다
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1411,6 +2052,9 @@ export default function PlansApplicationFlow({
                   pendingApplication={pendingApplication}
                   suppressFixedCta
                   autoOpenSelector
+                  reservedRegionLabel={
+                    localSample?.regionName ?? selectedRegionLabel
+                  }
                 />
               </div>
             </div>
@@ -1437,7 +2081,11 @@ export default function PlansApplicationFlow({
                 }
                 setStep((prev) => Math.min(3, prev + 1));
               }}
-              disabled={step === 0 && (locationStatus === "requesting" || locationStatus === "resolving")}
+              disabled={
+                step === 0 &&
+                (locationStatus === "requesting" ||
+                  locationStatus === "resolving")
+              }
               className="h-11 flex-1 rounded-2xl bg-[#3182f6] px-5 text-[15px] font-black text-white shadow-[0_18px_44px_rgba(49,130,246,0.28)] transition hover:bg-[#1c64dd] sm:min-w-[240px]"
             >
               {step === 0

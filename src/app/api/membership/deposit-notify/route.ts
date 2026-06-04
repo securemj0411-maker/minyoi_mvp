@@ -4,7 +4,12 @@ import { getMembershipPlan } from "@/lib/membership-plans";
 import { notifyAdminTelegram } from "@/lib/telegram-notify";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { getProStatus } from "@/lib/user-subscription";
-import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import {
+  jsonBody,
+  restFetch,
+  serviceHeaders,
+  tableUrl,
+} from "@/lib/supabase-rest";
 import { userRefForAuthUser } from "@/lib/user-ref";
 
 export const runtime = "nodejs";
@@ -16,12 +21,37 @@ function adminNoteLine(message: string) {
   return `[${new Date().toISOString()}] ${message}`;
 }
 
+async function expireUnpaidReservationsForUser(authUserId: string) {
+  const nowIso = new Date().toISOString();
+  const cutoffIso = new Date(Date.now() - 7 * 60_000).toISOString();
+  await restFetch(
+    `${tableUrl("mvp_membership_applications")}?auth_user_id=eq.${authUserId}&status=eq.pending&deposit_confirmed_at=is.null&created_at=lt.${encodeURIComponent(cutoffIso)}`,
+    {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: jsonBody({
+        status: "rejected",
+        decided_at: nowIso,
+        updated_at: nowIso,
+        admin_note: adminNoteLine("auto_expired_unpaid_reservation_7m"),
+      }),
+    },
+  ).catch((err) => {
+    console.warn(
+      "[membership/deposit-notify] expire unpaid reservation failed",
+      err instanceof Error ? err.message : String(err),
+    );
+  });
+}
+
 export async function POST(req: Request) {
   const auth = await requireSupabaseUser(req);
-  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!auth.ok)
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const userRef = userRefForAuthUser(auth.user.id);
   const status = await getProStatus(auth.user, userRef);
+  await expireUnpaidReservationsForUser(auth.user.id);
 
   const pendingRes = await restFetch(
     `${tableUrl("mvp_membership_applications")}?select=id,user_ref,email,display_name,application_kind,product_key,price_krw,admin_note,deposit_confirmed_at,scheduled_auto_approve_at&auth_user_id=eq.${auth.user.id}&status=eq.pending&order=created_at.desc&limit=1`,
@@ -42,34 +72,62 @@ export async function POST(req: Request) {
   const application = pendingRows[0] ?? null;
   if (!application) {
     if (status.isPro || status.isAdmin || status.isBetaTester) {
-      return NextResponse.json({ ok: true, alreadyMember: true, notified: false });
+      return NextResponse.json({
+        ok: true,
+        alreadyMember: true,
+        notified: false,
+      });
     }
-    return NextResponse.json({ error: "no_pending_application" }, { status: 404 });
+    return NextResponse.json(
+      { error: "no_pending_application" },
+      { status: 404 },
+    );
   }
-  if ((status.isPro || status.isAdmin || status.isBetaTester) && application.application_kind !== "renewal") {
-    return NextResponse.json({ ok: true, alreadyMember: true, notified: false });
+  if (
+    (status.isPro || status.isAdmin || status.isBetaTester) &&
+    application.application_kind !== "renewal"
+  ) {
+    return NextResponse.json({
+      ok: true,
+      alreadyMember: true,
+      notified: false,
+    });
   }
 
   const selectedPlan = getMembershipPlan(application.product_key);
   const previousAdminNote = application.admin_note?.trim() ?? "";
-  const name = application.display_name
-    ?? auth.user.user_metadata?.name
-    ?? auth.user.user_metadata?.full_name
-    ?? auth.user.user_metadata?.nickname
-    ?? "이름 없음";
+  const name =
+    application.display_name ??
+    auth.user.user_metadata?.name ??
+    auth.user.user_metadata?.full_name ??
+    auth.user.user_metadata?.nickname ??
+    "이름 없음";
   const email = application.email ?? auth.user.email ?? "email 없음";
   const nowIso = new Date().toISOString();
   const depositConfirmedAt = application.deposit_confirmed_at ?? nowIso;
-  const scheduledAutoApproveAt = new Date(Date.now() + AUTO_APPROVE_AFTER_MS).toISOString();
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://minyoi-mvp.vercel.app";
-  const approveToken = signAdminAction("membership_application", application.id, "approve");
-  const rejectToken = signAdminAction("membership_application", application.id, "reject");
+  const scheduledAutoApproveAt = new Date(
+    Date.now() + AUTO_APPROVE_AFTER_MS,
+  ).toISOString();
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://minyoi-mvp.vercel.app";
+  const approveToken = signAdminAction(
+    "membership_application",
+    application.id,
+    "approve",
+  );
+  const rejectToken = signAdminAction(
+    "membership_application",
+    application.id,
+    "reject",
+  );
   const approveLink = `${baseUrl}/api/admin/membership-applications/decide?id=${application.id}&decision=approve&token=${encodeURIComponent(approveToken)}`;
   const rejectLink = `${baseUrl}/api/admin/membership-applications/decide?id=${application.id}&decision=reject&token=${encodeURIComponent(rejectToken)}`;
 
   const notifyResult = await notifyAdminTelegram(
     [
-      application.application_kind === "renewal" ? "[득템잡이] 멤버십 연장 입금 확인 요청" : "[득템잡이] 멤버십 입금 확인 요청",
+      application.application_kind === "renewal"
+        ? "[득템잡이] 멤버십 연장 입금 확인 요청"
+        : "[득템잡이] 멤버십 입금 확인 요청",
       `예약 ID: ${application.id}`,
       `이름: ${String(name)}`,
       `이메일: ${email}`,
@@ -84,10 +142,12 @@ export async function POST(req: Request) {
     {
       parseMode: null,
       replyMarkup: {
-        inline_keyboard: [[
-          { text: "✅ 승인 확인 열기", url: approveLink },
-          { text: "❌ 거절 확인 열기", url: rejectLink },
-        ]],
+        inline_keyboard: [
+          [
+            { text: "✅ 승인 확인 열기", url: approveLink },
+            { text: "❌ 거절 확인 열기", url: rejectLink },
+          ],
+        ],
       },
     },
   );
@@ -97,19 +157,27 @@ export async function POST(req: Request) {
     adminNoteLine("user_deposit_confirmed"),
     notifyResult.ok
       ? adminNoteLine("telegram_deposit_notified")
-      : adminNoteLine(`telegram_deposit_notify_failed:${notifyResult.reason ?? "unknown"}`),
-  ].filter(Boolean).join("\n").slice(-1800);
+      : adminNoteLine(
+          `telegram_deposit_notify_failed:${notifyResult.reason ?? "unknown"}`,
+        ),
+  ]
+    .filter(Boolean)
+    .join("\n")
+    .slice(-1800);
 
-  await restFetch(`${tableUrl("mvp_membership_applications")}?id=eq.${application.id}&status=eq.pending`, {
-    method: "PATCH",
-    headers: serviceHeaders("return=minimal"),
-    body: jsonBody({
-      deposit_confirmed_at: depositConfirmedAt,
-      scheduled_auto_approve_at: scheduledAutoApproveAt,
-      admin_note: adminNote,
-      updated_at: nowIso,
-    }),
-  });
+  await restFetch(
+    `${tableUrl("mvp_membership_applications")}?id=eq.${application.id}&status=eq.pending`,
+    {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: jsonBody({
+        deposit_confirmed_at: depositConfirmedAt,
+        scheduled_auto_approve_at: scheduledAutoApproveAt,
+        admin_note: adminNote,
+        updated_at: nowIso,
+      }),
+    },
+  );
 
   if (!notifyResult.ok) {
     console.warn("[membership/deposit-notify] telegram notify failed", {
@@ -125,6 +193,6 @@ export async function POST(req: Request) {
     scheduledAutoApproveAt,
     serverNow: nowIso,
     telegramSent: notifyResult.ok,
-    telegramReason: notifyResult.ok ? null : notifyResult.reason ?? "unknown",
+    telegramReason: notifyResult.ok ? null : (notifyResult.reason ?? "unknown"),
   });
 }

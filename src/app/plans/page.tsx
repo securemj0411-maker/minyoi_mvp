@@ -6,7 +6,12 @@ import PlansSocialProofToasts, {
   type PlansSocialProofEvent,
 } from "@/components/plans-social-proof-toasts";
 import { getMembershipPlan, MEMBERSHIP_PLANS } from "@/lib/membership-plans";
-import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import {
+  jsonBody,
+  restFetch,
+  serviceHeaders,
+  tableUrl,
+} from "@/lib/supabase-rest";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 import { getProStatus } from "@/lib/user-subscription";
 import { userRefForAuthUser } from "@/lib/user-ref";
@@ -228,10 +233,38 @@ type SocialProofApplicationRow = {
   created_at: string;
 };
 
+function adminNoteLine(message: string) {
+  return `[${new Date().toISOString()}] ${message}`;
+}
+
+async function expireUnpaidReservationsForUser(authUserId: string) {
+  const nowIso = new Date().toISOString();
+  const cutoffIso = new Date(Date.now() - 7 * 60_000).toISOString();
+  await restFetch(
+    `${tableUrl("mvp_membership_applications")}?auth_user_id=eq.${authUserId}&status=eq.pending&deposit_confirmed_at=is.null&created_at=lt.${encodeURIComponent(cutoffIso)}`,
+    {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: jsonBody({
+        status: "rejected",
+        decided_at: nowIso,
+        updated_at: nowIso,
+        admin_note: adminNoteLine("auto_expired_unpaid_reservation_7m"),
+      }),
+    },
+  ).catch((err) => {
+    console.warn(
+      "[plans] expire unpaid reservation failed",
+      err instanceof Error ? err.message : String(err),
+    );
+  });
+}
+
 async function loadPendingApplication(
   authUserId: string,
 ): Promise<PendingApplicationRow | null> {
   try {
+    await expireUnpaidReservationsForUser(authUserId);
     const res = await restFetch(
       `${tableUrl("mvp_membership_applications")}?select=id,application_kind,product_key,price_krw,deposit_confirmed_at,scheduled_auto_approve_at,created_at&auth_user_id=eq.${authUserId}&status=eq.pending&order=created_at.desc&limit=1`,
       { headers: serviceHeaders(), cache: "no-store" },
@@ -484,9 +517,7 @@ export default async function PlansPage() {
                   isMember={isMember}
                   loginHref="/login?next=/plans"
                   plans={MEMBERSHIP_PLANS}
-                  pendingApplication={
-                    pendingApplicationPayload
-                  }
+                  pendingApplication={pendingApplicationPayload}
                 />
               </div>
               <ul className="grid gap-2">
