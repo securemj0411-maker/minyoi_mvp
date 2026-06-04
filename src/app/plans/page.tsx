@@ -39,19 +39,16 @@ const PAYMENT_HELP = [
 
 const SCARCITY_ROWS = [
   {
-    label: "아무나 안 받음",
-    value:
-      "돈 되는 매물은 전체 중고 매물 중 극소수라서, 무제한 공개하면 기회가 바로 깨집니다.",
+    label: "선착순 티오",
+    value: "전체 회원 수와 지역별 접근 수를 같이 관리합니다.",
   },
   {
-    label: "지역별 티오",
-    value:
-      "당근은 내 근처에 떠야 의미가 있어서, 같은 지역에 너무 많이 열지 않습니다.",
+    label: "지역 접근 수",
+    value: "당근은 가까운 동네에 떠야 실전성이 생겨서 지역 겹침을 봅니다.",
   },
   {
-    label: "시장 교란 방지",
-    value:
-      "같은 매물을 모두가 보면 가격도 속도도 망가져서, 소수만 안정적으로 보게 합니다.",
+    label: "소수 멤버십",
+    value: "차익 예상 매물을 실제로 움직일 수 있는 멤버에게만 제공합니다.",
   },
 ];
 
@@ -78,147 +75,63 @@ const MEMBER_PASS_SIGNALS = [
   { label: "연장 처리", value: "5분 내" },
 ];
 
-function MarketSignalIllustration() {
+function MembershipCapPanel({
+  filled,
+  capacity,
+}: {
+  filled: number;
+  capacity: number;
+}) {
+  const percent = Math.round((filled / capacity) * 100);
   return (
-    <svg
-      viewBox="0 0 520 360"
-      role="img"
-      aria-label="득템잡이 멤버십 시그널"
-      className="h-auto w-full"
-    >
-      <defs>
-        <linearGradient id="plansPulse" x1="0" x2="1" y1="0" y2="1">
-          <stop offset="0" stopColor="#3182f6" />
-          <stop offset="1" stopColor="#10b981" />
-        </linearGradient>
-        <linearGradient id="plansWarm" x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0" stopColor="#f59e0b" />
-          <stop offset="1" stopColor="#ef4444" />
-        </linearGradient>
-      </defs>
-      <rect x="28" y="34" width="464" height="292" rx="28" fill="#0f172a" />
-      <rect x="52" y="62" width="170" height="42" rx="14" fill="#172554" />
-      <circle cx="78" cy="83" r="10" fill="#10b981" />
-      <path
-        d="M98 84h88"
-        stroke="#bfdbfe"
-        strokeWidth="10"
-        strokeLinecap="round"
-      />
-      <rect
-        x="242"
-        y="62"
-        width="196"
-        height="42"
-        rx="14"
-        fill="#111827"
-        stroke="#334155"
-      />
-      <path
-        d="M268 83h58M346 83h64"
-        stroke="#94a3b8"
-        strokeWidth="9"
-        strokeLinecap="round"
-      />
-      <path
-        d="M80 254c40-74 82-92 128-68 38 20 62 10 88-38 25-46 64-62 112-22"
-        fill="none"
-        stroke="url(#plansPulse)"
-        strokeWidth="14"
-        strokeLinecap="round"
-      />
-      <path
-        d="M78 256h364"
-        stroke="#334155"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <g>
-        <rect
-          x="70"
-          y="128"
-          width="108"
-          height="72"
-          rx="18"
-          fill="#020617"
-          stroke="#1d4ed8"
-        />
-        <path
-          d="M94 154h56M94 176h36"
-          stroke="#bfdbfe"
-          strokeWidth="8"
-          strokeLinecap="round"
-        />
-        <circle cx="154" cy="176" r="11" fill="#3182f6" />
-      </g>
-      <g>
-        <rect
-          x="206"
-          y="116"
-          width="118"
-          height="82"
-          rx="18"
-          fill="#052e16"
-          stroke="#16a34a"
-        />
-        <path
-          d="M230 145h48M230 169h68"
-          stroke="#bbf7d0"
-          strokeWidth="8"
-          strokeLinecap="round"
-        />
-        <path
-          d="M292 134l12 12 20-28"
-          fill="none"
-          stroke="#34d399"
-          strokeWidth="8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </g>
-      <g>
-        <rect
-          x="352"
-          y="126"
-          width="88"
-          height="66"
-          rx="18"
-          fill="#451a03"
-          stroke="#f59e0b"
-        />
-        <path
-          d="M376 154h40M376 174h26"
-          stroke="#fed7aa"
-          strokeWidth="8"
-          strokeLinecap="round"
-        />
-      </g>
-      <circle cx="110" cy="254" r="9" fill="#3182f6" />
-      <circle cx="226" cy="190" r="9" fill="#10b981" />
-      <circle cx="384" cy="126" r="9" fill="#f59e0b" />
-      <rect
-        x="272"
-        y="238"
-        width="158"
-        height="42"
-        rx="21"
-        fill="url(#plansWarm)"
-      />
-      <path
-        d="M300 259h78"
-        stroke="#fff7ed"
-        strokeWidth="9"
-        strokeLinecap="round"
-      />
-      <path
-        d="M394 249l12 10-12 10"
-        fill="none"
-        stroke="#fff7ed"
-        strokeWidth="7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <div className="flex h-full min-h-[300px] flex-col justify-between gap-4 rounded-[22px] border border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(49,130,246,0.26),transparent_35%),linear-gradient(135deg,#020617,#111827_54%,#052e16)] p-5 shadow-[0_22px_60px_rgba(15,23,42,0.28)]">
+      <div>
+        <div className="text-[11px] font-black uppercase tracking-[0.18em] text-blue-200">
+          membership cap
+        </div>
+        <div className="mt-4 flex items-end gap-2">
+          <div className="font-mono text-[78px] font-black leading-none text-white tabular-nums">
+            {capacity}
+          </div>
+          <div className="pb-2 text-[18px] font-black text-zinc-300">명</div>
+        </div>
+        <div className="mt-3 break-keep text-[14px] font-black leading-6 text-zinc-200">
+          선착순 정원 안에서만 추천 상품과 원본 링크를 엽니다.
+        </div>
+      </div>
+      <div>
+        <div className="flex items-center justify-between text-[12px] font-black text-zinc-300">
+          <span>현재 예약</span>
+          <span>
+            {filled}/{capacity}
+          </span>
+        </div>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+          <div
+            className="h-full rounded-r-full bg-[linear-gradient(90deg,#10b981,#3182f6)]"
+            style={{ width: `${Math.min(96, Math.max(24, percent))}%` }}
+          />
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="rounded-[14px] border border-white/10 bg-white/[0.04] px-3 py-3">
+            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
+              access
+            </div>
+            <div className="mt-1 text-[13px] font-black text-white">
+              승인 후 공개
+            </div>
+          </div>
+          <div className="rounded-[14px] border border-white/10 bg-white/[0.04] px-3 py-3">
+            <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
+              region
+            </div>
+            <div className="mt-1 text-[13px] font-black text-white">
+              티오 확인
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -446,26 +359,13 @@ export default async function PlansPage() {
                 ))}
               </div>
               <h1 className="mt-5 max-w-[560px] break-keep text-[34px] font-black leading-[1.02] tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[50px]">
-                {isMember
-                  ? "멤버십 패스 활성화"
-                  : "아무나 보면, 아무도 못 법니다."}
+                {isMember ? "멤버십 패스 활성화" : "단 300명 회원제"}
               </h1>
               <p className="mt-5 max-w-[560px] break-keep text-[15px] font-bold leading-7 text-zinc-600 dark:text-zinc-300 sm:text-[16px] sm:leading-8">
                 {isMember
                   ? "연장하면 현재 만료일 뒤에 기간이 그대로 붙습니다. 매물 피드, 원본 링크, 시세 근거를 끊기지 않게 유지하세요."
-                  : "득템잡이는 시세보다 싼 매물을 모두에게 뿌리지 않습니다. 선착순 티오와 지역별 접근 수를 관리해서, 실제로 움직일 수 있는 소수 멤버만 원본 링크와 시세 근거를 봅니다."}
+                  : "득템잡이는 차익 예상 중고 상품을 선착순 티오와 지역별 접근 수로 관리해서, 실제로 움직일 수 있는 소수 멤버십 회원에게만 제공합니다."}
               </p>
-              {!isMember ? (
-                <div className="mt-5 rounded-[18px] border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/60 dark:bg-amber-950/20">
-                  <div className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-700 dark:text-amber-300">
-                    member cap
-                  </div>
-                  <div className="mt-1 break-keep text-[13px] font-black leading-6 text-zinc-800 dark:text-zinc-100">
-                    지금은 선공개 {SLOT_CAPACITY}명만 받습니다. 지역이 겹치면
-                    티오가 먼저 닫힐 수 있어요.
-                  </div>
-                </div>
-              ) : null}
               <div className="mt-6 grid gap-2 sm:grid-cols-3">
                 {infoRows.map((row) => (
                   <div
@@ -486,29 +386,12 @@ export default async function PlansPage() {
               {isMember ? (
                 <MembershipPassPanel />
               ) : (
-                <MarketSignalIllustration />
+                <MembershipCapPanel
+                  filled={slotSnapshot.filled}
+                  capacity={slotSnapshot.capacity}
+                />
               )}
             </div>
-          </div>
-          <div className="grid gap-3 border-t border-zinc-200 px-5 py-5 dark:border-zinc-800 sm:grid-cols-3 sm:px-8">
-            {PAYMENT_HELP.map((item, index) => (
-              <div
-                key={item.label}
-                className="flex gap-3 rounded-[16px] bg-[#f5f7fb] px-3.5 py-3 dark:bg-zinc-950/70"
-              >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-[12px] font-black text-[#3182f6] ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800">
-                  {index + 1}
-                </div>
-                <div>
-                  <div className="text-[12px] font-black text-zinc-950 dark:text-zinc-50">
-                    {item.label}
-                  </div>
-                  <div className="mt-1 break-keep text-[11.5px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
-                    {item.value}
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </section>
 
@@ -628,6 +511,26 @@ export default async function PlansPage() {
             </div>
           </div>
         </aside>
+      </div>
+      <div className="mx-auto mt-5 grid w-full max-w-[1100px] gap-3 sm:grid-cols-3">
+        {PAYMENT_HELP.map((item, index) => (
+          <div
+            key={item.label}
+            className="flex gap-3 rounded-[16px] border border-zinc-200 bg-white px-3.5 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+          >
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eef4ff] text-[12px] font-black text-[#3182f6] dark:bg-blue-950/40 dark:text-blue-200">
+              {index + 1}
+            </div>
+            <div>
+              <div className="text-[12px] font-black text-zinc-950 dark:text-zinc-50">
+                {item.label}
+              </div>
+              <div className="mt-1 break-keep text-[11.5px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
+                {item.value}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </main>
   );
