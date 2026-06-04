@@ -180,17 +180,23 @@ function pressureLabel(pressure: number) {
 function KoreaSeatMap({
   selected,
   hoveredKey,
+  zoomed,
   onSelect,
   onHover,
 }: {
   selected: RegionSeat;
   hoveredKey: string | null;
+  zoomed: boolean;
   onSelect: (key: string) => void;
   onHover: (key: string | null) => void;
 }) {
-  const activeRegion =
-    REGIONS.find((region) => region.key === (hoveredKey ?? selected.key)) ??
-    selected;
+  const hoveredRegion = REGIONS.find((region) => region.key === hoveredKey);
+  const activeRegion = hoveredRegion ?? (zoomed ? selected : null);
+  const zoomScale = zoomed ? 1.72 : 1;
+  const zoomX = zoomed ? 254.5 - selected.x * zoomScale : 0;
+  const zoomY = zoomed ? 358 - selected.y * zoomScale : 0;
+  const activeRegionX = activeRegion ? activeRegion.x * zoomScale + zoomX : 0;
+  const activeRegionY = activeRegion ? activeRegion.y * zoomScale + zoomY : 0;
 
   return (
     <svg
@@ -210,105 +216,132 @@ function KoreaSeatMap({
       <style>{`
         .korea-region-piece {
           fill: var(--region-fill);
-          stroke: rgba(255,255,255,0.68);
-          stroke-width: 1.1;
+          stroke: var(--region-fill);
+          stroke-width: 0.75;
           vector-effect: non-scaling-stroke;
-          transition: opacity 160ms ease, stroke-width 160ms ease, filter 160ms ease;
+          transition: opacity 160ms ease, stroke 160ms ease, stroke-width 160ms ease, filter 160ms ease;
         }
         .korea-region-active .korea-region-piece {
-          stroke: rgba(255,255,255,0.96);
-          stroke-width: 2.1;
+          stroke: rgba(255,255,255,0.58);
+          stroke-width: 0.9;
+        }
+        .korea-region-detailed .korea-region-piece {
+          stroke: rgba(255,255,255,0.86);
+          stroke-width: 1.2;
         }
       `}</style>
-      {REGIONS.map((region) => {
-        const active = region.key === selected.key || region.key === hoveredKey;
-        const regionSvg = KOREA_ADMIN_REGION_SVG[region.key];
-        return (
-          <g
-            key={region.key}
-            role="button"
-            tabIndex={0}
-            aria-label={`${region.label} 티오 ${region.seats}석`}
-            className="cursor-pointer outline-none"
-            onClick={() => onSelect(region.key)}
-            onMouseEnter={() => onHover(region.key)}
-            onMouseLeave={() => onHover(null)}
-            onFocus={() => onHover(region.key)}
-            onBlur={() => onHover(null)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onSelect(region.key);
-              }
-            }}
-          >
+      <g
+        style={{
+          transform: `translate(${zoomX}px, ${zoomY}px) scale(${zoomScale})`,
+          transformBox: "view-box",
+          transformOrigin: "0 0",
+          transition: "transform 320ms cubic-bezier(0.22, 1, 0.36, 1)",
+        } as CSSProperties}
+      >
+        {REGIONS.map((region) => {
+          const selectedActive = zoomed && region.key === selected.key;
+          const hoveredActive = region.key === hoveredKey;
+          const active = selectedActive || hoveredActive;
+          const regionSvg = KOREA_ADMIN_REGION_SVG[region.key];
+          return (
             <g
-              className={active ? "korea-region-active" : undefined}
-              dangerouslySetInnerHTML={{ __html: regionSvg }}
-              style={{
-                "--region-fill": pressureFill(region.pressure),
-                filter: active ? "url(#plans-region-pop)" : undefined,
-                opacity: active ? 1 : 0.62,
-                transform: active ? "scale(1.045)" : "scale(1)",
-                transformBox: "fill-box",
-                transformOrigin: "center",
-              } as CSSProperties}
-            />
-            <circle
-              cx={region.x}
-              cy={region.y}
-              r={active ? 22 : 16}
-              fill="rgba(15,23,42,0.62)"
-              stroke="rgba(255,255,255,0.78)"
-              strokeWidth={active ? 3.2 : 2}
-              className="transition-all duration-200"
-            />
-            <text
-              x={region.x}
-              y={region.y - 2}
-              textAnchor="middle"
-              className="pointer-events-none select-none fill-white text-[13px] font-black"
+              key={region.key}
+              role="button"
+              tabIndex={0}
+              aria-label={`${region.label} 티오 ${region.seats}석`}
+              className="cursor-pointer outline-none"
+              onClick={() => onSelect(region.key)}
+              onMouseEnter={() => onHover(region.key)}
+              onMouseLeave={() => onHover(null)}
+              onFocus={() => onHover(region.key)}
+              onBlur={() => onHover(null)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onSelect(region.key);
+                }
+              }}
             >
-              {region.shortLabel}
-            </text>
-            <text
-              x={region.x}
-              y={region.y + 13}
-              textAnchor="middle"
-              className="pointer-events-none select-none fill-white/90 text-[10px] font-black"
-            >
-              {region.seats}석
-            </text>
-          </g>
-        );
-      })}
-      <g className="pointer-events-none">
-        <rect
-          x={Math.max(16, Math.min(386, activeRegion.x - 55))}
-          y={Math.max(16, activeRegion.y - 72)}
-          width="110"
-          height="42"
-          rx="12"
-          fill="rgba(15,23,42,0.86)"
-          stroke="rgba(255,255,255,0.22)"
-        />
-        <text
-          x={Math.max(16, Math.min(386, activeRegion.x - 55)) + 55}
-          y={Math.max(16, activeRegion.y - 72) + 17}
-          textAnchor="middle"
-          className="fill-white text-[13px] font-black"
-        >
-          {activeRegion.shortLabel}
-        </text>
-        <text
-          x={Math.max(16, Math.min(386, activeRegion.x - 55)) + 55}
-          y={Math.max(16, activeRegion.y - 72) + 34}
-          textAnchor="middle"
-          className="fill-blue-100 text-[11px] font-black"
-        >
-          {activeRegion.seats}자리 남음
-        </text>
+              <g
+                className={
+                  selectedActive
+                    ? "korea-region-detailed"
+                    : active
+                      ? "korea-region-active"
+                      : undefined
+                }
+                dangerouslySetInnerHTML={{ __html: regionSvg }}
+                style={{
+                  "--region-fill": pressureFill(region.pressure),
+                  filter: active ? "url(#plans-region-pop)" : undefined,
+                  opacity: selectedActive ? 1 : zoomed ? 0.22 : hoveredActive ? 0.96 : 0.76,
+                  transform: hoveredActive && !zoomed ? "scale(1.03)" : "scale(1)",
+                  transformBox: "fill-box",
+                  transformOrigin: "center",
+                } as CSSProperties}
+              />
+              {(!zoomed || selectedActive || hoveredActive) ? (
+                <>
+                  <circle
+                    cx={region.x}
+                    cy={region.y}
+                    r={selectedActive ? 24 : hoveredActive ? 21 : 15}
+                    fill="rgba(15,23,42,0.68)"
+                    stroke="rgba(255,255,255,0.78)"
+                    strokeWidth={selectedActive ? 3 : 1.8}
+                    className="transition-all duration-200"
+                  />
+                  <text
+                    x={region.x}
+                    y={region.y - 2}
+                    textAnchor="middle"
+                    className="pointer-events-none select-none fill-white text-[13px] font-black"
+                  >
+                    {region.shortLabel}
+                  </text>
+                  <text
+                    x={region.x}
+                    y={region.y + 13}
+                    textAnchor="middle"
+                    className="pointer-events-none select-none fill-white/90 text-[10px] font-black"
+                  >
+                    {region.seats}석
+                  </text>
+                </>
+              ) : null}
+            </g>
+          );
+        })}
       </g>
+      {activeRegion ? (
+        <g className="pointer-events-none">
+          <rect
+            x={Math.max(16, Math.min(366, activeRegionX - 68))}
+            y={Math.max(16, activeRegionY - 82)}
+            width="136"
+            height="50"
+            rx="15"
+            fill="rgba(15,23,42,0.88)"
+            stroke="rgba(255,255,255,0.24)"
+          />
+          <text
+            x={Math.max(16, Math.min(366, activeRegionX - 68)) + 68}
+            y={Math.max(16, activeRegionY - 82) + 19}
+            textAnchor="middle"
+            className="fill-white text-[13px] font-black"
+          >
+            {activeRegion.shortLabel}
+          </text>
+          <text
+            x={Math.max(16, Math.min(366, activeRegionX - 68)) + 68}
+            y={Math.max(16, activeRegionY - 82) + 39}
+            textAnchor="middle"
+            className="fill-blue-100 text-[12px] font-black"
+          >
+            {activeRegion.seats}자리 남음
+          </text>
+        </g>
+      ) : null}
     </svg>
   );
 }
@@ -333,6 +366,7 @@ export default function PlansApplicationFlow({
   const [step, setStep] = useState(0);
   const [selectedKey, setSelectedKey] = useState("seoul");
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+  const [mapZoomed, setMapZoomed] = useState(false);
   const selected = useMemo(
     () => REGIONS.find((region) => region.key === selectedKey) ?? REGIONS[0],
     [selectedKey],
@@ -350,6 +384,12 @@ export default function PlansApplicationFlow({
     };
   }, []);
 
+  const handleRegionSelect = (key: string) => {
+    setSelectedKey(key);
+    setHoveredKey(null);
+    setMapZoomed(true);
+  };
+
   return (
     <main className="fixed inset-0 z-[75] overflow-hidden bg-[#f4f7fb] text-zinc-950 dark:bg-zinc-950 dark:text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(49,130,246,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.18),transparent_34%)]" />
@@ -366,7 +406,7 @@ export default function PlansApplicationFlow({
                       먼저 독점하세요.
                     </h1>
                     <p className="mt-2 max-w-[520px] break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400 sm:text-[15px] sm:leading-6">
-                      지역을 누르면 구·시 단위 티오까지 바로 확인합니다.
+                      먼저 광역 단위로 보고, 내 지역을 누르면 구·시 단위로 확대됩니다.
                     </p>
                   </div>
                   <div className="mt-9 shrink-0 rounded-full bg-blue-600 px-3 py-2 text-right text-white shadow-[0_12px_34px_rgba(37,99,235,0.3)] sm:mt-0 sm:px-4">
@@ -381,69 +421,84 @@ export default function PlansApplicationFlow({
                   />
                 </div>
                 <div className="mt-2 flex items-center justify-between rounded-2xl border border-zinc-200 bg-[#fbfcff] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/60 lg:hidden">
-                  <div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
-                      선택 지역
-                    </div>
-                    <div className="mt-0.5 text-[17px] font-black">{selected.label}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-zinc-950 px-2.5 py-1 text-[11px] font-black text-white dark:bg-white dark:text-zinc-950">
-                      {selected.seats}석
-                    </span>
-                    <span
-                      className="rounded-full px-2.5 py-1 text-[11px] font-black text-white"
-                      style={{ backgroundColor: pressureFill(selected.pressure) }}
-                    >
-                      {pressureLabel(selected.pressure)}
-                    </span>
-                  </div>
+                  {mapZoomed ? (
+                    <>
+                      <div>
+                        <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
+                          선택 지역
+                        </div>
+                        <div className="mt-0.5 flex items-end gap-2">
+                          <span className="text-[17px] font-black">{selected.label}</span>
+                          <span className="pb-0.5 text-[12px] font-black text-blue-600 dark:text-blue-300">
+                            {selected.seats}자리 남음
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setMapZoomed(false)}
+                        className="rounded-full border border-zinc-200 px-3 py-1.5 text-[11px] font-black text-zinc-600 dark:border-zinc-700 dark:text-zinc-200"
+                      >
+                        전국 보기
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
+                          seat map
+                        </div>
+                        <div className="mt-0.5 text-[15px] font-black">지도를 눌러 내 지역 티오 확인</div>
+                      </div>
+                      <span className="rounded-full bg-zinc-950 px-2.5 py-1 text-[11px] font-black text-white dark:bg-white dark:text-zinc-950">
+                        {capacity - filled}자리 남음
+                      </span>
+                    </>
+                  )}
                 </div>
-                <div className="mx-auto mt-1 h-[200px] min-h-0 max-w-[620px] sm:h-[calc(100%-184px)] sm:min-h-[280px] sm:max-h-[560px] lg:mt-2 lg:h-[calc(100%-148px)]">
+                <div className="mx-auto mt-1 h-[320px] min-h-0 max-w-[620px] sm:h-[calc(100%-184px)] sm:min-h-[320px] sm:max-h-[560px] lg:mt-2 lg:h-[calc(100%-148px)]">
                   <KoreaSeatMap
                     selected={selected}
                     hoveredKey={hoveredKey}
-                    onSelect={setSelectedKey}
+                    zoomed={mapZoomed}
+                    onSelect={handleRegionSelect}
                     onHover={setHoveredKey}
                   />
-                </div>
-                <div className="mt-1 grid grid-cols-3 gap-1 lg:hidden">
-                  {selectedDistricts.map((district) => (
-                    <button
-                      key={district.name}
-                      type="button"
-                      className="h-6 truncate rounded-md border border-zinc-200 bg-[#fbfcff] px-1 text-[9px] font-black text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950/60 dark:text-zinc-200"
-                    >
-                      {district.name} {district.seats}
-                    </button>
-                  ))}
                 </div>
               </div>
               <aside className="hidden min-h-0 flex-col p-4 sm:p-5 lg:flex">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-400 dark:text-zinc-500">
-                      선택 지역
+                      {mapZoomed ? "선택 지역" : "지역 티오"}
                     </div>
                     <h2 className="mt-1 break-keep text-[28px] font-black tracking-tight">
-                      {selected.label}
+                      {mapZoomed ? selected.label : "지도에서 선택"}
                     </h2>
                   </div>
-                  <span
-                    className="rounded-full px-3 py-1.5 text-[11px] font-black text-white"
-                    style={{ backgroundColor: pressureFill(selected.pressure) }}
-                  >
-                    {pressureLabel(selected.pressure)}
-                  </span>
+                  {mapZoomed ? (
+                    <span
+                      className="rounded-full px-3 py-1.5 text-[11px] font-black text-white"
+                      style={{ backgroundColor: pressureFill(selected.pressure) }}
+                    >
+                      {pressureLabel(selected.pressure)}
+                    </span>
+                  ) : null}
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <div className="rounded-2xl bg-[#f5f7fb] px-3 py-3 dark:bg-zinc-950">
-                    <div className="text-[10px] font-black text-zinc-400">남은 티오</div>
-                    <div className="mt-1 text-[28px] font-black">{selected.seats}석</div>
+                    <div className="text-[10px] font-black text-zinc-400">
+                      {mapZoomed ? "남은 티오" : "전체 남은 자리"}
+                    </div>
+                    <div className="mt-1 text-[28px] font-black">
+                      {mapZoomed ? selected.seats : capacity - filled}석
+                    </div>
                   </div>
                   <div className="rounded-2xl bg-[#f5f7fb] px-3 py-3 dark:bg-zinc-950">
                     <div className="text-[10px] font-black text-zinc-400">예약률</div>
-                    <div className="mt-1 text-[28px] font-black">{Math.round(selected.pressure * 100)}%</div>
+                    <div className="mt-1 text-[28px] font-black">
+                      {mapZoomed ? Math.round(selected.pressure * 100) : filledPct}%
+                    </div>
                   </div>
                 </div>
                 <div className="mt-4 rounded-2xl border border-zinc-200 bg-[#fbfcff] p-3 dark:border-zinc-800 dark:bg-zinc-950/60">
@@ -460,9 +515,9 @@ export default function PlansApplicationFlow({
                       <button
                         key={region.key}
                         type="button"
-                        onClick={() => setSelectedKey(region.key)}
+                        onClick={() => handleRegionSelect(region.key)}
                         className={`h-7 rounded-lg border px-1 text-center text-[10px] font-black transition ${
-                          region.key === selected.key
+                          mapZoomed && region.key === selected.key
                             ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-950/40 dark:text-blue-200"
                             : "border-zinc-200 bg-white text-zinc-500 hover:border-blue-200 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400"
                         }`}
@@ -477,7 +532,9 @@ export default function PlansApplicationFlow({
                     대표 지역
                   </div>
                   <div className="mt-2 break-keep text-[12px] font-black leading-5">
-                    {selectedDistricts.map((district) => district.name).join(" · ")}
+                    {mapZoomed
+                      ? selectedDistricts.map((district) => district.name).join(" · ")
+                      : "광역 단위로 먼저 보고, 클릭한 지역만 구·시 단위로 확대합니다."}
                   </div>
                 </div>
               </aside>
