@@ -15,13 +15,13 @@ import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { detectBrandDepth } from "@/lib/category-brand-depth";
 import type { DetailEventType } from "@/lib/detail-analytics";
-import { teaserBudgetRangeLabel, teaserProfitLabel } from "@/lib/feed-price-display";
+import { isDaangnMarketplaceSource } from "@/lib/marketplace-source";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
-// Wave 338+339 (Phase 1a + 1b — Freemium /explore):
-// 매물 풀 browsing. 피드는 무료 teaser, 상세 분석은 멤버십 승인 후 공개.
+// Wave 338+339 (Phase 1a + 1b — /explore):
+// 매물 풀 browsing. 현재 피드는 승인된 멤버십 사용자에게 실제 매입가/시세까지 공개.
 // + 통계 배너 + paywall 예고 + sold out 오버레이 + PackRevealModal 통합.
 // detail-access.ts FREE_DETAIL_ACCESS_LIMIT 와 동기화.
 // 현재 정책은 승인형 멤버십 게이트이므로 기본 free limit 은 0이다.
@@ -97,7 +97,7 @@ type ScrappedPoolItem = PoolItem & {
 type PoolResponse = {
   items: PoolItem[];
   cooldown: { canRefresh: boolean; remainingSec: number; nextAvailableAt: string | null };
-  feedMode?: "free" | "credit";
+  feedMode?: "membership" | "free" | "credit";
   creditFeed?: boolean;
   appliedBudget?: "150k" | "300k" | "500k" | "unlimited";
   detailAccess?: {
@@ -165,11 +165,6 @@ type DetailAccessValueSummary = {
   cautionCount: number;
 };
 
-type DirectTradeConfirmState = {
-  item: PoolItem;
-  costLabel: string;
-};
-
 function createDetailSessionId(pid: number) {
   const rand = Math.random().toString(36).slice(2, 8);
   return `detail:${pid}:${Date.now().toString(36)}:${rand}`;
@@ -177,15 +172,6 @@ function createDetailSessionId(pid: number) {
 
 function krw(value: number) {
   return `${Math.round(value).toLocaleString("ko-KR")}원`;
-}
-
-function krwTenThousandBand(value: number) {
-  return teaserBudgetRangeLabel(value);
-}
-
-function lockedProfitLabel(item: PoolItem) {
-  const avg = profitAvg(item);
-  return teaserProfitLabel(avg);
 }
 
 // Wave 383+385: cooldown 표시 — 초까지 보여서 카운트다운 실시간 가시.
@@ -234,18 +220,6 @@ function recomputePoolProfit(
     conditionClass: item.conditionClass,
     conditionTier: item.conditionTier,
   });
-}
-
-function isDirectOnlyItem(item: Pick<PoolItem, "transactionMode" | "shippingAssumption">) {
-  return item.transactionMode === "direct_only" || item.shippingAssumption === "direct_only";
-}
-
-function directTradeCostLabel(snapshot: DetailAccessSnapshot) {
-  if (snapshot.unlimited) return "상세 무제한";
-  const freeRemaining = Math.max(0, Number(snapshot.freeLimit) - Number(snapshot.freeUsed));
-  // Wave 762 (2026-05-26): hardcoded "1회" → 동적 (free limit 2 로 늘면서 정확한 잔여 노출).
-  if (freeRemaining > 0) return `무료 상세보기 ${freeRemaining}회`;
-  return "멤버십 상세보기";
 }
 
 function accessValueForItem(item: PoolItem): DetailAccessValueSummary {
@@ -444,12 +418,8 @@ function lockedPreviewTitle(item: PoolItem) {
   return `${lockedPreviewCategoryLabel(item)} · ${conditionPreviewLabel(item.conditionClass)} 후보`;
 }
 
-function isFeedTeaserLocked(item: PoolItem) {
-  return item.feedPreviewLocked === true || Boolean(item.accessToken);
-}
-
-function hasPaidOrFreeDetailAccess(snapshot: DetailAccessSnapshot, freeDetailRemaining: number) {
-  return Boolean(snapshot.unlimited) || freeDetailRemaining > 0 || Number(snapshot.creditBalance ?? 0) > 0;
+function isFeedTeaserLocked(_item: PoolItem) {
+  return false;
 }
 
 type SortOption = "profit_desc" | "latest" | "price_asc" | "distance";
@@ -947,148 +917,6 @@ function DetailAccessPaywallModal({
   );
 }
 
-function DirectTradeConfirmModal({
-  state,
-  onClose,
-  onConfirm,
-}: {
-  state: DirectTradeConfirmState | null;
-  onClose: () => void;
-  onConfirm: (item: PoolItem) => void;
-}) {
-  const [resolvedLocation, setResolvedLocation] = useState<string | null>(null);
-  const [isLocationLoading, setIsLocationLoading] = useState(false);
-  const activePid = state?.item.pid ?? null;
-  // Wave 755 (2026-05-26): teaser locked 매물은 pid=synthetic. API 가 real pid 못 찾음 → location null.
-  //   accessToken 있으면 그걸 보내서 server-side decode. 없으면 fallback to pid (unlocked path).
-  const activeToken = state?.item.accessToken ?? null;
-  const initialLocation = state?.item.directTradeLocation?.trim() ?? "";
-
-  useEffect(() => {
-    setResolvedLocation(null);
-    // Wave 755 (2026-05-26): initialLocation 있어도 fetch 호출 — stale state cache 무시.
-    //   teaser locked 매물은 pid=synthetic 이라 accessToken 필수.
-    //   endpoint 최신 응답 우선 (resolvedLocation > initialLocation).
-    if (!activePid && !activeToken) {
-      setIsLocationLoading(false);
-      return;
-    }
-    const controller = new AbortController();
-    setIsLocationLoading(true);
-    fetch("/api/packs/pool/direct-location", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(activeToken ? { accessToken: activeToken } : { pid: activePid }),
-      cache: "no-store",
-      signal: controller.signal,
-    })
-      .then((res) => res.ok ? res.json() : null)
-      .then((data: { location?: unknown } | null) => {
-        const location = typeof data?.location === "string" ? data.location.trim() : "";
-        if (location) setResolvedLocation(location);
-      })
-      .catch((err) => {
-        if ((err as { name?: string })?.name !== "AbortError") {
-          console.warn("[direct-location] fetch failed", err);
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsLocationLoading(false);
-      });
-    return () => controller.abort();
-  }, [activePid, activeToken, initialLocation]);
-
-  if (!state) return null;
-  // endpoint 응답 (resolvedLocation) 우선 — stale state cache override.
-  const location = resolvedLocation?.trim() || initialLocation || "";
-  const hasLocation = Boolean(location);
-  const locationParts = hasLocation
-    ? location.split(/\s*[·,]\s*/).map((part) => part.trim()).filter(Boolean).slice(0, 3)
-    : [];
-  const confirmItem = resolvedLocation && !initialLocation
-    ? { ...state.item, directTradeLocation: resolvedLocation }
-    : state.item;
-
-  return (
-    <div
-      className="fixed inset-0 z-[94] flex items-end justify-center bg-black/45 px-3 pb-3 pt-10 backdrop-blur-[2px] sm:items-center sm:p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-label="직거래 전용 매물 확인"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-[420px] overflow-hidden rounded-[28px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.28)] dark:bg-zinc-950"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="px-5 pb-5 pt-5 sm:px-6 sm:pt-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-amber-50 text-amber-700 dark:bg-amber-950/45 dark:text-amber-300">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
-              <path d="M12 21s7-4.7 7-11a7 7 0 0 0-14 0c0 6.3 7 11 7 11Z" />
-              <path d="M12 10.5h.01" />
-            </svg>
-          </div>
-
-          <p className="mt-5 text-[13px] font-black text-[#3182f6] dark:text-blue-300">열기 전 확인</p>
-          <h2 className="mt-2 break-keep text-[25px] font-black leading-[1.18] tracking-tight text-zinc-950 dark:text-zinc-50">
-            이 상품은 직거래만 가능한 매물이에요
-          </h2>
-          <p className="mt-3 break-keep text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-            택배로 받을 수 있는 조건이 아니라서, 실제로 만날 수 있는 지역인지 먼저 봐야 해요.
-            계속 열면 이 상품 상세 분석에 {state.costLabel}가 사용됩니다.
-          </p>
-
-          <div className="mt-5 rounded-[22px] bg-zinc-50 p-4 ring-1 ring-zinc-100 dark:bg-zinc-900/70 dark:ring-zinc-800">
-            <div className="text-[11px] font-black uppercase tracking-[0.14em] text-zinc-400">
-              거래 가능 지역
-            </div>
-            {hasLocation ? (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {locationParts.map((part) => (
-                  <span
-                    key={part}
-                    className="inline-flex min-h-9 items-center rounded-full bg-white px-3 text-[14px] font-black text-zinc-950 ring-1 ring-zinc-200 dark:bg-zinc-950 dark:text-zinc-50 dark:ring-zinc-700"
-                  >
-                    {part}
-                  </span>
-                ))}
-              </div>
-            ) : isLocationLoading ? (
-              <div className="mt-1.5 break-keep text-[15px] font-bold leading-6 text-zinc-700 dark:text-zinc-200">
-                거래 동네를 확인하고 있어요
-              </div>
-            ) : (
-              <div className="mt-1.5 break-keep text-[15px] font-bold leading-6 text-zinc-700 dark:text-zinc-200">
-                아직 동네 정보를 가져오지 못했어요
-              </div>
-            )}
-            <div className="mt-3 text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-              위치가 멀면 수익이 좋아 보여도 이동 시간 때문에 손해일 수 있어요. 지역이 맞는지 보고 열어주세요.
-            </div>
-          </div>
-
-          <div className="mt-5 grid gap-2">
-            <button
-              type="button"
-              onClick={() => onConfirm(confirmItem)}
-              className="flex min-h-12 items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-base font-black text-white shadow-[0_12px_26px_rgba(49,130,246,0.28)] transition hover:bg-[#1c6fe8]"
-            >
-              그래도 상세 분석 열기
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="min-h-12 rounded-2xl bg-zinc-100 px-4 text-sm font-black text-zinc-700 transition hover:bg-zinc-200 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-            >
-              다른 매물 볼게요
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function FirstFeedOnboardingCard({
   selectedBudget,
   onSelectBudget,
@@ -1338,7 +1166,7 @@ export default function ExploreClient({
   const [error, setError] = useState<string | null>(null);
   const [detailAccessLimit, setDetailAccessLimit] = useState<DetailAccessLimitModal | null>(null);
   // Wave launch-93: paywall 노출 이력은 모달 가치 요약/후속 CTA에만 사용한다.
-  const [hasSeenPaywall, setHasSeenPaywall] = useState<boolean>(() => {
+  const [, setHasSeenPaywall] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     try { return window.localStorage.getItem(`minyoi:has-seen-paywall:${storageScope}`) === "1"; } catch { return false; }
   });
@@ -1347,7 +1175,6 @@ export default function ExploreClient({
     if (typeof window === "undefined") return;
     try { window.localStorage.setItem(`minyoi:has-seen-paywall:${storageScope}`, "1"); } catch {}
   }, [storageScope]);
-  const [directTradeConfirm, setDirectTradeConfirm] = useState<DirectTradeConfirmState | null>(null);
   const [detailAccessLoadingPid, setDetailAccessLoadingPid] = useState<number | null>(null);
   const openedDetailPidsRef = useRef<Set<number>>(new Set());
   const [openedDetailPids, setOpenedDetailPids] = useState<Set<number>>(() => new Set());
@@ -2024,26 +1851,10 @@ export default function ExploreClient({
     });
   }, [items, selectedCard, scrapOnly, savedPidSet, openedDetailPids]);
 
-  const freeDetailRemaining = Math.max(
-    0,
-    detailAccessSnapshot.unlimited ? 0 : Number(detailAccessSnapshot.freeLimit) - Number(detailAccessSnapshot.freeUsed),
-  );
-
-  const openItemDetail = useCallback(async (item: PoolItem, options?: { directTradeConfirmed?: boolean }) => {
+  const openItemDetail = useCallback(async (item: PoolItem) => {
     if (item.soldOut) return;
-    const hasDetailEntitlement = hasPaidOrFreeDetailAccess(detailAccessSnapshot, freeDetailRemaining);
-    if (!options?.directTradeConfirmed && isDirectOnlyItem(item) && hasDetailEntitlement) {
-      setDetailAccessLimit(null);
-      setDirectTradeConfirm({
-        item,
-        costLabel: directTradeCostLabel(detailAccessSnapshot),
-      });
-      return;
-    }
-
     setDetailAccessLoadingPid(item.pid);
     setDetailAccessLimit(null);
-    setDirectTradeConfirm(null);
     try {
       const res = await fetch("/api/packs/pool/detail-access", {
         method: "POST",
@@ -2169,12 +1980,7 @@ export default function ExploreClient({
     } finally {
       setDetailAccessLoadingPid((prev) => (prev === item.pid ? null : prev));
     }
-  }, [beginDetailSession, detailAccessSnapshot, freeDetailRemaining, storageScope, trackDetailEvent]);
-
-  const confirmDirectTradeDetail = useCallback((item: PoolItem) => {
-    setDirectTradeConfirm(null);
-    void openItemDetail(item, { directTradeConfirmed: true });
-  }, [openItemDetail]);
+  }, [beginDetailSession, markPaywallSeen, storageScope, trackDetailEvent]);
 
   // 다른 매물 클릭 시 modal 전환
   const handleOpenRelatedItem = useCallback((pid: number) => {
@@ -2707,19 +2513,16 @@ export default function ExploreClient({
           {displayItems.map((item) => {
             const pct = profitPct(item);
             const isJoongna = item.marketplaceSource === "joongna";
+            const isDaangn = isDaangnMarketplaceSource(item.marketplaceSource);
             const isPremiumSeller = !isJoongna && (item.sellerReviewRating ?? 0) >= 4.8 && item.sellerReviewCount >= 30;
-            const shippingChip = item.transactionMode === "direct_only"
+            const shippingChip = isDaangn && item.transactionMode === "direct_only"
+              ? null
+              : item.transactionMode === "direct_only"
               ? "직거래만"
               : item.shippingAssumption === "included"
                 ? "배송비 포함"
                 : item.freeShipping ? "무료배송" : null;
             const isSoldOut = item.soldOut;
-            const teaserLocked = isFeedTeaserLocked(item);
-            const exactUnlocked = !teaserLocked || scrapOnly || savedPidSet.has(item.pid) || openedDetailPids.has(item.pid);
-            const lockedPreview = !exactUnlocked;
-            const freeDetailAvailable = lockedPreview && freeDetailRemaining > 0;
-            const unlimitedDetailAvailable = lockedPreview && detailAccessSnapshot.unlimited === true;
-            const membershipDetailPrompt = lockedPreview && !freeDetailAvailable && !unlimitedDetailAvailable;
             const tierBadgeCategory = tierBadgeCategoryForItem(item);
             const legacyBadgeCondition = tierBadgeCategory ? null : item.conditionClass;
             const fullLocked = false;
@@ -2818,32 +2621,12 @@ export default function ExploreClient({
                   </div>
 
 
-                  {lockedPreview && freeDetailAvailable ? (
-                    <div className="mt-1 text-[11px] font-bold text-blue-600 dark:text-blue-400">
-                      첫 상세 무료 {freeDetailRemaining.toLocaleString("ko-KR")}회 남음
-                    </div>
-                  ) : null}
-                  {unlimitedDetailAvailable ? (
-                    <div className="mt-1 text-[11px] font-bold text-blue-600 dark:text-blue-400">
-                      상세 무제한
-                    </div>
-                  ) : null}
-                  {membershipDetailPrompt ? (
-                    <div className="mt-1 text-[11px] font-bold text-blue-600 dark:text-blue-400">
-                      멤버십으로 정확한 매물 열기
-                    </div>
-                  ) : null}
                   <div className="mt-1.5 flex items-baseline gap-1.5">
                     {/* Wave launch-117b (2026-05-24): 수익 = emerald (사용자 정정, light+dark 둘 다). */}
                     <span className={`text-lg font-bold tabular-nums ${isSoldOut ? "text-zinc-500 line-through dark:text-zinc-500" : "text-emerald-600 dark:text-emerald-400"}`}>
-                      {/* Wave 886.2 (2026-05-27): 잠금 카드도 차익 exact 노출. 시세/매입가는 fuzzy 유지 → 역산 어려움. */}
                       +{krw(profitAvg(item))}
                     </span>
-                    {lockedPreview ? (
-                      <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                        {freeDetailAvailable ? "첫 상세 무료" : "시세 잠김"}
-                      </span>
-                    ) : pct != null ? (
+                    {pct != null ? (
                       <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${isSoldOut ? "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500" : "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-200"}`}>
                         +{pct}%
                       </span>
@@ -2851,23 +2634,18 @@ export default function ExploreClient({
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
                     <span>
-                      {lockedPreview ? "필요 예산" : "매입"}{" "}
+                      매입가{" "}
                       <span className="font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
-                        {lockedPreview ? (item.priceBandLabel ?? krwTenThousandBand(item.price)) : krw(item.price)}
+                        {krw(item.price)}
                       </span>
                     </span>
-                    {lockedPreview ? (
-                      <>
-                        <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                        <span className="font-bold text-zinc-500 dark:text-zinc-400">정확 시세 잠김</span>
-                      </>
-                    ) : item.skuMedian ? (
+                    {item.skuMedian ? (
                       <>
                         <span className="text-zinc-300 dark:text-zinc-700">·</span>
                         <span>
                           시세{" "}
                           <span className="font-bold tabular-nums">
-                            {lockedPreview ? (item.marketPriceBandLabel ?? krwTenThousandBand(item.skuMedian)) : krw(item.skuMedian)}
+                            {krw(item.skuMedian)}
                           </span>
                         </span>
                       </>
@@ -2895,19 +2673,14 @@ export default function ExploreClient({
                             {item.daangnDistanceLabel}
                           </span>
                         ) : null}
-                        {lockedPreview && item.priceSignalLabel ? (
+                        {item.priceSignalLabel ? (
                           <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
                             {item.priceSignalLabel}
                           </span>
                         ) : null}
-                        {lockedPreview && item.velocitySignalLabel ? (
+                        {item.velocitySignalLabel ? (
                           <span className="rounded-full bg-violet-50 px-1.5 py-0.5 font-bold text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
                             {item.velocitySignalLabel}
-                          </span>
-                        ) : null}
-                        {lockedPreview && item.sellerSignalLabel ? (
-                          <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                            {item.sellerSignalLabel}
                           </span>
                         ) : null}
                         {/* Wave launch-17: 가품 위험 chip — 메인 feed 카드에서도 1차 노출 (사용자 보호). */}
@@ -2962,11 +2735,6 @@ export default function ExploreClient({
                             {shippingChip}
                           </span>
                         ) : null}
-                        {lockedPreview ? (
-                          <span className="rounded-full bg-blue-50 px-1.5 py-0.5 font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-200">
-                            {freeDetailAvailable ? "첫 상세 무료" : "상세에서 제목·가격 공개"}
-                          </span>
-                        ) : null}
                       </>
                     )}
                   </div>
@@ -2997,7 +2765,7 @@ export default function ExploreClient({
                   ? budgetFilter !== "all"
                     ? `${budgetOption.label}에서 수익, 시세, 상태 조건을 통과한 후보만 남긴 결과예요. 가격대를 넓히면 더 볼 수 있어요.`
                     : "수익, 시세, 상태 조건을 통과한 매물만 남긴 결과예요."
-                  : "피드는 무료예요. 정확한 제목·가격·출처·원문은 상세 분석에서 열려요."}
+                  : "승인된 멤버에게만 지금 진행 중인 추천 매물과 시세를 보여줘요."}
               </div>
               {feedExhausted && budgetFilter !== "all" ? (
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -3257,12 +3025,6 @@ export default function ExploreClient({
           </div>
         </div>
       ) : null}
-
-      <DirectTradeConfirmModal
-        state={directTradeConfirm}
-        onClose={() => setDirectTradeConfirm(null)}
-        onConfirm={confirmDirectTradeDetail}
-      />
 
       {/* Wave launch-88 (사용자 정정 — 클릭 시 검증 딜레이 동안 렉걸린 느낌):
           detailAccessLoadingPid 활성 동안 검은 overlay + 가운데 dots loading 표시.

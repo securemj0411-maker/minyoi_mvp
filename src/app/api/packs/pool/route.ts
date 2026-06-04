@@ -10,7 +10,7 @@ import { loadSkuImageMap, resolveGenericImage } from "@/lib/sku-images";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { mergeConditionDisplayChips } from "@/lib/condition-display";
 import { isDaangnMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
-import { createPoolAccessToken, decodePoolAccessToken, syntheticPidForPoolToken } from "@/lib/pool-access-token";
+import { decodePoolAccessToken } from "@/lib/pool-access-token";
 import { localizeProductLineLabel } from "@/lib/product-line-display";
 import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
@@ -22,14 +22,14 @@ import { teaserBudgetRangeLabel } from "@/lib/feed-price-display";
 import { marketStatsConditionKey } from "@/lib/pack-open";
 
 // Wave 338 (Phase 1a — Freemium /explore):
-// 무료 사용자 매물 풀 browsing. 6h 이상 지난 매물만 노출 (유료는 즉시 — Phase 2).
+// 2026-06-04 멤버십 전환: /me 피드는 승인된 멤버만 접근하며 매입가/시세를 그대로 공개한다.
 //
 // 정책:
 // - 인증 필수 (로그인 사용자만)
 // - 30개 매물 / 1 페이지 (limit)
-// - 피드 탐색은 무료. 크레딧은 상세 분석/원문 공개 때만 차감.
+// - 인증 + 멤버십 필수
 // - 정렬: profit_band desc, expected_profit_max desc (안정적 = 같은 사용자 같은 매물)
-// - 피드는 구매 실행 식별키(pid/name/정확가/source/link)를 서버에서 teaser로 치환
+// - 피드에서 pid/name/매입가/시세/source 를 숨기지 않는다.
 //
 // 응답:
 // {
@@ -338,11 +338,6 @@ const LOCKED_CONDITION_LABELS: Record<string, string> = {
   low_batt: "배터리 약함",
 };
 
-function roundDownTenThousand(value: number | null) {
-  if (value == null || !Number.isFinite(Number(value))) return value;
-  return Math.max(0, Math.floor(Number(value) / 10000) * 10000);
-}
-
 function usesLatestTierPreviewCategory(category: string | null | undefined) {
   return LATEST_TIER_PREVIEW_CATEGORIES.has(category ?? "");
 }
@@ -379,28 +374,6 @@ function relativeDiscountLabel(price: number, marketPrice: number | null | undef
   const discount = Math.max(1, Math.round(((market - price) / market) * 100));
   const rounded = discount >= 10 ? Math.round(discount / 5) * 5 : discount;
   return `시세보다 약 ${rounded}% 낮음`;
-}
-
-function sellerSignalLabel(item: {
-  marketplaceSource?: string | null;
-  sellerReviewRating?: number | null;
-  sellerReviewCount?: number | null;
-  joongnaTrustScore?: number | null;
-  joongnaSafeOrderSalesCount?: number | null;
-}) {
-  const reviewCount = Number(item.sellerReviewCount ?? 0);
-  if (item.marketplaceSource === "joongna") {
-    const trust = Number(item.joongnaTrustScore ?? 0);
-    const safeSales = Number(item.joongnaSafeOrderSalesCount ?? 0);
-    if (trust >= 700 || reviewCount >= 10 || safeSales >= 3) return "판매자 신호 양호";
-    if (trust >= 400 || reviewCount > 0 || safeSales > 0) return "판매자 이력 확인 가능";
-    return "판매자 정보 상세 확인";
-  }
-  const rating = Number(item.sellerReviewRating ?? 0);
-  if (rating >= 4.8 && reviewCount >= 30) return "후기 많은 셀러";
-  if (rating >= 4.5 && reviewCount >= 5) return "판매자 신호 양호";
-  if (reviewCount > 0) return "거래후기 확인 가능";
-  return "판매자 정보 상세 확인";
 }
 
 function confidenceSignalLabel(confidence: number | null | undefined) {
@@ -1444,60 +1417,11 @@ function buildItems(
         priceBandLabel: priceBandLabel(raw.price),
         marketPriceBandLabel: priceBandLabel(skuMedianFinal),
         priceSignalLabel: relativeDiscountLabel(raw.price, skuMedianFinal),
-        sellerSignalLabel: sellerSignalLabel({
-          marketplaceSource,
-          sellerReviewRating: meta?.shop_review_rating ?? null,
-          sellerReviewCount: meta?.shop_review_count ?? 0,
-          joongnaTrustScore: facts.joongnaTrustScore ?? null,
-          joongnaSafeOrderSalesCount: facts.joongnaSafeOrderSalesCount ?? null,
-        }),
         marketSignalLabel: confidenceSignalLabel(row.confidence),
         velocitySignalLabel: row.comparable_key ? (velocitySignals.get(row.comparable_key) ?? null) : null,
       };
     })
     .filter((x): x is NonNullable<typeof x> => x != null);
-}
-
-function buildTeaserFeedItems<T extends ReturnType<typeof buildItems>[number]>(items: T[]) {
-  return items.map((item) => {
-    const accessToken = createPoolAccessToken(item.pid);
-    const roundedPrice = roundDownTenThousand(item.price) ?? 0;
-    const roundedMarketPrice = roundDownTenThousand(item.skuMedian);
-    return {
-      ...item,
-      pid: syntheticPidForPoolToken(accessToken),
-      accessToken,
-      feedPreviewLocked: true,
-      name: item.productLineLabel ?? lockedPreviewTitle(item.category, item.conditionClass),
-      listingUrl: null,
-      // Wave 886.2 (2026-05-27): 잠금 카드 source 로고 노출 — 일반 이미지로 leak 차단된 후라 마켓플레이스 식별 공개 OK.
-      // 매입가/시세 range는 그대로 fuzzy 유지 → 정확 listing 역산 어려움.
-      marketplaceSource: item.marketplaceSource,
-      marketplaceLabel: item.marketplaceLabel,
-      price: roundedPrice,
-      skuMedian: roundedMarketPrice,
-      thumbnailUrl: item.thumbnailUrl,
-      skuId: null,
-      skuName: null,
-      comparableKey: null,
-      // Wave 886.2: 차익은 exact 노출 (시세 + 매입가 둘 다 fuzzy 유지 → 역산 어려움).
-      expectedProfitMin: item.expectedProfitMin,
-      expectedProfitMax: item.expectedProfitMax,
-      sellerReviewRating: null,
-      sellerReviewCount: 0,
-      joongnaTrustScore: null,
-      joongnaSafeOrderSalesCount: null,
-      joongnaSafeOrderSalesText: null,
-      directTradeLocation: null,
-      descriptionPreview: "",
-      priceBandLabel: priceBandLabel(roundedPrice),
-      marketPriceBandLabel: priceBandLabel(roundedMarketPrice),
-      priceSignalLabel: item.priceSignalLabel,
-      sellerSignalLabel: item.sellerSignalLabel,
-      marketSignalLabel: item.marketSignalLabel,
-      velocitySignalLabel: item.velocitySignalLabel,
-    };
-  });
 }
 
 function sortDaangnItemsByDistance<T extends ReturnType<typeof buildItems>[number]>(items: T[]) {
@@ -1641,12 +1565,12 @@ export async function GET(req: Request) {
     }
     items = sortDaangnItemsByDistance(items);
     items = items.slice(0, PAGE_SIZE);
-    const responseItems = buildTeaserFeedItems(items);
+    const responseItems = items;
 
     return NextResponse.json({
       items: responseItems,
       cooldown: feedCooldown,
-      feedMode: "free",
+      feedMode: "membership",
       creditFeed: false,
       detailAccess,
       total: responseItems.length,
