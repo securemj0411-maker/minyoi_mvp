@@ -3,12 +3,25 @@
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { AccountPanel } from "@/components/account-panel";
 import { BrandLogo } from "@/components/brand-logo";
 import { displayNameForUser, isAdminUser } from "@/lib/auth-users";
-import { hasClientAdminOverride, setClientAdminOverride } from "@/lib/client-admin-override";
-import { hasAdminShadowClient, setAdminShadowClient } from "@/lib/admin-shadow-mode";
+import {
+  hasClientAdminOverride,
+  setClientAdminOverride,
+} from "@/lib/client-admin-override";
+import {
+  hasAdminShadowClient,
+  setAdminShadowClient,
+} from "@/lib/admin-shadow-mode";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type ThemeMode = "system" | "light" | "dark";
@@ -30,7 +43,8 @@ function applyTheme(mode: ThemeMode) {
 function loadTheme(): ThemeMode {
   try {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    if (stored === "light" || stored === "dark" || stored === "system") return stored;
+    if (stored === "light" || stored === "dark" || stored === "system")
+      return stored;
   } catch {
     return "system";
   }
@@ -39,16 +53,33 @@ function loadTheme(): ThemeMode {
 
 function SunIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
       <circle cx="12" cy="12" r="4" />
-      <path strokeLinecap="round" d="M12 2.5v2.5M12 19v2.5M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2.5 12H5M19 12h2.5M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" />
+      <path
+        strokeLinecap="round"
+        d="M12 2.5v2.5M12 19v2.5M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2.5 12H5M19 12h2.5M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"
+      />
     </svg>
   );
 }
 
 function MoonIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -60,7 +91,16 @@ function MoonIcon() {
 
 function SystemIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <rect x="2" y="4" width="20" height="14" rx="2" />
       <path d="M8 21h8M12 18v3" />
     </svg>
@@ -102,7 +142,9 @@ function ThemeToggle({
 
   if (variant === "compact") {
     return (
-      <div className={`flex items-center gap-1 rounded-full border border-zinc-200 bg-white p-1 shadow-[0_8px_18px_rgba(15,23,42,0.06)] dark:border-zinc-700 dark:bg-zinc-900 ${className}`}>
+      <div
+        className={`flex items-center gap-1 rounded-full border border-zinc-200 bg-white p-1 shadow-[0_8px_18px_rgba(15,23,42,0.06)] dark:border-zinc-700 dark:bg-zinc-900 ${className}`}
+      >
         <button
           type="button"
           onClick={() => setTheme("light")}
@@ -137,7 +179,9 @@ function ThemeToggle({
     ["dark", "다크", <MoonIcon key="moon" />],
   ];
   return (
-    <div className={`flex items-stretch gap-0.5 rounded-xl border border-zinc-200 bg-white p-0.5 shadow-[0_8px_18px_rgba(15,23,42,0.06)] dark:border-zinc-700 dark:bg-zinc-900 ${className}`}>
+    <div
+      className={`flex items-stretch gap-0.5 rounded-xl border border-zinc-200 bg-white p-0.5 shadow-[0_8px_18px_rgba(15,23,42,0.06)] dark:border-zinc-700 dark:bg-zinc-900 ${className}`}
+    >
       {items.map(([value, label, icon]) => (
         <button
           key={value}
@@ -160,7 +204,15 @@ function ThemeToggle({
 
 function HamburgerIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+    >
       <path d="M4 6h16M4 12h16M4 18h16" />
     </svg>
   );
@@ -168,7 +220,15 @@ function HamburgerIcon() {
 
 function CloseIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+    >
       <path d="M6 6l12 12M6 18L18 6" />
     </svg>
   );
@@ -181,14 +241,28 @@ function AdminTerminalNav() {
     <nav className="fixed left-0 right-0 top-0 z-40 h-10 border-b border-zinc-700/60 bg-zinc-950 px-4 text-xs font-mono">
       <div className="mx-auto flex h-full max-w-[1600px] items-center justify-between">
         <div className="flex items-center gap-3 text-amber-400">
-          <span className="text-[11px] font-black uppercase tracking-[0.18em]">▌MINYOI TERM</span>
-          <span className="hidden text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 sm:inline">OPERATOR CONSOLE</span>
+          <span className="text-[11px] font-black uppercase tracking-[0.18em]">
+            ▌MINYOI TERM
+          </span>
+          <span className="hidden text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 sm:inline">
+            OPERATOR CONSOLE
+          </span>
         </div>
         <Link
           href="/"
           className="inline-flex h-7 items-center gap-1 rounded border border-zinc-700 bg-zinc-900 px-2.5 text-[11px] font-bold text-zinc-300 transition hover:border-amber-500/60 hover:bg-zinc-800 hover:text-amber-300"
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="M3 11l9-8 9 8M5 10v10h14V10" />
           </svg>
           MAIN
@@ -214,19 +288,27 @@ export default function AppNav() {
   // Wave 106: admin이지만 shadow mode면 일반 user UI. non-admin이지만 adminOverride면 admin UI.
   const admin = (realAdmin && !adminShadow) || (!realAdmin && adminOverride);
   const userName = useMemo(() => displayNameForUser(user), [user]);
-  const userInitial = useMemo(() => (userName || "U").trim().charAt(0).toUpperCase(), [userName]);
+  const userInitial = useMemo(
+    () => (userName || "U").trim().charAt(0).toUpperCase(),
+    [userName],
+  );
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
 
     let mounted = true;
-    supabase.auth.getUser().then(({ data }) => {
-      if (!mounted) return;
-      const nextUser = data.user ?? null;
-      setUser(nextUser);
-    }).catch(() => undefined);
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth
+      .getUser()
+      .then(({ data }) => {
+        if (!mounted) return;
+        const nextUser = data.user ?? null;
+        setUser(nextUser);
+      })
+      .catch(() => undefined);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       const nextUser = session?.user ?? null;
       setUser(nextUser);
     });
@@ -253,7 +335,9 @@ export default function AppNav() {
         setAdminShadowClient(next);
         setAdminShadow(next);
         if (typeof window !== "undefined") {
-          window.alert(`Shadow Mode ${next ? "ON (일반인 가장 — 멤버십 게이팅 적용)" : "OFF (운영자 복귀)"}`);
+          window.alert(
+            `Shadow Mode ${next ? "ON (일반인 가장 — 멤버십 게이팅 적용)" : "OFF (운영자 복귀)"}`,
+          );
           window.location.reload(); // server-side cookie 검사 반영
         }
       } else {
@@ -261,7 +345,8 @@ export default function AppNav() {
         const next = !hasClientAdminOverride();
         setClientAdminOverride(next);
         setAdminOverride(next);
-        if (typeof window !== "undefined") window.alert(`운영자 모드 ${next ? "ON" : "OFF"}`);
+        if (typeof window !== "undefined")
+          window.alert(`운영자 모드 ${next ? "ON" : "OFF"}`);
       }
       return;
     }
@@ -325,176 +410,220 @@ export default function AppNav() {
     ? [
         { href: "/me", label: "추천 피드", caption: "오늘 볼 만한 매물" },
         // Wave 799c (2026-05-30): /lookup nav 추가.
-        { href: "/lookup", label: "시세 조회", caption: "URL 넣으면 시세·수익·비교매물" },
-        // Wave 726 (2026-05-23): 모바일에서 sidebar 숨김 (lg:block) 이라 텔레그램 알림 설정 접근 불가.
-        //   모바일 사용자가 한 번이라도 설정 가능하게 drawer 에 link 박음.
-        { href: "/me?view=hotdeal-alerts", label: "핫딜 알림", caption: "텔레그램 알림 설정" },
-        // Wave 731 (2026-05-24): 친구 초대 — 가입 시 양쪽 +5 / 첫 결제 시 추천인 +3/+30/+60
-        { href: "/invite", label: "친구 초대", caption: "득템잡이 공유하기" },
+        {
+          href: "/lookup",
+          label: "시세 조회",
+          caption: "URL 넣으면 시세·수익·비교매물",
+        },
         { href: "/plans", label: "멤버십 신청", caption: "선공개 300명" },
-        { href: "/how-it-works", label: "서비스 안내", caption: "득템잡이 사용법" },
-        ...(admin ? [{ href: "/debug", label: "운영 로그", caption: "관리자 전용" }] : []),
+        {
+          href: "/how-it-works",
+          label: "서비스 안내",
+          caption: "득템잡이 사용법",
+        },
+        ...(admin
+          ? [{ href: "/debug", label: "운영 로그", caption: "관리자 전용" }]
+          : []),
       ]
     : [
         { href: "/", label: "추천 상품", caption: "오늘의 후보" },
         // Wave 799c: guest 도 노출 (클릭 시 login wall) — 기능 인지 우선.
-        { href: "/lookup", label: "시세 조회", caption: "URL 넣으면 시세·수익 (로그인 필요)" },
-        { href: "/how-it-works", label: "서비스 안내", caption: "득템잡이 사용법" },
+        {
+          href: "/lookup",
+          label: "시세 조회",
+          caption: "URL 넣으면 시세·수익 (로그인 필요)",
+        },
+        {
+          href: "/how-it-works",
+          label: "서비스 안내",
+          caption: "득템잡이 사용법",
+        },
         { href: "/plans", label: "멤버십 신청", caption: "선공개 300명" },
       ];
 
   // Wave launch-101 (사용자 정정 — 운영자 페이지 nav 거추장): cau* admin path 면 minimal terminal nav.
   //   모든 hook 호출 후라서 React rules of hooks 안전. 메인 가는 button 1개만 노출.
-  if (pathname && pathname.startsWith("/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY")) {
+  if (
+    pathname &&
+    pathname.startsWith(
+      "/cauleexxyzikpoidaskfjhdleriuAASDASYDJHLdKjhlsadkjfhlkqwreOIUYOIUFDY",
+    )
+  ) {
     return <AdminTerminalNav />;
   }
 
   // Wave launch-112 (2026-05-24): 로그인/회원가입/콜백 페이지는 nav hide (다른 사이트 표준 패턴).
   //   로그인 페이지에서 다른 메뉴로 나갈 일 없음 — focused 한 단일 액션 화면.
-  if (pathname === "/login" || pathname === "/signup" || pathname?.startsWith("/auth/")) {
+  if (
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname?.startsWith("/auth/")
+  ) {
     return null;
   }
 
   return (
     <>
-    <nav className="sticky top-0 z-40 border-b border-zinc-200 bg-white/92 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/90">
-      <div className="mx-auto grid max-w-[1380px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-3 sm:px-6 md:gap-3 md:px-4 lg:px-8">
-        {/* 왼쪽: mobile = 햄버거, desktop = 로고 + admin dot */}
-        <div className="flex items-center gap-2 justify-self-start">
-          <button
-            type="button"
-            onClick={() => setMobileDrawerOpen(true)}
-            aria-label="메뉴 열기"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-900 transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800 md:hidden"
+      <nav className="sticky top-0 z-40 border-b border-zinc-200 bg-white/92 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/90">
+        <div className="mx-auto grid max-w-[1380px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-3 sm:px-6 md:gap-3 md:px-4 lg:px-8">
+          {/* 왼쪽: mobile = 햄버거, desktop = 로고 + admin dot */}
+          <div className="flex items-center gap-2 justify-self-start">
+            <button
+              type="button"
+              onClick={() => setMobileDrawerOpen(true)}
+              aria-label="메뉴 열기"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-900 transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800 md:hidden"
+            >
+              <HamburgerIcon />
+            </button>
+            <button
+              type="button"
+              onClick={handleAdminDotClick}
+              aria-label="admin-toggle"
+              className={`hidden h-2 w-2 rounded-full transition-colors md:block ${adminOverride ? "bg-blue-500" : "bg-zinc-300 dark:bg-zinc-700"}`}
+            />
+            <Link href="/" className="hidden items-center gap-2 md:flex">
+              {/* Wave launch-120 (2026-05-24): piggy brand mark — 공통 컴포넌트. */}
+              <BrandLogo
+                size={32}
+                className="rounded-[7px] shadow-md shadow-blue-500/20"
+              />
+              <span className="font-black tracking-tight text-zinc-950 dark:text-white">
+                득템잡이
+              </span>
+              <span className="rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-700 ring-1 ring-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:ring-blue-900">
+                선공개
+              </span>
+            </Link>
+          </div>
+
+          {/* 가운데: mobile = logo + "득템잡이", desktop = nav links */}
+          <Link
+            href={mobileHomeHref}
+            className="flex items-center gap-1.5 justify-self-center md:hidden"
           >
-            <HamburgerIcon />
-          </button>
-          <button
-            type="button"
-            onClick={handleAdminDotClick}
-            aria-label="admin-toggle"
-            className={`hidden h-2 w-2 rounded-full transition-colors md:block ${adminOverride ? "bg-blue-500" : "bg-zinc-300 dark:bg-zinc-700"}`}
-          />
-          <Link href="/" className="hidden items-center gap-2 md:flex">
-            {/* Wave launch-120 (2026-05-24): piggy brand mark — 공통 컴포넌트. */}
-            <BrandLogo size={32} className="rounded-[7px] shadow-md shadow-blue-500/20" />
-            <span className="font-black tracking-tight text-zinc-950 dark:text-white">득템잡이</span>
-            <span className="rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-700 ring-1 ring-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:ring-blue-900">
-              선공개
+            {/* Wave launch-120: 모바일 brand 옆 로고. */}
+            <BrandLogo size={24} className="rounded-[5px]" />
+            <span className="text-base font-black tracking-tight text-zinc-950 dark:text-white">
+              득템잡이
             </span>
           </Link>
-        </div>
 
-        {/* 가운데: mobile = logo + "득템잡이", desktop = nav links */}
-        <Link href={mobileHomeHref} className="flex items-center gap-1.5 justify-self-center md:hidden">
-          {/* Wave launch-120: 모바일 brand 옆 로고. */}
-          <BrandLogo size={24} className="rounded-[5px]" />
-          <span className="text-base font-black tracking-tight text-zinc-950 dark:text-white">득템잡이</span>
-        </Link>
+          <div className="hidden items-center justify-self-center gap-1 md:flex">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`rounded-xl px-3 py-1.5 text-xs font-black transition ${
+                  isActive(pathname, link.href)
+                    ? "bg-[var(--brand-accent)] text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(49,130,246,0.18)] dark:bg-zinc-100 dark:text-zinc-950"
+                    : "text-zinc-600 hover:bg-[var(--brand-accent-soft)] hover:text-[var(--brand-accent-strong)] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
 
-        <div className="hidden items-center justify-self-center gap-1 md:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`rounded-xl px-3 py-1.5 text-xs font-black transition ${
-                isActive(pathname, link.href)
-                  ? "bg-[var(--brand-accent)] text-[var(--brand-cream)] shadow-[0_8px_14px_rgba(49,130,246,0.18)] dark:bg-zinc-100 dark:text-zinc-950"
-                  : "text-zinc-600 hover:bg-[var(--brand-accent-soft)] hover:text-[var(--brand-accent-strong)] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
-
-        <div className="flex items-center justify-self-end gap-1.5">
-          {/* mobile 전용: 비로그인 시 로그인 */}
-          {user ? (
-            <div className="h-9 w-9 md:hidden" aria-hidden="true" />
-          ) : (
-            <Link
-              href="/login"
-              className="inline-flex h-9 items-center rounded-xl border border-zinc-200 bg-white px-3 text-xs font-black text-zinc-900 shadow-[0_8px_18px_rgba(15,23,42,0.06)] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:hidden"
-            >
-              로그인
-            </Link>
-          )}
-
-          {/* desktop 전용: account menu */}
-          {user ? (
-            <>
-              {admin ? (
-                <Link
-                  href="/debug"
-                  className="hidden h-9 items-center rounded-xl border border-blue-100 bg-white px-2.5 text-xs font-black leading-none text-zinc-900 shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:inline-flex"
-                >
-                  운영 로그
-                </Link>
-              ) : null}
-              <div ref={menuRef} className="relative hidden md:block">
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen((prev) => !prev)}
-                  className="flex h-9 items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 text-left text-xs leading-none shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                >
-                  <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-[10px] font-black leading-none text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
-                    {userInitial}
-                  </span>
-	                  <span className="hidden min-w-0 sm:block">
-	                    <span className="block max-w-16 truncate text-xs font-black leading-none text-zinc-950 dark:text-zinc-100">{userName}</span>
-	                  </span>
-                  <span className="text-[10px] leading-none text-zinc-400">{menuOpen ? "▴" : "▾"}</span>
-                </button>
-                {menuOpen ? (
-                  <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-56 rounded-2xl border border-zinc-200 bg-white p-2 shadow-[0_20px_40px_rgba(15,23,42,0.14)] dark:border-zinc-800 dark:bg-zinc-900">
-	                    <div className="rounded-xl px-3 py-2">
-	                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">계정</div>
-	                      <div className="mt-1 truncate text-sm font-black text-zinc-950 dark:text-zinc-100">{userName}</div>
-	                      {user.email ? (
-	                        <div className="mt-0.5 truncate text-xs font-semibold text-zinc-500 dark:text-zinc-400">{user.email}</div>
-	                      ) : null}
-	                    </div>
-                    <div className="px-2 py-1">
-                      <AccountPanel
-                        variant="desktop"
-                        onCloseAfterAction={() => setMenuOpen(false)}
-                      />
-                    </div>
-                    <div className="rounded-xl px-3 py-2">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">화면 모드</div>
-                      <ThemeToggle className="mt-2 w-full" />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleSignOut}
-                      className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
-                    >
-                      <span>로그아웃</span>
-                      <span className="text-zinc-400">↗</span>
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-            </>
-          ) : (
-            <>
-              <ThemeToggle variant="compact" className="hidden md:flex" />
+          <div className="flex items-center justify-self-end gap-1.5">
+            {/* mobile 전용: 비로그인 시 로그인 */}
+            {user ? (
+              <div className="h-9 w-9 md:hidden" aria-hidden="true" />
+            ) : (
               <Link
                 href="/login"
-                className="hidden rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-black text-zinc-900 shadow-[0_8px_18px_rgba(15,23,42,0.06)] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:inline-flex"
+                className="inline-flex h-9 items-center rounded-xl border border-zinc-200 bg-white px-3 text-xs font-black text-zinc-900 shadow-[0_8px_18px_rgba(15,23,42,0.06)] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:hidden"
               >
-                카카오 로그인
+                로그인
               </Link>
-            </>
-          )}
-        </div>
-      </div>
-    </nav>
+            )}
 
-    {/* Mobile drawer — nav 밖에 위치 (nav의 backdrop-blur stacking context를 escape) */}
-    {/* 항상 mount + 클래스 토글로 부드럽게 transition (slide + fade) */}
-    <div
+            {/* desktop 전용: account menu */}
+            {user ? (
+              <>
+                {admin ? (
+                  <Link
+                    href="/debug"
+                    className="hidden h-9 items-center rounded-xl border border-blue-100 bg-white px-2.5 text-xs font-black leading-none text-zinc-900 shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:inline-flex"
+                  >
+                    운영 로그
+                  </Link>
+                ) : null}
+                <div ref={menuRef} className="relative hidden md:block">
+                  <button
+                    type="button"
+                    onClick={() => setMenuOpen((prev) => !prev)}
+                    className="flex h-9 items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-2.5 text-left text-xs leading-none shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                  >
+                    <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-[10px] font-black leading-none text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
+                      {userInitial}
+                    </span>
+                    <span className="hidden min-w-0 sm:block">
+                      <span className="block max-w-16 truncate text-xs font-black leading-none text-zinc-950 dark:text-zinc-100">
+                        {userName}
+                      </span>
+                    </span>
+                    <span className="text-[10px] leading-none text-zinc-400">
+                      {menuOpen ? "▴" : "▾"}
+                    </span>
+                  </button>
+                  {menuOpen ? (
+                    <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-56 rounded-2xl border border-zinc-200 bg-white p-2 shadow-[0_20px_40px_rgba(15,23,42,0.14)] dark:border-zinc-800 dark:bg-zinc-900">
+                      <div className="rounded-xl px-3 py-2">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">
+                          계정
+                        </div>
+                        <div className="mt-1 truncate text-sm font-black text-zinc-950 dark:text-zinc-100">
+                          {userName}
+                        </div>
+                        {user.email ? (
+                          <div className="mt-0.5 truncate text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                            {user.email}
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="px-2 py-1">
+                        <AccountPanel
+                          variant="desktop"
+                          onCloseAfterAction={() => setMenuOpen(false)}
+                        />
+                      </div>
+                      <div className="rounded-xl px-3 py-2">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">
+                          화면 모드
+                        </div>
+                        <ThemeToggle className="mt-2 w-full" />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 transition hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
+                      >
+                        <span>로그아웃</span>
+                        <span className="text-zinc-400">↗</span>
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </>
+            ) : (
+              <>
+                <ThemeToggle variant="compact" className="hidden md:flex" />
+                <Link
+                  href="/login"
+                  className="hidden rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-black text-zinc-900 shadow-[0_8px_18px_rgba(15,23,42,0.06)] hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 md:inline-flex"
+                >
+                  카카오 로그인
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile drawer — nav 밖에 위치 (nav의 backdrop-blur stacking context를 escape) */}
+      {/* 항상 mount + 클래스 토글로 부드럽게 transition (slide + fade) */}
+      <div
         className={`fixed inset-0 z-50 md:hidden ${mobileDrawerOpen ? "" : "pointer-events-none"}`}
         role="dialog"
         aria-modal="true"
@@ -511,186 +640,207 @@ export default function AppNav() {
             mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-            {/* drawer header */}
-            <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-              {user ? (
-                <button
-                  type="button"
-                  onClick={() => setAccountSheetOpen(true)}
-                  className="-ml-1 flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-1.5 py-1.5 text-left ring-1 ring-transparent transition hover:bg-[var(--brand-accent-soft)] hover:ring-blue-100 active:scale-[0.99] dark:hover:bg-zinc-900 dark:hover:ring-zinc-800"
-                  aria-label="계정 관리 열기"
-                >
-                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-sm font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
-                    {userInitial}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[15px] font-black tracking-tight text-zinc-950 dark:text-white">
-                      {userName}
-                    </span>
-                    <span className="mt-0.5 block truncate text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                      계정 설정 열기
-                    </span>
-                  </span>
-                  <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-black text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
-                    →
-                  </span>
-                </button>
-              ) : (
-                <div className="min-w-0">
-                  <div className="text-[15px] font-black tracking-tight text-zinc-950 dark:text-white">
-                    로그인하고 시작하기
-                  </div>
-                  <div className="mt-0.5 truncate text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                    선공개 멤버십 신청
-                  </div>
-                </div>
-              )}
+          {/* drawer header */}
+          <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+            {user ? (
               <button
                 type="button"
-                onClick={() => setMobileDrawerOpen(false)}
-                aria-label="메뉴 닫기"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-900 hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
+                onClick={() => setAccountSheetOpen(true)}
+                className="-ml-1 flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-1.5 py-1.5 text-left ring-1 ring-transparent transition hover:bg-[var(--brand-accent-soft)] hover:ring-blue-100 active:scale-[0.99] dark:hover:bg-zinc-900 dark:hover:ring-zinc-800"
+                aria-label="계정 관리 열기"
               >
-                <CloseIcon />
+                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-sm font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
+                  {userInitial}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[15px] font-black tracking-tight text-zinc-950 dark:text-white">
+                    {userName}
+                  </span>
+                  <span className="mt-0.5 block truncate text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                    계정 설정 열기
+                  </span>
+                </span>
+                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-black text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+                  →
+                </span>
               </button>
-            </div>
+            ) : (
+              <div className="min-w-0">
+                <div className="text-[15px] font-black tracking-tight text-zinc-950 dark:text-white">
+                  로그인하고 시작하기
+                </div>
+                <div className="mt-0.5 truncate text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+                  선공개 멤버십 신청
+                </div>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => setMobileDrawerOpen(false)}
+              aria-label="메뉴 닫기"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-900 hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
+            >
+              <CloseIcon />
+            </button>
+          </div>
 
-            {/* nav links */}
-            <div className="flex-1 overflow-y-auto px-3 py-4">
-              {user ? (
-                <Link
-                  href="/plans"
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="mb-3 block rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-400">
-                        선공개 멤버십
-                      </div>
-                      <div className="mt-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
-                        승인된 계정만 추천 피드 이용
-                      </div>
+          {/* nav links */}
+          <div className="flex-1 overflow-y-auto px-3 py-4">
+            {user ? (
+              <Link
+                href="/plans"
+                onClick={() => setMobileDrawerOpen(false)}
+                className="mb-3 block rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 transition hover:bg-[var(--brand-accent-soft)] dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-400">
+                      선공개 멤버십
                     </div>
-                    <div className="flex items-center rounded-full bg-white px-2.5 py-1.5 text-[11px] font-black text-[#3182f6] shadow-sm dark:bg-zinc-950 dark:text-blue-200">
-                      신청하기
+                    <div className="mt-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
+                      승인된 계정만 추천 피드 이용
                     </div>
                   </div>
-                </Link>
-              ) : null}
-              <div className="space-y-1">
-                {mobileNavLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMobileDrawerOpen(false)}
-                    className={`flex items-center justify-between rounded-xl px-3 py-2.5 transition ${
-                      isActive(pathname, link.href)
-                        ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950"
-                        : "text-zinc-900 hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
-                    }`}
-                  >
-                    <span>
-                      <span className="block text-sm font-black">{link.label}</span>
-                      <span className={`mt-0.5 block text-[11px] font-semibold ${
+                  <div className="flex items-center rounded-full bg-white px-2.5 py-1.5 text-[11px] font-black text-[#3182f6] shadow-sm dark:bg-zinc-950 dark:text-blue-200">
+                    신청하기
+                  </div>
+                </div>
+              </Link>
+            ) : null}
+            <div className="space-y-1">
+              {mobileNavLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className={`flex items-center justify-between rounded-xl px-3 py-2.5 transition ${
+                    isActive(pathname, link.href)
+                      ? "bg-[var(--brand-accent-strong)] text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950"
+                      : "text-zinc-900 hover:bg-[var(--brand-accent-soft)] dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  <span>
+                    <span className="block text-sm font-black">
+                      {link.label}
+                    </span>
+                    <span
+                      className={`mt-0.5 block text-[11px] font-semibold ${
                         isActive(pathname, link.href)
                           ? "text-white/70 dark:text-zinc-950/60"
                           : "text-zinc-400 dark:text-zinc-500"
-                      }`}>
-                        {link.caption}
-                      </span>
+                      }`}
+                    >
+                      {link.caption}
                     </span>
-                    <span className="text-zinc-400">↗</span>
-                  </Link>
-                ))}
+                  </span>
+                  <span className="text-zinc-400">↗</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* bottom: 화면 모드 */}
+          <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">
+            {user ? (
+              <div className="space-y-2">
+                <div className="rounded-xl bg-white px-3 py-2.5 dark:bg-zinc-900">
+                  <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-400">
+                    화면 모드
+                  </div>
+                  <ThemeToggle className="mt-2 w-full" />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="flex w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-3 py-2.5 text-sm font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950"
+                >
+                  카카오 로그인
+                </Link>
+                <div className="rounded-xl bg-white px-3 py-2.5 dark:bg-zinc-900">
+                  <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-400">
+                    화면 모드
+                  </div>
+                  <ThemeToggle className="mt-2 w-full" />
+                </div>
+              </div>
+            )}
+          </div>
+        </aside>
+      </div>
+
+      {/* Mobile account bottom sheet — 계정 chip 누르면 아래에서 위로 슬라이드 */}
+      {/* 항상 mount + 클래스 토글로 부드럽게 transition */}
+      {user && (
+        <div
+          className={`fixed inset-0 z-[60] md:hidden ${accountSheetOpen ? "" : "pointer-events-none"}`}
+          role="dialog"
+          aria-modal="true"
+          aria-hidden={!accountSheetOpen}
+        >
+          <div
+            className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
+              accountSheetOpen ? "opacity-100" : "opacity-0"
+            }`}
+            onClick={() => setAccountSheetOpen(false)}
+          />
+          <div
+            className={`absolute inset-x-0 bottom-0 rounded-t-3xl bg-white p-4 pb-6 shadow-[0_-12px_32px_rgba(15,23,42,0.18)] transition-transform duration-300 ease-out dark:bg-zinc-950 ${
+              accountSheetOpen ? "translate-y-0" : "translate-y-full"
+            }`}
+          >
+            <div className="mx-auto h-1.5 w-12 rounded-full bg-zinc-200 dark:bg-zinc-700" />
+            <div className="mt-4 flex items-center gap-3 rounded-xl bg-zinc-50 px-3 py-3 dark:bg-zinc-900">
+              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-base font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
+                {userInitial}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-base font-black text-zinc-950 dark:text-zinc-100">
+                  {userName}
+                </div>
+                {user.email ? (
+                  <div className="truncate text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                    {user.email}
+                  </div>
+                ) : null}
               </div>
             </div>
-
-            {/* bottom: 화면 모드 */}
-            <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">
-              {user ? (
-                <div className="space-y-2">
-                  <div className="rounded-xl bg-white px-3 py-2.5 dark:bg-zinc-900">
-                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-400">화면 모드</div>
-                    <ThemeToggle className="mt-2 w-full" />
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Link
-                    href="/login"
-                    onClick={() => setMobileDrawerOpen(false)}
-                    className="flex w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-3 py-2.5 text-sm font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950"
-                  >
-                    카카오 로그인
-                  </Link>
-                  <div className="rounded-xl bg-white px-3 py-2.5 dark:bg-zinc-900">
-                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-400">화면 모드</div>
-                    <ThemeToggle className="mt-2 w-full" />
-                  </div>
-                </div>
-              )}
+            {/* 계정 사용량 + 액션 */}
+            <div className="mt-3">
+              <AccountPanel
+                variant="mobile"
+                onCloseAfterAction={() => {
+                  setAccountSheetOpen(false);
+                  setMobileDrawerOpen(false);
+                }}
+              />
             </div>
-          </aside>
-        </div>
-
-    {/* Mobile account bottom sheet — 계정 chip 누르면 아래에서 위로 슬라이드 */}
-    {/* 항상 mount + 클래스 토글로 부드럽게 transition */}
-    {user && (
-      <div
-        className={`fixed inset-0 z-[60] md:hidden ${accountSheetOpen ? "" : "pointer-events-none"}`}
-        role="dialog"
-        aria-modal="true"
-        aria-hidden={!accountSheetOpen}
-      >
-        <div
-          className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
-            accountSheetOpen ? "opacity-100" : "opacity-0"
-          }`}
-          onClick={() => setAccountSheetOpen(false)}
-        />
-        <div
-          className={`absolute inset-x-0 bottom-0 rounded-t-3xl bg-white p-4 pb-6 shadow-[0_-12px_32px_rgba(15,23,42,0.18)] transition-transform duration-300 ease-out dark:bg-zinc-950 ${
-            accountSheetOpen ? "translate-y-0" : "translate-y-full"
-          }`}
-        >
-          <div className="mx-auto h-1.5 w-12 rounded-full bg-zinc-200 dark:bg-zinc-700" />
-          <div className="mt-4 flex items-center gap-3 rounded-xl bg-zinc-50 px-3 py-3 dark:bg-zinc-900">
-            <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--brand-accent-strong)] text-base font-black text-[var(--brand-cream)] dark:bg-zinc-100 dark:text-zinc-950">
-              {userInitial}
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-base font-black text-zinc-950 dark:text-zinc-100">{userName}</div>
-              {user.email ? (
-                <div className="truncate text-xs font-semibold text-zinc-500 dark:text-zinc-400">{user.email}</div>
-              ) : null}
+            {/* 화면 모드 */}
+            <div className="mt-3 rounded-xl bg-white px-3 py-2.5 dark:bg-zinc-950/50">
+              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-400">
+                화면 모드
+              </div>
+              <ThemeToggle className="mt-2 w-full" />
+            </div>
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setAccountSheetOpen(false);
+                  setMobileDrawerOpen(false);
+                  void handleSignOut();
+                }}
+                className="flex w-full items-center justify-between rounded-xl bg-red-50 px-3 py-3 text-sm font-bold text-[#a04545] hover:bg-red-100 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/40"
+              >
+                <span>로그아웃</span>
+                <span>↗</span>
+              </button>
             </div>
           </div>
-          {/* 계정 사용량 + 액션 */}
-          <div className="mt-3">
-            <AccountPanel
-              variant="mobile"
-              onCloseAfterAction={() => { setAccountSheetOpen(false); setMobileDrawerOpen(false); }}
-            />
-          </div>
-          {/* 화면 모드 */}
-          <div className="mt-3 rounded-xl bg-white px-3 py-2.5 dark:bg-zinc-950/50">
-            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-400">화면 모드</div>
-            <ThemeToggle className="mt-2 w-full" />
-          </div>
-          <div className="mt-3">
-            <button
-              type="button"
-              onClick={() => { setAccountSheetOpen(false); setMobileDrawerOpen(false); void handleSignOut(); }}
-              className="flex w-full items-center justify-between rounded-xl bg-red-50 px-3 py-3 text-sm font-bold text-[#a04545] hover:bg-red-100 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/40"
-            >
-              <span>로그아웃</span>
-              <span>↗</span>
-            </button>
-          </div>
         </div>
-      </div>
-    )}
+      )}
     </>
   );
 }
