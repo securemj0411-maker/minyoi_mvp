@@ -3005,6 +3005,27 @@ function ComparableListingsPanel({ card, mode = "simple" }: { card: RevealCard; 
 }
 
 function UpperFoldFearReducers({ card, analysisLoading = false }: { card: RevealCard; analysisLoading?: boolean }) {
+  if (analysisLoading) {
+    const loadingTiles = ["수요 · 공급", "평균 판매속도", "거래 안전"];
+    return (
+      <div className="mt-3 overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/40">
+        <div className="mt-3 grid grid-cols-3 divide-x divide-zinc-200 dark:divide-zinc-800">
+          {loadingTiles.map((label) => (
+            <div key={label} className="flex flex-col items-center px-2 py-2.5 text-center">
+              <div className="flex h-3 items-center justify-center text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <span className="truncate">{label}</span>
+              </div>
+              <div className="mt-2 h-5 w-5 animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-800" />
+              <div className="mt-2 h-[13px] w-14 animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-800" />
+              <div className="mt-2 h-2.5 w-16 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800/70" />
+              <div className="mt-1 h-2.5 w-12 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800/70" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const speed = saleSpeedDisplay(card, { analysisLoading });
   const risk = buildRiskScore(revealRiskScoreInput(card));
   const activity = marketActivityDisplay(card);
