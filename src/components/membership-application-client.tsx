@@ -78,12 +78,14 @@ export default function MembershipApplicationClient({
   loginHref,
   plans,
   pendingApplication,
+  suppressFixedCta = false,
 }: {
   isAuthed: boolean;
   isMember: boolean;
   loginHref: string;
   plans: MembershipPlan[];
   pendingApplication: PendingApplication | null;
+  suppressFixedCta?: boolean;
 }) {
   const router = useRouter();
   const [selectorOpen, setSelectorOpen] = useState(false);
@@ -451,12 +453,14 @@ export default function MembershipApplicationClient({
         >
           로그인하고 신청하기
         </Link>
-        <Link
-          href={loginHref}
-          className="fixed inset-x-3 bottom-3 z-40 flex h-12 items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.34)] ring-1 ring-white/30 transition hover:opacity-90 sm:hidden"
-        >
-          로그인하고 내 지역 티오 확인
-        </Link>
+        {!suppressFixedCta ? (
+          <Link
+            href={loginHref}
+            className="fixed inset-x-3 bottom-3 z-40 flex h-12 items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.34)] ring-1 ring-white/30 transition hover:opacity-90 sm:hidden"
+          >
+            로그인하고 내 지역 티오 확인
+          </Link>
+        ) : null}
       </>
     );
   }
@@ -650,7 +654,7 @@ export default function MembershipApplicationClient({
           >
             {state === "submitting" ? "자리 예약 중" : "멤버십 신청하기"}
           </button>
-          {!selectorOpen && !upsellOpen ? (
+          {!suppressFixedCta && !selectorOpen && !upsellOpen ? (
             <button
               type="button"
               onClick={openSelector}

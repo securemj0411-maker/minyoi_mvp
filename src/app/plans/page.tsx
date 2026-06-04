@@ -1,6 +1,6 @@
 import Link from "next/link";
+import PlansApplicationFlow from "@/components/plans-application-flow";
 import MembershipApplicationClient from "@/components/membership-application-client";
-import PlansSeatMap from "@/components/plans-seat-map";
 import PlansUrgencyCountdown from "@/components/plans-urgency-countdown";
 import PlansSocialProofToasts, {
   type PlansSocialProofEvent,
@@ -341,10 +341,40 @@ export default async function PlansPage() {
     : null;
   const slotSnapshot = loadSlotSnapshot();
   const membershipEndAt = membership?.proUntil ?? null;
-  const socialProofEvents = await loadSocialProofEvents();
+  const socialProofEvents = isMember ? await loadSocialProofEvents() : [];
   const heroBadges = isMember
     ? ["활성 멤버", "남은 기간 확인", "기간 연장 가능"]
     : NON_MEMBER_BADGES;
+  const pendingApplicationPayload = pendingApplication
+    ? {
+        id: pendingApplication.id,
+        applicationKind:
+          pendingApplication.application_kind ?? (isMember ? "renewal" : "new"),
+        planKey: pendingPlan?.key ?? "limited_300_3mo",
+        planLabel: pendingPlan?.label ?? "멤버십",
+        priceKrw: Number(
+          pendingApplication.price_krw ?? pendingPlan?.priceKrw ?? 99_000,
+        ),
+        depositConfirmedAt: pendingApplication.deposit_confirmed_at,
+        scheduledAutoApproveAt: pendingApplication.scheduled_auto_approve_at,
+        createdAt: pendingApplication.created_at,
+      }
+    : null;
+
+  if (!isMember) {
+    return (
+      <PlansApplicationFlow
+        isAuthed={auth.ok}
+        isMember={isMember}
+        loginHref="/login?next=/plans"
+        plans={MEMBERSHIP_PLANS}
+        pendingApplication={pendingApplicationPayload}
+        filled={slotSnapshot.filled}
+        capacity={slotSnapshot.capacity}
+      />
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#f4f7fb] px-3 pb-24 pt-4 dark:bg-zinc-950 sm:px-5 sm:py-8 lg:py-10">
       <PlansSocialProofToasts events={socialProofEvents} />
@@ -376,12 +406,6 @@ export default async function PlansPage() {
                   ? "연장하면 현재 만료일 뒤에 기간이 그대로 붙습니다. 매물 피드, 원본 링크, 시세 근거를 끊기지 않게 유지하세요."
                   : "득템잡이는 차익 예상 중고 상품을 선착순 티오와 지역별 접근 수로 관리해서, 실제로 움직일 수 있는 소수 멤버십 회원에게만 제공합니다."}
               </p>
-              {!isMember ? (
-                <PlansSeatMap
-                  filled={slotSnapshot.filled}
-                  capacity={slotSnapshot.capacity}
-                />
-              ) : null}
               {isMember ? (
                 <div className="mt-6 grid gap-2 sm:grid-cols-3">
                   {MEMBER_ROWS.map((row) => (
@@ -461,26 +485,7 @@ export default async function PlansPage() {
                   loginHref="/login?next=/plans"
                   plans={MEMBERSHIP_PLANS}
                   pendingApplication={
-                    pendingApplication
-                      ? {
-                          id: pendingApplication.id,
-                          applicationKind:
-                            pendingApplication.application_kind ??
-                            (isMember ? "renewal" : "new"),
-                          planKey: pendingPlan?.key ?? "limited_300_3mo",
-                          planLabel: pendingPlan?.label ?? "멤버십",
-                          priceKrw: Number(
-                            pendingApplication.price_krw ??
-                              pendingPlan?.priceKrw ??
-                              99_000,
-                          ),
-                          depositConfirmedAt:
-                            pendingApplication.deposit_confirmed_at,
-                          scheduledAutoApproveAt:
-                            pendingApplication.scheduled_auto_approve_at,
-                          createdAt: pendingApplication.created_at,
-                        }
-                      : null
+                    pendingApplicationPayload
                   }
                 />
               </div>
