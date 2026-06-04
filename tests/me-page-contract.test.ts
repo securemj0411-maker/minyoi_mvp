@@ -84,9 +84,10 @@ test("/me user modal explains recommendation trust in plain language", () => {
   assert.doesNotMatch(modal, />\s*band \{card\.band\}/);
 });
 
-test("/me detail keeps comparables visible while MVP market graph is hidden", () => {
+test("/me detail shows comparable listings before the market graph", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
   const comparableIndex = modal.indexOf("<ComparableListingsPanel card={card} mode={mode} />");
+  const graphIndex = modal.indexOf("<DetailMarketGraphSection card={card} />");
 
   assert.match(modal, /compactSourceLabel/);
   assert.match(modal, /표본 \{market\.sampleCount\.toLocaleString/);
@@ -95,6 +96,7 @@ test("/me detail keeps comparables visible while MVP market graph is hidden", ()
   assert.match(modal, /hidden sm:inline-flex/);
   assert.match(modal, /그래프 기준 보기/);
   assert.ok(comparableIndex >= 0);
+  assert.ok(graphIndex > comparableIndex, "concrete comparable listings should render before the market graph");
 });
 
 test("/me market graph labels Bunjang-sourced prices explicitly", () => {

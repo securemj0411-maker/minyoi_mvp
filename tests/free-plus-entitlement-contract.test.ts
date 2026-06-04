@@ -224,16 +224,21 @@ test("direct-only items open detail directly under membership detail access", ()
   assert.match(explore, /void openItemDetail\(item\)/);
 });
 
-test("detail modal keeps purchase decision and market evidence in the first fold", () => {
+test("detail modal leads with exact money and market evidence instead of boilerplate decision", () => {
   const modal = source("src/components/pack-reveal-modal.tsx");
-  const decisionIndex = modal.indexOf("<PurchaseDecisionHeader card={card} />");
+  const profitIndex = modal.indexOf(">예상 순익</span>");
+  const sellerIndex = modal.indexOf("<SellerTrustPanel card={card} />");
   const comparableIndex = modal.indexOf("<ComparableListingsPanel card={card} mode={mode} />");
+  const graphIndex = modal.indexOf("<DetailMarketGraphSection card={card} />");
 
-  assert.match(modal, /function PurchaseDecisionHeader/);
-  assert.match(modal, /구매 판단/);
-  assert.match(modal, /근거 있는 매입 후보/);
-  assert.ok(decisionIndex > 0, "purchase decision header should render in the detail modal");
-  assert.ok(comparableIndex > decisionIndex, "market comparables should stay directly after the decision/profit block");
+  assert.doesNotMatch(modal, /function PurchaseDecisionHeader/);
+  assert.doesNotMatch(modal, /구매 판단 요약/);
+  assert.doesNotMatch(modal, /근거 확인 후 판단/);
+  assert.doesNotMatch(modal, /<PurchaseDecisionHeader card=\{card\} \/>/);
+  assert.ok(profitIndex > 0, "profit should render before softer judgement copy");
+  assert.ok(sellerIndex > profitIndex, "seller trust should stay near the top after money/risk");
+  assert.ok(comparableIndex > sellerIndex, "market comparables should follow money and seller trust");
+  assert.ok(graphIndex > comparableIndex, "market graph should stay after concrete comparable listings");
 });
 
 test("related item clicks do not scroll before access is granted", () => {

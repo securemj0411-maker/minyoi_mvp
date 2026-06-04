@@ -56,7 +56,7 @@ test("detail modal compacts source, condition, and location into one Korean meta
   const modal = source("src/components/pack-reveal-modal.tsx");
   const heroBlock = modal.slice(
     modal.indexOf("const directTradeLocation ="),
-    modal.indexOf("<PurchaseDecisionHeader card={card} />"),
+    modal.indexOf("/* Wave 395.1"),
   );
 
   assert.match(modal, /function compactTradeLocationLabel/);
@@ -80,4 +80,20 @@ test("detail modal uses one report surface without easy mode CTA", () => {
   assert.doesNotMatch(modal, /data-beginner-guide-reopen/);
   assert.doesNotMatch(modal, />쉽게 보기<\/span>/);
   assert.doesNotMatch(modal, /onBeginnerGuideClick=\{/);
+});
+
+test("detail modal leads with money then comparable evidence", () => {
+  const modal = source("src/components/pack-reveal-modal.tsx");
+  const profitIndex = modal.indexOf(">예상 순익</span>");
+  const fearReducerIndex = modal.indexOf("<UpperFoldFearReducers card={card} analysisLoading={analysisLoading} />");
+  const sellerIndex = modal.indexOf("<SellerTrustPanel card={card} />");
+  const comparableIndex = modal.indexOf("<ComparableListingsPanel card={card} mode={mode} />");
+  const graphIndex = modal.indexOf("<DetailMarketGraphSection card={card} />");
+
+  assert.ok(profitIndex > 0, "profit card should render in the detail modal");
+  assert.ok(fearReducerIndex > profitIndex, "quick risk/speed tiles should follow money");
+  assert.ok(sellerIndex > fearReducerIndex, "seller trust should follow quick risk/speed tiles");
+  assert.ok(comparableIndex > sellerIndex, "comparable listings should come before graph evidence");
+  assert.ok(graphIndex > comparableIndex, "market graph should come after comparable listings");
+  assert.doesNotMatch(modal, /<PurchaseDecisionHeader card=\{card\} \/>/);
 });

@@ -398,20 +398,8 @@ function hasUsableMarketBasis(card: RevealCard) {
   return Boolean(median && median > 0 && (card.marketBasis?.sampleCount ?? 0) >= 3);
 }
 
-function holdReasonText(card: RevealCard) {
-  if (!hasUsableMarketBasis(card)) return "같은 출처·같은 상태의 시세 근거가 아직 부족해요.";
-  return "시세 갱신으로 지금은 순익이 사라졌어요.";
-}
-
 function holdChipText(card: RevealCard) {
   return hasUsableMarketBasis(card) ? "보류 처리" : "시세 근거 부족";
-}
-
-function marketDiscountPercent(card: RevealCard) {
-  const median = card.marketBasis?.medianPrice ?? null;
-  if (!median || median <= 0 || !card.price || card.price <= 0) return null;
-  const pct = Math.round(((median - card.price) / median) * 100);
-  return Number.isFinite(pct) ? pct : null;
 }
 
 type BeginnerGuideStep = {
@@ -2223,101 +2211,6 @@ function revealRiskScoreInput(card: RevealCard): RiskScoreInput {
     daangnMannerTemperature: card.savedDetail?.daangnMannerTemperature ?? null,
     photoCount: card.savedDetail?.imageCount ?? null,
   };
-}
-
-function PurchaseDecisionHeader({ card }: { card: RevealCard }) {
-  const sampleCount = card.marketBasis?.sampleCount ?? 0;
-  const confidencePct = Math.round((card.confidence ?? 0) * 100);
-  const profitAvg = expectedProfitAverage(card);
-  const discountPct = marketDiscountPercent(card);
-  const conditionLabel = marketConditionLabel(card);
-  const isMarketInvalidated = Math.min(card.expectedProfitMin, card.expectedProfitMax) <= 0;
-  const category = categoryFromComparableKey(card.marketBasis?.comparableKey ?? null);
-  const brandDepth = detectBrandDepth(category, {
-    skuId: card.skuId ?? null,
-    skuName: card.skuName ?? null,
-    name: card.name ?? null,
-  });
-  const hasHighCounterfeitRisk = brandDepth?.brand.counterfeitRisk === "high";
-
-  const sampleText = sampleCount > 0 ? `${sampleCount.toLocaleString("ko-KR")}건` : "부족";
-  const discountText = discountPct != null && discountPct > 0
-    ? `시세보다 ${discountPct}% 낮게`
-    : null;
-  const profitText = displayProfitRange(card);
-
-  const tone = isMarketInvalidated
-    ? {
-        eyebrow: "text-rose-700 dark:text-rose-300",
-        badge: "보류",
-        badgeClass: "bg-rose-100 text-rose-800 ring-rose-200 dark:bg-rose-950/40 dark:text-rose-200 dark:ring-rose-900/60",
-        borderClass: "border-rose-200 bg-rose-50 dark:border-rose-900/60 dark:bg-rose-950/25",
-        headline: "지금은 보류할 매물",
-        body: holdReasonText(card),
-      }
-    : hasHighCounterfeitRisk
-      ? {
-          eyebrow: "text-amber-700 dark:text-amber-300",
-          badge: "조건부",
-          badgeClass: "bg-amber-100 text-amber-800 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900/60",
-          borderClass: "border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/25",
-          headline: "정품 확인 후 매입 후보",
-          body: `${conditionLabel} 비교 ${sampleText} 기준 차익은 보이지만, 정품 체크가 먼저예요.`,
-        }
-      : sampleCount < 3 || confidencePct < 65
-        ? {
-            eyebrow: "text-amber-700 dark:text-amber-300",
-            badge: "확인",
-            badgeClass: "bg-amber-100 text-amber-800 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900/60",
-            borderClass: "border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/25",
-            headline: "근거 확인 후 판단",
-            body: `${conditionLabel} 비교 표본이 ${sampleText}이라 시세 근거를 먼저 보고 결정하는 게 좋아요.`,
-          }
-        : profitAvg > 0
-          ? {
-              eyebrow: "text-blue-700 dark:text-blue-300",
-              badge: "후보",
-              badgeClass: "bg-blue-100 text-blue-800 ring-blue-200 dark:bg-blue-950/40 dark:text-blue-200 dark:ring-blue-900/60",
-              borderClass: "border-blue-200 bg-white dark:border-zinc-800 dark:bg-zinc-900",
-              headline: "근거 있는 매입 후보",
-              body: discountText
-                ? `${conditionLabel} 비교 ${sampleText} 기준 ${discountText} 잡힌 매물이에요.`
-                : `${conditionLabel} 비교 ${sampleText} 기준 예상 순익 ${profitText} 구간이에요.`,
-            }
-          : {
-              eyebrow: "text-zinc-500 dark:text-zinc-400",
-              badge: "대기",
-              badgeClass: "bg-zinc-100 text-zinc-700 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:ring-zinc-700",
-              borderClass: "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900",
-              headline: "추가 확인이 필요한 매물",
-              body: "가격 차이가 크지 않아 비교 매물과 리스크를 같이 확인해야 해요.",
-            };
-
-  return (
-    <section
-      aria-label="구매 판단 요약"
-      className={`mt-3 rounded-xl border px-3 py-2.5 shadow-sm ${tone.borderClass}`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex min-w-0 items-center gap-2">
-            <div className={`shrink-0 text-[10px] font-black uppercase tracking-[0.14em] ${tone.eyebrow}`}>
-              구매 판단
-            </div>
-            <div className="min-w-0 truncate text-[14px] font-black leading-tight tracking-tight text-[#172019] dark:text-zinc-50">
-              {tone.headline}
-            </div>
-          </div>
-          <p className="mt-1 line-clamp-2 text-[11.5px] font-semibold leading-4 text-[#5f6b5e] dark:text-zinc-300">
-            {tone.body}
-          </p>
-        </div>
-        <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-black ring-1 ${tone.badgeClass}`}>
-          {tone.badge}
-        </span>
-      </div>
-    </section>
-  );
 }
 
 function RevealProductImage({ card }: { card: RevealCard }) {
@@ -6520,7 +6413,6 @@ function RevealCardItem({
                     {card.name}
                   </div>
                 </div>
-                <PurchaseDecisionHeader card={card} />
               {/* Wave 395.1: PDF처럼 "예상 순익 + 계산식/비교매물 보기"만 독립 카드로 분리. */}
               <div
                 className={`relative mt-3.5 overflow-hidden rounded-[18px] border px-3.5 pb-3 pt-3.5 ${profitCardClass}`}
@@ -6605,13 +6497,14 @@ function RevealCardItem({
               <UpperFoldFearReducers card={card} analysisLoading={analysisLoading} />
               <SellerTrustPanel card={card} />
 
+              {/* Wave 1078 (2026-06-04): 실제 시세 근거는 그래프보다 비교매물 먼저. */}
+              <ComparableListingsPanel card={card} mode={mode} />
+
               {/* Wave launch-83 (사용자 결정): 데이터 부족 placeholder 안내 박스 보이는 게
                   미완성 사이트 인상 → 빈 상태면 섹션 전체 hide. DetailMarketGraphSection 내부에서
                   MarketHistoryChart 의 onState 콜백으로 데이터 여부 추적 + wrapper 가시성 제어. */}
               <DetailMarketGraphSection card={card} />
 
-              {/* Wave 395.2: 비교 매물은 Profit 카드 안이 아니라 PDF처럼 별도 섹션/리스트 카드로 분리. */}
-              <ComparableListingsPanel card={card} mode={mode} />
               {/* Wave 392+393.2: "왜 싸지" 작은 inline note — 보조 정보 톤. */}
               <WhyCheapPanel card={card} />
               {/* Wave 394.6.b (외부 review #7): 정보 순서 재정렬 — 사용자 판단 흐름 따름.
