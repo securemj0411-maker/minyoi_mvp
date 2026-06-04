@@ -93,11 +93,7 @@ export default function MembershipApplicationClient({
     );
   const [depositNotifyMessage, setDepositNotifyMessage] = useState<
     string | null
-  >(
-    pendingApplication?.depositConfirmedAt
-      ? "입금 확인 요청이 접수됐어요. 5분 내 승인 보장으로 확인 중입니다."
-      : null,
-  );
+  >(null);
   const [autoApproveAt, setAutoApproveAt] = useState<string | null>(
     pendingApplication?.scheduledAutoApproveAt ?? null,
   );
@@ -312,7 +308,7 @@ export default function MembershipApplicationClient({
     setDepositNotifyMessage(
       payload?.telegramSent === false
         ? "입금 확인 요청은 저장됐어요. 알림 상태는 확인 중이라, 늦으면 카톡으로도 알려주세요."
-        : "운영자에게 입금 확인 알림을 보냈어요. 5분 내 승인 보장으로 확인합니다.",
+        : null,
     );
   }
 
@@ -419,6 +415,8 @@ export default function MembershipApplicationClient({
       : 7 * 60_000;
   const reservationRegion = reservedRegionLabel?.trim() || "내 지역";
   const showDepositCountdown = hasReservation && depositNotifyState === "sent";
+  const showReservationCountdown =
+    hasReservation && !renewalMode && depositNotifyState !== "sent";
 
   function goToFeed() {
     router.replace("/me");
@@ -465,15 +463,26 @@ export default function MembershipApplicationClient({
             <div className="relative flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="inline-flex rounded-full bg-white px-3 py-1 text-[11px] font-black tracking-[0.04em] text-[#3182f6] ring-1 ring-blue-100 dark:bg-zinc-950 dark:ring-zinc-800">
-                  {renewalMode ? "연장 예약 완료" : "자리 확보 완료"}
+                  {renewalMode
+                    ? "연장 예약 완료"
+                    : showDepositCountdown
+                      ? "입금 확인 진행 중"
+                      : "자리 확보 완료"}
                 </div>
                 <h2 className="mt-3 break-keep text-[25px] font-black leading-tight tracking-tight sm:text-[40px]">
                   {renewalMode
                     ? `${planLabel} 연장 예약을 잡았어요.`
-                    : `${reservationRegion} 자리 예약됐어요.`}
+                    : showDepositCountdown
+                      ? "입금 확인 요청됐어요."
+                      : `${reservationRegion} 자리 예약됐어요.`}
                 </h2>
+                {showReservationCountdown ? (
+                  <p className="mt-2 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+                    7분 안에 입금하지 않으면 예약이 취소돼요.
+                  </p>
+                ) : null}
               </div>
-              {!renewalMode ? (
+              {showReservationCountdown ? (
                 <div className="shrink-0 rounded-[18px] bg-white px-3 py-2.5 text-center text-zinc-950 shadow-[0_12px_30px_rgba(49,130,246,0.16)] ring-1 ring-blue-100 dark:bg-zinc-950 dark:text-white dark:ring-zinc-800">
                   <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-400">
                     남은 시간
@@ -579,28 +588,26 @@ export default function MembershipApplicationClient({
                 {depositNotifyMessage}
               </p>
             ) : null}
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={openSelector}
-                disabled={
-                  state === "submitting" || depositNotifyState === "sent"
-                }
-                className="h-10 rounded-xl border border-blue-100 bg-blue-50 text-[12px] font-black text-[#3182f6] transition hover:bg-[#ebf2ff] disabled:cursor-default disabled:opacity-60 dark:border-blue-950/70 dark:bg-blue-950/30 dark:text-blue-200"
-              >
-                {renewalMode ? "연장 기간 변경" : "기간/금액 변경"}
-              </button>
-              <button
-                type="button"
-                onClick={() => void cancelReservation()}
-                disabled={
-                  state === "submitting" || depositNotifyState === "sent"
-                }
-                className="h-10 rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-600 transition hover:bg-zinc-50 disabled:cursor-default disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300"
-              >
-                {renewalMode ? "연장 취소" : "예약 취소"}
-              </button>
-            </div>
+            {depositNotifyState !== "sent" ? (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={openSelector}
+                  disabled={state === "submitting"}
+                  className="h-10 rounded-xl border border-blue-100 bg-blue-50 text-[12px] font-black text-[#3182f6] transition hover:bg-[#ebf2ff] disabled:cursor-default disabled:opacity-60 dark:border-blue-950/70 dark:bg-blue-950/30 dark:text-blue-200"
+                >
+                  {renewalMode ? "연장 기간 변경" : "기간/금액 변경"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void cancelReservation()}
+                  disabled={state === "submitting"}
+                  className="h-10 rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-600 transition hover:bg-zinc-50 disabled:cursor-default disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300"
+                >
+                  {renewalMode ? "연장 취소" : "예약 취소"}
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       ) : renewalMode ? (

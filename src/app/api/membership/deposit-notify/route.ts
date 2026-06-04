@@ -135,7 +135,7 @@ export async function POST(req: Request) {
       `user_ref: ${application.user_ref ?? userRef}`,
       `종류: ${application.application_kind === "renewal" ? "연장 예약" : "신규 신청"}`,
       `상품: ${selectedPlan.label} / ${Number(application.price_krw ?? selectedPlan.priceKrw).toLocaleString("ko-KR")}원`,
-      "처리: 아래 버튼을 열고 확인 버튼을 눌러야 승인/거절 처리",
+      "처리: 아래 버튼을 누르면 로그인 없이 즉시 승인/거절 처리",
       "보장: 5분 내 미처리 시 자동 승인",
       `자동 승인 예정: ${scheduledAutoApproveAt}`,
     ].join("\n"),
@@ -144,8 +144,8 @@ export async function POST(req: Request) {
       replyMarkup: {
         inline_keyboard: [
           [
-            { text: "✅ 승인 확인 열기", url: approveLink },
-            { text: "❌ 거절 확인 열기", url: rejectLink },
+            { text: "✅ 바로 승인", url: approveLink },
+            { text: "❌ 바로 거절", url: rejectLink },
           ],
         ],
       },
