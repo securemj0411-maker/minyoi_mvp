@@ -2424,31 +2424,6 @@ export default function ExploreClient({
         remainingSec={feedUpsellRemainingSec}
       />
 
-      {/* Wave 383+393: 6h lag 제거 + 사이트 핵심 가치 (band-aware 비교) 강조. */}
-      <div className="mb-2 hidden rounded-xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/40 sm:block">
-        <div className="flex items-center gap-1.5 text-[12px] font-bold text-blue-800 dark:text-blue-300">
-          <span aria-hidden="true">⚖</span>
-          <span>같은 상태 매물끼리만 비교 — 진짜 싼 매물만</span>
-        </div>
-        <div className="mt-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[11px]">
-          <span className="text-zinc-600 dark:text-zinc-400">
-            사용감 있는 매물끼리, 미개봉 매물끼리 비교
-            {stats && stats.caughtToday > 0 ? (
-              <span className="ml-1 text-amber-700 dark:text-amber-300">
-                · 오늘 {stats.caughtToday.toLocaleString("ko-KR")}건 잡힘
-              </span>
-            ) : null}
-          </span>
-          <Link
-            href="/plans"
-            className="inline-flex items-center gap-1 font-bold text-blue-700 hover:underline dark:text-blue-300"
-          >
-            <ZapIcon className="h-3 w-3" />
-            대기 없이 즉시 받기 →
-          </Link>
-        </div>
-      </div>
-
       {/* 필터/정렬 — sticky bar (당근식). Wave 370: 마진/패딩 압축 (모바일 화면 좁음).
           Wave 886.6 (2026-05-27): app-nav (sticky top-0 z-40, ~60px high) 와 겹침 해소 — top-14 로 navbar 아래 부착. */}
       <div className="sticky top-14 z-20 -mx-3 mb-2 flex flex-col items-stretch gap-1.5 bg-[#f5f7fb]/95 px-3 py-1.5 backdrop-blur dark:bg-zinc-950/95 sm:-mx-6 sm:flex-row sm:items-center sm:px-6">
