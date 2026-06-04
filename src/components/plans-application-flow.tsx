@@ -31,6 +31,14 @@ type AddressOption = {
   lng: number;
 };
 
+type HomeRegionDraft = {
+  lat: number;
+  lng: number;
+  fullPath: string;
+  label: string;
+  source: "gps" | "manual";
+};
+
 type DistrictSeat = {
   name: string;
   seats: number;
@@ -1300,13 +1308,15 @@ export default function PlansApplicationFlow({
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const [mapZoomed, setMapZoomed] = useState(false);
   const [locationStatus, setLocationStatus] = useState<
-    "idle" | "requesting" | "resolving" | "success" | "error"
+    "idle" | "requesting" | "resolving" | "saving" | "success" | "error"
   >("idle");
   const [locationError, setLocationError] = useState<string | null>(null);
   const [manualQuery, setManualQuery] = useState("");
   const [manualResults, setManualResults] = useState<AddressOption[]>([]);
   const [manualSearching, setManualSearching] = useState(false);
   const [showManualSearch, setShowManualSearch] = useState(false);
+  const [homeRegionDraft, setHomeRegionDraft] =
+    useState<HomeRegionDraft | null>(null);
   const [pinnedDistrictName, setPinnedDistrictName] = useState<string | null>(
     null,
   );
@@ -1364,9 +1374,17 @@ export default function PlansApplicationFlow({
     setSelectedKey(key);
     setSelectedDistrictName(nextDistricts[0]?.name ?? null);
     setPinnedDistrictName(null);
+    setHomeRegionDraft(null);
     setHoveredKey(null);
     setMapZoomed(true);
   };
+
+  function handleDistrictSelect(districtName: string) {
+    setSelectedDistrictName(districtName);
+    if (homeRegionDraft && !homeRegionDraft.label.includes(districtName)) {
+      setHomeRegionDraft(null);
+    }
+  }
 
   async function getAccessToken() {
     const supabase = getSupabaseBrowserClient();
@@ -1450,6 +1468,47 @@ export default function PlansApplicationFlow({
     return true;
   }
 
+  async function saveHomeRegionDraft() {
+    if (!homeRegionDraft) return true;
+    setLocationStatus("saving");
+    setLocationError(null);
+    try {
+      const token = await getAccessToken();
+      if (!token) {
+        window.location.href = loginHref;
+        return false;
+      }
+      const res = await fetch("/api/user/home-region", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "x-minyoi-user-action": "1",
+        },
+        body: JSON.stringify({
+          lat: homeRegionDraft.lat,
+          lng: homeRegionDraft.lng,
+          fullPath: homeRegionDraft.fullPath,
+        }),
+      });
+      const json = (await res.json().catch(() => null)) as {
+        ok?: boolean;
+        error?: string;
+      } | null;
+      if (!res.ok || !json?.ok) {
+        throw new Error(json?.error || "home_region_save_failed");
+      }
+      setLocationStatus("success");
+      return true;
+    } catch {
+      setLocationStatus("error");
+      setLocationError(
+        "동네 저장에 실패했어요. 다시 위치를 불러오거나 직접 검색해주세요.",
+      );
+      return false;
+    }
+  }
+
   function handleLocationLoad() {
     if (!navigator.geolocation) {
       setLocationStatus("error");
@@ -1496,10 +1555,21 @@ export default function PlansApplicationFlow({
             setShowManualSearch(true);
             return;
           }
-          selectRegionFromAddress(
+          const selectedOk = selectRegionFromAddress(
             [json.region1, json.region2, json.region3, json.fullPath],
             json.region2 ?? json.region3 ?? null,
           );
+          if (selectedOk && json.fullPath) {
+            setHomeRegionDraft({
+              lat,
+              lng,
+              fullPath: json.fullPath,
+              label:
+                [json.region2, json.region3].filter(Boolean).join(" ") ||
+                json.fullPath,
+              source: "gps",
+            });
+          }
         } catch {
           setLocationStatus("error");
           setLocationError(
@@ -1633,7 +1703,7 @@ export default function PlansApplicationFlow({
                               key={district.name}
                               type="button"
                               onClick={() =>
-                                setSelectedDistrictName(district.name)
+                                handleDistrictSelect(district.name)
                               }
                               className={`mb-1.5 grid w-full grid-cols-[minmax(0,1fr)_58px_74px] items-center gap-2 rounded-2xl border px-3 py-2 text-left transition ${
                                 active
@@ -1725,8 +1795,8 @@ export default function PlansApplicationFlow({
                             <button
                               key={`${result.fullPath}-${result.lat}-${result.lng}`}
                               type="button"
-                              onClick={() =>
-                                selectRegionFromAddress(
+                              onClick={() => {
+                                const selectedOk = selectRegionFromAddress(
                                   [
                                     result.region1,
                                     result.region2,
@@ -1734,8 +1804,20 @@ export default function PlansApplicationFlow({
                                     result.fullPath,
                                   ],
                                   result.region2 || result.region3,
-                                )
-                              }
+                                );
+                                if (selectedOk) {
+                                  setHomeRegionDraft({
+                                    lat: result.lat,
+                                    lng: result.lng,
+                                    fullPath: result.fullPath,
+                                    label:
+                                      [result.region2, result.region3]
+                                        .filter(Boolean)
+                                        .join(" ") || result.fullPath,
+                                    source: "manual",
+                                  });
+                                }
+                              }}
                               className="mb-1.5 w-full rounded-2xl border border-zinc-200 bg-[#fbfcff] px-3 py-2 text-left text-[13px] font-black transition hover:border-blue-300 dark:border-zinc-800 dark:bg-zinc-900"
                             >
                               <span className="block truncate">
@@ -1745,6 +1827,19 @@ export default function PlansApplicationFlow({
                           ))}
                         </div>
                       ) : null}
+                    </div>
+                  ) : null}
+                  {homeRegionDraft && mapZoomed ? (
+                    <div className="mt-2 rounded-[20px] border border-emerald-200 bg-emerald-50 px-3 py-2 text-left shadow-[0_10px_24px_rgba(16,185,129,0.12)] dark:border-emerald-900/70 dark:bg-emerald-950/25">
+                      <div className="text-[10px] font-black uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
+                        내 동네 확인
+                      </div>
+                      <div className="mt-0.5 break-keep text-[14px] font-black leading-5 text-zinc-950 dark:text-zinc-50">
+                        {homeRegionDraft.label} 맞나요?
+                      </div>
+                      <div className="mt-0.5 break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400">
+                        계속 누르면 이 동네를 피드 추천 기준으로 저장합니다.
+                      </div>
                     </div>
                   ) : null}
                 </div>
@@ -2072,17 +2167,22 @@ export default function PlansApplicationFlow({
             ) : null}
             <button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 if (step === 0 && !mapZoomed) {
                   handleLocationLoad();
                   return;
+                }
+                if (step === 0 && mapZoomed) {
+                  const saved = await saveHomeRegionDraft();
+                  if (!saved) return;
                 }
                 setStep((prev) => Math.min(3, prev + 1));
               }}
               disabled={
                 step === 0 &&
                 (locationStatus === "requesting" ||
-                  locationStatus === "resolving")
+                  locationStatus === "resolving" ||
+                  locationStatus === "saving")
               }
               className="h-11 flex-1 rounded-2xl bg-[#3182f6] px-5 text-[15px] font-black text-white shadow-[0_18px_44px_rgba(49,130,246,0.28)] transition hover:bg-[#1c64dd] sm:min-w-[240px]"
             >
@@ -2093,7 +2193,9 @@ export default function PlansApplicationFlow({
                     ? "위치 권한 확인 중..."
                     : locationStatus === "resolving"
                       ? "동네 확인 중..."
-                      : "내 위치 불러오기"
+                      : locationStatus === "saving"
+                        ? "동네 저장 중..."
+                        : "내 위치 불러오기"
                 : step === 2
                   ? "지금 바로 자리 차지하기"
                   : "다음"}
