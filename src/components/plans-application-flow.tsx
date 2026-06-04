@@ -447,11 +447,12 @@ function pressureLabel(pressure: number) {
 }
 
 function regionZoomScale(key: string) {
-  if (key === "seoul") return 9.2;
-  if (["incheon", "busan", "daegu", "daejeon", "gwangju", "ulsan", "sejong"].includes(key)) return 7.2;
-  if (key === "jeju") return 2.45;
-  if (key === "gyeonggi") return 1.95;
-  return 1.72;
+  if (key === "seoul") return 10.4;
+  if (key === "busan") return 9.6;
+  if (["incheon", "daegu", "daejeon", "gwangju", "ulsan", "sejong"].includes(key)) return 8.8;
+  if (key === "jeju") return 3.5;
+  if (key === "gyeonggi") return 2.65;
+  return 2.1;
 }
 
 function KoreaSeatMap({
@@ -476,8 +477,22 @@ function KoreaSeatMap({
   const hoveredRegion = zoomed ? null : REGIONS.find((region) => region.key === hoveredKey);
   const activeRegion = hoveredRegion ?? (zoomed ? selected : null);
   const zoomScale = zoomed ? regionZoomScale(selected.key) : 1;
-  const zoomX = zoomed ? 254.5 - selected.x * zoomScale : 0;
-  const zoomY = zoomed ? 358 - selected.y * zoomScale : 0;
+  const districtBounds = selectedDistricts.reduce(
+    (bounds, district) => {
+      if (district.x === undefined || district.y === undefined) return bounds;
+      return {
+        minX: Math.min(bounds.minX, district.x),
+        maxX: Math.max(bounds.maxX, district.x),
+        minY: Math.min(bounds.minY, district.y),
+        maxY: Math.max(bounds.maxY, district.y),
+      };
+    },
+    { minX: selected.x, maxX: selected.x, minY: selected.y, maxY: selected.y },
+  );
+  const focusX = zoomed ? (districtBounds.minX + districtBounds.maxX) / 2 : selected.x;
+  const focusY = zoomed ? (districtBounds.minY + districtBounds.maxY) / 2 : selected.y;
+  const zoomX = zoomed ? 254.5 - focusX * zoomScale : 0;
+  const zoomY = zoomed ? 358 - focusY * zoomScale : 0;
   const districtX = zoomed && selectedDistrict?.x ? selectedDistrict.x * zoomScale + zoomX : null;
   const districtY = zoomed && selectedDistrict?.y ? selectedDistrict.y * zoomScale + zoomY : null;
   const activeRegionX = districtX ?? (activeRegion ? activeRegion.x * zoomScale + zoomX : 0);
@@ -571,7 +586,7 @@ function KoreaSeatMap({
                 style={{
                   "--region-fill": regionMapFill(region.key),
                   filter: active ? "url(#plans-region-pop)" : undefined,
-                  opacity: selectedActive ? 1 : zoomed ? 0.22 : hoveredActive ? 0.96 : 0.76,
+                  opacity: selectedActive ? 1 : zoomed ? 0.07 : hoveredActive ? 0.96 : 0.76,
                   transform: hoveredActive && !zoomed ? "scale(1.03)" : "scale(1)",
                   transformBox: "fill-box",
                   transformOrigin: "center",
@@ -591,7 +606,7 @@ function KoreaSeatMap({
                 className={selectedActive || hoveredActive ? "korea-region-boundary korea-region-boundary-active" : "korea-region-boundary"}
                 dangerouslySetInnerHTML={{ __html: regionSvg }}
                 style={{
-                  opacity: selectedActive ? 1 : zoomed ? 0.42 : 0.86,
+                  opacity: selectedActive ? 1 : zoomed ? 0.08 : 0.86,
                 } as CSSProperties}
               />
             );
@@ -657,8 +672,8 @@ function KoreaSeatMap({
             const active = district.name === selectedDistrict?.name;
             const compact = selected.key === "seoul" || selected.key === "busan" || selected.key === "daegu";
             const label = active ? district.name : district.name.replace(/(특별자치시|특별자치도|광역시|시|군|구|읍|동)$/u, "");
-            const width = active ? (compact ? 86 : 104) : compact ? 56 : 68;
-            const height = active ? 50 : compact ? 40 : 44;
+            const width = active ? (compact ? 110 : 122) : compact ? 68 : 78;
+            const height = active ? 58 : compact ? 46 : 50;
             return (
               <g
                 key={`${selected.key}-${district.name}-district-pin`}
@@ -691,7 +706,7 @@ function KoreaSeatMap({
                   textAnchor="middle"
                   className="pointer-events-none select-none fill-white font-black"
                   style={{
-                    fontSize: active ? 15 : compact ? 12 : 14,
+                    fontSize: active ? 16 : compact ? 13 : 15,
                     paintOrder: "stroke",
                     stroke: "rgba(15,23,42,0.72)",
                     strokeWidth: 3,
@@ -705,7 +720,7 @@ function KoreaSeatMap({
                   textAnchor="middle"
                   className="pointer-events-none select-none fill-white font-black"
                   style={{
-                    fontSize: active ? 12 : compact ? 10 : 11,
+                    fontSize: active ? 13 : compact ? 11 : 12,
                     paintOrder: "stroke",
                     stroke: "rgba(15,23,42,0.72)",
                     strokeWidth: 2.5,
