@@ -244,6 +244,7 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
   const offerPlans = useMemo(() => feedOfferPlansFor(remainingDays), [remainingDays]);
   const [selectedKey, setSelectedKey] = useState<MembershipPlanKey | null>(offerPlans[0]?.key ?? null);
   const [reservation, setReservation] = useState<FeedRenewalReservation | null>(null);
+  const [offerModalOpen, setOfferModalOpen] = useState(false);
   const [requestState, setRequestState] = useState<"idle" | "submitting" | "reserved" | "depositing" | "deposit_sent" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const selectedPlan = selectedKey ? getMembershipPlan(selectedKey) : offerPlans[0];
@@ -280,12 +281,12 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
     const payload = (await res?.json().catch(() => null)) as { ok?: boolean; applicationId?: number | null; scheduledAutoApproveAt?: string | null } | null;
     if (!res?.ok || !payload?.ok) {
       setRequestState("error");
-      setMessage("특가 예약을 만들지 못했어요. 잠시 후 다시 눌러주세요.");
+      setMessage("제안을 수락하지 못했어요. 잠시 후 다시 눌러주세요.");
       return;
     }
     setReservation({ applicationId: payload.applicationId ?? null, plan, scheduledAutoApproveAt: payload.scheduledAutoApproveAt ?? null });
     setRequestState("reserved");
-    setMessage("특가 예약이 잡혔어요. 아래 계좌로 송금 후 입금했어요를 누르면 됩니다.");
+    setMessage("제안이 수락됐어요. 계좌로 송금 후 입금했어요를 누르면 됩니다.");
   }
 
   async function notifyDepositDone() {
@@ -365,31 +366,14 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
               </div>
               <button
                 type="button"
-                onClick={() => void reserveOffer(selectedPlan)}
+                onClick={() => {
+                  setOfferModalOpen(true);
+                  setMessage(null);
+                }}
                 disabled={expired || requestState === "submitting"}
                 className="flex h-10 items-center justify-center rounded-xl bg-zinc-950 px-4 text-[12px] font-black text-white transition hover:bg-amber-700 disabled:cursor-default disabled:opacity-50 dark:bg-white dark:text-zinc-950"
               >
-                {requestState === "submitting" ? "예약 중" : expired ? "이벤트 마감" : "이 전환가로 예약"}
-              </button>
-            </div>
-          </div>
-        ) : null}
-        {reservation ? (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 dark:border-emerald-900/70 dark:bg-emerald-950/20">
-            <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">특가 예약 완료 · 계좌이체 대기</div>
-            <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center">
-              <div className="rounded-lg bg-white px-3 py-2 text-[12px] font-bold text-zinc-700 dark:bg-zinc-950 dark:text-zinc-200">
-                {BANK_NAME} <b className="font-black">{ACCOUNT_NUMBER}</b> · 예금주 {ACCOUNT_HOLDER}
-                <br />
-                입금 금액 <b className="text-emerald-700 dark:text-emerald-300">{membershipKrw(reservation.plan.priceKrw)}</b>
-              </div>
-              <button
-                type="button"
-                onClick={() => void notifyDepositDone()}
-                disabled={requestState === "depositing" || requestState === "deposit_sent"}
-                className="flex h-10 items-center justify-center rounded-xl bg-emerald-700 px-4 text-[12px] font-black text-white transition hover:bg-emerald-800 disabled:cursor-default disabled:opacity-60"
-              >
-                {requestState === "depositing" ? "요청 중" : requestState === "deposit_sent" ? "입금 확인 요청 완료" : "입금했어요"}
+                {expired ? "이벤트 마감" : "제안 수락"}
               </button>
             </div>
           </div>
@@ -400,6 +384,87 @@ function FeedMembershipUpsellCard({ remainingSec, planEndAt }: { remainingSec: n
           </p>
         ) : null}
       </div>
+      {offerModalOpen && selectedPlan ? (
+        <div className="fixed inset-0 z-[92] flex items-end justify-center bg-black/55 px-3 py-4 backdrop-blur-sm sm:items-center">
+          <div className="w-full max-w-[460px] overflow-hidden rounded-[20px] border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
+            <div className="bg-gradient-to-r from-amber-500 to-zinc-950 px-4 py-4 text-white">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-50">
+                    1시간 전환 제안
+                  </div>
+                  <div className="mt-1 break-keep text-[20px] font-black leading-tight">
+                    {selectedPlan.label}으로 전환
+                  </div>
+                  <div className="mt-1 text-[12px] font-bold text-white/80">
+                    남은 시간 {formatCooldown(clamped)}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setOfferModalOpen(false)}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/12 text-[18px] font-black text-white transition hover:bg-white/20"
+                  aria-label="닫기"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <div className="grid gap-3 px-4 py-4">
+              <div className="rounded-[14px] border border-amber-100 bg-amber-50 px-3 py-3 dark:border-amber-950/70 dark:bg-amber-950/20">
+                <div className="text-[11px] font-black text-amber-700 dark:text-amber-300">
+                  오늘 차액
+                </div>
+                <div className="mt-1 text-[26px] font-black text-zinc-950 dark:text-zinc-50">
+                  {membershipKrw(selectedPlan.priceKrw)}
+                </div>
+                <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+                  기존 기간은 버리지 않고, 목표 기간까지 부족한 기간만 채우는 전환 조건입니다.
+                </div>
+              </div>
+              {!reservation ? (
+                <button
+                  type="button"
+                  onClick={() => void reserveOffer(selectedPlan)}
+                  disabled={requestState === "submitting" || expired}
+                  className="flex h-12 items-center justify-center rounded-xl bg-zinc-950 px-4 text-[14px] font-black text-white transition hover:bg-amber-700 disabled:cursor-default disabled:opacity-60 dark:bg-white dark:text-zinc-950"
+                >
+                  {requestState === "submitting" ? "수락 처리 중" : "제안 수락하고 계좌 보기"}
+                </button>
+              ) : (
+                <div className="grid gap-3 rounded-[14px] border border-emerald-200 bg-emerald-50 px-3 py-3 dark:border-emerald-900/70 dark:bg-emerald-950/20">
+                  <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">
+                    제안 수락 완료 · 계좌이체 대기
+                  </div>
+                  <div className="rounded-lg bg-white px-3 py-2 text-[12px] font-bold leading-5 text-zinc-700 dark:bg-zinc-950 dark:text-zinc-200">
+                    {BANK_NAME} <b className="font-black">{ACCOUNT_NUMBER}</b>
+                    <br />
+                    예금주 {ACCOUNT_HOLDER}
+                    <br />
+                    입금 금액{" "}
+                    <b className="text-emerald-700 dark:text-emerald-300">
+                      {membershipKrw(reservation.plan.priceKrw)}
+                    </b>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void notifyDepositDone()}
+                    disabled={requestState === "depositing" || requestState === "deposit_sent"}
+                    className="flex h-11 items-center justify-center rounded-xl bg-emerald-700 px-4 text-[13px] font-black text-white transition hover:bg-emerald-800 disabled:cursor-default disabled:opacity-60"
+                  >
+                    {requestState === "depositing" ? "요청 중" : requestState === "deposit_sent" ? "입금 확인 요청 완료" : "입금했어요"}
+                  </button>
+                </div>
+              )}
+              {message ? (
+                <p className={`break-keep text-[11px] font-bold leading-4 ${requestState === "error" ? "text-red-500" : "text-emerald-700 dark:text-emerald-300"}`}>
+                  {message}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
