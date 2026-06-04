@@ -176,7 +176,7 @@ export default function SiteHelpFaq() {
             className="absolute inset-0 bg-black/35 backdrop-blur-[2px]"
             onClick={() => setOpen(false)}
           />
-          <section className="absolute bottom-0 right-0 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-[28px] border border-emerald-100 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.28)] dark:border-zinc-800 dark:bg-zinc-950 sm:bottom-5 sm:right-5 sm:h-[620px] sm:max-h-[78vh] sm:w-[400px] sm:rounded-[24px]">
+          <section className="absolute inset-x-0 bottom-0 flex h-[88dvh] max-h-[calc(100dvh-12px)] w-full flex-col overflow-hidden rounded-t-[28px] border border-emerald-100 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.28)] dark:border-zinc-800 dark:bg-zinc-950 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[620px] sm:max-h-[78vh] sm:w-[400px] sm:rounded-[24px]">
             <header className="border-b border-emerald-100 bg-white/90 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
