@@ -11,6 +11,36 @@ import assert from "node:assert/strict";
 import { parseListingOptions } from "@/lib/option-parser";
 import { ruleMatch } from "@/lib/catalog";
 
+function parsedStringField(parsedJson: Record<string, unknown>, key: string) {
+  const value = parsedJson[key];
+  return typeof value === "string" ? value : null;
+}
+
+describe("explicit clothing brand beats polo-shirt product type", () => {
+  it("Tommy Hilfiger polo tee stays in Tommy, not Polo Ralph Lauren", () => {
+    const title = "타미힐피거 화이트 레귤러핏 폴로티 M";
+    const sku = ruleMatch(title, "");
+    assert.equal(sku?.id, "clothing-tommy-hilfiger-broad");
+
+    const parsed = parseListingOptions({
+      title,
+      description: "",
+      skuId: sku?.id ?? null,
+      skuName: sku?.modelName ?? null,
+      category: sku?.category ?? null,
+      defaultProductType: sku?.defaultProductType ?? null,
+    });
+
+    assert.match(parsed.comparableKey ?? "", /^clothing\|tommy_hilfiger_broad\|polo_shirt\|/);
+    assert.doesNotMatch(parsed.comparableKey ?? "", /polo_pony_tee|polo_pique_classic/);
+  });
+
+  it("explicit Ralph Lauren wording still enters Polo Ralph Lauren", () => {
+    const sku = ruleMatch("폴로 랄프로렌 커스텀핏 폴로티 그레이 L 반팔 100", "");
+    assert.equal(sku?.id, "clothing-polo-pony-tee");
+  });
+});
+
 describe("Wave 254.6 — clothing product_type regex 우선순위", () => {
   describe("user-reported root case", () => {
     it("pid 331382713 — '빔즈 노스페이스 눕시 쇼츠 M' → shorts (down_jacket X)", () => {
@@ -21,7 +51,7 @@ describe("Wave 254.6 — clothing product_type regex 우선순위", () => {
         skuName: null,
         category: "clothing",
       });
-      const productType = (result.parsedJson as any).clothing_product_type;
+      const productType = parsedStringField(result.parsedJson, "clothing_product_type");
       assert.equal(productType, "shorts",
         `parseClothingProductType returned ${productType} for "눕시 쇼츠" (expected shorts)`);
     });
@@ -66,7 +96,7 @@ describe("Wave 254.6 — clothing product_type regex 우선순위", () => {
           skuName: null,
           category: "clothing",
         });
-        const productType = (result.parsedJson as any).clothing_product_type;
+        const productType = parsedStringField(result.parsedJson, "clothing_product_type");
         assert.equal(productType, expected, `expected ${expected}, got ${productType}`);
       });
     }
@@ -394,7 +424,7 @@ describe("Wave 254.6 — clothing product_type regex 우선순위", () => {
           skuName: null,
           category: "clothing",
         });
-        const productType = (result.parsedJson as any).clothing_product_type;
+        const productType = parsedStringField(result.parsedJson, "clothing_product_type");
         assert.equal(productType, expected);
       });
     }
@@ -1515,7 +1545,7 @@ describe("Wave 254.6 — bag 모델명 false positive 차단", () => {
       skuName: null,
       category: "bag",
     });
-    const productType = (result.parsedJson as any).bag_product_type;
+    const productType = parsedStringField(result.parsedJson, "bag_product_type");
     // Wave 254.6 fix: 키링 단독 매물은 backpack 매칭 X.
     assert.notEqual(productType, "backpack",
       `bag_product_type 잘못 backpack 박힘: ${productType}`);
@@ -1529,7 +1559,7 @@ describe("Wave 254.6 — bag 모델명 false positive 차단", () => {
       skuName: null,
       category: "bag",
     });
-    const productType = (result.parsedJson as any).bag_product_type;
+    const productType = parsedStringField(result.parsedJson, "bag_product_type");
     assert.equal(productType, "backpack");
   });
 

@@ -9,7 +9,7 @@ const reportsDir = path.join(appDir, "reports");
 
 const CATEGORY_EXPECTED_BY_RUNTIME: Record<string, string> = {
   shoe: "wave92-shoe-v41",
-  clothing: "wave216-clothing-v52",
+  clothing: "wave216-clothing-v53",
 };
 
 const CATEGORY_EXPECTED_BEFORE_WAVE807_FIX: Record<string, string> = {
@@ -19,7 +19,7 @@ const CATEGORY_EXPECTED_BEFORE_WAVE807_FIX: Record<string, string> = {
 
 const CATEGORY_EXPECTED_BY_PARSER: Record<string, string> = {
   shoe: "wave92-shoe-v41",
-  clothing: "wave216-clothing-v52",
+  clothing: "wave216-clothing-v53",
 };
 
 type RawRow = {

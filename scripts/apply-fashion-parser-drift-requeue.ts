@@ -7,7 +7,7 @@ import { restFetchAll } from "@/lib/rest-paginated";
 const appDir = process.cwd();
 const EXPECTED: Record<string, string> = {
   shoe: "wave92-shoe-v41",
-  clothing: "wave216-clothing-v52",
+  clothing: "wave216-clothing-v53",
 };
 
 type ParsedRow = {

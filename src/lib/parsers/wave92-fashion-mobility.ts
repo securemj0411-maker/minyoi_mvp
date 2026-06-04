@@ -705,7 +705,9 @@ const PARSER_VERSION_W92_BAG_V8 = "wave92-bag-v24";
 // Wave 507 v20: final condition_class rewrites comparable condition token before key materialization.
 // Wave 540 (2026-05-22): Polo Oxford boys/youth sizes no longer enter adult shirt samples.
 // Wave 742 (2026-05-24): 의류 사이즈 추출 (sizeAlpha + sizeKr).
-const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v52";  // Wave 779: Baltoro/발토로는 자켓 wording이어도 down_jacket key 유지
+// Wave 1071 (2026-06-04): explicit brand drift rematch. Stored "Polo" raw sku_id must not keep
+// Tommy Hilfiger/Lacoste/etc. polo-shirt category rows in Polo Ralph Lauren samples.
+const PARSER_VERSION_W216_CLOTHING_LATEST = "wave216-clothing-v53";
 
 // ─── 의류 사이즈 추출 (Wave 742) ─────────────────────────────────────────
 // Alpha: XS/S/M/L/XL/XXL/XXXL/2XL/3XL/FREE

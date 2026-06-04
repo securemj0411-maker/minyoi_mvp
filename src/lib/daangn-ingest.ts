@@ -608,6 +608,10 @@ type DaangnClassifyParseResult = {
   parsedOptions: ParsedListingOptions | null;
 };
 
+function isFashionSku(sku: Sku | null | undefined) {
+  return sku?.category === "clothing" || sku?.category === "shoe" || sku?.category === "bag";
+}
+
 const DAANGN_CLASSIFY_PARSE_CACHE_MAX = 20_000;
 const daangnClassifyParseCache = new Map<string, DaangnClassifyParseResult>();
 
@@ -738,6 +742,10 @@ function reusableDaangnClassification(
 
   const sku = skuById(existing.sku_id);
   if (!sku) return null;
+  // Fashion lanes are catalog-sensitive: "polo shirt" is a product type, while
+  // "Polo Ralph Lauren" is a brand. Do not let an old stored fashion sku_id
+  // bypass the current matcher on scheduled Daangn touches.
+  if (isFashionSku(sku)) return null;
   return {
     listingType: "normal",
     skuId: existing.sku_id,

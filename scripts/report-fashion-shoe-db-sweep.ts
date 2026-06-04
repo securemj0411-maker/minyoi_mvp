@@ -93,7 +93,7 @@ type SweepCase = {
 
 const EXPECTED_PARSER_BY_CATEGORY: Record<FashionCategory, string> = {
   shoe: "wave92-shoe-v41",
-  clothing: "wave216-clothing-v52",
+  clothing: "wave216-clothing-v53",
   bag: "wave92-bag-v24",
 };
 

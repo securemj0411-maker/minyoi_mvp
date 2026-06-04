@@ -126,7 +126,7 @@ async function handleReparse(req: NextRequest) {
   // category 명시 시 해당 카테고리의 latest version과 비교 (currentVersion override).
   const legacyVersion = categoryFilter === "shoe" ? "wave92-shoe-v41"
     : categoryFilter === "bag" ? "wave92-bag-v24"
-    : categoryFilter === "clothing" ? "wave216-clothing-v52"
+    : categoryFilter === "clothing" ? "wave216-clothing-v53"
     : PARSER_VERSION;
   // 2026-05-16 v46 cleanup: option-parser.PARSER_VERSION import — silent drift 차단 (이전 별도 const).
   const rows = legacyOnly

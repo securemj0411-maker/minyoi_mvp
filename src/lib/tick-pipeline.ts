@@ -3277,8 +3277,9 @@ const LATEST_PARSER_VERSION_BY_CATEGORY: Partial<Record<NonNullable<Sku["categor
   // Wave 712b (2026-05-23): clothing v46 — 의류 신설 (Adidas collab 5 / FOG Main Line 4 / Polo 7 / Stone Island sub 3 / Arc'teryx Down / BAPE × Adidas + Longsleeve + Backpack / TNF Novelty + Steep Tech / Junya + CDG Converse broad / Stussy 모델 3 + Nike sub 2 / NB collab 2 / Polo Chief Keef).
   // Wave 742 (2026-05-24): clothing v47 — 의류 사이즈 추출 신설 (sizeAlpha/sizeKr/waistInch). 7,616건 v46 매물 점진 reparse.
   // Wave 779/801: clothing v52 — Baltoro/down_jacket key 유지 + fashion pool purity follow-up.
+  // Wave 1071: clothing v53 — explicit brand drift rematch (polo shirt category ≠ Polo RL brand).
   //   parser 출력값과 drift gate 기대값 sync 유지.
-  clothing: "wave216-clothing-v52",
+  clothing: "wave216-clothing-v53",
   bike: "wave92-fashion-mobility-v7",
   // Generic option-parser categories must track the exported parser version.
   // Wave 808: v55 literals and missing game/golf/camera/etc. mappings caused the same

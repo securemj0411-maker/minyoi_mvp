@@ -257,7 +257,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         `bag parser_version mismatch: ${result.parserVersion}`);
     });
 
-    it("parser_version clothing = wave216-clothing-v52 (Wave 801 pool purity follow-up)", () => {
+    it("parser_version clothing = wave216-clothing-v53 (explicit brand drift rematch)", () => {
       const result = parseListingOptions({
         title: "스투시 후드",
         description: "L 사이즈",
@@ -265,7 +265,7 @@ describe("Wave 254.5 step 1 — conditionFromTextFashion (shoe)", () => {
         skuName: "Stussy Hoodie",
         category: "clothing",
       });
-      assert.equal(result.parserVersion, "wave216-clothing-v52",
+      assert.equal(result.parserVersion, "wave216-clothing-v53",
         `clothing parser_version mismatch: ${result.parserVersion}`);
     });
 
