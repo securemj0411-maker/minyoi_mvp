@@ -73,6 +73,18 @@ const RISKY_SPORT_GOLF_PUBLIC_SKU_IDS = new Set([
   "club-mizuno-mx",
 ]);
 
+const RISKY_CLOTHING_PUBLIC_LANE_KEYS = new Set([
+  // Wave 1081 (2026-06-04): these lanes are still useful for catalog recall,
+  // but DB pool samples showed mixed public price axes: shirt/tee/polo-shirt
+  // bleed, stale non-brand matches, brand apparel broad, and team/cap bundles.
+  "polo_pony_tee",
+  "polo_shirt_pattern",
+  "polo_knit_sweater",
+  "adidas_trefoil",
+  "patagonia_apparel",
+  "mlb_apparel",
+]);
+
 const HIGH_PROFIT_ELECTRONICS_CATEGORIES = new Set<Sku["category"]>([
   "earphone",
   "smartwatch",
@@ -349,6 +361,15 @@ function isRiskySportGolfPublicSku(sku: Sku | null | undefined): boolean {
   );
 }
 
+function isRiskyClothingPublicSku(sku: Sku | null | undefined): boolean {
+  if (!sku || sku.category !== "clothing") return false;
+  return (
+    sku.id.endsWith("-broad") ||
+    sku.laneKey?.endsWith("_broad") === true ||
+    RISKY_CLOTHING_PUBLIC_LANE_KEYS.has(sku.laneKey ?? "")
+  );
+}
+
 // Lane-aware pool gate. A SKU tagged with a `ready` laneKey enters the pool
 // even when its broader category is `internal_only`. SKUs without a lane (or
 // whose lane is itself blocked) fall back to the category gate.
@@ -392,6 +413,20 @@ export function evaluatePoolGate(
       status: "blocked",
       canEnterPool: false,
       reason: "category_internal_only_sport_golf_broad_lane_required",
+      laneKey: sku?.laneKey,
+    };
+  }
+
+  // Wave 1081 (2026-06-04): clothing also needs a second public-pool guard.
+  // Category-level clothing is already held, but some historical "ready"
+  // lanes are still family/brand/product-type broad enough to mix public price
+  // axes. Keep them as parser/search scaffolding until split/audited again.
+  if (isRiskyClothingPublicSku(sku)) {
+    return {
+      ...categoryDecision,
+      status: "blocked",
+      canEnterPool: false,
+      reason: "category_internal_only_clothing_broad_lane_required",
       laneKey: sku?.laneKey,
     };
   }

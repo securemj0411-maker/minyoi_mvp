@@ -2444,7 +2444,7 @@ test("clothing broad SKUs cannot enter pool through category-level readiness", (
   );
 
   assert.equal(decision.canEnterPool, false);
-  assert.equal(decision.reason, "category_internal_only_clothing_lane_required");
+  assert.equal(decision.reason, "category_internal_only_clothing_broad_lane_required");
 });
 
 test("bag broad SKUs cannot enter pool through category-level readiness unless lane-vetted", () => {
@@ -2531,6 +2531,37 @@ test("sport golf broad SKUs stay internal even when broad lane readiness exists"
   );
   assert.equal(allowed.canEnterPool, true);
   assert.equal(allowed.reason, "lane_ready_sport_golf_ping_i230_iron");
+});
+
+test("risky clothing family lanes stay internal even when historical lane readiness exists", () => {
+  const riskyIds = [
+    "clothing-polo-pony-tee",
+    "clothing-polo-shirt-pattern",
+    "clothing-polo-knit-sweater",
+    "clothing-adidas-trefoil",
+    "clothing-patagonia",
+    "clothing-mlb-cap",
+  ];
+
+  for (const id of riskyIds) {
+    const sku = CATALOG.find((item) => item.id === id);
+    assert.ok(sku, `expected risky clothing SKU in catalog: ${id}`);
+    const decision = evaluatePoolGate(
+      { sku, category: "clothing" },
+      { categoryReadiness: CATEGORY_READINESS, laneReadiness: LANE_READINESS },
+    );
+    assert.equal(decision.canEnterPool, false, id);
+    assert.equal(decision.reason, "category_internal_only_clothing_broad_lane_required", id);
+  }
+
+  const narrowSku = CATALOG.find((item) => item.id === "clothing-polo-oxford-shirt");
+  assert.ok(narrowSku, "expected Polo Oxford narrow SKU in catalog");
+  const allowed = evaluatePoolGate(
+    { sku: narrowSku, category: "clothing" },
+    { categoryReadiness: CATEGORY_READINESS, laneReadiness: LANE_READINESS },
+  );
+  assert.equal(allowed.canEnterPool, true);
+  assert.equal(allowed.reason, "lane_ready_polo_oxford_shirt");
 });
 
 test("low-purity clothing product-type lanes stay held out of the pool", () => {
