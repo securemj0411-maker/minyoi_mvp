@@ -51,6 +51,18 @@ export function SendIcon(props: IconProps) {
   );
 }
 
+export function HeadsetIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path d="M3 11a9 9 0 0 1 18 0" />
+      <path d="M3 11v4a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2" />
+      <path d="M21 11v4a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2" />
+      <path d="M21 15v2a4 4 0 0 1-4 4h-3" />
+      <path d="M12 21h2" />
+    </svg>
+  );
+}
+
 export function PauseIcon(props: IconProps) {
   return (
     <svg {...baseProps} {...props}>

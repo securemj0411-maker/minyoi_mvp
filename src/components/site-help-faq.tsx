@@ -1,8 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useId, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useEffect, useId, useRef, useState } from "react";
 
-import { SendIcon } from "@/components/icons";
+import { HeadsetIcon, SendIcon } from "@/components/icons";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type SupportConversation = {
@@ -40,7 +40,7 @@ export default function SiteHelpFaq() {
 
   useEffect(() => {
     if (!open) return;
-    function onKeyDown(event: KeyboardEvent) {
+    function onKeyDown(event: globalThis.KeyboardEvent) {
       if (event.key === "Escape") setOpen(false);
     }
     window.addEventListener("keydown", onKeyDown);
@@ -149,6 +149,13 @@ export default function SiteHelpFaq() {
     setSendState("idle");
   }
 
+  function handleComposerKeyDown(event: ReactKeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== "Enter" || event.shiftKey) return;
+    event.preventDefault();
+    if (loadState !== "ready" || sendState === "sending" || !message.trim()) return;
+    event.currentTarget.form?.requestSubmit();
+  }
+
   return (
     <>
       <button
@@ -157,7 +164,7 @@ export default function SiteHelpFaq() {
         aria-label="고객센터 열기"
         className="fixed bottom-4 right-4 z-[70] flex h-[52px] min-h-[52px] items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-600 px-4 py-3 text-sm font-black text-white shadow-[0_16px_42px_rgba(5,150,105,0.34)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 dark:border-emerald-300/20 dark:bg-emerald-500 dark:hover:bg-emerald-400 sm:bottom-5 sm:right-5"
       >
-        <SendIcon className="h-5 w-5" />
+        <HeadsetIcon className="h-5 w-5" />
         <span className="hidden sm:inline">고객센터</span>
       </button>
 
@@ -174,7 +181,7 @@ export default function SiteHelpFaq() {
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-xs font-black text-white shadow-[0_10px_24px_rgba(5,150,105,0.24)]">
-                    상담
+                    <HeadsetIcon className="h-5 w-5" />
                     <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-300 dark:border-zinc-950" />
                   </div>
                   <div className="min-w-0">
@@ -262,8 +269,9 @@ export default function SiteHelpFaq() {
                     setMessage(event.target.value);
                     if (sendState === "error") setSendState("idle");
                   }}
+                  onKeyDown={handleComposerKeyDown}
                   disabled={loadState !== "ready" || sendState === "sending"}
-                  placeholder="문의 내용을 입력하세요"
+                  placeholder="문의 내용을 입력하세요. Enter 전송 · Shift+Enter 줄바꿈"
                   rows={1}
                   className="max-h-28 min-h-11 flex-1 resize-none rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-3 text-sm font-semibold leading-5 text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:ring-emerald-950"
                 />
