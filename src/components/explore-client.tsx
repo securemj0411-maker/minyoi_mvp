@@ -1061,6 +1061,7 @@ function isFeedTeaserLocked(_item: PoolItem) {
 type SortOption = "profit_desc" | "latest" | "price_asc" | "distance";
 type SourceOption = "all" | "bunjang" | "joongna" | "daangn";
 type BudgetFilterOption = "all" | "150000" | "300000" | "500000";
+type LocationFilterOption = "all" | "nearby";
 type LoadPoolOptions = {
   autoScrollNew?: boolean;
   serverSource?: SourceOption | null;
@@ -1072,6 +1073,14 @@ const SOURCE_OPTIONS: Array<{ value: SourceOption; label: string }> = [
   { value: "bunjang", label: "번개장터" },
   { value: "joongna", label: "중고나라" },
   { value: "daangn", label: "당근" },
+];
+
+const LOCATION_FILTER_OPTIONS: Array<{
+  value: LocationFilterOption;
+  label: string;
+}> = [
+  { value: "all", label: "위치 전체" },
+  { value: "nearby", label: "내 동네 우선" },
 ];
 
 const BUDGET_FILTER_OPTIONS: Array<{
@@ -3379,7 +3388,7 @@ export default function ExploreClient({
             ) : null}
           </div>
         </div>
-        <div className="grid w-full grid-cols-3 gap-1.5 sm:flex sm:w-auto sm:items-center">
+        <div className="grid w-full grid-cols-2 gap-1.5 sm:flex sm:w-auto sm:items-center">
           <select
             data-budget-filter-select
             value={budgetFilter}
@@ -3397,10 +3406,43 @@ export default function ExploreClient({
             ))}
           </select>
           <select
+            value={isDaangnFocusedView ? "nearby" : "all"}
+            onChange={(e) => {
+              const nextLocation = e.target.value as LocationFilterOption;
+              setScrapOnly(false);
+              if (nextLocation === "nearby") {
+                setSource("daangn");
+                setSort("distance");
+                void loadPool(false, {
+                  serverSource: "daangn",
+                  serverSort: "distance",
+                });
+              } else {
+                setSource("all");
+                if (sortRef.current === "distance") setSort("profit_desc");
+                void loadPool(false, {
+                  serverSource: "all",
+                  serverSort: null,
+                });
+              }
+            }}
+            className="min-w-0 rounded-lg border border-zinc-200 bg-white px-2 py-2 text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300 sm:w-auto sm:shrink-0 sm:rounded-md sm:py-1 sm:text-[10px] sm:font-medium"
+            aria-label="위치 필터"
+          >
+            {LOCATION_FILTER_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <select
             value={source}
             onChange={(e) => {
               const nextSource = e.target.value as SourceOption;
+              const isLeavingDaangnDistance =
+                nextSource !== "daangn" && sortRef.current === "distance";
               setSource(nextSource);
+              if (isLeavingDaangnDistance) setSort("profit_desc");
               setScrapOnly(false);
               if (nextSource === "daangn") {
                 void loadPool(false, {
@@ -3411,8 +3453,12 @@ export default function ExploreClient({
               } else if (source === "daangn") {
                 void loadPool(false, {
                   serverSource: nextSource,
-                  serverSort:
-                    sortRef.current === "distance" ? "distance" : null,
+                  serverSort: null,
+                });
+              } else if (isLeavingDaangnDistance) {
+                void loadPool(false, {
+                  serverSource: nextSource,
+                  serverSort: null,
                 });
               }
             }}
@@ -3432,8 +3478,9 @@ export default function ExploreClient({
               setSort(nextSort);
               setScrapOnly(false);
               if (nextSort === "distance") {
+                setSource("daangn");
                 void loadPool(false, {
-                  serverSource: source,
+                  serverSource: "daangn",
                   serverSort: "distance",
                 });
               } else if (wasDistance) {
