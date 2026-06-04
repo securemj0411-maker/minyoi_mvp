@@ -630,7 +630,7 @@ function KoreaSeatMap({
           );
         })}
         <g className="pointer-events-none">
-          {REGIONS.map((region) => {
+          {zoomed ? REGIONS.map((region) => {
             const selectedActive = zoomed && region.key === selected.key;
             const hoveredActive = !zoomed && region.key === hoveredKey;
             const regionSvg = KOREA_ADMIN_REGION_SVG[region.key];
@@ -644,7 +644,7 @@ function KoreaSeatMap({
                 } as CSSProperties}
               />
             );
-          })}
+          }) : null}
         </g>
         <g>
           {REGIONS.map((region) => {
