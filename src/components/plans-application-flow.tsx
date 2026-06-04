@@ -51,6 +51,23 @@ type RegionSeat = {
   districts: DistrictSeat[];
 };
 
+type LocalSampleItem = {
+  pid: number;
+  title: string;
+  sourceLabel: string;
+  regionName: string | null;
+  buyPrice: number;
+  marketPrice: number;
+  expectedProfit: number;
+  medianDaysToSold: number | null;
+  sold7dCount: number | null;
+  sampleCount: number | null;
+  category: string;
+  comparableKey: string | null;
+  genericImageUrl: string | null;
+  thumbnailUrl: string | null;
+};
+
 function makeDistrictSeats(names: string[], baseSeats: number, basePressure: number): DistrictSeat[] {
   return names.map((name, index) => ({
     name,
@@ -503,45 +520,6 @@ function seatTone(seats: number, total: number) {
   };
 }
 
-function localSampleFor(district: DistrictSeat | null, region: RegionSeat) {
-  const seed = (district?.name ?? region.shortLabel).charCodeAt(0) + region.key.length;
-  const samples = [
-    {
-      title: "애플워치 SE2 44mm 미드나이트",
-      category: "smartwatch",
-      buy: 150_000,
-      market: 214_500,
-      profit: 64_500,
-      days: 4.5,
-    },
-    {
-      title: "에어팟 맥스 퍼플 미개봉",
-      category: "earphone",
-      buy: 510_000,
-      market: 626_600,
-      profit: 116_600,
-      days: 6.2,
-    },
-    {
-      title: "맥북 프로 14인치 M1 Pro",
-      category: "laptop",
-      buy: 980_000,
-      market: 1_185_000,
-      profit: 205_000,
-      days: 8.6,
-    },
-    {
-      title: "나이키 조던1 로우 265",
-      category: "shoe",
-      buy: 65_000,
-      market: 106_000,
-      profit: 41_000,
-      days: 5.5,
-    },
-  ];
-  return samples[seed % samples.length];
-}
-
 function formatKrw(value: number) {
   return `${value.toLocaleString("ko-KR")}원`;
 }
@@ -841,13 +819,16 @@ export default function PlansApplicationFlow({
   const [manualSearching, setManualSearching] = useState(false);
   const [showManualSearch, setShowManualSearch] = useState(false);
   const [pinnedDistrictName, setPinnedDistrictName] = useState<string | null>(null);
+  const [localSample, setLocalSample] = useState<LocalSampleItem | null>(null);
+  const [localSampleLoading, setLocalSampleLoading] = useState(false);
+  const [localSampleError, setLocalSampleError] = useState<string | null>(null);
   const selected = useMemo(
     () => REGIONS.find((region) => region.key === selectedKey) ?? REGIONS[0],
     [selectedKey],
   );
   const selectedDistricts = useMemo(() => districtSeatsFor(selected), [selected]);
   const selectedDistrict = selectedDistricts.find((district) => district.name === selectedDistrictName) ?? selectedDistricts[0] ?? null;
-  const localSample = useMemo(() => localSampleFor(selectedDistrict, selected), [selectedDistrict, selected]);
+  const selectedRegionLabel = selectedDistrict?.name ?? selected.shortLabel;
   const visibleDistricts = useMemo(() => {
     if (!pinnedDistrictName) return selectedDistricts;
     const pinnedDistrict = selectedDistricts.find((district) => district.name === pinnedDistrictName);
@@ -885,6 +866,46 @@ export default function PlansApplicationFlow({
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token ?? null;
   }
+
+  useEffect(() => {
+    if (step !== 1) return;
+    let cancelled = false;
+
+    async function loadLocalSample() {
+      setLocalSampleLoading(true);
+      setLocalSampleError(null);
+      try {
+        const token = await getAccessToken();
+        if (!token) {
+          if (!cancelled) {
+            setLocalSample(null);
+            setLocalSampleError("로그인 후 실제 추천 샘플을 볼 수 있어요.");
+          }
+          return;
+        }
+        const params = new URLSearchParams({ region: selectedRegionLabel });
+        const res = await fetch(`/api/membership/local-sample?${params.toString()}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+        const json = (await res.json().catch(() => null)) as { ok?: boolean; item?: LocalSampleItem | null; error?: string } | null;
+        if (!res.ok || !json?.ok) throw new Error(json?.error || "sample_load_failed");
+        if (!cancelled) setLocalSample(json.item ?? null);
+      } catch {
+        if (!cancelled) {
+          setLocalSample(null);
+          setLocalSampleError("실제 추천 샘플을 불러오지 못했어요. 잠시 후 다시 확인해주세요.");
+        }
+      } finally {
+        if (!cancelled) setLocalSampleLoading(false);
+      }
+    }
+
+    void loadLocalSample();
+    return () => {
+      cancelled = true;
+    };
+  }, [step, selectedRegionLabel]);
 
   function selectRegionFromAddress(parts: Array<string | null | undefined>, districtHint?: string | null) {
     const key = regionKeyFromAddress(parts);
@@ -1231,11 +1252,15 @@ export default function PlansApplicationFlow({
                 <div className="mt-6 grid grid-cols-3 gap-2">
                   <div className="rounded-[22px] bg-blue-50 px-3 py-3 dark:bg-blue-950/28">
                     <div className="text-[10px] font-black text-blue-500 dark:text-blue-300">예상 차익</div>
-                    <div className="mt-1 text-[18px] font-black text-blue-700 dark:text-blue-200">+{formatKrw(localSample.profit)}</div>
+                    <div className="mt-1 text-[18px] font-black text-blue-700 dark:text-blue-200">
+                      {localSample ? `+${formatKrw(localSample.expectedProfit)}` : "확인 중"}
+                    </div>
                   </div>
                   <div className="rounded-[22px] bg-zinc-100 px-3 py-3 dark:bg-zinc-950">
                     <div className="text-[10px] font-black text-zinc-500">판매속도</div>
-                    <div className="mt-1 text-[18px] font-black">~{localSample.days}일</div>
+                    <div className="mt-1 text-[18px] font-black">
+                      {localSample?.medianDaysToSold ? `~${localSample.medianDaysToSold}일` : "수집 중"}
+                    </div>
                   </div>
                   <div className={`rounded-[22px] px-3 py-3 ring-1 ${seatTone(selectedDistrict?.seats ?? selected.seats, districtUsage(selectedDistrict ?? selected.districts[0]).total).badge}`}>
                     <div className="text-[10px] font-black opacity-75">남은 자리</div>
@@ -1247,20 +1272,48 @@ export default function PlansApplicationFlow({
                 <div className="rounded-[28px] border border-zinc-200 bg-[#fbfcff] p-4 shadow-[0_18px_50px_rgba(15,23,42,0.12)] dark:border-zinc-800 dark:bg-zinc-950/70">
                   <div className="flex items-center gap-3">
                     <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-[22px] bg-zinc-100 dark:bg-zinc-900">
-                      <CategoryWatermark category={localSample.category} size={66} />
+                      {localSample?.genericImageUrl ? (
+                        <div
+                          className="h-full w-full bg-cover bg-center"
+                          style={{ backgroundImage: `url(${localSample.genericImageUrl})` }}
+                        />
+                      ) : (
+                        <CategoryWatermark category={localSample?.category ?? "other"} size={66} />
+                      )}
                     </div>
                     <div className="min-w-0">
                       <div className="text-[12px] font-black text-zinc-500 dark:text-zinc-400">
-                        {selectedDistrict?.name ?? selected.shortLabel} · 샘플
+                        {localSample?.regionName ?? selectedRegionLabel} · 실제 당근 후보
                       </div>
                       <div className="mt-1 line-clamp-2 text-[17px] font-black leading-tight">
-                        {localSample.title}
+                        {localSampleLoading && !localSample
+                          ? "실제 추천 매물을 불러오는 중"
+                          : localSample?.title ?? "지금 보여줄 당근 후보를 확인 중이에요"}
                       </div>
                       <div className="mt-2 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
-                        매입 {formatKrw(localSample.buy)} · 시세 {formatKrw(localSample.market)}
+                        {localSample
+                          ? `매입 ${formatKrw(localSample.buyPrice)} · 시세 ${formatKrw(localSample.marketPrice)}`
+                          : localSampleError ?? "피드 ready 풀에서 당근 매물을 고르고 있어요."}
                       </div>
                     </div>
                   </div>
+                  {localSample ? (
+                    <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-black">
+                      <span className="rounded-full bg-orange-50 px-3 py-1 text-orange-700 ring-1 ring-orange-100 dark:bg-orange-950/30 dark:text-orange-200 dark:ring-orange-900">
+                        {localSample.sourceLabel}
+                      </span>
+                      {localSample.sold7dCount ? (
+                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-200 dark:ring-emerald-900">
+                          최근 7일 판매 {localSample.sold7dCount}건
+                        </span>
+                      ) : null}
+                      {localSample.sampleCount ? (
+                        <span className="rounded-full bg-zinc-100 px-3 py-1 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
+                          표본 {localSample.sampleCount}건
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
                   <div className="mt-4 rounded-[24px] bg-zinc-950 px-4 py-4 text-white dark:bg-white dark:text-zinc-950">
                     <div className="text-[12px] font-black opacity-70">지금 이 지역 티오</div>
                     <div className="mt-1 break-keep text-[24px] font-black leading-tight">
