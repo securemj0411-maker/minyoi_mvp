@@ -786,6 +786,13 @@ export default function PlansApplicationFlow({
   );
   const selectedDistricts = useMemo(() => districtSeatsFor(selected), [selected]);
   const selectedDistrict = selectedDistricts.find((district) => district.name === selectedDistrictName) ?? selectedDistricts[0] ?? null;
+  const visibleDistricts = useMemo(() => {
+    if (!selectedDistrict?.name) return selectedDistricts;
+    return [
+      selectedDistrict,
+      ...selectedDistricts.filter((district) => district.name !== selectedDistrict.name),
+    ];
+  }, [selectedDistrict, selectedDistricts]);
   const filledPct = Math.round((filled / capacity) * 100);
   const canGoBack = step > 0;
   const isLast = step === 3;
@@ -983,7 +990,7 @@ export default function PlansApplicationFlow({
                   {mapZoomed ? (
                     <div className="mt-2 flex min-h-0 flex-1 flex-col rounded-[24px] border border-zinc-200 bg-[#fbfcff] shadow-[0_14px_34px_rgba(15,23,42,0.12)] dark:border-zinc-800 dark:bg-zinc-950/80">
                       <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
-                        {selectedDistricts.map((district) => {
+                        {visibleDistricts.map((district) => {
                           const active = district.name === selectedDistrict?.name;
                           const usage = districtUsage(district);
                           return (
