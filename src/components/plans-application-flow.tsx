@@ -56,9 +56,12 @@ type LocalSampleItem = {
   title: string;
   sourceLabel: string;
   regionName: string | null;
+  fullRegionName: string | null;
+  districtName: string;
   buyPrice: number;
   marketPrice: number;
   expectedProfit: number;
+  profitPct: number | null;
   medianDaysToSold: number | null;
   sold7dCount: number | null;
   sampleCount: number | null;
@@ -883,7 +886,7 @@ export default function PlansApplicationFlow({
           }
           return;
         }
-        const params = new URLSearchParams({ region: selectedRegionLabel });
+        const params = new URLSearchParams({ district: selectedRegionLabel });
         const res = await fetch(`/api/membership/local-sample?${params.toString()}`, {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
@@ -1236,94 +1239,115 @@ export default function PlansApplicationFlow({
           ) : null}
 
           {step === 1 ? (
-            <div className="grid h-full min-h-0 gap-0 lg:grid-cols-[minmax(0,1fr)_360px]">
-              <div className="flex min-h-0 flex-col justify-center border-b border-zinc-200 p-5 dark:border-zinc-800 sm:p-9 lg:border-b-0 lg:border-r">
-                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-blue-300">
-                  local sample
-                </div>
-                <h1 className="mt-3 break-keep text-[32px] font-black leading-[1.02] tracking-tight sm:text-[58px]">
-                  {selectedDistrict?.name ?? selected.shortLabel}에서는
-                  <br />
-                  이런 매물만 추려요.
-                </h1>
-                <p className="mt-4 break-keep text-[14px] font-bold leading-6 text-zinc-500 dark:text-zinc-400 sm:max-w-[620px] sm:text-[16px] sm:leading-7">
-                  가까운 동네 매물 중 차익과 판매 속도가 같이 보이는 것만 남깁니다.
-                </p>
-                <div className="mt-6 grid grid-cols-3 gap-2">
-                  <div className="rounded-[22px] bg-blue-50 px-3 py-3 dark:bg-blue-950/28">
-                    <div className="text-[10px] font-black text-blue-500 dark:text-blue-300">예상 차익</div>
-                    <div className="mt-1 text-[18px] font-black text-blue-700 dark:text-blue-200">
-                      {localSample ? `+${formatKrw(localSample.expectedProfit)}` : "확인 중"}
+            <div className="flex h-full min-h-0 flex-col justify-center p-4 sm:p-8">
+              <div className="mx-auto w-full max-w-[880px]">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-300">
+                      real feed sample
                     </div>
+                    <h1 className="mt-2 break-keep text-[30px] font-black leading-[1.02] tracking-tight sm:text-[54px]">
+                      {selectedRegionLabel} 근처에
+                      <br />
+                      실제로 뜨는 후보예요.
+                    </h1>
                   </div>
-                  <div className="rounded-[22px] bg-zinc-100 px-3 py-3 dark:bg-zinc-950">
-                    <div className="text-[10px] font-black text-zinc-500">판매속도</div>
-                    <div className="mt-1 text-[18px] font-black">
-                      {localSample?.medianDaysToSold ? `~${localSample.medianDaysToSold}일` : "수집 중"}
-                    </div>
-                  </div>
-                  <div className={`rounded-[22px] px-3 py-3 ring-1 ${seatTone(selectedDistrict?.seats ?? selected.seats, districtUsage(selectedDistrict ?? selected.districts[0]).total).badge}`}>
-                    <div className="text-[10px] font-black opacity-75">남은 자리</div>
-                    <div className="mt-1 text-[18px] font-black">{selectedDistrict?.seats ?? selected.seats}명</div>
+                  <div className={`rounded-[22px] px-4 py-3 text-right ring-1 ${seatTone(selectedDistrict?.seats ?? selected.seats, districtUsage(selectedDistrict ?? selected.districts[0]).total).badge}`}>
+                    <div className="text-[10px] font-black opacity-70">남은 자리</div>
+                    <div className="text-[24px] font-black leading-none">{selectedDistrict?.seats ?? selected.seats}석</div>
                   </div>
                 </div>
-              </div>
-              <div className="flex min-h-0 flex-col justify-center p-4 sm:p-6">
-                <div className="rounded-[28px] border border-zinc-200 bg-[#fbfcff] p-4 shadow-[0_18px_50px_rgba(15,23,42,0.12)] dark:border-zinc-800 dark:bg-zinc-950/70">
-                  <div className="flex items-center gap-3">
-                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-[22px] bg-zinc-100 dark:bg-zinc-900">
-                      {localSample?.genericImageUrl ? (
-                        <div
-                          className="h-full w-full bg-cover bg-center"
-                          style={{ backgroundImage: `url(${localSample.genericImageUrl})` }}
-                        />
-                      ) : (
-                        <CategoryWatermark category={localSample?.category ?? "other"} size={66} />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-[12px] font-black text-zinc-500 dark:text-zinc-400">
-                        {localSample?.regionName ?? selectedRegionLabel} · 실제 당근 후보
-                      </div>
-                      <div className="mt-1 line-clamp-2 text-[17px] font-black leading-tight">
-                        {localSampleLoading && !localSample
-                          ? "실제 추천 매물을 불러오는 중"
-                          : localSample?.title ?? "지금 보여줄 당근 후보를 확인 중이에요"}
-                      </div>
-                      <div className="mt-2 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
-                        {localSample
-                          ? `매입 ${formatKrw(localSample.buyPrice)} · 시세 ${formatKrw(localSample.marketPrice)}`
-                          : localSampleError ?? "피드 ready 풀에서 당근 매물을 고르고 있어요."}
-                      </div>
-                    </div>
-                  </div>
+
+                <div className="mt-5 overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.14)] dark:border-zinc-800 dark:bg-zinc-950/80">
                   {localSample ? (
-                    <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-black">
-                      <span className="rounded-full bg-orange-50 px-3 py-1 text-orange-700 ring-1 ring-orange-100 dark:bg-orange-950/30 dark:text-orange-200 dark:ring-orange-900">
-                        {localSample.sourceLabel}
-                      </span>
-                      {localSample.sold7dCount ? (
-                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-200 dark:ring-emerald-900">
-                          최근 7일 판매 {localSample.sold7dCount}건
-                        </span>
-                      ) : null}
-                      {localSample.sampleCount ? (
-                        <span className="rounded-full bg-zinc-100 px-3 py-1 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
-                          표본 {localSample.sampleCount}건
-                        </span>
-                      ) : null}
+                    <div className="grid grid-cols-[128px_minmax(0,1fr)] gap-3 p-3 text-left sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-5 sm:p-5">
+                      <div className="relative aspect-square overflow-hidden rounded-[20px] bg-zinc-100 dark:bg-zinc-900">
+                        {localSample.thumbnailUrl || localSample.genericImageUrl ? (
+                          <div
+                            className="h-full w-full bg-cover bg-center"
+                            style={{ backgroundImage: `url(${localSample.thumbnailUrl ?? localSample.genericImageUrl})` }}
+                          />
+                        ) : (
+                          <CategoryWatermark
+                            category={localSample.category}
+                            comparableKey={localSample.comparableKey}
+                            size={76}
+                          />
+                        )}
+                        <CategoryWatermark
+                          category={localSample.category}
+                          comparableKey={localSample.comparableKey}
+                          size={28}
+                          variant="corner"
+                        />
+                      </div>
+                      <div className="min-w-0 py-1 sm:py-2">
+                        <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-black sm:text-[11px]">
+                          <span className="rounded-full bg-orange-50 px-2 py-1 text-orange-700 ring-1 ring-orange-100 dark:bg-orange-950/30 dark:text-orange-200 dark:ring-orange-900">
+                            {localSample.sourceLabel}
+                          </span>
+                          {localSample.regionName ? (
+                            <span className="rounded-full bg-zinc-100 px-2 py-1 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
+                              {localSample.regionName}
+                            </span>
+                          ) : null}
+                          {localSample.medianDaysToSold ? (
+                            <span className="rounded-full bg-violet-50 px-2 py-1 text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">
+                              평균 {localSample.medianDaysToSold}일 내로 팔려요
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className="mt-2 line-clamp-2 break-keep text-[16px] font-black leading-tight text-zinc-950 dark:text-zinc-50 sm:text-[22px]">
+                          {localSample.title}
+                        </div>
+                        <div className="mt-2 flex items-baseline gap-2">
+                          <span className="text-[24px] font-black tabular-nums text-emerald-600 dark:text-emerald-400 sm:text-[38px]">
+                            +{formatKrw(localSample.expectedProfit)}
+                          </span>
+                          {localSample.profitPct != null ? (
+                            <span className="rounded-full bg-blue-50 px-2 py-1 text-[11px] font-black tabular-nums text-blue-700 dark:bg-blue-950/40 dark:text-blue-200">
+                              +{localSample.profitPct}%
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400 sm:text-[13px]">
+                          <span>
+                            매입가 <span className="tabular-nums text-zinc-950 dark:text-zinc-50">{formatKrw(localSample.buyPrice)}</span>
+                          </span>
+                          <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                          <span>
+                            시세 <span className="tabular-nums text-zinc-950 dark:text-zinc-50">{formatKrw(localSample.marketPrice)}</span>
+                          </span>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-1.5 text-[10px] font-bold sm:text-[11px]">
+                          {localSample.sold7dCount ? (
+                            <span className="rounded-full bg-emerald-50 px-2 py-1 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-200">
+                              최근 7일 판매 {localSample.sold7dCount}건
+                            </span>
+                          ) : null}
+                          {localSample.sampleCount ? (
+                            <span className="rounded-full bg-zinc-100 px-2 py-1 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
+                              표본 {localSample.sampleCount}건
+                            </span>
+                          ) : null}
+                          <span className="rounded-full bg-rose-50 px-2 py-1 text-rose-700 dark:bg-rose-950/30 dark:text-rose-200">
+                            {selectedRegionLabel} {selectedDistrict?.seats ?? selected.seats}석 남음
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  ) : null}
-                  <div className="mt-4 rounded-[24px] bg-zinc-950 px-4 py-4 text-white dark:bg-white dark:text-zinc-950">
-                    <div className="text-[12px] font-black opacity-70">지금 이 지역 티오</div>
-                    <div className="mt-1 break-keep text-[24px] font-black leading-tight">
-                      {selectedDistrict?.name ?? selected.shortLabel} 자리는 {selectedDistrict?.seats ?? selected.seats}명 남았어요.
+                  ) : (
+                    <div className="p-6">
+                      <div className="rounded-[22px] bg-zinc-100 px-4 py-5 text-sm font-black text-zinc-500 dark:bg-zinc-900 dark:text-zinc-300">
+                        {localSampleLoading ? "실제 피드 샘플을 불러오는 중" : localSampleError ?? "이 지역 샘플 캐시를 준비 중이에요."}
+                      </div>
                     </div>
-                    <div className="mt-2 break-keep text-[12px] font-bold leading-5 opacity-70">
-                      같은 동네에서 보는 사람이 많아지면 좋은 매물은 금방 사라져요.
-                    </div>
-                  </div>
+                  )}
                 </div>
+
+                <p className="mt-4 break-keep text-[13px] font-bold leading-6 text-zinc-500 dark:text-zinc-400 sm:text-[15px]">
+                  신청 화면에는 원본 링크를 열지 않고, 실제 추천 풀에 들어온 당근 후보의 핵심 수익 신호만 먼저 보여줘요.
+                </p>
               </div>
             </div>
           ) : null}

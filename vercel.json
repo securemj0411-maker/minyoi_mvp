@@ -61,6 +61,10 @@
       "schedule": "23 * * * *"
     },
     {
+      "path": "/api/cron/membership-local-samples",
+      "schedule": "29 * * * *"
+    },
+    {
       "path": "/api/cron/housekeeper",
       "schedule": "7,37 * * * *"
     },

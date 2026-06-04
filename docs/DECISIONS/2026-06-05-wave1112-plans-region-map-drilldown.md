@@ -49,9 +49,13 @@
 - 멤버십 신청 전 흐름은 `지역 티오 선택 → 내 동네 샘플 → 공개 제한 이유 → 신청` 순서로 정리했다.
 - 샘플 매물은 프론트 mock 배열이 아니라 `/api/membership/local-sample`에서 실제 `mvp_candidate_pool.status=ready` + `mvp_raw_listings.source=daangn` + `listing_state=active` 후보를 읽어 보여주도록 바꿨다.
 - 신청 전에는 원본 링크와 실매물 사진을 열지 않고, 피드와 같은 SKU 기본 이미지/매입가/시세/예상 차익/판매속도 표본만 노출한다.
+- 샘플 API의 request-time live join은 느려서 폐기하고 `mvp_membership_local_samples` DB cache를 추가했다.
+- `/api/cron/membership-local-samples`가 실제 당근 ready/active 후보를 구/지역별로 미리 구워 저장하고, 신청 화면은 캐시 row 1개만 읽는다.
+- 샘플 카드는 피드 카드와 맞춰 실사진, 제목, `+예상 차익`, `+%`, 매입가, 시세, 당근 지역/판매속도 chip을 한 카드 안에 배치했다.
+- 운영 DB에 캐시 테이블을 적용했고, 초기 refresh 결과 131개 district sample이 생성됐다.
 
 ## 보류
 
 - 실제 인구/지역별 신청자 기반 티오 산정은 아직 mock 수치 기반이다.
 - 지도 클러즈업 애니메이션의 세밀한 easing/gesture 조정은 다음 디자인 라운드에서 더 다듬는다.
-- 선택 지역과 정확히 같은 동 단위 당근 후보가 없을 때는 같은 실제 당근 ready 후보 중 점수가 높은 매물을 보여준다. 향후 지역별 표본이 충분해지면 정확한 동/구 우선 노출로 더 좁힐 수 있다.
+- 선택 district 캐시가 없을 때는 최신 캐시 row 하나로 fallback한다. 향후 지역별 표본이 충분해지면 모든 선택 구/시를 100% exact sample로 채운다.
