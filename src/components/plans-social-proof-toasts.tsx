@@ -104,7 +104,15 @@ export default function PlansSocialProofToasts({
   events: PlansSocialProofEvent[];
 }) {
   const queue = useMemo(() => {
-    const merged = [...events, ...FALLBACK_EVENTS];
+    const rotation = Math.floor(Date.now() / 600_000) % FALLBACK_EVENTS.length;
+    const rotatedFallback = [
+      ...FALLBACK_EVENTS.slice(rotation),
+      ...FALLBACK_EVENTS.slice(0, rotation),
+    ];
+    const merged = rotatedFallback.flatMap((fallbackEvent, index) => {
+      const realEvent = events[index];
+      return realEvent ? [fallbackEvent, realEvent] : [fallbackEvent];
+    });
     return merged.slice(0, Math.max(12, Math.min(32, merged.length)));
   }, [events]);
   const [index, setIndex] = useState(-1);

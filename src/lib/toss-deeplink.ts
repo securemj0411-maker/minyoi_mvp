@@ -34,8 +34,8 @@ export function buildKakaopayQrUrl(amount: number): string {
   return KAKAOPAY_QR_BY_AMOUNT[amount] ?? KAKAOPAY_QR_BASE_URL;
 }
 
-const TOSS_BANK_PARAM = "우리은행"; // Wave 774b — 풀네임 (짧은 "우리" 는 토스에서 인식 안 됨)
-const ACCOUNT_RAW = "1002367160511";
+const TOSS_BANK_PARAM = "케이뱅크";
+const ACCOUNT_RAW = "100300138855";
 export const TOSS_APP_STORE_URL = "https://apps.apple.com/kr/app/id839333328";
 export const TOSS_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=viva.republica.toss";
 

@@ -17,10 +17,10 @@ import { displayNameForUser } from "@/lib/auth-users";
 import { formatKrw, planForKey, type PlanKey } from "@/lib/plan-config";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
-const BANK_NAME = "우리은행";
-const ACCOUNT_NUMBER = "1002-367-160511";
-const ACCOUNT_RAW = "1002367160511";
-const ACCOUNT_HOLDER = "이민제";
+const BANK_NAME = "케이뱅크";
+const ACCOUNT_NUMBER = "100300138855";
+const ACCOUNT_RAW = "100300138855";
+const ACCOUNT_HOLDER = "더빙나우";
 // Wave 775 (2026-05-27): toss-deeplink helper 는 src/lib/toss-deeplink.ts 로 이동.
 
 const CREDIT_PACKAGE_TO_PLAN: Record<string, Exclude<PlanKey, "free">> = {

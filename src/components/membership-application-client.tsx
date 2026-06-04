@@ -14,9 +14,9 @@ import {
 } from "@/lib/membership-plans";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
-const BANK_NAME = "우리은행";
-const ACCOUNT_NUMBER = "1002-367-160511";
-const ACCOUNT_HOLDER = "이민제";
+const BANK_NAME = "케이뱅크";
+const ACCOUNT_NUMBER = "100300138855";
+const ACCOUNT_HOLDER = "더빙나우";
 
 type ApplyState = "idle" | "submitting" | "sent" | "error";
 type DepositNotifyState = "idle" | "sending" | "sent" | "error";

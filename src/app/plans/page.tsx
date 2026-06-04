@@ -77,6 +77,7 @@ const MEMBER_PASS_SIGNALS = [
 
 const SOCIAL_PROOF_SURNAMES = [
   "김",
+  "이",
   "박",
   "최",
   "정",
@@ -122,6 +123,9 @@ const SOCIAL_PROOF_SURNAMES = [
   "채",
   "원",
   "천",
+  "방",
+  "공",
+  "현",
 ];
 
 function MembershipCapPanel({
@@ -316,16 +320,9 @@ function loadSlotSnapshot(): SlotSnapshot {
 }
 
 function maskedMemberLabel(
-  row: Pick<SocialProofApplicationRow, "display_name" | "email">,
+  row: Pick<SocialProofApplicationRow, "id" | "display_name" | "email">,
 ) {
-  const name = String(row.display_name ?? "").trim();
-  if (name) return `${name.slice(0, 1)}**님`;
-  const local =
-    String(row.email ?? "")
-      .split("@")[0]
-      ?.trim() ?? "";
-  if (local) return `${local.slice(0, 1)}**님`;
-  const seed = `${row.email ?? ""}${row.display_name ?? ""}`;
+  const seed = `${row.id}:${row.email ?? ""}:${row.display_name ?? ""}`;
   const codeSum = Array.from(seed || "member").reduce(
     (sum, char) => sum + char.charCodeAt(0),
     0,
