@@ -32,6 +32,120 @@ type RegionSeat = {
   districts: DistrictSeat[];
 };
 
+function makeDistrictSeats(names: string[], baseSeats: number, basePressure: number): DistrictSeat[] {
+  return names.map((name, index) => ({
+    name,
+    seats: Math.max(1, baseSeats - (index % 3)),
+    pressure: Math.max(0.32, Math.min(0.9, basePressure - (index % 5) * 0.035)),
+  }));
+}
+
+const DISTRICT_OVERRIDES: Record<string, DistrictSeat[]> = {
+  seoul: makeDistrictSeats(
+    [
+      "강남구",
+      "송파구",
+      "관악구",
+      "마포구",
+      "성동구",
+      "노원구",
+      "서초구",
+      "용산구",
+      "영등포구",
+      "동작구",
+      "강서구",
+      "강동구",
+      "중구",
+      "종로구",
+      "은평구",
+      "서대문구",
+      "구로구",
+      "금천구",
+      "광진구",
+      "동대문구",
+      "중랑구",
+      "성북구",
+      "강북구",
+      "도봉구",
+      "양천구",
+    ],
+    3,
+    0.86,
+  ),
+  gyeonggi: makeDistrictSeats(
+    [
+      "수원시",
+      "성남시",
+      "용인시",
+      "고양시",
+      "화성시",
+      "부천시",
+      "남양주시",
+      "안산시",
+      "안양시",
+      "평택시",
+      "시흥시",
+      "파주시",
+      "김포시",
+      "의정부시",
+      "광주시",
+      "하남시",
+      "광명시",
+      "군포시",
+      "오산시",
+      "이천시",
+      "양주시",
+      "구리시",
+      "안성시",
+      "포천시",
+      "의왕시",
+      "양평군",
+      "여주시",
+      "동두천시",
+      "과천시",
+      "가평군",
+      "연천군",
+    ],
+    4,
+    0.78,
+  ),
+  incheon: makeDistrictSeats(["연수구", "부평구", "서구", "남동구", "미추홀구", "계양구", "중구", "동구", "강화군", "옹진군"], 3, 0.72),
+  busan: makeDistrictSeats(["해운대구", "수영구", "부산진구", "동래구", "남구", "연제구", "사하구", "북구", "금정구", "강서구", "기장군", "중구", "서구", "동구", "영도구", "사상구"], 3, 0.82),
+  daegu: makeDistrictSeats(["수성구", "달서구", "동구", "중구", "서구", "남구", "북구", "달성군", "군위군"], 3, 0.7),
+  daejeon: makeDistrictSeats(["서구", "유성구", "중구", "동구", "대덕구"], 3, 0.62),
+  gwangju: makeDistrictSeats(["북구", "광산구", "서구", "동구", "남구"], 3, 0.56),
+  ulsan: makeDistrictSeats(["남구", "중구", "울주군", "동구", "북구"], 3, 0.66),
+  sejong: makeDistrictSeats(["새롬동", "도담동", "어진동", "나성동", "조치원읍", "반곡동"], 2, 0.58),
+  gangwon: makeDistrictSeats(["춘천시", "원주시", "강릉시", "속초시", "동해시", "삼척시", "태백시", "홍천군", "횡성군", "평창군"], 4, 0.48),
+  chungbuk: makeDistrictSeats(["청주시", "충주시", "제천시", "음성군", "진천군", "증평군", "옥천군", "영동군", "단양군", "보은군", "괴산군"], 4, 0.51),
+  chungnam: makeDistrictSeats(["천안시", "아산시", "공주시", "당진시", "서산시", "논산시", "보령시", "계룡시", "홍성군", "예산군", "부여군", "태안군"], 4, 0.56),
+  jeonbuk: makeDistrictSeats(["전주시", "군산시", "익산시", "완주군", "정읍시", "남원시", "김제시", "무주군", "고창군", "부안군"], 4, 0.49),
+  jeonnam: makeDistrictSeats(["목포시", "여수시", "순천시", "나주시", "광양시", "무안군", "해남군", "화순군", "고흥군", "영암군"], 3, 0.43),
+  gyeongbuk: makeDistrictSeats(["포항시", "구미시", "경산시", "경주시", "안동시", "김천시", "영주시", "상주시", "문경시", "칠곡군"], 3, 0.55),
+  gyeongnam: makeDistrictSeats(["창원시", "김해시", "진주시", "양산시", "거제시", "통영시", "사천시", "밀양시", "함안군", "창녕군"], 4, 0.59),
+  jeju: makeDistrictSeats(["제주시", "서귀포시"], 4, 0.37),
+};
+
+const REGION_PATHS: Record<string, string> = {
+  seoul: "M116 67L131 65L139 76L133 90L116 91L107 80Z",
+  incheon: "M84 78L106 72L112 91L96 104L82 96Z",
+  gyeonggi: "M105 42L158 43L178 72L166 126L130 139L96 117L92 82Z",
+  gangwon: "M157 30L217 48L244 88L225 136L178 126L167 70Z",
+  chungbuk: "M142 132L184 126L201 174L171 205L133 190Z",
+  chungnam: "M86 136L136 128L134 196L93 216L62 188Z",
+  sejong: "M125 176L143 174L146 190L132 200L121 190Z",
+  daejeon: "M130 194L151 190L156 211L137 222L122 210Z",
+  jeonbuk: "M80 216L141 212L156 252L127 287L77 270Z",
+  gwangju: "M91 287L117 282L125 306L103 320L83 306Z",
+  jeonnam: "M65 271L132 284L151 330L119 360L64 337L47 309Z",
+  gyeongbuk: "M178 170L228 145L254 193L238 245L194 241L166 204Z",
+  daegu: "M188 223L213 217L222 239L202 255L181 242Z",
+  ulsan: "M226 244L257 244L266 268L239 283L218 265Z",
+  gyeongnam: "M151 255L211 244L231 287L203 325L145 318L124 286Z",
+  busan: "M207 305L239 286L256 305L241 329L213 331Z",
+  jeju: "M82 365C101 354 128 354 150 365C132 379 101 380 82 365Z",
+};
+
 const REGIONS: RegionSeat[] = [
   { key: "seoul", shortLabel: "서울", label: "서울특별시", seats: 38, pressure: 0.82, x: 125, y: 76, districts: [{ name: "강남구", seats: 2, pressure: 0.88 }, { name: "송파구", seats: 3, pressure: 0.8 }, { name: "관악구", seats: 3, pressure: 0.74 }, { name: "마포구", seats: 2, pressure: 0.86 }] },
   { key: "incheon", shortLabel: "인천", label: "인천광역시", seats: 18, pressure: 0.67, x: 94, y: 91, districts: [{ name: "연수구", seats: 2, pressure: 0.78 }, { name: "부평구", seats: 2, pressure: 0.74 }, { name: "서구", seats: 3, pressure: 0.62 }, { name: "남동구", seats: 2, pressure: 0.69 }] },
@@ -81,14 +195,22 @@ function pressureLabel(pressure: number) {
 
 function KoreaSeatMap({
   selected,
+  hoveredKey,
   onSelect,
+  onHover,
 }: {
   selected: RegionSeat;
+  hoveredKey: string | null;
   onSelect: (key: string) => void;
+  onHover: (key: string | null) => void;
 }) {
+  const activeRegion =
+    REGIONS.find((region) => region.key === (hoveredKey ?? selected.key)) ??
+    selected;
+
   return (
     <svg
-      viewBox="25 0 255 398"
+      viewBox="30 20 250 365"
       role="img"
       aria-label="대한민국 남한 지역별 멤버십 티오 지도"
       className="h-full w-full overflow-visible"
@@ -96,6 +218,9 @@ function KoreaSeatMap({
       <defs>
         <filter id="plans-korea-shadow" x="-20%" y="-20%" width="140%" height="140%">
           <feDropShadow dx="0" dy="14" stdDeviation="12" floodColor="#020617" floodOpacity="0.2" />
+        </filter>
+        <filter id="plans-region-pop" x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx="0" dy="10" stdDeviation="9" floodColor="#2563eb" floodOpacity="0.28" />
         </filter>
       </defs>
       <path
@@ -114,7 +239,8 @@ function KoreaSeatMap({
       <ellipse cx="113" cy="377" rx="35" ry="12" fill="currentColor" className="text-zinc-100 dark:text-zinc-900" />
       <ellipse cx="113" cy="377" rx="35" ry="12" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-300 dark:text-zinc-700" />
       {REGIONS.map((region) => {
-        const active = region.key === selected.key;
+        const active = region.key === selected.key || region.key === hoveredKey;
+        const pathD = REGION_PATHS[region.key];
         return (
           <g
             key={region.key}
@@ -123,6 +249,10 @@ function KoreaSeatMap({
             aria-label={`${region.label} 티오 ${region.seats}석`}
             className="cursor-pointer outline-none"
             onClick={() => onSelect(region.key)}
+            onMouseEnter={() => onHover(region.key)}
+            onMouseLeave={() => onHover(null)}
+            onFocus={() => onHover(region.key)}
+            onBlur={() => onHover(null)}
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
@@ -130,14 +260,28 @@ function KoreaSeatMap({
               }
             }}
           >
+            <path
+              d={pathD}
+              fill={pressureFill(region.pressure)}
+              opacity={active ? 0.96 : 0.6}
+              stroke={active ? "#ffffff" : "rgba(255,255,255,0.55)"}
+              strokeWidth={active ? 3 : 1.5}
+              filter={active ? "url(#plans-region-pop)" : undefined}
+              className="transition-all duration-200 ease-out"
+              style={{
+                transform: active ? "scale(1.045)" : "scale(1)",
+                transformBox: "fill-box",
+                transformOrigin: "center",
+              }}
+            />
             <circle
               cx={region.x}
               cy={region.y}
-              r={active ? 16 : 11}
-              fill={pressureFill(region.pressure)}
-              opacity={active ? 1 : 0.78}
-              stroke={active ? "#fff" : "rgba(255,255,255,0.76)"}
-              strokeWidth={active ? 4 : 2}
+              r={active ? 15 : 10}
+              fill="rgba(15,23,42,0.62)"
+              stroke="rgba(255,255,255,0.78)"
+              strokeWidth={active ? 2.5 : 1.5}
+              className="transition-all duration-200"
             />
             <text
               x={region.x}
@@ -158,20 +302,34 @@ function KoreaSeatMap({
           </g>
         );
       })}
-    </svg>
-  );
-}
-
-function StepDots({ step }: { step: number }) {
-  return (
-    <div className="flex items-center gap-1.5">
-      {[0, 1, 2, 3].map((idx) => (
-        <span
-          key={idx}
-          className={`h-1.5 rounded-full transition-all ${idx === step ? "w-7 bg-[#3182f6]" : "w-1.5 bg-zinc-300 dark:bg-zinc-700"}`}
+      <g className="pointer-events-none">
+        <rect
+          x={Math.max(42, Math.min(176, activeRegion.x - 40))}
+          y={Math.max(34, activeRegion.y - 52)}
+          width="82"
+          height="31"
+          rx="12"
+          fill="rgba(15,23,42,0.86)"
+          stroke="rgba(255,255,255,0.22)"
         />
-      ))}
-    </div>
+        <text
+          x={Math.max(42, Math.min(176, activeRegion.x - 40)) + 41}
+          y={Math.max(34, activeRegion.y - 52) + 13}
+          textAnchor="middle"
+          className="fill-white text-[9px] font-black"
+        >
+          {activeRegion.shortLabel}
+        </text>
+        <text
+          x={Math.max(42, Math.min(176, activeRegion.x - 40)) + 41}
+          y={Math.max(34, activeRegion.y - 52) + 25}
+          textAnchor="middle"
+          className="fill-blue-100 text-[8px] font-black"
+        >
+          {activeRegion.seats}자리 남음
+        </text>
+      </g>
+    </svg>
   );
 }
 
@@ -194,10 +352,12 @@ export default function PlansApplicationFlow({
 }) {
   const [step, setStep] = useState(0);
   const [selectedKey, setSelectedKey] = useState("seoul");
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const selected = useMemo(
     () => REGIONS.find((region) => region.key === selectedKey) ?? REGIONS[0],
     [selectedKey],
   );
+  const selectedDistricts = DISTRICT_OVERRIDES[selected.key] ?? selected.districts;
   const filledPct = Math.round((filled / capacity) * 100);
   const canGoBack = step > 0;
   const isLast = step === 3;
@@ -214,50 +374,33 @@ export default function PlansApplicationFlow({
     <main className="fixed inset-0 z-[75] overflow-hidden bg-[#f4f7fb] text-zinc-950 dark:bg-zinc-950 dark:text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(49,130,246,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.18),transparent_34%)]" />
       <div className="relative mx-auto flex h-full w-full max-w-[1180px] flex-col px-3 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-[calc(env(safe-area-inset-top)+12px)] sm:px-5 sm:py-5">
-        <header className="flex h-11 shrink-0 items-center justify-between gap-3">
-          <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[#3182f6] dark:text-blue-300">
-              단 300명 회원제
-            </div>
-            <div className="mt-0.5 text-[16px] font-black tracking-tight">
-              선공개 300명 신청
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <StepDots step={step} />
-            <div className="rounded-full bg-zinc-950 px-3 py-1.5 text-[11px] font-black text-white dark:bg-white dark:text-zinc-950">
-              {step + 1}/4
-            </div>
-          </div>
-        </header>
-
-        <section className="mt-3 min-h-0 flex-1 overflow-hidden rounded-[30px] border border-zinc-200 bg-white shadow-[0_24px_90px_rgba(15,23,42,0.14)] dark:border-zinc-800 dark:bg-zinc-900">
+        <section className="relative min-h-0 flex-1 overflow-hidden rounded-[30px] border border-zinc-200 bg-white shadow-[0_24px_90px_rgba(15,23,42,0.14)] dark:border-zinc-800 dark:bg-zinc-900">
           {step === 0 ? (
             <div className="grid h-full min-h-0 gap-0 lg:grid-cols-[minmax(0,1fr)_340px]">
-              <div className="min-h-0 border-b border-zinc-200 p-4 dark:border-zinc-800 sm:p-6 lg:border-b-0 lg:border-r">
+              <div className="min-h-0 border-b border-zinc-200 p-4 pb-2 dark:border-zinc-800 sm:p-6 lg:border-b-0 lg:border-r">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h1 className="break-keep text-[28px] font-black leading-[1.02] tracking-tight sm:text-[44px]">
-                      지역 티오부터
+                  <div className="min-w-0">
+                    <h1 className="break-keep pr-10 text-[24px] font-black leading-[1.02] tracking-tight sm:text-[44px]">
+                      우리 동네 매물을
                       <br />
-                      확인합니다.
+                      먼저 독점하세요.
                     </h1>
-                    <p className="mt-3 max-w-[520px] break-keep text-[13px] font-bold leading-5 text-zinc-500 dark:text-zinc-400 sm:text-[15px] sm:leading-6">
-                      전국을 무제한으로 열지 않고, 권역별 접근 수를 먼저 봅니다. 지도에서 내 지역을 눌러 티오를 확인하세요.
+                    <p className="mt-2 max-w-[520px] break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400 sm:text-[15px] sm:leading-6">
+                      지역을 누르면 구·시 단위 티오까지 바로 확인합니다.
                     </p>
                   </div>
-                  <div className="shrink-0 rounded-[22px] bg-zinc-950 px-4 py-3 text-right text-white dark:bg-white dark:text-zinc-950">
-                    <div className="text-[9px] font-black uppercase tracking-[0.14em] opacity-60">현재 예약</div>
-                    <div className="mt-0.5 text-[24px] font-black tabular-nums">{filled}/{capacity}</div>
+                  <div className="mt-9 shrink-0 rounded-full bg-blue-600 px-3 py-2 text-right text-white shadow-[0_12px_34px_rgba(37,99,235,0.3)] sm:mt-0 sm:px-4">
+                    <div className="text-[9px] font-black opacity-80">현재 예약</div>
+                    <div className="text-[18px] font-black tabular-nums sm:text-[24px]">{filled}/{capacity}</div>
                   </div>
                 </div>
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
                   <div
                     className="h-full rounded-r-full bg-[linear-gradient(90deg,#10b981,#3182f6,#1d4ed8)]"
                     style={{ width: `${Math.min(96, Math.max(18, filledPct))}%` }}
                   />
                 </div>
-                <div className="mt-3 flex items-center justify-between rounded-2xl border border-zinc-200 bg-[#fbfcff] px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/60 lg:hidden">
+                <div className="mt-2 flex items-center justify-between rounded-2xl border border-zinc-200 bg-[#fbfcff] px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/60 lg:hidden">
                   <div>
                     <div className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">
                       선택 지역
@@ -276,8 +419,24 @@ export default function PlansApplicationFlow({
                     </span>
                   </div>
                 </div>
-                <div className="mx-auto mt-2 h-[320px] min-h-0 max-w-[620px] sm:h-[calc(100%-184px)] sm:min-h-[280px] sm:max-h-[560px] lg:mt-2 lg:h-[calc(100%-148px)]">
-                  <KoreaSeatMap selected={selected} onSelect={setSelectedKey} />
+                <div className="mx-auto mt-1 h-[200px] min-h-0 max-w-[620px] sm:h-[calc(100%-184px)] sm:min-h-[280px] sm:max-h-[560px] lg:mt-2 lg:h-[calc(100%-148px)]">
+                  <KoreaSeatMap
+                    selected={selected}
+                    hoveredKey={hoveredKey}
+                    onSelect={setSelectedKey}
+                    onHover={setHoveredKey}
+                  />
+                </div>
+                <div className="mt-1 grid grid-cols-3 gap-1 lg:hidden">
+                  {selectedDistricts.map((district) => (
+                    <button
+                      key={district.name}
+                      type="button"
+                      className="h-6 truncate rounded-md border border-zinc-200 bg-[#fbfcff] px-1 text-[9px] font-black text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950/60 dark:text-zinc-200"
+                    >
+                      {district.name} {district.seats}
+                    </button>
+                  ))}
                 </div>
               </div>
               <aside className="hidden min-h-0 flex-col p-4 sm:p-5 lg:flex">
@@ -338,7 +497,7 @@ export default function PlansApplicationFlow({
                     대표 지역
                   </div>
                   <div className="mt-2 break-keep text-[12px] font-black leading-5">
-                    {selected.districts.map((district) => district.name).join(" · ")}
+                    {selectedDistricts.map((district) => district.name).join(" · ")}
                   </div>
                 </div>
               </aside>
