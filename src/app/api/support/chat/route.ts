@@ -93,7 +93,24 @@ export async function GET(req: NextRequest) {
     if (!result.auth.ok) return NextResponse.json({ error: result.auth.error }, { status: result.auth.status });
     if (!result.conversation) return NextResponse.json({ error: "conversation_missing" }, { status: 500 });
     const messages = await loadMessages(result.conversation.id);
-    return NextResponse.json({ conversation: result.conversation, messages });
+    const conversation =
+      result.conversation.user_unread_count > 0
+        ? { ...result.conversation, user_unread_count: 0 }
+        : result.conversation;
+    if (result.conversation.user_unread_count > 0) {
+      void restFetch(
+        `${tableUrl("mvp_support_conversations")}?id=eq.${result.conversation.id}`,
+        {
+          method: "PATCH",
+          headers: { ...serviceHeaders(), Prefer: "return=minimal" },
+          body: jsonBody({
+            user_unread_count: 0,
+            updated_at: new Date().toISOString(),
+          }),
+        },
+      ).catch(() => undefined);
+    }
+    return NextResponse.json({ conversation, messages });
   } catch (err) {
     console.error("[support/chat] GET failed", err instanceof Error ? err.message : String(err));
     return NextResponse.json({ error: "support_chat_failed" }, { status: 500 });

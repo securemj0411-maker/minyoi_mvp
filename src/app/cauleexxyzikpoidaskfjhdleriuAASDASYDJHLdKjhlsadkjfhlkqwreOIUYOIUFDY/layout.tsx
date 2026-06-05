@@ -39,10 +39,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!isAdminUser(auth.user)) notFound();
 
   return (
-    // Wave launch-123 (2026-05-24): forced `dark` class — cau 운영자 페이지 전체 강제 다크.
-    //   AdminPoolBrowser 같은 자식이 `dark:bg-zinc-900` 패턴 박혀 있는데, 사용자가 light mode 면 bg-white 적용.
-    //   subtree 에 `dark` class 박으면 모든 dark: variant 활성 — 운영자 페이지 강제 Bloomberg 톤.
-    <div className="dark min-h-screen bg-zinc-950 font-mono text-zinc-200">
+    // cau 운영자 페이지는 강제 다크로 고정한다. 운영 화면은 dense 하되 terminal 톤 대신 제품 운영 대시보드 톤으로 유지.
+    <div className="dark min-h-screen bg-zinc-950 text-zinc-200">
       <AdminTopBar />
       {children}
     </div>

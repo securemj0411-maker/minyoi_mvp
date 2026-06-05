@@ -61,8 +61,34 @@ export default function SiteHelpFaq() {
   const [message, setMessage] = useState("");
   const [loadState, setLoadState] = useState<"idle" | "loading" | "ready" | "error" | "login">("idle");
   const [sendState, setSendState] = useState<"idle" | "sending" | "error">("idle");
+  const [unreadCount, setUnreadCount] = useState(0);
   const titleId = useId();
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const lastUnreadCountRef = useRef(0);
+  const interactedRef = useRef(false);
+
+  function playReplySound() {
+    if (!interactedRef.current) return;
+    try {
+      const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const ctx = new AudioContextClass();
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = 880;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.045, ctx.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + 0.2);
+      window.setTimeout(() => void ctx.close().catch(() => undefined), 260);
+    } catch {
+      // Browser autoplay policy can block audio. Badge still carries the notification.
+    }
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -71,6 +97,29 @@ export default function SiteHelpFaq() {
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadUnreadStatus() {
+      const res = await fetch("/api/support/chat/status", { cache: "no-store" }).catch(() => null);
+      if (cancelled) return;
+      if (!res?.ok) {
+        if (res?.status === 401) setUnreadCount(0);
+        return;
+      }
+      const data = (await res.json().catch(() => null)) as { unreadCount?: number } | null;
+      const next = Math.max(0, Number(data?.unreadCount ?? 0));
+      if (!open && next > lastUnreadCountRef.current) playReplySound();
+      lastUnreadCountRef.current = next;
+      setUnreadCount(next);
+    }
+    void loadUnreadStatus();
+    const id = window.setInterval(loadUnreadStatus, 12_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
   }, [open]);
 
   useEffect(() => {
@@ -95,7 +144,10 @@ export default function SiteHelpFaq() {
       }
       setConversation(data.conversation);
       setMessages(data.messages ?? []);
+      setUnreadCount(0);
+      lastUnreadCountRef.current = 0;
       setLoadState("ready");
+      void fetch("/api/support/chat/read", { method: "POST" }).catch(() => undefined);
     }
     void loadChat();
     return () => {
@@ -121,6 +173,11 @@ export default function SiteHelpFaq() {
           const next = payload.new as SupportMessage;
           if (next.conversation_id !== conversation.id) return;
           setMessages((current) => mergeSupportMessage(current, next));
+          if (next.sender === "admin") {
+            setUnreadCount(0);
+            lastUnreadCountRef.current = 0;
+            void fetch("/api/support/chat/read", { method: "POST" }).catch(() => undefined);
+          }
         },
       )
       .subscribe();
@@ -183,12 +240,22 @@ export default function SiteHelpFaq() {
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          interactedRef.current = true;
+          setOpen(true);
+          setUnreadCount(0);
+          lastUnreadCountRef.current = 0;
+        }}
         aria-label="고객센터 열기"
         className="fixed bottom-[88px] right-4 z-[70] flex h-[52px] min-h-[52px] items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-600 px-4 py-3 text-sm font-black text-white shadow-[0_16px_42px_rgba(5,150,105,0.34)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 dark:border-emerald-300/20 dark:bg-emerald-500 dark:hover:bg-emerald-400 sm:bottom-5 sm:right-5"
       >
         <HeadsetIcon className="h-5 w-5" />
         <span className="hidden sm:inline">고객센터</span>
+        {unreadCount > 0 ? (
+          <span className="absolute -right-1.5 -top-1.5 flex min-h-6 min-w-6 items-center justify-center rounded-full border-2 border-white bg-rose-500 px-1.5 text-[11px] font-black text-white shadow-[0_8px_20px_rgba(244,63,94,0.4)] dark:border-zinc-950">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        ) : null}
       </button>
 
       {open ? (

@@ -6,7 +6,8 @@
 import Link from "next/link";
 
 import { OPS_ADMIN_REVEAL_ANALYTICS_PATH } from "@/lib/admin-routes";
-import { serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { approveMembershipApplication } from "@/lib/membership-application-approval";
+import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { userRefForAuthUser } from "@/lib/user-ref";
 import MembersTable, { type MemberRow } from "./members-table";
 import FeedbackPanel from "./feedback-panel";
@@ -77,6 +78,63 @@ type MembershipApplicationDbRow = {
   created_at: string;
 };
 
+type SupportConversationDbRow = {
+  id: number;
+  auth_user_id: string;
+  user_email: string | null;
+  user_display_name: string | null;
+  status: "open" | "closed";
+  admin_unread_count: number | null;
+  user_unread_count: number | null;
+  last_message_at: string;
+  created_at: string;
+};
+
+const UNPAID_RESERVATION_MS = 7 * 60_000;
+
+function adminNoteLine(message: string) {
+  return `[${new Date().toISOString()}] ${message}`;
+}
+
+async function reconcileMembershipApplicationsForAdmin() {
+  const nowIso = new Date().toISOString();
+  const unpaidCutoffIso = new Date(Date.now() - UNPAID_RESERVATION_MS).toISOString();
+
+  await restFetch(
+    `${tableUrl("mvp_membership_applications")}?status=eq.pending&deposit_confirmed_at=is.null&created_at=lt.${encodeURIComponent(unpaidCutoffIso)}`,
+    {
+      method: "PATCH",
+      headers: serviceHeaders("return=minimal"),
+      body: jsonBody({
+        status: "rejected",
+        decided_at: nowIso,
+        updated_at: nowIso,
+        admin_note: adminNoteLine("auto_expired_unpaid_reservation_7m_admin_view"),
+      }),
+    },
+  ).catch((err) => {
+    console.warn("[admin/members] unpaid reservation cleanup failed", err instanceof Error ? err.message : String(err));
+  });
+
+  const dueRes = await restFetch(
+    `${tableUrl("mvp_membership_applications")}?select=id&status=eq.pending&deposit_confirmed_at=not.is.null&scheduled_auto_approve_at=lte.${encodeURIComponent(nowIso)}&order=scheduled_auto_approve_at.asc&limit=30`,
+    { headers: serviceHeaders(), cache: "no-store" },
+  ).catch((err) => {
+    console.warn("[admin/members] due membership lookup failed", err instanceof Error ? err.message : String(err));
+    return null;
+  });
+  if (!dueRes?.ok) return;
+  const dueRows = (await dueRes.json().catch(() => [])) as Array<{ id: number }>;
+  for (const row of dueRows) {
+    if (!Number.isFinite(row.id)) continue;
+    try {
+      await approveMembershipApplication(row.id, "auto", null);
+    } catch (err) {
+      console.warn("[admin/members] inline auto approve failed", row.id, err instanceof Error ? err.message : String(err));
+    }
+  }
+}
+
 async function fetchAuthUsers(): Promise<AuthUser[]> {
   const base = (process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/$/, "");
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -117,7 +175,7 @@ async function fetchAllPlans(): Promise<PlanRow[]> {
 async function fetchMembershipApplications(): Promise<MembershipApplicationRow[]> {
   try {
     const res = await fetch(
-      `${tableUrl("mvp_membership_applications")}?select=id,user_ref,auth_user_id,email,display_name,application_kind,product_key,price_krw,status,admin_note,deposit_confirmed_at,scheduled_auto_approve_at,decided_at,created_at&order=status.asc,created_at.desc&limit=100`,
+      `${tableUrl("mvp_membership_applications")}?select=id,user_ref,auth_user_id,email,display_name,application_kind,product_key,price_krw,status,admin_note,deposit_confirmed_at,scheduled_auto_approve_at,decided_at,created_at&order=created_at.desc&limit=1000`,
       { headers: serviceHeaders(), cache: "no-store" },
     );
     if (!res.ok) return [];
@@ -138,6 +196,19 @@ async function fetchMembershipApplications(): Promise<MembershipApplicationRow[]
       decidedAt: row.decided_at,
       createdAt: row.created_at,
     }));
+  } catch {
+    return [];
+  }
+}
+
+async function fetchSupportConversations(): Promise<SupportConversationDbRow[]> {
+  try {
+    const res = await fetch(
+      `${tableUrl("mvp_support_conversations")}?select=id,auth_user_id,user_email,user_display_name,status,admin_unread_count,user_unread_count,last_message_at,created_at&order=last_message_at.desc&limit=500`,
+      { headers: serviceHeaders(), cache: "no-store" },
+    );
+    if (!res.ok) return [];
+    return (await res.json()) as SupportConversationDbRow[];
   } catch {
     return [];
   }
@@ -208,20 +279,34 @@ function profileImageUrlOf(user: AuthUser): string | null {
 
 export default async function MembersPage() {
   // admin auth 는 layout 에서 처리 (Wave launch-108).
-  const [users, credits, plans, applications] = await Promise.all([
+  await reconcileMembershipApplicationsForAdmin();
+
+  const [users, credits, plans, applications, supportConversations] = await Promise.all([
     fetchAuthUsers(),
     fetchAllCredits(),
     fetchAllPlans(),
     fetchMembershipApplications(),
+    fetchSupportConversations(),
   ]);
 
   const creditMap = new Map(credits.map((c) => [c.auth_user_id, c]));
   const planMap = new Map(plans.map((p) => [p.auth_user_id, p]));
+  const supportMap = new Map(supportConversations.map((conversation) => [conversation.auth_user_id, conversation]));
+  const applicationsByUser = new Map<string, MembershipApplicationRow[]>();
+  for (const application of applications) {
+    const list = applicationsByUser.get(application.authUserId) ?? [];
+    list.push(application);
+    applicationsByUser.set(application.authUserId, list);
+  }
 
   const rows: MemberRow[] = users
     .map((u) => {
       const credit = creditMap.get(u.id) ?? null;
       const plan = planMap.get(u.id) ?? null;
+      const userApplications = applicationsByUser.get(u.id) ?? [];
+      const approvedApplications = userApplications.filter((application) => application.status === "approved");
+      const latestApplication = userApplications[0] ?? null;
+      const support = supportMap.get(u.id) ?? null;
       return {
         authUserId: u.id,
         userRef: credit?.user_ref ?? userRefForAuthUser(u.id),
@@ -246,50 +331,112 @@ export default async function MembersPage() {
         dailyUsedCount: plan?.daily_used_count ?? null,
         lastPaymentAt: plan?.last_payment_at ?? null,
         lastPaymentAmount: plan?.last_payment_amount ?? null,
+        totalPaidKrw: approvedApplications.reduce((sum, application) => sum + Number(application.priceKrw ?? 0), 0),
+        applicationCount: userApplications.length,
+        lastApplicationId: latestApplication?.id ?? null,
+        lastApplicationStatus: latestApplication?.status ?? null,
+        lastApplicationKind: latestApplication?.applicationKind ?? null,
+        lastApplicationProductKey: latestApplication?.productKey ?? null,
+        lastApplicationAt: latestApplication?.createdAt ?? null,
+        supportConversationId: support?.id ?? null,
+        supportStatus: support?.status ?? null,
+        supportAdminUnreadCount: support?.admin_unread_count ?? 0,
+        supportUserUnreadCount: support?.user_unread_count ?? 0,
+        supportLastMessageAt: support?.last_message_at ?? null,
       };
     })
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-  return (
-    <main className="mx-auto w-full max-w-[1600px] px-4 pb-10 pt-4 sm:px-6">
-      <header className="mb-4 border-b border-zinc-800 pb-3">
-        <div className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-400">▌MEMBERS / OPERATORS</div>
-        <div className="mt-1 flex flex-wrap items-center gap-3">
-          <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-black tabular-nums text-zinc-50">{rows.length}</span>
-            <span className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">accounts</span>
-          </div>
-          <Link
-            href={OPS_ADMIN_REVEAL_ANALYTICS_PATH}
-            className="ml-auto inline-flex items-center gap-2 rounded-sm border border-emerald-700 bg-emerald-950/40 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-300 transition hover:border-emerald-500 hover:bg-emerald-950/70"
-          >
-            <span>전체 REVEAL 통계</span>
-            <span className="text-emerald-500">↗</span>
-          </Link>
-        </div>
-      </header>
+  const depositRequestedCount = applications.filter((row) => row.status === "pending" && row.depositConfirmedAt).length;
+  const unpaidReservationCount = applications.filter((row) => row.status === "pending" && !row.depositConfirmedAt).length;
+  const paidMemberCount = rows.filter((row) => {
+    const end = row.planEndAt ?? row.proUntil;
+    return row.planKey !== "free" && (!end || Date.parse(end) > Date.now());
+  }).length;
+  const totalMembershipRevenue = applications
+    .filter((row) => row.status === "approved")
+    .reduce((sum, row) => sum + Number(row.priceKrw ?? 0), 0);
+  const openSupportCount = supportConversations.filter((row) => row.status === "open").length;
+  const supportUnreadCount = supportConversations.reduce((sum, row) => sum + Number(row.admin_unread_count ?? 0), 0);
 
-      <MembershipApplicationsPanel initialRows={applications} />
-      <SupportChatPanel />
-      <FeedbackPanel />
-      <section className="mb-4 rounded-sm border border-emerald-800 bg-emerald-950/30 p-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+  return (
+    <main className="mx-auto w-full max-w-[1560px] px-4 pb-10 pt-5 sm:px-6">
+      <header className="mb-5 overflow-hidden rounded-[28px] border border-zinc-800 bg-[radial-gradient(circle_at_top_right,rgba(49,130,246,0.22),transparent_36%),linear-gradient(135deg,#111827,#020617)] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">▌전체 REVEAL 통계</div>
-            <p className="mt-1 text-[11px] font-bold text-zinc-400">
-              가격대 · 카테고리 · SKU · source · 원본 클릭률을 전체 사용자 기준으로 봅니다.
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-blue-300">운영 대시보드</div>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">
+              멤버십·입금·상담을 한눈에 봅니다
+            </h1>
+            <p className="mt-2 max-w-2xl break-keep text-sm font-bold leading-6 text-zinc-300">
+              입금 확인 요청, 자동승인 보정, 고객상담, 회원별 결제 흐름을 분리해서 운영자가 바로 처리할 수 있게 정리했습니다.
             </p>
           </div>
           <Link
             href={OPS_ADMIN_REVEAL_ANALYTICS_PATH}
-            className="inline-flex items-center gap-2 rounded-sm border border-emerald-600 bg-emerald-500/10 px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-emerald-200 transition hover:bg-emerald-500/20"
+            className="inline-flex h-11 items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-4 text-sm font-black text-emerald-200 transition hover:bg-emerald-400/20"
           >
-            전체 통계 페이지 열기
+            전체 통계 보기
             <span>↗</span>
           </Link>
         </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <OpsMetricCard label="입금 확인 요청" value={`${depositRequestedCount}건`} tone="blue" caption="입금했어요를 누른 신청" />
+          <OpsMetricCard label="입금 전 예약" value={`${unpaidReservationCount}건`} tone="amber" caption="7분 지나면 자동 만료" />
+          <OpsMetricCard label="열린 상담" value={`${openSupportCount}건`} tone="emerald" caption={supportUnreadCount > 0 ? `새 메시지 ${supportUnreadCount}개` : "미확인 메시지 없음"} />
+          <OpsMetricCard label="활성 멤버" value={`${paidMemberCount}명`} tone="violet" caption={`전체 계정 ${rows.length}명`} />
+          <OpsMetricCard label="누적 결제" value={`${totalMembershipRevenue.toLocaleString("ko-KR")}원`} tone="slate" caption="승인된 멤버십 신청 기준" />
+        </div>
+
+        <nav className="mt-5 flex flex-wrap gap-2 text-sm font-black">
+          <a href="#membership-payments" className="rounded-full bg-white px-4 py-2 text-zinc-950">입금 확인</a>
+          <a href="#customer-support" className="rounded-full border border-white/15 px-4 py-2 text-white hover:bg-white/10">고객상담</a>
+          <a href="#member-management" className="rounded-full border border-white/15 px-4 py-2 text-white hover:bg-white/10">회원 관리</a>
+          <a href="#feedback-review" className="rounded-full border border-white/15 px-4 py-2 text-white hover:bg-white/10">오류 신고</a>
+        </nav>
+      </header>
+
+      <section id="membership-payments" className="scroll-mt-28">
+        <MembershipApplicationsPanel initialRows={applications} />
       </section>
-      <MembersTable initialRows={rows} />
+      <section id="customer-support" className="scroll-mt-28">
+        <SupportChatPanel />
+      </section>
+      <section id="member-management" className="scroll-mt-28">
+        <MembersTable initialRows={rows} />
+      </section>
+      <section id="feedback-review" className="scroll-mt-28">
+        <FeedbackPanel />
+      </section>
     </main>
+  );
+}
+
+function OpsMetricCard({
+  label,
+  value,
+  caption,
+  tone,
+}: {
+  label: string;
+  value: string;
+  caption: string;
+  tone: "blue" | "amber" | "emerald" | "violet" | "slate";
+}) {
+  const toneClass = {
+    blue: "from-blue-500/24 to-blue-400/5 text-blue-100",
+    amber: "from-amber-500/24 to-amber-400/5 text-amber-100",
+    emerald: "from-emerald-500/24 to-emerald-400/5 text-emerald-100",
+    violet: "from-violet-500/24 to-violet-400/5 text-violet-100",
+    slate: "from-slate-400/18 to-white/5 text-zinc-100",
+  }[tone];
+
+  return (
+    <div className={`rounded-2xl border border-white/10 bg-gradient-to-br ${toneClass} p-4`}>
+      <div className="text-[12px] font-black text-white/62">{label}</div>
+      <div className="mt-2 text-2xl font-black tabular-nums text-white">{value}</div>
+      <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-white/58">{caption}</div>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useState } from "react";
 
 type SupportMessage = {
   id: number;
@@ -26,7 +26,16 @@ type SupportConversation = {
 function dateLabel(value: string) {
   const d = new Date(value);
   if (!Number.isFinite(d.getTime())) return "-";
-  return d.toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleString("ko-KR", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function conversationName(row: SupportConversation) {
+  return row.user_display_name || row.user_email || `상담 #${row.id}`;
 }
 
 export default function SupportChatPanel() {
@@ -43,6 +52,8 @@ export default function SupportChatPanel() {
   );
   const selectedConversationId = selected?.id ?? null;
   const selectedAdminUnreadCount = selected?.admin_unread_count ?? 0;
+  const openCount = rows.filter((row) => row.status === "open").length;
+  const unreadCount = rows.reduce((sum, row) => sum + Number(row.admin_unread_count ?? 0), 0);
 
   async function load() {
     setLoading(true);
@@ -70,13 +81,21 @@ export default function SupportChatPanel() {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ conversationId: selectedConversationId }),
-    }).then(() => {
-      setRows((current) => current.map((row) => row.id === selectedConversationId ? { ...row, admin_unread_count: 0 } : row));
-    }).catch(() => undefined);
+    })
+      .then(() => {
+        setRows((current) =>
+          current.map((row) =>
+            row.id === selectedConversationId
+              ? { ...row, admin_unread_count: 0 }
+              : row,
+          ),
+        );
+      })
+      .catch(() => undefined);
   }, [selectedConversationId, selectedAdminUnreadCount]);
 
-  async function sendReply(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function sendReply(event?: FormEvent<HTMLFormElement>) {
+    event?.preventDefault();
     if (!selected || !reply.trim()) return;
     setReplying(true);
     setNotice(null);
@@ -93,8 +112,15 @@ export default function SupportChatPanel() {
       setNotice("답장 전송 실패");
       return;
     }
-    setNotice("답장 전송 완료");
+    setNotice("답장을 보냈어요. 사용자 고객센터 버튼에 안 읽은 표시가 뜹니다.");
     await load();
+  }
+
+  function handleReplyKeyDown(event: ReactKeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== "Enter" || event.shiftKey) return;
+    event.preventDefault();
+    if (replying || !reply.trim()) return;
+    void sendReply();
   }
 
   async function toggleStatus() {
@@ -106,37 +132,51 @@ export default function SupportChatPanel() {
       body: JSON.stringify({ conversationId: selected.id, status: nextStatus }),
     }).catch(() => null);
     if (!res?.ok) {
-      setNotice("상태 변경 실패");
+      setNotice("상담 상태 변경 실패");
       return;
     }
     await load();
   }
 
   return (
-    <section className="mb-4 rounded-sm border border-emerald-800 bg-zinc-950/80 p-3">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">▌CUSTOMER CENTER</div>
-          <h2 className="mt-1 text-lg font-black text-zinc-50">1대1 고객상담</h2>
-          <p className="mt-1 text-[11px] font-bold text-zinc-500">사용자가 우하단 고객센터에서 남긴 채팅입니다.</p>
+    <section className="mb-5 overflow-hidden rounded-[28px] border border-zinc-800 bg-zinc-950 shadow-[0_20px_70px_rgba(0,0,0,0.24)]">
+      <div className="border-b border-zinc-800 bg-zinc-900/70 px-5 py-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-emerald-300">
+              고객상담
+            </div>
+            <h2 className="mt-1 text-2xl font-black tracking-tight text-white">1대1 상담 채팅</h2>
+            <p className="mt-1 text-sm font-bold leading-6 text-zinc-400">
+              사용자가 우하단 고객센터에서 보낸 메시지입니다. 답장하면 사용자 버튼에 안 읽은 표시가 뜹니다.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <StatusBadge label="열린 상담" value={openCount} />
+            <StatusBadge label="새 메시지" value={unreadCount} hot={unreadCount > 0} />
+            <button
+              type="button"
+              onClick={() => void load()}
+              className="h-12 rounded-2xl border border-zinc-700 px-4 text-sm font-black text-zinc-100 transition hover:bg-zinc-800"
+            >
+              {loading ? "불러오는 중" : "새로고침"}
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => void load()}
-          className="rounded-sm border border-zinc-700 px-3 py-2 text-[11px] font-black text-zinc-200 hover:bg-zinc-900"
-        >
-          {loading ? "새로고침 중" : "새로고침"}
-        </button>
       </div>
 
-      {notice ? <div className="mb-3 rounded-sm bg-emerald-500/10 px-3 py-2 text-[11px] font-bold text-emerald-200">{notice}</div> : null}
+      {notice ? (
+        <div className="mx-5 mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm font-black text-emerald-100">
+          {notice}
+        </div>
+      ) : null}
 
-      <div className="grid min-h-[420px] gap-3 lg:grid-cols-[360px_minmax(0,1fr)]">
-        <div className="overflow-hidden rounded-sm border border-zinc-800 bg-zinc-950">
+      <div className="grid min-h-[580px] gap-0 lg:grid-cols-[380px_minmax(0,1fr)]">
+        <aside className="border-b border-zinc-800 lg:border-b-0 lg:border-r">
           {rows.length === 0 ? (
-            <div className="p-4 text-sm font-bold text-zinc-500">아직 상담이 없습니다.</div>
+            <div className="p-5 text-sm font-bold text-zinc-500">아직 상담이 없습니다.</div>
           ) : (
-            <div className="max-h-[520px] overflow-y-auto">
+            <div className="max-h-[580px] overflow-y-auto">
               {rows.map((row) => {
                 const active = selected?.id === row.id;
                 const last = row.messages[row.messages.length - 1];
@@ -145,24 +185,26 @@ export default function SupportChatPanel() {
                     key={row.id}
                     type="button"
                     onClick={() => setSelectedId(row.id)}
-                    className={`block w-full border-b border-zinc-900 px-3 py-3 text-left transition ${active ? "bg-emerald-950/35" : "hover:bg-zinc-900/80"}`}
+                    className={`block w-full border-b border-zinc-900 px-4 py-4 text-left transition ${
+                      active ? "bg-emerald-500/10" : "hover:bg-zinc-900/80"
+                    }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="min-w-0 text-sm font-black text-zinc-100">
-                        {row.user_display_name || "이름 없음"}
+                      <div className="min-w-0 truncate text-sm font-black text-zinc-100">
+                        {conversationName(row)}
                       </div>
                       {row.admin_unread_count > 0 ? (
-                        <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-black text-zinc-950">
-                          새 메시지 {row.admin_unread_count}
+                        <span className="rounded-full bg-emerald-400 px-2 py-0.5 text-[11px] font-black text-zinc-950">
+                          {row.admin_unread_count}
                         </span>
                       ) : null}
                     </div>
-                    <div className="mt-1 truncate text-[11px] font-bold text-zinc-500">{row.user_email || "-"}</div>
-                    <div className="mt-2 line-clamp-2 text-[12px] font-semibold leading-5 text-zinc-300">
+                    <div className="mt-1 truncate text-xs font-bold text-zinc-500">{row.user_email || "-"}</div>
+                    <div className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-zinc-300">
                       {last?.body ?? "대화 없음"}
                     </div>
-                    <div className="mt-2 flex items-center justify-between text-[10px] font-bold text-zinc-600">
-                      <span>{row.status}</span>
+                    <div className="mt-3 flex items-center justify-between text-xs font-bold text-zinc-600">
+                      <span>{row.status === "open" ? "진행 중" : "종료"}</span>
                       <span>{dateLabel(row.last_message_at)}</span>
                     </div>
                   </button>
@@ -170,51 +212,62 @@ export default function SupportChatPanel() {
               })}
             </div>
           )}
-        </div>
+        </aside>
 
-        <div className="flex min-h-0 flex-col rounded-sm border border-zinc-800 bg-zinc-950">
+        <div className="flex min-h-0 flex-col bg-zinc-950">
           {selected ? (
             <>
-              <div className="border-b border-zinc-800 px-3 py-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
+              <header className="border-b border-zinc-800 px-5 py-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <div className="text-sm font-black text-zinc-50">{selected.user_display_name || "이름 없음"}</div>
-                    <div className="mt-1 text-[11px] font-bold text-zinc-500">{selected.user_email || "-"}</div>
+                    <div className="text-lg font-black text-zinc-50">{conversationName(selected)}</div>
+                    <div className="mt-1 text-sm font-bold text-zinc-500">{selected.user_email || "-"}</div>
                   </div>
                   <button
                     type="button"
                     onClick={() => void toggleStatus()}
-                    className="rounded-sm border border-zinc-700 px-3 py-2 text-[11px] font-black text-zinc-200 hover:bg-zinc-900"
+                    className="h-10 rounded-full border border-zinc-700 px-4 text-sm font-black text-zinc-100 transition hover:bg-zinc-800"
                   >
                     {selected.status === "open" ? "상담 종료" : "다시 열기"}
                   </button>
                 </div>
-              </div>
-              <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-4">
+              </header>
+
+              <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-zinc-950 px-5 py-5">
                 {selected.messages.map((message) => {
                   const fromAdmin = message.sender === "admin";
                   return (
                     <div key={message.id} className={`flex ${fromAdmin ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[78%] rounded-2xl px-3 py-2 text-[13px] font-semibold leading-5 ${fromAdmin ? "bg-emerald-600 text-white" : "bg-zinc-900 text-zinc-100 ring-1 ring-zinc-800"}`}>
-                        <div className="mb-1 text-[10px] font-black opacity-70">{fromAdmin ? (message.admin_name || "상담원") : "사용자"} · {dateLabel(message.created_at)}</div>
+                      <div
+                        className={`max-w-[78%] rounded-3xl px-4 py-3 text-sm font-semibold leading-6 shadow-sm ${
+                          fromAdmin
+                            ? "rounded-tr-md bg-emerald-500 text-white"
+                            : "rounded-tl-md bg-zinc-900 text-zinc-100 ring-1 ring-zinc-800"
+                        }`}
+                      >
+                        <div className={`mb-1 text-[11px] font-black ${fromAdmin ? "text-emerald-50" : "text-zinc-500"}`}>
+                          {fromAdmin ? message.admin_name || "상담원" : "사용자"} · {dateLabel(message.created_at)}
+                        </div>
                         <div className="whitespace-pre-wrap break-words">{message.body}</div>
                       </div>
                     </div>
                   );
                 })}
               </div>
-              <form onSubmit={sendReply} className="border-t border-zinc-800 p-3">
+
+              <form onSubmit={sendReply} className="border-t border-zinc-800 bg-zinc-900/70 p-4">
                 <textarea
                   value={reply}
                   onChange={(event) => setReply(event.target.value)}
-                  placeholder="상담원 답변 입력"
-                  className="min-h-20 w-full resize-none rounded-sm border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm font-semibold text-zinc-100 outline-none focus:border-emerald-500"
+                  onKeyDown={handleReplyKeyDown}
+                  placeholder="상담원 답변 입력 · Enter 전송 · Shift+Enter 줄바꿈"
+                  className="min-h-24 w-full resize-none rounded-2xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm font-semibold leading-6 text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/10"
                 />
-                <div className="mt-2 flex justify-end">
+                <div className="mt-3 flex justify-end">
                   <button
                     type="submit"
                     disabled={replying || !reply.trim()}
-                    className="rounded-sm bg-emerald-500 px-4 py-2 text-[12px] font-black text-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="h-11 rounded-full bg-emerald-400 px-5 text-sm font-black text-zinc-950 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {replying ? "전송 중" : "상담원으로 답장"}
                   </button>
@@ -227,5 +280,18 @@ export default function SupportChatPanel() {
         </div>
       </div>
     </section>
+  );
+}
+
+function StatusBadge({ label, value, hot = false }: { label: string; value: number; hot?: boolean }) {
+  return (
+    <div className={`min-w-[92px] rounded-2xl border px-3 py-2 text-center ${
+      hot
+        ? "border-emerald-300/30 bg-emerald-400/14 text-emerald-100"
+        : "border-zinc-700 bg-zinc-900 text-zinc-100"
+    }`}>
+      <div className="text-xl font-black tabular-nums">{value}</div>
+      <div className="mt-0.5 text-[11px] font-black text-white/58">{label}</div>
+    </div>
   );
 }

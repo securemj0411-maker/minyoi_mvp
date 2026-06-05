@@ -33,6 +33,18 @@ export type MemberRow = {
   dailyUsedCount: number | null;
   lastPaymentAt: string | null;
   lastPaymentAmount: number | null;
+  totalPaidKrw: number;
+  applicationCount: number;
+  lastApplicationId: number | null;
+  lastApplicationStatus: string | null;
+  lastApplicationKind: "new" | "renewal" | null;
+  lastApplicationProductKey: string | null;
+  lastApplicationAt: string | null;
+  supportConversationId: number | null;
+  supportStatus: "open" | "closed" | null;
+  supportAdminUnreadCount: number;
+  supportUserUnreadCount: number;
+  supportLastMessageAt: string | null;
 };
 
 const KST_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
@@ -51,6 +63,26 @@ function fmt(value: string | null | undefined): string {
 
 const PAGE_SIZE = 50;
 
+function krw(value: number | null | undefined): string {
+  return `${Math.round(Number(value ?? 0)).toLocaleString("ko-KR")}원`;
+}
+
+function memberPlanLabel(row: MemberRow): string {
+  const end = row.planEndAt ?? row.proUntil;
+  const isActivePaid = row.planKey !== "free" && (!end || Date.parse(end) > Date.now());
+  if (row.blockedAt) return "차단";
+  if (isActivePaid) return "프로 멤버";
+  if (row.isBetaTester) return "운영 테스트";
+  return "무료/미승인";
+}
+
+function applicationStatusLabel(value: string | null): string {
+  if (value === "approved") return "승인 완료";
+  if (value === "pending") return "처리 중";
+  if (value === "rejected") return "거절/만료";
+  return "기록 없음";
+}
+
 export default function MembersTable({ initialRows }: { initialRows: MemberRow[] }) {
   const [rows, setRows] = useState<MemberRow[]>(initialRows);
   const [search, setSearch] = useState("");
@@ -66,7 +98,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
   const filteredRows = useMemo(() => {
     if (!search.trim()) return rows;
     const s = search.trim().toLowerCase();
-    return rows.filter((row) => `${row.email ?? ""} ${row.nickname}`.toLowerCase().includes(s));
+    return rows.filter((row) => `${row.email ?? ""} ${row.nickname} ${row.authUserId}`.toLowerCase().includes(s));
   }, [rows, search]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
@@ -147,42 +179,45 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
   }
 
   return (
-    <section className="mt-6 font-mono">
+    <section className="mt-6 overflow-hidden rounded-[28px] border border-zinc-800 bg-zinc-950 shadow-[0_20px_70px_rgba(0,0,0,0.24)]">
       {/* header bar */}
-      <div className="mb-2 flex flex-wrap items-center gap-2">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-400">▌MEMBERS</h2>
+      <div className="flex flex-wrap items-center gap-3 border-b border-zinc-800 bg-zinc-900/70 px-5 py-4">
+        <div>
+          <div className="text-[11px] font-black uppercase tracking-[0.16em] text-violet-300">회원 관리</div>
+          <h2 className="mt-1 text-2xl font-black text-white">회원별 결제·신청·상담 흐름</h2>
+        </div>
         <input
           type="search"
-          placeholder="SEARCH email / nickname"
+          placeholder="이메일 / 닉네임 / auth id 검색"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-          className="ml-auto h-7 w-[260px] rounded-sm border border-zinc-800 bg-zinc-900 px-2 text-[11px] text-zinc-200 placeholder:text-zinc-600 focus:border-amber-500/50 focus:outline-none"
+          className="ml-auto h-11 w-full rounded-2xl border border-zinc-700 bg-zinc-950 px-4 text-sm font-bold text-zinc-100 placeholder:text-zinc-600 focus:border-violet-400 focus:outline-none sm:w-[360px]"
         />
         {selectedIds.size > 0 ? (
           <button
             type="button"
             onClick={() => void deleteSelected()}
             disabled={deleteInProgress}
-            className="inline-flex h-7 items-center gap-1 rounded-sm border border-rose-700 bg-rose-900/40 px-2.5 text-[10px] font-black uppercase tracking-wide text-rose-300 transition hover:bg-rose-900/60 disabled:opacity-50"
+            className="inline-flex h-11 items-center gap-1 rounded-2xl border border-rose-400/30 bg-rose-500/10 px-4 text-sm font-black text-rose-100 transition hover:bg-rose-500/20 disabled:opacity-50"
           >
-            {deleteInProgress ? "..." : `DELETE ${selectedIds.size}`}
+            {deleteInProgress ? "삭제 중" : `${selectedIds.size}명 삭제`}
           </button>
         ) : null}
       </div>
 
       {notice ? (
-        <div className="mb-2 rounded-sm border border-blue-900/50 bg-blue-950/30 px-2.5 py-1.5 text-[10px] font-bold text-blue-300">
+        <div className="mx-5 mt-4 rounded-2xl border border-blue-400/20 bg-blue-500/10 px-4 py-3 text-sm font-black text-blue-100">
           {notice}
         </div>
       ) : null}
       {error ? (
-        <div className="mb-2 rounded-sm border border-rose-900/50 bg-rose-950/30 px-2.5 py-1.5 text-[10px] font-bold text-rose-300">
+        <div className="mx-5 mt-4 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm font-black text-rose-100">
           {error}
         </div>
       ) : null}
 
       {/* Wave launch-110: 모바일 카드 layout (md 미만). desktop 테이블은 md 이상. */}
-      <div className="space-y-1.5 md:hidden">
+      <div className="space-y-2 p-4 md:hidden">
         {pageRows.length === 0 ? (
           <div className="rounded-sm border border-zinc-800 bg-zinc-950 px-3 py-6 text-center text-[10px] uppercase text-zinc-600">no results</div>
         ) : pageRows.map((row) => {
@@ -212,12 +247,12 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                   {isBlocked ? (
                     <span className="rounded-sm border border-rose-800/60 bg-rose-950/40 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-rose-300">BLOCKED</span>
                   ) : null}
-                  <span className="font-bold uppercase text-amber-400">{row.planKey}</span>
+                  <span className="font-bold text-violet-200">{memberPlanLabel(row)}</span>
                 </div>
               </div>
               <div className="mt-1 truncate font-mono text-[11px] text-zinc-400">{row.email ?? "—"}</div>
               <div className="mt-0.5 flex items-center justify-between gap-2 text-[10px] uppercase text-zinc-600">
-                <span>{row.provider ?? "—"} · 탭하여 상세</span>
+                <span>{row.provider ?? "—"} · 결제 {krw(row.totalPaidKrw)}</span>
                 <Link
                   href={`${OPS_ADMIN_REVEAL_ANALYTICS_PATH}?userRef=${encodeURIComponent(row.userRef)}`}
                   onClick={(e) => e.stopPropagation()}
@@ -231,10 +266,11 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
         })}
       </div>
 
-      <div className="hidden overflow-x-auto rounded-sm border border-zinc-800 bg-zinc-950 md:block">
+      <div className="hidden overflow-x-auto px-5 py-5 md:block">
+        <div className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950">
         <table className="w-full text-[11px]">
           <thead className="bg-zinc-900/80">
-            <tr className="border-b border-zinc-800 text-left text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">
+            <tr className="border-b border-zinc-800 text-left text-[11px] font-black text-zinc-500">
               <th className="w-9 px-3 py-2">
                 <input
                   type="checkbox"
@@ -250,17 +286,18 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                   className="h-3.5 w-3.5 cursor-pointer accent-amber-500"
                 />
               </th>
-              <th className="px-3 py-2">NICK</th>
-              <th className="px-3 py-2">EMAIL</th>
-              <th className="px-3 py-2 text-right">MEMBERSHIP</th>
-              <th className="px-3 py-2">STATUS</th>
-              <th className="px-3 py-2">PROV</th>
-              <th className="px-3 py-2 text-right">회원별 내역</th>
+              <th className="px-3 py-3">회원</th>
+              <th className="px-3 py-3">이메일</th>
+              <th className="px-3 py-3 text-right">멤버십</th>
+              <th className="px-3 py-3 text-right">누적 결제</th>
+              <th className="px-3 py-3">최근 신청</th>
+              <th className="px-3 py-3">상담</th>
+              <th className="px-3 py-3 text-right">회원별 내역</th>
             </tr>
           </thead>
           <tbody>
             {pageRows.length === 0 ? (
-              <tr><td colSpan={7} className="px-3 py-6 text-center text-[10px] uppercase tracking-wide text-zinc-600">no results</td></tr>
+              <tr><td colSpan={8} className="px-3 py-8 text-center text-sm font-bold text-zinc-600">검색 결과가 없습니다.</td></tr>
             ) : pageRows.map((row) => {
               const isBlocked = Boolean(row.blockedAt);
               const isSelected = selectedIds.has(row.authUserId);
@@ -288,17 +325,27 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                   </td>
                   <td className="px-3 py-2 text-zinc-400">{row.email ?? "—"}</td>
                   <td className="px-3 py-2 text-right">
-                    <div className="font-bold uppercase text-amber-400">{row.planKey}</div>
-                    <div className="text-[9px] uppercase tracking-wide text-zinc-600">{row.planStatus ?? "none"}</div>
+                    <div className="font-black text-violet-200">{memberPlanLabel(row)}</div>
+                    <div className="text-[10px] font-bold text-zinc-600">{fmt(row.planEndAt ?? row.proUntil)}</div>
+                  </td>
+                  <td className="px-3 py-2 text-right font-black tabular-nums text-zinc-100">
+                    {krw(row.totalPaidKrw)}
                   </td>
                   <td className="px-3 py-2">
-                    {isBlocked ? (
-                      <span className="rounded-sm border border-rose-800/60 bg-rose-950/40 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-rose-300">BLOCKED</span>
+                    <div className="text-xs font-black text-zinc-200">{applicationStatusLabel(row.lastApplicationStatus)}</div>
+                    <div className="mt-0.5 text-[10px] font-bold text-zinc-600">
+                      {row.lastApplicationId ? `#${row.lastApplicationId} · ${fmt(row.lastApplicationAt)}` : "신청 없음"}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2">
+                    {row.supportConversationId ? (
+                      <a href="#customer-support" className="inline-flex rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black text-emerald-100">
+                        {row.supportAdminUnreadCount > 0 ? `새 상담 ${row.supportAdminUnreadCount}` : row.supportStatus === "open" ? "상담 진행" : "상담 기록"}
+                      </a>
                     ) : (
-                      <span className="text-[9px] uppercase tracking-wide text-zinc-600">active</span>
+                      <span className="text-[10px] font-bold text-zinc-700">상담 없음</span>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-[10px] uppercase text-zinc-500">{row.provider ?? "—"}</td>
                   <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>
                     <Link
                       href={`${OPS_ADMIN_REVEAL_ANALYTICS_PATH}?userRef=${encodeURIComponent(row.userRef)}`}
@@ -312,15 +359,16 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* pagination */}
       {totalPages > 1 ? (
-        <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-wide text-zinc-500">
-          <span>page {currentPage + 1} / {totalPages} · {filteredRows.length} rows</span>
+        <div className="px-5 pb-5 pt-0 flex items-center justify-between text-xs font-bold text-zinc-500">
+          <span>{currentPage + 1} / {totalPages} 페이지 · {filteredRows.length}명</span>
           <div className="flex gap-1">
-            <button type="button" onClick={() => setPage(Math.max(0, currentPage - 1))} disabled={currentPage === 0} className="h-7 rounded-sm border border-zinc-800 bg-zinc-900 px-2.5 font-bold text-zinc-300 hover:border-zinc-700 disabled:opacity-30">‹ PREV</button>
-            <button type="button" onClick={() => setPage(Math.min(totalPages - 1, currentPage + 1))} disabled={currentPage >= totalPages - 1} className="h-7 rounded-sm border border-zinc-800 bg-zinc-900 px-2.5 font-bold text-zinc-300 hover:border-zinc-700 disabled:opacity-30">NEXT ›</button>
+            <button type="button" onClick={() => setPage(Math.max(0, currentPage - 1))} disabled={currentPage === 0} className="h-9 rounded-full border border-zinc-800 bg-zinc-900 px-3 font-bold text-zinc-300 hover:border-zinc-700 disabled:opacity-30">이전</button>
+            <button type="button" onClick={() => setPage(Math.min(totalPages - 1, currentPage + 1))} disabled={currentPage >= totalPages - 1} className="h-9 rounded-full border border-zinc-800 bg-zinc-900 px-3 font-bold text-zinc-300 hover:border-zinc-700 disabled:opacity-30">다음</button>
           </div>
         </div>
       ) : null}
@@ -393,11 +441,11 @@ function MemberDrawer({
       role="dialog"
       aria-modal="true"
       onClick={onClose}
-      className="fixed inset-0 z-[80] flex justify-end bg-black/55 backdrop-blur-sm font-mono"
+      className="fixed inset-0 z-[80] flex justify-end bg-black/55 backdrop-blur-sm"
     >
       <aside
         onClick={(e) => e.stopPropagation()}
-        className="flex h-full w-full max-w-[420px] flex-col overflow-y-auto border-l border-zinc-800 bg-zinc-950 px-5 py-6 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
+        className="flex h-full w-full max-w-[460px] flex-col overflow-y-auto border-l border-zinc-800 bg-zinc-950 px-5 py-6 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 items-start gap-3">
@@ -420,7 +468,7 @@ function MemberDrawer({
               </div>
             )}
             <div className="min-w-0">
-              <div className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">MEMBER PROFILE</div>
+              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-violet-300">회원 상세</div>
               <div className="mt-1 truncate text-lg font-black text-zinc-50">{row.nickname || "—"}</div>
               <div className="mt-0.5 truncate text-[11px] text-zinc-500">{row.email ?? "—"}</div>
               {row.profileImageUrl ? (
@@ -429,87 +477,109 @@ function MemberDrawer({
                   onClick={onOpenPhoto}
                   className="mt-2 rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-[9px] font-black uppercase tracking-wide text-blue-300 transition hover:border-blue-700 hover:bg-blue-950/30"
                 >
-                  PROFILE PHOTO
+                  프로필 사진
                 </button>
               ) : (
-                <div className="mt-2 text-[9px] font-bold uppercase tracking-wide text-zinc-700">NO PROFILE PHOTO</div>
+                <div className="mt-2 text-[11px] font-bold text-zinc-700">프로필 사진 없음</div>
               )}
             </div>
           </div>
-          <button type="button" onClick={onClose} className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-400 hover:text-zinc-200">CLOSE</button>
+          <button type="button" onClick={onClose} className="rounded-full border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs font-bold text-zinc-400 hover:text-zinc-200">닫기</button>
         </div>
 
         {/* meta */}
-        <dl className="mt-6 grid grid-cols-[100px_minmax(0,1fr)] gap-y-2.5 text-[11px]">
-          <dt className="font-bold uppercase tracking-wide text-zinc-500">CREATED</dt>
+        <dl className="mt-6 grid grid-cols-[116px_minmax(0,1fr)] gap-y-3 text-sm">
+          <dt className="font-bold text-zinc-500">가입일</dt>
           <dd className="tabular-nums text-zinc-300">{fmt(row.createdAt)}</dd>
-          <dt className="font-bold uppercase tracking-wide text-zinc-500">LAST LOGIN</dt>
+          <dt className="font-bold text-zinc-500">마지막 로그인</dt>
           <dd className="tabular-nums text-zinc-300">{fmt(row.lastSignInAt)}</dd>
-          <dt className="font-bold uppercase tracking-wide text-zinc-500">PROVIDER</dt>
+          <dt className="font-bold text-zinc-500">로그인 방식</dt>
           <dd className="text-zinc-300">{row.provider ?? "—"}</dd>
-          <dt className="font-bold uppercase tracking-wide text-zinc-500">PROFILE PHOTO</dt>
+          <dt className="font-bold text-zinc-500">프로필 사진</dt>
           <dd>
             {row.profileImageUrl ? (
               <button
                 type="button"
                 onClick={onOpenPhoto}
-                className="inline-flex items-center rounded-sm border border-blue-800 bg-blue-950/30 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-blue-300 transition hover:border-blue-600 hover:bg-blue-950/50"
+                className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-xs font-black text-blue-200 transition hover:bg-blue-500/20"
               >
-                VIEW PHOTO
+                사진 보기
               </button>
             ) : (
-              <span className="text-[11px] uppercase tracking-wide text-zinc-500">none</span>
+              <span className="text-zinc-500">없음</span>
             )}
           </dd>
-          <dt className="font-bold uppercase tracking-wide text-zinc-500">MEMBERSHIP</dt>
+          <dt className="font-bold text-zinc-500">멤버십</dt>
           <dd>
-            <div className="font-bold uppercase text-amber-400">{row.planKey}</div>
-            <div className="mt-0.5 text-[10px] uppercase tracking-wide text-zinc-600">
-              {row.planStatus ?? "none"} · until {fmt(row.planEndAt)}
+            <div className="font-black text-violet-200">{memberPlanLabel(row)}</div>
+            <div className="mt-0.5 text-xs font-bold text-zinc-600">
+              {row.planStatus ?? "상태 없음"} · 만료 {fmt(row.planEndAt ?? row.proUntil)}
             </div>
           </dd>
-          <dt className="font-bold uppercase tracking-wide text-zinc-500">STATUS</dt>
+          <dt className="font-bold text-zinc-500">누적 결제</dt>
+          <dd>
+            <div className="font-black tabular-nums text-zinc-100">{krw(row.totalPaidKrw)}</div>
+            <div className="mt-0.5 text-xs font-bold text-zinc-600">멤버십 신청 {row.applicationCount}건</div>
+          </dd>
+          <dt className="font-bold text-zinc-500">최근 신청</dt>
+          <dd>
+            <div className="font-black text-zinc-200">{applicationStatusLabel(row.lastApplicationStatus)}</div>
+            <div className="mt-0.5 text-xs font-bold text-zinc-600">
+              {row.lastApplicationId ? `#${row.lastApplicationId} · ${row.lastApplicationKind === "renewal" ? "연장" : "신규"} · ${fmt(row.lastApplicationAt)}` : "기록 없음"}
+            </div>
+          </dd>
+          <dt className="font-bold text-zinc-500">고객상담</dt>
+          <dd>
+            {row.supportConversationId ? (
+              <a href="#customer-support" className="inline-flex rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-black text-emerald-100">
+                {row.supportAdminUnreadCount > 0 ? `새 메시지 ${row.supportAdminUnreadCount}개` : row.supportStatus === "open" ? "진행 중인 상담 보기" : "상담 기록 보기"}
+              </a>
+            ) : (
+              <span className="text-zinc-500">상담 없음</span>
+            )}
+          </dd>
+          <dt className="font-bold text-zinc-500">계정 상태</dt>
           <dd>
             {isBlocked ? (
-              <span className="rounded-sm border border-rose-800/60 bg-rose-950/40 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-rose-300">BLOCKED</span>
+              <span className="rounded-full border border-rose-400/30 bg-rose-500/10 px-2 py-1 text-xs font-black text-rose-200">차단됨</span>
             ) : (
-              <span className="text-[11px] uppercase tracking-wide text-zinc-500">active</span>
+              <span className="text-zinc-500">정상</span>
             )}
           </dd>
           {row.blockedReason ? (
             <>
-              <dt className="font-bold uppercase tracking-wide text-zinc-500">BLOCK REASON</dt>
-              <dd className="text-[10px] text-rose-300/80">{row.blockedReason}</dd>
+              <dt className="font-bold text-zinc-500">차단 사유</dt>
+              <dd className="text-xs text-rose-300/80">{row.blockedReason}</dd>
             </>
           ) : null}
-          <dt className="font-bold uppercase tracking-wide text-zinc-500">AUTH ID</dt>
-          <dd className="break-all font-mono text-[9px] text-zinc-600">{row.authUserId}</dd>
+          <dt className="font-bold text-zinc-500">Auth ID</dt>
+          <dd className="break-all font-mono text-[10px] text-zinc-600">{row.authUserId}</dd>
         </dl>
 
         {/* actions */}
         <div className="mt-6 space-y-3">
           <div>
-            <div className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-emerald-400">▌REVEAL HISTORY</div>
+            <div className="mb-1 text-xs font-black text-emerald-300">회원별 이용 내역</div>
             <Link
               href={`${OPS_ADMIN_REVEAL_ANALYTICS_PATH}?userRef=${encodeURIComponent(row.userRef)}`}
-              className="flex w-full items-center justify-between rounded-sm border border-emerald-800 bg-emerald-950/30 px-3 py-2 text-[10px] font-black uppercase tracking-wide text-emerald-300 transition hover:border-emerald-600 hover:bg-emerald-950/50"
+              className="flex w-full items-center justify-between rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm font-black text-emerald-100 transition hover:bg-emerald-500/20"
             >
-              <span>회원별 REVEAL 내역</span>
-              <span className="text-emerald-500">↗</span>
+              <span>상품 열람/원문 클릭 내역</span>
+              <span>↗</span>
             </Link>
           </div>
 
           {/* block toggle */}
           <div>
-            <div className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-zinc-400">▌ACCOUNT</div>
+            <div className="mb-1 text-xs font-black text-zinc-400">계정 처리</div>
             <button
               type="button" disabled={pending} onClick={onToggleBlock}
-              className={`w-full rounded-sm border px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition disabled:opacity-40 ${
+              className={`w-full rounded-2xl border px-4 py-3 text-sm font-black transition disabled:opacity-40 ${
                 isBlocked
                   ? "border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
                   : "border-zinc-700 bg-zinc-900 text-rose-300 hover:bg-rose-950/40"
               }`}
-            >{isBlocked ? "UNBLOCK ACCOUNT" : "BLOCK ACCOUNT"}</button>
+            >{isBlocked ? "차단 해제" : "계정 차단"}</button>
           </div>
         </div>
       </aside>
