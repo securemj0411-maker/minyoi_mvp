@@ -16,6 +16,7 @@ import {
   GiftIcon,
   HourglassIcon,
   BookmarkIcon,
+  SettingsIcon,
 } from "@/components/icons";
 import { BrandLogo } from "@/components/brand-logo";
 import {
@@ -1325,6 +1326,20 @@ function sourceOptionLabel(value: SourceOption) {
   );
 }
 
+function locationFilterLabel(value: LocationFilterOption) {
+  return (
+    LOCATION_FILTER_OPTIONS.find((option) => option.value === value)?.label ??
+    "위치 전체"
+  );
+}
+
+function sortOptionLabel(value: SortOption) {
+  if (value === "price_asc") return "매입단가순";
+  if (value === "distance") return "가까운 순";
+  if (value === "latest") return "최신순";
+  return "차익순";
+}
+
 function poolItemSource(item: PoolItem): SourceOption {
   const source = String(item.marketplaceSource ?? "bunjang").toLowerCase();
   if (source === "joongna" || source === "daangn") return source;
@@ -2381,6 +2396,7 @@ export default function ExploreClient({
   const [scrapOnly, setScrapOnly] = useState(
     () => searchParams.get("view") === "scrap",
   );
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const categoryScrollRef = useRef<HTMLDivElement | null>(null);
   const [canScrollCategoriesPrev, setCanScrollCategoriesPrev] = useState(false);
   const [canScrollCategoriesNext, setCanScrollCategoriesNext] = useState(false);
@@ -2849,6 +2865,15 @@ export default function ExploreClient({
     source,
   ]);
   const isDaangnFocusedView = source === "daangn" || sort === "distance";
+  const locationFilterValue: LocationFilterOption = isDaangnFocusedView ? "nearby" : "all";
+  const mobileFilterSummary = useMemo(() => {
+    return [
+      budgetOption.shortLabel,
+      locationFilterLabel(locationFilterValue),
+      sourceOptionLabel(source),
+      sortOptionLabel(sort),
+    ].join(" · ");
+  }, [budgetOption.shortLabel, locationFilterValue, sort, source]);
   const loadingCopy = isDaangnFocusedView
     ? {
         title: "근처 당근 매물부터 확인 중",
@@ -3340,6 +3365,72 @@ export default function ExploreClient({
     [],
   );
 
+  function handleBudgetFilterChange(value: BudgetFilterOption) {
+    updateBudgetFilter(value);
+    setScrapOnly(false);
+  }
+
+  function handleLocationFilterChange(nextLocation: LocationFilterOption) {
+    setScrapOnly(false);
+    if (nextLocation === "nearby") {
+      setSource("daangn");
+      setSort("distance");
+      void loadPool(false, {
+        serverSource: "daangn",
+        serverSort: "distance",
+      });
+      return;
+    }
+    setSource("all");
+    if (sortRef.current === "distance") setSort("profit_desc");
+    void loadPool(false, {
+      serverSource: "all",
+      serverSort: null,
+    });
+  }
+
+  function handleSourceFilterChange(nextSource: SourceOption) {
+    const isLeavingDaangnDistance =
+      nextSource !== "daangn" && sortRef.current === "distance";
+    setSource(nextSource);
+    if (isLeavingDaangnDistance) setSort("profit_desc");
+    setScrapOnly(false);
+    if (nextSource === "daangn") {
+      void loadPool(false, {
+        serverSource: "daangn",
+        serverSort: sortRef.current === "distance" ? "distance" : null,
+      });
+    } else if (source === "daangn") {
+      void loadPool(false, {
+        serverSource: nextSource,
+        serverSort: null,
+      });
+    } else if (isLeavingDaangnDistance) {
+      void loadPool(false, {
+        serverSource: nextSource,
+        serverSort: null,
+      });
+    }
+  }
+
+  function handleSortFilterChange(nextSort: SortOption) {
+    const wasDistance = sortRef.current === "distance";
+    setSort(nextSort);
+    setScrapOnly(false);
+    if (nextSort === "distance") {
+      setSource("daangn");
+      void loadPool(false, {
+        serverSource: "daangn",
+        serverSort: "distance",
+      });
+    } else if (wasDistance) {
+      void loadPool(false, {
+        serverSource: source,
+        serverSort: null,
+      });
+    }
+  }
+
   // 2026-05-19: pb-24 → pb-4. 이전 fixed FAB 시절 sticky 영역 확보 padding이었는데
   // sticky 통일 후 의미 없어짐 → button과 footer 사이 큰 빈 공간 제거.
   return (
@@ -3469,14 +3560,26 @@ export default function ExploreClient({
             ) : null}
           </div>
         </div>
-        <div className="grid w-full grid-cols-2 gap-1.5 sm:flex sm:w-auto sm:items-center">
+        <button
+          type="button"
+          onClick={() => setMobileFilterOpen(true)}
+          className="flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-zinc-200 bg-white px-3 text-left text-[12px] font-black text-zinc-800 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 sm:hidden"
+          aria-label="필터 열기"
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <SettingsIcon className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-300" />
+            <span className="shrink-0 text-blue-600 dark:text-blue-300">필터</span>
+            <span className="min-w-0 truncate text-zinc-500 dark:text-zinc-400">
+              {mobileFilterSummary}
+            </span>
+          </span>
+          <span className="shrink-0 text-base leading-none text-zinc-400">›</span>
+        </button>
+        <div className="hidden w-full grid-cols-2 gap-1.5 sm:flex sm:w-auto sm:items-center">
           <select
             data-budget-filter-select
             value={budgetFilter}
-            onChange={(e) => {
-              updateBudgetFilter(e.target.value as BudgetFilterOption);
-              setScrapOnly(false);
-            }}
+            onChange={(e) => handleBudgetFilterChange(e.target.value as BudgetFilterOption)}
             className="min-w-0 rounded-lg border border-zinc-200 bg-white px-2 py-2 text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300 sm:w-auto sm:shrink-0 sm:rounded-md sm:py-1 sm:text-[10px] sm:font-medium"
             aria-label="예산 필터"
           >
@@ -3487,26 +3590,8 @@ export default function ExploreClient({
             ))}
           </select>
           <select
-            value={isDaangnFocusedView ? "nearby" : "all"}
-            onChange={(e) => {
-              const nextLocation = e.target.value as LocationFilterOption;
-              setScrapOnly(false);
-              if (nextLocation === "nearby") {
-                setSource("daangn");
-                setSort("distance");
-                void loadPool(false, {
-                  serverSource: "daangn",
-                  serverSort: "distance",
-                });
-              } else {
-                setSource("all");
-                if (sortRef.current === "distance") setSort("profit_desc");
-                void loadPool(false, {
-                  serverSource: "all",
-                  serverSort: null,
-                });
-              }
-            }}
+            value={locationFilterValue}
+            onChange={(e) => handleLocationFilterChange(e.target.value as LocationFilterOption)}
             className="min-w-0 rounded-lg border border-zinc-200 bg-white px-2 py-2 text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300 sm:w-auto sm:shrink-0 sm:rounded-md sm:py-1 sm:text-[10px] sm:font-medium"
             aria-label="위치 필터"
           >
@@ -3518,31 +3603,7 @@ export default function ExploreClient({
           </select>
           <select
             value={source}
-            onChange={(e) => {
-              const nextSource = e.target.value as SourceOption;
-              const isLeavingDaangnDistance =
-                nextSource !== "daangn" && sortRef.current === "distance";
-              setSource(nextSource);
-              if (isLeavingDaangnDistance) setSort("profit_desc");
-              setScrapOnly(false);
-              if (nextSource === "daangn") {
-                void loadPool(false, {
-                  serverSource: "daangn",
-                  serverSort:
-                    sortRef.current === "distance" ? "distance" : null,
-                });
-              } else if (source === "daangn") {
-                void loadPool(false, {
-                  serverSource: nextSource,
-                  serverSort: null,
-                });
-              } else if (isLeavingDaangnDistance) {
-                void loadPool(false, {
-                  serverSource: nextSource,
-                  serverSort: null,
-                });
-              }
-            }}
+            onChange={(e) => handleSourceFilterChange(e.target.value as SourceOption)}
             className="min-w-0 rounded-lg border border-zinc-200 bg-white px-2 py-2 text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300 sm:w-auto sm:shrink-0 sm:rounded-md sm:py-1 sm:text-[10px] sm:font-medium"
           >
             {SOURCE_OPTIONS.map((option) => (
@@ -3553,24 +3614,7 @@ export default function ExploreClient({
           </select>
           <select
             value={sort}
-            onChange={(e) => {
-              const nextSort = e.target.value as SortOption;
-              const wasDistance = sortRef.current === "distance";
-              setSort(nextSort);
-              setScrapOnly(false);
-              if (nextSort === "distance") {
-                setSource("daangn");
-                void loadPool(false, {
-                  serverSource: "daangn",
-                  serverSort: "distance",
-                });
-              } else if (wasDistance) {
-                void loadPool(false, {
-                  serverSource: source,
-                  serverSort: null,
-                });
-              }
-            }}
+            onChange={(e) => handleSortFilterChange(e.target.value as SortOption)}
             className="min-w-0 rounded-lg border border-zinc-200 bg-white px-2 py-2 text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300 sm:w-auto sm:shrink-0 sm:rounded-md sm:py-1 sm:text-[10px] sm:font-medium"
           >
             <option value="profit_desc">차익순</option>
@@ -3580,6 +3624,162 @@ export default function ExploreClient({
           </select>
         </div>
       </div>
+
+      {mobileFilterOpen ? (
+        <div className="fixed inset-0 z-[75] sm:hidden" role="dialog" aria-modal="true" aria-label="피드 필터">
+          <button
+            type="button"
+            aria-label="필터 닫기"
+            className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
+            onClick={() => setMobileFilterOpen(false)}
+          />
+          <section className="absolute inset-x-0 bottom-0 max-h-[82dvh] overflow-y-auto rounded-t-[28px] border border-zinc-200 bg-white p-4 shadow-[0_-24px_80px_rgba(15,23,42,0.28)] dark:border-zinc-800 dark:bg-zinc-950">
+            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-blue-600 dark:text-blue-300">
+                  Feed Filter
+                </div>
+                <h2 className="mt-1 text-2xl font-black text-zinc-950 dark:text-zinc-50">
+                  조건 고르기
+                </h2>
+                <p className="mt-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
+                  {mobileFilterSummary}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileFilterOpen(false)}
+                className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-black text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+              >
+                닫기
+              </button>
+            </div>
+
+            <div className="mt-5 space-y-5">
+              <div>
+                <div className="mb-2 text-xs font-black text-zinc-500 dark:text-zinc-400">예산</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {BUDGET_FILTER_OPTIONS.map((option) => {
+                    const active = budgetFilter === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => handleBudgetFilterChange(option.value)}
+                        className={`rounded-2xl border px-3 py-3 text-left transition ${
+                          active
+                            ? "border-blue-500 bg-blue-600 text-white shadow-[0_14px_34px_rgba(37,99,235,0.24)]"
+                            : "border-zinc-200 bg-zinc-50 text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                        }`}
+                      >
+                        <div className="text-sm font-black">{option.shortLabel}</div>
+                        <div className={`mt-1 text-[11px] font-bold ${active ? "text-blue-100" : "text-zinc-500 dark:text-zinc-400"}`}>
+                          {option.label}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-2 text-xs font-black text-zinc-500 dark:text-zinc-400">위치</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {LOCATION_FILTER_OPTIONS.map((option) => {
+                    const active = locationFilterValue === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => handleLocationFilterChange(option.value)}
+                        className={`rounded-2xl border px-3 py-3 text-left text-sm font-black transition ${
+                          active
+                            ? "border-emerald-500 bg-emerald-600 text-white shadow-[0_14px_34px_rgba(5,150,105,0.22)]"
+                            : "border-zinc-200 bg-zinc-50 text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-2 text-xs font-black text-zinc-500 dark:text-zinc-400">출처</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {SOURCE_OPTIONS.map((option) => {
+                    const active = source === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => handleSourceFilterChange(option.value)}
+                        className={`rounded-2xl border px-3 py-3 text-left text-sm font-black transition ${
+                          active
+                            ? "border-zinc-950 bg-zinc-950 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
+                            : "border-zinc-200 bg-zinc-50 text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-2 text-xs font-black text-zinc-500 dark:text-zinc-400">정렬</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["profit_desc", "price_asc", "distance", "latest"] as SortOption[]).map((option) => {
+                    const active = sort === option;
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => handleSortFilterChange(option)}
+                        className={`rounded-2xl border px-3 py-3 text-left text-sm font-black transition ${
+                          active
+                            ? "border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-950/50 dark:text-blue-200"
+                            : "border-zinc-200 bg-zinc-50 text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                        }`}
+                      >
+                        {sortOptionLabel(option)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="sticky bottom-0 -mx-4 mt-5 border-t border-zinc-200 bg-white/95 px-4 pb-[max(14px,env(safe-area-inset-bottom))] pt-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
+              <div className="grid grid-cols-[0.8fr_1.2fr] gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategories(new Set());
+                    setScrapOnly(false);
+                    setSource("all");
+                    setSort("profit_desc");
+                    updateBudgetFilter("all");
+                  }}
+                  className="h-12 rounded-2xl border border-zinc-200 bg-zinc-50 text-sm font-black text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+                >
+                  초기화
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileFilterOpen(false)}
+                  className="h-12 rounded-2xl bg-blue-600 text-sm font-black text-white shadow-[0_16px_34px_rgba(37,99,235,0.26)]"
+                >
+                  적용하고 보기
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : null}
 
       {/* 로딩 / 에러 / 매물 grid */}
       {loading ? (
