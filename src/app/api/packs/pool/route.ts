@@ -802,9 +802,11 @@ async function loadNearbyDaangnReadyRows(
   }
 
   try {
+    const localFirstPrefetch = options.source === "daangn" || options.sort === "distance";
+    const regionBatchSize = localFirstPrefetch ? 1 : DAANGN_NEARBY_REGION_BATCH_SIZE;
     const regionBatches: string[][] = [];
-    for (let i = 0; i < regionIds.length; i += DAANGN_NEARBY_REGION_BATCH_SIZE) {
-      regionBatches.push(regionIds.slice(i, i + DAANGN_NEARBY_REGION_BATCH_SIZE));
+    for (let i = 0; i < regionIds.length; i += regionBatchSize) {
+      regionBatches.push(regionIds.slice(i, i + regionBatchSize));
     }
     const distanceByPid = new Map<number, DaangnDistanceSignal>();
     const lastSeenByPid = new Map<number, string | null>();
