@@ -502,7 +502,7 @@ export default function MembershipApplicationClient({
         </div>
       ) : null}
       {hasReservation && paymentModalOpen ? (
-        <div className="fixed inset-0 z-[220] flex items-center justify-center overflow-y-auto bg-black/62 px-3 py-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[9990] flex items-start justify-center overflow-y-auto bg-black/62 px-3 pb-4 pt-[calc(env(safe-area-inset-top)+16px)] backdrop-blur-sm sm:items-center sm:py-8">
           <div
             role="dialog"
             aria-modal="true"
@@ -693,7 +693,6 @@ export default function MembershipApplicationClient({
                     송금 방법 다시 선택
                   </button>
                 ) : null}
-                <PaymentTrustCard />
               </div>
             )}
             {showDepositCountdown ? (
@@ -737,6 +736,11 @@ export default function MembershipApplicationClient({
               >
                 {depositNotifyMessage}
               </p>
+            ) : null}
+            {showPaymentDetails ? (
+              <div className="mt-3">
+                <PaymentTrustCard />
+              </div>
             ) : null}
             {depositNotifyState !== "sent" ? (
               <div className="mt-3 grid grid-cols-2 gap-2">

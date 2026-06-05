@@ -663,7 +663,7 @@ function FeedMembershipUpsellCard({
         ) : null}
       </div>
       {offerModalOpen && selectedPlan ? (
-        <div className="fixed inset-0 z-[92] flex items-end justify-center bg-black/55 px-3 py-4 backdrop-blur-sm sm:items-center">
+        <div className="fixed inset-0 z-[9990] flex items-end justify-center bg-black/55 px-3 py-4 backdrop-blur-sm sm:items-center">
           <div className="w-full max-w-[460px] overflow-hidden rounded-[20px] border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
             <div className="bg-gradient-to-r from-amber-500 to-zinc-950 px-4 py-4 text-white">
               <div className="flex items-start justify-between gap-3">
@@ -839,7 +839,6 @@ function FeedMembershipUpsellCard({
                           송금 방법 다시 선택
                         </button>
                       ) : null}
-                      <PaymentTrustCard />
                     </>
                   )}
                   {showPaymentDetails ? (
@@ -884,6 +883,7 @@ function FeedMembershipUpsellCard({
                       </div>
                     </div>
                   ) : null}
+                  {showPaymentDetails ? <PaymentTrustCard /> : null}
                 </div>
               )}
               {message ? (
