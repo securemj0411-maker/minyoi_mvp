@@ -66,6 +66,15 @@ export default function SiteHelpFaq() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const lastUnreadCountRef = useRef(0);
   const interactedRef = useRef(false);
+  const authUserIdRef = useRef<string | null | undefined>(undefined);
+
+  function resetChatState(nextState: "idle" | "loading" | "ready" | "error" | "login" = "idle") {
+    setConversation(null);
+    setMessages([]);
+    setMessage("");
+    setLoadState(nextState);
+    setSendState("idle");
+  }
 
   function playReplySound() {
     if (!interactedRef.current) return;
@@ -89,6 +98,30 @@ export default function SiteHelpFaq() {
       // Browser autoplay policy can block audio. Badge still carries the notification.
     }
   }
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    let cancelled = false;
+    void supabase.auth.getUser().then(({ data }) => {
+      if (cancelled || authUserIdRef.current !== undefined) return;
+      authUserIdRef.current = data.user?.id ?? null;
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUserId = session?.user?.id ?? null;
+      if (authUserIdRef.current !== undefined && authUserIdRef.current !== nextUserId) {
+        setOpen(false);
+        resetChatState("idle");
+        setUnreadCount(0);
+        lastUnreadCountRef.current = 0;
+      }
+      authUserIdRef.current = nextUserId;
+    });
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -126,24 +159,37 @@ export default function SiteHelpFaq() {
     if (!open) return;
     let cancelled = false;
     async function loadChat() {
+      setConversation(null);
+      setMessages([]);
       setLoadState("loading");
       const res = await fetch("/api/support/chat", { cache: "no-store" }).catch(() => null);
       if (cancelled) return;
       if (!res) {
+        setConversation(null);
+        setMessages([]);
         setLoadState("error");
         return;
       }
       if (res.status === 401) {
+        setConversation(null);
+        setMessages([]);
         setLoadState("login");
         return;
       }
       const data = (await res.json().catch(() => null)) as { conversation?: SupportConversation; messages?: SupportMessage[] } | null;
       if (!res.ok || !data?.conversation) {
+        setConversation(null);
+        setMessages([]);
         setLoadState("error");
         return;
       }
+      const scopedMessages = (data.messages ?? []).filter(
+        (item) =>
+          item.conversation_id === data.conversation!.id &&
+          item.auth_user_id === data.conversation!.auth_user_id,
+      );
       setConversation(data.conversation);
-      setMessages(data.messages ?? []);
+      setMessages(scopedMessages);
       setUnreadCount(0);
       lastUnreadCountRef.current = 0;
       setLoadState("ready");
@@ -167,11 +213,11 @@ export default function SiteHelpFaq() {
           event: "INSERT",
           schema: "public",
           table: "mvp_support_messages",
-          filter: `auth_user_id=eq.${conversation.auth_user_id}`,
+          filter: `conversation_id=eq.${conversation.id}`,
         },
         (payload) => {
           const next = payload.new as SupportMessage;
-          if (next.conversation_id !== conversation.id) return;
+          if (next.conversation_id !== conversation.id || next.auth_user_id !== conversation.auth_user_id) return;
           setMessages((current) => mergeSupportMessage(current, next));
           if (next.sender === "admin") {
             setUnreadCount(0);
@@ -242,6 +288,7 @@ export default function SiteHelpFaq() {
         type="button"
         onClick={() => {
           interactedRef.current = true;
+          resetChatState("loading");
           setOpen(true);
           setUnreadCount(0);
           lastUnreadCountRef.current = 0;

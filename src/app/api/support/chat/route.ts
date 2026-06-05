@@ -78,13 +78,18 @@ async function getOrCreateConversation(req: NextRequest) {
   return { auth, conversation };
 }
 
-async function loadMessages(conversationId: number) {
+async function loadMessages(conversationId: number, authUserId: string) {
   const res = await restFetch(
-    `${tableUrl("mvp_support_messages")}?select=*&conversation_id=eq.${conversationId}&order=created_at.asc&limit=200`,
+    `${tableUrl("mvp_support_messages")}?select=*&conversation_id=eq.${conversationId}&auth_user_id=eq.${authUserId}&order=created_at.asc&limit=200`,
     { headers: serviceHeaders() },
   );
   if (!res.ok) throw new Error("messages_lookup_failed");
-  return (await res.json()) as SupportMessage[];
+  const rows = (await res.json()) as SupportMessage[];
+  return rows.filter(
+    (row) =>
+      Number(row.conversation_id) === Number(conversationId) &&
+      row.auth_user_id === authUserId,
+  );
 }
 
 export async function GET(req: NextRequest) {
@@ -92,7 +97,13 @@ export async function GET(req: NextRequest) {
     const result = await getOrCreateConversation(req);
     if (!result.auth.ok) return NextResponse.json({ error: result.auth.error }, { status: result.auth.status });
     if (!result.conversation) return NextResponse.json({ error: "conversation_missing" }, { status: 500 });
-    const messages = await loadMessages(result.conversation.id);
+    if (result.conversation.auth_user_id !== result.auth.user.id) {
+      console.error("[support/chat] conversation owner mismatch", {
+        conversationId: result.conversation.id,
+      });
+      return NextResponse.json({ error: "conversation_scope_mismatch" }, { status: 403 });
+    }
+    const messages = await loadMessages(result.conversation.id, result.auth.user.id);
     const conversation =
       result.conversation.user_unread_count > 0
         ? { ...result.conversation, user_unread_count: 0 }
