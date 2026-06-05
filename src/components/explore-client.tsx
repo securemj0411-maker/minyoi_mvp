@@ -964,6 +964,84 @@ function poolItemToRevealCard(item: PoolItem): RevealCard {
   };
 }
 
+function mergeDetailAccessItem(
+  current: PoolItem,
+  incoming: PoolItem,
+): PoolItem {
+  return {
+    ...current,
+    ...incoming,
+    marketplaceSource: incoming.marketplaceSource ?? current.marketplaceSource,
+    marketplaceLabel: incoming.marketplaceLabel ?? current.marketplaceLabel,
+    firstSeenAt: incoming.firstSeenAt ?? current.firstSeenAt,
+    freeShipping: incoming.freeShipping ?? current.freeShipping,
+    sellerReviewRating:
+      incoming.sellerReviewRating ?? current.sellerReviewRating,
+    sellerReviewCount:
+      incoming.sellerReviewCount ?? current.sellerReviewCount,
+    joongnaTrustScore:
+      incoming.joongnaTrustScore ?? current.joongnaTrustScore,
+    joongnaSafeOrderSalesCount:
+      incoming.joongnaSafeOrderSalesCount ??
+      current.joongnaSafeOrderSalesCount,
+    joongnaSafeOrderSalesText:
+      incoming.joongnaSafeOrderSalesText ?? current.joongnaSafeOrderSalesText,
+    daangnMannerTemperature:
+      incoming.daangnMannerTemperature ?? current.daangnMannerTemperature,
+    daangnReviewCount:
+      incoming.daangnReviewCount ?? current.daangnReviewCount,
+    productTradeType: incoming.productTradeType ?? current.productTradeType,
+    parcelFeeYn: incoming.parcelFeeYn ?? current.parcelFeeYn,
+    tradeLabels:
+      incoming.tradeLabels && incoming.tradeLabels.length > 0
+        ? incoming.tradeLabels
+        : current.tradeLabels,
+    transactionMode: incoming.transactionMode ?? current.transactionMode,
+    shippingAssumption:
+      incoming.shippingAssumption ?? current.shippingAssumption,
+    directTradeLocation:
+      incoming.directTradeLocation ?? current.directTradeLocation,
+    imageCount: incoming.imageCount ?? current.imageCount,
+    descriptionPreview:
+      incoming.descriptionPreview || current.descriptionPreview,
+    conditionTier: incoming.conditionTier ?? current.conditionTier,
+    conditionCluster: incoming.conditionCluster ?? current.conditionCluster,
+    conditionConfidence:
+      incoming.conditionConfidence ?? current.conditionConfidence,
+    conditionFlags: incoming.conditionFlags ?? current.conditionFlags,
+    conditionChips:
+      incoming.conditionChips && incoming.conditionChips.length > 0
+        ? incoming.conditionChips
+        : current.conditionChips,
+    feedPreviewLocked:
+      incoming.feedPreviewLocked ?? current.feedPreviewLocked,
+    productLineLabel:
+      incoming.productLineLabel ?? current.productLineLabel,
+    priceBandLabel: incoming.priceBandLabel ?? current.priceBandLabel,
+    marketPriceBandLabel:
+      incoming.marketPriceBandLabel ?? current.marketPriceBandLabel,
+    priceSignalLabel:
+      incoming.priceSignalLabel ?? current.priceSignalLabel,
+    sellerSignalLabel:
+      incoming.sellerSignalLabel ?? current.sellerSignalLabel,
+    marketSignalLabel:
+      incoming.marketSignalLabel ?? current.marketSignalLabel,
+    velocitySignalLabel:
+      incoming.velocitySignalLabel ?? current.velocitySignalLabel,
+    daangnDistanceKm:
+      incoming.daangnDistanceKm ?? current.daangnDistanceKm,
+    daangnDistanceLabel:
+      incoming.daangnDistanceLabel ?? current.daangnDistanceLabel,
+    daangnDistanceRank:
+      incoming.daangnDistanceRank ?? current.daangnDistanceRank,
+    marketBasis: incoming.marketBasis ?? current.marketBasis,
+    velocityBasis: incoming.velocityBasis ?? current.velocityBasis,
+    skuListingFlow: incoming.skuListingFlow ?? current.skuListingFlow,
+    optionBaseAssumed:
+      incoming.optionBaseAssumed ?? current.optionBaseAssumed,
+  };
+}
+
 // Wave 340: 카테고리 필터 옵션 — 6개 위험 카테고리 + 가장 큰 카테고리 위주.
 const CATEGORY_OPTIONS = [
   { value: "earphone", label: "이어폰" },
@@ -3033,7 +3111,9 @@ export default function ExploreClient({
         if (data.item) {
           setItems((prev) =>
             prev.map((candidate) =>
-              candidate.pid === item.pid ? data.item! : candidate,
+              candidate.pid === item.pid
+                ? mergeDetailAccessItem(candidate, data.item!)
+                : candidate,
             ),
           );
         }
