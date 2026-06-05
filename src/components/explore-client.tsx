@@ -144,6 +144,14 @@ type DetailAccessSnapshot = {
   unlimited?: boolean;
 };
 
+type HomeRegionSnapshot = {
+  daangn_region_id: string;
+  daangn_region_name: string;
+  daangn_full_path: string | null;
+  source: string;
+  set_at?: string | null;
+};
+
 type StatsResponse = {
   caughtToday: number;
   freshLocked: number;
@@ -1336,6 +1344,22 @@ function locationFilterLabel(value: LocationFilterOption) {
   );
 }
 
+const TOP_LEVEL_REGION_PATTERN =
+  /^(서울특별시|서울|부산광역시|부산|대구광역시|대구|인천광역시|인천|광주광역시|광주|대전광역시|대전|울산광역시|울산|세종특별자치시|세종|경기도|경기|강원특별자치도|강원|충청북도|충북|충청남도|충남|전북특별자치도|전북|전라남도|전남|경상북도|경북|경상남도|경남|제주특별자치도|제주)$/;
+
+function compactHomeRegionLabel(region: HomeRegionSnapshot | null) {
+  const raw =
+    region?.daangn_full_path?.trim() ||
+    region?.daangn_region_name?.trim() ||
+    "";
+  if (!raw) return null;
+  const parts = raw.split(/\s+/).filter(Boolean);
+  if (parts.length > 1 && TOP_LEVEL_REGION_PATTERN.test(parts[0])) {
+    return parts.slice(1).join(" ");
+  }
+  return raw;
+}
+
 function sortOptionLabel(value: SortOption) {
   if (value === "price_asc") return "매입단가순";
   if (value === "distance") return "가까운 순";
@@ -2086,6 +2110,7 @@ export default function ExploreClient({
   const [items, setItems] = useState<PoolItem[]>([]);
   // Wave 391: loadPool에서 items deps에 박으면 infinite loop. ref로 fresh 접근.
   const itemsRef = useRef<PoolItem[]>([]);
+  const poolFetchSeqRef = useRef(0);
   useEffect(() => {
     itemsRef.current = items;
   }, [items]);
@@ -2096,6 +2121,7 @@ export default function ExploreClient({
     null,
   );
   const [stats, setStats] = useState<StatsResponse | null>(null);
+  const [homeRegion, setHomeRegion] = useState<HomeRegionSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [velocityHelpOpen, setVelocityHelpOpen] = useState(false);
@@ -2650,6 +2676,8 @@ export default function ExploreClient({
   // "더 찾아보기"에서만 serverSource를 받아 현재 출처 조건의 추가 후보를 더 가져올 수 있게 한다.
   const loadPool = useCallback(
     async (refresh: boolean, options?: LoadPoolOptions) => {
+      const requestSeq = ++poolFetchSeqRef.current;
+      const isLatestRequest = () => requestSeq === poolFetchSeqRef.current;
       if (refresh) setRefreshing(true);
       else {
         setLoading(true);
@@ -2687,6 +2715,7 @@ export default function ExploreClient({
         const url = `/api/packs/pool${params.toString() ? `?${params.toString()}` : ""}`;
         const res = await fetch(url, { cache: "no-store" });
         const data = (await res.json()) as PoolResponse;
+        if (!isLatestRequest()) return;
         if (res.ok) {
           if (data.items != null) {
             // Wave 371: refresh = append + pid dedupe (기존 매물 유지하면서 새 매물 추가).
@@ -2736,6 +2765,7 @@ export default function ExploreClient({
           setFeedExhausted(true);
         }
       } catch (e) {
+        if (!isLatestRequest()) return;
         // 네트워크 끊김도 동일 — 무한 retry 차단.
         setError(
           e instanceof Error && e.message
@@ -2744,6 +2774,7 @@ export default function ExploreClient({
         );
         setFeedExhausted(true);
       } finally {
+        if (!isLatestRequest()) return;
         setRefreshing(false);
         setLoading(false);
       }
@@ -2764,6 +2795,27 @@ export default function ExploreClient({
   useEffect(() => {
     void loadStats();
   }, [loadStats]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadHomeRegion() {
+      try {
+        const res = await fetch("/api/user/home-region", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          ok?: boolean;
+          home_region?: HomeRegionSnapshot | null;
+        };
+        if (!cancelled) setHomeRegion(data.home_region ?? null);
+      } catch {
+        // 기준 동네 표시 실패는 피드 로딩을 막지 않는다.
+      }
+    }
+    void loadHomeRegion();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Wave 394.7.j: 더 찾아보기 후 새 매물 첫 카드로 자동 스크롤.
   useEffect(() => {
@@ -2870,14 +2922,29 @@ export default function ExploreClient({
   ]);
   const isDaangnFocusedView = source === "daangn" || sort === "distance";
   const locationFilterValue: LocationFilterOption = isDaangnFocusedView ? "nearby" : "all";
+  const homeRegionLabel = useMemo(
+    () => compactHomeRegionLabel(homeRegion),
+    [homeRegion],
+  );
   const mobileFilterSummary = useMemo(() => {
+    const locationLabel =
+      isDaangnFocusedView && homeRegionLabel
+        ? `기준 ${homeRegionLabel}`
+        : locationFilterLabel(locationFilterValue);
     return [
       budgetOption.shortLabel,
-      locationFilterLabel(locationFilterValue),
+      locationLabel,
       sourceOptionLabel(source),
       sortOptionLabel(sort),
     ].join(" · ");
-  }, [budgetOption.shortLabel, locationFilterValue, sort, source]);
+  }, [
+    budgetOption.shortLabel,
+    homeRegionLabel,
+    isDaangnFocusedView,
+    locationFilterValue,
+    sort,
+    source,
+  ]);
   const loadingCopy = isDaangnFocusedView
     ? {
         title: "근처 당근 매물부터 확인 중",
@@ -3679,6 +3746,11 @@ export default function ExploreClient({
             <option value="distance">가까운 순 (당근)</option>
             <option value="latest">최신순</option>
           </select>
+          {homeRegionLabel ? (
+            <span className="inline-flex min-w-0 max-w-[220px] items-center rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-black text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-200">
+              <span className="truncate">기준 동네 {homeRegionLabel}</span>
+            </span>
+          ) : null}
         </div>
       </div>
 
@@ -3741,7 +3813,14 @@ export default function ExploreClient({
               </div>
 
               <div>
-                <div className="mb-2 text-xs font-black text-zinc-500 dark:text-zinc-400">위치</div>
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <div className="text-xs font-black text-zinc-500 dark:text-zinc-400">위치</div>
+                  {homeRegionLabel ? (
+                    <div className="min-w-0 truncate rounded-full bg-blue-50 px-2 py-1 text-[11px] font-black text-blue-700 dark:bg-blue-500/10 dark:text-blue-200">
+                      기준 {homeRegionLabel}
+                    </div>
+                  ) : null}
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   {LOCATION_FILTER_OPTIONS.map((option) => {
                     const active = locationFilterValue === option.value;
