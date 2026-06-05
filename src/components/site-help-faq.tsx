@@ -28,6 +28,32 @@ function timeLabel(value: string) {
   return d.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
 }
 
+function isMatchingOptimisticMessage(current: SupportMessage, incoming: SupportMessage) {
+  if (current.id >= 0) return false;
+  if (current.sender !== incoming.sender) return false;
+  if (current.sender !== "user") return false;
+  if (current.body !== incoming.body) return false;
+  if (current.conversation_id !== 0 && current.conversation_id !== incoming.conversation_id) return false;
+  const currentTime = new Date(current.created_at).getTime();
+  const incomingTime = new Date(incoming.created_at).getTime();
+  if (!Number.isFinite(currentTime) || !Number.isFinite(incomingTime)) return true;
+  return Math.abs(incomingTime - currentTime) <= 120_000;
+}
+
+function mergeSupportMessage(current: SupportMessage[], incoming: SupportMessage) {
+  if (current.some((item) => item.id === incoming.id)) return current;
+  let replaced = false;
+  const next = current.map((item) => {
+    if (!replaced && isMatchingOptimisticMessage(item, incoming)) {
+      replaced = true;
+      return incoming;
+    }
+    return item;
+  });
+  if (!replaced) next.push(incoming);
+  return next.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+}
+
 export default function SiteHelpFaq() {
   const [open, setOpen] = useState(false);
   const [conversation, setConversation] = useState<SupportConversation | null>(null);
@@ -94,7 +120,7 @@ export default function SiteHelpFaq() {
         (payload) => {
           const next = payload.new as SupportMessage;
           if (next.conversation_id !== conversation.id) return;
-          setMessages((current) => current.some((item) => item.id === next.id) ? current : [...current, next]);
+          setMessages((current) => mergeSupportMessage(current, next));
         },
       )
       .subscribe();
@@ -141,10 +167,7 @@ export default function SiteHelpFaq() {
     const data = (await res.json().catch(() => null)) as { conversation?: SupportConversation; message?: SupportMessage } | null;
     if (data?.conversation) setConversation(data.conversation);
     if (data?.message) {
-      setMessages((current) => [
-        ...current.filter((item) => item.id !== optimisticId && item.id !== data.message?.id),
-        data.message!,
-      ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()));
+      setMessages((current) => mergeSupportMessage(current.filter((item) => item.id !== optimisticId), data.message!));
     }
     setSendState("idle");
   }
