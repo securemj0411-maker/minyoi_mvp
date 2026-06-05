@@ -260,11 +260,7 @@ export default function MembershipApplicationClient({
     setReservationExpiresAt(new Date(Date.now() + 7 * 60_000).toISOString());
     setPaymentModalOpen(true);
     setState("sent");
-    setMessage(
-      renewalMode
-        ? `${plan.label} 연장 예약 완료. 아래 계좌로 송금한 뒤 입금했어요 버튼을 눌러주세요.`
-        : null,
-    );
+    setMessage(null);
   }
 
   async function notifyDepositDone() {
@@ -410,8 +406,6 @@ export default function MembershipApplicationClient({
     submittedPlan?.label ?? pendingApplication?.planLabel ?? "멤버십";
   const priceKrw =
     submittedPlan?.priceKrw ?? pendingApplication?.priceKrw ?? 99_000;
-  const defaultReservationMessage =
-    "연장 예약이 잡혔습니다. 아래 계좌로 송금한 뒤 입금했어요 버튼을 눌러주세요.";
   const autoApproveTargetMs = autoApproveAt ? Date.parse(autoApproveAt) : null;
   const autoApproveMsLeft =
     autoApproveTargetMs && Number.isFinite(autoApproveTargetMs)
@@ -482,12 +476,12 @@ export default function MembershipApplicationClient({
         </div>
       ) : null}
       {hasReservation && paymentModalOpen ? (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/62 px-3 py-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[220] flex items-start justify-center overflow-y-auto bg-black/62 px-3 py-4 backdrop-blur-sm sm:py-10">
           <div
             role="dialog"
             aria-modal="true"
             aria-label={renewalMode ? "멤버십 연장 입금" : "멤버십 입금"}
-            className="relative max-h-[calc(100dvh-32px)] w-full max-w-[520px] overflow-y-auto"
+            className="relative w-full max-w-[520px]"
           >
             <button
               type="button"
@@ -498,7 +492,7 @@ export default function MembershipApplicationClient({
               ×
             </button>
             <div className="overflow-hidden rounded-[24px] border border-blue-100 bg-white text-zinc-950 shadow-[0_24px_80px_rgba(15,23,42,0.35)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
-          <div className="relative border-b border-blue-100 bg-[#f5f8ff] px-4 py-4 dark:border-zinc-800 dark:bg-white/6 sm:px-7 sm:py-6">
+          <div className="relative border-b border-blue-100 bg-[#f5f8ff] px-4 py-4 dark:border-zinc-800 dark:bg-white/6 sm:px-7 sm:py-5">
             <div className="relative flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="inline-flex rounded-full bg-white px-3 py-1 text-[11px] font-black tracking-[0.04em] text-[#3182f6] ring-1 ring-blue-100 dark:bg-zinc-950 dark:ring-zinc-800">
@@ -508,18 +502,14 @@ export default function MembershipApplicationClient({
                       ? "입금 확인 진행 중"
                       : "자리 확보 완료"}
                 </div>
-                <h2 className="mt-3 break-keep text-[25px] font-black leading-tight tracking-tight sm:text-[40px]">
-                  {renewalMode
-                    ? `${planLabel} 연장 예약을 잡았어요.`
-                    : showDepositCountdown
-                      ? "입금 확인 요청됐어요."
-                      : `${reservationRegion} 자리 예약됐어요.`}
+                <h2 className="mt-3 break-keep text-[25px] font-black leading-tight tracking-tight sm:text-[34px]">
+                  {showDepositCountdown ? "입금 확인 중" : "입금 방법 선택"}
                 </h2>
-                {showReservationCountdown ? (
-                  <p className="mt-2 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
-                    7분 안에 입금하지 않으면 예약이 취소돼요.
-                  </p>
-                ) : null}
+                <p className="mt-2 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+                  {showDepositCountdown
+                    ? "입금 확인 요청을 받았어요. 승인까지 잠시만 기다려주세요."
+                    : "토스 또는 계좌이체 중 편한 방법으로 송금해 주세요."}
+                </p>
               </div>
               {showReservationCountdown ? (
                 <div className="shrink-0 rounded-[18px] bg-white px-3 py-2.5 text-center text-zinc-950 shadow-[0_12px_30px_rgba(49,130,246,0.16)] ring-1 ring-blue-100 dark:bg-zinc-950 dark:text-white dark:ring-zinc-800">
@@ -550,44 +540,57 @@ export default function MembershipApplicationClient({
                 </div>
               </div>
             </div>
-            {renewalMode || state === "error" ? (
+            {state === "error" && message ? (
               <p
-                className={`mt-2 break-keep text-[12px] font-semibold leading-5 ${state === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}
+                className="mt-2 break-keep text-[12px] font-semibold leading-5 text-red-500"
               >
-                {message ?? defaultReservationMessage}
+                {message}
               </p>
             ) : null}
-            <div className="mt-2 rounded-[16px] bg-[#f5f7fb] p-3 dark:bg-zinc-900/70">
+            <div className="mt-3 rounded-[16px] bg-[#f5f7fb] p-3 dark:bg-zinc-900/70">
+              <div className="mb-2 text-[11px] font-black uppercase tracking-[0.12em] text-zinc-400">
+                송금 방법
+              </div>
               <button
                 type="button"
                 onClick={() => openTossSend(priceKrw)}
                 disabled={depositNotifyState === "sent"}
-                className="mb-3 flex h-11 w-full items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-[13px] font-black text-white shadow-[0_10px_22px_rgba(49,130,246,0.24)] transition hover:bg-[#1c6fe8] disabled:cursor-default disabled:opacity-60"
+                className="flex h-11 w-full items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-[13px] font-black text-white shadow-[0_10px_22px_rgba(49,130,246,0.24)] transition hover:bg-[#1c6fe8] disabled:cursor-default disabled:opacity-60"
               >
-                토스로 바로 송금하기
+                토스로 송금하기
               </button>
-              <p className="mb-3 break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400">
-                토스가 안 열리면 아래 계좌로 직접 입금해 주세요.
-              </p>
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <div className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+              <div className="my-3 flex items-center gap-3">
+                <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+                <span className="text-[10px] font-black text-zinc-400">또는</span>
+                <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+              </div>
+              <div className="rounded-[14px] bg-white p-3 ring-1 ring-zinc-200 dark:bg-zinc-950 dark:ring-zinc-800">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-[13px] font-black text-zinc-950 dark:text-zinc-50">
+                    계좌로 직접 송금하기
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void copyAccountNumber()}
+                    className="flex h-9 shrink-0 items-center justify-center rounded-xl bg-[#ebf2ff] px-3 text-[11px] font-black text-[#3182f6] transition hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300"
+                  >
+                    {copyOk ? "복사됨" : "계좌 복사"}
+                  </button>
+                </div>
+                <div className="mt-3 grid grid-cols-[76px_1fr] gap-x-3 gap-y-1 text-[12px] font-bold">
+                  <div className="text-zinc-400">은행</div>
+                  <div className="text-zinc-800 dark:text-zinc-200">
                     {PAYMENT_BANK_NAME}
                   </div>
-                  <div className="mt-1 font-black tabular-nums text-[18px] tracking-tight text-zinc-950 dark:text-zinc-50">
+                  <div className="text-zinc-400">계좌번호</div>
+                  <div className="font-black tabular-nums tracking-tight text-zinc-950 dark:text-zinc-50">
                     {PAYMENT_ACCOUNT_NUMBER}
                   </div>
-                  <div className="mt-1 text-[12px] font-bold text-zinc-700 dark:text-zinc-300">
-                    예금주 {PAYMENT_ACCOUNT_HOLDER}
+                  <div className="text-zinc-400">예금주</div>
+                  <div className="text-zinc-800 dark:text-zinc-200">
+                    {PAYMENT_ACCOUNT_HOLDER}
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => void copyAccountNumber()}
-                  className="flex h-10 shrink-0 items-center justify-center rounded-xl bg-white px-3 text-[11px] font-black text-[#3182f6] ring-1 ring-zinc-200 transition hover:bg-[#ebf2ff] dark:bg-zinc-950 dark:text-blue-300 dark:ring-zinc-700 dark:hover:bg-blue-950/40"
-                >
-                  {copyOk ? "복사됨" : "계좌 복사"}
-                </button>
               </div>
             </div>
             {showDepositCountdown ? (
@@ -624,7 +627,7 @@ export default function MembershipApplicationClient({
             {depositNotifyState === "idle" ? (
               <p className="mt-2 break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400">
                 입금 후 입금했어요 버튼을 누르면 5분 내로 멤버십에 자동
-                가입됩니다.
+                반영됩니다.
               </p>
             ) : null}
             {depositNotifyMessage ? (

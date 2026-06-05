@@ -716,7 +716,29 @@ function FeedMembershipUpsellCard({
                   <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">
                     제안 수락 완료 · 계좌이체 대기
                   </div>
+                  <div className="text-[12px] font-black text-zinc-800 dark:text-zinc-100">
+                    송금 방법을 선택해 주세요.
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openTossSend(reservation.plan.priceKrw)}
+                    disabled={requestState === "deposit_sent"}
+                    className="flex h-11 items-center justify-center rounded-xl bg-[#3182f6] px-4 text-[13px] font-black text-white transition hover:bg-[#1c6fe8] disabled:cursor-default disabled:opacity-60"
+                  >
+                    토스로 송금하기
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <span className="h-px flex-1 bg-emerald-200 dark:bg-emerald-900/70" />
+                    <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-300">
+                      또는
+                    </span>
+                    <span className="h-px flex-1 bg-emerald-200 dark:bg-emerald-900/70" />
+                  </div>
                   <div className="rounded-lg bg-white px-3 py-2 text-[12px] font-bold leading-5 text-zinc-700 dark:bg-zinc-950 dark:text-zinc-200">
+                    <b className="font-black text-zinc-950 dark:text-zinc-50">
+                      계좌로 직접 송금하기
+                    </b>
+                    <br />
                     {PAYMENT_BANK_NAME}{" "}
                     <b className="font-black">{PAYMENT_ACCOUNT_NUMBER}</b>
                     <br />
@@ -727,17 +749,6 @@ function FeedMembershipUpsellCard({
                       {membershipKrw(reservation.plan.priceKrw)}
                     </b>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => openTossSend(reservation.plan.priceKrw)}
-                    disabled={requestState === "deposit_sent"}
-                    className="flex h-11 items-center justify-center rounded-xl bg-[#3182f6] px-4 text-[13px] font-black text-white transition hover:bg-[#1c6fe8] disabled:cursor-default disabled:opacity-60"
-                  >
-                    토스로 바로 송금하기
-                  </button>
-                  <p className="break-keep text-[11px] font-bold leading-4 text-emerald-700 dark:text-emerald-300">
-                    토스가 안 열리면 위 계좌로 직접 입금해 주세요.
-                  </p>
                   <button
                     type="button"
                     onClick={() => void notifyDepositDone()}
