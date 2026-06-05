@@ -232,7 +232,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v72";  // Wave 803l: earphone "본체/케이스 분실" + "이어버드만" 박은 게 → drift gate reparse trigger
+export const PARSER_VERSION = "option-parser-v73";  // Wave 1150: earphone essential-parts-only ("이어폰만"/충전케이스 없음) hard pool block
 
 // Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
 //   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
@@ -1099,10 +1099,10 @@ function parseAirpodsNoiseControl(model: string | null, text: string) {
   }
 
   if (
-    /노캔\s*(?:x|×|❌|ㄴㄴ|ᄂᄂ|노노|없|아님|아니|안됨|안\s*됨|안\s*돼|안돼|안\s*되는|미지원)|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)\s*(?:x|×|❌|없|아님|아니|안됨|안\s*됨|안\s*돼|안돼|안\s*되는|미지원)|anc\s*(?:x|no|없|미지원)/.test(rawLower) ||
-    /노캔\s*(?:x|없|아님|아니|안됨|안\s*됨|안\s*돼|안돼|안\s*되는|미지원)|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)\s*(?:x|없|아님|아니|안됨|안\s*됨|안\s*돼|안돼|안\s*되는|미지원)|anc\s*(?:x|no|없|미지원)/.test(lower) ||
-    /노캔이되는모델은아니|노캔안되는|노캔안돼|노캔없는|노캔x|노캔❌|노캔ㄴㄴ|노캔ᄂᄂ|노캔노노|노캔아님|노캔아니|노캔착각|노클x|노이즈캔슬링안되는|노이즈캔슬안되는|ancx/.test(rawCompact) ||
-    /노캔이되는모델은아니|노캔안되는|노캔안돼|노캔없는|노캔x|노캔아님|노캔아니|노캔착각|노클x|노이즈캔슬링안되는|노이즈캔슬안되는|ancx/.test(compact) ||
+    /노캔(?:은|는|이|가)?\s*(?:x|×|❌|ㄴㄴ|ᄂᄂ|노노|없|아님|아니|안됨|안\s*됨|안\s*됩|안됩|안\s*돼|안돼|안\s*되는|미지원)|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)(?:은|는|이|가)?\s*(?:x|×|❌|없|아님|아니|안됨|안\s*됨|안\s*됩|안됩|안\s*돼|안돼|안\s*되는|미지원)|anc\s*(?:x|no|없|미지원)/.test(rawLower) ||
+    /노캔(?:은|는|이|가)?\s*(?:x|없|아님|아니|안됨|안\s*됨|안\s*됩|안됩|안\s*돼|안돼|안\s*되는|미지원)|노이즈\s*(?:캔슬링|켄슬링|캔슬|켄슬)(?:은|는|이|가)?\s*(?:x|없|아님|아니|안됨|안\s*됨|안\s*됩|안됩|안\s*돼|안돼|안\s*되는|미지원)|anc\s*(?:x|no|없|미지원)/.test(lower) ||
+    /노캔(?:은|는|이|가)?이되는모델은아니|노캔(?:은|는|이|가)?안되는|노캔(?:은|는|이|가)?안돼|노캔(?:은|는|이|가)?안됨|노캔(?:은|는|이|가)?안됩|노캔(?:은|는|이|가)?없는|노캔x|노캔❌|노캔ㄴㄴ|노캔ᄂᄂ|노캔노노|노캔(?:은|는|이|가)?아님|노캔(?:은|는|이|가)?아니|노캔착각|노클x|노이즈캔슬링(?:은|는|이|가)?안되는|노이즈캔슬(?:은|는|이|가)?안되는|ancx/.test(rawCompact) ||
+    /노캔(?:은|는|이|가)?이되는모델은아니|노캔(?:은|는|이|가)?안되는|노캔(?:은|는|이|가)?안돼|노캔(?:은|는|이|가)?안됨|노캔(?:은|는|이|가)?안됩|노캔(?:은|는|이|가)?없는|노캔x|노캔(?:은|는|이|가)?아님|노캔(?:은|는|이|가)?아니|노캔착각|노클x|노이즈캔슬링(?:은|는|이|가)?안되는|노이즈캔슬(?:은|는|이|가)?안되는|ancx/.test(compact) ||
     /일반\s*모델|일반형|기본\s*모델|기본모델|유선\s*충전|유선충전|mxp63/.test(lower) ||
     // Wave 90: "비노캔" 키워드 추가 (사용자 코멘트로 발견 — pid 403846241)
     /비\s*노캔|비노캔|비\s*노이즈\s*캔슬|비노이즈캔슬/.test(lower) ||
@@ -1206,6 +1206,7 @@ function conditionFromText(
   batteryHealth: number | null,
   cycles: number | null,
   category: Sku["category"] | null = null,
+  options: { earphoneNoAncVariant?: boolean } = {},
 ) {
   // Wave 204/207 (2026-05-18): title-only matching 위해 raw text 에서 첫 줄 분리.
   // normalize 가 \n 을 공백으로 합치므로 정규화 후엔 title/description 구분 불가.
@@ -1339,7 +1340,7 @@ function conditionFromText(
     const earphoneBatteryDefect = new RegExp(`${sidePrefix}(?:이|가|는|만)?[^.!?\\n]{0,15}배터리[^.!?\\n]{0,15}(?:빨리\\s*닳|빨리\\s*다됨|빨리\\s*닳음|급격|이상|불량)`);
     // 명시 negation — "왼쪽 소리 문제 없음" 같은 정상 표현 false positive 차단.
     const earphoneDefectNegation = /(?:왼쪽|오른쪽|한\s*쪽|소리|노캔|anc|배터리)[^.!?\n]{0,18}(?:문제|이상|불량|결함|하자)\s*(?:없|없음|없어|아님|x|❌)/;
-    if (!earphoneDefectNegation.test(lower) && (earphoneSoundDefect.test(lower) || earphoneAncDefect.test(lower) || earphoneBatteryDefect.test(lower))) {
+    if (!earphoneDefectNegation.test(lower) && (earphoneSoundDefect.test(lower) || (!options.earphoneNoAncVariant && earphoneAncDefect.test(lower)) || earphoneBatteryDefect.test(lower))) {
       add("earphone_function_defect", -0.4);
       if (!notes.includes("repair_or_defect_signal")) {
         notes.push("repair_or_defect_signal");
@@ -2232,7 +2233,9 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
   const monitorShape = category === "monitor"
     ? (parseMonitorShape(title) ?? parseMonitorShape(text) ?? monitorModelHint?.monitorShape ?? null)
     : null;
-  const conditionResult = conditionFromText(text, batteryHealth, batteryCycles, category);
+  const conditionResult = conditionFromText(text, batteryHealth, batteryCycles, category, {
+    earphoneNoAncVariant: category === "earphone" && model === "airpods_4" && airpodsNoiseControl === "no_anc",
+  });
   let conditionScore = conditionResult.conditionScore;
   const conditionNotes = [...conditionResult.conditionNotes];
   const earphoneConditionEvidence = category === "earphone"
@@ -2253,6 +2256,7 @@ export function parseListingOptions(input: ParseInput): ParsedListingOptions {
       single_side_unit: ["single_side_only", "earphone_single_side_unit"],
       charging_case_only: ["parts_only", "earphone_case_only"],
       protective_case_only: ["accessory_compatible_for_other_product", "earphone_case_only"],
+      essential_parts_missing: ["parts_only", "earphone_missing_parts"],
       audio_output_issue: ["repair_or_defect_signal", "earphone_audio_issue"],
       anc_or_transparency_issue: ["repair_or_defect_signal", "earphone_anc_issue"],
       mic_issue: ["repair_or_defect_signal", "earphone_mic_issue"],

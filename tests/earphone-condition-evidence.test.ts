@@ -88,6 +88,16 @@ describe("earphone condition evidence shadow parser", () => {
     assert.ok(result.warningSignals.includes("missing_parts"));
   });
 
+  it("갤럭시 버즈 이어폰만 매물은 구성품 경고가 아니라 필수 구성품 누락 hard block이다", () => {
+    const result = parseEarphoneConditionEvidence({
+      title: "갤럭시 버즈3 실버 (이어폰만)",
+      description: "이어폰만 있습니다.",
+    });
+
+    assert.ok(result.signals.includes("essential_parts_missing"), JSON.stringify(result));
+    assert.ok(result.hardBlockCandidates.includes("essential_parts_missing"), JSON.stringify(result));
+  });
+
   it("노캔이 없는 일반 모델은 ANC 고장이 아니라 variant로 본다", () => {
     const result = parseEarphoneConditionEvidence({
       title: "에어팟 4세대 노캔 x",
@@ -259,6 +269,16 @@ describe("earphone condition evidence shadow parser", () => {
     assert.ok(result.signals.includes("missing_parts"));
   });
 
+  it("충전 케이스가 없는 TWS는 필수 구성품 누락으로 hard block한다", () => {
+    const result = parseEarphoneConditionEvidence({
+      title: "갤럭시 버즈3 양쪽 팔아요",
+      description: "충전케이스는 분실해서 이어폰만 판매합니다.",
+    });
+
+    assert.ok(result.signals.includes("essential_parts_missing"), JSON.stringify(result));
+    assert.ok(result.hardBlockCandidates.includes("essential_parts_missing"), JSON.stringify(result));
+  });
+
   it("케이스를 잃어버리고 양쪽 유닛은 있는 매물은 한쪽 유닛 누락으로 보지 않는다", () => {
     const result = parseEarphoneConditionEvidence({
       title: "삼성 갤럭시 버즈2 프로 이어폰만 왼쪽 오른쪽",
@@ -384,6 +404,21 @@ describe("earphone condition evidence shadow parser", () => {
     assert.ok(charging.conditionNotes.includes("earphone_battery_issue"));
   });
 
+  it("parseListingOptions는 버즈 이어폰만 매물을 parts_only로 내려 ready 차단 대상으로 만든다", () => {
+    const parsed = parseListingOptions({
+      category: "earphone",
+      title: "갤럭시 버즈3 실버 (이어폰만)",
+      description: "이어폰만 있습니다.",
+      skuId: "galaxy-buds-3",
+      skuName: "Galaxy Buds 3",
+    });
+
+    assert.equal(parsed.conditionClass, "flawed");
+    assert.ok(parsed.conditionNotes.includes("parts_only"), JSON.stringify(parsed.conditionNotes));
+    assert.ok(parsed.conditionNotes.includes("earphone_missing_parts"), JSON.stringify(parsed.conditionNotes));
+    assert.ok(parsed.needsReview);
+  });
+
   it("parseListingOptions는 노캔 일반 모델/정상 부정형을 flawed로 낮추지 않는다", () => {
     const noAnc = parseListingOptions({
       category: "earphone",
@@ -411,6 +446,21 @@ describe("earphone condition evidence shadow parser", () => {
     assert.equal(result.entries.length, 0);
     assert.deepEqual(result.invalidations, [
       { pid: 926001, reason: "earphone_condition_audio_output_issue" },
+    ]);
+  });
+
+  it("pool_gate_v1 essential_parts_missing candidate는 candidate pool 진입을 차단한다", () => {
+    const result = buildAirpodsPool({
+      earphone_condition_policy: {
+        mode: "pool_gate_v1",
+        hard_block_candidates: ["essential_parts_missing"],
+        warning_signals: [],
+      },
+    }, 926002);
+
+    assert.equal(result.entries.length, 0);
+    assert.deepEqual(result.invalidations, [
+      { pid: 926002, reason: "earphone_condition_essential_parts_missing" },
     ]);
   });
 

@@ -1,4 +1,4 @@
-export const EARPHONE_CONDITION_EVIDENCE_VERSION = "earphone-condition-evidence-v2";
+export const EARPHONE_CONDITION_EVIDENCE_VERSION = "earphone-condition-evidence-v3";
 
 export type EarphoneConditionSignal =
   | "single_side_unit"
@@ -12,6 +12,7 @@ export type EarphoneConditionSignal =
   | "hygiene_or_stain"
   | "physical_damage"
   | "missing_parts"
+  | "essential_parts_missing"
   | "full_set_positive"
   | "new_positive"
   | "no_anc_variant"
@@ -180,6 +181,16 @@ export function parseEarphoneConditionEvidence(input: {
   const hasProductBodyContext = /본체|헤드폰\s*본품|기기\s*단품/.test(allText);
   if (!hasProductBodyContext || /유닛\s*(?:없|미포함|분실)|(?:없|미포함|분실).{0,18}유닛/.test(chargingCaseOnlyEvidence?.evidence ?? "")) {
     add("charging_case_only", "block_candidate", 0.98, chargingCaseOnlyEvidence);
+  }
+
+  const essentialPartsMissingEvidence = firstEvidence(sources, [
+    /(?:이어\s*폰|이어\s*버드|이어버드|이어\s*피스|이어피스|유닛)\s*(?:양쪽|좌\s*우|좌우|양\s*유닛|페어)?\s*(?:만|단품)(?:$|[\s.]|입니다|판매|팝니다|팔아요)/,
+    /(?:양쪽|좌\s*우|좌우|양\s*유닛|두\s*쪽)\s*(?:이어\s*폰|이어\s*버드|이어버드|유닛)?\s*(?:만|단품)(?:$|[\s.]|입니다|판매|팝니다|팔아요)/,
+    /(?:충전\s*)?케이스(?:만)?\s*(?:은|는|이|가|를)?\s*(?:없|없는|없음|미포함|분실|잃어|제외)/,
+    /(?:충전\s*)?케이스.{0,10}(?:없|없음|미포함|분실|잃어|제외)/,
+  ]);
+  if (!fullSizeHeadphone) {
+    add("essential_parts_missing", "block_candidate", 0.94, essentialPartsMissingEvidence);
   }
 
   const protectiveCaseEvidence = firstEvidence(titleOnly, [

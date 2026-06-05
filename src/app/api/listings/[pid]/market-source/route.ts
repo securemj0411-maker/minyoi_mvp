@@ -20,6 +20,7 @@ import { hasDetailAccess } from "@/lib/detail-access";
 import { userRefForAuthUser } from "@/lib/user-ref";
 import { COMPARABLE_EXCLUDE_NOTES } from "@/lib/condition-policy";
 import { mergeConditionDisplayChips } from "@/lib/condition-display";
+import { parseEarphoneConditionEvidence } from "@/lib/condition-evidence/earphone";
 import { hardSplitChipSignature, shouldUseExactHardChipComparison } from "@/lib/condition-chip-policy";
 import { madTrim } from "@/lib/market-math";
 import { getProStatus } from "@/lib/user-subscription";
@@ -84,6 +85,14 @@ function sortMarketProofRows(rows: Array<Record<string, unknown>>) {
 
     return comparableLastSeenMs(b) - comparableLastSeenMs(a);
   });
+}
+
+function hasEssentialEarphonePartsMissing(row: Record<string, unknown>) {
+  const evidence = parseEarphoneConditionEvidence({
+    title: String(row.name ?? ""),
+    description: String(row.description_preview ?? ""),
+  });
+  return evidence.hardBlockCandidates.includes("essential_parts_missing");
 }
 
 function trimComparableOutlierRows(rows: Array<Record<string, unknown>>) {
@@ -183,7 +192,7 @@ export async function GET(
         { headers: serviceHeaders() },
       ),
       restFetch(
-        `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,thumbnail_url,sale_status,listing_state,last_seen_at,query&pid=eq.${pid}`,
+        `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,sku_id,thumbnail_url,sale_status,listing_state,last_seen_at,query,description_preview&pid=eq.${pid}`,
         { headers: serviceHeaders() },
       ),
     ]);
@@ -203,6 +212,7 @@ export async function GET(
       comparableKey && (comparableKey.startsWith("shoe|") || comparableKey.startsWith("clothing|")),
     );
     const skuId = (raw?.sku_id as string | null) ?? null;
+    const isEarphoneTarget = Boolean(comparableKey?.startsWith("earphone|"));
     // Wave 251.4 (2026-05-19): fashion sub-product 분리 — 본 매물 clothing_product_type 추출.
     //   사용자 frustration (id 201, 202, 203): BAPE tee 50+건 비교군에 tee/hoodie/crewneck/맨투맨 섞임.
     //     같은 sku_id (clothing-bape-tee) 안 product_type 별 가격 분포 다름 (tee ₩70k vs hoodie ₩300k).
@@ -278,7 +288,7 @@ export async function GET(
         const [rawListRes, analysisRes, parsedRes2] = await Promise.all([
           restFetch(
             // Wave launch-31 (사용자 짚음): 같은 셀러 다중 가격 매물 dedup 위해 seller_uid 추가.
-            `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,query,seller_uid&pid=in.(${sameKeyPids.join(",")})&listing_type=eq.normal&order=last_seen_at.desc`,
+            `${tableUrl("mvp_raw_listings")}?select=pid,source,seller_source,url,name,price,thumbnail_url,sale_status,listing_state,last_seen_at,query,seller_uid,description_preview&pid=in.(${sameKeyPids.join(",")})&listing_type=eq.normal&order=last_seen_at.desc`,
             { headers: serviceHeaders() },
           ),
           restFetch(
@@ -417,6 +427,7 @@ export async function GET(
           const parsedJsonNotes = parsedRow?.parsed_json?.condition_notes as string[] | undefined;
           const notes = parsedRow?.condition_notes ?? parsedJsonNotes ?? [];
           if (COMPARABLE_EXCLUDE_NOTES.some((n) => notes.includes(n))) return false;
+          if (isEarphoneTarget && hasEssentialEarphonePartsMissing(row)) return false;
           const rowHardSignature = hardSignatureByPid.get(pid) ?? "";
           if (!targetHardChipSignature && rowHardSignature) return false;
           if (targetHardChipSignature && exactHardChipGate?.ok && rowHardSignature !== targetHardChipSignature) return false;

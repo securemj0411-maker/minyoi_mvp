@@ -9,6 +9,7 @@ import { loadUserHomeRegion } from "@/lib/user-home-region-loader";
 import { loadSkuImageMap, resolveGenericImage } from "@/lib/sku-images";
 import { safeThumbnailUrl } from "@/lib/thumbnail-utils";
 import { mergeConditionDisplayChips } from "@/lib/condition-display";
+import { parseEarphoneConditionEvidence } from "@/lib/condition-evidence/earphone";
 import { isDaangnMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { decodePoolAccessToken } from "@/lib/pool-access-token";
 import { localizeProductLineLabel } from "@/lib/product-line-display";
@@ -1142,6 +1143,7 @@ async function loadPool(
   // Wave 795 (2026-05-27): listing_state 추가 fetch — "방금 거래" 표시 진짜 sold 만 (active 73% leak fix).
   const sourceByPid = new Map<number, string | null>();
   const listingStateByPid = new Map<number, string | null>();
+  const rawDescriptionByPid = new Map<number, string | null>();
   const daangnActionableByPid = new Map<number, boolean>();
   // Wave 797 (2026-05-27): 거리 우선 정렬용 — 당근 매물 distanceKm 저장.
   const daangnDistanceKmByPid = new Map<number, number>();
@@ -1159,9 +1161,10 @@ async function loadPool(
       daangn_region_id: string | null;
       daangn_region_name: string | null;
       listing_state: string | null;
+      description_preview: string | null;
     }>(
       "mvp_raw_listings",
-      "pid,source,daangn_region_id,daangn_region_name,listing_state",
+      "pid,source,daangn_region_id,daangn_region_name,listing_state,description_preview",
       allCandidatePids,
       headers,
     ),
@@ -1171,6 +1174,7 @@ async function loadPool(
     const normalizedSource = row.source ? normalizeMarketplaceSource(row.source) : null;
     sourceByPid.set(Number(row.pid), normalizedSource);
     listingStateByPid.set(Number(row.pid), row.listing_state);
+    rawDescriptionByPid.set(Number(row.pid), row.description_preview ?? null);
     if (normalizedSource === "daangn" && options.userHomeDaangnFullPath) {
       const distance = evaluateDaangnRegionDistance(
         options.userHomeDaangnFullPath,
@@ -1199,6 +1203,18 @@ async function loadPool(
     const raw = rawByPid.get(row.pid);
     return raw != null && Number.isFinite(raw.price) && raw.price > 0 && raw.price <= options.priceMax;
   };
+  // Wave 1150 (2026-06-05): stale ready row 방어.
+  // Parser v73이 "이어폰만/충전케이스 없음"을 hard block 하더라도,
+  // worker 재파싱 전 v72 ready row가 피드에 남을 수 있어 응답 직전에 한 번 더 막는다.
+  const essentialEarphonePartsPass = (row: PoolRow & { soldOut: boolean }) => {
+    if (row.category !== "earphone") return true;
+    const raw = rawByPid.get(row.pid);
+    const evidence = parseEarphoneConditionEvidence({
+      title: raw?.name ?? "",
+      description: rawDescriptionByPid.get(row.pid) ?? "",
+    });
+    return !evidence.hardBlockCandidates.includes("essential_parts_missing");
+  };
   // Wave 795 (2026-05-27): sold_out 필터 추가 — invalidated 매물 중 진짜 sold 만 keep.
   //   DB sweep 발견: invalidated 1,073건 중 73.5% (789건) 가 active+SELLING 매물 (catalog 변경/시세 변동/AI reject 등 invalidation 사유).
   //   "방금 거래된 상품" 라벨이 73% 거짓 정보 → 사용자 신뢰 직격.
@@ -1209,8 +1225,8 @@ async function loadPool(
   };
   // Wave launch-40: source + budget 통합 필터. 다양화 전.
   // Wave 895 (당근 거리 필터) + Wave 795 (진짜 sold 만) 통합.
-  const readyFiltered = readyRowsRaw.filter((r) => sourcePass(r) && budgetPass(r) && daangnDistancePass(r));
-  const soldOutFiltered = soldOutRowsRaw.filter((r) => sourcePass(r) && budgetPass(r) && daangnDistancePass(r) && realSoldPass(r));
+  const readyFiltered = readyRowsRaw.filter((r) => sourcePass(r) && budgetPass(r) && daangnDistancePass(r) && essentialEarphonePartsPass(r));
+  const soldOutFiltered = soldOutRowsRaw.filter((r) => sourcePass(r) && budgetPass(r) && daangnDistancePass(r) && essentialEarphonePartsPass(r) && realSoldPass(r));
 
   // Wave 346: 카테고리 다양화 — budget filter 통과 매물 안에서만.
   // Wave 886.3 (2026-05-27): source 다양화 추가.

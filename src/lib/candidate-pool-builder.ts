@@ -209,6 +209,7 @@ const EARPHONE_POOL_BLOCK_SIGNALS = new Set([
   "single_side_unit",
   "charging_case_only",
   "protective_case_only",
+  "essential_parts_missing",
 ]);
 
 function earphoneConditionEvidenceBlockReason(input: {
