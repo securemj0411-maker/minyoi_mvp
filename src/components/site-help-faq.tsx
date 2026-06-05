@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useEffect, useId, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useId, useRef, useState } from "react";
 
 import { HeadsetIcon, SendIcon } from "@/components/icons";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -68,13 +68,21 @@ export default function SiteHelpFaq() {
   const interactedRef = useRef(false);
   const authUserIdRef = useRef<string | null | undefined>(undefined);
 
-  function resetChatState(nextState: "idle" | "loading" | "ready" | "error" | "login" = "idle") {
+  const resetChatState = useCallback((nextState: "idle" | "loading" | "ready" | "error" | "login" = "idle") => {
     setConversation(null);
     setMessages([]);
     setMessage("");
     setLoadState(nextState);
     setSendState("idle");
-  }
+  }, []);
+
+  const openSupportChat = useCallback(() => {
+    interactedRef.current = true;
+    resetChatState("loading");
+    setOpen(true);
+    setUnreadCount(0);
+    lastUnreadCountRef.current = 0;
+  }, [resetChatState]);
 
   function playReplySound() {
     if (!interactedRef.current) return;
@@ -100,6 +108,11 @@ export default function SiteHelpFaq() {
   }
 
   useEffect(() => {
+    window.addEventListener("minyoi:open-support-chat", openSupportChat);
+    return () => window.removeEventListener("minyoi:open-support-chat", openSupportChat);
+  }, [openSupportChat]);
+
+  useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
     let cancelled = false;
@@ -121,7 +134,7 @@ export default function SiteHelpFaq() {
       cancelled = true;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [resetChatState]);
 
   useEffect(() => {
     if (!open) return;
@@ -286,15 +299,9 @@ export default function SiteHelpFaq() {
     <>
       <button
         type="button"
-        onClick={() => {
-          interactedRef.current = true;
-          resetChatState("loading");
-          setOpen(true);
-          setUnreadCount(0);
-          lastUnreadCountRef.current = 0;
-        }}
+        onClick={openSupportChat}
         aria-label="고객센터 열기"
-        className="fixed bottom-[88px] right-4 z-[70] flex h-[52px] min-h-[52px] items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-600 px-4 py-3 text-sm font-black text-white shadow-[0_16px_42px_rgba(5,150,105,0.34)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 dark:border-emerald-300/20 dark:bg-emerald-500 dark:hover:bg-emerald-400 sm:bottom-5 sm:right-5"
+        className="fixed bottom-[88px] right-4 z-[10020] flex h-[52px] min-h-[52px] items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-600 px-4 py-3 text-sm font-black text-white shadow-[0_16px_42px_rgba(5,150,105,0.34)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 dark:border-emerald-300/20 dark:bg-emerald-500 dark:hover:bg-emerald-400 sm:bottom-5 sm:right-5"
       >
         <HeadsetIcon className="h-5 w-5" />
         <span className="hidden sm:inline">고객센터</span>
@@ -306,7 +313,7 @@ export default function SiteHelpFaq() {
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-[80]" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+        <div className="fixed inset-0 z-[10030]" role="dialog" aria-modal="true" aria-labelledby={titleId}>
           <button
             type="button"
             aria-label="고객센터 닫기"
