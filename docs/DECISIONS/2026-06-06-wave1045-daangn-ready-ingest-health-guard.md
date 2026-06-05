@@ -67,12 +67,37 @@ npx tsx --test tests/cron-guard.test.ts
 
 Result: 10 pass, 0 fail.
 
+```bash
+npm run build
+```
+
+Result: passed.
+
+## Post-deploy Verification
+
+After deploying commit `cacfc656`:
+
+- Manual `vercel crons run /api/cron/daangn-worker` no longer skipped on stale unhealthy source health.
+- `mvp_collect_runs` recorded a real `daangn_worker` run:
+  - status: `succeeded`
+  - collected: 47,413
+  - raw upserted: 500
+  - duration: 147,517ms
+- `mvp_source_health` latest Daangn row recovered:
+  - status: `healthy`
+  - reason: `ok`
+  - checked_at: 2026-06-05T22:19:14Z
+- Immediate ready snapshot after the run:
+  - daangn: 2,845
+  - bunjang: 957
+  - joongna: 525
+
+Ready count is not expected to jump instantly; the new raw rows still need detail/score/pool cycles.
+
 ## Follow-up
 
 After deploy:
 
-1. Watch `mvp_collect_runs` for new `daangn_worker` rows after the next 5-minute tick.
-2. Confirm `mvp_cron_executions` no longer shows `skipped_unhealthy` for stale Daangn health.
-3. Recheck source-ready counts after several score/lifecycle cycles; ready should recover gradually if ingest produces valid, market-supported rows.
-4. Consider a source-health probe route/worker so source health can refresh independently without needing the full heavy worker to run.
-
+1. Watch automatic `daangn_worker` ticks after the next 5-minute schedule.
+2. Recheck source-ready counts after several score/lifecycle cycles; ready should recover gradually if ingest produces valid, market-supported rows.
+3. Consider a source-health probe route/worker so source health can refresh independently without needing the full heavy worker to run.
