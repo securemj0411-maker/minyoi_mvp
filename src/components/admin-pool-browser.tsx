@@ -5,7 +5,7 @@
 // 운영자가 팩 결제 없이 풀 전체 검증 가능.
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import MarketHistoryChart from "@/components/market-history-chart";
 import { MarketSourceDebug } from "@/components/market-source-debug";
 import { ConditionChip, ConditionTierChip, ConditionChipsList } from "@/components/condition-chip";
@@ -193,6 +193,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
   const [loading, setLoading] = useState(false);
   const [statsLoading, setStatsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fetchSeqRef = useRef(0);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
   const [status, setStatus] = useState("ready");
@@ -211,6 +212,8 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
   const [searchQuery, setSearchQuery] = useState("");
 
   const fetchPage = useCallback(async () => {
+    const seq = fetchSeqRef.current + 1;
+    fetchSeqRef.current = seq;
     setLoading(true);
     setError(null);
     try {
@@ -230,11 +233,13 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
         throw new Error(body?.error ?? `HTTP ${res.status}`);
       }
       const json = (await res.json()) as Resp;
+      if (seq !== fetchSeqRef.current) return;
       setData(json);
     } catch (err) {
+      if (seq !== fetchSeqRef.current) return;
       setError(err instanceof Error ? err.message : "fetch failed");
     } finally {
-      setLoading(false);
+      if (seq === fetchSeqRef.current) setLoading(false);
     }
   }, [page, pageSize, status, band, category, priceBucket, sku, source, daangnRegion1, daangnRegion2, daangnRegion3, sort, searchQuery, endpoint]);
 
