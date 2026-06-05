@@ -72,7 +72,7 @@ export default function AppFooter() {
             <div>
               호스팅 Vercel
               <span className="mx-1.5 text-zinc-300 dark:text-zinc-700">·</span>
-              서비스명 득템잡이 — 중고 매물 시세 분석 및 크레딧 기반 정보 제공 서비스
+              서비스명 득템잡이 — 중고 매물 시세 분석 및 멤버십 기반 정보 제공 서비스
             </div>
           </div>
         </details>

@@ -12,12 +12,6 @@ type LookupResponse = {
   ok: boolean;
   // Wave 979: DB 미존재 → 실시간 fetch + ingest 한 매물 표시.
   freshlyIngested?: boolean;
-  creditInfo?: {
-    charged: boolean;
-    balance: number | null;
-    lookupsUsed: number;
-    lookupsPerCredit: number;
-  };
   raw: {
     pid: number;
     source: string | null;
@@ -98,8 +92,7 @@ type LookupResponse = {
 type ErrorResponse = {
   error: string;
   message?: string;
-  balance?: number | null;
-  lookupsUsed?: number;
+  redirectTo?: string;
   step?: string;
   detail?: string;
 };
@@ -177,7 +170,6 @@ export default function LookupClient() {
   const [progressStage, setProgressStage] = useState(0);
   const [result, setResult] = useState<LookupResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [paywall, setPaywall] = useState<{ balance: number | null; message: string } | null>(null);
   const [authReady, setAuthReady] = useState<"loading" | "authed" | "guest">("loading");
 
   // Wave 803j (2026-05-30): SSE 실제 step 박은 게 박은 게 박은 게 박은 게 박은 게 박은 게.
@@ -220,7 +212,6 @@ export default function LookupClient() {
       case "fetch_comparable_listings": return 3;
       case "fetch_price_daily": return 3;
       case "register_to_pool": return 4; // 95% (마지막)
-      case "charge_credit": return 4;
       default: return 1;
     }
   }
@@ -233,7 +224,6 @@ export default function LookupClient() {
     setLoading(true);
     setError(null);
     setResult(null);
-    setPaywall(null);
     setProgressStage(1);
     try {
       const supabase = getSupabaseBrowserClient();
@@ -256,8 +246,8 @@ export default function LookupClient() {
         // server SSE 미지원 (또는 rate-limit/auth 등 박은 게 JSON 박힘) → 기존 처리.
         const data = (await res.json().catch(() => ({}))) as LookupResponse & ErrorResponse;
         if (!res.ok) {
-          if (res.status === 402) {
-            setPaywall({ balance: data.balance ?? 0, message: data.message ?? "크레딧이 부족해요." });
+          if (res.status === 403 && data.redirectTo) {
+            window.location.href = data.redirectTo;
             return;
           }
           const baseMsg = data.message ?? "조회에 실패했어요. 잠시 후 다시 시도해주세요.";
@@ -312,8 +302,8 @@ export default function LookupClient() {
         return;
       }
       if (doneStatus !== 200) {
-        if (doneStatus === 402) {
-          setPaywall({ balance: doneBody.balance ?? 0, message: doneBody.message ?? "크레딧이 부족해요." });
+        if (doneStatus === 403 && doneBody.redirectTo) {
+          window.location.href = doneBody.redirectTo;
           return;
         }
         const baseMsg = doneBody.message ?? "조회에 실패했어요. 잠시 후 다시 시도해주세요.";
@@ -378,11 +368,11 @@ export default function LookupClient() {
             시세 조회
           </h1>
           <p className="mt-1 break-keep text-[12.5px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-            번개장터·중고나라·당근마켓 URL 을 붙여넣으면 미뇨이가 시세 / 예상 수익 / 비교 매물 / 14일 시세 추이를 보여드려요.
+            번개장터·중고나라·당근마켓 URL 을 붙여넣으면 득템잡이가 시세 / 예상 수익 / 비교 매물 / 14일 시세 추이를 보여드려요.
           </p>
           <div className="mt-3 flex items-center gap-1.5 rounded-xl bg-[#f5f9ff] px-3 py-2 text-[11px] font-bold text-[#3182f6] dark:bg-blue-950/24 dark:text-blue-300">
-            <span>💎</span>
-            <span>조회 1번 = 0.2크레딧 (5번 = 1크레딧 차감)</span>
+            <span>멤버십 전용</span>
+            <span>승인된 멤버는 추가 차감 없이 URL 시세를 확인할 수 있어요.</span>
           </div>
         </section>
 
@@ -473,65 +463,11 @@ export default function LookupClient() {
               {error}
             </div>
           ) : null}
-          {paywall ? (
-            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/50 dark:bg-amber-950/30">
-              <div className="text-[12.5px] font-black text-amber-900 dark:text-amber-100">
-                💎 크레딧이 부족해요
-              </div>
-              <p className="mt-1 break-keep text-[11.5px] font-bold leading-4 text-amber-800 dark:text-amber-200">
-                {paywall.message}
-              </p>
-              <div className="mt-1 text-[10.5px] font-bold text-amber-700 dark:text-amber-300">
-                현재 잔액 {paywall.balance ?? 0}크레딧
-              </div>
-              <Link
-                href="/plans"
-                className="mt-2 inline-flex h-9 items-center justify-center rounded-lg bg-amber-600 px-3 text-[11.5px] font-black text-white shadow-sm transition hover:bg-amber-700"
-              >
-                크레딧 충전하기 →
-              </Link>
-            </div>
-          ) : null}
         </section>
 
         {/* Result */}
         {result ? (
           <>
-            {/* 크레딧 사용 정보 */}
-            {result.creditInfo ? (
-              <section className="mt-3 rounded-[16px] border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">
-                      이번 조회
-                    </div>
-                    <div className={`mt-0.5 text-[13px] font-black ${result.creditInfo.charged ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"}`}>
-                      {result.creditInfo.charged
-                        ? `-1크레딧 차감 (5번 누적 완료)`
-                        : `무료 (${result.creditInfo.lookupsUsed}/${result.creditInfo.lookupsPerCredit})`}
-                    </div>
-                  </div>
-                  {result.creditInfo.balance != null ? (
-                    <div className="text-right">
-                      <div className="text-[10.5px] font-bold text-zinc-500 dark:text-zinc-400">잔액</div>
-                      <div className="mt-0.5 text-[13px] font-black text-zinc-900 dark:text-zinc-100">
-                        {result.creditInfo.balance}크레딧
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black text-violet-700 dark:bg-violet-950/40 dark:text-violet-300">
-                      운영자 무한
-                    </div>
-                  )}
-                </div>
-                {!result.creditInfo.charged && result.creditInfo.lookupsUsed === result.creditInfo.lookupsPerCredit - 1 ? (
-                  <div className="mt-2 rounded-lg bg-amber-50 px-2 py-1.5 text-[10.5px] font-bold text-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
-                    ⚠️ 다음 조회는 5번째 — 1크레딧이 차감돼요
-                  </div>
-                ) : null}
-              </section>
-            ) : null}
-
             {/* 매물 정보 */}
             <section className="mt-3 rounded-[16px] border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
               <div className="flex gap-3">

@@ -307,8 +307,8 @@ async function runLookup(
     }
   }
 
-  // DB 매물 조회 — url 컬럼 ILIKE 검색
-  // (크레딧 차감은 성공 응답 직전에 — 404/202 시 무료)
+  // DB 매물 조회 — url 컬럼 ILIKE 검색.
+  // 현재 URL 조회는 승인 멤버십 전용이며 별도 크레딧을 차감하지 않는다.
   setStep("fetch_raw_listing");
   const headers = serviceHeaders();
   // Wave 886.14 (2026-05-27): bunjang/joongna 는 key=pid (numeric) → pid 인덱스 eq 사용.
