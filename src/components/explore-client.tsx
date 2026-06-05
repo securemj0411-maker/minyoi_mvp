@@ -1320,10 +1320,89 @@ const LEGACY_SAVED_REVEAL_PIDS_STORAGE_KEY = "minyoi_saved_reveal_pids_v1";
 const FIRST_FEED_ONBOARDING_STORAGE_KEY = "minyoi_first_feed_value_hook_v1";
 const FEED_BUDGET_FILTER_STORAGE_KEY = "minyoi_feed_budget_filter_v1";
 const DETAIL_ACCESS_SNAPSHOT_STORAGE_KEY = "minyoi_detail_access_snapshot_v1";
+const FEED_SNAPSHOT_STORAGE_KEY = "minyoi_feed_snapshot_v2";
+const FEED_SNAPSHOT_TTL_MS = 2 * 60_000;
+const FEED_SNAPSHOT_MAX_ITEMS = 80;
 const MAX_LOCAL_SCRAP_SNAPSHOTS = 500;
 
 function scopedStorageKey(baseKey: string, storageScope: string) {
   return `${baseKey}:${storageScope || "anonymous"}`;
+}
+
+function feedSnapshotStorageKey(
+  storageScope: string,
+  options: {
+    budget: BudgetFilterOption;
+    extendedMarketplaces?: boolean;
+    source: SourceOption | null;
+    sort: SortOption | null;
+  },
+) {
+  const sourceKey = options.source ?? "all";
+  const sortKey = options.sort ?? "profit_desc";
+  const marketKey = options.extendedMarketplaces ? "extended" : "base";
+  return scopedStorageKey(
+    `${FEED_SNAPSHOT_STORAGE_KEY}:${sourceKey}:${sortKey}:${options.budget}:${marketKey}`,
+    storageScope,
+  );
+}
+
+function readFeedSnapshot(
+  storageScope: string,
+  options: {
+    budget: BudgetFilterOption;
+    extendedMarketplaces?: boolean;
+    source: SourceOption | null;
+    sort: SortOption | null;
+  },
+): PoolItem[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(
+      feedSnapshotStorageKey(storageScope, options),
+    );
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as {
+      items?: PoolItem[];
+      savedAt?: number;
+    } | null;
+    if (
+      !parsed ||
+      !Array.isArray(parsed.items) ||
+      parsed.items.length === 0 ||
+      typeof parsed.savedAt !== "number" ||
+      Date.now() - parsed.savedAt > FEED_SNAPSHOT_TTL_MS
+    ) {
+      return null;
+    }
+    return parsed.items.filter((item) => Number.isFinite(Number(item?.pid)));
+  } catch {
+    return null;
+  }
+}
+
+function writeFeedSnapshot(
+  storageScope: string,
+  options: {
+    budget: BudgetFilterOption;
+    extendedMarketplaces?: boolean;
+    source: SourceOption | null;
+    sort: SortOption | null;
+  },
+  items: PoolItem[],
+) {
+  if (typeof window === "undefined" || items.length === 0) return;
+  try {
+    window.localStorage.setItem(
+      feedSnapshotStorageKey(storageScope, options),
+      JSON.stringify({
+        items: items.slice(0, FEED_SNAPSHOT_MAX_ITEMS),
+        savedAt: Date.now(),
+      }),
+    );
+  } catch {
+    // ignore — snapshot is only a perceived-speed hint.
+  }
 }
 
 function isBudgetFilterOption(
@@ -2811,11 +2890,27 @@ export default function ExploreClient({
       const requestSeq = ++poolFetchSeqRef.current;
       const isLatestRequest = () => requestSeq === poolFetchSeqRef.current;
       const silent = options?.silent === true;
+      const requestLimit = options?.limit ?? (!refresh ? INITIAL_FEED_PAGE_SIZE : null);
+      const serverSource = options?.serverSource ?? sourceRef.current;
+      const serverSort =
+        options?.serverSort ??
+        (sortRef.current === "distance" ? "distance" : null);
+      const snapshotOptions = {
+        budget: budgetFilter,
+        extendedMarketplaces: options?.extendedMarketplaces === true,
+        source: serverSource,
+        sort: serverSort ?? sortRef.current,
+      };
       if (refresh) {
         if (!silent) setRefreshing(true);
       }
       else {
         initialRemainderRequestedRef.current = false;
+        const cachedItems = readFeedSnapshot(storageScope, snapshotOptions);
+        if (cachedItems?.length) {
+          itemsRef.current = cachedItems;
+          setItems(cachedItems);
+        }
         setLoading(true);
         setFeedExhausted(false);
       }
@@ -2823,14 +2918,9 @@ export default function ExploreClient({
       try {
         const params = new URLSearchParams();
         if (refresh) params.set("refresh", "1");
-        const requestLimit = options?.limit ?? (!refresh ? INITIAL_FEED_PAGE_SIZE : null);
         if (requestLimit != null) params.set("limit", String(requestLimit));
-        const serverSource = options?.serverSource ?? sourceRef.current;
         if (serverSource !== "all") params.set("source", serverSource);
         if (options?.extendedMarketplaces) params.set("marketplaces", "extended");
-        const serverSort =
-          options?.serverSort ??
-          (sortRef.current === "distance" ? "distance" : null);
         if (serverSort === "distance") params.set("sort", "distance");
         const budgetParam = budgetApiParam(budgetFilter);
         if (budgetParam) params.set("budget", budgetParam);
@@ -2875,10 +2965,13 @@ export default function ExploreClient({
                 // Wave 394.7.j: 새 매물 첫 pid 저장 — useEffect 가 mount 후 scroll.
                 if (fresh.length > 0 && options?.autoScrollNew !== false)
                   setScrollTargetPid(fresh[0].pid);
-                return [...prev, ...fresh];
+                const nextItems = [...prev, ...fresh];
+                writeFeedSnapshot(storageScope, snapshotOptions, nextItems);
+                return nextItems;
               });
             } else {
               setItems(data.items);
+              writeFeedSnapshot(storageScope, snapshotOptions, data.items);
               setFeedExhausted(data.items.length === 0);
             }
           }
@@ -4075,7 +4168,7 @@ export default function ExploreClient({
       ) : null}
 
       {/* 로딩 / 에러 / 매물 grid */}
-      {loading ? (
+      {loading && items.length === 0 ? (
         <div className="space-y-3">
           <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 shadow-sm dark:border-blue-900/40 dark:bg-zinc-950/70">
             <div className="flex items-center gap-3">
