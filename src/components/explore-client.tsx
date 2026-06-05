@@ -29,6 +29,7 @@ import {
   KbankPaymentLogo,
   TossPaymentLogo,
 } from "@/components/payment-brand-logo";
+import PaymentTrustCard from "@/components/payment-trust-card";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { detectBrandDepth } from "@/lib/category-brand-depth";
 import type { DetailEventType } from "@/lib/detail-analytics";
@@ -767,6 +768,7 @@ function FeedMembershipUpsellCard({
                       {membershipKrw(reservation.plan.priceKrw)}
                     </b>
                   </div>
+                  <PaymentTrustCard />
                   <button
                     type="button"
                     onClick={() => void notifyDepositDone()}

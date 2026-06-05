@@ -9,10 +9,10 @@ export function TossPaymentLogo({
 }) {
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-lg bg-white px-1.5 py-1 ring-1 ring-zinc-100 ${className}`}
+      className={`inline-flex items-center justify-center rounded-lg bg-[#0b1220] px-1.5 py-1 ring-1 ring-white/15 shadow-[0_8px_20px_rgba(15,23,42,0.18)] ${className}`}
     >
       <Image
-        src="/payment/toss-logo.png"
+        src="/payment/toss-logo-white.png"
         alt="Toss"
         width={104}
         height={52}

@@ -18,6 +18,7 @@ import {
   KbankPaymentLogo,
   TossPaymentLogo,
 } from "@/components/payment-brand-logo";
+import PaymentTrustCard from "@/components/payment-trust-card";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { openTossSend } from "@/lib/toss-deeplink";
 
@@ -630,6 +631,9 @@ export default function MembershipApplicationClient({
                   </div>
                 </div>
               </div>
+            </div>
+            <div className="mt-3">
+              <PaymentTrustCard />
             </div>
             {showDepositCountdown ? (
               <div className="mt-3 rounded-[12px] border border-emerald-200 bg-emerald-50 px-3 py-3 dark:border-emerald-900/70 dark:bg-emerald-950/20">
