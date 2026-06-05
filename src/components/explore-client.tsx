@@ -3032,6 +3032,8 @@ export default function ExploreClient({
   ]);
 
   const currentServerSourceFilter = source !== "all" ? source : null;
+  const shouldShowFeedUpsell =
+    !loading && !scrapOnly && displayItems.length > 0 && feedUpsellRemainingSec > 0;
   const currentViewFilterLabel = useMemo(() => {
     if (scrapOnly) return "스크랩";
     const labels: string[] = [];
@@ -3692,12 +3694,6 @@ export default function ExploreClient({
           onDismiss={dismissFirstFeedOnboarding}
         />
       ) : null}
-
-      <FeedMembershipUpsellCard
-        planEndAt={membershipStatus?.planEndAt ?? null}
-        remainingSec={feedUpsellRemainingSec}
-        onMembershipStatusChange={setMembershipStatus}
-      />
 
       {/* 필터/정렬 — sticky bar (당근식). Wave 370: 마진/패딩 압축 (모바일 화면 좁음).
           Wave 886.6 (2026-05-27): app-nav (sticky top-0 z-40, ~60px high) 와 겹침 해소 — top-14 로 navbar 아래 부착. */}
@@ -4563,6 +4559,16 @@ export default function ExploreClient({
           })}
         </div>
       )}
+
+      {shouldShowFeedUpsell ? (
+        <div className="mt-4">
+          <FeedMembershipUpsellCard
+            planEndAt={membershipStatus?.planEndAt ?? null}
+            remainingSec={feedUpsellRemainingSec}
+            onMembershipStatusChange={setMembershipStatus}
+          />
+        </div>
+      ) : null}
 
       {/* Wave 358: 빈 공간 채우기 — 매물 끝에 다음 라운드 안내 카드. */}
       {!loading && !scrapOnly && items.length > 0 ? (
