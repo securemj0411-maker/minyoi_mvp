@@ -24,6 +24,7 @@ import { openTossSend } from "@/lib/toss-deeplink";
 
 type ApplyState = "idle" | "submitting" | "cancelling" | "sent" | "error";
 type DepositNotifyState = "idle" | "sending" | "sent" | "error";
+type PaymentMethod = "toss" | "bank";
 type PendingApplication = {
   id: number;
   applicationKind: "new" | "renewal";
@@ -109,6 +110,8 @@ export default function MembershipApplicationClient({
   const [paymentModalOpen, setPaymentModalOpen] = useState(
     Boolean(pendingApplication),
   );
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<PaymentMethod | null>(null);
   const [reservationCancelled, setReservationCancelled] = useState(false);
   const [reservationExpiresAt, setReservationExpiresAt] = useState<
     string | null
@@ -203,6 +206,11 @@ export default function MembershipApplicationClient({
     void submitApplication(plan);
   }
 
+  function chooseTossPayment() {
+    setSelectedPaymentMethod("toss");
+    openTossSend(priceKrw);
+  }
+
   async function copyAccountNumber() {
     try {
       await navigator.clipboard.writeText(
@@ -262,6 +270,7 @@ export default function MembershipApplicationClient({
     }
     await res.json().catch(() => null);
     setSubmittedPlan(plan);
+    setSelectedPaymentMethod(null);
     setReservationCancelled(false);
     setReservationExpiresAt(new Date(Date.now() + 7 * 60_000).toISOString());
     setPaymentModalOpen(true);
@@ -368,6 +377,7 @@ export default function MembershipApplicationClient({
     }
 
     setSubmittedPlan(null);
+    setSelectedPaymentMethod(null);
     setDepositNotifyState("idle");
     setDepositNotifyMessage(null);
     setAutoApproveAt(null);
@@ -428,6 +438,8 @@ export default function MembershipApplicationClient({
   const showDepositCountdown = hasReservation && depositNotifyState === "sent";
   const showReservationCountdown =
     hasReservation && !renewalMode && depositNotifyState !== "sent";
+  const showPaymentDetails =
+    showDepositCountdown || selectedPaymentMethod !== null;
 
   function goToFeed() {
     router.replace("/me");
@@ -490,7 +502,7 @@ export default function MembershipApplicationClient({
         </div>
       ) : null}
       {hasReservation && paymentModalOpen ? (
-        <div className="fixed inset-0 z-[220] flex items-start justify-center overflow-y-auto bg-black/62 px-3 py-4 backdrop-blur-sm sm:py-10">
+        <div className="fixed inset-0 z-[220] flex items-center justify-center overflow-y-auto bg-black/62 px-3 py-4 backdrop-blur-sm">
           <div
             role="dialog"
             aria-modal="true"
@@ -505,7 +517,7 @@ export default function MembershipApplicationClient({
             >
               ×
             </button>
-            <div className="overflow-hidden rounded-[24px] border border-blue-100 bg-white text-zinc-950 shadow-[0_24px_80px_rgba(15,23,42,0.35)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
+            <div className="max-h-[calc(100dvh-32px)] overflow-y-auto rounded-[24px] border border-blue-100 bg-white text-zinc-950 shadow-[0_24px_80px_rgba(15,23,42,0.35)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
           <div className="relative border-b border-blue-100 bg-[#f5f8ff] px-4 py-4 dark:border-zinc-800 dark:bg-white/6 sm:px-7 sm:py-5">
             <div className="relative flex items-start justify-between gap-4">
               <div className="min-w-0">
@@ -517,12 +529,18 @@ export default function MembershipApplicationClient({
                       : "자리 확보 완료"}
                 </div>
                 <h2 className="mt-3 break-keep text-[25px] font-black leading-tight tracking-tight sm:text-[34px]">
-                  {showDepositCountdown ? "입금 확인 중" : "입금 방법 선택"}
+                  {showDepositCountdown
+                    ? "입금 확인 중"
+                    : showPaymentDetails
+                      ? "입금 확인"
+                      : "입금 방법 선택"}
                 </h2>
                 <p className="mt-2 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
                   {showDepositCountdown
                     ? "입금 확인 요청을 받았어요. 승인까지 잠시만 기다려주세요."
-                    : "토스 또는 계좌이체 중 편한 방법으로 송금해 주세요."}
+                    : showPaymentDetails
+                      ? "송금 후 입금했어요 버튼을 누르면 5분 내로 멤버십에 반영됩니다."
+                      : "토스 또는 계좌송금 중 편한 방법을 먼저 골라주세요."}
                 </p>
               </div>
               {showReservationCountdown ? (
@@ -538,103 +556,154 @@ export default function MembershipApplicationClient({
             </div>
           </div>
           <div className="px-3 py-3 sm:px-5 sm:py-4">
-            <div className="flex items-center justify-between gap-3 rounded-[16px] bg-[#f5f8ff] px-3 py-2.5 ring-1 ring-blue-100 dark:bg-white/8 dark:ring-white/10">
-              <div>
-                <div className="text-[11px] font-black text-zinc-400">
-                  선택 기간
-                </div>
-                <div className="mt-1 text-[16px] font-black">{planLabel}</div>
-              </div>
-              <div className="text-right">
-                <div className="text-[11px] font-black text-zinc-400">
-                  입금 금액
-                </div>
-                <div className="mt-1 text-[20px] font-black tabular-nums text-[#3182f6] dark:text-blue-300">
-                  {krw(priceKrw)}
-                </div>
-              </div>
-            </div>
             {state === "error" && message ? (
               <p
-                className="mt-2 break-keep text-[12px] font-semibold leading-5 text-red-500"
+                className="break-keep text-[12px] font-semibold leading-5 text-red-500"
               >
                 {message}
               </p>
             ) : null}
-            <div className="mt-3 rounded-[16px] bg-[#f5f7fb] p-3 dark:bg-zinc-900/70">
-              <div className="mb-2 text-[11px] font-black uppercase tracking-[0.12em] text-zinc-400">
-                송금 방법
-              </div>
-              <button
-                type="button"
-                onClick={() => openTossSend(priceKrw)}
-                disabled={depositNotifyState === "sent"}
-                className="flex h-14 w-full items-center justify-between rounded-2xl bg-white px-4 text-left shadow-[0_10px_22px_rgba(49,130,246,0.12)] ring-1 ring-blue-100 transition hover:bg-[#f8fbff] disabled:cursor-default disabled:opacity-60 dark:bg-white dark:text-zinc-950 dark:ring-blue-100"
-              >
-                <span className="flex min-w-0 items-center gap-3">
-                  <span className="flex h-9 w-[82px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-zinc-100">
-                    <TossPaymentLogo />
+            {!showPaymentDetails ? (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={chooseTossPayment}
+                  className="group min-h-[154px] rounded-[22px] bg-[#3182f6] p-4 text-left text-white shadow-[0_18px_42px_rgba(49,130,246,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(49,130,246,0.34)]"
+                >
+                  <span className="flex h-11 w-[104px] items-center justify-center rounded-2xl bg-white shadow-sm">
+                    <TossPaymentLogo className="w-[82px]" />
                   </span>
-                  <span className="min-w-0">
-                    <span className="block text-[13px] font-black text-zinc-950">
-                      토스로 송금하기
-                    </span>
-                    <span className="mt-0.5 block text-[10px] font-bold text-zinc-500">
-                      앱에서 금액 확인 후 송금
-                    </span>
+                  <span className="mt-5 block break-keep text-[21px] font-black leading-tight">
+                    토스로 보내기
                   </span>
-                </span>
-                <span className="shrink-0 rounded-full bg-[#3182f6] px-3 py-1.5 text-[11px] font-black text-white">
-                  열기
-                </span>
-              </button>
-              <div className="my-3 flex items-center gap-3">
-                <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
-                <span className="text-[10px] font-black text-zinc-400">또는</span>
-                <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+                  <span className="mt-2 block break-keep text-[11px] font-bold leading-4 text-blue-50">
+                    앱에서 금액 확인 후 송금
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPaymentMethod("bank")}
+                  className="group min-h-[154px] rounded-[22px] bg-zinc-950 p-4 text-left text-white shadow-[0_18px_42px_rgba(15,23,42,0.22)] ring-1 ring-zinc-200 transition hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(15,23,42,0.28)] dark:bg-white dark:text-zinc-950 dark:ring-zinc-800"
+                >
+                  <span className="flex h-11 w-[104px] items-center justify-center rounded-2xl bg-[#101bb5] shadow-sm ring-1 ring-blue-200">
+                    <KbankPaymentLogo className="w-[82px]" />
+                  </span>
+                  <span className="mt-5 block break-keep text-[21px] font-black leading-tight">
+                    계좌송금 하기
+                  </span>
+                  <span className="mt-2 block break-keep text-[11px] font-bold leading-4 text-zinc-300 dark:text-zinc-500">
+                    복사 후 은행앱에서 송금
+                  </span>
+                </button>
               </div>
-              <div className="rounded-[14px] bg-white p-3 ring-1 ring-zinc-200 dark:bg-zinc-950 dark:ring-zinc-800">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-9 w-[74px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#101bb5] ring-1 ring-blue-200">
-                      <KbankPaymentLogo />
-                    </span>
-                    <div className="min-w-0">
-                      <div className="text-[13px] font-black text-zinc-950 dark:text-zinc-50">
-                        계좌로 직접 송금하기
+            ) : (
+              <div className="grid gap-3">
+                <div className="flex items-center justify-between gap-3 rounded-[18px] bg-[#f5f8ff] px-3 py-3 ring-1 ring-blue-100 dark:bg-white/8 dark:ring-white/10">
+                  <div>
+                    <div className="text-[11px] font-black text-zinc-400">
+                      선택 기간
+                    </div>
+                    <div className="mt-1 text-[16px] font-black">
+                      {planLabel}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[11px] font-black text-zinc-400">
+                      입금 금액
+                    </div>
+                    <div className="mt-1 text-[22px] font-black tabular-nums text-[#3182f6] dark:text-blue-300">
+                      {krw(priceKrw)}
+                    </div>
+                  </div>
+                </div>
+                {selectedPaymentMethod === "toss" && !showDepositCountdown ? (
+                  <div className="rounded-[18px] bg-[#eef5ff] p-3 ring-1 ring-blue-100 dark:bg-blue-950/20 dark:ring-blue-900/60">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="flex h-11 w-[96px] shrink-0 items-center justify-center rounded-2xl bg-white ring-1 ring-blue-100">
+                          <TossPaymentLogo className="w-[76px]" />
+                        </span>
+                        <div className="min-w-0">
+                          <div className="text-[13px] font-black text-zinc-950 dark:text-white">
+                            토스 송금창을 열었어요
+                          </div>
+                          <div className="mt-0.5 break-keep text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+                            송금 후 아래 입금했어요를 눌러주세요.
+                          </div>
+                        </div>
                       </div>
-                      <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
-                        복사 후 은행앱에서 송금
+                      <button
+                        type="button"
+                        onClick={() => openTossSend(priceKrw)}
+                        className="h-9 shrink-0 rounded-xl bg-[#3182f6] px-3 text-[11px] font-black text-white"
+                      >
+                        다시 열기
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+                {(selectedPaymentMethod === "bank" ||
+                  (showDepositCountdown && !selectedPaymentMethod)) ? (
+                  <div className="rounded-[18px] bg-white p-3 ring-1 ring-zinc-200 dark:bg-zinc-950 dark:ring-zinc-800">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="flex h-10 w-[82px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#101bb5] ring-1 ring-blue-200">
+                          <KbankPaymentLogo className="w-[66px]" />
+                        </span>
+                        <div className="min-w-0">
+                          <div className="text-[13px] font-black text-zinc-950 dark:text-zinc-50">
+                            계좌송금 정보
+                          </div>
+                          <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+                            복사 후 은행앱에서 송금
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void copyAccountNumber()}
+                        className="flex h-9 shrink-0 items-center justify-center rounded-xl bg-[#ebf2ff] px-3 text-[11px] font-black text-[#3182f6] transition hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300"
+                      >
+                        {copyOk ? "복사됨" : "계좌 복사"}
+                      </button>
+                    </div>
+                    <div className="mt-3 grid grid-cols-[76px_1fr] gap-x-3 gap-y-1 text-[12px] font-bold">
+                      <div className="text-zinc-400">은행</div>
+                      <div className="text-zinc-800 dark:text-zinc-200">
+                        {PAYMENT_BANK_NAME}
+                      </div>
+                      <div className="text-zinc-400">계좌번호</div>
+                      <div className="font-black tabular-nums tracking-tight text-zinc-950 dark:text-zinc-50">
+                        {PAYMENT_ACCOUNT_NUMBER}
+                      </div>
+                      <div className="text-zinc-400">예금주</div>
+                      <div className="text-zinc-800 dark:text-zinc-200">
+                        {PAYMENT_ACCOUNT_HOLDER}
                       </div>
                     </div>
                   </div>
+                ) : null}
+                {selectedPaymentMethod === "toss" && !showDepositCountdown ? (
                   <button
                     type="button"
-                    onClick={() => void copyAccountNumber()}
-                    className="flex h-9 shrink-0 items-center justify-center rounded-xl bg-[#ebf2ff] px-3 text-[11px] font-black text-[#3182f6] transition hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300"
+                    onClick={() => setSelectedPaymentMethod("bank")}
+                    className="h-10 rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-600 transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300"
                   >
-                    {copyOk ? "복사됨" : "계좌 복사"}
+                    토스가 안 열리면 계좌송금으로 변경
                   </button>
-                </div>
-                <div className="mt-3 grid grid-cols-[76px_1fr] gap-x-3 gap-y-1 text-[12px] font-bold">
-                  <div className="text-zinc-400">은행</div>
-                  <div className="text-zinc-800 dark:text-zinc-200">
-                    {PAYMENT_BANK_NAME}
-                  </div>
-                  <div className="text-zinc-400">계좌번호</div>
-                  <div className="font-black tabular-nums tracking-tight text-zinc-950 dark:text-zinc-50">
-                    {PAYMENT_ACCOUNT_NUMBER}
-                  </div>
-                  <div className="text-zinc-400">예금주</div>
-                  <div className="text-zinc-800 dark:text-zinc-200">
-                    {PAYMENT_ACCOUNT_HOLDER}
-                  </div>
-                </div>
+                ) : null}
+                {depositNotifyState !== "sent" ? (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPaymentMethod(null)}
+                    className="h-9 text-[11px] font-black text-zinc-400 transition hover:text-zinc-700 dark:hover:text-zinc-200"
+                  >
+                    송금 방법 다시 선택
+                  </button>
+                ) : null}
+                <PaymentTrustCard />
               </div>
-            </div>
-            <div className="mt-3">
-              <PaymentTrustCard />
-            </div>
+            )}
             {showDepositCountdown ? (
               <div className="mt-3 rounded-[12px] border border-emerald-200 bg-emerald-50 px-3 py-3 dark:border-emerald-900/70 dark:bg-emerald-950/20">
                 <div className="flex items-center justify-between gap-3">
@@ -654,7 +723,7 @@ export default function MembershipApplicationClient({
                 </div>
               </div>
             ) : null}
-            {depositNotifyState !== "sent" ? (
+            {showPaymentDetails && depositNotifyState !== "sent" ? (
               <button
                 type="button"
                 onClick={() => void notifyDepositDone()}
@@ -664,7 +733,7 @@ export default function MembershipApplicationClient({
                 {depositNotifyState === "sending" ? "확인 중" : "입금했어요"}
               </button>
             ) : null}
-            {depositNotifyState === "idle" ? (
+            {showPaymentDetails && depositNotifyState === "idle" ? (
               <p className="mt-2 break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400">
                 입금 후 입금했어요 버튼을 누르면 5분 내로 멤버십에 자동
                 반영됩니다.

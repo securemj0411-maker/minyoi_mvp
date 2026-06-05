@@ -222,6 +222,7 @@ type FeedRenewalReservation = {
   plan: MembershipPlan;
   scheduledAutoApproveAt: string | null;
 };
+type FeedRenewalPaymentMethod = "toss" | "bank";
 
 // Wave launch-14 (사용자 짚음): error 종류 따라 다른 모달 톤.
 // paywall = 멤버십 승인 필요, sold = 매물 거래완료/사라짐 (새로고침), verify_fail = 일시 통신 (재시도).
@@ -366,6 +367,8 @@ function FeedMembershipUpsellCard({
     | "approved"
     | "error"
   >("idle");
+  const [paymentMethod, setPaymentMethod] =
+    useState<FeedRenewalPaymentMethod | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [approvalToast, setApprovalToast] = useState<string | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
@@ -426,8 +429,9 @@ function FeedMembershipUpsellCard({
       plan,
       scheduledAutoApproveAt: payload.scheduledAutoApproveAt ?? null,
     });
+    setPaymentMethod(null);
     setRequestState("reserved");
-    setMessage("제안이 수락됐어요. 계좌로 송금 후 입금했어요를 누르면 됩니다.");
+    setMessage("제안이 수락됐어요. 송금 방법을 선택해 주세요.");
   }
 
   async function notifyDepositDone() {
@@ -557,6 +561,7 @@ function FeedMembershipUpsellCard({
       ? Math.max(0, autoApproveTargetMs - nowMs)
       : 5 * 60_000;
   const showDepositCountdown = requestState === "deposit_sent";
+  const showPaymentDetails = showDepositCountdown || paymentMethod !== null;
 
   if (approvalToast) {
     return (
@@ -719,71 +724,155 @@ function FeedMembershipUpsellCard({
               ) : (
                 <div className="grid gap-3 rounded-[14px] border border-emerald-200 bg-emerald-50 px-3 py-3 dark:border-emerald-900/70 dark:bg-emerald-950/20">
                   <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">
-                    제안 수락 완료 · 계좌이체 대기
+                    제안 수락 완료
                   </div>
-                  <div className="text-[12px] font-black text-zinc-800 dark:text-zinc-100">
-                    송금 방법을 선택해 주세요.
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => openTossSend(reservation.plan.priceKrw)}
-                    disabled={requestState === "deposit_sent"}
-                    className="flex h-12 items-center justify-between rounded-xl bg-white px-3 text-left ring-1 ring-emerald-200 transition hover:bg-emerald-50 disabled:cursor-default disabled:opacity-60 dark:bg-white dark:text-zinc-950 dark:ring-emerald-100"
-                  >
-                    <span className="flex min-w-0 items-center gap-2">
-                      <span className="flex h-8 w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white ring-1 ring-zinc-100">
-                        <TossPaymentLogo className="w-[60px]" />
-                      </span>
-                      <span className="text-[13px] font-black text-zinc-950">
-                        토스로 송금하기
-                      </span>
-                    </span>
-                    <span className="shrink-0 rounded-full bg-[#3182f6] px-2.5 py-1 text-[10px] font-black text-white">
-                      열기
-                    </span>
-                  </button>
-                  <div className="flex items-center gap-2">
-                    <span className="h-px flex-1 bg-emerald-200 dark:bg-emerald-900/70" />
-                    <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-300">
-                      또는
-                    </span>
-                    <span className="h-px flex-1 bg-emerald-200 dark:bg-emerald-900/70" />
-                  </div>
-                  <div className="rounded-lg bg-white px-3 py-2 text-[12px] font-bold leading-5 text-zinc-700 dark:bg-zinc-950 dark:text-zinc-200">
-                    <div className="mb-2 flex items-center gap-2">
-                      <span className="flex h-7 w-[58px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#101bb5] ring-1 ring-blue-200">
-                        <KbankPaymentLogo className="w-[48px]" />
-                      </span>
-                      <b className="font-black text-zinc-950 dark:text-zinc-50">
-                        계좌로 직접 송금하기
-                      </b>
+                  {!showPaymentDetails ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPaymentMethod("toss");
+                          openTossSend(reservation.plan.priceKrw);
+                        }}
+                        className="min-h-[118px] rounded-2xl bg-[#3182f6] p-3 text-left text-white shadow-[0_14px_34px_rgba(49,130,246,0.24)] transition hover:-translate-y-0.5"
+                      >
+                        <span className="flex h-9 w-[84px] items-center justify-center rounded-xl bg-white">
+                          <TossPaymentLogo className="w-[66px]" />
+                        </span>
+                        <span className="mt-4 block break-keep text-[16px] font-black leading-tight">
+                          토스로 보내기
+                        </span>
+                        <span className="mt-1 block break-keep text-[10px] font-bold text-blue-50">
+                          앱에서 금액 확인
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod("bank")}
+                        className="min-h-[118px] rounded-2xl bg-zinc-950 p-3 text-left text-white shadow-[0_14px_34px_rgba(15,23,42,0.22)] transition hover:-translate-y-0.5 dark:bg-white dark:text-zinc-950"
+                      >
+                        <span className="flex h-9 w-[84px] items-center justify-center rounded-xl bg-[#101bb5] ring-1 ring-blue-200">
+                          <KbankPaymentLogo className="w-[66px]" />
+                        </span>
+                        <span className="mt-4 block break-keep text-[16px] font-black leading-tight">
+                          계좌송금 하기
+                        </span>
+                        <span className="mt-1 block break-keep text-[10px] font-bold text-zinc-300 dark:text-zinc-500">
+                          복사 후 송금
+                        </span>
+                      </button>
                     </div>
-                    {PAYMENT_BANK_NAME}{" "}
-                    <b className="font-black">{PAYMENT_ACCOUNT_NUMBER}</b>
-                    <br />
-                    예금주 {PAYMENT_ACCOUNT_HOLDER}
-                    <br />
-                    입금 금액{" "}
-                    <b className="text-emerald-700 dark:text-emerald-300">
-                      {membershipKrw(reservation.plan.priceKrw)}
-                    </b>
-                  </div>
-                  <PaymentTrustCard />
-                  <button
-                    type="button"
-                    onClick={() => void notifyDepositDone()}
-                    disabled={
-                      requestState === "depositing" ||
-                      requestState === "deposit_sent"
-                    }
-                    className="flex h-11 items-center justify-center rounded-xl bg-emerald-700 px-4 text-[13px] font-black text-white transition hover:bg-emerald-800 disabled:cursor-default disabled:opacity-60"
-                  >
-                    {requestState === "depositing"
-                      ? "요청 중"
-                      : requestState === "deposit_sent"
-                        ? "입금 확인 요청 완료"
-                        : "입금했어요"}
-                  </button>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between gap-3 rounded-[14px] bg-white px-3 py-3 ring-1 ring-emerald-200 dark:bg-zinc-950 dark:ring-emerald-900/70">
+                        <div>
+                          <div className="text-[10px] font-black text-zinc-400">
+                            입금 금액
+                          </div>
+                          <div className="mt-1 text-[22px] font-black text-zinc-950 dark:text-white">
+                            {membershipKrw(reservation.plan.priceKrw)}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[10px] font-black text-zinc-400">
+                            선택 기간
+                          </div>
+                          <div className="mt-1 text-[14px] font-black text-zinc-700 dark:text-zinc-200">
+                            {reservation.plan.label}
+                          </div>
+                        </div>
+                      </div>
+                      {paymentMethod === "toss" && !showDepositCountdown ? (
+                        <div className="rounded-xl bg-white px-3 py-3 ring-1 ring-emerald-200 dark:bg-zinc-950 dark:ring-emerald-900/70">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="flex min-w-0 items-center gap-2">
+                              <span className="flex h-9 w-[76px] shrink-0 items-center justify-center rounded-lg bg-white ring-1 ring-zinc-100">
+                                <TossPaymentLogo className="w-[60px]" />
+                              </span>
+                              <span className="min-w-0">
+                                <span className="block text-[12px] font-black text-zinc-950 dark:text-white">
+                                  토스 송금창을 열었어요
+                                </span>
+                                <span className="mt-0.5 block break-keep text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+                                  송금 후 입금했어요를 눌러주세요.
+                                </span>
+                              </span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openTossSend(reservation.plan.priceKrw)
+                              }
+                              className="h-8 shrink-0 rounded-lg bg-[#3182f6] px-2.5 text-[10px] font-black text-white"
+                            >
+                              다시 열기
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
+                      {(paymentMethod === "bank" ||
+                        (showDepositCountdown && !paymentMethod)) ? (
+                        <div className="rounded-lg bg-white px-3 py-3 text-[12px] font-bold leading-5 text-zinc-700 dark:bg-zinc-950 dark:text-zinc-200">
+                          <div className="mb-2 flex items-center gap-2">
+                            <span className="flex h-8 w-[66px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#101bb5] ring-1 ring-blue-200">
+                              <KbankPaymentLogo className="w-[54px]" />
+                            </span>
+                            <b className="font-black text-zinc-950 dark:text-zinc-50">
+                              계좌송금 정보
+                            </b>
+                          </div>
+                          {PAYMENT_BANK_NAME}{" "}
+                          <b className="font-black">
+                            {PAYMENT_ACCOUNT_NUMBER}
+                          </b>
+                          <br />
+                          예금주 {PAYMENT_ACCOUNT_HOLDER}
+                        </div>
+                      ) : null}
+                      {paymentMethod === "toss" && !showDepositCountdown ? (
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod("bank")}
+                          className="h-9 rounded-xl border border-emerald-200 bg-white text-[11px] font-black text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-900/70 dark:bg-zinc-950 dark:text-emerald-300"
+                        >
+                          토스가 안 열리면 계좌송금으로 변경
+                        </button>
+                      ) : null}
+                      {requestState !== "deposit_sent" ? (
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod(null)}
+                          className="h-8 text-[10px] font-black text-emerald-700/70 dark:text-emerald-300/80"
+                        >
+                          송금 방법 다시 선택
+                        </button>
+                      ) : null}
+                      <PaymentTrustCard />
+                    </>
+                  )}
+                  {showPaymentDetails ? (
+                    <button
+                      type="button"
+                      onClick={() => void notifyDepositDone()}
+                      disabled={
+                        requestState === "depositing" ||
+                        requestState === "deposit_sent"
+                      }
+                      className="flex h-11 items-center justify-center rounded-xl bg-emerald-700 px-4 text-[13px] font-black text-white transition hover:bg-emerald-800 disabled:cursor-default disabled:opacity-60"
+                    >
+                      {requestState === "depositing"
+                        ? "요청 중"
+                        : requestState === "deposit_sent"
+                          ? "입금 확인 요청 완료"
+                          : "입금했어요"}
+                    </button>
+                  ) : null}
+                  {showPaymentDetails && requestState !== "deposit_sent" ? (
+                    <p className="break-keep text-[11px] font-bold leading-4 text-emerald-800 dark:text-emerald-200">
+                      입금 후 입금했어요 버튼을 누르면 5분 내로 멤버십에
+                      자동 반영됩니다.
+                    </p>
+                  ) : null}
                   {showDepositCountdown ? (
                     <div className="rounded-[12px] border border-emerald-200 bg-white px-3 py-3 dark:border-emerald-900/70 dark:bg-zinc-950">
                       <div className="flex items-center justify-between gap-3">
@@ -792,7 +881,7 @@ function FeedMembershipUpsellCard({
                             자동 승인 대기 중
                           </div>
                           <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
-                            운영자가 놓쳐도 시간이 지나면 자동으로 열립니다.
+                            5분 내로 멤버십에 자동 반영됩니다.
                           </div>
                         </div>
                         <div className="shrink-0 rounded-[10px] bg-emerald-50 px-3 py-2 text-[22px] font-black tabular-nums text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900">
