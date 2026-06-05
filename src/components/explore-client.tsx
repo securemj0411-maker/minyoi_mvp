@@ -1144,6 +1144,7 @@ type BudgetFilterOption = "all" | "150000" | "300000" | "500000";
 type LocationFilterOption = "all" | "nearby";
 type LoadPoolOptions = {
   autoScrollNew?: boolean;
+  extendedMarketplaces?: boolean;
   serverSource?: SourceOption | null;
   serverSort?: SortOption | null;
 };
@@ -2662,6 +2663,7 @@ export default function ExploreClient({
         if (refresh) params.set("refresh", "1");
         const serverSource = options?.serverSource ?? sourceRef.current;
         if (serverSource !== "all") params.set("source", serverSource);
+        if (options?.extendedMarketplaces) params.set("marketplaces", "extended");
         const serverSort =
           options?.serverSort ??
           (sortRef.current === "distance" ? "distance" : null);
@@ -3453,6 +3455,7 @@ export default function ExploreClient({
     setSort("profit_desc");
     setScrapOnly(false);
     void loadPool(false, {
+      extendedMarketplaces: true,
       serverSource: "all",
       serverSort: null,
     });

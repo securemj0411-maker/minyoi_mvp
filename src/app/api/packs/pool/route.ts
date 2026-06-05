@@ -95,6 +95,7 @@ const DAANGN_NEARBY_SLOW_LOG_MS = intEnv("DAANGN_NEARBY_FEED_SLOW_LOG_MS", 1_200
 const DAANGN_NEARBY_PREFETCH_BUDGET_MS = intEnv("DAANGN_NEARBY_FEED_PREFETCH_BUDGET_MS", 4_500, 500, 30_000);
 const DAANGN_SOURCE_QUOTA = intEnv("DAANGN_FEED_SOURCE_QUOTA", 18, 0, READY_SLOTS);
 const JOONGNA_SOURCE_QUOTA = intEnv("JOONGNA_FEED_SOURCE_QUOTA", 3, 0, READY_SLOTS);
+const EXTENDED_MARKETPLACE_QUOTA = intEnv("EXTENDED_MARKETPLACE_SOURCE_QUOTA", 10, 0, READY_SLOTS);
 
 type PoolRow = {
   pid: number;
@@ -736,10 +737,13 @@ async function loadNearbyDaangnReadyRows(
     source?: "bunjang" | "joongna" | "daangn" | null;
     sort?: "profit_desc" | "latest" | "price_asc" | "distance";
     excludePids?: number[];
+    extendedMarketplaces?: boolean;
   },
 ): Promise<NearbyDaangnPrefetchResult> {
   const startedAt = Date.now();
-  const disabledReason = !options.userHomeDaangnFullPath
+  const disabledReason = options.extendedMarketplaces
+    ? "extended_marketplaces"
+    : !options.userHomeDaangnFullPath
     ? "no_home_region"
     : options.source && options.source !== "daangn"
       ? "non_daangn_source"
@@ -943,8 +947,10 @@ function readyPoolOverfetchLimit(options: {
   priceMax?: number | null;
   readyCandidateLimit?: number;
   userHomeDaangnFullPath?: string | null;
+  extendedMarketplaces?: boolean;
 }) {
   const candidateTarget = options.readyCandidateLimit ?? READY_SLOTS;
+  if (options.extendedMarketplaces) return FETCH_POOL_OVERFETCH;
   const nearbyDaangnSortPriority = Boolean(options.userHomeDaangnFullPath) && options.sort === "distance";
   if (nearbyDaangnSortPriority) {
     return Math.min(FETCH_POOL_OVERFETCH, Math.max(READY_SLOTS * 4, candidateTarget));
@@ -971,6 +977,7 @@ async function loadPool(
     excludePids?: number[];
     readyCandidateLimit?: number;
     userHomeDaangnFullPath?: string | null;
+    extendedMarketplaces?: boolean;
   } = {},
 ): Promise<{
   pool: (PoolRow & { soldOut: boolean })[];
@@ -1026,6 +1033,7 @@ async function loadPool(
         source: options.source,
         sort: options.sort,
         excludePids: options.excludePids,
+        extendedMarketplaces: options.extendedMarketplaces,
       }),
       DAANGN_NEARBY_PREFETCH_BUDGET_MS + 500,
       "nearby_daangn_prefetch",
@@ -1157,12 +1165,16 @@ async function loadPool(
       return true;
     };
 
-    // Phase 1: protected source quota (당근/중나 최소 슬롯 보장)
+    // Phase 1: protected source quota.
+    // 확장 마켓 버튼은 사용자가 당근 밖 후보를 보겠다는 의도이므로 중나/번장을 먼저 보장한다.
     // options.source 가 지정돼 있으면 quota skip — 사용자가 단일 source 선택했을 때 무관한 source 강제 X.
     // Wave 797 (2026-05-27): 당근 매물 distance ASC 정렬 — 가까운 동네 우선.
     //   user home region 등록된 경우만 효과. tie-break: 차익 DESC.
+    const sourceQuota = options.extendedMarketplaces
+      ? { joongna: EXTENDED_MARKETPLACE_QUOTA, bunjang: EXTENDED_MARKETPLACE_QUOTA }
+      : SOURCE_QUOTA;
     if (!options.source) {
-      for (const [src, quota] of Object.entries(SOURCE_QUOTA)) {
+      for (const [src, quota] of Object.entries(sourceQuota)) {
         const candidateRows = (src === 'daangn' && options.userHomeDaangnFullPath)
           ? [...rows].sort((a, b) => {
               const aDist = daangnDistanceKmByPid.get(a.pid) ?? Number.POSITIVE_INFINITY;
@@ -1488,6 +1500,26 @@ function sortDaangnItemsByDistance<T extends ReturnType<typeof buildItems>[numbe
     .map(({ item }) => item);
 }
 
+function sortExtendedMarketplaceItems<T extends ReturnType<typeof buildItems>[number]>(items: T[]) {
+  return items
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => {
+      const aExtended = a.item.marketplaceSource === "joongna" || a.item.marketplaceSource === "bunjang";
+      const bExtended = b.item.marketplaceSource === "joongna" || b.item.marketplaceSource === "bunjang";
+      if (aExtended !== bExtended) return aExtended ? -1 : 1;
+      if (aExtended && bExtended) {
+        const sourceOrder = (source: string | null | undefined) =>
+          source === "joongna" ? 0 : source === "bunjang" ? 1 : 2;
+        const sourceDiff = sourceOrder(a.item.marketplaceSource) - sourceOrder(b.item.marketplaceSource);
+        if (sourceDiff !== 0) return sourceDiff;
+      }
+      const profitDiff = (b.item.expectedProfitMax ?? 0) - (a.item.expectedProfitMax ?? 0);
+      if (profitDiff !== 0) return profitDiff;
+      return a.index - b.index;
+    })
+    .map(({ item }) => item);
+}
+
 function sameSellerProductDedupeKey(
   row: PoolRow & { soldOut: boolean },
   meta: RawListingMeta | undefined,
@@ -1592,6 +1624,7 @@ export async function GET(req: Request) {
       sourceParam === "bunjang" || sourceParam === "joongna" || sourceParam === "daangn"
         ? normalizeMarketplaceSource(sourceParam)
         : null;
+    const extendedMarketplaces = url.searchParams.get("marketplaces") === "extended";
 
     // Wave 391: 클라이언트가 이미 본 pids 제외 — refresh 시 새 매물 보장.
     const excludePidsParam = url.searchParams.get("excludePids");
@@ -1637,6 +1670,7 @@ export async function GET(req: Request) {
       excludePids: excludeAllPids,
       readyCandidateLimit,
       userHomeDaangnFullPath: userHomeRegion?.daangn_full_path ?? null,
+      extendedMarketplaces,
     });
     const deduped = dedupeSameSellerProducts(pool, raws, metas);
     const skuImageMap = await loadSkuImageMap();
@@ -1678,7 +1712,9 @@ export async function GET(req: Request) {
         return (b.expectedProfitMax ?? 0) - (a.expectedProfitMax ?? 0);
       });
     }
-    items = sortDaangnItemsByDistance(items);
+    items = extendedMarketplaces
+      ? sortExtendedMarketplaceItems(items)
+      : sortDaangnItemsByDistance(items);
     items = items.slice(0, PAGE_SIZE);
     const responseItems = items;
 
