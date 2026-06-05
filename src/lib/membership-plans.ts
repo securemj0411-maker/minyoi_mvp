@@ -43,9 +43,9 @@ export const MEMBERSHIP_PLANS: MembershipPlan[] = [
     priceKrw: 99_000,
     label: "3개월",
     monthlyLabel: "월 33,000원꼴",
-    badge: "추천",
-    valueNote: "가장 무난한 시작 구간",
-    paybackNote: "월 1건 목표로 루틴 만들기",
+    badge: "인기 1위",
+    valueNote: "가장 많이 선택한 시작 구간",
+    paybackNote: "신청자들이 가장 많이 선택",
   },
   {
     key: "limited_300_6mo",

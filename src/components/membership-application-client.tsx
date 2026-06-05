@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -795,23 +796,32 @@ export default function MembershipApplicationClient({
           </Link>
         </div>
       ) : showInlineSelector ? (
-        <div className="overflow-hidden rounded-[26px] border border-blue-100 bg-white text-zinc-950 shadow-[0_24px_70px_rgba(49,130,246,0.16)] ring-1 ring-blue-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:ring-white/10">
-          <div className="relative border-b border-blue-100 bg-[linear-gradient(135deg,#f8fbff_0%,#eaf3ff_100%)] px-4 py-4 dark:border-zinc-800 dark:bg-none dark:bg-white/6 sm:px-6 sm:py-5">
+        <div className="overflow-hidden rounded-[28px] border border-zinc-800 bg-[#16181d] text-zinc-50 shadow-[0_28px_80px_rgba(15,23,42,0.22)] ring-1 ring-white/8">
+          <div className="relative border-b border-white/8 px-4 py-4 sm:px-6 sm:py-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-300">
-                  Membership
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-blue-200">
+                  <span className="h-6 w-6 overflow-hidden rounded-lg shadow-[0_8px_18px_rgba(49,130,246,0.35)]">
+                    <Image
+                      src="/logo.svg"
+                      alt=""
+                      width={24}
+                      height={24}
+                      className="h-full w-full object-cover"
+                    />
+                  </span>
+                  MEMBERSHIP
                 </div>
-                <h2 className="mt-1 break-keep text-[26px] font-black leading-tight tracking-tight sm:text-[36px]">
+                <h2 className="mt-3 break-keep text-[26px] font-black leading-tight tracking-tight sm:text-[34px]">
                   멤버십 기간 선택
                 </h2>
-                <p className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-                  기간을 고르면 지역 티오를 먼저 잡아둡니다.
+                <p className="mt-2 break-keep text-[12px] font-bold leading-5 text-zinc-400">
+                  선택 즉시 지역 티오를 먼저 잡아둡니다.
                 </p>
               </div>
-              <div className="shrink-0 rounded-2xl bg-white px-2.5 py-2 text-right ring-1 ring-blue-100 dark:bg-zinc-950 dark:ring-zinc-800">
-                <div className="text-[9px] font-black text-zinc-400">지역</div>
-                <div className="mt-0.5 max-w-[106px] truncate text-[12px] font-black text-[#3182f6] dark:text-blue-300 sm:max-w-[150px] sm:text-[13px]">
+              <div className="shrink-0 rounded-2xl bg-white/8 px-2.5 py-2 text-right ring-1 ring-white/10">
+                <div className="text-[9px] font-black text-zinc-500">지역</div>
+                <div className="mt-0.5 max-w-[106px] truncate text-[12px] font-black text-blue-200 sm:max-w-[150px] sm:text-[13px]">
                   {reservationRegion}
                 </div>
               </div>
@@ -828,7 +838,7 @@ export default function MembershipApplicationClient({
               type="button"
               onClick={() => void beginApplication(selectedPlan)}
               disabled={isBusy}
-              className="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+10px)] z-[130] mx-auto flex h-12 max-w-[760px] items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[15px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.30)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70 sm:static sm:mt-3 sm:max-w-none"
+              className="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+10px)] z-[130] mx-auto flex h-12 max-w-[760px] items-center justify-center rounded-2xl bg-[#3b74ff] px-4 text-[15px] font-black text-white shadow-[0_18px_45px_rgba(49,130,246,0.30)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70 sm:static sm:mt-4 sm:max-w-none"
             >
               {isBusy ? (
                 <span className="inline-flex items-center gap-2">
@@ -891,17 +901,26 @@ export default function MembershipApplicationClient({
         </p>
       ) : null}
       {selectorOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-3 py-4 backdrop-blur-sm">
-          <div className="flex max-h-[calc(100dvh-32px)] w-full max-w-[760px] flex-col overflow-y-auto rounded-[28px] border border-zinc-200 bg-white p-5 shadow-2xl dark:border-zinc-800 dark:bg-zinc-950 sm:p-7">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-2 py-2 backdrop-blur-sm sm:px-3 sm:py-3">
+          <div className="flex max-h-[calc(100dvh-16px)] w-full max-w-[720px] flex-col overflow-y-auto rounded-[22px] border border-zinc-800 bg-[#16181d] p-3 text-zinc-50 shadow-[0_28px_90px_rgba(0,0,0,0.52)] sm:max-h-[calc(100dvh-24px)] sm:rounded-[24px] sm:p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-200">
-                  Membership
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-blue-200">
+                  <span className="h-6 w-6 overflow-hidden rounded-lg shadow-[0_8px_18px_rgba(49,130,246,0.35)]">
+                    <Image
+                      src="/logo.svg"
+                      alt=""
+                      width={24}
+                      height={24}
+                      className="h-full w-full object-cover"
+                    />
+                  </span>
+                  MEMBERSHIP
                 </div>
-                <h2 className="mt-1 break-keep text-[26px] font-black leading-tight text-zinc-950 dark:text-zinc-50 sm:text-[34px]">
+                <h2 className="mt-2.5 break-keep text-[22px] font-black leading-tight text-zinc-50 sm:mt-3 sm:text-[30px]">
                   {renewalMode ? "멤버십 연장 기간 선택" : "멤버십 기간 선택"}
                 </h2>
-                <p className="mt-1.5 break-keep text-[12px] font-semibold leading-5 text-zinc-500 dark:text-zinc-400">
+                <p className="mt-1.5 hidden break-keep text-[12px] font-semibold leading-5 text-zinc-400 sm:block">
                   {renewalMode
                     ? "승인되면 기존 만료일 뒤에 선택한 기간이 붙습니다. 월 단가는 기간이 길수록 낮아집니다."
                     : "기간이 길수록 월 단가가 낮아집니다."}
@@ -910,13 +929,13 @@ export default function MembershipApplicationClient({
               <button
                 type="button"
                 onClick={() => setSelectorOpen(false)}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white text-[17px] font-black text-zinc-500 transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[22px] font-light text-zinc-300 transition hover:bg-white/10"
                 aria-label="닫기"
               >
                 ×
               </button>
             </div>
-            <div className="mt-4">
+            <div className="mt-4 sm:mt-5">
               <PlanGrid
                 plans={plans}
                 selectedKey={selectedKey}
@@ -924,11 +943,11 @@ export default function MembershipApplicationClient({
                 disabled={isBusy}
               />
             </div>
-            <div className="mt-4 grid grid-cols-[0.8fr_1.2fr] gap-2">
+            <div className="mt-3 grid grid-cols-[0.34fr_1fr] gap-2 sm:mt-4 sm:gap-2.5">
               <button
                 type="button"
                 onClick={() => setSelectorOpen(false)}
-                className="h-11 rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+                className="h-11 rounded-2xl border border-white/10 bg-white/5 text-[13px] font-black text-zinc-200 transition hover:bg-white/10 sm:h-12 sm:text-[14px]"
               >
                 닫기
               </button>
@@ -936,7 +955,7 @@ export default function MembershipApplicationClient({
                 type="button"
                 onClick={() => void beginApplication(selectedPlan)}
                 disabled={isBusy}
-                className="h-11 rounded-xl bg-[var(--brand-accent-strong)] text-[12px] font-black text-[var(--brand-cream)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+                className="h-11 rounded-2xl bg-[#3b74ff] text-[13px] font-black text-white shadow-[0_14px_34px_rgba(49,130,246,0.30)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70 sm:h-12 sm:text-[14px]"
               >
                 {isBusy ? (
                   <span className="inline-flex items-center justify-center gap-2">
@@ -970,7 +989,7 @@ function PlanGrid({
   disabled?: boolean;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
       {plans.map((plan) => {
         const active = plan.key === selectedKey;
         return (
@@ -979,29 +998,30 @@ function PlanGrid({
             type="button"
             disabled={disabled}
             onClick={() => onSelect(plan.key)}
-            className={`relative overflow-hidden rounded-[18px] border px-3 py-3 text-left transition disabled:cursor-default sm:px-3.5 sm:py-3 ${
+            className={`relative overflow-hidden rounded-[16px] border px-3 py-3 text-left transition disabled:cursor-default sm:min-h-[148px] sm:rounded-[18px] sm:px-4 sm:py-4 ${
               active
-                ? "border-[#3182f6] bg-zinc-950 text-white shadow-[0_16px_34px_rgba(49,130,246,0.22)] ring-1 ring-[#3182f6]/30 dark:border-blue-400 dark:bg-white dark:text-zinc-950"
-                : "border-zinc-200 bg-white text-zinc-950 shadow-[0_10px_26px_rgba(15,23,42,0.05)] hover:border-blue-200 hover:bg-[#fbfcff] dark:border-zinc-800 dark:bg-zinc-950/50 dark:text-zinc-50 dark:hover:border-blue-900"
+                ? "border-[#3b74ff] bg-[#18223d] text-white shadow-[0_22px_58px_rgba(49,130,246,0.26)] ring-1 ring-[#3b74ff]/35"
+                : "border-white/10 bg-[#15171d] text-zinc-50 shadow-[0_14px_40px_rgba(0,0,0,0.18)] hover:border-blue-400/45 hover:bg-[#181c25]"
             }`}
           >
             {active ? (
-              <div className="absolute right-2 top-2 rounded-full bg-[#3182f6] px-2 py-0.5 text-[9px] font-black text-white">
-                선택됨
+              <div className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-[#3b74ff] px-2 py-0.5 text-[9px] font-black text-white shadow-[0_10px_26px_rgba(49,130,246,0.32)] sm:right-3 sm:top-3 sm:px-2.5 sm:py-1 sm:text-[10px]">
+                <span>✓</span>
+                <span>선택됨</span>
               </div>
             ) : null}
-            <div className="flex min-h-[82px] flex-col justify-between gap-2 sm:min-h-0">
+            <div className="flex min-h-[88px] flex-col justify-between gap-2 sm:min-h-[98px] sm:gap-3">
               <div>
-                <div className="flex flex-wrap items-center gap-1 pr-9">
-                  <span className="text-[20px] font-black leading-none sm:text-[15px]">
+                <div className="flex flex-wrap items-center gap-1 pr-14 sm:gap-1.5 sm:pr-20">
+                  <span className="text-[19px] font-black leading-none sm:text-[24px]">
                     {plan.label}
                   </span>
                   {plan.badge ? (
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[9px] font-black ring-1 sm:px-2 sm:text-[10px] ${
                         active
-                          ? "bg-white/10 text-blue-100 ring-white/20 dark:bg-zinc-950/8 dark:text-[#3182f6] dark:ring-zinc-950/10"
-                          : "bg-white text-[#3182f6] ring-blue-100 dark:bg-zinc-900 dark:ring-blue-900"
+                          ? "bg-white/8 text-blue-100 ring-white/18"
+                          : "bg-[#17213a] text-blue-300 ring-blue-400/20"
                       }`}
                     >
                       {plan.badge}
@@ -1009,31 +1029,28 @@ function PlanGrid({
                   ) : null}
                 </div>
                 <div
-                  className={`mt-1 hidden text-[11px] font-bold sm:block ${
+                  className={`mt-2 hidden text-[12px] font-bold sm:block ${
                     active
-                      ? "text-white/58 dark:text-zinc-500"
-                      : "text-zinc-500 dark:text-zinc-400"
+                      ? "text-zinc-300"
+                      : "text-zinc-400"
                   }`}
                 >
                   {plan.valueNote}
                 </div>
               </div>
               <div>
-                <div className="text-[19px] font-black leading-none sm:text-[14px]">
+                <div className="text-[20px] font-black leading-none sm:text-[24px]">
                   {krw(plan.priceKrw)}
                 </div>
                 <div
-                  className={`mt-1 whitespace-nowrap text-[10px] font-black ${
-                    active
-                      ? "text-white/58 dark:text-zinc-500"
-                      : "text-zinc-400"
-                  }`}
+                  className="mt-1 whitespace-nowrap text-[10.5px] font-black text-zinc-500 sm:mt-1.5 sm:text-[12px]"
                 >
                   {plan.monthlyLabel}
                 </div>
               </div>
             </div>
-            <div className="mt-1.5 hidden text-[11px] font-bold text-emerald-700 dark:text-emerald-300 sm:block">
+            <div className="mt-2 hidden border-t border-white/8 pt-3 text-[12px] font-black text-emerald-300 sm:block">
+              <span className="mr-2">✓</span>
               {plan.paybackNote}
             </div>
           </button>

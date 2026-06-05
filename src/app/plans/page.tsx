@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Image from "next/image";
 import PlansApplicationFlow from "@/components/plans-application-flow";
 import MembershipApplicationClient from "@/components/membership-application-client";
 import PlansSocialProofToasts, {
@@ -77,34 +77,6 @@ const SOCIAL_PROOF_SURNAMES = [
   "공",
   "현",
 ];
-
-function MembershipPassBadge() {
-  return (
-    <div className="relative overflow-hidden rounded-[22px] border border-amber-200/60 bg-[linear-gradient(135deg,#fff7ed_0%,#dbeafe_44%,#ecfeff_100%)] p-4 shadow-[0_22px_55px_rgba(49,130,246,0.18)] dark:border-amber-300/20 dark:bg-[linear-gradient(135deg,#172554_0%,#111827_46%,#052e16_100%)]">
-      <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-white/40 blur-2xl dark:bg-blue-300/20" />
-      <div className="relative flex items-center justify-between gap-3">
-        <div>
-          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-700 dark:text-amber-200">
-            premium pass
-          </div>
-          <div className="mt-1 text-[24px] font-black tracking-tight text-zinc-950 dark:text-white">
-            ACTIVE
-          </div>
-        </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-950 text-[20px] font-black text-white shadow-[0_14px_30px_rgba(15,23,42,0.28)] dark:bg-white dark:text-zinc-950">
-          M
-        </div>
-      </div>
-      <div className="relative mt-5 h-1.5 overflow-hidden rounded-full bg-white/60 dark:bg-white/15">
-        <div className="h-full w-[82%] rounded-full bg-[linear-gradient(90deg,#f59e0b,#3182f6,#10b981)]" />
-      </div>
-      <div className="relative mt-3 flex items-center justify-between text-[11px] font-black text-zinc-600 dark:text-zinc-200">
-        <span>득템잡이 멤버십</span>
-        <span>승인 완료</span>
-      </div>
-    </div>
-  );
-}
 
 type PendingApplicationRow = {
   id: number;
@@ -198,6 +170,35 @@ function membershipRemainingLabel(value: string | null | undefined): string {
   return `${days.toLocaleString("ko-KR")}일 남음`;
 }
 
+function membershipTimeline(value: string | null | undefined) {
+  const end = value ? new Date(value) : null;
+  if (!end || !Number.isFinite(end.getTime())) {
+    return {
+      startLabel: "가입일 확인 중",
+      progressLabel: "활성",
+      progressPercent: 100,
+    };
+  }
+
+  const remainingDays = Math.max(
+    0,
+    Math.ceil((end.getTime() - Date.now()) / 86_400_000),
+  );
+  const totalDays =
+    remainingDays > 366 ? Math.ceil(remainingDays / 365) * 365 : 365;
+  const start = new Date(end.getTime() - totalDays * 86_400_000);
+  const progressPercent = Math.max(
+    8,
+    Math.min(100, Math.round((remainingDays / totalDays) * 100)),
+  );
+
+  return {
+    startLabel: `가입 ${KST_DATE_FORMATTER.format(start)}`,
+    progressLabel: `${progressPercent}% 남음`,
+    progressPercent,
+  };
+}
+
 function loadSlotSnapshot(now = Date.now()): SlotSnapshot {
   const elapsedMs = Math.max(0, now - SLOT_RAMP_START_MS);
   const progress = Math.min(1, elapsedMs / SLOT_RAMP_DURATION_MS);
@@ -288,6 +289,7 @@ export default async function PlansPage() {
   const slotSnapshot = loadSlotSnapshot();
   const membershipEndAt = membership?.proUntil ?? null;
   const socialProofEvents = isMember ? await loadSocialProofEvents() : [];
+  const membershipTimelineState = membershipTimeline(membershipEndAt);
   const pendingApplicationPayload = pendingApplication
     ? {
         id: pendingApplication.id,
@@ -321,88 +323,102 @@ export default async function PlansPage() {
   return (
     <main className="min-h-screen bg-[#f4f7fb] px-3 pb-24 pt-4 dark:bg-zinc-950 sm:px-5 sm:py-8 lg:py-10">
       <PlansSocialProofToasts events={socialProofEvents} />
-      <div className="mx-auto grid w-full max-w-[1120px] gap-4 lg:grid-cols-[390px_minmax(0,1fr)] lg:items-start">
-        <section className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white shadow-[0_20px_80px_rgba(15,23,42,0.08)] dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="px-5 py-6 sm:px-7 lg:px-8 lg:py-8">
-            <div className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900/60">
-              멤버십 활성화됨
-            </div>
-            <h1 className="mt-4 break-keep text-[34px] font-black leading-[1.02] tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[46px] lg:text-[52px]">
-              멤버십
-              <br />
-              연장하기
-            </h1>
-            <p className="mt-4 break-keep text-[14px] font-bold leading-6 text-zinc-600 dark:text-zinc-300 sm:text-[15px]">
-              만료 전에 연장해도 남은 기간 뒤에 그대로 붙습니다.
-            </p>
-            <div className="mt-5 grid gap-2">
-              <div className="rounded-[18px] border border-zinc-200 bg-[#fbfcff] px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950/50">
-                <div className="text-[11px] font-black text-zinc-400">
-                  남은 기간
-                </div>
-                <div className="mt-1 text-[28px] font-black text-zinc-950 dark:text-zinc-50">
-                  {membershipRemainingLabel(membershipEndAt)}
-                </div>
-              </div>
-              <div className="rounded-[18px] border border-zinc-200 bg-[#fbfcff] px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950/50">
-                <div className="text-[11px] font-black text-zinc-400">
-                  만료일
-                </div>
-                <div className="mt-1 break-keep text-[16px] font-black text-zinc-950 dark:text-zinc-50">
-                  {membershipEndLabel(membershipEndAt)}
-                </div>
-              </div>
-            </div>
-            <div className="mt-5">
-              <MembershipPassBadge />
-            </div>
-            <Link
-              href="/me"
-              className="mt-4 flex h-12 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-[14px] font-black text-zinc-900 transition hover:bg-[#eef4ff] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-800"
-            >
-              지금 매물 보러가기
-            </Link>
-          </div>
-        </section>
-
-        <aside className="order-first lg:order-none lg:sticky lg:top-5">
-          <div className="overflow-hidden rounded-[24px] border border-blue-200 bg-white shadow-[0_24px_90px_rgba(49,130,246,0.16)] ring-1 ring-blue-50 dark:border-blue-900/60 dark:bg-zinc-900 dark:ring-blue-950/70">
-            <div className="border-b border-blue-100 bg-[linear-gradient(135deg,#f8fbff_0%,#eaf3ff_100%)] px-5 py-5 dark:border-zinc-800 dark:bg-none dark:bg-white/6 sm:px-6">
-              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-[#3182f6] dark:text-blue-200">
-                Renewal
-              </div>
-              <h2 className="mt-2 break-keep text-[34px] font-black leading-tight tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[42px]">
-                연장 기간을
-                <br className="hidden sm:block" />
-                선택하세요.
-              </h2>
-              <p className="mt-3 break-keep text-[13px] font-bold leading-6 text-zinc-600 dark:text-zinc-300">
-                기간을 고르면 입금 계좌가 열리고, 입금했어요 버튼으로 승인
-                확인을 시작합니다.
-              </p>
-            </div>
-            <div className="grid gap-3 px-4 py-4 sm:px-5">
-              <div className="rounded-[20px] border border-blue-100 bg-blue-50/70 px-4 py-4 dark:border-blue-950/70 dark:bg-blue-950/20">
-                <MembershipApplicationClient
-                  isAuthed={auth.ok}
-                  isMember={isMember}
-                  loginHref="/login?next=/plans"
-                  plans={MEMBERSHIP_PLANS}
-                  pendingApplication={pendingApplicationPayload}
+      <section className="mx-auto w-full max-w-[520px] overflow-hidden rounded-[26px] border border-zinc-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.11)] dark:border-zinc-800 dark:bg-[#18191d]">
+        <div className="px-5 py-5 sm:px-6">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 overflow-hidden rounded-full shadow-[0_12px_28px_rgba(49,130,246,0.34)] ring-1 ring-blue-300/40 dark:ring-blue-300/20">
+                <Image
+                  src="/logo.svg"
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="h-full w-full object-cover"
                 />
               </div>
-              <div className="rounded-[18px] border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950/70">
-                <div className="text-[12px] font-black text-zinc-950 dark:text-zinc-50">
-                  입금 전에는 기간 변경이나 취소가 가능합니다.
-                </div>
-                <div className="mt-1 break-keep text-[11.5px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-                  입금했어요 버튼을 누른 뒤에는 승인 확인이 진행됩니다.
-                </div>
+              <div className="text-[15px] font-black text-blue-700 dark:text-blue-200">
+                멤버십 관리
               </div>
             </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-[12px] font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-400/25">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              활성
+            </span>
           </div>
-        </aside>
-      </div>
+
+          <div className="mt-6 flex flex-col items-center text-center">
+            <div
+              className="flex h-[92px] w-[92px] items-center justify-center rounded-full p-[6px] shadow-[0_16px_34px_rgba(49,130,246,0.20)]"
+              style={{
+                background: `conic-gradient(#3b74ff ${membershipTimelineState.progressPercent}%, rgba(49,130,246,0.16) 0)`,
+              }}
+            >
+              <div className="h-full w-full overflow-hidden rounded-full ring-[7px] ring-blue-950/10 dark:ring-blue-950/50">
+                <Image
+                  src="/logo.svg"
+                  alt=""
+                  width={80}
+                  height={80}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            </div>
+            <h1 className="mt-4 text-[23px] font-black tracking-tight text-zinc-950 dark:text-zinc-50">
+              득템잡이 멤버십
+            </h1>
+            <p className="mt-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
+              프리미엄 매물 알림 · 무제한 열람
+            </p>
+          </div>
+
+          <div className="mt-6">
+            <div className="flex items-end justify-between gap-3">
+              <div className="text-[13px] font-black text-zinc-500 dark:text-zinc-400">
+                남은 기간
+              </div>
+              <div className="text-[24px] font-black leading-none tracking-tight text-[#3b74ff]">
+                {membershipRemainingLabel(membershipEndAt)}
+              </div>
+            </div>
+            <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+              <div
+                className="h-full rounded-full bg-[linear-gradient(90deg,#2f65ff,#8eb3ff)]"
+                style={{
+                  width: `${membershipTimelineState.progressPercent}%`,
+                }}
+              />
+            </div>
+            <div className="mt-2 flex items-center justify-between text-[11px] font-bold text-zinc-400 dark:text-zinc-500">
+              <span>{membershipTimelineState.startLabel}</span>
+              <span>{membershipTimelineState.progressLabel}</span>
+              <span>만료 {membershipEndLabel(membershipEndAt)}</span>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-[16px] border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950/30">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-[12px] font-black text-zinc-400">연장 방식</span>
+              <span className="text-right text-[13px] font-black text-zinc-950 dark:text-zinc-50">
+                만료일 뒤에 자동 추가
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <MembershipApplicationClient
+              isAuthed={auth.ok}
+              isMember={isMember}
+              loginHref="/login?next=/plans"
+              plans={MEMBERSHIP_PLANS}
+              pendingApplication={pendingApplicationPayload}
+            />
+            <p className="mt-3 break-keep text-center text-[11.5px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+              입금 전에는 기간 변경이나 취소가 가능하고, 입금했어요 버튼을 누르면
+              승인 확인이 진행됩니다.
+            </p>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
