@@ -1824,6 +1824,39 @@ export async function GET(req: Request) {
     const deduped = dedupeSameSellerProducts(pool, raws, metas);
     const skuImageMap = await loadSkuImageMap();
     items = buildItems(deduped.pool, deduped.raws, deduped.metas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, userHomeRegion, parsedGradingRows, skuImageMap);
+    let nearbyDaangnStatsForResponse = nearbyDaangnStats;
+    let deepFallbackUsed = false;
+    if (items.length === 0 && quickPage && (priceMax != null || isDaangnLocalRequest)) {
+      const fallbackPool = await loadPool(headers, {
+        sort,
+        source,
+        priceMax,
+        excludePids: excludeAllPids,
+        readyCandidateLimit: REFRESH_READY_CANDIDATE_LIMIT,
+        userHomeDaangnFullPath: userHomeRegion?.daangn_full_path ?? null,
+        extendedMarketplaces,
+        quickPage: false,
+      });
+      const fallbackDeduped = dedupeSameSellerProducts(
+        fallbackPool.pool,
+        fallbackPool.raws,
+        fallbackPool.metas,
+      );
+      items = buildItems(
+        fallbackDeduped.pool,
+        fallbackDeduped.raws,
+        fallbackDeduped.metas,
+        fallbackPool.marketBands,
+        fallbackPool.sourceMarketBands,
+        fallbackPool.v7SiblingPresence,
+        fallbackPool.velocitySignals,
+        userHomeRegion,
+        fallbackPool.parsedGradingRows,
+        skuImageMap,
+      );
+      nearbyDaangnStatsForResponse = fallbackPool.nearbyDaangnStats;
+      deepFallbackUsed = true;
+    }
 
     // Wave 373: 성향 정렬 — preference 따라 우선순위 재정렬.
     //   safe: 우수 셀러 (평점 4.5+ & 후기 10+) 우선
@@ -1878,7 +1911,8 @@ export async function GET(req: Request) {
         responsePageSize,
         returnedItems: responseItems.length,
         readyCandidateLimit,
-        nearbyDaangn: nearbyDaangnStats,
+        deepFallbackUsed,
+        nearbyDaangn: nearbyDaangnStatsForResponse,
       });
     }
 
@@ -1891,7 +1925,7 @@ export async function GET(req: Request) {
       total: responseItems.length,
       pageSize: responsePageSize,
       freshLagHours: FRESH_LAG_HOURS,
-      debug: isAdminUser(auth.user) ? { nearbyDaangn: nearbyDaangnStats } : undefined,
+      debug: isAdminUser(auth.user) ? { deepFallbackUsed, nearbyDaangn: nearbyDaangnStatsForResponse } : undefined,
       // Wave 382: 사용자 예산이 fallback됐는지 (사용자 안내용).
       appliedBudget,
     }, { headers: { "Cache-Control": "no-store" } });

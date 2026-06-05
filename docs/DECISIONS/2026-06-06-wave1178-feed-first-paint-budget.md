@@ -7,6 +7,8 @@
 - 15만원 이하 같은 예산 필터에서 비싼 raw rows를 먼저 훑은 뒤 나중에 탈락시키는 비용과 빈 화면 가능성을 줄였다.
 - 첫 카드 렌더 직후 500개 background hydration을 바로 시작하지 않고, 당근/거리 피드는 900ms 지연 후 조용히 붙이도록 했다.
 - 느린 `/api/packs/pool` 응답은 1.2초 이상이면 `[pool] response` 로그로 quick/refresh/source/budget/nearby prefetch stats를 남긴다.
+- quick request가 0개를 반환하면 빈 화면을 확정하지 않고, 같은 조건으로 deep scan을 한 번 fallback 실행한다.
+- 즉, first-paint path는 빠르게 시도하되 매물이 있는데도 “후보 부족”으로 끝나는 거짓 empty state를 막는다.
 
 ## 보류
 - 근본 최종형은 `mvp_feed_cards` 또는 지역별 feed snapshot/materialized table을 worker가 미리 만들고, 피드 API는 조립이 아니라 읽기만 하는 구조다.
