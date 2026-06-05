@@ -60,6 +60,7 @@ import { openTossSend } from "@/lib/toss-deeplink";
 const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 0;
 const INITIAL_FEED_PAGE_SIZE = 6;
 const BACKGROUND_FEED_PAGE_SIZE = 30;
+const DAANGN_BACKGROUND_FEED_PAGE_SIZE = 500;
 
 type PoolItem = {
   pid: number;
@@ -3051,11 +3052,17 @@ export default function ExploreClient({
     if (loading || scrapOnly || items.length === 0) return;
     if (initialRemainderRequestedRef.current) return;
     initialRemainderRequestedRef.current = true;
+    const backgroundSource = sourceRef.current;
+    const backgroundSort = sortRef.current;
+    const isDaangnFocusedBackground =
+      backgroundSource === "daangn" || backgroundSort === "distance";
     void loadPool(true, {
       autoScrollNew: false,
-      limit: BACKGROUND_FEED_PAGE_SIZE,
-      serverSource: sourceRef.current,
-      serverSort: sortRef.current === "distance" ? "distance" : null,
+      limit: isDaangnFocusedBackground
+        ? DAANGN_BACKGROUND_FEED_PAGE_SIZE
+        : BACKGROUND_FEED_PAGE_SIZE,
+      serverSource: backgroundSource,
+      serverSort: backgroundSort === "distance" ? "distance" : null,
       silent: true,
     });
   }, [items.length, loadPool, loading, scrapOnly]);

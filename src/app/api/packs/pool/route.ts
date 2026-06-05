@@ -48,6 +48,7 @@ export const revalidate = 0;
 
 const PAGE_SIZE = 30;
 const MIN_PAGE_SIZE = 1;
+const MAX_PAGE_SIZE = 500;
 const READY_SLOTS = 25; // 살아있는 매물
 const SOLD_OUT_SLOTS = 5; // 오늘 잡힌 매물 (FOMO)
 // Wave 383: 6h lag 제거 (0으로). 피드 신선도는 teaser에서도 동일하게 유지.
@@ -85,9 +86,10 @@ function intEnv(name: string, fallback: number, min: number, max: number) {
 }
 
 function pageSizeParam(raw: string | null) {
+  if (!raw) return PAGE_SIZE;
   const parsed = Number(raw);
   if (!Number.isFinite(parsed)) return PAGE_SIZE;
-  return Math.min(PAGE_SIZE, Math.max(MIN_PAGE_SIZE, Math.trunc(parsed)));
+  return Math.min(MAX_PAGE_SIZE, Math.max(MIN_PAGE_SIZE, Math.trunc(parsed)));
 }
 
 // Daangn is local-first. The profit-ordered pool query can miss nearby dong rows,
@@ -103,13 +105,13 @@ const DAANGN_NEARBY_LOCAL_POOL_LOOKUP_LIMIT = intEnv("DAANGN_NEARBY_FEED_LOCAL_P
 const DAANGN_NEARBY_BOOST_LIMIT = intEnv("DAANGN_NEARBY_FEED_BOOST_LIMIT", 36, 10, 500);
 const DAANGN_NEARBY_LOCAL_READY_TARGET = intEnv(
   "DAANGN_NEARBY_FEED_LOCAL_READY_TARGET",
-  180,
+  REFRESH_READY_CANDIDATE_LIMIT,
   PAGE_SIZE,
   REFRESH_READY_CANDIDATE_LIMIT,
 );
 const DAANGN_NEARBY_LOCAL_RETURN_LIMIT = intEnv(
   "DAANGN_NEARBY_FEED_LOCAL_RETURN_LIMIT",
-  180,
+  REFRESH_READY_CANDIDATE_LIMIT,
   DAANGN_NEARBY_BOOST_LIMIT,
   REFRESH_READY_CANDIDATE_LIMIT,
 );
