@@ -3482,7 +3482,6 @@ export default function ExploreClient({
         )}
         <Link
           href="/me?view=hotdeal-alerts"
-          scroll={false}
           className="min-h-12 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm font-black text-emerald-800 shadow-sm transition hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/70 dark:text-emerald-200"
         >
           새매물 알림 받기
