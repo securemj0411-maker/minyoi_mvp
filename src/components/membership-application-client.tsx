@@ -101,6 +101,9 @@ export default function MembershipApplicationClient({
   );
   const [approvalDetected, setApprovalDetected] = useState(false);
   const [approvalMessage, setApprovalMessage] = useState<string | null>(null);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(
+    Boolean(pendingApplication),
+  );
   const [reservationCancelled, setReservationCancelled] = useState(false);
   const [reservationExpiresAt, setReservationExpiresAt] = useState<
     string | null
@@ -116,7 +119,8 @@ export default function MembershipApplicationClient({
     autoOpenSelector &&
     !renewalMode &&
     !pendingApplication &&
-    !reservationCancelled;
+    !reservationCancelled &&
+    state !== "sent";
 
   useEffect(() => {
     if (!autoApproveAt && !reservationExpiresAt) return;
@@ -150,6 +154,7 @@ export default function MembershipApplicationClient({
       const applicationStatus = payload?.application?.status ?? null;
       if (payload?.isMember && applicationStatus === "approved") {
         setApprovalDetected(true);
+        setPaymentModalOpen(false);
         setApprovalMessage(
           renewalMode
             ? "멤버십 연장 완료. 기간이 추가됐어요."
@@ -253,6 +258,7 @@ export default function MembershipApplicationClient({
     setSubmittedPlan(plan);
     setReservationCancelled(false);
     setReservationExpiresAt(new Date(Date.now() + 7 * 60_000).toISOString());
+    setPaymentModalOpen(true);
     setState("sent");
     setMessage(
       renewalMode
@@ -366,6 +372,7 @@ export default function MembershipApplicationClient({
     setReservationExpiresAt(null);
     setApprovalDetected(false);
     setApprovalMessage(null);
+    setPaymentModalOpen(false);
     setReservationCancelled(true);
     setState("idle");
     setMessage(
@@ -474,8 +481,23 @@ export default function MembershipApplicationClient({
           </div>
         </div>
       ) : null}
-      {hasReservation ? (
-        <div className="overflow-hidden rounded-[24px] border border-blue-100 bg-white text-zinc-950 shadow-[0_18px_54px_rgba(49,130,246,0.13)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
+      {hasReservation && paymentModalOpen ? (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/62 px-3 py-4 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={renewalMode ? "멤버십 연장 입금" : "멤버십 입금"}
+            className="relative max-h-[calc(100dvh-32px)] w-full max-w-[520px] overflow-y-auto"
+          >
+            <button
+              type="button"
+              onClick={() => setPaymentModalOpen(false)}
+              className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[18px] font-black text-zinc-500 shadow-lg ring-1 ring-zinc-200 transition hover:bg-zinc-50 dark:bg-zinc-950 dark:text-zinc-300 dark:ring-zinc-800"
+              aria-label="입금 안내 닫기"
+            >
+              ×
+            </button>
+            <div className="overflow-hidden rounded-[24px] border border-blue-100 bg-white text-zinc-950 shadow-[0_24px_80px_rgba(15,23,42,0.35)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
           <div className="relative border-b border-blue-100 bg-[#f5f8ff] px-4 py-4 dark:border-zinc-800 dark:bg-white/6 sm:px-7 sm:py-6">
             <div className="relative flex items-start justify-between gap-4">
               <div className="min-w-0">
@@ -634,7 +656,10 @@ export default function MembershipApplicationClient({
             ) : null}
           </div>
         </div>
-      ) : renewalMode ? (
+          </div>
+        </div>
+      ) : null}
+      {renewalMode ? (
         <div className="grid gap-2 sm:grid-cols-[1fr_1.15fr]">
           <Link
             href="/me"
@@ -644,11 +669,19 @@ export default function MembershipApplicationClient({
           </Link>
           <button
             type="button"
-            onClick={openSelector}
+            onClick={
+              hasReservation ? () => setPaymentModalOpen(true) : openSelector
+            }
             disabled={state === "submitting"}
             className="flex h-11 items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
           >
-            {state === "submitting" ? "연장 예약 중" : "멤버십 연장하기"}
+            {state === "submitting"
+              ? "연장 예약 중"
+              : hasReservation
+                ? depositNotifyState === "sent"
+                  ? "승인 대기 보기"
+                  : "입금 이어하기"
+                : "멤버십 연장하기"}
           </button>
         </div>
       ) : showInlineSelector ? (
@@ -702,24 +735,36 @@ export default function MembershipApplicationClient({
         <>
           <button
             type="button"
-            onClick={openSelector}
+            onClick={
+              hasReservation ? () => setPaymentModalOpen(true) : openSelector
+            }
             disabled={state === "submitting"}
             className="flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
           >
             {state === "submitting"
               ? "자리 예약 중"
-              : "지금 바로 자리 차지하기"}
+              : hasReservation
+                ? depositNotifyState === "sent"
+                  ? "승인 대기 보기"
+                  : "입금 이어하기"
+                : "지금 바로 자리 차지하기"}
           </button>
           {!suppressFixedCta && !selectorOpen ? (
             <button
               type="button"
-              onClick={openSelector}
+              onClick={
+                hasReservation ? () => setPaymentModalOpen(true) : openSelector
+              }
               disabled={state === "submitting"}
               className="fixed inset-x-3 bottom-3 z-40 flex h-12 items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.34)] ring-1 ring-white/30 transition hover:opacity-90 disabled:cursor-default disabled:opacity-70 sm:hidden"
             >
               {state === "submitting"
                 ? "자리 예약 중"
-                : "지금 바로 자리 차지하기"}
+                : hasReservation
+                  ? depositNotifyState === "sent"
+                    ? "승인 대기 보기"
+                    : "입금 이어하기"
+                  : "지금 바로 자리 차지하기"}
             </button>
           ) : null}
         </>
