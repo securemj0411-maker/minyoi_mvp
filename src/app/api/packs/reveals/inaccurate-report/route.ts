@@ -1,7 +1,6 @@
-// Wave 182c (2026-05-17): 정보 오류 신고 + 토큰 +3 보상.
+// Wave 182c (2026-05-17): 정보 오류 신고.
 // loss_report (매물 받고 손해) 보다 임계값 낮음 — 매수 전에도 "이 정보 이상함" 즉시 신고 가능.
-// 사용자 피드백 자연 수집 + 토큰 보상으로 유인 → feedback-resolutions polling source.
-// Wave 245 (2026-05-18): 보상은 신고 즉시가 아니라 운영자 승인(resolved) 시점에 지급.
+// 사용자 피드백 자연 수집 → feedback-resolutions polling source.
 //
 // 흐름:
 // 1. 사용자가 매물 상세 모달에서 "정보 오류 신고" 클릭
@@ -9,10 +8,10 @@
 //    + optional 사유 (자유 입력)
 // 3. mvp_reveal_feedback type-scoped upsert (feedback_type='inaccurate_report')
 //    - admin_status='pending', compensation_granted_tokens=0
-// 4. 운영자가 /cau.../loss-reports 에서 승인하면 RPC가 토큰 +3을 원자적으로 지급
-// 5. 응답: "신고 접수. 승인되면 토큰 3개 지급."
+// 4. 운영자가 /cau.../loss-reports 에서 확인하면 시세·상태 보정 데이터로 반영
+// 5. 응답: "신고 접수. 운영자 확인 후 보정 반영."
 //
-// 중복 신고 차단: 같은 (user_ref, pid) 이미 inaccurate_report 박혀있으면 토큰 미지급.
+// 중복 신고 차단: 같은 (user_ref, pid) 이미 inaccurate_report 박혀있으면 중복 접수 방지.
 
 import { NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -23,7 +22,6 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const COMPENSATION_TOKENS = 3;
 const MAX_USER_REF = 64;
 const MAX_NOTE = 1000;
 // 부정확 신고 spam 차단: 시간당 10건 (loss_report 보다 임계값 낮으니 한도 더 큼).
@@ -96,9 +94,6 @@ export async function POST(req: Request) {
       return NextResponse.json({
         ok: true,
         duplicate: true,
-        compensationTokens: 0,
-        pendingCompensationTokens: 0,
-        tokensAfter: null,
         message: "이미 신고된 매물입니다. 운영자 검토 진행 중입니다.",
       });
     }
@@ -135,10 +130,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       duplicate: false,
-      compensationTokens: 0,
-      pendingCompensationTokens: COMPENSATION_TOKENS,
-      tokensAfter: null,
-      message: `신고 접수됨. 운영자가 확인 후 적절하면 토큰 ${COMPENSATION_TOKENS}개를 지급합니다.`,
+      message: "신고 접수됨. 운영자가 확인 후 시세·상태·모델 보정에 반영합니다.",
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown error";

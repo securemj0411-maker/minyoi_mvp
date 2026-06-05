@@ -3307,7 +3307,7 @@ function RecommendationReasonPanel({ card, className = "" }: { card: RevealCard;
 // Wave launch-83 (사용자 결정): 데이터 부족 시 "수집 중" placeholder 보이지 않게.
 //   MarketHistoryChart 가 onState 로 data 상태 알림 → "available" / "reference_only" 외엔 섹션 자체 hide.
 //   첫 mount default = "loading" — fetch 동안엔 wrapper + skeleton 표시. 빈 상태 확인되면 wrapper 사라짐.
-// Wave launch-103 (사용자 결정 — 매물 신고/피드백): 매물 잘못됐을 때 사용자가 신고 → 운영자 검토 → +20 크레딧.
+// 매물 잘못됐을 때 사용자가 신고 → 운영자 검토 → 알고리즘 보정.
 //   인라인 카드 (수익 계산 근거 / 채널 비교 / 추천 이유 다음). 보상 명시 → conversion ↑.
 function FeedbackReportPanel({
   card,
@@ -3383,7 +3383,7 @@ function FeedbackReportPanel({
           제보 접수됐어요
         </div>
         <p className="mt-1.5 text-[12px] font-bold leading-5 text-blue-700/80 dark:text-blue-300/90">
-          운영자가 검토 후 정당하면 +20 크레딧 지급해드릴게요.
+          운영자가 검토 후 시세·상태·모델 보정에 반영할게요.
         </p>
       </section>
     );
@@ -3405,7 +3405,7 @@ function FeedbackReportPanel({
               이 매물 정보가 이상한가요?
             </div>
             <div className="mt-1 text-[11.5px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-              시세, 상태, 모델 분류가 틀린 것 같으면 알려주세요. 운영자 확인 후 적절하면 +20크레딧을 드려요.
+              시세, 상태, 모델 분류가 틀린 것 같으면 알려주세요. 운영자 확인 후 보정 데이터로 반영해요.
             </div>
           </div>
         </div>
@@ -6495,7 +6495,7 @@ function RevealCardItem({
                 card={card}
                 className="mt-2 border-t border-[#e1dacd] pt-2"
               />
-              {/* Wave launch-103+현재: 매물 잘못 신고 → 운영자 검토 → +20 크레딧.
+              {/* 매물 잘못 신고 → 운영자 검토 → 알고리즘 보정.
                   하단 prominent section 유지 + 상단 신고 shortcut 은 이 섹션을 자동으로 연다.
                   매물 ID 자동 부착 (운영자가 어떤 매물 issue 인지 즉시 확인). */}
               <FeedbackReportPanel card={card} openSignal={reportShortcutSignal} panelRef={reportPanelRef} />
@@ -6611,7 +6611,7 @@ function ModalActionFooter({
       type="button"
       onClick={() => onReportLoss(card)}
       disabled={alreadyReportedLoss}
-      title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "부정확 정보 신고하기 — 승인 시 토큰 +3"}
+      title={alreadyReportedLoss ? "이미 신고됨 — 운영자 검수 진행 중" : "부정확 정보 신고하기"}
       className={`mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border-2 px-3 py-2 text-xs font-black leading-none transition ${
         alreadyReportedLoss
           ? "cursor-not-allowed border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
@@ -7714,7 +7714,7 @@ export default function PackRevealModal({
           {!displayLoading && result?.result === "refunded" ? (
             <div className="space-y-4 py-6">
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
-                <div className="text-base font-bold">검증 실패 — 크레딧 {result.tokensRefunded}개 환불됨</div>
+                <div className="text-base font-bold">검증 실패 — 추천에서 제외됐어요</div>
                 <p className="mt-2 text-sm">{result.reason}</p>
               </div>
               <div className="flex flex-wrap items-center justify-end gap-2">
@@ -7741,7 +7741,7 @@ export default function PackRevealModal({
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-700 dark:bg-zinc-800/40">
                 <div className="text-base font-bold">현재 재고 부족</div>
                 <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{result.reason}</p>
-                {/* Wave 106: dead-end 방지. unavailable은 토큰 차감 X (atomic RPC amount=0)이라
+                {/* Wave 106: dead-end 방지. unavailable은 이용권 차감 X (atomic RPC amount=0)이라
                     재시도 안전. 새 매물이 풀에 들어왔을 가능성 + 다른 등급도 시도 가능. */}
                 <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
                   잠시 후 새 매물이 풀에 들어올 수 있어요. 다시 시도하거나 다른 등급을 열어보세요.

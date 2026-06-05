@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Wave 151 (2026-05-16): parser 9개 누락 패턴
 // Wave 152 (2026-05-16): 가품 detection v3 tier 3 (이미지 + desc 길이)
 

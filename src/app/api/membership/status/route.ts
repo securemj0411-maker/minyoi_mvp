@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { approveMembershipApplication } from "@/lib/membership-application-approval";
 import { getMembershipPlan } from "@/lib/membership-plans";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { getProStatus, hasMembershipAccess } from "@/lib/user-subscription";
@@ -58,8 +59,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const userRef = userRefForAuthUser(auth.user.id);
-  const membership = await getProStatus(auth.user, userRef);
-  const isMember = hasMembershipAccess(membership);
+  let membership = await getProStatus(auth.user, userRef);
+  let isMember = hasMembershipAccess(membership);
   await expireUnpaidReservationsForUser(auth.user.id);
 
   const res = await restFetch(
@@ -67,7 +68,29 @@ export async function GET(req: Request) {
     { headers: serviceHeaders(), cache: "no-store" },
   ).catch(() => null);
   const rows = res?.ok ? ((await res.json()) as ApplicationStatusRow[]) : [];
-  const application = rows[0] ?? null;
+  let application = rows[0] ?? null;
+  if (
+    application?.status === "pending" &&
+    application.deposit_confirmed_at &&
+    application.scheduled_auto_approve_at &&
+    Date.parse(application.scheduled_auto_approve_at) <= Date.now()
+  ) {
+    const approval = await approveMembershipApplication(application.id, "auto", null);
+    if (approval.ok && approval.activated) {
+      membership = await getProStatus(auth.user, userRef);
+      isMember = hasMembershipAccess(membership);
+      application = {
+        ...application,
+        status: approval.status ?? "approved",
+        decided_at: new Date().toISOString(),
+      };
+    } else if (!approval.ok) {
+      console.warn("[membership/status] inline auto approve failed", {
+        applicationId: application.id,
+        error: approval.error ?? "unknown",
+      });
+    }
+  }
   const selectedPlan = application
     ? getMembershipPlan(application.product_key)
     : null;

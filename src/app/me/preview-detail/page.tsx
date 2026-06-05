@@ -334,6 +334,66 @@ function Card({ children, style, accent }: { children: ReactNode; style?: CSSPro
   );
 }
 
+function MarketStat({
+  label,
+  valueColor,
+  value,
+  sub,
+  icon,
+}: {
+  label: string;
+  valueColor: string;
+  value: string;
+  sub: string;
+  icon: ReactNode;
+}) {
+  return (
+    <div style={{ flex: 1, textAlign: "center", padding: "4px 0" }}>
+      <div style={{ fontSize: 10.5, color: tokens.ink3, fontWeight: 700, marginBottom: 6 }}>{label}</div>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 4, color: valueColor }}>{icon}</div>
+      <div style={{ fontSize: 13, fontWeight: 800, color: valueColor, letterSpacing: -0.2 }}>{value}</div>
+      <div style={{ fontSize: 10, color: tokens.ink4, marginTop: 4, lineHeight: 1.35 }}>{sub}</div>
+    </div>
+  );
+}
+
+type NegotiationRowTone = "em" | "amber" | "rose";
+
+function NegotiationRow({
+  icon,
+  tone,
+  label,
+  sub,
+  value,
+}: {
+  icon: string;
+  tone: NegotiationRowTone;
+  label: string;
+  sub?: string;
+  value: string;
+}) {
+  const tones = {
+    em: { bg: "#e6f4ec", fg: "#1c64dd", icon: "#10b981" },
+    amber: { bg: "#fef3c7", fg: "#92400e", icon: "#d97706" },
+    rose: { bg: "#ffe4e6", fg: "#9f1239", icon: "#e11d48" },
+  } as const;
+  const t = tones[tone];
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 12px", background: t.bg, borderRadius: 12, marginBottom: 6 }}>
+      <div style={{ width: 24, height: 24, borderRadius: 999, background: "#fff", color: t.icon, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontWeight: 900, fontSize: 14 }}>
+        {icon}
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: tokens.ink2, letterSpacing: -0.3 }}>
+          {label}
+          {sub && <span style={{ fontVariantNumeric: "tabular-nums", marginLeft: 6, fontSize: 13.5, color: t.fg }}>{sub}</span>}
+        </div>
+      </div>
+      <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 12.5, fontWeight: 800, color: t.fg, letterSpacing: -0.2, textAlign: "right" }}>{value}</div>
+    </div>
+  );
+}
+
 function Hero({ data }: { data: BoundData | null }) {
   const imgs = data?.detail?.imageUrls ?? (data?.reveal.thumbnailUrl ? [data.reveal.thumbnailUrl] : []);
   const conditionLabel = data?.detail?.conditionLabel ?? "상태 정보 없음";
@@ -693,14 +753,6 @@ function MarketStats({ data }: { data: BoundData | null }) {
   const reviews = seller?.sellerReviewCount ?? 0;
   const safeValue = rating ? `평점 ${rating.toFixed(1)} 셀러` : "정보 부족";
   const safeColor = rating && rating >= 4.5 ? tokens.em700 : tokens.amber;
-  const Stat = ({ label, valueColor, value, sub, icon }: { label: string; valueColor: string; value: string; sub: string; icon: ReactNode }) => (
-    <div style={{ flex: 1, textAlign: "center", padding: "4px 0" }}>
-      <div style={{ fontSize: 10.5, color: tokens.ink3, fontWeight: 700, marginBottom: 6 }}>{label}</div>
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 4, color: valueColor }}>{icon}</div>
-      <div style={{ fontSize: 13, fontWeight: 800, color: valueColor, letterSpacing: -0.2 }}>{value}</div>
-      <div style={{ fontSize: 10, color: tokens.ink4, marginTop: 4, lineHeight: 1.35 }}>{sub}</div>
-    </div>
-  );
   return (
     <div style={{ padding: "18px 14px 0" }}>
       <Card>
@@ -709,11 +761,11 @@ function MarketStats({ data }: { data: BoundData | null }) {
           <span style={{ fontSize: 11.5, color: "#065f46", fontWeight: 700, lineHeight: 1.4 }}>비슷한 상태의 매물 중에서도 셀러가 낮게 등록한 것 같아요</span>
         </div>
         <div style={{ display: "flex", alignItems: "stretch", borderRadius: 10 }}>
-          <Stat label="수요·공급" value={supplyValue} valueColor={supplyColor} sub={flow ? `7일 평균 ${flow.avgPerDay7d}/일` : "같은 상태 · 번개 기준"} icon={Icon.pulse(supplyColor)} />
+          <MarketStat label="수요·공급" value={supplyValue} valueColor={supplyColor} sub={flow ? `7일 평균 ${flow.avgPerDay7d}/일` : "같은 상태 · 번개 기준"} icon={Icon.pulse(supplyColor)} />
           <div style={{ width: 1, background: tokens.line }} />
-          <Stat label="팔리는 속도" value={velocityValue} valueColor={velocityColor} sub={velocity?.sold7dCount ? `7일 ${velocity.sold7dCount}건 판매` : "회전 데이터 수집 중"} icon={Icon.clock(velocityColor)} />
+          <MarketStat label="팔리는 속도" value={velocityValue} valueColor={velocityColor} sub={velocity?.sold7dCount ? `7일 ${velocity.sold7dCount}건 판매` : "회전 데이터 수집 중"} icon={Icon.clock(velocityColor)} />
           <div style={{ width: 1, background: tokens.line }} />
-          <Stat label="거래 안전" value={safeValue} valueColor={safeColor} sub={`후기 ${reviews.toLocaleString()}건`} icon={Icon.trophy(safeColor)} />
+          <MarketStat label="거래 안전" value={safeValue} valueColor={safeColor} sub={`후기 ${reviews.toLocaleString()}건`} icon={Icon.trophy(safeColor)} />
         </div>
       </Card>
     </div>
@@ -751,38 +803,15 @@ function PriceGraph() {
 }
 
 function NegotiationGuide() {
-  type RowTone = "em" | "amber" | "rose";
-  const Row = ({ icon, tone, label, sub, value }: { icon: string; tone: RowTone; label: string; sub?: string; value: string }) => {
-    const tones = {
-      em: { bg: "#e6f4ec", fg: "#1c64dd", icon: "#10b981" },
-      amber: { bg: "#fef3c7", fg: "#92400e", icon: "#d97706" },
-      rose: { bg: "#ffe4e6", fg: "#9f1239", icon: "#e11d48" },
-    } as const;
-    const t = tones[tone];
-    return (
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 12px", background: t.bg, borderRadius: 12, marginBottom: 6 }}>
-        <div style={{ width: 24, height: 24, borderRadius: 999, background: "#fff", color: t.icon, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontWeight: 900, fontSize: 14 }}>
-          {icon}
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: tokens.ink2, letterSpacing: -0.3 }}>
-            {label}
-            {sub && <span style={{ fontVariantNumeric: "tabular-nums", marginLeft: 6, fontSize: 13.5, color: t.fg }}>{sub}</span>}
-          </div>
-        </div>
-        <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 12.5, fontWeight: 800, color: t.fg, letterSpacing: -0.2, textAlign: "right" }}>{value}</div>
-      </div>
-    );
-  };
   return (
     <div style={{ padding: "18px 14px 0" }}>
       <SectionH right={<Chip tone="em">차익 충분</Chip>}>협상 가이드</SectionH>
       <Card style={{ padding: 12 }}>
-        <Row icon="●" tone="em" label="현재 매입가" sub="350,000원" value="차익 +305,600원" />
-        <Row icon="↓" tone="em" label="협상 시도" sub="330,000원" value="차익 +325,600원" />
+        <NegotiationRow icon="●" tone="em" label="현재 매입가" sub="350,000원" value="차익 +305,600원" />
+        <NegotiationRow icon="↓" tone="em" label="협상 시도" sub="330,000원" value="차익 +325,600원" />
         <div style={{ fontSize: 10.5, color: tokens.ink3, padding: "0 4px 8px", lineHeight: 1.4 }}>현재가 −20,000원 깎기 (차익의 30% 또는 최대 2만원)</div>
-        <Row icon="!" tone="amber" label="약 64.6만원~ 사면" value="차익 1만원 미만" />
-        <Row icon="×" tone="rose" label="약 65.6만원~ 사면" value="손해 (차익 0 이하)" />
+        <NegotiationRow icon="!" tone="amber" label="약 64.6만원~ 사면" value="차익 1만원 미만" />
+        <NegotiationRow icon="×" tone="rose" label="약 65.6만원~ 사면" value="손해 (차익 0 이하)" />
       </Card>
     </div>
   );

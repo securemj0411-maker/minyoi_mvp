@@ -815,7 +815,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
       });
   }
 
-  // Wave 182c/Wave 245: 정보 오류 신고 — inaccurate_report endpoint (운영자 승인 시 토큰 +3).
+  // 정보 오류 신고 — 운영자 검토 후 알고리즘 보정 데이터로 반영.
   async function submitLossReport() {
     if (!lossReportItem || !userRef) return;
     if (!lossReportCategory) {
@@ -842,7 +842,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
           note: lossReportNote.trim(),
         }),
       });
-      const json = (await res.json()) as { ok?: boolean; message?: string; compensationTokens?: number; pendingCompensationTokens?: number; error?: string };
+      const json = (await res.json()) as { ok?: boolean; message?: string; error?: string };
       if (!res.ok || !json.ok) {
         setLossReportResult({
           ok: false,
@@ -852,8 +852,8 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         setLossReportResult({
           ok: true,
           message: json.message ?? "신고 접수됨.",
-          compensation: json.compensationTokens ?? 0,
-          pendingCompensation: json.pendingCompensationTokens ?? 0,
+          compensation: 0,
+          pendingCompensation: 1,
         });
         const reportNote = lossReportNote.trim() || "정보 오류 신고";
         setItems((prev) => prev.map((item) => (
@@ -1101,7 +1101,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
         </div>
       </div>
 
-      {/* Wave 182c: 정보 오류 신고 모달 — 카테고리 chip + optional 사유 + 승인 시 토큰 +3.
+      {/* 정보 오류 신고 모달 — 카테고리 chip + optional 사유.
           이전 (182): "손해 신고 — 5자 이상 사유 필수". 임계값 높아 신고 어려움.
           현재: 카테고리만 골라도 제출 가능 (사유 optional). 사용자 자연 수집 → algorithm 보정 source. */}
       {lossReportItem && (
@@ -1117,11 +1117,11 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                 </div>
                 {lossReportResult.compensation && lossReportResult.compensation > 0 ? (
                   <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-800 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200">
-                    토큰 +{lossReportResult.compensation}개 지급 완료
+                    운영자 검토가 완료됐어요.
                   </div>
                 ) : lossReportResult.pendingCompensation && lossReportResult.pendingCompensation > 0 ? (
                   <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
-                    승인되면 토큰 +{lossReportResult.pendingCompensation}개 지급
+                    운영자가 확인 후 알고리즘 보정에 반영합니다.
                   </div>
                 ) : null}
                 <div className="mt-3 text-[11px] text-zinc-500 dark:text-zinc-400">
@@ -1146,7 +1146,7 @@ export default function UserRevealDashboard({ userRef, welcomePending = false }:
                   매물: <span className="font-bold">{lossReportItem.name}</span>
                 </div>
                 <div className="mt-3 text-[12px] leading-relaxed text-zinc-700 dark:text-zinc-300">
-                  어떤 부정확 정보를 발견했나요? 운영자가 확인 후 적절하면 토큰 <b>3개</b>가 지급됩니다.
+                  어떤 부정확 정보를 발견했나요? 운영자가 확인 후 시세·상태·모델 보정 데이터로 반영합니다.
                 </div>
 
                 {/* 카테고리 chip — 클릭으로 선택 */}

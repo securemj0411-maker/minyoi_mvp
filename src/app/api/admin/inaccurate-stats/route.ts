@@ -77,14 +77,14 @@ export async function GET(req: NextRequest) {
       // 카테고리 × 상태 매트릭스
       const matrix: Record<string, Record<string, number>> = {};
       let total = 0;
-      let totalTokens = 0;
+      let reviewedRewardCount = 0;
       for (const r of filtered) {
         const cat = extractCategory(r.note);
         const st = statusOf(r);
         matrix[cat] = matrix[cat] ?? { pending: 0, resolved: 0, dismissed: 0 };
         matrix[cat][st] = (matrix[cat][st] ?? 0) + 1;
         total += 1;
-        totalTokens += Math.max(0, Number(r.compensation_granted_tokens ?? 0));
+        if (statusOf(r) === "resolved") reviewedRewardCount += 1;
       }
       // 카테고리별 총합
       const byCategory = CATEGORY_KEYS.concat([{ key: "unknown", label: "기타 (분류 불가)" }]).map(({ key, label }) => {
@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
       const responseRate = total > 0 ? Math.round((responded / total) * 100) : 0;
       const resolveRate = responded > 0 ? Math.round((byStatus.resolved / responded) * 100) : 0;
 
-      return { total, totalTokens, byCategory, byStatus, responseRate, resolveRate };
+      return { total, reviewedRewardCount, byCategory, byStatus, responseRate, resolveRate };
     }
 
     const allTime = buildStats(rows);

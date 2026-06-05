@@ -1,4 +1,4 @@
-// Wave launch-103: 피드백 승인/거절. 승인 시 +20 크레딧 grant. HTML 응답 (텔레그램 link 클릭).
+// Wave launch-103: 피드백 승인/거절. HTML 응답 (텔레그램 link 클릭).
 // Wave launch-107 (2026-05-24): sold_out 카테고리 풀 status 처리.
 //   submit 단계에서 임시 invalidate (reason=user_report_sold_pending:fbXXX) 박혀 있음.
 //   approve → user_report_sold_confirmed + raw_listings.listing_state=sold_confirmed (정식)
@@ -44,33 +44,8 @@ async function handle(req: NextRequest, decision: "approve" | "reject", id: numb
   const nowIso = new Date().toISOString();
 
   if (decision === "approve") {
-    // 1) 크레딧 grant (RPC refund_mvp_user_credits 재사용)
-    const grantRes = await restFetch(
-      `${(process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/$/, "")}/rest/v1/rpc/refund_mvp_user_credits`,
-      {
-        method: "POST",
-        headers: serviceHeaders(),
-        body: jsonBody({
-          p_user_ref: fb.user_ref,
-          p_auth_user_id: fb.auth_user_id,
-          p_amount: fb.reward_amount,
-          p_metadata: {
-            source: "feedback_reward",
-            feedback_id: fb.id,
-            admin_email: auth.user.email ?? null,
-          },
-        }),
-      },
-    );
-    if (!grantRes.ok) {
-      const text = await grantRes.text().catch(() => "");
-      console.error("[feedback/decide] grant failed", { status: grantRes.status, body: text.slice(0, 200) });
-      return new NextResponse(resultHtml("크레딧 지급 실패", "보상 지급 중 오류가 발생했어요. 서버 로그를 확인해주세요."), { headers: { "content-type": "text/html; charset=utf-8" } });
-    }
-    const grantRows = (await grantRes.json()) as Array<{ balance?: number }>;
-    const newBalance = grantRows[0]?.balance ?? null;
-
-    // 2) status update + reward_granted_at
+    // Membership mode: approval records the feedback as reviewed. No credit/token
+    // grant is made because the product no longer sells credit balances.
     await restFetch(
       `${tableUrl("mvp_user_feedback")}?id=eq.${fb.id}`,
       {
@@ -80,7 +55,8 @@ async function handle(req: NextRequest, decision: "approve" | "reject", id: numb
           status: "approved",
           decided_at: nowIso,
           decided_by: "admin",
-          reward_granted_at: nowIso,
+          reward_amount: 0,
+          reward_granted_at: null,
         }),
       },
     );
@@ -118,10 +94,9 @@ async function handle(req: NextRequest, decision: "approve" | "reject", id: numb
       poolNote = `<br/><span style="color:#34d399">매물 #${fb.pid} 정식 sold_confirmed 마킹.</span>`;
     }
 
-    // 3) ledger event_type=feedback_reward (RPC 가 이미 박지만 명시 metadata 보강 — RPC 결과에 의존)
     return new NextResponse(resultHtml(
-      "✅ 승인 + 보상 지급",
-      `피드백 #${id} 승인. +${fb.reward_amount} 크레딧 (잔액 ${newBalance?.toLocaleString("ko-KR") ?? "-"})${poolNote}`,
+      "✅ 승인 완료",
+      `피드백 #${id} 승인. 보정 데이터로 반영됐어요.${poolNote}`,
     ), { headers: { "content-type": "text/html; charset=utf-8" } });
   } else {
     await restFetch(
@@ -162,7 +137,7 @@ async function handle(req: NextRequest, decision: "approve" | "reject", id: numb
 
     return new NextResponse(resultHtml(
       "❌ 거절 완료",
-      `피드백 #${id} 거절됨. 보상 지급 X.${poolNote}`,
+      `피드백 #${id} 거절됨.${poolNote}`,
     ), { headers: { "content-type": "text/html; charset=utf-8" } });
   }
 }

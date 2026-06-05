@@ -914,7 +914,7 @@ export default function AdminPoolBrowser({ endpoint = "/api/admin/pool-listings"
                         );
                       })()}
                     </div>
-                    {/* 2026-05-17 Phase 0 L4: RiskScoreBar — 5축 잔여 위험 신호 시각화. 운영자풀은 showDetail. */}
+                    {/* 2026-05-17 Phase 0 L4: RiskScoreBar — 상품군별 잔여 위험 신호 시각화. 운영자풀은 showDetail. */}
                     <div className="flex flex-wrap items-center gap-2">
                       <RiskScoreBar
                         scoreFlags={item.scoreFlags}

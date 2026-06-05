@@ -1,4 +1,4 @@
-// 2026-05-17 Phase 0 L4 가시화 — 매물 카드에 5축 risk score 박는 utility.
+// 2026-05-17 Phase 0 L4 가시화 — 매물 카드에 category-aware risk score 박는 utility.
 // 득템잡이 차별화 = "보호받음" — 풀 통과 매물의 *잔여 risk*를 사용자에게 시각화.
 // (POOL_BLOCK_FLAGS 로 hard block 된 매물은 풀에 없음. 통과해도 약한 신호 남아있을 수 있음.)
 //
@@ -15,10 +15,11 @@ export type RiskAxisResult = {
   axis: RiskAxis;
   level: RiskLevel;
   reason: string | null; // ko, 사용자 노출용
+  applicable?: boolean; // false = 이 상품군에는 해당 점검축을 보여주지 않음
 };
 
 export type RiskScore = {
-  axes: RiskAxisResult[];      // 길이 5, 순서 고정 (fraud → lock → battery → seller → photo)
+  axes: RiskAxisResult[];      // 순서 고정 (fraud → lock → battery → seller → photo), 축별 적용 여부 포함
   total: number;               // 0~10
   hitCount: number;            // level >= 1 인 axis 수
   tone: RiskTone;
@@ -43,22 +44,41 @@ export type RiskScoreInput = {
 
 const FRAUD_KEYWORDS = /타오바오|짝퉁|레플리카|공장\s*직배송|중국발|s급\s*카피|미러급/i;
 const LOCK_KEYWORDS = /icloud|아이클라우드|통신사\s*잠금|통신사\s*락|할부\s*남|할부\s*잔여|애플케어\s*활성|렌탈\s*잔여/i;
-const BATTERY_RISK_KEYWORDS = /배터리\s*저하|충전\s*안됨|효율\s*[5-7]\d\s*%?|효율\s*낮/i;
+const BATTERY_RISK_KEYWORDS = /(?:배터리|충전).{0,16}(?:저하|안\s*됨|불량|광탈|방전|빨리\s*닳|오래\s*못|급격)|효율\s*[5-7]\d\s*%?|효율\s*낮/i;
 const BATTERY_DISCLOSED_RE = /배터리\s*(효율|성능|상태)\s*[:：]?\s*(\d{2,3})\s*%/;
 const PHOTO_REQUEST_HINT_RE = /사진\s*(추가|더|요청|드림)|직거래\s*시\s*보여/;
 
-// 카테고리 — 배터리가 가격 핵심 변수인 SKU.
+// 카테고리 — 잠금/할부 확인이 실제 구매 체크리스트인 SKU.
+const LOCK_RELEVANT_CATEGORIES = new Set([
+  "smartphone",
+  "tablet",
+  "smartwatch",
+  "laptop",
+]);
+
+// 카테고리 — 배터리 효율/사이클을 구매자가 직접 확인할 수 있고 가격 핵심 변수인 SKU.
 const BATTERY_SENSITIVE_CATEGORIES = new Set([
   "smartphone",
-  "earphone",
-  "earbuds",
   "smartwatch",
   "tablet",
   "laptop",
+  "drone",
+  "camera",
 ]);
 
 function flagsSet(flags: readonly string[] | null | undefined): Set<string> {
   return new Set(Array.isArray(flags) ? flags : []);
+}
+
+function normalizedCategorySlug(input: RiskScoreInput): string | null {
+  const slug = input.categorySlug?.trim().toLowerCase();
+  return slug ? slug : null;
+}
+
+function isCategoryRelevant(categorySlug: string | null, relevantCategories: Set<string>): boolean {
+  // 카테고리를 모르는 과거/운영자 데이터는 기존처럼 보수적으로 보여준다.
+  if (!categorySlug) return true;
+  return relevantCategories.has(categorySlug);
 }
 
 function scoreFraud(input: RiskScoreInput, flags: Set<string>): RiskAxisResult {
@@ -94,6 +114,11 @@ function scoreFraud(input: RiskScoreInput, flags: Set<string>): RiskAxisResult {
 }
 
 function scoreLock(input: RiskScoreInput, flags: Set<string>): RiskAxisResult {
+  const categorySlug = normalizedCategorySlug(input);
+  const applicable = isCategoryRelevant(categorySlug, LOCK_RELEVANT_CATEGORIES);
+  if (!applicable) {
+    return { axis: "lock", level: 0, reason: null, applicable: false };
+  }
   if (input.descriptionPreview && LOCK_KEYWORDS.test(input.descriptionPreview)) {
     return { axis: "lock", level: 2, reason: "잠금/할부 키워드" };
   }
@@ -104,14 +129,19 @@ function scoreLock(input: RiskScoreInput, flags: Set<string>): RiskAxisResult {
 }
 
 function scoreBattery(input: RiskScoreInput, _flags: Set<string>): RiskAxisResult {
+  const categorySlug = normalizedCategorySlug(input);
+  const applicable = isCategoryRelevant(categorySlug, BATTERY_SENSITIVE_CATEGORIES);
+  const hasExplicitBatteryRisk = Boolean(input.descriptionPreview && BATTERY_RISK_KEYWORDS.test(input.descriptionPreview));
+  if (!applicable && input.conditionClass !== "low_batt" && !hasExplicitBatteryRisk) {
+    return { axis: "battery", level: 0, reason: null, applicable: false };
+  }
   if (input.conditionClass === "low_batt") {
     return { axis: "battery", level: 2, reason: "배터리 저하" };
   }
-  if (input.descriptionPreview && BATTERY_RISK_KEYWORDS.test(input.descriptionPreview)) {
+  if (hasExplicitBatteryRisk) {
     return { axis: "battery", level: 2, reason: "배터리 risk 키워드" };
   }
-  const sensitive = input.categorySlug ? BATTERY_SENSITIVE_CATEGORIES.has(input.categorySlug) : false;
-  if (sensitive && input.descriptionPreview) {
+  if (applicable && input.descriptionPreview) {
     const disclosed = BATTERY_DISCLOSED_RE.exec(input.descriptionPreview);
     if (!disclosed) {
       // 미공개 — 일반적인 약한 신호.

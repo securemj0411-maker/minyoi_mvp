@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomBytes } from "node:crypto";
 import { signAdminAction } from "@/lib/admin-action-token";
 import { getMembershipPlan } from "@/lib/membership-plans";
 import { notifyAdminTelegram } from "@/lib/telegram-notify";
@@ -19,6 +20,17 @@ const AUTO_APPROVE_AFTER_MS = 5 * 60 * 1000;
 
 function adminNoteLine(message: string) {
   return `[${new Date().toISOString()}] ${message}`;
+}
+
+function telegramDecisionToken(
+  applicationId: number,
+  decision: "approve" | "reject",
+) {
+  const signed = signAdminAction("membership_application", applicationId, decision);
+  // signAdminAction can return an empty string when the signing secret is not
+  // configured. Store a random one-time token in admin_note so Telegram links
+  // still work without an admin session and without relying only on env state.
+  return signed || randomBytes(32).toString("base64url");
 }
 
 async function expireUnpaidReservationsForUser(authUserId: string) {
@@ -110,16 +122,8 @@ export async function POST(req: Request) {
   ).toISOString();
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL ?? "https://minyoi-mvp.vercel.app";
-  const approveToken = signAdminAction(
-    "membership_application",
-    application.id,
-    "approve",
-  );
-  const rejectToken = signAdminAction(
-    "membership_application",
-    application.id,
-    "reject",
-  );
+  const approveToken = telegramDecisionToken(application.id, "approve");
+  const rejectToken = telegramDecisionToken(application.id, "reject");
   const approveLink = `${baseUrl}/api/admin/membership-applications/decide?id=${application.id}&decision=approve&token=${encodeURIComponent(approveToken)}`;
   const rejectLink = `${baseUrl}/api/admin/membership-applications/decide?id=${application.id}&decision=reject&token=${encodeURIComponent(rejectToken)}`;
 

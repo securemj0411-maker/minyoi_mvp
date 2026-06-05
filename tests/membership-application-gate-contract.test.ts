@@ -43,11 +43,13 @@ test("/plans is a membership application page, not a credit package page", () =>
   assert.match(plans, /MembershipApplicationClient/);
   assert.match(plans, /멤버십 이용 중/);
   assert.match(plans, /membershipRemainingLabel/);
-  assert.match(plans, /memberPlanEndAt/);
+  assert.doesNotMatch(plans, /memberPlanEndAt/);
   assert.match(plans, /applicationKind: pendingApplication\.application_kind/);
   assert.match(applyClient, /신청하기|로그인하고 신청하기/);
   assert.match(applyClient, /멤버십 연장하기/);
   assert.match(applyClient, /연장 기간을 고르세요/);
+  assert.doesNotMatch(applyClient, /멤버십 활성화됨/);
+  assert.doesNotMatch(applyClient, /remainingDaysLabel/);
   assert.match(applyClient, /intent: renewalMode \? "renewal" : "new"/);
   assert.match(applyClient, /payload\?\.isMember && applicationStatus === "approved"/);
   assert.match(applyClient, /멤버십 연장 완료\. 기간이 추가됐어요/);

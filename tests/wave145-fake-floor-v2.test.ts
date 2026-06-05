@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Wave 145 (2026-05-16): 가품 detection v2 — 셀러 신뢰도 + 가격 floor 결합.
 
 import { describe, it } from "node:test";

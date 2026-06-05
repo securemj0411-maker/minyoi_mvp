@@ -1,4 +1,4 @@
-// Wave launch-103: 사용자 피드백/신고 제출 — 운영자 검토 후 20 크레딧 보상.
+// Wave launch-103: 사용자 피드백/신고 제출 — 운영자 검토 후 보정 반영.
 // Wave launch-107 (2026-05-24): sold_out 카테고리 즉시 임시 invalidate + 24h dedup.
 //   사용자 신고 → 매물 즉시 풀에서 빠짐 (다른 사용자한테 안 보임).
 //   운영자 approve → 정식 sold_confirmed, reject → ready 복귀.
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
           category,
           message,
           status: "pending",
-          reward_amount: 20,
+          reward_amount: 0,
         }]),
       },
     );
@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
       ? "\n⚠️ *즉시 풀 제외됨* — 거절 시 자동 복귀"
       : "";
     const msg = [
-      "🚨 *사용자 피드백 / 신고* (검토 → +20 크레딧)",
+      "🚨 *사용자 피드백 / 신고* (검토 → 보정 반영)",
       "",
       `• 신고 ID: \`${feedbackId}\``,
       `• 회원: ${escapeMarkdown(auth.user.email ?? authUserId)}`,
@@ -154,11 +154,11 @@ export async function POST(req: NextRequest) {
       "내용:",
       `> ${escapeMarkdown(escapedMessage)}`,
       "",
-      `[✅ 승인 (+20)](${approveLink}) / [❌ 거절](${rejectLink})`,
+      `[✅ 승인](${approveLink}) / [❌ 거절](${rejectLink})`,
     ].join("\n");
     await notifyAdminTelegram(msg);
 
-    return NextResponse.json({ ok: true, feedbackId, reward: 20, pendingInvalidated });
+    return NextResponse.json({ ok: true, feedbackId, reward: 0, pendingInvalidated });
   } catch (err) {
     console.error("[feedback/submit] error", err instanceof Error ? err.message : String(err));
     return NextResponse.json({

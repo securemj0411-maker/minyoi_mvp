@@ -1,15 +1,14 @@
 // Wave 182 (2026-05-17): 손해 신고 + 운영자 검수 큐 진입.
 // 사업 보고서 #6 Loss Recovery — 손해 본 사용자가 churn 확률 가장 높음.
-// Wave 245 (2026-05-18): 보상은 신고 즉시가 아니라 운영자 승인(resolved) 시점에 지급.
 //
 // 흐름:
 // 1. 사용자가 카드에 "손해 봤어요" 클릭 → 짧은 사유 입력
 // 2. mvp_reveal_feedback 에 feedback_type='loss_report' type-scoped upsert
 //    - admin_status='pending', compensation_granted_tokens=0 박힘
-// 3. 운영자가 /cau.../loss-reports 에서 승인하면 RPC가 토큰 +3을 원자적으로 지급
-// 4. 응답: "신고 접수. 승인되면 토큰 3개 지급."
+// 3. 운영자가 /cau.../loss-reports 에서 확인하면 시세·상태 보정 데이터로 반영
+// 4. 응답: "신고 접수. 운영자 확인 후 보정 반영."
 //
-// 중복 신고 차단: 같은 (user_ref, pid) 이미 loss_report 박혀있으면 토큰 미지급 + 안내.
+// 중복 신고 차단: 같은 (user_ref, pid) 이미 loss_report 박혀있으면 중복 접수 방지.
 
 import { NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -20,7 +19,6 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const COMPENSATION_TOKENS = 3;
 const MAX_USER_REF = 64;
 const MAX_NOTE = 1000;
 // 손해 신고 spam 차단: 시간당 5건.
@@ -81,9 +79,6 @@ export async function POST(req: Request) {
       return NextResponse.json({
         ok: true,
         duplicate: true,
-        compensationTokens: 0,
-        pendingCompensationTokens: 0,
-        tokensAfter: null,
         message: "이미 신고된 매물입니다. 운영자 검토 진행 중입니다.",
       });
     }
@@ -116,10 +111,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       duplicate: false,
-      compensationTokens: 0,
-      pendingCompensationTokens: COMPENSATION_TOKENS,
-      tokensAfter: null,
-      message: `신고 접수됨. 운영자가 확인 후 적절하면 토큰 ${COMPENSATION_TOKENS}개를 지급합니다.`,
+      message: "신고 접수됨. 운영자가 확인 후 시세·상태·모델 보정에 반영합니다.",
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown error";

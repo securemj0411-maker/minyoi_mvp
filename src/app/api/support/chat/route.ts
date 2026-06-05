@@ -159,7 +159,18 @@ export async function POST(req: NextRequest) {
       console.warn("[support/chat] telegram notify failed", notifyResult.reason ?? "unknown");
     }
 
-    return NextResponse.json({ conversation: { ...conversation, admin_unread_count: (conversation.admin_unread_count ?? 0) + 1, last_message_at: nowIso, last_user_message_at: nowIso, updated_at: nowIso }, message: inserted });
+    return NextResponse.json({
+      conversation: {
+        ...conversation,
+        admin_unread_count: (conversation.admin_unread_count ?? 0) + 1,
+        last_message_at: nowIso,
+        last_user_message_at: nowIso,
+        updated_at: nowIso,
+      },
+      message: inserted,
+      telegramSent: notifyResult.ok,
+      telegramReason: notifyResult.ok ? null : (notifyResult.reason ?? "unknown"),
+    });
   } catch (err) {
     console.error("[support/chat] POST failed", err instanceof Error ? err.message : String(err));
     return NextResponse.json({ error: "support_message_failed" }, { status: 500 });

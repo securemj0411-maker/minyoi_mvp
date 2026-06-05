@@ -1,6 +1,6 @@
 "use client";
 
-// 2026-05-17 Phase 0 L4 가시화 — 매물 카드에 5축 잔여 risk 시각화.
+// 2026-05-17 Phase 0 L4 가시화 — 매물 카드에 상품군별 잔여 risk 시각화.
 // 득템잡이 차별화 = "보호받음 감정" — POOL_BLOCK 통과 매물의 잔여 신호를 사용자에게 명시.
 // 3 화면 공유 (admin-pool-browser / pack-reveal-modal / user-reveal-dashboard).
 
@@ -51,7 +51,7 @@ function riskActionSummary(axis: RiskAxisResult, input: RiskScoreInput): string 
   }
   if (axis.axis === "battery") {
     if (reason.includes("미공개")) return "배터리 효율이 안 적혀 있어요. 효율 화면 캡처와 교체 이력을 요청하세요.";
-    return "배터리 상태가 가격에 영향을 줄 수 있어요. 효율 수치와 충전 상태를 확인하세요.";
+    return "배터리/충전 문제가 가격에 영향을 줄 수 있어요. 충전 상태, 작동 시간, 하자 고지를 확인하세요.";
   }
   if (axis.axis === "seller") {
     if (isDaangn) {
@@ -87,7 +87,8 @@ export function RiskScoreBar({
   const toneClass = RISK_TONE_CLASS[score.tone];
   const detailLabel = detailTriggerLabel(score.tone, score.hitCount);
   const DetailIcon = score.tone === "safe" ? ShieldIcon : AlertTriangleIcon;
-  const actionSummaries = score.axes
+  const visibleAxes = score.axes.filter((axis) => axis.applicable !== false);
+  const actionSummaries = visibleAxes
     .map((axis) => riskActionSummary(axis, input))
     .filter((text): text is string => Boolean(text));
   useEffect(() => {
@@ -136,7 +137,7 @@ export function RiskScoreBar({
         </div>
         <div className="max-h-[calc(100dvh-232px)] overflow-y-auto px-4 py-3 sm:max-h-[calc(74vh-76px)] sm:px-5 sm:py-4">
           <div className="space-y-2.5">
-            {score.axes.map((a) => (
+            {visibleAxes.map((a) => (
               <div
                 key={a.axis}
                 className="grid grid-cols-[72px_minmax(0,1fr)] items-center gap-3 rounded-xl border border-[#ebe3d8] bg-white px-3 py-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/35"
@@ -185,8 +186,8 @@ export function RiskScoreBar({
           </div>
           <div className="mt-3 rounded-xl border border-[#ebe3d8] bg-white px-3.5 py-3 text-xs font-semibold leading-5 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/35 dark:text-zinc-400">
             {isDaangn
-              ? "득템잡이는 가품 의심, 잠금/할부 의심처럼 강한 차단 신호가 있는 매물은 추천 풀에 넣지 않아요. 이 화면은 통과한 매물에서 남은 확인 포인트만 보여줘요. 신호가 0이어도 당근 직거래 전 실사진, 매너온도, 만남 장소는 마지막으로 확인하세요."
-              : <>득템잡이는 가품 의심, 잠금/할부 의심처럼 강한 차단 신호가 있는 매물은 추천 풀에 넣지 않아요. 이 화면은 통과한 매물에서 남은 확인 포인트만 보여줘요. 신호가 0이어도 거래 전 실사진과 {paymentLabel} 가능 여부는 마지막으로 확인하세요.</>}
+              ? "득템잡이는 가품 의심, 계정 잠금, 기능 하자처럼 강한 차단 신호가 있는 매물은 추천 풀에 넣지 않아요. 이 화면은 상품군에 맞는 남은 확인 포인트만 보여줘요. 신호가 0이어도 당근 직거래 전 실사진, 매너온도, 만남 장소는 마지막으로 확인하세요."
+              : <>득템잡이는 가품 의심, 계정 잠금, 기능 하자처럼 강한 차단 신호가 있는 매물은 추천 풀에 넣지 않아요. 이 화면은 상품군에 맞는 남은 확인 포인트만 보여줘요. 신호가 0이어도 거래 전 실사진과 {paymentLabel} 가능 여부는 마지막으로 확인하세요.</>}
           </div>
         </div>
       </div>
@@ -257,9 +258,9 @@ export function RiskScoreBar({
       {!compact && (
         <span
           className="inline-flex items-center gap-[2px]"
-          aria-label="위험 신호 5축 점수"
+          aria-label="위험 신호 점수"
         >
-          {score.axes.map((a) => (
+          {visibleAxes.map((a) => (
             <span
               key={a.axis}
               title={`${RISK_AXIS_LABEL[a.axis]}: ${a.reason ?? "정상"}`}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Wave 148 (2026-05-16): 광고/소매 매물 차단 검증.
 
 import { describe, it } from "node:test";

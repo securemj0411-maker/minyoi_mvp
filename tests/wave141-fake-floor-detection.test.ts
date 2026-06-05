@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Wave 141 (2026-05-16): 시세 floor 가품 detection 검증.
 // pool 진입 시 price < max(msrp, skuMedian) * 0.15 → 신발/가방 차단.
 

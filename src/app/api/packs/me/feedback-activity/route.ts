@@ -1,11 +1,11 @@
 // Wave 185 (2026-05-17): 사용자 본인 피드백 활동 가시화.
 // 사업 보고서 retention #6 (Loss Recovery 가시화) + L7 (Feedback Loop) 결합.
 //
-// 흐름: 사용자가 정보 오류 신고 → 토큰 +3 → 24h 내 운영자 검수 → **결과 가시화** ← 이 wave
-// 가시화 없으면 신고 동기 1회성 (토큰만). 가시화 후 compound loop 활성화.
+// 흐름: 사용자가 정보 오류 신고 → 24h 내 운영자 검수 → **결과 가시화** ← 이 wave
+// 가시화 후 compound loop 활성화.
 //
 // 응답:
-// - thisMonth: 이번 달 신고 stats (전체/보정/대기/기각 count + 토큰 합)
+// - thisMonth: 이번 달 신고 stats (전체/보정/대기/기각 count)
 // - allTime: 누적 stats (동일 구조)
 // - recentReports: 최근 신고 list (자세히 보기 모달용, 최대 50건)
 
@@ -37,20 +37,22 @@ type Stats = {
   resolvedCount: number;
   pendingCount: number;
   dismissedCount: number;
-  tokensReceived: number;
+  reviewedRewardCount: number;
 };
 
 function emptyStats(): Stats {
-  return { totalCount: 0, resolvedCount: 0, pendingCount: 0, dismissedCount: 0, tokensReceived: 0 };
+  return { totalCount: 0, resolvedCount: 0, pendingCount: 0, dismissedCount: 0, reviewedRewardCount: 0 };
 }
 
 function aggregateStats(rows: FeedbackRow[]): Stats {
   const stats = emptyStats();
   for (const r of rows) {
     stats.totalCount += 1;
-    stats.tokensReceived += Math.max(0, Number(r.compensation_granted_tokens ?? 0));
     const status = r.admin_status ?? "pending";
-    if (status === "resolved") stats.resolvedCount += 1;
+    if (status === "resolved") {
+      stats.resolvedCount += 1;
+      stats.reviewedRewardCount += 1;
+    }
     else if (status === "dismissed") stats.dismissedCount += 1;
     else stats.pendingCount += 1;
   }
@@ -108,7 +110,7 @@ export async function GET(req: Request) {
         adminStatus: (r.admin_status ?? "pending") as "pending" | "resolved" | "dismissed",
         adminResponseNote: r.admin_response_note,
         adminRespondedAt: r.admin_responded_at,
-        compensationTokens: r.compensation_granted_tokens,
+        compensationTokens: 0,
         createdAt: r.created_at,
         // Wave 194: unread 표시.
         userSeenAt: r.user_seen_at,

@@ -6,12 +6,15 @@ import { fetchJoongnaDetail } from "@/lib/joongna";
 import { isDaangnMarketplaceSource, isJoongnaMarketplaceSource, listingUrlForSource, marketplaceSourceLabel, normalizeMarketplaceSource } from "@/lib/marketplace-source";
 import { inferMarketplaceTransaction, marketplaceFactsFromRawJson, marketplaceLocationCombinedWithRegion } from "@/lib/marketplace-safety";
 import {
+  fetchLatestMarketVelocity,
   fetchLatestMarketStats,
   fetchLatestMarketStatsPerSource,
   fetchReferencePrices,
   fetchV7SiblingPresence,
   marketBasisForCandidate,
+  velocityBasisForCandidate,
 } from "@/lib/pack-open";
+import { loadCategoryReadinessMap } from "@/lib/category-readiness";
 import { mergeConditionDisplayChips } from "@/lib/condition-display";
 import { resolveDaangnFullRegion } from "@/lib/daangn-region-resolver";
 import { classifyListing } from "@/lib/pipeline";
@@ -216,6 +219,7 @@ async function loadExactPoolItem(pid: number) {
     tradeLocation: null as string | null,
     marketBasisSampleCount: null as number | null,
     marketBasisUsable: null as boolean | null,
+    velocityBasis: null as ReturnType<typeof velocityBasisForCandidate>,
     // Wave 714n (2026-05-23): 신발/의류 5-tier grading + chips — 매물 클릭 시 모달 path 의 진짜 source.
     //   loadExactPoolItem 가 listing_parsed query 안 했었음 → setSelectedCard 의 input PoolItem 에
     //   conditionTier 자체 없어서 모달 디버그 tier=null 표시. 이제 fetch + 박음.
@@ -229,11 +233,13 @@ async function loadExactPoolItem(pid: number) {
 
 async function recomputeExactPoolItemProfit(item: ExactPoolItem | null): Promise<ExactPoolItem | null> {
   if (!item?.comparableKey) return item;
-  const [marketStats, marketStatsPerSource, referencePrices, v7SiblingPresence] = await Promise.all([
+  const [marketStats, marketStatsPerSource, referencePrices, v7SiblingPresence, velocityStats, readinessMap] = await Promise.all([
     fetchLatestMarketStats([item.comparableKey]),
     fetchLatestMarketStatsPerSource([item.comparableKey]),
     fetchReferencePrices([item.comparableKey]),
     fetchV7SiblingPresence([item.comparableKey]),
+    fetchLatestMarketVelocity([item.comparableKey]),
+    loadCategoryReadinessMap(),
   ]);
   // Wave 797b (2026-05-27): marketBasisForCandidateWithLiveSourceFallback 가 pack-open 에 export 안 됨
   //   (다른 worktree incomplete 변경). 기존 marketBasisForCandidate (sync + sourceOptions object) 사용.
@@ -253,6 +259,12 @@ async function recomputeExactPoolItemProfit(item: ExactPoolItem | null): Promise
   // Wave 1022 (2026-06-02): 당근은 same-source basis 가 없으면 상세 진입 전 fail-closed.
   // 예전 DB sku_median 을 되살리면 mixed/batch fallback 잔여물이 상세/easy 계산에 다시 샌다.
   const effectiveMedianPrice = marketBasis.medianPrice;
+  const velocityBasis = velocityBasisForCandidate(
+    item.comparableKey,
+    velocityStats,
+    readinessMap,
+    item.conditionClass ?? null,
+  );
   const daangnBasisMissing = isDaangnMarketplaceSource(item.marketplaceSource)
     && (
       !marketBasis.sourceSampleUsed
@@ -267,6 +279,7 @@ async function recomputeExactPoolItemProfit(item: ExactPoolItem | null): Promise
       expectedProfitMax: 0,
       marketBasisSampleCount: marketBasis.sourceSampleCount ?? marketBasis.sampleCount,
       marketBasisUsable: false,
+      velocityBasis,
     };
   }
   const profit = expectedProfitFromMarketPrice({
@@ -286,6 +299,7 @@ async function recomputeExactPoolItemProfit(item: ExactPoolItem | null): Promise
     expectedProfitMax: profit.max,
     marketBasisSampleCount: marketBasis.sampleCount,
     marketBasisUsable: true,
+    velocityBasis,
   };
 }
 

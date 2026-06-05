@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Wave 132 (2026-05-16): one-time backfill — 현재 pool 매물의 num_comment 채우고
  * num_comment >= 8 매물 pool에서 invalidate.

@@ -6,7 +6,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { BellIcon, CoinsIcon, SearchIcon } from "@/components/icons";
+import { BellIcon, SearchIcon } from "@/components/icons";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type Stats = {
@@ -14,7 +14,7 @@ type Stats = {
   resolvedCount: number;
   pendingCount: number;
   dismissedCount: number;
-  tokensReceived: number;
+  reviewedRewardCount: number;
 };
 
 type RecentReport = {
@@ -205,7 +205,7 @@ export function MyFeedbackActivity() {
         {!hasAny ? (
           // 빈 상태 — 신고 권장 메시지
           <div className="text-[12px] leading-relaxed text-zinc-700 dark:text-zinc-300">
-            아직 신고한 매물이 없어요. 시세/매물 정보가 다르면 매물 상세에서 <b className="text-amber-700 dark:text-amber-300">[정보 오류 신고]</b> 클릭 → 즉시 <b>토큰 +3</b> 보상 + 24시간 안에 운영자가 검토합니다.
+            아직 신고한 매물이 없어요. 시세/매물 정보가 다르면 매물 상세에서 <b className="text-amber-700 dark:text-amber-300">[정보 오류 신고]</b>를 눌러주세요. 운영자가 확인 후 보정 데이터로 반영합니다.
             <div className="mt-1 text-[10px] text-zinc-500 dark:text-zinc-400">
               회원님 신고가 알고리즘 보정 데이터로 들어가요.
             </div>
@@ -232,18 +232,17 @@ export function MyFeedbackActivity() {
                 <div className="text-[9px] font-bold text-amber-800 dark:text-amber-300">대기</div>
               </div>
               <div className="rounded-lg bg-zinc-100 px-2 py-2 dark:bg-zinc-800">
-                <div className="flex items-center justify-center gap-1 text-base font-black tabular-nums text-zinc-700 dark:text-zinc-200">
-                  <CoinsIcon className="h-3.5 w-3.5" />
-                  {thisMonth.tokensReceived}
+                <div className="text-base font-black tabular-nums text-zinc-700 dark:text-zinc-200">
+                  {thisMonth.reviewedRewardCount}
                 </div>
-                <div className="text-[9px] font-bold text-zinc-600 dark:text-zinc-400">토큰</div>
+                <div className="text-[9px] font-bold text-zinc-600 dark:text-zinc-400">반영</div>
               </div>
             </div>
 
             {/* 누적 (allTime) — thisMonth 와 다르면 표시 */}
             {allTime.totalCount > thisMonth.totalCount && (
               <div className="mt-2 text-[10px] text-zinc-600 dark:text-zinc-400">
-                누적: 신고 <b>{allTime.totalCount}건</b> · 보정 <b className="text-blue-700 dark:text-blue-300">{allTime.resolvedCount}건</b> · 토큰 <b>+{allTime.tokensReceived}</b>
+                누적: 신고 <b>{allTime.totalCount}건</b> · 보정 <b className="text-blue-700 dark:text-blue-300">{allTime.resolvedCount}건</b>
               </div>
             )}
 
@@ -358,11 +357,6 @@ export function MyFeedbackActivity() {
                                 : report.adminStatus === "dismissed" ? "기각"
                                 : "대기 중"}
                             </span>
-                            {report.compensationTokens > 0 && (
-                              <div className="mt-1 text-[10px] font-bold text-blue-600 dark:text-blue-400">
-                                토큰 +{report.compensationTokens}
-                              </div>
-                            )}
                           </div>
                         </div>
                         <div className="mt-1.5 rounded border border-zinc-200 bg-zinc-50 px-2 py-1 text-[11px] text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800/40 dark:text-zinc-200">

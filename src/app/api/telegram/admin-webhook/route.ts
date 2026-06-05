@@ -141,36 +141,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, alreadyHandled: true });
   }
 
-  // 실행
-  let resultLine: string;
-  let toastText: string;
-  if (parsed.decision === "approve") {
-    const result = await grantManualDeposit(request, "admin");
-    if (!result.ok) {
-      await answerCallbackQuery(callback.id, `❌ 승인 실패: ${result.error ?? "unknown"}`, true).catch(() => {});
-      return NextResponse.json({ ok: false, error: result.error ?? "grant_failed" });
-    }
-    resultLine = `✅ *승인 완료* — ${request.depositor_name} ${request.amount.toLocaleString("ko-KR")} 크레딧 지급 (잔액 ${result.newBalance?.toLocaleString("ko-KR")})`;
-    toastText = "✅ 승인 완료";
-  } else {
-    const result = await rejectManualDeposit(request);
-    if (!result.ok) {
-      await answerCallbackQuery(callback.id, "❌ 거절 실패 (이미 처리됨?)", true).catch(() => {});
-      return NextResponse.json({ ok: false, error: "reject_failed" });
-    }
-    resultLine = `❌ *거절 완료* — ${request.depositor_name} 신청 #${request.id} 거절`;
-    toastText = "❌ 거절 완료";
-  }
-
-  // 텔레그램 UI 갱신 — 토스트 + 메시지 텍스트 갱신 (버튼 사라짐).
-  await answerCallbackQuery(callback.id, toastText).catch(() => {});
+  await answerCallbackQuery(callback.id, "크레딧 수동입금 처리는 종료됐어요.", true).catch(() => {});
   if (callback.message) {
-    const stamp = new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
-    const newText = `${callback.message.text ?? ""}\n\n${resultLine}\n_처리: ${stamp}_`;
-    await editAdminMessageText(callback.message.chat.id, callback.message.message_id, newText).catch(() => {});
+    await editAdminMessageText(
+      callback.message.chat.id,
+      callback.message.message_id,
+      `${callback.message.text ?? ""}\n\n_레거시 크레딧 수동입금 버튼은 비활성화됐어요. 멤버십 승인 메뉴를 이용해주세요._`,
+    ).catch(() => {});
   }
-
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: false,
+    error: "legacy_credit_manual_deposit_disabled",
+  }, { status: 410 });
 }
 
 export async function GET() {

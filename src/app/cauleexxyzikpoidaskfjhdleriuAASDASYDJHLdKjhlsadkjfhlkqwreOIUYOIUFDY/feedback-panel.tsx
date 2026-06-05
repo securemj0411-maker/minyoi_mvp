@@ -71,7 +71,7 @@ export default function FeedbackPanel() {
 
   async function decide(id: number, decision: "approve" | "reject") {
     if (pendingIds.has(id)) return;
-    if (!window.confirm(`피드백 #${id} ${decision === "approve" ? "승인 (+20 크레딧 지급)" : "거절"}?`)) return;
+    if (!window.confirm(`피드백 #${id} ${decision === "approve" ? "승인 및 보정 반영" : "거절"}?`)) return;
     setPendingIds((p) => new Set(p).add(id));
     setError(null); setNotice(null);
     try {
@@ -81,7 +81,7 @@ export default function FeedbackPanel() {
         headers: { "x-minyoi-admin-action": "1" },
       });
       if (!res.ok) { setError(`${decision === "approve" ? "승인" : "거절"} 실패 (${res.status})`); return; }
-      setNotice(`피드백 #${id} ${decision === "approve" ? "승인 + 보상 지급" : "거절"} 완료`);
+      setNotice(`피드백 #${id} ${decision === "approve" ? "승인 및 보정 반영" : "거절"} 완료`);
       void refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "네트워크 오류");
