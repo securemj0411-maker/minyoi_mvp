@@ -21,6 +21,12 @@ import { getDetailAccessSnapshot } from "@/lib/detail-access";
 import { getProStatus, hasMembershipAccess } from "@/lib/user-subscription";
 import { teaserBudgetRangeLabel } from "@/lib/feed-price-display";
 import { marketStatsConditionKey } from "@/lib/pack-open";
+import {
+  canUseFeedSnapshot,
+  readFeedSnapshot,
+  writeFeedSnapshot,
+  type FeedSnapshotContext,
+} from "@/lib/feed-snapshot-cache";
 
 // Wave 338 (Phase 1a — Freemium /explore):
 // 2026-06-04 멤버십 전환: /me 피드는 승인된 멤버만 접근하며 매입가/시세를 그대로 공개한다.
@@ -1806,6 +1812,63 @@ export async function GET(req: Request) {
       priceMax === 300000 ? "300k" :
       priceMax === 500000 ? "500k" :
       "unlimited";
+    const feedSnapshotContext: FeedSnapshotContext = {
+      regionKey: userHomeRegion?.daangn_full_path ?? null,
+      source,
+      budget: appliedBudget,
+      sort,
+      preference,
+      extendedMarketplaces,
+      pageSize: responsePageSize,
+    };
+    const feedSnapshotAllowed = canUseFeedSnapshot({
+      refresh,
+      excludePids: excludeAllPids,
+      regionKey: userHomeRegion?.daangn_full_path ?? null,
+    });
+    if (feedSnapshotAllowed) {
+      const cached = await readFeedSnapshot<ReturnType<typeof buildItems>[number]>(feedSnapshotContext, headers).catch((err) => {
+        console.warn("[pool] feed snapshot read failed", err instanceof Error ? err.message : String(err));
+        return null;
+      });
+      if (cached && cached.items.length > 0) {
+        const responseElapsedMs = Date.now() - requestStartedAt;
+        if (responseElapsedMs >= 1_200 || process.env.FEED_DEBUG_LOG === "1") {
+          console.info("[pool] response", {
+            elapsedMs: responseElapsedMs,
+            quickPage,
+            refresh,
+            source,
+            sort,
+            appliedBudget,
+            responsePageSize,
+            returnedItems: cached.items.length,
+            feedSnapshotHit: true,
+            feedSnapshotUpdatedAt: cached.updatedAt,
+          });
+        }
+        return NextResponse.json({
+          items: cached.items,
+          cooldown: feedCooldown,
+          feedMode: "membership",
+          creditFeed: false,
+          detailAccess,
+          total: cached.items.length,
+          pageSize: responsePageSize,
+          freshLagHours: FRESH_LAG_HOURS,
+          debug: isAdminUser(auth.user) ? {
+            feedSnapshot: {
+              hit: true,
+              cacheKey: cached.cacheKey,
+              updatedAt: cached.updatedAt,
+              expiresAt: cached.expiresAt,
+              itemCount: cached.itemCount,
+            },
+          } : undefined,
+          appliedBudget,
+        }, { headers: { "Cache-Control": "no-store" } });
+      }
+    }
     let items: ReturnType<typeof buildItems> = [];
 
     // 예산 필터가 있을 때 더 넓은 가격대로 조용히 fallback하지 않는다.
@@ -1899,6 +1962,13 @@ export async function GET(req: Request) {
       : sortDaangnItemsByDistance(items);
     items = items.slice(0, responsePageSize);
     const responseItems = items;
+    let feedSnapshotWrite: Awaited<ReturnType<typeof writeFeedSnapshot>> | null = null;
+    if (feedSnapshotAllowed && responseItems.length > 0) {
+      feedSnapshotWrite = await writeFeedSnapshot(feedSnapshotContext, responseItems, headers).catch((err) => {
+        console.warn("[pool] feed snapshot write failed", err instanceof Error ? err.message : String(err));
+        return null;
+      });
+    }
     const responseElapsedMs = Date.now() - requestStartedAt;
     if (responseElapsedMs >= 1_200 || process.env.FEED_DEBUG_LOG === "1") {
       console.info("[pool] response", {
@@ -1912,6 +1982,8 @@ export async function GET(req: Request) {
         returnedItems: responseItems.length,
         readyCandidateLimit,
         deepFallbackUsed,
+        feedSnapshotHit: false,
+        feedSnapshotWrite,
         nearbyDaangn: nearbyDaangnStatsForResponse,
       });
     }
@@ -1925,7 +1997,15 @@ export async function GET(req: Request) {
       total: responseItems.length,
       pageSize: responsePageSize,
       freshLagHours: FRESH_LAG_HOURS,
-      debug: isAdminUser(auth.user) ? { deepFallbackUsed, nearbyDaangn: nearbyDaangnStatsForResponse } : undefined,
+      debug: isAdminUser(auth.user) ? {
+        deepFallbackUsed,
+        nearbyDaangn: nearbyDaangnStatsForResponse,
+        feedSnapshot: {
+          hit: false,
+          allowed: feedSnapshotAllowed,
+          write: feedSnapshotWrite,
+        },
+      } : undefined,
       // Wave 382: 사용자 예산이 fallback됐는지 (사용자 안내용).
       appliedBudget,
     }, { headers: { "Cache-Control": "no-store" } });
