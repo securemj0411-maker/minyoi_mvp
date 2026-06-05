@@ -57,6 +57,7 @@ const MAX_PER_CATEGORY = 5;
 // 피드는 전체 source 통계를 쓰지 않지만, 후보를 너무 얕게 보면 high-profit 번개 샘플 안에서만
 // source quota가 동작한다. 1000-row PostgREST cap도 명시적 page-loop로 우회한다.
 const FETCH_POOL_OVERFETCH = 1500;
+const BUDGET_READY_SCAN_LIMIT = intEnv("FEED_BUDGET_READY_SCAN_LIMIT", 6000, FETCH_POOL_OVERFETCH, 12000);
 const POOL_PAGE_SIZE = 1000;
 const PID_LOOKUP_CHUNK_SIZE = 400;
 const REFRESH_READY_CANDIDATE_LIMIT = 500;
@@ -957,7 +958,10 @@ function readyPoolOverfetchLimit(options: {
   }
   // Budget filtering needs mvp_listings.price, so keep the wider scan until
   // candidate_pool has a denormalized buy-price column or a DB-side feed RPC.
-  if (options.priceMax != null) return FETCH_POOL_OVERFETCH;
+  // Budget filters are applied after joining listing price because candidate_pool
+  // does not yet denormalize buy price. A shallow profit-ordered scan misses many
+  // cheap local Daangn rows that sit below the top 1.5k profit ranks.
+  if (options.priceMax != null) return BUDGET_READY_SCAN_LIMIT;
   if (options.source === "daangn") {
     return Math.min(FETCH_POOL_OVERFETCH, Math.max(DAANGN_SOURCE_READY_OVERFETCH, candidateTarget));
   }

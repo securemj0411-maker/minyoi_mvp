@@ -2405,8 +2405,6 @@ export default function ExploreClient({
   const [canScrollCategoriesNext, setCanScrollCategoriesNext] = useState(false);
   const sortRef = useRef(sort);
   const sourceRef = useRef(source);
-  const budgetTouchedThisSessionRef = useRef(false);
-  const daangnBudgetAutoRelaxedRef = useRef(false);
   useEffect(() => {
     sortRef.current = sort;
   }, [sort]);
@@ -2551,7 +2549,6 @@ export default function ExploreClient({
 
   const selectFirstFeedBudget = useCallback(
     (value: BudgetFilterOption) => {
-      budgetTouchedThisSessionRef.current = true;
       updateBudgetFilter(value);
       dismissFirstFeedOnboarding();
     },
@@ -2692,18 +2689,6 @@ export default function ExploreClient({
         const data = (await res.json()) as PoolResponse;
         if (res.ok) {
           if (data.items != null) {
-            if (
-              !refresh &&
-              data.items.length === 0 &&
-              budgetFilter !== "all" &&
-              serverSource === "daangn" &&
-              !budgetTouchedThisSessionRef.current &&
-              !daangnBudgetAutoRelaxedRef.current
-            ) {
-              daangnBudgetAutoRelaxedRef.current = true;
-              updateBudgetFilter("all");
-              return;
-            }
             // Wave 371: refresh = append + pid dedupe (기존 매물 유지하면서 새 매물 추가).
             // 사용자 의도 — 더 둘러보고 싶어서 "다른 매물 찾기" 누르는데 기존이 사라지면 X.
             // 초기 load (refresh=false)는 덮어쓰기 (첫 데이터).
@@ -2763,7 +2748,7 @@ export default function ExploreClient({
         setLoading(false);
       }
     },
-    [budgetFilter, storageScope, updateBudgetFilter],
+    [budgetFilter, storageScope],
   );
 
   const loadStats = useCallback(async () => {
@@ -3385,7 +3370,6 @@ export default function ExploreClient({
   );
 
   function handleBudgetFilterChange(value: BudgetFilterOption) {
-    budgetTouchedThisSessionRef.current = true;
     updateBudgetFilter(value);
     setScrapOnly(false);
   }
