@@ -86,14 +86,28 @@ function intEnv(name: string, fallback: number, min: number, max: number) {
 // so we prefetch ready candidates by nearby Daangn region ids before diversification.
 const DAANGN_NEARBY_REGION_LIMIT = intEnv("DAANGN_NEARBY_FEED_REGION_LIMIT", 96, 20, 900);
 const DAANGN_NEARBY_RADIUS_KM = intEnv("DAANGN_NEARBY_FEED_RADIUS_KM", 10, 1, 30);
-const DAANGN_NEARBY_RAW_LOOKUP_LIMIT = intEnv("DAANGN_NEARBY_FEED_RAW_LOOKUP_LIMIT", 1200, 100, 6000);
+const DAANGN_NEARBY_RAW_LOOKUP_LIMIT = intEnv("DAANGN_NEARBY_FEED_RAW_LOOKUP_LIMIT", 5000, 100, 6000);
 const DAANGN_NEARBY_REGION_BATCH_SIZE = intEnv("DAANGN_NEARBY_FEED_REGION_BATCH_SIZE", 24, 8, 260);
+const DAANGN_NEARBY_LOCAL_REGION_BATCH_SIZE = intEnv("DAANGN_NEARBY_FEED_LOCAL_REGION_BATCH_SIZE", 8, 1, 24);
 const DAANGN_NEARBY_REGION_BATCH_RAW_LIMIT = intEnv("DAANGN_NEARBY_FEED_REGION_BATCH_RAW_LIMIT", 300, 100, 2000);
 const DAANGN_NEARBY_POOL_LOOKUP_LIMIT = intEnv("DAANGN_NEARBY_FEED_POOL_LOOKUP_LIMIT", 250, 50, 2000);
+const DAANGN_NEARBY_LOCAL_POOL_LOOKUP_LIMIT = intEnv("DAANGN_NEARBY_FEED_LOCAL_POOL_LOOKUP_LIMIT", 1000, 250, 3000);
 const DAANGN_NEARBY_BOOST_LIMIT = intEnv("DAANGN_NEARBY_FEED_BOOST_LIMIT", 36, 10, 500);
+const DAANGN_NEARBY_LOCAL_READY_TARGET = intEnv(
+  "DAANGN_NEARBY_FEED_LOCAL_READY_TARGET",
+  180,
+  PAGE_SIZE,
+  REFRESH_READY_CANDIDATE_LIMIT,
+);
+const DAANGN_NEARBY_LOCAL_RETURN_LIMIT = intEnv(
+  "DAANGN_NEARBY_FEED_LOCAL_RETURN_LIMIT",
+  180,
+  DAANGN_NEARBY_BOOST_LIMIT,
+  REFRESH_READY_CANDIDATE_LIMIT,
+);
 const DAANGN_NEARBY_CACHE_TTL_MS = intEnv("DAANGN_NEARBY_FEED_CACHE_TTL_MS", 45_000, 0, 300_000);
 const DAANGN_NEARBY_SLOW_LOG_MS = intEnv("DAANGN_NEARBY_FEED_SLOW_LOG_MS", 1_200, 100, 10_000);
-const DAANGN_NEARBY_PREFETCH_BUDGET_MS = intEnv("DAANGN_NEARBY_FEED_PREFETCH_BUDGET_MS", 4_500, 500, 30_000);
+const DAANGN_NEARBY_PREFETCH_BUDGET_MS = intEnv("DAANGN_NEARBY_FEED_PREFETCH_BUDGET_MS", 8_000, 500, 30_000);
 const DAANGN_SOURCE_QUOTA = intEnv("DAANGN_FEED_SOURCE_QUOTA", 18, 0, READY_SLOTS);
 const JOONGNA_SOURCE_QUOTA = intEnv("JOONGNA_FEED_SOURCE_QUOTA", 3, 0, READY_SLOTS);
 const EXTENDED_MARKETPLACE_QUOTA = intEnv("EXTENDED_MARKETPLACE_SOURCE_QUOTA", 10, 0, READY_SLOTS);
@@ -761,9 +775,16 @@ async function loadNearbyDaangnReadyRows(
     DAANGN_NEARBY_RADIUS_KM,
     DAANGN_NEARBY_REGION_LIMIT,
   );
-  const targetReady = options.source === "daangn" || options.sort === "distance"
-    ? PAGE_SIZE
+  const localFirstPrefetch = options.source === "daangn" || options.sort === "distance";
+  const targetReady = localFirstPrefetch
+    ? DAANGN_NEARBY_LOCAL_READY_TARGET
     : Math.min(READY_SLOTS, Math.max(1, DAANGN_SOURCE_QUOTA));
+  const returnLimit = localFirstPrefetch
+    ? DAANGN_NEARBY_LOCAL_RETURN_LIMIT
+    : DAANGN_NEARBY_BOOST_LIMIT;
+  const regionBatchSize = localFirstPrefetch
+    ? DAANGN_NEARBY_LOCAL_REGION_BATCH_SIZE
+    : DAANGN_NEARBY_REGION_BATCH_SIZE;
   if (regionIds.length === 0) {
     return {
       rows: [],
@@ -779,17 +800,20 @@ async function loadNearbyDaangnReadyRows(
 
   const exclude = new Set(options.excludePids ?? []);
   const cacheKey = [
+    "v3",
     options.userHomeDaangnFullPath,
     options.source ?? "all",
     options.sort ?? "profit_desc",
     DAANGN_NEARBY_RADIUS_KM,
     DAANGN_NEARBY_REGION_LIMIT,
-    DAANGN_NEARBY_REGION_BATCH_SIZE,
+    regionBatchSize,
+    targetReady,
+    returnLimit,
   ].join("|");
   const canUseCache = exclude.size === 0 && DAANGN_NEARBY_CACHE_TTL_MS > 0;
   const cached = canUseCache ? NEARBY_DAANGN_READY_CACHE.get(cacheKey) : null;
   if (cached && cached.expiresAt > Date.now()) {
-    const rows = cached.rows.slice(0, DAANGN_NEARBY_BOOST_LIMIT);
+    const rows = cached.rows.slice(0, returnLimit);
     return {
       rows,
       stats: {
@@ -802,8 +826,6 @@ async function loadNearbyDaangnReadyRows(
   }
 
   try {
-    const localFirstPrefetch = options.source === "daangn" || options.sort === "distance";
-    const regionBatchSize = localFirstPrefetch ? 1 : DAANGN_NEARBY_REGION_BATCH_SIZE;
     const regionBatches: string[][] = [];
     for (let i = 0; i < regionIds.length; i += regionBatchSize) {
       regionBatches.push(regionIds.slice(i, i + regionBatchSize));
@@ -814,31 +836,57 @@ async function loadNearbyDaangnReadyRows(
     const candidatePids = new Set<number>();
     let rawRows = 0;
     let usedBatches = 0;
+    let stopReason: string | undefined;
 
     for (const batch of regionBatches) {
-      if (Date.now() - startedAt >= DAANGN_NEARBY_PREFETCH_BUDGET_MS) break;
-      if (rawRows >= DAANGN_NEARBY_RAW_LOOKUP_LIMIT) break;
+      const rawRemainingMs = DAANGN_NEARBY_PREFETCH_BUDGET_MS - (Date.now() - startedAt);
+      if (rawRemainingMs < 700) {
+        stopReason = "budget_exhausted";
+        break;
+      }
+      if (rawRows >= DAANGN_NEARBY_RAW_LOOKUP_LIMIT) {
+        stopReason = "raw_limit";
+        break;
+      }
       const regionCsv = batch.map((id) => encodeURIComponent(id)).join(",");
-      const limit = Math.min(
-        DAANGN_NEARBY_REGION_BATCH_RAW_LIMIT,
-        DAANGN_NEARBY_RAW_LOOKUP_LIMIT - rawRows,
-      );
-      const sourceRes = await withTimeout(
-        restFetch(
-          `${tableUrl("mvp_raw_listings")}?select=pid,source,daangn_region_id,daangn_region_name,listing_state,last_seen_at&source=eq.daangn&listing_state=eq.active&detail_status=eq.done&daangn_region_id=in.(${regionCsv})&order=last_seen_at.desc&limit=${limit}`,
-          { headers },
-        ),
-        Math.max(500, DAANGN_NEARBY_PREFETCH_BUDGET_MS - (Date.now() - startedAt)),
-        "nearby_daangn_raw_fetch",
-      );
-      const sourceRows = (await sourceRes.json()) as NearbyDaangnSourceRow[];
+      const limit = localFirstPrefetch
+        ? Math.min(
+            POOL_PAGE_SIZE,
+            DAANGN_NEARBY_REGION_BATCH_RAW_LIMIT * batch.length,
+            DAANGN_NEARBY_RAW_LOOKUP_LIMIT - rawRows,
+          )
+        : Math.min(
+            DAANGN_NEARBY_REGION_BATCH_RAW_LIMIT,
+            DAANGN_NEARBY_RAW_LOOKUP_LIMIT - rawRows,
+          );
+      let sourceRows: NearbyDaangnSourceRow[];
+      try {
+        const sourceRes = await withTimeout(
+          restFetch(
+            `${tableUrl("mvp_raw_listings")}?select=pid,source,daangn_region_id,daangn_region_name,listing_state,last_seen_at&source=eq.daangn&listing_state=eq.active&detail_status=eq.done&daangn_region_id=in.(${regionCsv})&order=last_seen_at.desc&limit=${limit}`,
+            { headers },
+          ),
+          rawRemainingMs,
+          "nearby_daangn_raw_fetch",
+        );
+        sourceRows = (await sourceRes.json()) as NearbyDaangnSourceRow[];
+      } catch (err) {
+        stopReason = "raw_fetch_interrupted";
+        console.warn("[pool] nearby daangn raw fetch interrupted", err instanceof Error ? err.message : String(err));
+        break;
+      }
       usedBatches += 1;
       rawRows += sourceRows.length;
 
-      const poolLookupLimit = Math.min(
-        DAANGN_NEARBY_POOL_LOOKUP_LIMIT,
-        Math.max(targetReady, targetReady * 25),
-      );
+      const poolLookupLimit = localFirstPrefetch
+        ? Math.min(
+            DAANGN_NEARBY_LOCAL_POOL_LOOKUP_LIMIT,
+            Math.max(targetReady, targetReady * 8),
+          )
+        : Math.min(
+            DAANGN_NEARBY_POOL_LOOKUP_LIMIT,
+            Math.max(targetReady, targetReady * 25),
+          );
       const orderedPids = sourceRows
         .filter((row) => row.listing_state === "active" && !exclude.has(Number(row.pid)))
         .map((row) => {
@@ -867,14 +915,29 @@ async function loadNearbyDaangnReadyRows(
         .slice(0, poolLookupLimit);
 
       for (const pid of orderedPids) candidatePids.add(pid);
-      const poolRows = await withTimeout(
-        fetchReadyPoolRowsByPidChunks(orderedPids, headers, targetReady - readyByPid.size),
-        Math.max(500, DAANGN_NEARBY_PREFETCH_BUDGET_MS - (Date.now() - startedAt)),
-        "nearby_daangn_pool_fetch",
-      );
+      const poolRemainingMs = DAANGN_NEARBY_PREFETCH_BUDGET_MS - (Date.now() - startedAt);
+      if (poolRemainingMs < 700) {
+        stopReason = "budget_exhausted";
+        break;
+      }
+      let poolRows: PoolRow[];
+      try {
+        poolRows = await withTimeout(
+          fetchReadyPoolRowsByPidChunks(orderedPids, headers, targetReady - readyByPid.size),
+          poolRemainingMs,
+          "nearby_daangn_pool_fetch",
+        );
+      } catch (err) {
+        stopReason = "pool_fetch_interrupted";
+        console.warn("[pool] nearby daangn pool fetch interrupted", err instanceof Error ? err.message : String(err));
+        break;
+      }
       for (const row of poolRows) readyByPid.set(row.pid, row);
 
-      if (readyByPid.size >= targetReady) break;
+      if (readyByPid.size >= targetReady) {
+        stopReason = "target_ready";
+        break;
+      }
       if (sourceRows.length < limit) continue;
     }
 
@@ -889,7 +952,7 @@ async function loadNearbyDaangnReadyRows(
         if (aKm !== bKm) return aKm - bKm;
         return (b.expected_profit_max ?? 0) - (a.expected_profit_max ?? 0);
       })
-      .slice(0, DAANGN_NEARBY_BOOST_LIMIT)
+      .slice(0, returnLimit)
       .map((row) => ({ ...row, soldOut: false }));
     const stats: NearbyDaangnPrefetchStats = {
       enabled: true,
@@ -903,6 +966,7 @@ async function loadNearbyDaangnReadyRows(
       returnedRows: rows.length,
       targetReady,
       stoppedEarly: readyByPid.size >= targetReady,
+      reason: stopReason,
     };
     if (canUseCache) {
       NEARBY_DAANGN_READY_CACHE.set(cacheKey, {
@@ -1154,6 +1218,8 @@ async function loadPool(
   //   카테고리 다양화보다 "내 동네에서 살 수 있음"이 먼저인 source.
   const SOURCE_QUOTA: Record<string, number> = { daangn: DAANGN_SOURCE_QUOTA, joongna: JOONGNA_SOURCE_QUOTA };
   function diversifyByCategory(rows: (PoolRow & { soldOut: boolean })[], maxRows: number) {
+    const localDaangnMode = Boolean(options.userHomeDaangnFullPath)
+      && (options.source === "daangn" || options.sort === "distance");
     const perCategory = new Map<string, number>();
     const perSource = new Map<string, number>();
     const picked = new Set<number>();
@@ -1202,7 +1268,7 @@ async function loadPool(
     // Phase 2: 나머지를 차익순으로 채움 (이미 picked + 카테고리 cap 존중)
     for (const row of rows) {
       if (out.length >= maxRows) break;
-      tryAdd(row);
+      tryAdd(row, { ignoreCategoryCap: localDaangnMode });
     }
 
     // Phase 3: 슬롯 부족 시 카테고리 cap 무시하고 추가 (기존 fallback 유지)
