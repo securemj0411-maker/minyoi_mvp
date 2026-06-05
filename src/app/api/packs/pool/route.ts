@@ -118,6 +118,12 @@ const DAANGN_NEARBY_LOCAL_RETURN_LIMIT = intEnv(
 const DAANGN_NEARBY_CACHE_TTL_MS = intEnv("DAANGN_NEARBY_FEED_CACHE_TTL_MS", 45_000, 0, 300_000);
 const DAANGN_NEARBY_SLOW_LOG_MS = intEnv("DAANGN_NEARBY_FEED_SLOW_LOG_MS", 1_200, 100, 10_000);
 const DAANGN_NEARBY_PREFETCH_BUDGET_MS = intEnv("DAANGN_NEARBY_FEED_PREFETCH_BUDGET_MS", 8_000, 500, 30_000);
+const DAANGN_NEARBY_QUICK_PREFETCH_BUDGET_MS = intEnv(
+  "DAANGN_NEARBY_FEED_QUICK_PREFETCH_BUDGET_MS",
+  1_200,
+  300,
+  DAANGN_NEARBY_PREFETCH_BUDGET_MS,
+);
 const DAANGN_SOURCE_QUOTA = intEnv("DAANGN_FEED_SOURCE_QUOTA", 18, 0, READY_SLOTS);
 const JOONGNA_SOURCE_QUOTA = intEnv("JOONGNA_FEED_SOURCE_QUOTA", 3, 0, READY_SLOTS);
 const EXTENDED_MARKETPLACE_QUOTA = intEnv("EXTENDED_MARKETPLACE_SOURCE_QUOTA", 10, 0, READY_SLOTS);
@@ -175,6 +181,7 @@ type RawListingMeta = {
 type NearbyDaangnSourceRow = {
   pid: number;
   source: string | null;
+  price: number | null;
   daangn_region_id: string | null;
   daangn_region_name: string | null;
   listing_state: string | null;
@@ -761,6 +768,7 @@ async function loadNearbyDaangnReadyRows(
     userHomeDaangnFullPath?: string | null;
     source?: "bunjang" | "joongna" | "daangn" | null;
     sort?: "profit_desc" | "latest" | "price_asc" | "distance";
+    priceMax?: number | null;
     excludePids?: number[];
     extendedMarketplaces?: boolean;
     readyCandidateLimit?: number;
@@ -772,9 +780,12 @@ async function loadNearbyDaangnReadyRows(
     ? "extended_marketplaces"
     : !options.userHomeDaangnFullPath
     ? "no_home_region"
-    : options.source && options.source !== "daangn"
-      ? "non_daangn_source"
-      : null;
+      : options.source && options.source !== "daangn"
+        ? "non_daangn_source"
+        : null;
+  const prefetchBudgetMs = options.quickPage
+    ? DAANGN_NEARBY_QUICK_PREFETCH_BUDGET_MS
+    : DAANGN_NEARBY_PREFETCH_BUDGET_MS;
   if (disabledReason) {
     return {
       rows: [],
@@ -823,6 +834,7 @@ async function loadNearbyDaangnReadyRows(
     options.userHomeDaangnFullPath,
     options.source ?? "all",
     options.sort ?? "profit_desc",
+    options.priceMax ?? "all",
     DAANGN_NEARBY_RADIUS_KM,
     DAANGN_NEARBY_REGION_LIMIT,
     regionBatchSize,
@@ -858,7 +870,7 @@ async function loadNearbyDaangnReadyRows(
     let stopReason: string | undefined;
 
     for (const batch of regionBatches) {
-      const rawRemainingMs = DAANGN_NEARBY_PREFETCH_BUDGET_MS - (Date.now() - startedAt);
+      const rawRemainingMs = prefetchBudgetMs - (Date.now() - startedAt);
       if (rawRemainingMs < 700) {
         stopReason = "budget_exhausted";
         break;
@@ -868,6 +880,7 @@ async function loadNearbyDaangnReadyRows(
         break;
       }
       const regionCsv = batch.map((id) => encodeURIComponent(id)).join(",");
+      const priceClause = options.priceMax != null ? `&price=lte.${options.priceMax}` : "";
       const limit = localFirstPrefetch
         ? Math.min(
             POOL_PAGE_SIZE,
@@ -882,7 +895,7 @@ async function loadNearbyDaangnReadyRows(
       try {
         const sourceRes = await withTimeout(
           restFetch(
-            `${tableUrl("mvp_raw_listings")}?select=pid,source,daangn_region_id,daangn_region_name,listing_state,last_seen_at&source=eq.daangn&listing_state=eq.active&detail_status=eq.done&daangn_region_id=in.(${regionCsv})&order=last_seen_at.desc&limit=${limit}`,
+            `${tableUrl("mvp_raw_listings")}?select=pid,source,price,daangn_region_id,daangn_region_name,listing_state,last_seen_at&source=eq.daangn&listing_state=eq.active&detail_status=eq.done&daangn_region_id=in.(${regionCsv})${priceClause}&order=last_seen_at.desc&limit=${limit}`,
             { headers },
           ),
           rawRemainingMs,
@@ -934,7 +947,7 @@ async function loadNearbyDaangnReadyRows(
         .slice(0, poolLookupLimit);
 
       for (const pid of orderedPids) candidatePids.add(pid);
-      const poolRemainingMs = DAANGN_NEARBY_PREFETCH_BUDGET_MS - (Date.now() - startedAt);
+      const poolRemainingMs = prefetchBudgetMs - (Date.now() - startedAt);
       if (poolRemainingMs < 700) {
         stopReason = "budget_exhausted";
         break;
@@ -1045,6 +1058,9 @@ function readyPoolOverfetchLimit(options: {
   if (nearbyDaangnSortPriority) {
     return Math.min(FETCH_POOL_OVERFETCH, Math.max(READY_SLOTS * 4, candidateTarget));
   }
+  if (options.quickPage && options.priceMax != null && (nearbyDaangnSortPriority || options.source === "daangn")) {
+    return Math.min(FETCH_POOL_OVERFETCH, Math.max(READY_SLOTS * 4, candidateTarget));
+  }
   // Budget filtering needs mvp_listings.price, so keep the wider scan until
   // candidate_pool has a denormalized buy-price column or a DB-side feed RPC.
   // Budget filters are applied after joining listing price because candidate_pool
@@ -1119,6 +1135,9 @@ async function loadPool(
   // Unbudgeted first feed can be much lighter: nearby Daangn prefetch preserves local-first
   // ordering, while the normal ready page only needs enough rows for category/source diversity.
   const readyOverfetchLimit = readyPoolOverfetchLimit(options);
+  const nearbyDaangnTimeoutMs = (options.quickPage
+    ? DAANGN_NEARBY_QUICK_PREFETCH_BUDGET_MS
+    : DAANGN_NEARBY_PREFETCH_BUDGET_MS) + 500;
   const [readyRowsPage, nearbyDaangnResult, soldOutRes] = await Promise.all([
     fetchPaginatedJson<PoolRow>(readyBaseUrl, headers, readyOverfetchLimit),
     withTimeout(
@@ -1126,12 +1145,13 @@ async function loadPool(
         userHomeDaangnFullPath: options.userHomeDaangnFullPath,
         source: options.source,
         sort: options.sort,
+        priceMax: options.priceMax,
         excludePids: options.excludePids,
         extendedMarketplaces: options.extendedMarketplaces,
         readyCandidateLimit: options.readyCandidateLimit,
         quickPage: options.quickPage,
       }),
-      DAANGN_NEARBY_PREFETCH_BUDGET_MS + 500,
+      nearbyDaangnTimeoutMs,
       "nearby_daangn_prefetch",
     ).catch((err): NearbyDaangnPrefetchResult => {
       console.warn("[pool] nearby daangn prefetch fallback", err instanceof Error ? err.message : String(err));
@@ -1140,7 +1160,7 @@ async function loadPool(
         stats: {
           ...EMPTY_NEARBY_DAANGN_STATS,
           enabled: true,
-          elapsedMs: DAANGN_NEARBY_PREFETCH_BUDGET_MS,
+          elapsedMs: nearbyDaangnTimeoutMs,
           reason: "timeout_fallback",
         },
       };
@@ -1703,6 +1723,7 @@ function dedupeSameSellerProducts(
 
 export async function GET(req: Request) {
   try {
+    const requestStartedAt = Date.now();
     const auth = await requireSupabaseUser(req);
     if (!auth.ok) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -1845,6 +1866,21 @@ export async function GET(req: Request) {
       : sortDaangnItemsByDistance(items);
     items = items.slice(0, responsePageSize);
     const responseItems = items;
+    const responseElapsedMs = Date.now() - requestStartedAt;
+    if (responseElapsedMs >= 1_200 || process.env.FEED_DEBUG_LOG === "1") {
+      console.info("[pool] response", {
+        elapsedMs: responseElapsedMs,
+        quickPage,
+        refresh,
+        source,
+        sort,
+        appliedBudget,
+        responsePageSize,
+        returnedItems: responseItems.length,
+        readyCandidateLimit,
+        nearbyDaangn: nearbyDaangnStats,
+      });
+    }
 
     return NextResponse.json({
       items: responseItems,

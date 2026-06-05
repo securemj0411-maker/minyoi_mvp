@@ -3149,15 +3149,19 @@ export default function ExploreClient({
     const backgroundSort = sortRef.current;
     const isDaangnFocusedBackground =
       backgroundSource === "daangn" || backgroundSort === "distance";
-    void loadPool(true, {
-      autoScrollNew: false,
-      limit: isDaangnFocusedBackground
-        ? DAANGN_BACKGROUND_FEED_PAGE_SIZE
-        : BACKGROUND_FEED_PAGE_SIZE,
-      serverSource: backgroundSource,
-      serverSort: backgroundSort === "distance" ? "distance" : null,
-      silent: true,
-    });
+    const hydrationDelayMs = isDaangnFocusedBackground ? 900 : 250;
+    const timeoutId = window.setTimeout(() => {
+      void loadPool(true, {
+        autoScrollNew: false,
+        limit: isDaangnFocusedBackground
+          ? DAANGN_BACKGROUND_FEED_PAGE_SIZE
+          : BACKGROUND_FEED_PAGE_SIZE,
+        serverSource: backgroundSource,
+        serverSort: backgroundSort === "distance" ? "distance" : null,
+        silent: true,
+      });
+    }, hydrationDelayMs);
+    return () => window.clearTimeout(timeoutId);
   }, [items.length, loadPool, loading, scrapOnly]);
 
   const shouldShowFeedUpsell =
