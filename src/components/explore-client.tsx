@@ -58,6 +58,8 @@ import { openTossSend } from "@/lib/toss-deeplink";
 // detail-access.ts FREE_DETAIL_ACCESS_LIMIT 와 동기화.
 // 현재 정책은 승인형 멤버십 게이트이므로 기본 free limit 은 0이다.
 const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 0;
+const INITIAL_FEED_PAGE_SIZE = 6;
+const BACKGROUND_FEED_PAGE_SIZE = 24;
 
 type PoolItem = {
   pid: number;
@@ -1280,8 +1282,10 @@ type LocationFilterOption = "all" | "nearby";
 type LoadPoolOptions = {
   autoScrollNew?: boolean;
   extendedMarketplaces?: boolean;
+  limit?: number;
   serverSource?: SourceOption | null;
   serverSort?: SortOption | null;
+  silent?: boolean;
 };
 
 const SOURCE_OPTIONS: Array<{ value: SourceOption; label: string }> = [
@@ -2237,6 +2241,7 @@ export default function ExploreClient({
   // Wave 391: loadPool에서 items deps에 박으면 infinite loop. ref로 fresh 접근.
   const itemsRef = useRef<PoolItem[]>([]);
   const poolFetchSeqRef = useRef(0);
+  const initialRemainderRequestedRef = useRef(false);
   useEffect(() => {
     itemsRef.current = items;
   }, [items]);
@@ -2804,8 +2809,12 @@ export default function ExploreClient({
     async (refresh: boolean, options?: LoadPoolOptions) => {
       const requestSeq = ++poolFetchSeqRef.current;
       const isLatestRequest = () => requestSeq === poolFetchSeqRef.current;
-      if (refresh) setRefreshing(true);
+      const silent = options?.silent === true;
+      if (refresh) {
+        if (!silent) setRefreshing(true);
+      }
       else {
+        initialRemainderRequestedRef.current = false;
         setLoading(true);
         setFeedExhausted(false);
       }
@@ -2813,6 +2822,8 @@ export default function ExploreClient({
       try {
         const params = new URLSearchParams();
         if (refresh) params.set("refresh", "1");
+        const requestLimit = options?.limit ?? (!refresh ? INITIAL_FEED_PAGE_SIZE : null);
+        if (requestLimit != null) params.set("limit", String(requestLimit));
         const serverSource = options?.serverSource ?? sourceRef.current;
         if (serverSource !== "all") params.set("source", serverSource);
         if (options?.extendedMarketplaces) params.set("marketplaces", "extended");
@@ -2884,24 +2895,28 @@ export default function ExploreClient({
           // feedExhausted 안 박혀서 IntersectionObserver 가 sentinel 보고 또 loadPool(true)
           // → 또 error → 빨간 box 들였다 사라졌다 반복. error 발생 시도 feedExhausted=true
           // 박아서 자동 retry 자체 차단. 사용자가 직접 새로고침 누르도록.
-          setError(
-            data.message ??
-              "매물을 잠시 못 가져왔어요. 잠시 후 다시 시도해주세요.",
-          );
-          setFeedExhausted(true);
+          if (!silent) {
+            setError(
+              data.message ??
+                "매물을 잠시 못 가져왔어요. 잠시 후 다시 시도해주세요.",
+            );
+            setFeedExhausted(true);
+          }
         }
       } catch (e) {
         if (!isLatestRequest()) return;
         // 네트워크 끊김도 동일 — 무한 retry 차단.
-        setError(
-          e instanceof Error && e.message
-            ? e.message
-            : "네트워크가 잠시 불안정해요. 잠시 후 다시 시도해주세요.",
-        );
-        setFeedExhausted(true);
+        if (!silent) {
+          setError(
+            e instanceof Error && e.message
+              ? e.message
+              : "네트워크가 잠시 불안정해요. 잠시 후 다시 시도해주세요.",
+          );
+          setFeedExhausted(true);
+        }
       } finally {
         if (!isLatestRequest()) return;
-        setRefreshing(false);
+        if (!silent) setRefreshing(false);
         setLoading(false);
       }
     },
@@ -3032,6 +3047,19 @@ export default function ExploreClient({
   ]);
 
   const currentServerSourceFilter = source !== "all" ? source : null;
+  useEffect(() => {
+    if (loading || scrapOnly || items.length === 0) return;
+    if (initialRemainderRequestedRef.current) return;
+    initialRemainderRequestedRef.current = true;
+    void loadPool(true, {
+      autoScrollNew: false,
+      limit: BACKGROUND_FEED_PAGE_SIZE,
+      serverSource: sourceRef.current,
+      serverSort: sortRef.current === "distance" ? "distance" : null,
+      silent: true,
+    });
+  }, [items.length, loadPool, loading, scrapOnly]);
+
   const shouldShowFeedUpsell =
     !loading && !scrapOnly && displayItems.length > 0 && feedUpsellRemainingSec > 0;
   const currentViewFilterLabel = useMemo(() => {

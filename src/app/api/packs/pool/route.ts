@@ -47,6 +47,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const PAGE_SIZE = 30;
+const MIN_PAGE_SIZE = 1;
 const READY_SLOTS = 25; // 살아있는 매물
 const SOLD_OUT_SLOTS = 5; // 오늘 잡힌 매물 (FOMO)
 // Wave 383: 6h lag 제거 (0으로). 피드 신선도는 teaser에서도 동일하게 유지.
@@ -81,6 +82,12 @@ function intEnv(name: string, fallback: number, min: number, max: number) {
   const raw = Number(process.env[name]);
   if (!Number.isFinite(raw)) return fallback;
   return Math.min(max, Math.max(min, Math.trunc(raw)));
+}
+
+function pageSizeParam(raw: string | null) {
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed)) return PAGE_SIZE;
+  return Math.min(PAGE_SIZE, Math.max(MIN_PAGE_SIZE, Math.trunc(parsed)));
 }
 
 // Daangn is local-first. The profit-ordered pool query can miss nearby dong rows,
@@ -754,6 +761,8 @@ async function loadNearbyDaangnReadyRows(
     sort?: "profit_desc" | "latest" | "price_asc" | "distance";
     excludePids?: number[];
     extendedMarketplaces?: boolean;
+    readyCandidateLimit?: number;
+    quickPage?: boolean;
   },
 ): Promise<NearbyDaangnPrefetchResult> {
   const startedAt = Date.now();
@@ -777,14 +786,21 @@ async function loadNearbyDaangnReadyRows(
     DAANGN_NEARBY_REGION_LIMIT,
   );
   const localFirstPrefetch = options.source === "daangn" || options.sort === "distance";
+  const quickTarget = Math.max(READY_SLOTS, options.readyCandidateLimit ?? READY_SLOTS);
   const targetReady = localFirstPrefetch
-    ? DAANGN_NEARBY_LOCAL_READY_TARGET
+    ? options.quickPage
+      ? Math.min(DAANGN_NEARBY_LOCAL_READY_TARGET, quickTarget)
+      : DAANGN_NEARBY_LOCAL_READY_TARGET
     : Math.min(READY_SLOTS, Math.max(1, DAANGN_SOURCE_QUOTA));
   const returnLimit = localFirstPrefetch
-    ? DAANGN_NEARBY_LOCAL_RETURN_LIMIT
+    ? options.quickPage
+      ? Math.min(DAANGN_NEARBY_LOCAL_RETURN_LIMIT, Math.max(DAANGN_NEARBY_BOOST_LIMIT, quickTarget))
+      : DAANGN_NEARBY_LOCAL_RETURN_LIMIT
     : DAANGN_NEARBY_BOOST_LIMIT;
   const regionBatchSize = localFirstPrefetch
-    ? DAANGN_NEARBY_LOCAL_REGION_BATCH_SIZE
+    ? options.quickPage
+      ? Math.max(1, Math.min(DAANGN_NEARBY_LOCAL_REGION_BATCH_SIZE, 4))
+      : DAANGN_NEARBY_LOCAL_REGION_BATCH_SIZE
     : DAANGN_NEARBY_REGION_BATCH_SIZE;
   if (regionIds.length === 0) {
     return {
@@ -1016,10 +1032,14 @@ function readyPoolOverfetchLimit(options: {
   readyCandidateLimit?: number;
   userHomeDaangnFullPath?: string | null;
   extendedMarketplaces?: boolean;
+  quickPage?: boolean;
 }) {
   const candidateTarget = options.readyCandidateLimit ?? READY_SLOTS;
   if (options.extendedMarketplaces) return FETCH_POOL_OVERFETCH;
   const nearbyDaangnSortPriority = Boolean(options.userHomeDaangnFullPath) && options.sort === "distance";
+  if (options.quickPage && options.priceMax == null && (nearbyDaangnSortPriority || options.source === "daangn")) {
+    return Math.min(FETCH_POOL_OVERFETCH, Math.max(READY_SLOTS * 4, candidateTarget));
+  }
   if (nearbyDaangnSortPriority) {
     return Math.min(FETCH_POOL_OVERFETCH, Math.max(READY_SLOTS * 4, candidateTarget));
   }
@@ -1049,6 +1069,7 @@ async function loadPool(
     readyCandidateLimit?: number;
     userHomeDaangnFullPath?: string | null;
     extendedMarketplaces?: boolean;
+    quickPage?: boolean;
   } = {},
 ): Promise<{
   pool: (PoolRow & { soldOut: boolean })[];
@@ -1105,6 +1126,8 @@ async function loadPool(
         sort: options.sort,
         excludePids: options.excludePids,
         extendedMarketplaces: options.extendedMarketplaces,
+        readyCandidateLimit: options.readyCandidateLimit,
+        quickPage: options.quickPage,
       }),
       DAANGN_NEARBY_PREFETCH_BUDGET_MS + 500,
       "nearby_daangn_prefetch",
@@ -1688,6 +1711,8 @@ export async function GET(req: Request) {
     const userHomeRegion = await loadUserHomeRegion(auth.user.id);
     const url = new URL(req.url);
     const refresh = url.searchParams.get("refresh") === "1";
+    const responsePageSize = pageSizeParam(url.searchParams.get("limit"));
+    const quickPage = !refresh && responsePageSize < PAGE_SIZE;
     // Wave 340: 정렬 옵션. Wave 353: 카테고리 필터는 클라이언트로 이동 (전체 vs 카테고리 일관성).
     const sortParam = url.searchParams.get("sort");
     const sort: "profit_desc" | "latest" | "price_asc" | "distance" =
@@ -1747,9 +1772,12 @@ export async function GET(req: Request) {
     // Daangn "nearby" has the same shape: many close rows can be dropped during
     // source-median/lifecycle recompute, so distance sorting must happen after a deep scan.
     const isDaangnLocalRequest = source === "daangn" || sort === "distance";
-    const readyCandidateLimit = refresh || priceMax != null || isDaangnLocalRequest
-      ? REFRESH_READY_CANDIDATE_LIMIT
-      : READY_SLOTS;
+    const quickReadyCandidateLimit = Math.max(READY_SLOTS, responsePageSize * 4);
+    const readyCandidateLimit = quickPage
+      ? quickReadyCandidateLimit
+      : refresh || priceMax != null || isDaangnLocalRequest
+        ? REFRESH_READY_CANDIDATE_LIMIT
+        : READY_SLOTS;
     const appliedBudget: "150k" | "300k" | "500k" | "unlimited" =
       priceMax === 150000 ? "150k" :
       priceMax === 300000 ? "300k" :
@@ -1768,6 +1796,7 @@ export async function GET(req: Request) {
       readyCandidateLimit,
       userHomeDaangnFullPath: userHomeRegion?.daangn_full_path ?? null,
       extendedMarketplaces,
+      quickPage,
     });
     const deduped = dedupeSameSellerProducts(pool, raws, metas);
     const skuImageMap = await loadSkuImageMap();
@@ -1812,7 +1841,7 @@ export async function GET(req: Request) {
     items = extendedMarketplaces
       ? sortExtendedMarketplaceItems(items)
       : sortDaangnItemsByDistance(items);
-    items = items.slice(0, PAGE_SIZE);
+    items = items.slice(0, responsePageSize);
     const responseItems = items;
 
     return NextResponse.json({
@@ -1822,7 +1851,7 @@ export async function GET(req: Request) {
       creditFeed: false,
       detailAccess,
       total: responseItems.length,
-      pageSize: PAGE_SIZE,
+      pageSize: responsePageSize,
       freshLagHours: FRESH_LAG_HOURS,
       debug: isAdminUser(auth.user) ? { nearbyDaangn: nearbyDaangnStats } : undefined,
       // Wave 382: 사용자 예산이 fallback됐는지 (사용자 안내용).
