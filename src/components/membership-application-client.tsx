@@ -14,6 +14,10 @@ import {
   PAYMENT_ACCOUNT_NUMBER,
   PAYMENT_BANK_NAME,
 } from "@/lib/payment-account";
+import {
+  KbankPaymentLogo,
+  TossPaymentLogo,
+} from "@/components/payment-brand-logo";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { openTossSend } from "@/lib/toss-deeplink";
 
@@ -555,9 +559,24 @@ export default function MembershipApplicationClient({
                 type="button"
                 onClick={() => openTossSend(priceKrw)}
                 disabled={depositNotifyState === "sent"}
-                className="flex h-11 w-full items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-[13px] font-black text-white shadow-[0_10px_22px_rgba(49,130,246,0.24)] transition hover:bg-[#1c6fe8] disabled:cursor-default disabled:opacity-60"
+                className="flex h-14 w-full items-center justify-between rounded-2xl bg-white px-4 text-left shadow-[0_10px_22px_rgba(49,130,246,0.12)] ring-1 ring-blue-100 transition hover:bg-[#f8fbff] disabled:cursor-default disabled:opacity-60 dark:bg-white dark:text-zinc-950 dark:ring-blue-100"
               >
-                토스로 송금하기
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-9 w-[82px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-zinc-100">
+                    <TossPaymentLogo />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[13px] font-black text-zinc-950">
+                      토스로 송금하기
+                    </span>
+                    <span className="mt-0.5 block text-[10px] font-bold text-zinc-500">
+                      앱에서 금액 확인 후 송금
+                    </span>
+                  </span>
+                </span>
+                <span className="shrink-0 rounded-full bg-[#3182f6] px-3 py-1.5 text-[11px] font-black text-white">
+                  열기
+                </span>
               </button>
               <div className="my-3 flex items-center gap-3">
                 <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
@@ -566,8 +585,18 @@ export default function MembershipApplicationClient({
               </div>
               <div className="rounded-[14px] bg-white p-3 ring-1 ring-zinc-200 dark:bg-zinc-950 dark:ring-zinc-800">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="text-[13px] font-black text-zinc-950 dark:text-zinc-50">
-                    계좌로 직접 송금하기
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-9 w-[74px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#101bb5] ring-1 ring-blue-200">
+                      <KbankPaymentLogo />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="text-[13px] font-black text-zinc-950 dark:text-zinc-50">
+                        계좌로 직접 송금하기
+                      </div>
+                      <div className="mt-0.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+                        복사 후 은행앱에서 송금
+                      </div>
+                    </div>
                   </div>
                   <button
                     type="button"

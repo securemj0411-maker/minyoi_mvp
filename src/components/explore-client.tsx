@@ -25,6 +25,10 @@ import {
 } from "@/components/condition-chip";
 import { CategoryWatermark } from "@/components/category-watermark";
 import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
+import {
+  KbankPaymentLogo,
+  TossPaymentLogo,
+} from "@/components/payment-brand-logo";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { detectBrandDepth } from "@/lib/category-brand-depth";
 import type { DetailEventType } from "@/lib/detail-analytics";
@@ -723,9 +727,19 @@ function FeedMembershipUpsellCard({
                     type="button"
                     onClick={() => openTossSend(reservation.plan.priceKrw)}
                     disabled={requestState === "deposit_sent"}
-                    className="flex h-11 items-center justify-center rounded-xl bg-[#3182f6] px-4 text-[13px] font-black text-white transition hover:bg-[#1c6fe8] disabled:cursor-default disabled:opacity-60"
+                    className="flex h-12 items-center justify-between rounded-xl bg-white px-3 text-left ring-1 ring-emerald-200 transition hover:bg-emerald-50 disabled:cursor-default disabled:opacity-60 dark:bg-white dark:text-zinc-950 dark:ring-emerald-100"
                   >
-                    토스로 송금하기
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className="flex h-8 w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white ring-1 ring-zinc-100">
+                        <TossPaymentLogo className="w-[60px]" />
+                      </span>
+                      <span className="text-[13px] font-black text-zinc-950">
+                        토스로 송금하기
+                      </span>
+                    </span>
+                    <span className="shrink-0 rounded-full bg-[#3182f6] px-2.5 py-1 text-[10px] font-black text-white">
+                      열기
+                    </span>
                   </button>
                   <div className="flex items-center gap-2">
                     <span className="h-px flex-1 bg-emerald-200 dark:bg-emerald-900/70" />
@@ -735,10 +749,14 @@ function FeedMembershipUpsellCard({
                     <span className="h-px flex-1 bg-emerald-200 dark:bg-emerald-900/70" />
                   </div>
                   <div className="rounded-lg bg-white px-3 py-2 text-[12px] font-bold leading-5 text-zinc-700 dark:bg-zinc-950 dark:text-zinc-200">
-                    <b className="font-black text-zinc-950 dark:text-zinc-50">
-                      계좌로 직접 송금하기
-                    </b>
-                    <br />
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="flex h-7 w-[58px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#101bb5] ring-1 ring-blue-200">
+                        <KbankPaymentLogo className="w-[48px]" />
+                      </span>
+                      <b className="font-black text-zinc-950 dark:text-zinc-50">
+                        계좌로 직접 송금하기
+                      </b>
+                    </div>
                     {PAYMENT_BANK_NAME}{" "}
                     <b className="font-black">{PAYMENT_ACCOUNT_NUMBER}</b>
                     <br />
