@@ -15,17 +15,44 @@
 // compliance-retention 등) false positive 발생.
 
 import { reportCriticalIncident } from "@/lib/operational-notifier";
+import type { CronWorkerMode } from "@/lib/cron-guard";
 import { restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 
 type WatchdogTarget = {
   name: string;
-  requestPath: string; // mvp_collect_runs.request_path prefix 매칭
+  requestPath: string; // mvp_collect_runs.request_path exact-or-query 매칭
+  executionMode?: CronWorkerMode; // mvp_cron_executions.mode. startCollectRun 전 guard skip 감지용.
   expectedMinutes: number; // 정상 호출 주기
   alertAfterMinutes: number; // 이 시간 이상 안 돌면 alert
+  guardSkipAlertAfterMinutes?: number; // source_health guard skip 누적 alert threshold
 };
 
 type LastRunLookup =
   | { ok: true; lastRun: Date | null }
+  | { ok: false; error: string };
+
+type CronExecutionRow = {
+  started_at: string;
+  status: string | null;
+  skip_reason: string | null;
+  detail: Record<string, unknown> | null;
+};
+
+type GuardSkipIncident = {
+  worker: string;
+  mode: CronWorkerMode;
+  alertAgeMinutes: number;
+  minutesSinceFirstSkip: number;
+  latestStartedAt: string;
+  latestStatus: string | null;
+  latestSkipReason: string | null;
+  sourceHealthAgeMinutes: number | null;
+  sourceHealthReason: string | null;
+  skipCount: number;
+};
+
+type GuardSkipLookup =
+  | { ok: true; incident: GuardSkipIncident | null }
   | { ok: false; error: string };
 
 // Wave 106: 운영 readiness audit. 진짜 stale 3개만 추가 추적.
@@ -41,12 +68,23 @@ type LastRunLookup =
 // 재추가 trigger: 사용자 100명+ 성장 / compliance audit 요청 시.
 const WATCHDOG_TARGETS: WatchdogTarget[] = [
   { name: "lifecycle-worker", requestPath: "/api/cron/lifecycle-worker", expectedMinutes: 7, alertAfterMinutes: 21 },
+  { name: "lifecycle-worker-b", requestPath: "/api/cron/lifecycle-worker-b", expectedMinutes: 7, alertAfterMinutes: 21 },
+  { name: "lifecycle-worker-c", requestPath: "/api/cron/lifecycle-worker-c", expectedMinutes: 7, alertAfterMinutes: 21 },
   { name: "tick", requestPath: "/api/cron/tick", expectedMinutes: 2, alertAfterMinutes: 10 },
   { name: "detail-worker", requestPath: "/api/cron/detail-worker", expectedMinutes: 2, alertAfterMinutes: 10 },
+  { name: "score-worker", requestPath: "/api/cron/score-worker", executionMode: "score_worker", expectedMinutes: 1, alertAfterMinutes: 10 },
+  { name: "score-worker-b", requestPath: "/api/cron/score-worker-b", executionMode: "score_worker_b", expectedMinutes: 1, alertAfterMinutes: 10 },
+  { name: "score-worker-c", requestPath: "/api/cron/score-worker-c", executionMode: "score_worker_c", expectedMinutes: 1, alertAfterMinutes: 10 },
   { name: "market-worker", requestPath: "/api/cron/market-worker", expectedMinutes: 60, alertAfterMinutes: 180 },
   { name: "pool-warmer", requestPath: "/api/cron/pool-warmer", expectedMinutes: 30, alertAfterMinutes: 90 },
   { name: "deep-crawl", requestPath: "/api/cron/deep-crawl", expectedMinutes: 60, alertAfterMinutes: 180 },
   { name: "housekeeper", requestPath: "/api/cron/housekeeper", expectedMinutes: 30, alertAfterMinutes: 90 },
+  { name: "joongna-worker", requestPath: "/api/cron/joongna-worker", executionMode: "joongna_worker", expectedMinutes: 3, alertAfterMinutes: 15 },
+  { name: "daangn-worker", requestPath: "/api/cron/daangn-worker", executionMode: "daangn_worker", expectedMinutes: 5, alertAfterMinutes: 20 },
+  { name: "daangn-worker-b", requestPath: "/api/cron/daangn-worker-b", executionMode: "daangn_worker_b", expectedMinutes: 5, alertAfterMinutes: 20 },
+  { name: "daangn-worker-c", requestPath: "/api/cron/daangn-worker-c", executionMode: "daangn_worker_c", expectedMinutes: 5, alertAfterMinutes: 20 },
+  { name: "daangn-detail-worker", requestPath: "/api/cron/daangn-detail-worker", executionMode: "daangn_detail_worker_a", expectedMinutes: 5, alertAfterMinutes: 20 },
+  { name: "daangn-price-sweep-worker", requestPath: "/api/cron/daangn-price-sweep-worker", executionMode: "daangn_price_sweep_worker_a", expectedMinutes: 5, alertAfterMinutes: 20 },
 ];
 
 const COOLDOWN_MINUTES = 30;
@@ -58,13 +96,68 @@ function lookbackMinutesForTarget(target: WatchdogTarget): number {
   return Math.max(360, Math.min(Math.round(target.alertAfterMinutes * 1.5), 48 * 60));
 }
 
+function isUnhealthyGuardSkip(row: CronExecutionRow): boolean {
+  return row.status === "skipped_unhealthy" || row.skip_reason === "source_health_unhealthy";
+}
+
+function numberFromDetail(detail: Record<string, unknown> | null, key: string): number | null {
+  const value = detail?.[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function stringFromDetail(detail: Record<string, unknown> | null, key: string): string | null {
+  const value = detail?.[key];
+  return typeof value === "string" && value.trim() ? value.slice(0, 160) : null;
+}
+
+export function summarizeGuardSkipIncidentForTests(
+  target: Pick<WatchdogTarget, "name" | "executionMode" | "alertAfterMinutes" | "guardSkipAlertAfterMinutes">,
+  rows: CronExecutionRow[],
+  nowMs = Date.now(),
+): GuardSkipIncident | null {
+  if (!target.executionMode || rows.length === 0) return null;
+
+  const latest = rows[0];
+  if (!latest || !isUnhealthyGuardSkip(latest)) return null;
+
+  const unhealthyRows = rows.filter(isUnhealthyGuardSkip);
+  const firstSkip = unhealthyRows[unhealthyRows.length - 1] ?? latest;
+  const firstSkipAt = Date.parse(firstSkip.started_at);
+  const minutesSinceFirstSkip = Number.isFinite(firstSkipAt)
+    ? Math.max(0, Math.round((nowMs - firstSkipAt) / 60_000))
+    : 0;
+  const sourceHealthAgeMinutes = (() => {
+    const ageMs = numberFromDetail(latest.detail, "ageMs");
+    return ageMs == null ? null : Math.max(0, Math.round(ageMs / 60_000));
+  })();
+  const threshold = target.guardSkipAlertAfterMinutes ?? target.alertAfterMinutes;
+  const alertAgeMinutes = Math.max(minutesSinceFirstSkip, sourceHealthAgeMinutes ?? 0);
+
+  if (alertAgeMinutes < threshold) {
+    return null;
+  }
+
+  return {
+    worker: target.name,
+    mode: target.executionMode,
+    alertAgeMinutes,
+    minutesSinceFirstSkip,
+    latestStartedAt: latest.started_at,
+    latestStatus: latest.status,
+    latestSkipReason: latest.skip_reason,
+    sourceHealthAgeMinutes,
+    sourceHealthReason: stringFromDetail(latest.detail, "reason"),
+    skipCount: unhealthyRows.length,
+  };
+}
+
 async function loadLastRunForTarget(target: WatchdogTarget): Promise<LastRunLookup> {
   const lookbackMinutes = lookbackMinutesForTarget(target);
   const sinceIso = new Date(Date.now() - lookbackMinutes * 60_000).toISOString();
-  // PostgREST `like` pattern: * in place of %.
-  // request_path은 "/api/cron/X?wait=1" 형태라 prefix matching.
-  const filterValue = `like.${target.requestPath}*`;
-  const url = `${tableUrl("mvp_collect_runs")}?select=started_at&request_path=${encodeURIComponent(filterValue)}&started_at=gte.${encodeURIComponent(sinceIso)}&order=started_at.desc&limit=1`;
+  // request_path은 "/api/cron/X?wait=1" 형태가 가능해서 exact 또는 query-string 포함만 허용한다.
+  // 단순 prefix(`/daangn-worker*`)는 `/daangn-worker-b`까지 잡아 stale 감지를 숨길 수 있다.
+  const pathFilter = `(request_path.eq.${target.requestPath},request_path.like.${target.requestPath}?*)`;
+  const url = `${tableUrl("mvp_collect_runs")}?select=started_at&or=${encodeURIComponent(pathFilter)}&started_at=gte.${encodeURIComponent(sinceIso)}&order=started_at.desc&limit=1`;
   try {
     const res = await restFetch(url, { method: "GET", headers: serviceHeaders() });
     if (!res.ok) return { ok: false, error: `status_${res.status}` };
@@ -76,11 +169,29 @@ async function loadLastRunForTarget(target: WatchdogTarget): Promise<LastRunLook
   }
 }
 
-async function tryAcquireAlertCooldown(workerName: string): Promise<boolean> {
+async function loadGuardSkipForTarget(target: WatchdogTarget): Promise<GuardSkipLookup> {
+  if (!target.executionMode) return { ok: true, incident: null };
+
+  const lookbackMinutes = lookbackMinutesForTarget(target);
+  const sinceIso = new Date(Date.now() - lookbackMinutes * 60_000).toISOString();
+  const modeFilter = `eq.${target.executionMode}`;
+  const url = `${tableUrl("mvp_cron_executions")}?select=started_at,status,skip_reason,detail&mode=${encodeURIComponent(modeFilter)}&started_at=gte.${encodeURIComponent(sinceIso)}&order=started_at.desc&limit=120`;
+
+  try {
+    const res = await restFetch(url, { method: "GET", headers: serviceHeaders() });
+    if (!res.ok) return { ok: false, error: `status_${res.status}` };
+    const rows = (await res.json()) as CronExecutionRow[];
+    return { ok: true, incident: summarizeGuardSkipIncidentForTests(target, rows) };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message.slice(0, 160) : String(err).slice(0, 160) };
+  }
+}
+
+async function tryAcquireAlertCooldown(alertKey: string): Promise<boolean> {
   // mvp_cron_locks에 watchdog_alert_<name> mode로 lock 시도. 이미 lock 있으면 false → alert skip.
   // RPC: try_acquire_mvp_cron_lock(p_mode text, p_owner text, p_lease_seconds integer)
   //      returns (acquired boolean, owner text, lease_until timestamptz)
-  const mode = `watchdog_alert_${workerName}`;
+  const mode = `watchdog_alert_${alertKey}`;
   try {
     const res = await restFetch(rpcUrl("try_acquire_mvp_cron_lock"), {
       method: "POST",
@@ -102,10 +213,12 @@ async function tryAcquireAlertCooldown(workerName: string): Promise<boolean> {
 export async function checkCronWatchdog(): Promise<{
   checked: number;
   stale: { worker: string; minutesSinceLast: number }[];
+  guardSkipped: GuardSkipIncident[];
   lookupFailed: { worker: string; error: string }[];
   alertsSent: number;
 }> {
   const stale: { worker: string; minutesSinceLast: number }[] = [];
+  const guardSkipped: GuardSkipIncident[] = [];
   const lookupFailed: { worker: string; error: string }[] = [];
   let alertsSent = 0;
 
@@ -115,12 +228,42 @@ export async function checkCronWatchdog(): Promise<{
       WATCHDOG_TARGETS.map(async (target) => ({
         target,
         lookup: await loadLastRunForTarget(target),
+        guardLookup: await loadGuardSkipForTarget(target),
       })),
     );
 
     const now = Date.now();
 
-    for (const { target, lookup } of targetsWithLastRun) {
+    for (const { target, lookup, guardLookup } of targetsWithLastRun) {
+      let guardIncident: GuardSkipIncident | null = null;
+      if (!guardLookup.ok) {
+        lookupFailed.push({ worker: `${target.name}:guard`, error: guardLookup.error });
+      } else if (guardLookup.incident) {
+        guardIncident = guardLookup.incident;
+        guardSkipped.push(guardIncident);
+        const acquired = await tryAcquireAlertCooldown(`${target.name}_guard_skip`);
+        if (acquired) {
+          await reportCriticalIncident({
+            source: "cron_watchdog",
+            summary: `[${target.name}] 호출은 오지만 ${guardIncident.latestSkipReason ?? guardIncident.latestStatus ?? "guard_skip"}로 ${guardIncident.alertAgeMinutes}분째 실행 전 스킵`,
+            context: {
+              worker: target.name,
+              mode: guardIncident.mode,
+              expectedMinutes: target.expectedMinutes,
+              thresholdMinutes: target.guardSkipAlertAfterMinutes ?? target.alertAfterMinutes,
+              alertAgeMinutes: guardIncident.alertAgeMinutes,
+              latestExecutionAt: guardIncident.latestStartedAt,
+              latestStatus: guardIncident.latestStatus,
+              latestSkipReason: guardIncident.latestSkipReason,
+              sourceHealthReason: guardIncident.sourceHealthReason,
+              sourceHealthAgeMinutes: guardIncident.sourceHealthAgeMinutes,
+              skipCountInLookback: guardIncident.skipCount,
+            },
+          });
+          alertsSent += 1;
+        }
+      }
+
       if (!lookup.ok) {
         // DB/REST 일시 실패를 "worker가 안 돌았다"로 오판하지 않는다.
         // 다음 tick에서 다시 확인하면 되므로 alert는 보내지 않는다.
@@ -133,6 +276,7 @@ export async function checkCronWatchdog(): Promise<{
         // lookback window 안에 한 번도 안 돔 → stale.
         const lookback = lookbackMinutesForTarget(target);
         stale.push({ worker: target.name, minutesSinceLast: lookback });
+        if (guardIncident) continue;
         const acquired = await tryAcquireAlertCooldown(target.name);
         if (acquired) {
           await reportCriticalIncident({
@@ -152,6 +296,7 @@ export async function checkCronWatchdog(): Promise<{
       const minutesSinceLast = (now - lastRun.getTime()) / 60_000;
       if (minutesSinceLast > target.alertAfterMinutes) {
         stale.push({ worker: target.name, minutesSinceLast: Math.round(minutesSinceLast) });
+        if (guardIncident) continue;
         const acquired = await tryAcquireAlertCooldown(target.name);
         if (acquired) {
           await reportCriticalIncident({
@@ -172,5 +317,5 @@ export async function checkCronWatchdog(): Promise<{
     console.error("[cron-watchdog] error", err instanceof Error ? err.message : String(err));
   }
 
-  return { checked: WATCHDOG_TARGETS.length, stale, lookupFailed, alertsSent };
+  return { checked: WATCHDOG_TARGETS.length, stale, guardSkipped, lookupFailed, alertsSent };
 }
