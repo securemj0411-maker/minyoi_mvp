@@ -3098,7 +3098,7 @@ export default function ExploreClient({
           // Wave launch-128 (2026-05-25): paywall 메시지 가치 포지셔닝 강화.
           const defaultMessageByVariant =
             variant === "paywall"
-              ? "선공개 멤버십 승인 후 시세 비교, 비용 계산, 원본 링크까지 볼 수 있어요."
+              ? "멤버십 승인 후 시세 비교, 비용 계산, 원본 링크까지 볼 수 있어요."
               : variant === "sold"
                 ? "이 매물은 방금 다른 곳에서 거래되었거나 셀러가 내린 것 같아요. 새로고침하면 다른 매물을 보여드릴게요."
                 : variant === "profit_lost"
@@ -4126,7 +4126,7 @@ export default function ExploreClient({
                       variant: "paywall",
                       title: "멤버십 승인이 필요해요",
                       message:
-                        "선공개 멤버십 승인 후 시세 비교, 비용 계산, 원본 링크까지 볼 수 있어요.",
+                        "멤버십 승인 후 시세 비교, 비용 계산, 원본 링크까지 볼 수 있어요.",
                       creditBalance: detailAccessSnapshot.creditBalance ?? 0,
                       freeUsed: detailAccessSnapshot.freeUsed ?? 0,
                       freeLimit: detailAccessSnapshot.freeLimit ?? 0,
@@ -4376,7 +4376,7 @@ export default function ExploreClient({
                   ? budgetFilter !== "all"
                     ? `${budgetOption.label}에서 수익, 시세, 상태 조건을 통과한 후보만 남긴 결과예요. 가격대를 넓히면 더 볼 수 있어요.`
                     : "수익, 시세, 상태 조건을 통과한 매물만 남긴 결과예요."
-                  : "승인된 멤버에게만 지금 진행 중인 추천 매물과 시세를 보여줘요."}
+                  : "새로 잡힌 후보가 있으면 아래에 이어서 붙어요."}
               </div>
               {feedExhausted && budgetFilter !== "all" ? (
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -4434,10 +4434,6 @@ export default function ExploreClient({
                   </ul>
                 </div>
               ) : null}
-              <div className="mt-2 flex items-center gap-1.5 rounded-md bg-blue-50 px-2 py-1.5 text-[11px] font-bold text-blue-800 dark:bg-blue-950/40 dark:text-blue-200">
-                <ZapIcon className="h-3 w-3" />
-                <span>상세 분석은 선공개 멤버십 승인 후 열 수 있어요</span>
-              </div>
               <div className="mt-4">
                 {renderFeedSecondaryActions()}
               </div>
@@ -4675,7 +4671,7 @@ export default function ExploreClient({
                           멤버십 신청하러 가기
                         </div>
                         <div className="mt-0.5 text-[11px] font-medium text-white/85">
-                          선공개 300명
+                          300명 정원
                         </div>
                       </div>
                     </div>

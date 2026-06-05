@@ -32,7 +32,7 @@ export function AccountPanel({
         <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">멤버십</div>
         <div className="mt-2 flex items-center justify-between gap-3">
           <div className="text-[14px] font-black text-zinc-950 dark:text-zinc-100">
-            {approved ? "선공개 멤버십" : "승인 대기"}
+            {approved ? "멤버십 활성화" : "승인 대기"}
           </div>
           <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-black ${
             approved

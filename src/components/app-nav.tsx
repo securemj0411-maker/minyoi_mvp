@@ -443,7 +443,7 @@ export default function AppNav() {
         {
           href: "/plans",
           label: membershipApproved ? "멤버십 관리" : "멤버십 신청",
-          caption: membershipApproved ? "남은 기간 확인·연장" : "선공개 300명",
+          caption: membershipApproved ? "남은 기간 확인·연장" : "300명 정원",
         },
         {
           href: "/how-it-works",
@@ -467,7 +467,7 @@ export default function AppNav() {
           label: "서비스 안내",
           caption: "득템잡이 사용법",
         },
-        { href: "/plans", label: "멤버십 신청", caption: "선공개 300명" },
+        { href: "/plans", label: "멤버십 신청", caption: "300명 정원" },
       ];
 
   // Wave launch-101 (사용자 정정 — 운영자 페이지 nav 거추장): cau* admin path 면 minimal terminal nav.
@@ -519,9 +519,6 @@ export default function AppNav() {
               />
               <span className="font-black tracking-tight text-zinc-950 dark:text-white">
                 득템잡이
-              </span>
-              <span className="rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-700 ring-1 ring-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:ring-blue-900">
-                선공개
               </span>
             </Link>
           </div>
@@ -699,7 +696,7 @@ export default function AppNav() {
                   로그인하고 시작하기
                 </div>
                 <div className="mt-0.5 truncate text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-                  선공개 멤버십 신청
+                  멤버십 신청
                 </div>
               </div>
             )}
@@ -734,7 +731,7 @@ export default function AppNav() {
                           : "text-[#3182f6] dark:text-blue-400"
                       }`}
                     >
-                      {membershipApproved ? "멤버십 활성화" : "선공개 멤버십"}
+                      {membershipApproved ? "멤버십 활성화" : "멤버십 신청"}
                     </div>
                     <div className="mt-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
                       {membershipApproved
