@@ -564,23 +564,24 @@ export default function MembershipApplicationClient({
                 </h2>
                 <p className="mt-2 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
                   {showDepositCountdown
-                    ? renewalMode
-                      ? "입금 확인 요청을 받았어요. 승인되면 기존 만료일 뒤에 기간이 붙습니다."
-                      : "입금 확인 요청을 받았어요. 승인까지 잠시만 기다려주세요."
-                    : showPaymentDetails
                       ? renewalMode
-                        ? "송금 후 입금했어요 버튼을 누르면 5분 내로 연장 기간이 반영됩니다."
-                        : "송금 후 입금했어요 버튼을 누르면 5분 내로 멤버십에 반영됩니다."
+                        ? "입금 확인 요청을 받았어요. 승인되면 기존 만료일 뒤에 기간이 붙습니다."
+                        : "입금 확인 요청을 받았어요. 승인까지 잠시만 기다려주세요."
+                    : showPaymentDetails
+                      ? "선택한 방법으로 송금한 뒤 입금 확인을 진행해 주세요."
                       : "토스 또는 계좌송금 중 편한 방법을 먼저 골라주세요."}
                 </p>
               </div>
               {showReservationCountdown ? (
                 <div className="shrink-0 rounded-[18px] bg-white px-3 py-2.5 text-center text-zinc-950 shadow-[0_12px_30px_rgba(49,130,246,0.16)] ring-1 ring-blue-100 dark:bg-zinc-950 dark:text-white dark:ring-zinc-800">
                   <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-400">
-                    남은 시간
+                    자리 예약 만료까지
                   </div>
                   <div className="mt-1 font-mono text-[26px] font-black leading-none tabular-nums">
                     {countdownLabel(reservationMsLeft)}
+                  </div>
+                  <div className="mt-1 max-w-[118px] break-keep text-[10px] font-black leading-4 text-rose-500 dark:text-rose-300">
+                    시간 내 입금하지 않으면 취소돼요
                   </div>
                 </div>
               ) : null}
