@@ -56,8 +56,6 @@ export default function AppFooter() {
             </div>
             <div>
               사업자등록번호 <b className="font-bold text-zinc-900 dark:text-zinc-300">563-62-00789</b>
-              <span className="mx-1.5 text-zinc-300 dark:text-zinc-700">·</span>
-              통신판매업신고 <b className="font-bold text-zinc-900 dark:text-zinc-300">신고 준비 중</b>
             </div>
             <div>
               주소 제주특별자치도 제주시 수덕로 75, 302호

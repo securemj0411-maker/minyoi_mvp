@@ -19,7 +19,6 @@ test("PG review public pages expose legal links and business information", () =>
   assert.match(footer, /\/refund-policy/);
   assert.match(footer, /상호명/);
   assert.match(footer, /사업자등록번호/);
-  assert.match(footer, /통신판매업신고/);
   assert.match(footer, /주소/);
   assert.match(footer, /대표번호/);
   assert.match(plans, /필요한 만큼 충전/);
