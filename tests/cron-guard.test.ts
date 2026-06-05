@@ -133,6 +133,19 @@ test("cron guard lets market worker probe when source health is stale", async ()
   if (guard.allowed) guard.release();
 });
 
+test("cron guard lets daangn ingest probe when source health is stale", async () => {
+  resetCronGuardForTests();
+  setCronGuardSourceHealthLoaderForTests(async () => ({
+    status: "unhealthy",
+    checked_at: new Date(Date.now() - 30 * 60_000).toISOString(),
+    reason: "blocked:http_403_access_denied",
+  }));
+
+  const guard = await acquireCronGuardWithSourceHealth("daangn_worker");
+  assert.equal(guard.allowed, true);
+  if (guard.allowed) guard.release();
+});
+
 test("daangn worker-only roles allow their detail shard lanes", () => {
   const previousRole = process.env.CRON_PROJECT_ROLE;
   try {

@@ -376,7 +376,9 @@ function shouldSkipForSourceHealth(
   const staleMs = envMs("CRON_GUARD_SOURCE_HEALTH_STALE_MS", 10 * 60_000, 60_000, 6 * 60 * 60_000);
   const checkedAtMs = health.checked_at ? Date.parse(health.checked_at) : Number.NaN;
   const ageMs = Number.isFinite(checkedAtMs) ? now - checkedAtMs : Number.POSITIVE_INFINITY;
-  if (mode === "market_worker" && ageMs >= staleMs) {
+  // A source-health block must expire into a probe run. Otherwise one transient
+  // 403/timeout can permanently stop the only worker capable of refreshing health.
+  if (ageMs >= staleMs) {
     return null;
   }
 
