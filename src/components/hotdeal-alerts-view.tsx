@@ -23,16 +23,16 @@ export default function HotdealAlertsView() {
       <div className="mx-auto max-w-2xl space-y-6">
         <header>
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d735f] dark:text-blue-400">
-            Real-time Deal Alerts
+            New Listing Alerts
           </p>
           <h2 className="mt-2 flex items-center gap-3 text-2xl font-black tracking-tight text-[#223127] dark:text-white sm:text-3xl">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-orange-100 to-amber-200 text-orange-600 dark:from-orange-900/40 dark:to-amber-900/40 dark:text-orange-300">
               <FlameIcon className="h-6 w-6" />
             </span>
-            실시간 매물 등록 알림
+            새매물 알림
           </h2>
           <p className="mt-2 text-sm font-semibold leading-6 text-[#5a6658] dark:text-zinc-400">
-            차익이 큰 후보가 잡히면 텔레그램으로 알려드려요.
+            차익이 큰 새 매물이 잡히면 텔레그램으로 알려드려요.
             한 매물은 여러 사람에게 무제한으로 뿌리지 않고, 중복 알림을 줄여서 보냅니다.
           </p>
         </header>

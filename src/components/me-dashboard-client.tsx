@@ -1,6 +1,7 @@
 "use client";
 
 import type { User } from "@supabase/supabase-js";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import AdminPoolBrowser from "@/components/admin-pool-browser";
 import AdminClassificationBrowser from "@/components/admin-classification-browser";
@@ -92,9 +93,10 @@ function initialViewFromUrl(): DashboardView {
 
 // Wave 343: initialInventory는 next/server에서 page.tsx prop으로 강제 전달 (서버 prop). 미사용이지만 시그니처 유지.
 export default function MeDashboardClient({ initialInventory: _initialInventory }: { initialInventory: InventorySnapshot[] }) {
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeView] = useState<DashboardView>(initialViewFromUrl);
+  const [activeView, setActiveView] = useState<DashboardView>(initialViewFromUrl);
   const [shadowMode, setShadowMode] = useState<boolean>(false);
   // Wave 343: welcome flow 폐기 (ExploreClient로 통합). welcomePending state 제거.
   // seekMoreOpen modal 제거 ("더 찾아보기" 버튼 사라짐 — cooldown으로 대체).
@@ -109,6 +111,11 @@ export default function MeDashboardClient({ initialInventory: _initialInventory 
       flushPendingConsents().catch((err) => console.warn("[consents] flush failed (non-fatal)", err));
     });
   }, []);
+
+  useEffect(() => {
+    const v = searchParams.get("view");
+    setActiveView((VALID_VIEWS as string[]).includes(v ?? "") ? (v as DashboardView) : "history");
+  }, [searchParams]);
 
   const effectiveAdmin = isAdminUser(user) && !shadowMode;
 

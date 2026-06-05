@@ -464,6 +464,7 @@ function FeedMembershipUpsellCard({
       return;
     }
     let alive = true;
+    const reservationApplicationId = reservation.applicationId;
 
     async function checkApproval() {
       const token = await getAccessToken();
@@ -482,9 +483,9 @@ function FeedMembershipUpsellCard({
       const latestApplication = payload.application ?? null;
       const activeApplicationId = payload.activePlan?.applicationId ?? null;
       const approved =
-        latestApplication?.id === reservation.applicationId &&
+        latestApplication?.id === reservationApplicationId &&
         latestApplication.status === "approved";
-      const activeApproved = activeApplicationId === reservation.applicationId;
+      const activeApproved = activeApplicationId === reservationApplicationId;
 
       if (payload.isMember && (approved || activeApproved)) {
         setRequestState("approved");
@@ -492,7 +493,7 @@ function FeedMembershipUpsellCard({
         setApprovalToast("멤버십 연장 완료. 기간이 추가됐어요.");
         setOfferModalOpen(false);
       } else if (
-        latestApplication?.id === reservation.applicationId &&
+        latestApplication?.id === reservationApplicationId &&
         latestApplication.status === "rejected"
       ) {
         setRequestState("error");
@@ -3457,6 +3458,39 @@ export default function ExploreClient({
     });
   }
 
+  function renderFeedSecondaryActions() {
+    return (
+      <div className="grid gap-2 sm:grid-cols-2">
+        {source === "daangn" || sort === "distance" ? (
+          <button
+            type="button"
+            onClick={expandToAllMarketplaces}
+            disabled={refreshing}
+            className="min-h-12 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm font-black text-zinc-900 shadow-sm transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-900"
+          >
+            중고나라·번개장터까지 보기
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => handleLocationFilterChange("nearby")}
+            disabled={refreshing}
+            className="min-h-12 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-black text-orange-800 shadow-sm transition hover:bg-orange-100 disabled:opacity-60 dark:border-orange-900/60 dark:bg-orange-950/70 dark:text-orange-200"
+          >
+            당근 근처 매물만 보기
+          </button>
+        )}
+        <Link
+          href="/me?view=hotdeal-alerts"
+          scroll={false}
+          className="min-h-12 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm font-black text-emerald-800 shadow-sm transition hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/70 dark:text-emerald-200"
+        >
+          새매물 알림 받기
+        </Link>
+      </div>
+    );
+  }
+
   // 2026-05-19: pb-24 → pb-4. 이전 fixed FAB 시절 sticky 영역 확보 padding이었는데
   // sticky 통일 후 의미 없어짐 → button과 footer 사이 큰 빈 공간 제거.
   return (
@@ -3986,6 +4020,9 @@ export default function ExploreClient({
               </button>
             </div>
           ) : null}
+          <div className="mt-4">
+            {renderFeedSecondaryActions()}
+          </div>
         </div>
       ) : displayItems.length === 0 ? (
         // Wave 894: 클라이언트 필터 결과 빈 경우 — 현재 피드 snapshot 안에만 없음.
@@ -4034,6 +4071,11 @@ export default function ExploreClient({
               </button>
             ) : null}
           </div>
+          {!scrapOnly ? (
+            <div className="mt-4">
+              {renderFeedSecondaryActions()}
+            </div>
+          ) : null}
         </div>
       ) : (
         // Wave 350: 당근 피드 스타일 — 모바일 1열 + 박스 X + divider만.
@@ -4396,6 +4438,9 @@ export default function ExploreClient({
                 <ZapIcon className="h-3 w-3" />
                 <span>상세 분석은 선공개 멤버십 승인 후 열 수 있어요</span>
               </div>
+              <div className="mt-4">
+                {renderFeedSecondaryActions()}
+              </div>
             </div>
           </div>
         </div>
@@ -4409,7 +4454,7 @@ export default function ExploreClient({
           canRefresh이면 모달 X, 직접 loadPool(true) — 자연스럽게 append.
           !canRefresh면 cooldown 모달 (카톡/즉시받기/대기). */}
       {!loading && !scrapOnly && items.length > 0 ? (
-        <div className="sticky bottom-4 z-20 mt-4 flex flex-col items-center gap-2 px-4 sm:mt-6 sm:px-0">
+        <div className="sticky bottom-4 z-20 mt-4 flex justify-center px-4 sm:mt-6 sm:px-0">
           <button
             type="button"
             onClick={() => {
@@ -4427,33 +4472,6 @@ export default function ExploreClient({
             <SearchIcon className="h-4 w-4" />
             {refreshing ? "가져오는 중..." : "더 찾아보기"}
           </button>
-          <div className="grid w-full max-w-[420px] grid-cols-2 gap-2 sm:max-w-none sm:flex sm:w-auto sm:justify-center">
-            {source === "daangn" || sort === "distance" ? (
-              <button
-                type="button"
-                onClick={expandToAllMarketplaces}
-                disabled={refreshing}
-                className="min-h-10 rounded-full border border-zinc-200 bg-white/95 px-3 py-2 text-[12px] font-black text-zinc-800 shadow-[0_10px_28px_rgba(15,23,42,0.12)] backdrop-blur transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950/95 dark:text-zinc-100 dark:hover:bg-zinc-900"
-              >
-                중고나라·번개까지 보기
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => handleLocationFilterChange("nearby")}
-                disabled={refreshing}
-                className="min-h-10 rounded-full border border-orange-200 bg-orange-50/95 px-3 py-2 text-[12px] font-black text-orange-800 shadow-[0_10px_28px_rgba(15,23,42,0.10)] backdrop-blur transition hover:bg-orange-100 disabled:opacity-60 dark:border-orange-900/60 dark:bg-orange-950/70 dark:text-orange-200"
-              >
-                당근 근처 매물만 보기
-              </button>
-            )}
-            <Link
-              href="/me?view=hotdeal-alerts"
-              className="min-h-10 rounded-full border border-emerald-200 bg-emerald-50/95 px-3 py-2 text-center text-[12px] font-black text-emerald-800 shadow-[0_10px_28px_rgba(15,23,42,0.10)] backdrop-blur transition hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/70 dark:text-emerald-200"
-            >
-              실시간 매물 알림 받기
-            </Link>
-          </div>
         </div>
       ) : null}
 
