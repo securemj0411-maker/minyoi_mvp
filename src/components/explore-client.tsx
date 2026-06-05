@@ -736,9 +736,7 @@ function FeedMembershipUpsellCard({
                         }}
                         className="min-h-[118px] rounded-2xl bg-[#3182f6] p-3 text-left text-white shadow-[0_14px_34px_rgba(49,130,246,0.24)] transition hover:-translate-y-0.5"
                       >
-                        <span className="flex h-9 w-[84px] items-center justify-center rounded-xl bg-white">
-                          <TossPaymentLogo className="w-[66px]" />
-                        </span>
+                        <TossPaymentLogo className="h-10 w-[112px]" />
                         <span className="mt-4 block break-keep text-[16px] font-black leading-tight">
                           토스로 보내기
                         </span>
@@ -751,9 +749,7 @@ function FeedMembershipUpsellCard({
                         onClick={() => setPaymentMethod("bank")}
                         className="min-h-[118px] rounded-2xl bg-zinc-950 p-3 text-left text-white shadow-[0_14px_34px_rgba(15,23,42,0.22)] transition hover:-translate-y-0.5 dark:bg-white dark:text-zinc-950"
                       >
-                        <span className="flex h-9 w-[84px] items-center justify-center rounded-xl bg-[#101bb5] ring-1 ring-blue-200">
-                          <KbankPaymentLogo className="w-[66px]" />
-                        </span>
+                        <KbankPaymentLogo className="h-10 w-[112px]" />
                         <span className="mt-4 block break-keep text-[16px] font-black leading-tight">
                           계좌송금 하기
                         </span>
@@ -786,9 +782,7 @@ function FeedMembershipUpsellCard({
                         <div className="rounded-xl bg-white px-3 py-3 ring-1 ring-emerald-200 dark:bg-zinc-950 dark:ring-emerald-900/70">
                           <div className="flex items-center justify-between gap-2">
                             <span className="flex min-w-0 items-center gap-2">
-                              <span className="flex h-9 w-[76px] shrink-0 items-center justify-center rounded-lg bg-white ring-1 ring-zinc-100">
-                                <TossPaymentLogo className="w-[60px]" />
-                              </span>
+                              <TossPaymentLogo className="h-9 w-[96px] shrink-0 rounded-xl" />
                               <span className="min-w-0">
                                 <span className="block text-[12px] font-black text-zinc-950 dark:text-white">
                                   토스 송금창을 열었어요
@@ -814,9 +808,7 @@ function FeedMembershipUpsellCard({
                         (showDepositCountdown && !paymentMethod)) ? (
                         <div className="rounded-lg bg-white px-3 py-3 text-[12px] font-bold leading-5 text-zinc-700 dark:bg-zinc-950 dark:text-zinc-200">
                           <div className="mb-2 flex items-center gap-2">
-                            <span className="flex h-8 w-[66px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#101bb5] ring-1 ring-blue-200">
-                              <KbankPaymentLogo className="w-[54px]" />
-                            </span>
+                            <KbankPaymentLogo className="h-9 w-[96px] shrink-0 rounded-xl" />
                             <b className="font-black text-zinc-950 dark:text-zinc-50">
                               계좌송금 정보
                             </b>

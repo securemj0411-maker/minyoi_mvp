@@ -570,9 +570,7 @@ export default function MembershipApplicationClient({
                   onClick={chooseTossPayment}
                   className="group min-h-[154px] rounded-[22px] bg-[#3182f6] p-4 text-left text-white shadow-[0_18px_42px_rgba(49,130,246,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(49,130,246,0.34)]"
                 >
-                  <span className="flex h-11 w-[104px] items-center justify-center rounded-2xl bg-white shadow-sm">
-                    <TossPaymentLogo className="w-[82px]" />
-                  </span>
+                  <TossPaymentLogo />
                   <span className="mt-5 block break-keep text-[21px] font-black leading-tight">
                     토스로 보내기
                   </span>
@@ -585,9 +583,7 @@ export default function MembershipApplicationClient({
                   onClick={() => setSelectedPaymentMethod("bank")}
                   className="group min-h-[154px] rounded-[22px] bg-zinc-950 p-4 text-left text-white shadow-[0_18px_42px_rgba(15,23,42,0.22)] ring-1 ring-zinc-200 transition hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(15,23,42,0.28)] dark:bg-white dark:text-zinc-950 dark:ring-zinc-800"
                 >
-                  <span className="flex h-11 w-[104px] items-center justify-center rounded-2xl bg-[#101bb5] shadow-sm ring-1 ring-blue-200">
-                    <KbankPaymentLogo className="w-[82px]" />
-                  </span>
+                  <KbankPaymentLogo />
                   <span className="mt-5 block break-keep text-[21px] font-black leading-tight">
                     계좌송금 하기
                   </span>
@@ -620,9 +616,7 @@ export default function MembershipApplicationClient({
                   <div className="rounded-[18px] bg-[#eef5ff] p-3 ring-1 ring-blue-100 dark:bg-blue-950/20 dark:ring-blue-900/60">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-11 w-[96px] shrink-0 items-center justify-center rounded-2xl bg-white ring-1 ring-blue-100">
-                          <TossPaymentLogo className="w-[76px]" />
-                        </span>
+                        <TossPaymentLogo className="h-10 w-[112px] shrink-0" />
                         <div className="min-w-0">
                           <div className="text-[13px] font-black text-zinc-950 dark:text-white">
                             토스 송금창을 열었어요
@@ -647,9 +641,7 @@ export default function MembershipApplicationClient({
                   <div className="rounded-[18px] bg-white p-3 ring-1 ring-zinc-200 dark:bg-zinc-950 dark:ring-zinc-800">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-10 w-[82px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#101bb5] ring-1 ring-blue-200">
-                          <KbankPaymentLogo className="w-[66px]" />
-                        </span>
+                        <KbankPaymentLogo className="h-10 w-[112px] shrink-0" />
                         <div className="min-w-0">
                           <div className="text-[13px] font-black text-zinc-950 dark:text-zinc-50">
                             계좌송금 정보
