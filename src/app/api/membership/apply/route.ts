@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import {
   getMembershipPlan,
   RENEWAL_UPGRADE_PLANS,
@@ -344,35 +344,15 @@ export async function DELETE(req: Request) {
   const email = application.email ?? auth.user.email ?? "email 없음";
   const nowIso = new Date().toISOString();
 
-  const notifyResult = await notifyAdminTelegram(
-    [
-      "[득템잡이] 선공개 300명 자리 예약 취소",
-      `예약 ID: ${application.id}`,
-      `이름: ${String(name)}`,
-      `이메일: ${email}`,
-      `auth_user_id: ${auth.user.id}`,
-      `user_ref: ${application.user_ref ?? userRef}`,
-      `상품: ${selectedPlan.label} / ${Number(application.price_krw ?? selectedPlan.priceKrw).toLocaleString("ko-KR")}원`,
-      `종류: ${application.application_kind === "renewal" ? "연장 예약" : "신규 신청"}`,
-      "처리: 신청자가 입금 전 예약 취소",
-    ].join("\n"),
-    { parseMode: null },
-  );
-
   const adminNote = [
     previousAdminNote,
     adminNoteLine("user_cancelled_reservation"),
-    notifyResult.ok
-      ? adminNoteLine("telegram_cancel_notified")
-      : adminNoteLine(
-          `telegram_cancel_notify_failed:${notifyResult.reason ?? "unknown"}`,
-        ),
   ]
     .filter(Boolean)
     .join("\n")
     .slice(-1800);
 
-  await restFetch(
+  const cancelRes = await restFetch(
     `${tableUrl("mvp_membership_applications")}?id=eq.${application.id}&status=eq.pending`,
     {
       method: "PATCH",
@@ -386,18 +366,52 @@ export async function DELETE(req: Request) {
     },
   );
 
-  if (!notifyResult.ok) {
-    console.warn("[membership/apply] cancellation telegram notify failed", {
-      applicationId: application.id,
-      reason: notifyResult.reason ?? "unknown",
-    });
+  if (!cancelRes.ok) {
+    return NextResponse.json(
+      { error: "cancel_failed", message: "예약 취소 처리에 실패했어요." },
+      { status: 500 },
+    );
   }
+
+  after(async () => {
+    const notifyResult = await notifyAdminTelegram(
+      [
+        application.application_kind === "renewal"
+          ? "[득템잡이] 멤버십 연장 예약 취소"
+          : "[득템잡이] 선공개 300명 자리 예약 취소",
+        `예약 ID: ${application.id}`,
+        `이름: ${String(name)}`,
+        `이메일: ${email}`,
+        `auth_user_id: ${auth.user.id}`,
+        `user_ref: ${application.user_ref ?? userRef}`,
+        `상품: ${selectedPlan.label} / ${Number(application.price_krw ?? selectedPlan.priceKrw).toLocaleString("ko-KR")}원`,
+        `종류: ${application.application_kind === "renewal" ? "연장 예약" : "신규 신청"}`,
+        "처리: 신청자가 입금 전 예약 취소",
+      ].join("\n"),
+      { parseMode: null },
+    );
+    const notificationLine = notifyResult.ok
+      ? adminNoteLine("telegram_cancel_notified")
+      : adminNoteLine(
+          `telegram_cancel_notify_failed:${notifyResult.reason ?? "unknown"}`,
+        );
+    await updateApplicationAdminNote(
+      application.id,
+      [adminNote, notificationLine].filter(Boolean).join("\n").slice(-1800),
+    );
+
+    if (!notifyResult.ok) {
+      console.warn("[membership/apply] cancellation telegram notify failed", {
+        applicationId: application.id,
+        reason: notifyResult.reason ?? "unknown",
+      });
+    }
+  });
 
   return NextResponse.json({
     ok: true,
     cancelled: true,
     applicationId: application.id,
-    telegramSent: notifyResult.ok,
-    telegramReason: notifyResult.ok ? null : (notifyResult.reason ?? "unknown"),
+    telegramQueued: true,
   });
 }

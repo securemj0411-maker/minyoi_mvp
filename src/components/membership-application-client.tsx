@@ -21,7 +21,7 @@ import {
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { openTossSend } from "@/lib/toss-deeplink";
 
-type ApplyState = "idle" | "submitting" | "sent" | "error";
+type ApplyState = "idle" | "submitting" | "cancelling" | "sent" | "error";
 type DepositNotifyState = "idle" | "sending" | "sent" | "error";
 type PendingApplication = {
   id: number;
@@ -125,6 +125,7 @@ export default function MembershipApplicationClient({
     !pendingApplication &&
     !reservationCancelled &&
     state !== "sent";
+  const isBusy = state === "submitting" || state === "cancelling";
 
   useEffect(() => {
     if (!autoApproveAt && !reservationExpiresAt) return;
@@ -190,13 +191,13 @@ export default function MembershipApplicationClient({
   ]);
 
   function openSelector() {
-    if (state === "submitting") return;
+    if (isBusy) return;
     setMessage(null);
     setSelectorOpen(true);
   }
 
   async function beginApplication(plan: MembershipPlan) {
-    if (state === "submitting") return;
+    if (isBusy) return;
     setSelectorOpen(false);
     void submitApplication(plan);
   }
@@ -214,7 +215,7 @@ export default function MembershipApplicationClient({
   }
 
   async function submitApplication(plan: MembershipPlan) {
-    if (state === "submitting") return;
+    if (isBusy) return;
     if (depositNotifyState === "sent") {
       setMessage(
         "입금 확인 중에는 기간/금액 변경이 막혀요. 필요하면 고객센터로 알려주세요.",
@@ -268,7 +269,7 @@ export default function MembershipApplicationClient({
   }
 
   async function notifyDepositDone() {
-    if (state === "submitting" || depositNotifyState === "sending") return;
+    if (isBusy || depositNotifyState === "sending") return;
     setDepositNotifyState("sending");
     setDepositNotifyMessage(null);
 
@@ -323,7 +324,7 @@ export default function MembershipApplicationClient({
   }
 
   async function cancelReservation() {
-    if (state === "submitting") return;
+    if (isBusy) return;
     if (depositNotifyState === "sent") {
       setMessage(
         "입금 확인 중에는 예약 취소가 막혀요. 필요하면 고객센터로 알려주세요.",
@@ -337,7 +338,7 @@ export default function MembershipApplicationClient({
     );
     if (!confirmed) return;
 
-    setState("submitting");
+    setState("cancelling");
     setMessage(null);
     setSelectorOpen(false);
 
@@ -433,15 +434,23 @@ export default function MembershipApplicationClient({
 
   return (
     <div>
-      {state === "submitting" ? (
+      {isBusy ? (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/38 px-4 backdrop-blur-sm">
           <div className="flex w-full max-w-[300px] flex-col items-center rounded-[24px] border border-blue-100 bg-white px-5 py-6 text-center shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
             <span className="h-9 w-9 animate-spin rounded-full border-4 border-blue-100 border-t-[#3182f6] dark:border-zinc-800 dark:border-t-blue-300" />
             <div className="mt-4 break-keep text-[18px] font-black text-zinc-950 dark:text-zinc-50">
-              {renewalMode ? "연장 예약 중" : "자리 확보 중"}
+              {state === "cancelling"
+                ? renewalMode
+                  ? "연장 취소 중"
+                  : "예약 취소 중"
+                : renewalMode
+                  ? "연장 예약 중"
+                  : "자리 확보 중"}
             </div>
             <p className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
-              선택한 기간으로 예약을 만들고 있어요.
+              {state === "cancelling"
+                ? "입금 전 예약을 취소하고 있어요."
+                : "선택한 기간으로 예약을 만들고 있어요."}
             </p>
           </div>
         </div>
@@ -645,9 +654,7 @@ export default function MembershipApplicationClient({
               <button
                 type="button"
                 onClick={() => void notifyDepositDone()}
-                disabled={
-                  state === "submitting" || depositNotifyState === "sending"
-                }
+                disabled={isBusy || depositNotifyState === "sending"}
                 className="mt-2 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
               >
                 {depositNotifyState === "sending" ? "확인 중" : "입금했어요"}
@@ -671,7 +678,7 @@ export default function MembershipApplicationClient({
                 <button
                   type="button"
                   onClick={openSelector}
-                  disabled={state === "submitting"}
+                  disabled={isBusy}
                   className="h-10 rounded-xl border border-blue-100 bg-blue-50 text-[12px] font-black text-[#3182f6] transition hover:bg-[#ebf2ff] disabled:cursor-default disabled:opacity-60 dark:border-blue-950/70 dark:bg-blue-950/30 dark:text-blue-200"
                 >
                   {renewalMode ? "연장 기간 변경" : "기간/금액 변경"}
@@ -679,7 +686,7 @@ export default function MembershipApplicationClient({
                 <button
                   type="button"
                   onClick={() => void cancelReservation()}
-                  disabled={state === "submitting"}
+                  disabled={isBusy}
                   className="h-10 rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-600 transition hover:bg-zinc-50 disabled:cursor-default disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300"
                 >
                   {renewalMode ? "연장 취소" : "예약 취소"}
@@ -704,11 +711,13 @@ export default function MembershipApplicationClient({
             onClick={
               hasReservation ? () => setPaymentModalOpen(true) : openSelector
             }
-            disabled={state === "submitting"}
+            disabled={isBusy}
             className="flex h-11 items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
           >
-            {state === "submitting"
-              ? "연장 예약 중"
+            {isBusy
+              ? state === "cancelling"
+                ? "연장 취소 중"
+                : "연장 예약 중"
               : hasReservation
                 ? depositNotifyState === "sent"
                   ? "승인 대기 보기"
@@ -744,18 +753,18 @@ export default function MembershipApplicationClient({
               plans={plans}
               selectedKey={selectedKey}
               onSelect={setSelectedKey}
-              disabled={state === "submitting"}
+              disabled={isBusy}
             />
             <button
               type="button"
               onClick={() => void beginApplication(selectedPlan)}
-              disabled={state === "submitting"}
+              disabled={isBusy}
               className="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+10px)] z-[130] mx-auto flex h-12 max-w-[760px] items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[15px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.30)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70 sm:static sm:mt-3 sm:max-w-none"
             >
-              {state === "submitting" ? (
+              {isBusy ? (
                 <span className="inline-flex items-center gap-2">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/35 border-t-white" />
-                  자리 확보 중
+                  {state === "cancelling" ? "예약 취소 중" : "자리 확보 중"}
                 </span>
               ) : (
                 `${selectedPlan.label}로 자리 확보하기`
@@ -770,11 +779,13 @@ export default function MembershipApplicationClient({
             onClick={
               hasReservation ? () => setPaymentModalOpen(true) : openSelector
             }
-            disabled={state === "submitting"}
+            disabled={isBusy}
             className="flex h-11 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
           >
-            {state === "submitting"
-              ? "자리 예약 중"
+            {isBusy
+              ? state === "cancelling"
+                ? "예약 취소 중"
+                : "자리 예약 중"
               : hasReservation
                 ? depositNotifyState === "sent"
                   ? "승인 대기 보기"
@@ -787,11 +798,13 @@ export default function MembershipApplicationClient({
               onClick={
                 hasReservation ? () => setPaymentModalOpen(true) : openSelector
               }
-              disabled={state === "submitting"}
+              disabled={isBusy}
               className="fixed inset-x-3 bottom-3 z-40 flex h-12 items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_18px_45px_rgba(49,130,246,0.34)] ring-1 ring-white/30 transition hover:opacity-90 disabled:cursor-default disabled:opacity-70 sm:hidden"
             >
-              {state === "submitting"
-                ? "자리 예약 중"
+              {isBusy
+                ? state === "cancelling"
+                  ? "예약 취소 중"
+                  : "자리 예약 중"
                 : hasReservation
                   ? depositNotifyState === "sent"
                     ? "승인 대기 보기"
@@ -839,7 +852,7 @@ export default function MembershipApplicationClient({
                 plans={plans}
                 selectedKey={selectedKey}
                 onSelect={setSelectedKey}
-                disabled={state === "submitting"}
+                disabled={isBusy}
               />
             </div>
             <div className="mt-4 grid grid-cols-[0.8fr_1.2fr] gap-2">
@@ -853,13 +866,13 @@ export default function MembershipApplicationClient({
               <button
                 type="button"
                 onClick={() => void beginApplication(selectedPlan)}
-                disabled={state === "submitting"}
+                disabled={isBusy}
                 className="h-11 rounded-xl bg-[var(--brand-accent-strong)] text-[12px] font-black text-[var(--brand-cream)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
               >
-                {state === "submitting" ? (
+                {isBusy ? (
                   <span className="inline-flex items-center justify-center gap-2">
                     <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/35 border-t-white" />
-                    처리 중
+                    {state === "cancelling" ? "취소 중" : "처리 중"}
                   </span>
                 ) : (
                   <>
