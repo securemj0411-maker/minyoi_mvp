@@ -49,6 +49,19 @@ type MembershipStatusResponse = {
   } | null;
 };
 
+const PLAN_SELECTION_PROOF_NAMES = [
+  "김**님",
+  "박**님",
+  "최**님",
+  "정**님",
+  "강**님",
+  "윤**님",
+  "서**님",
+  "송**님",
+];
+
+const PLAN_SELECTION_PROOF_MINUTES = [6, 14];
+
 function countdownLabel(ms: number) {
   const safeMs = Math.max(0, ms);
   const totalSec = Math.ceil(safeMs / 1000);
@@ -445,6 +458,8 @@ export default function MembershipApplicationClient({
     hasReservation && !renewalMode && depositNotifyState !== "sent";
   const showPaymentDetails =
     showDepositCountdown || selectedPaymentMethod !== null;
+  const showPlanSelectionProof =
+    !renewalMode && !hasReservation && (selectorOpen || showInlineSelector);
 
   function goToFeed() {
     router.replace("/me");
@@ -452,6 +467,7 @@ export default function MembershipApplicationClient({
 
   return (
     <div>
+      <PlanSelectionProofToast active={showPlanSelectionProof} />
       {isBusy ? (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/38 px-4 backdrop-blur-sm">
           <div className="flex w-full max-w-[300px] flex-col items-center rounded-[24px] border border-blue-100 bg-white px-5 py-6 text-center shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
@@ -990,6 +1006,63 @@ export default function MembershipApplicationClient({
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function PlanSelectionProofToast({ active }: { active: boolean }) {
+  const [index, setIndex] = useState(-1);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!active) {
+      setVisible(false);
+      return;
+    }
+    const timers: number[] = [];
+    const showAt = (nextIndex: number) => {
+      setIndex(nextIndex);
+      setVisible(true);
+      timers.push(window.setTimeout(() => setVisible(false), 7200));
+    };
+
+    timers.push(window.setTimeout(() => showAt(0), 1200));
+    timers.push(window.setTimeout(() => showAt(1), 15_800));
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, [active]);
+
+  if (!active || index < 0 || index >= PLAN_SELECTION_PROOF_MINUTES.length) {
+    return null;
+  }
+
+  return (
+    <div
+      aria-live="polite"
+      className={`fixed left-3 right-3 top-[calc(env(safe-area-inset-top)+14px)] z-[120] mx-auto max-w-[460px] transition-all duration-700 ease-out sm:left-auto sm:right-8 sm:top-8 sm:mx-0 ${
+        visible
+          ? "translate-y-0 scale-100 opacity-100"
+          : "-translate-y-3 scale-[0.98] opacity-0 pointer-events-none"
+      }`}
+    >
+      <div className="rounded-2xl border border-rose-200 bg-white/98 px-4 py-3.5 shadow-[0_20px_54px_rgba(244,63,94,0.24)] backdrop-blur dark:border-rose-400/30 dark:bg-zinc-950/96">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-500 text-[15px] font-black text-white shadow-[0_12px_28px_rgba(244,63,94,0.34)]">
+            ✓
+          </div>
+          <div className="min-w-0">
+            <div className="break-keep text-[13px] font-black leading-5 text-zinc-950 dark:text-white">
+              {PLAN_SELECTION_PROOF_NAMES[index]}이{" "}
+              {PLAN_SELECTION_PROOF_MINUTES[index]}분 전에 멤버십에 가입해
+              1자리를 확보했어요.
+            </div>
+            <div className="mt-1 break-keep text-[11px] font-black text-rose-600 dark:text-rose-200">
+              기간 선택 중에도 선착순 지역 티오는 계속 줄어듭니다.
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
