@@ -6,6 +6,10 @@
 - 같은 `daangn_full_path`와 같은 source/budget/sort/preference/pageSize 조합이면, 한 사용자가 만든 피드 결과를 다음 같은 지역 사용자가 즉시 읽는다.
 - 스냅샷은 기존 `buildItems()`가 만든 실제 카드 payload를 그대로 저장한다. 카드 필드 재해석/새 포맷 도입은 하지 않았다.
 - 빈 결과는 저장하지 않는다. 지난 wave처럼 quick path 0건이 “없는 피드”로 고정되는 사고를 막기 위함이다.
+- 스냅샷 hit라도 그대로 반환하지 않고, 반환 직전에 `mvp_candidate_pool` + `mvp_raw_listings`로 live 상태를 재검증한다.
+  - 일반 카드는 `candidate_pool.status=ready`, `raw.listing_state=active`, `raw.detail_status=done`일 때만 유지한다.
+  - 판매완료 카드는 raw 상태가 `sold_confirmed` 또는 `disappeared`일 때만 유지한다.
+  - 캐시 안 카드가 하나라도 탈락하면 snapshot을 쓰지 않고 기존 live build 경로로 내려간다. 캐시 hit 때문에 유효 후보가 줄어 보이는 일을 막기 위함이다.
 
 ## 구현
 
@@ -17,8 +21,10 @@
 - `/api/packs/pool` 동작:
   1. refresh/excludePids가 없고 home region이 있으면 snapshot 조회
   2. hit면 기존 pool 조립을 건너뛰고 즉시 반환
-  3. miss면 기존 조립 로직으로 items 생성
-  4. items가 1개 이상이면 snapshot upsert
+  3. hit payload를 live 상태로 필터링하고, 모든 카드가 통과할 때만 반환
+  4. miss 또는 live 필터 0건이면 기존 조립 로직으로 items 생성
+  5. items가 1개 이상이면 snapshot upsert
+- snapshot upsert는 `return=minimal`로 저장해서 응답 본문 비용을 줄인다.
 - 당근 예산 필터 raw lookup을 위해 `mvp_raw_daangn_active_done_region_price_last_seen_idx`를 추가했다.
 
 ## 보류

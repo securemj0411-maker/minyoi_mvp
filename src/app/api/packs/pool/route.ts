@@ -23,6 +23,7 @@ import { teaserBudgetRangeLabel } from "@/lib/feed-price-display";
 import { marketStatsConditionKey } from "@/lib/pack-open";
 import {
   canUseFeedSnapshot,
+  filterFeedSnapshotItemsByLiveState,
   readFeedSnapshot,
   writeFeedSnapshot,
   type FeedSnapshotContext,
@@ -1832,41 +1833,60 @@ export async function GET(req: Request) {
         return null;
       });
       if (cached && cached.items.length > 0) {
-        const responseElapsedMs = Date.now() - requestStartedAt;
-        if (responseElapsedMs >= 1_200 || process.env.FEED_DEBUG_LOG === "1") {
-          console.info("[pool] response", {
-            elapsedMs: responseElapsedMs,
-            quickPage,
-            refresh,
-            source,
-            sort,
-            appliedBudget,
-            responsePageSize,
-            returnedItems: cached.items.length,
-            feedSnapshotHit: true,
-            feedSnapshotUpdatedAt: cached.updatedAt,
-          });
-        }
-        return NextResponse.json({
-          items: cached.items,
-          cooldown: feedCooldown,
-          feedMode: "membership",
-          creditFeed: false,
-          detailAccess,
-          total: cached.items.length,
-          pageSize: responsePageSize,
-          freshLagHours: FRESH_LAG_HOURS,
-          debug: isAdminUser(auth.user) ? {
-            feedSnapshot: {
-              hit: true,
+        const liveCachedItems = await filterFeedSnapshotItemsByLiveState(cached.items, headers).catch((err) => {
+          console.warn("[pool] feed snapshot live validation failed", err instanceof Error ? err.message : String(err));
+          return [];
+        });
+        const droppedCachedItemCount = cached.items.length - liveCachedItems.length;
+        if (droppedCachedItemCount > 0) {
+          if (process.env.FEED_DEBUG_LOG === "1") {
+            console.info("[pool] feed snapshot dropped stale items; falling back to live build", {
               cacheKey: cached.cacheKey,
-              updatedAt: cached.updatedAt,
-              expiresAt: cached.expiresAt,
-              itemCount: cached.itemCount,
-            },
-          } : undefined,
-          appliedBudget,
-        }, { headers: { "Cache-Control": "no-store" } });
+              cachedItems: cached.items.length,
+              liveItems: liveCachedItems.length,
+              droppedItems: droppedCachedItemCount,
+            });
+          }
+        } else if (liveCachedItems.length > 0) {
+          const responseElapsedMs = Date.now() - requestStartedAt;
+          if (responseElapsedMs >= 1_200 || process.env.FEED_DEBUG_LOG === "1") {
+            console.info("[pool] response", {
+              elapsedMs: responseElapsedMs,
+              quickPage,
+              refresh,
+              source,
+              sort,
+              appliedBudget,
+              responsePageSize,
+              returnedItems: liveCachedItems.length,
+              feedSnapshotHit: true,
+              feedSnapshotUpdatedAt: cached.updatedAt,
+              feedSnapshotDroppedItems: droppedCachedItemCount,
+            });
+          }
+          return NextResponse.json({
+            items: liveCachedItems,
+            cooldown: feedCooldown,
+            feedMode: "membership",
+            creditFeed: false,
+            detailAccess,
+            total: liveCachedItems.length,
+            pageSize: responsePageSize,
+            freshLagHours: FRESH_LAG_HOURS,
+            debug: isAdminUser(auth.user) ? {
+              feedSnapshot: {
+                hit: true,
+                cacheKey: cached.cacheKey,
+                updatedAt: cached.updatedAt,
+                expiresAt: cached.expiresAt,
+                itemCount: cached.itemCount,
+                liveItemCount: liveCachedItems.length,
+                droppedItemCount: droppedCachedItemCount,
+              },
+            } : undefined,
+            appliedBudget,
+          }, { headers: { "Cache-Control": "no-store" } });
+        }
       }
     }
     let items: ReturnType<typeof buildItems> = [];
