@@ -3460,13 +3460,13 @@ export default function ExploreClient({
 
   function renderFeedSecondaryActions() {
     return (
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div className="grid gap-2 sm:grid-cols-[1fr_1.15fr]">
         {source === "daangn" || sort === "distance" ? (
           <button
             type="button"
             onClick={expandToAllMarketplaces}
             disabled={refreshing}
-            className="min-h-12 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm font-black text-zinc-900 shadow-sm transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-900"
+            className="min-h-12 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm font-black text-zinc-700 shadow-sm transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-900"
           >
             중고나라·번개장터까지 보기
           </button>
@@ -3482,7 +3482,7 @@ export default function ExploreClient({
         )}
         <Link
           href="/me?view=hotdeal-alerts"
-          className="min-h-12 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm font-black text-emerald-800 shadow-sm transition hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/70 dark:text-emerald-200"
+          className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-[#3182f6] px-4 py-3 text-center text-[15px] font-black text-white shadow-[0_14px_30px_rgba(49,130,246,0.28)] ring-1 ring-blue-400/20 transition hover:bg-[#1c6fe8] active:scale-[0.99] dark:bg-blue-500 dark:text-white dark:shadow-[0_14px_30px_rgba(59,130,246,0.24)] dark:hover:bg-blue-400"
         >
           새매물 알림 받기
         </Link>
