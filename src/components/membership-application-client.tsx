@@ -9,11 +9,13 @@ import {
   type MembershipPlan,
   type MembershipPlanKey,
 } from "@/lib/membership-plans";
+import {
+  PAYMENT_ACCOUNT_HOLDER,
+  PAYMENT_ACCOUNT_NUMBER,
+  PAYMENT_BANK_NAME,
+} from "@/lib/payment-account";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
-
-const BANK_NAME = "케이뱅크";
-const ACCOUNT_NUMBER = "100300138855";
-const ACCOUNT_HOLDER = "더빙나우";
+import { openTossSend } from "@/lib/toss-deeplink";
 
 type ApplyState = "idle" | "submitting" | "sent" | "error";
 type DepositNotifyState = "idle" | "sending" | "sent" | "error";
@@ -192,7 +194,9 @@ export default function MembershipApplicationClient({
 
   async function copyAccountNumber() {
     try {
-      await navigator.clipboard.writeText(ACCOUNT_NUMBER.replaceAll("-", ""));
+      await navigator.clipboard.writeText(
+        PAYMENT_ACCOUNT_NUMBER.replaceAll("-", ""),
+      );
       setCopyOk(true);
       window.setTimeout(() => setCopyOk(false), 1800);
     } catch {
@@ -532,16 +536,27 @@ export default function MembershipApplicationClient({
               </p>
             ) : null}
             <div className="mt-2 rounded-[16px] bg-[#f5f7fb] p-3 dark:bg-zinc-900/70">
+              <button
+                type="button"
+                onClick={() => openTossSend(priceKrw)}
+                disabled={depositNotifyState === "sent"}
+                className="mb-3 flex h-11 w-full items-center justify-center rounded-2xl bg-[#3182f6] px-4 text-[13px] font-black text-white shadow-[0_10px_22px_rgba(49,130,246,0.24)] transition hover:bg-[#1c6fe8] disabled:cursor-default disabled:opacity-60"
+              >
+                토스로 바로 송금하기
+              </button>
+              <p className="mb-3 break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400">
+                토스가 안 열리면 아래 계좌로 직접 입금해 주세요.
+              </p>
               <div className="flex items-center justify-between gap-2">
                 <div>
                   <div className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
-                    {BANK_NAME}
+                    {PAYMENT_BANK_NAME}
                   </div>
                   <div className="mt-1 font-black tabular-nums text-[18px] tracking-tight text-zinc-950 dark:text-zinc-50">
-                    {ACCOUNT_NUMBER}
+                    {PAYMENT_ACCOUNT_NUMBER}
                   </div>
                   <div className="mt-1 text-[12px] font-bold text-zinc-700 dark:text-zinc-300">
-                    예금주 {ACCOUNT_HOLDER}
+                    예금주 {PAYMENT_ACCOUNT_HOLDER}
                   </div>
                 </div>
                 <button

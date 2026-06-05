@@ -36,10 +36,16 @@ import {
   type MembershipPlan,
   type MembershipPlanKey,
 } from "@/lib/membership-plans";
+import {
+  PAYMENT_ACCOUNT_HOLDER,
+  PAYMENT_ACCOUNT_NUMBER,
+  PAYMENT_BANK_NAME,
+} from "@/lib/payment-account";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { daangnFeedLocationLabel } from "@/lib/trade-location-label";
+import { openTossSend } from "@/lib/toss-deeplink";
 
 // Wave 338+339 (Phase 1a + 1b — /explore):
 // 매물 풀 browsing. 현재 피드는 승인된 멤버십 사용자에게 실제 매입가/시세까지 공개.
@@ -267,10 +273,6 @@ function countdownLabel(ms: number) {
   const seconds = totalSec % 60;
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
-
-const BANK_NAME = "케이뱅크";
-const ACCOUNT_NUMBER = "100300138855";
-const ACCOUNT_HOLDER = "더빙나우";
 
 function upgradeTargetLabel(plan: MembershipPlan) {
   const targetMonths = plan.upgradeTargetMonths ?? plan.months;
@@ -715,15 +717,27 @@ function FeedMembershipUpsellCard({
                     제안 수락 완료 · 계좌이체 대기
                   </div>
                   <div className="rounded-lg bg-white px-3 py-2 text-[12px] font-bold leading-5 text-zinc-700 dark:bg-zinc-950 dark:text-zinc-200">
-                    {BANK_NAME} <b className="font-black">{ACCOUNT_NUMBER}</b>
+                    {PAYMENT_BANK_NAME}{" "}
+                    <b className="font-black">{PAYMENT_ACCOUNT_NUMBER}</b>
                     <br />
-                    예금주 {ACCOUNT_HOLDER}
+                    예금주 {PAYMENT_ACCOUNT_HOLDER}
                     <br />
                     입금 금액{" "}
                     <b className="text-emerald-700 dark:text-emerald-300">
                       {membershipKrw(reservation.plan.priceKrw)}
                     </b>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => openTossSend(reservation.plan.priceKrw)}
+                    disabled={requestState === "deposit_sent"}
+                    className="flex h-11 items-center justify-center rounded-xl bg-[#3182f6] px-4 text-[13px] font-black text-white transition hover:bg-[#1c6fe8] disabled:cursor-default disabled:opacity-60"
+                  >
+                    토스로 바로 송금하기
+                  </button>
+                  <p className="break-keep text-[11px] font-bold leading-4 text-emerald-700 dark:text-emerald-300">
+                    토스가 안 열리면 위 계좌로 직접 입금해 주세요.
+                  </p>
                   <button
                     type="button"
                     onClick={() => void notifyDepositDone()}

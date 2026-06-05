@@ -15,12 +15,13 @@ import { useEffect, useState } from "react";
 
 import { displayNameForUser } from "@/lib/auth-users";
 import { formatKrw, planForKey, type PlanKey } from "@/lib/plan-config";
+import {
+  PAYMENT_ACCOUNT_HOLDER,
+  PAYMENT_ACCOUNT_NUMBER,
+  PAYMENT_ACCOUNT_RAW,
+  PAYMENT_BANK_NAME,
+} from "@/lib/payment-account";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
-
-const BANK_NAME = "케이뱅크";
-const ACCOUNT_NUMBER = "100300138855";
-const ACCOUNT_RAW = "100300138855";
-const ACCOUNT_HOLDER = "더빙나우";
 // Wave 775 (2026-05-27): toss-deeplink helper 는 src/lib/toss-deeplink.ts 로 이동.
 
 const CREDIT_PACKAGE_TO_PLAN: Record<string, Exclude<PlanKey, "free">> = {
@@ -170,7 +171,7 @@ export default function ManualDepositClient() {
 
   async function copyAccountNumber() {
     try {
-      await navigator.clipboard.writeText(ACCOUNT_RAW);
+      await navigator.clipboard.writeText(PAYMENT_ACCOUNT_RAW);
       setCopyOk(true);
       window.setTimeout(() => setCopyOk(false), 1600);
     } catch {
@@ -272,10 +273,10 @@ export default function ManualDepositClient() {
           <div className="text-[13px] font-black text-zinc-950 dark:text-zinc-50">아래 계좌로 입금해주세요</div>
 
           <div className="mt-3 rounded-[14px] bg-[#f5f7fb] p-3 dark:bg-zinc-950/55">
-            <div className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">{BANK_NAME}</div>
+            <div className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">{PAYMENT_BANK_NAME}</div>
             <div className="mt-1 flex items-center justify-between gap-2">
               <div className="font-black tabular-nums text-[20px] tracking-tight text-zinc-950 dark:text-zinc-50">
-                {ACCOUNT_NUMBER}
+                {PAYMENT_ACCOUNT_NUMBER}
               </div>
               <button
                 type="button"
@@ -295,7 +296,7 @@ export default function ManualDepositClient() {
                 )}
               </button>
             </div>
-            <div className="mt-1 text-[12px] font-bold text-zinc-700 dark:text-zinc-300">예금주 {ACCOUNT_HOLDER}</div>
+            <div className="mt-1 text-[12px] font-bold text-zinc-700 dark:text-zinc-300">예금주 {PAYMENT_ACCOUNT_HOLDER}</div>
             {copyOk ? (
               <div className="mt-2 text-[11px] font-black text-[#3182f6] dark:text-blue-300">계좌번호가 복사됐어요</div>
             ) : null}

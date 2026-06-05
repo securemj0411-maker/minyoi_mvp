@@ -10,6 +10,8 @@
 // Wave 776d (2026-05-27): owner 가 패키지별 5개 QR 직접 발급 + share.
 //   amount → URL lookup table 로 처리. amount 없거나 unknown 이면 base URL fallback.
 
+import { PAYMENT_ACCOUNT_RAW, PAYMENT_BANK_NAME } from "@/lib/payment-account";
+
 // 변동 금액 QR (fallback) — owner 일반 송금 QR
 const KAKAOPAY_BASE_QR_ID = "281006020758065968058098";
 export const KAKAOPAY_QR_BASE_URL = `https://qr.kakaopay.com/${KAKAOPAY_BASE_QR_ID}`;
@@ -34,10 +36,11 @@ export function buildKakaopayQrUrl(amount: number): string {
   return KAKAOPAY_QR_BY_AMOUNT[amount] ?? KAKAOPAY_QR_BASE_URL;
 }
 
-const TOSS_BANK_PARAM = "케이뱅크";
-const ACCOUNT_RAW = "100300138855";
+const TOSS_BANK_PARAM = PAYMENT_BANK_NAME;
+const ACCOUNT_RAW = PAYMENT_ACCOUNT_RAW;
 export const TOSS_APP_STORE_URL = "https://apps.apple.com/kr/app/id839333328";
-export const TOSS_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=viva.republica.toss";
+export const TOSS_PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=viva.republica.toss";
 
 export function buildTossDeepLink(amount: number): string {
   const params = new URLSearchParams({
