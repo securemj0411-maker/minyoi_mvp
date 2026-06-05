@@ -59,7 +59,7 @@ import { openTossSend } from "@/lib/toss-deeplink";
 // 현재 정책은 승인형 멤버십 게이트이므로 기본 free limit 은 0이다.
 const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 0;
 const INITIAL_FEED_PAGE_SIZE = 6;
-const BACKGROUND_FEED_PAGE_SIZE = 24;
+const BACKGROUND_FEED_PAGE_SIZE = 30;
 
 type PoolItem = {
   pid: number;
