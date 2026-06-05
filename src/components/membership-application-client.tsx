@@ -699,20 +699,14 @@ export default function MembershipApplicationClient({
         </div>
       ) : null}
       {renewalMode ? (
-        <div className="grid gap-2 sm:grid-cols-[1fr_1.15fr]">
-          <Link
-            href="/me"
-            className="flex h-11 items-center justify-center rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
-          >
-            상품 피드 보기
-          </Link>
+        <div className="grid gap-2">
           <button
             type="button"
             onClick={
               hasReservation ? () => setPaymentModalOpen(true) : openSelector
             }
             disabled={isBusy}
-            className="flex h-11 items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[13px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+            className="flex h-14 items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[16px] font-black text-[var(--brand-cream)] shadow-[0_18px_42px_rgba(49,130,246,0.28)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
           >
             {isBusy
               ? state === "cancelling"
@@ -724,6 +718,12 @@ export default function MembershipApplicationClient({
                   : "입금 이어하기"
                 : "멤버십 연장하기"}
           </button>
+          <Link
+            href="/me"
+            className="flex h-11 items-center justify-center rounded-xl border border-zinc-200 bg-white text-[12px] font-black text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+          >
+            지금 매물 보러가기
+          </Link>
         </div>
       ) : showInlineSelector ? (
         <div className="overflow-hidden rounded-[26px] border border-blue-100 bg-white text-zinc-950 shadow-[0_24px_70px_rgba(49,130,246,0.16)] ring-1 ring-blue-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:ring-white/10">
