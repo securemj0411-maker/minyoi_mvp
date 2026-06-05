@@ -87,6 +87,9 @@ After deploying commit `cacfc656`:
   - status: `healthy`
   - reason: `ok`
   - checked_at: 2026-06-05T22:19:14Z
+- Automatic schedule also recovered:
+  - `/api/cron/daangn-worker` started a new collect run at 2026-06-05T22:23:13Z
+  - status at check time: `running`
 - Immediate ready snapshot after the run:
   - daangn: 2,845
   - bunjang: 957
@@ -98,6 +101,5 @@ Ready count is not expected to jump instantly; the new raw rows still need detai
 
 After deploy:
 
-1. Watch automatic `daangn_worker` ticks after the next 5-minute schedule.
-2. Recheck source-ready counts after several score/lifecycle cycles; ready should recover gradually if ingest produces valid, market-supported rows.
-3. Consider a source-health probe route/worker so source health can refresh independently without needing the full heavy worker to run.
+1. Recheck source-ready counts after several score/lifecycle cycles; ready should recover gradually if ingest produces valid, market-supported rows.
+2. Consider a source-health probe route/worker so source health can refresh independently without needing the full heavy worker to run.
