@@ -3458,6 +3458,16 @@ export default function ExploreClient({
     });
   }
 
+  function refreshNearbyDaangnFeed() {
+    setSource("daangn");
+    setSort("distance");
+    setScrapOnly(false);
+    void loadPool(false, {
+      serverSource: "daangn",
+      serverSort: "distance",
+    });
+  }
+
   function renderFeedSecondaryActions() {
     return (
       <div className="grid gap-2 sm:grid-cols-[1fr_1.15fr]">
@@ -4368,14 +4378,18 @@ export default function ExploreClient({
                   ? budgetFilter !== "all"
                     ? `${budgetOption.label} 조건은 오늘 여기까지예요`
                     : "오늘 볼 수 있는 추천 매물은 여기까지예요"
-                  : "더 찾아보면 새 후보가 이어져요"}
+                  : isDaangnFocusedView
+                    ? "근처 당근 후보를 다시 확인해요"
+                    : "더 찾아보면 새 후보가 이어져요"}
               </div>
               <div className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 {feedExhausted
                   ? budgetFilter !== "all"
                     ? `${budgetOption.label}에서 수익, 시세, 상태 조건을 통과한 후보만 남긴 결과예요. 가격대를 넓히면 더 볼 수 있어요.`
                     : "수익, 시세, 상태 조건을 통과한 매물만 남긴 결과예요."
-                  : "새로 잡힌 후보가 있으면 아래에 이어서 붙어요."}
+                  : isDaangnFocusedView
+                    ? "내 동네 기준으로 다시 훑어서 새로 잡힌 당근 후보가 있는지 확인해요."
+                    : "새로 잡힌 후보가 있으면 아래에 이어서 붙어요."}
               </div>
               {feedExhausted && budgetFilter !== "all" ? (
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -4453,6 +4467,10 @@ export default function ExploreClient({
           <button
             type="button"
             onClick={() => {
+              if (isDaangnFocusedView) {
+                refreshNearbyDaangnFeed();
+                return;
+              }
               if (canRefresh) {
                 void loadPool(true, {
                   serverSource: currentServerSourceFilter,
@@ -4461,11 +4479,15 @@ export default function ExploreClient({
                 setRefreshModalOpen(true);
               }
             }}
-            disabled={refreshing}
+            disabled={refreshing || (isDaangnFocusedView && loading)}
             className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--brand-accent-strong)] px-6 py-3.5 text-base font-bold text-[var(--brand-cream)] shadow-[0_20px_44px_rgba(15,23,42,0.38),0_4px_12px_rgba(15,23,42,0.20)] ring-1 ring-white/10 transition active:scale-[0.97] hover:translate-y-[-1px] hover:shadow-[0_24px_48px_rgba(15,23,42,0.42)] sm:min-h-0 sm:py-3 sm:text-sm sm:shadow-[0_16px_34px_rgba(15,23,42,0.32)]"
           >
             <SearchIcon className="h-4 w-4" />
-            {refreshing ? "가져오는 중..." : "더 찾아보기"}
+            {refreshing || (isDaangnFocusedView && loading)
+              ? "확인 중..."
+              : isDaangnFocusedView
+                ? "근처 매물 새로고침"
+                : "더 찾아보기"}
           </button>
         </div>
       ) : null}
