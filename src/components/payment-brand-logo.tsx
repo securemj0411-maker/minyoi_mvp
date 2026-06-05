@@ -8,14 +8,18 @@ export function TossPaymentLogo({
   className?: string;
 }) {
   return (
-    <Image
-      src="/payment/toss-logo.png"
-      alt="Toss"
-      width={104}
-      height={52}
-      className={`h-auto object-contain ${className}`}
-      priority={false}
-    />
+    <span
+      className={`inline-flex items-center justify-center rounded-lg bg-white px-1.5 py-1 ring-1 ring-zinc-100 ${className}`}
+    >
+      <Image
+        src="/payment/toss-logo.png"
+        alt="Toss"
+        width={104}
+        height={52}
+        className="h-auto w-full object-contain"
+        priority={false}
+      />
+    </span>
   );
 }
 
