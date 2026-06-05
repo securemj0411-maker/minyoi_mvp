@@ -10,6 +10,7 @@
   - 일반 카드는 `candidate_pool.status=ready`, `raw.listing_state=active`, `raw.detail_status=done`일 때만 유지한다.
   - 판매완료 카드는 raw 상태가 `sold_confirmed` 또는 `disappeared`일 때만 유지한다.
   - 캐시 안 카드가 하나라도 탈락하면 snapshot을 쓰지 않고 기존 live build 경로로 내려간다. 캐시 hit 때문에 유효 후보가 줄어 보이는 일을 막기 위함이다.
+- 브라우저 localStorage 피드 스냅샷도 지역 단위로 묶었다. 서버 캐시는 지역 key가 있는데 클라이언트 캐시는 지역 key가 없으면, 사용자가 동네를 바꾼 직후 예전 동네 카드가 먼저 보일 수 있기 때문이다.
 
 ## 구현
 
@@ -25,6 +26,8 @@
   4. miss 또는 live 필터 0건이면 기존 조립 로직으로 items 생성
   5. items가 1개 이상이면 snapshot upsert
 - snapshot upsert는 `return=minimal`로 저장해서 응답 본문 비용을 줄인다.
+- 클라이언트 snapshot key에 home region을 추가했고, home region을 아직 모르면 local snapshot을 읽거나 쓰지 않는다.
+- 클라이언트 snapshot TTL은 2분에서 45초로 줄였다. 이 snapshot은 “첫 화면 체감 속도 힌트”일 뿐이고, 최종 데이터는 서버 응답으로 즉시 교체된다.
 - 당근 예산 필터 raw lookup을 위해 `mvp_raw_daangn_active_done_region_price_last_seen_idx`를 추가했다.
 
 ## 보류

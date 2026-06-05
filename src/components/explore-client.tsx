@@ -1321,7 +1321,7 @@ const FIRST_FEED_ONBOARDING_STORAGE_KEY = "minyoi_first_feed_value_hook_v1";
 const FEED_BUDGET_FILTER_STORAGE_KEY = "minyoi_feed_budget_filter_v1";
 const DETAIL_ACCESS_SNAPSHOT_STORAGE_KEY = "minyoi_detail_access_snapshot_v1";
 const FEED_SNAPSHOT_STORAGE_KEY = "minyoi_feed_snapshot_v2";
-const FEED_SNAPSHOT_TTL_MS = 2 * 60_000;
+const FEED_SNAPSHOT_TTL_MS = 45_000;
 const FEED_SNAPSHOT_MAX_ITEMS = 80;
 const MAX_LOCAL_SCRAP_SNAPSHOTS = 500;
 
@@ -1334,15 +1334,19 @@ function feedSnapshotStorageKey(
   options: {
     budget: BudgetFilterOption;
     extendedMarketplaces?: boolean;
+    regionKey?: string | null;
     source: SourceOption | null;
     sort: SortOption | null;
   },
 ) {
+  const regionKey = options.regionKey?.trim();
+  if (!regionKey) return null;
   const sourceKey = options.source ?? "all";
   const sortKey = options.sort ?? "profit_desc";
   const marketKey = options.extendedMarketplaces ? "extended" : "base";
+  const regionKeyPart = encodeURIComponent(regionKey);
   return scopedStorageKey(
-    `${FEED_SNAPSHOT_STORAGE_KEY}:${sourceKey}:${sortKey}:${options.budget}:${marketKey}`,
+    `${FEED_SNAPSHOT_STORAGE_KEY}:${regionKeyPart}:${sourceKey}:${sortKey}:${options.budget}:${marketKey}`,
     storageScope,
   );
 }
@@ -1352,15 +1356,16 @@ function readFeedSnapshot(
   options: {
     budget: BudgetFilterOption;
     extendedMarketplaces?: boolean;
+    regionKey?: string | null;
     source: SourceOption | null;
     sort: SortOption | null;
   },
 ): PoolItem[] | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(
-      feedSnapshotStorageKey(storageScope, options),
-    );
+    const key = feedSnapshotStorageKey(storageScope, options);
+    if (!key) return null;
+    const raw = window.localStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as {
       items?: PoolItem[];
@@ -1386,6 +1391,7 @@ function writeFeedSnapshot(
   options: {
     budget: BudgetFilterOption;
     extendedMarketplaces?: boolean;
+    regionKey?: string | null;
     source: SourceOption | null;
     sort: SortOption | null;
   },
@@ -1393,13 +1399,12 @@ function writeFeedSnapshot(
 ) {
   if (typeof window === "undefined" || items.length === 0) return;
   try {
-    window.localStorage.setItem(
-      feedSnapshotStorageKey(storageScope, options),
-      JSON.stringify({
-        items: items.slice(0, FEED_SNAPSHOT_MAX_ITEMS),
-        savedAt: Date.now(),
-      }),
-    );
+    const key = feedSnapshotStorageKey(storageScope, options);
+    if (!key) return;
+    window.localStorage.setItem(key, JSON.stringify({
+      items: items.slice(0, FEED_SNAPSHOT_MAX_ITEMS),
+      savedAt: Date.now(),
+    }));
   } catch {
     // ignore — snapshot is only a perceived-speed hint.
   }
@@ -2895,9 +2900,14 @@ export default function ExploreClient({
       const serverSort =
         options?.serverSort ??
         (sortRef.current === "distance" ? "distance" : null);
+      const regionKey =
+        homeRegion?.daangn_full_path?.trim() ||
+        homeRegion?.daangn_region_name?.trim() ||
+        null;
       const snapshotOptions = {
         budget: budgetFilter,
         extendedMarketplaces: options?.extendedMarketplaces === true,
+        regionKey,
         source: serverSource,
         sort: serverSort ?? sortRef.current,
       };
@@ -3014,7 +3024,7 @@ export default function ExploreClient({
         setLoading(false);
       }
     },
-    [budgetFilter, storageScope],
+    [budgetFilter, homeRegion?.daangn_full_path, homeRegion?.daangn_region_name, storageScope],
   );
 
   const loadStats = useCallback(async () => {
