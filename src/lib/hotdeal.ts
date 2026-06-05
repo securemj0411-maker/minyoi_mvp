@@ -278,19 +278,18 @@ function buildAlertText(pid: number, c: AlertContent, opts: { adminShadow?: bool
   }
 
   return [
-    "🔥 *핫딜 매물 도착*",
+    "🔔 *새매물 알림*",
     "",
     `차익  · *${escapeMd(`+₩${profitKrw} (${pct}%)`)}*`,
-    c.band !== null ? `band  · ${c.band}` : "",
     "",
-    `⏱ ${minLeft}분 안에 득템잡이에서 *열어* 매물 확인`,
+    `⏱ ${minLeft}분 안에 득템잡이에서 매물 확인`,
   ].filter(Boolean).join("\n");
 }
 
 function buildAlertReplyMarkup(pid: number) {
   return {
     inline_keyboard: [[{
-      text: "🔍 득템잡이에서 열기",
+      text: "🔍 알림 매물 확인",
       url: `${process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://minyoi-mvp.vercel.app"}/me?view=hotdeal-alerts&pid=${pid}`,
     }]],
   };

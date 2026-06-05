@@ -38,7 +38,7 @@ export async function GET(req: Request) {
   const pids = reservations.map((r) => r.pid);
   const [listingRes, queueRes] = await Promise.all([
     restFetch(
-      `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,sku_name,thumbnail_url&pid=in.(${pids.join(",")})`,
+      `${tableUrl("mvp_listings")}?select=pid,name,price,sku_median,sku_name,thumbnail_url,url&pid=in.(${pids.join(",")})`,
       { headers: serviceHeaders() },
     ),
     restFetch(
@@ -71,7 +71,7 @@ export async function GET(req: Request) {
               price: Number(l?.price ?? 0),
               skuMedian: Number(l?.sku_median ?? 0),
               thumbnailUrl: (l?.thumbnail_url as string | null) ?? null,
-              bunjangUrl: `https://m.bunjang.co.kr/products/${r.pid}`,
+              sourceUrl: (l?.url as string | null) ?? null,
             }
           : null,
         deal: {

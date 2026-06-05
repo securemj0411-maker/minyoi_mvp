@@ -32,26 +32,27 @@ export default function HotdealAlertsView() {
             새매물 알림
           </h2>
           <p className="mt-2 text-sm font-semibold leading-6 text-[#5a6658] dark:text-zinc-400">
-            차익이 큰 새 매물이 잡히면 텔레그램으로 알려드려요.
-            한 매물은 여러 사람에게 무제한으로 뿌리지 않고, 중복 알림을 줄여서 보냅니다.
+            내 동네에 차익 나는 새 매물이 잡히면 텔레그램으로 알려드려요.
+            같은 매물을 반복해서 보내지 않도록 중복 알림은 줄입니다.
           </p>
         </header>
 
         <TelegramConnectPanel />
 
-        <div>
-          <div className="mb-3 text-sm font-black text-[#223127] dark:text-zinc-100">받은 알림</div>
-          <HotdealReservations initialPid={initialPid} />
-        </div>
+        {initialPid != null ? (
+          <div>
+            <div className="mb-3 text-sm font-black text-[#223127] dark:text-zinc-100">알림 매물 확인</div>
+            <HotdealReservations initialPid={initialPid} />
+          </div>
+        ) : null}
 
         <details className="rounded-2xl border border-[#e2d9cb] bg-[#fffbf4] p-5 dark:border-zinc-800 dark:bg-zinc-900">
-          <summary className="cursor-pointer text-sm font-black text-[#223127] dark:text-zinc-100">동작 방식</summary>
+          <summary className="cursor-pointer text-sm font-black text-[#223127] dark:text-zinc-100">알림 기준</summary>
           <ol className="mt-3 space-y-2 text-xs font-semibold leading-6 text-[#5a6658] dark:text-zinc-400">
             <li><strong>1.</strong> 텔레그램 봇 연결 (위에서)</li>
-            <li><strong>2.</strong> 차익이 큰 후보를 먼저 골라 텔레그램으로 알림</li>
-            <li><strong>3.</strong> 알림 받으면 득템잡이에서 매입가, 시세 근거, 원문 링크 확인</li>
-            <li><strong>4.</strong> 같은 매물을 반복 발송하지 않도록 예약/열람 기록으로 중복을 줄임</li>
-            <li><strong>5.</strong> 내 동네 기반 신규 당근 알림은 지역 설정과 연결해 별도 큐로 확장합니다</li>
+            <li><strong>2.</strong> 내 동네 기준으로 새로 잡힌 차익 후보를 확인</li>
+            <li><strong>3.</strong> 같은 매물을 반복 발송하지 않도록 중복 알림을 줄임</li>
+            <li><strong>4.</strong> 알림 링크로 들어오면 해당 알림 매물을 확인</li>
           </ol>
         </details>
       </div>

@@ -20,7 +20,7 @@ type Reservation = {
     price: number;
     skuMedian: number;
     thumbnailUrl: string | null;
-    bunjangUrl: string;
+    sourceUrl: string | null;
   } | null;
   deal: {
     profitAmount: number;
@@ -96,7 +96,7 @@ export default function HotdealReservations({ initialPid }: { initialPid: number
 
   async function openAll() {
     if (pending.length === 0) return;
-    if (!confirm(`핫딜 ${pending.length}건 한 번에 열까요?`)) return;
+    if (!confirm(`새매물 알림 ${pending.length}건을 한 번에 열까요?`)) return;
     try {
       const r = await fetch("/api/me/hotdeal/open", {
         method: "POST",
@@ -123,7 +123,7 @@ export default function HotdealReservations({ initialPid }: { initialPid: number
   if (items.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-[#d6cdb8] bg-[#fffbf4] p-6 text-center text-sm font-semibold text-[#5a6658] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-400">
-        지금 받은 핫딜이 없어요. 새 핫딜이 나오면 텔레그램으로 즉시 알려드려요.
+        이 알림 매물은 이미 만료됐거나 확인 가능한 상태가 아니에요.
       </div>
     );
   }
@@ -139,7 +139,7 @@ export default function HotdealReservations({ initialPid }: { initialPid: number
       {pending.length > 1 && (
         <div className="flex items-center justify-between rounded-2xl border border-[#c8d8c4] bg-[var(--brand-accent-soft)] p-4 dark:border-blue-800 dark:bg-blue-950/30">
           <div className="text-sm font-black text-[#223127] dark:text-zinc-100">
-            받은 핫딜 {pending.length}건
+            새매물 알림 {pending.length}건
           </div>
           <button
             type="button"
@@ -185,7 +185,7 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen }: {
       return (
         <article className="rounded-2xl border border-[#eee5d8] bg-[#faf5ec] p-5 opacity-60 dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black text-red-600 dark:text-red-400">만료된 핫딜 (기회 종료)</span>
+            <span className="text-xs font-black text-red-600 dark:text-red-400">만료된 알림 (기회 종료)</span>
             <span className="text-xs font-semibold text-[#7a8577] dark:text-zinc-500">
               차익 ₩{profitWan.toLocaleString("ko-KR")}만 ({pct}%)
             </span>
@@ -208,8 +208,7 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen }: {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-orange-600 dark:text-orange-300">
               <FlameIcon className="h-3.5 w-3.5" />
-              <span>핫딜 도착</span>
-              {item.deal.band !== null && <span className="text-[#7a8577] dark:text-zinc-500">band {item.deal.band}</span>}
+              <span>새매물 알림 도착</span>
             </div>
             <h3 className="mt-1 text-base font-black leading-6 text-[#223127] dark:text-zinc-100">
               차익 ₩{profitWan.toLocaleString("ko-KR")}만 ({pct}%)
@@ -261,8 +260,7 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen }: {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-orange-600 dark:text-orange-300">
             <FlameIcon className="h-3.5 w-3.5" />
-            <span>{lst.skuName ?? "핫딜"}</span>
-            {item.deal.band !== null && <span className="text-[#7a8577] dark:text-zinc-500">band {item.deal.band}</span>}
+            <span>{lst.skuName ?? "새매물 알림"}</span>
           </div>
           <h3 className="mt-1 line-clamp-2 text-base font-black leading-6 text-[#223127] dark:text-zinc-100">
             {lst.name}
@@ -295,14 +293,14 @@ function ReservationCard({ item, highlight, remainingMs, busy, onOpen }: {
           <span className="text-xs font-semibold text-[#7a8577] dark:text-zinc-500">기회 종료</span>
         ) : (
           // Wave 106: 응답 버튼 ("샀어요/포기") 제거. 카드 까는 순간 = consumed.
-          // 번장 직링크만 제공 — 매물 보고 살지 말지는 본인 결정, 추가 응답 없음.
+          // 원문 링크만 제공 — 매물 보고 살지 말지는 본인 결정, 추가 응답 없음.
           <a
-            href={lst.bunjangUrl}
+            href={lst.sourceUrl ?? "#"}
             target="_blank"
             rel="noopener noreferrer"
-            className={`inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-xs font-black text-white transition hover:bg-blue-700 ${busy ? "pointer-events-none opacity-50" : ""}`}
+            className={`inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-xs font-black text-white transition hover:bg-blue-700 ${busy || !lst.sourceUrl ? "pointer-events-none opacity-50" : ""}`}
           >
-            <CheckCircleIcon className="h-3.5 w-3.5" /> 번장에서 거래
+            <CheckCircleIcon className="h-3.5 w-3.5" /> 원문 열기
           </a>
         )}
       </div>
