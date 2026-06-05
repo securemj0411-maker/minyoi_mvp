@@ -1652,7 +1652,13 @@ export async function GET(req: Request) {
     const detailAccess = await getDetailAccessSnapshot({ user: auth.user, userRef, unlimited: unlimitedAccess });
     const feedCooldown = { canRefresh: true, remainingSec: 0, nextAvailableAt: null };
 
-    const readyCandidateLimit = refresh ? REFRESH_READY_CANDIDATE_LIMIT : READY_SLOTS;
+    // Budgeted feeds need a wider final candidate set even on first load.
+    // The raw fetch already scans widely for priceMax, but the old first-load path
+    // diversified only 25 rows before build-time profit/lifecycle filters. That made
+    // 15만원 이하 show an empty state until the user pressed refresh, where we scan 500.
+    const readyCandidateLimit = refresh || priceMax != null
+      ? REFRESH_READY_CANDIDATE_LIMIT
+      : READY_SLOTS;
     const appliedBudget: "150k" | "300k" | "500k" | "unlimited" =
       priceMax === 150000 ? "150k" :
       priceMax === 300000 ? "300k" :
