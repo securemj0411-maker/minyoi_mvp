@@ -160,7 +160,7 @@ export default function MembershipApplicationsPanel({ initialRows }: { initialRo
               입금했어요를 누른 사람만 처리합니다
             </h2>
             <p className="mt-1 break-keep text-sm font-bold leading-6 text-zinc-400">
-              입금 전 예약은 7분이 지나면 자동 만료되고, 입금 확인 요청은 5분이 지나면 자동승인됩니다.
+              신규 자리 예약만 7분 후 만료됩니다. 연장 예약은 입금 전까지 변경/취소할 수 있고, 입금 확인 요청은 5분 뒤 자동승인됩니다.
             </p>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center">
@@ -197,7 +197,7 @@ export default function MembershipApplicationsPanel({ initialRows }: { initialRo
 
           <div className="space-y-4">
             <div>
-              <SectionTitle title="입금 전 예약" caption="아직 입금했어요를 누르지 않은 자리 예약입니다." />
+              <SectionTitle title="입금 전 예약" caption="신규는 지역 티오 예약, 연장은 기존 만료일 뒤에 붙일 기간 예약입니다." />
               <div className="mt-2 space-y-2">
                 {grouped.unpaidReservations.length === 0 ? (
                   <EmptyBox text="입금 전 예약이 없습니다." compact />

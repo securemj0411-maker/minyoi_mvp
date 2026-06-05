@@ -54,7 +54,7 @@ async function expireUnpaidReservationsForUser(authUserId: string) {
   const nowIso = new Date().toISOString();
   const cutoffIso = new Date(Date.now() - 7 * 60_000).toISOString();
   await restFetch(
-    `${tableUrl("mvp_membership_applications")}?auth_user_id=eq.${authUserId}&status=eq.pending&deposit_confirmed_at=is.null&created_at=lt.${encodeURIComponent(cutoffIso)}`,
+    `${tableUrl("mvp_membership_applications")}?auth_user_id=eq.${authUserId}&status=eq.pending&deposit_confirmed_at=is.null&created_at=lt.${encodeURIComponent(cutoffIso)}&or=(application_kind.eq.new,application_kind.is.null)`,
     {
       method: "PATCH",
       headers: serviceHeaders("return=minimal"),

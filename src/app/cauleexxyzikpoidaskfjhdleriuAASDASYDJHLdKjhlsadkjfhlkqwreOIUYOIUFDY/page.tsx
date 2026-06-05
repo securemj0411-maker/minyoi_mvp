@@ -101,7 +101,7 @@ async function reconcileMembershipApplicationsForAdmin() {
   const unpaidCutoffIso = new Date(Date.now() - UNPAID_RESERVATION_MS).toISOString();
 
   await restFetch(
-    `${tableUrl("mvp_membership_applications")}?status=eq.pending&deposit_confirmed_at=is.null&created_at=lt.${encodeURIComponent(unpaidCutoffIso)}`,
+    `${tableUrl("mvp_membership_applications")}?status=eq.pending&deposit_confirmed_at=is.null&created_at=lt.${encodeURIComponent(unpaidCutoffIso)}&or=(application_kind.eq.new,application_kind.is.null)`,
     {
       method: "PATCH",
       headers: serviceHeaders("return=minimal"),
@@ -349,6 +349,8 @@ export default async function MembersPage() {
 
   const depositRequestedCount = applications.filter((row) => row.status === "pending" && row.depositConfirmedAt).length;
   const unpaidReservationCount = applications.filter((row) => row.status === "pending" && !row.depositConfirmedAt).length;
+  const unpaidNewReservationCount = applications.filter((row) => row.status === "pending" && !row.depositConfirmedAt && row.applicationKind !== "renewal").length;
+  const unpaidRenewalReservationCount = applications.filter((row) => row.status === "pending" && !row.depositConfirmedAt && row.applicationKind === "renewal").length;
   const paidMemberCount = rows.filter((row) => {
     const end = row.planEndAt ?? row.proUntil;
     return row.planKey !== "free" && (!end || Date.parse(end) > Date.now());
@@ -383,7 +385,12 @@ export default async function MembersPage() {
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <OpsMetricCard label="입금 확인 요청" value={`${depositRequestedCount}건`} tone="blue" caption="입금했어요를 누른 신청" />
-          <OpsMetricCard label="입금 전 예약" value={`${unpaidReservationCount}건`} tone="amber" caption="7분 지나면 자동 만료" />
+          <OpsMetricCard
+            label="입금 전 예약"
+            value={`${unpaidReservationCount}건`}
+            tone="amber"
+            caption={`신규 ${unpaidNewReservationCount}건 7분 만료 · 연장 ${unpaidRenewalReservationCount}건 유지`}
+          />
           <OpsMetricCard label="열린 상담" value={`${openSupportCount}건`} tone="emerald" caption={supportUnreadCount > 0 ? `새 메시지 ${supportUnreadCount}개` : "미확인 메시지 없음"} />
           <OpsMetricCard label="활성 멤버" value={`${paidMemberCount}명`} tone="violet" caption={`전체 계정 ${rows.length}명`} />
           <OpsMetricCard label="누적 결제" value={`${totalMembershipRevenue.toLocaleString("ko-KR")}원`} tone="slate" caption="승인된 멤버십 신청 기준" />
