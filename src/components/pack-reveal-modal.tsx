@@ -36,6 +36,7 @@ import {
 } from "@/components/icons";
 import { findModelGuide, type ModelGuide } from "@/lib/model-guides";
 import type { PackBand, RevealCard, RevealFeedbackType, RevealListingDetail } from "@/lib/pack-open";
+import { compactTradeLocationLabel } from "@/lib/trade-location-label";
 import {
   RESELL_SHIPPING_FEE,
   SAFETY_BUFFER,
@@ -1352,15 +1353,6 @@ function seenAgoLabel(iso: string | null | undefined): string | null {
   if (seconds < 3600) return `${Math.max(1, Math.round(seconds / 60))}분 전 확인`;
   if (seconds < 24 * 3600) return `${Math.round(seconds / 3600)}시간 전 확인`;
   return `${Math.round(seconds / 86400)}일 전 확인`;
-}
-
-function compactTradeLocationLabel(location: string | null | undefined): string | null {
-  const cleaned = String(location ?? "").replace(/\s+/g, " ").trim();
-  if (!cleaned) return null;
-  const primary = cleaned.split(/\s*[·,]\s*/).map((part) => part.trim()).filter(Boolean)[0] ?? cleaned;
-  const tokens = primary.split(/\s+/).filter(Boolean);
-  const localToken = [...tokens].reverse().find((token) => /[가-힣]+(?:동|읍|면|리|가)$/u.test(token));
-  return localToken ?? tokens.at(-1) ?? primary;
 }
 
 function revealHeaderConditionLabel(card: RevealCard): string | null {

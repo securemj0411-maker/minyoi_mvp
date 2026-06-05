@@ -39,6 +39,7 @@ import {
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { daangnFeedLocationLabel } from "@/lib/trade-location-label";
 
 // Wave 338+339 (Phase 1a + 1b — /explore):
 // 매물 풀 browsing. 현재 피드는 승인된 멤버십 사용자에게 실제 매입가/시세까지 공개.
@@ -4267,9 +4268,15 @@ export default function ExploreClient({
                           label={item.marketplaceLabel}
                         />
                         {item.marketplaceSource === "daangn" &&
-                        item.daangnDistanceLabel ? (
+                        daangnFeedLocationLabel({
+                          directTradeLocation: item.directTradeLocation,
+                          distanceLabel: item.daangnDistanceLabel,
+                        }) ? (
                           <span className="rounded-full bg-orange-50 px-1.5 py-0.5 font-bold text-orange-700 dark:bg-orange-950/40 dark:text-orange-200">
-                            {item.daangnDistanceLabel}
+                            {daangnFeedLocationLabel({
+                              directTradeLocation: item.directTradeLocation,
+                              distanceLabel: item.daangnDistanceLabel,
+                            })}
                           </span>
                         ) : null}
                         {item.priceSignalLabel ? (
