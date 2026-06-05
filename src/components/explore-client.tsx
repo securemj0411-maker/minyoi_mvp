@@ -4379,7 +4379,7 @@ export default function ExploreClient({
                     ? `${budgetOption.label} 조건은 오늘 여기까지예요`
                     : "오늘 볼 수 있는 추천 매물은 여기까지예요"
                   : isDaangnFocusedView
-                    ? "돈 되는 중고 매물 자체가 원래 극소수예요"
+                    ? "새 매물을 계속 확인하고 있어요"
                     : "더 찾아보면 새 후보가 이어져요"}
               </div>
               <div className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
@@ -4388,7 +4388,7 @@ export default function ExploreClient({
                     ? `${budgetOption.label}에서 수익, 시세, 상태 조건을 통과한 후보만 남긴 결과예요. 가격대를 넓히면 더 볼 수 있어요.`
                     : "수익, 시세, 상태 조건을 통과한 매물만 남긴 결과예요."
                   : isDaangnFocusedView
-                    ? "전체 중고 매물 중 차익, 상태, 판매 속도를 통과한 것만 추리고, 그중 내 동네에서 움직일 수 있는 후보만 보여줘요. 새로 뜨는 기회는 새매물 알림으로 받아보세요."
+                    ? "득템잡이는 매시간 새로 올라오는 중고 매물을 다시 훑고, 차익·상태·판매 속도를 통과한 내 동네 후보만 남겨요. 새로 뜨는 기회는 새매물 알림으로 받아보세요."
                     : "새로 잡힌 후보가 있으면 아래에 이어서 붙어요."}
               </div>
               {feedExhausted && budgetFilter !== "all" ? (
