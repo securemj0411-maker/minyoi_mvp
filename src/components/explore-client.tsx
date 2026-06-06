@@ -4508,6 +4508,17 @@ export default function ExploreClient({
         </div>
       ) : null}
 
+      {/* Wave 1216 (2026-06-06): 1시간 특가 업그레이드 오퍼를 피드 상단으로 (기존엔 grid 맨 밑이라 안 보였음). */}
+      {shouldShowFeedUpsell ? (
+        <div className="mb-4">
+          <FeedMembershipUpsellCard
+            planEndAt={membershipStatus?.planEndAt ?? null}
+            remainingSec={feedUpsellRemainingSec}
+            onMembershipStatusChange={setMembershipStatus}
+          />
+        </div>
+      ) : null}
+
       {/* 로딩 / 에러 / 매물 grid */}
       {/* Wave 1192d (2026-06-06): "매물 없어요" 가 로딩 중 떴다가 팍 나타나는 버그 fix.
           quick 응답 와서 loading=false 됐지만 나머지(remainder) 대기 중이면 items 0 일 때
@@ -5149,15 +5160,7 @@ export default function ExploreClient({
         </div>
       ) : null}
 
-      {shouldShowFeedUpsell ? (
-        <div className="mt-4">
-          <FeedMembershipUpsellCard
-            planEndAt={membershipStatus?.planEndAt ?? null}
-            remainingSec={feedUpsellRemainingSec}
-            onMembershipStatusChange={setMembershipStatus}
-          />
-        </div>
-      ) : null}
+      {/* Wave 1216: 업그레이드 오퍼는 피드 상단으로 이동됨 (위 "로딩/에러/매물 grid" 직전). */}
 
       {/* Wave 358: 빈 공간 채우기 — 매물 끝에 다음 라운드 안내 카드. */}
       {!loading && !scrapOnly && items.length > 0 ? (
