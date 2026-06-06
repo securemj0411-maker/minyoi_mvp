@@ -654,7 +654,16 @@ function FeedMembershipUpsellCard({
     );
   }
 
-  if (!offerPlans.length || expired) return null;
+  // Wave 1224 (2026-06-07): 결제 플로우 진행 중(모달 열림 또는 예약→입금→승인대기)에는 오퍼 타이머가
+  //   만료(expired)되거나 offerPlans 가 비어도 카드를 숨기지 않는다. 숨기면 열려 있는 입금 모달·5분
+  //   카운트다운이 통째로 사라진다(부모 shouldShowFeedUpsell 마운트 유지와 짝이 되는 카드 내부 게이트).
+  //   완료 토스트(approvalToast)는 위에서 먼저 렌더되므로 영향 없음. 승인 완료(approved) 후엔 다시 숨김.
+  const feedFlowInProgress =
+    offerModalOpen ||
+    requestState === "reserved" ||
+    requestState === "depositing" ||
+    requestState === "deposit_sent";
+  if ((!offerPlans.length || expired) && !feedFlowInProgress) return null;
 
   return (
     <section className="mb-3 overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-[0_16px_45px_rgba(245,158,11,0.13)] dark:border-amber-900/50 dark:bg-zinc-900">
@@ -3326,8 +3335,21 @@ export default function ExploreClient({
     scrapOnly,
   ]);
 
+  // Wave 1224 (2026-06-07): renewal 결제 플로우가 진행 중(pending)이거나 막 완료(approved)되면
+  //   오퍼 타이머(feedUpsellRemainingSec)가 0이어도 카드를 계속 마운트한다.
+  //   버그: '입금했어요' 직후 카드의 첫 status 폴링이 onMembershipStatusChange 로 membershipStatus 를
+  //   renewal/pending 으로 갱신 → feedUpsellRemainingSec=0 → shouldShowFeedUpsell=false → 카드(+모달
+  //   +5분 카운트다운+승인 폴러+완료 토스트) 통째로 언마운트 → 5:00 뜨자마자 모달 자동 닫힘 + 텔레그램
+  //   승인해도 완료 토스트 안 뜸. (Wave 1223 은 카드 내부 close 조건만 고쳐 이 부모 언마운트 경로를 못 막음.)
+  const feedRenewalFlowActive =
+    membershipStatus?.application?.applicationKind === "renewal" &&
+    (membershipStatus.application.status === "pending" ||
+      membershipStatus.application.status === "approved");
   const shouldShowFeedUpsell =
-    !loading && !scrapOnly && displayItems.length > 0 && feedUpsellRemainingSec > 0;
+    !loading &&
+    !scrapOnly &&
+    displayItems.length > 0 &&
+    (feedUpsellRemainingSec > 0 || feedRenewalFlowActive);
   const shouldShowContinuationSkeleton =
     !loading &&
     !scrapOnly &&
