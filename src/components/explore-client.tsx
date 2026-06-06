@@ -544,13 +544,16 @@ function FeedMembershipUpsellCard({
 
       onMembershipStatusChange?.(payload);
       const latestApplication = payload.application ?? null;
-      const activeApplicationId = payload.activePlan?.applicationId ?? null;
+      // Wave 1223 (2026-06-07): 기존 멤버 업그레이드 시 입금 직후 모달이 즉시 닫히고
+      //   5분 카운트/완료 토스트가 안 보이던 버그 fix. 원인: 아래 activeApproved 클로즈
+      //   (activePlan.applicationId === 새 예약 id)가 기존 멤버는 입금 전부터/직후 참이 돼
+      //   '진짜 승인' 전에 닫혔음. 정상 연장모달(membership-application-client)은 이 조건이 없고
+      //   `isMember && application.status==="approved"` 만으로 닫음 → 동일하게 맞춤.
       const approved =
         latestApplication?.id === reservationApplicationId &&
         latestApplication.status === "approved";
-      const activeApproved = activeApplicationId === reservationApplicationId;
 
-      if (payload.isMember && (approved || activeApproved)) {
+      if (payload.isMember && approved) {
         setRequestState("approved");
         setMessage("멤버십 연장 완료. 기간이 추가됐어요.");
         setApprovalToast("멤버십 연장 완료. 기간이 추가됐어요.");
