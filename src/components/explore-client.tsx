@@ -2369,6 +2369,7 @@ export default function ExploreClient({
   const itemsRef = useRef<PoolItem[]>([]);
   const poolFetchSeqRef = useRef(0);
   const continuationFetchSeqRef = useRef(0);
+  const emptyDeepRefreshRequestedRef = useRef<string | null>(null);
   const initialRemainderRequestedRef = useRef(false);
   useEffect(() => {
     itemsRef.current = items;
@@ -3238,6 +3239,12 @@ export default function ExploreClient({
     items.length > 0 &&
     detailAccessLoadingPid == null &&
     (continuationLoading || refreshing);
+  const emptyDeepRefreshKey = [
+    budgetFilter,
+    source,
+    sort,
+    homeRegion?.daangn_full_path ?? homeRegion?.daangn_region_name ?? "",
+  ].join("|");
   const currentViewFilterLabel = useMemo(() => {
     if (scrapOnly) return "스크랩";
     const labels: string[] = [];
@@ -3277,6 +3284,42 @@ export default function ExploreClient({
     sort,
     source,
   ]);
+
+  useEffect(() => {
+    if (loading || refreshing || continuationLoading || scrapOnly || error) return;
+    if (items.length > 0) {
+      if (emptyDeepRefreshRequestedRef.current === emptyDeepRefreshKey) {
+        emptyDeepRefreshRequestedRef.current = null;
+      }
+      return;
+    }
+    if (emptyDeepRefreshRequestedRef.current === emptyDeepRefreshKey) return;
+    if (budgetFilter === "all" && !isDaangnFocusedView) return;
+
+    emptyDeepRefreshRequestedRef.current = emptyDeepRefreshKey;
+    setFeedExhausted(false);
+    void loadPool(true, {
+      autoScrollNew: false,
+      limit: isDaangnFocusedView
+        ? DAANGN_BACKGROUND_FEED_PAGE_SIZE
+        : BACKGROUND_FEED_PAGE_SIZE,
+      serverSource: sourceRef.current,
+      serverSort: sortRef.current === "distance" ? "distance" : null,
+      silent: true,
+    });
+  }, [
+    budgetFilter,
+    continuationLoading,
+    emptyDeepRefreshKey,
+    error,
+    isDaangnFocusedView,
+    items.length,
+    loadPool,
+    loading,
+    refreshing,
+    scrapOnly,
+  ]);
+
   const loadingCopy = isDaangnFocusedView
     ? {
         title: "근처 당근 매물부터 확인 중",
@@ -3849,9 +3892,23 @@ export default function ExploreClient({
     setSource("daangn");
     setSort("distance");
     setScrapOnly(false);
+    setFeedExhausted(false);
+    emptyDeepRefreshRequestedRef.current = null;
     void loadPool(true, {
       serverSource: "daangn",
       serverSort: "distance",
+    });
+  }
+
+  function refreshCurrentFeed() {
+    setFeedExhausted(false);
+    emptyDeepRefreshRequestedRef.current = null;
+    if (isDaangnFocusedView) {
+      refreshNearbyDaangnFeed();
+      return;
+    }
+    void loadPool(true, {
+      serverSource: currentServerSourceFilter,
     });
   }
 
@@ -4359,15 +4416,24 @@ export default function ExploreClient({
         <div className="rounded-2xl border border-amber-200 bg-amber-50/60 px-5 py-8 text-center dark:border-amber-900/40 dark:bg-amber-950/20">
           <HourglassIcon className="mx-auto h-8 w-8 text-amber-600 dark:text-amber-300" />
           <p className="mt-3 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-            {budgetFilter !== "all"
+            {continuationLoading || refreshing
+              ? "조건에 맞는 후보를 더 확인하는 중이에요"
+              : budgetFilter !== "all"
               ? `${budgetOption.label} 조건은 아직 후보가 적어요`
               : "잠시 후 다시 와주세요"}
           </p>
           <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            {budgetFilter !== "all"
+            {continuationLoading || refreshing
+              ? "처음 빠른 조회에서 안 잡힌 가까운 당근 후보까지 다시 훑고 있어요."
+              : budgetFilter !== "all"
               ? "수익, 시세, 상태 조건을 통과한 매물만 보여주다 보니 오늘은 아직 이 가격대 후보가 부족해요."
               : "오늘 잡은 매물이 충분치 않아요. 잠시 후 새로고침하면 새 매물이 보일 수 있어요."}
           </p>
+          {continuationLoading || refreshing ? (
+            <div className="mt-4">
+              <FeedContinuationSkeleton />
+            </div>
+          ) : null}
           {/* Wave launch-32 (사용자 짚음): "왜 이게 전부냐" 신뢰 메시지.
            * 사용자가 가격 필터 끝까지 내려서 매물 부족할 때, 우리가 얼마나 빡세게 거른 후
            * 이렇게 보여주는지 안내. 사회적 증명 + 정직. */}
@@ -4402,6 +4468,18 @@ export default function ExploreClient({
           ) : null}
           {budgetFilter !== "all" ? (
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={refreshCurrentFeed}
+                disabled={refreshing || continuationLoading}
+                className="rounded-full bg-zinc-950 px-3 py-1.5 text-xs font-black text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200"
+              >
+                {refreshing || continuationLoading
+                  ? "다시 확인 중..."
+                  : isDaangnFocusedView
+                    ? "근처 매물 새로고침"
+                    : "새로고침"}
+              </button>
               {nextBudgetOption ? (
                 <button
                   type="button"
@@ -4421,7 +4499,22 @@ export default function ExploreClient({
                 전체 가격대 보기
               </button>
             </div>
-          ) : null}
+          ) : (
+            <div className="mt-4 flex justify-center">
+              <button
+                type="button"
+                onClick={refreshCurrentFeed}
+                disabled={refreshing || continuationLoading}
+                className="rounded-full bg-zinc-950 px-3 py-1.5 text-xs font-black text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200"
+              >
+                {refreshing || continuationLoading
+                  ? "다시 확인 중..."
+                  : isDaangnFocusedView
+                    ? "근처 매물 새로고침"
+                    : "새로고침"}
+              </button>
+            </div>
+          )}
           <div className="mt-4">
             {renderFeedSecondaryActions()}
           </div>
