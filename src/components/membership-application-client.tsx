@@ -589,15 +589,15 @@ export default function MembershipApplicationClient({
                 </p>
               </div>
               {showReservationCountdown ? (
-                <div className="shrink-0 rounded-[18px] bg-white px-3 py-2.5 text-center text-zinc-950 shadow-[0_12px_30px_rgba(49,130,246,0.16)] ring-1 ring-blue-100 dark:bg-zinc-950 dark:text-white dark:ring-zinc-800">
+                <div className="mr-9 shrink-0 rounded-[18px] bg-white px-3 py-2.5 text-center text-zinc-950 shadow-[0_12px_30px_rgba(49,130,246,0.16)] ring-1 ring-blue-100 dark:bg-zinc-950 dark:text-white dark:ring-zinc-800">
                   <div className="text-[10px] font-black uppercase tracking-[0.12em] text-zinc-400">
                     자리 예약 만료까지
                   </div>
                   <div className="mt-1 font-mono text-[26px] font-black leading-none tabular-nums">
                     {countdownLabel(reservationMsLeft)}
                   </div>
-                  <div className="mt-1 max-w-[118px] break-keep text-[10px] font-black leading-4 text-rose-500 dark:text-rose-300">
-                    시간 내 입금하지 않으면 취소돼요
+                  <div className="mt-1 max-w-[124px] break-keep text-[10px] font-black leading-4 text-rose-500 dark:text-rose-300">
+                    시간 내 입금하지 않으면 예약이 취소돼요
                   </div>
                 </div>
               ) : null}
