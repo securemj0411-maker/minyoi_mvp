@@ -1,7 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+
 import { getMembershipPlan } from "@/lib/membership-plans";
+
+import { Button, Notice } from "./_ui/primitives";
 
 export type MembershipApplicationRow = {
   id: number;
@@ -153,7 +156,7 @@ export default function MembershipApplicationsPanel({ initialRows }: { initialRo
       <div className="border-b border-zinc-800 bg-zinc-900/70 px-5 py-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-blue-300">
+            <div className="text-xs font-black uppercase tracking-[0.16em] text-blue-300">
               멤버십 입금 확인
             </div>
             <h2 className="mt-1 text-2xl font-black tracking-tight text-white">
@@ -172,8 +175,16 @@ export default function MembershipApplicationsPanel({ initialRows }: { initialRo
       </div>
 
       <div className="p-5">
-        {notice ? <div className="mb-3 rounded-2xl border border-blue-400/20 bg-blue-500/10 px-4 py-3 text-sm font-black text-blue-100">{notice}</div> : null}
-        {error ? <div className="mb-3 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm font-black text-rose-100">{error}</div> : null}
+        {notice ? (
+          <Notice tone="blue" className="mb-3">
+            {notice}
+          </Notice>
+        ) : null}
+        {error ? (
+          <Notice tone="rose" className="mb-3">
+            {error}
+          </Notice>
+        ) : null}
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]">
           <div className="space-y-3">
@@ -237,7 +248,7 @@ function QueuePill({ label, value, tone }: { label: string; value: number; tone:
   return (
     <div className={`min-w-[82px] rounded-2xl border px-3 py-2 ${cls}`}>
       <div className="text-xl font-black tabular-nums">{value}</div>
-      <div className="mt-0.5 text-[11px] font-black text-white/60">{label}</div>
+      <div className="mt-0.5 text-xs font-black text-white/60">{label}</div>
     </div>
   );
 }
@@ -297,22 +308,12 @@ function ApplicationCard({
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-blue-400/15 bg-blue-500/10 px-4 py-3">
         <div className="text-sm font-black text-blue-100">{highlight}</div>
         <div className="flex gap-2">
-          <button
-            type="button"
-            disabled={pending}
-            onClick={onApprove}
-            className="h-10 rounded-full bg-emerald-400 px-4 text-sm font-black text-zinc-950 transition hover:bg-emerald-300 disabled:opacity-40"
-          >
+          <Button variant="approve" disabled={pending} onClick={onApprove}>
             승인
-          </button>
-          <button
-            type="button"
-            disabled={pending}
-            onClick={onReject}
-            className="h-10 rounded-full border border-rose-400/30 bg-rose-500/10 px-4 text-sm font-black text-rose-100 transition hover:bg-rose-500/20 disabled:opacity-40"
-          >
+          </Button>
+          <Button variant="danger" disabled={pending} onClick={onReject}>
             거절
-          </button>
+          </Button>
         </div>
       </div>
     </article>
