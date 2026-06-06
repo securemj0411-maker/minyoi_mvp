@@ -1375,6 +1375,18 @@ export default function PlansApplicationFlow({
   capacity: number;
 }) {
   const [step, setStep] = useState(0);
+
+  // Wave 1201 (2026-06-06, audit P0): 비멤버 탈출구. /plans는 전체화면(z-75)이라 nav·로그아웃이
+  //   가려지고, /·/me·/lookup 모두 비멤버를 /plans로 되돌려 "영원히 못 나가는" 갇힘 발생(owner 우려).
+  //   로그아웃 후 공개 메인(비로그인 마스킹 피드)으로 보내 탈출 보장 — 비멤버는 로그아웃 안 하면
+  //   /로 가도 다시 /plans로 튕기므로 signOut 필수.
+  async function handleExit() {
+    const supabase = getSupabaseBrowserClient();
+    if (supabase) {
+      await supabase.auth.signOut().catch(() => {});
+    }
+    window.location.href = "/";
+  }
   const [selectedKey, setSelectedKey] = useState("seoul");
   const [selectedDistrictName, setSelectedDistrictName] = useState<
     string | null
@@ -1558,7 +1570,10 @@ export default function PlansApplicationFlow({
   }
 
   async function saveHomeRegionDraft() {
-    if (!homeRegionDraft) return true;
+    // Wave 1201 (2026-06-06, audit P0): 지도에서 시/도만 탭(zoom)하고 세부 동네 미선택 시 draft=null.
+    //   기존 `return true`는 미저장인데 다음 step 통과 → 결제·승인 후 /onboarding/home-region이
+    //   "동네 미설정"으로 또 떠 중복 온보딩. 안전망으로 false 반환(진행 차단). UI는 진행 버튼 disable+라벨로 유도.
+    if (!homeRegionDraft) return false;
     setLocationStatus("saving");
     setLocationError(null);
     try {
@@ -2308,6 +2323,15 @@ export default function PlansApplicationFlow({
               >
                 이전
               </button>
+            ) : isAuthed ? (
+              // Wave 1201 (audit P0): step 0(첫 진입, 이전 없음)에서 비멤버가 갇히지 않도록 "나가기" 노출.
+              <button
+                type="button"
+                onClick={() => void handleExit()}
+                className="h-11 rounded-2xl border border-zinc-200 bg-white px-5 text-[14px] font-black text-zinc-500 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400"
+              >
+                나가기
+              </button>
             ) : null}
             <button
               type="button"
@@ -2330,13 +2354,17 @@ export default function PlansApplicationFlow({
                 step === 0 &&
                 (locationStatus === "requesting" ||
                   locationStatus === "resolving" ||
-                  locationStatus === "saving")
+                  locationStatus === "saving" ||
+                  // Wave 1201 (audit P0): 지도 확대 후 세부 동네 미선택이면 진행 차단 (중복 온보딩 방지)
+                  (mapZoomed && !homeRegionDraft))
               }
               className="h-11 flex-1 rounded-2xl bg-[#3182f6] px-5 text-[15px] font-black text-white shadow-[0_18px_44px_rgba(49,130,246,0.28)] transition hover:bg-[#1c64dd] sm:min-w-[240px]"
             >
               {step === 0
                 ? mapZoomed
-                  ? "이 지역으로 계속"
+                  ? homeRegionDraft
+                    ? "이 지역으로 계속"
+                    : "지도에서 우리 동네를 선택하세요"
                   : locationConfirmDraft
                     ? "맞아요, 세부 지역 보기"
                     : locationStatus === "requesting"
