@@ -32,11 +32,24 @@
 ### INFO (무시 가능)
 - RLS enabled no policy 다수 — RLS 켜졌고 policy 없음 = service_role 만 접근, anon 차단됨 (정상)
 
-## 조치
+## 조치 (owner GO 후 완료)
 
-- ✅ `nearby_daangn_ready_feed` anon/authenticated REVOKE (내 책임분)
-- ⏳ ERROR RLS 3개 + 기존 cron RPC anon revoke → owner 결정 (보안 정리 wave 제안)
-- ⏳ leaked-pw → owner 대시보드
+- ✅ `nearby_daangn_ready_feed` anon/authenticated REVOKE
+- ✅ RLS enable 3개: `mvp_market_price_daily_per_source` / `_audit_skus_baseline_20260527` / `mvp_market_blocked_key_prefixes` → anon 직접 읽기 차단
+- ✅ cron 전용 RPC 7개 anon/authenticated REVOKE: claim_mvp_lifecycle_checks, claim_scorable_raw_rows, ensure_pool_eligible_for_ready_categories, mark_scorable_score_dirty_by_comparable_keys, prune_raw_listings_dead_rows, sync_market_velocity_daily_for_category, wave978_backfill_daangn_lifecycle_chunk
+- server 는 모두 service_role 로 호출 → 영향 0
+- ⏳ leaked-pw → owner Supabase 대시보드 토글 (코드 아님)
+
+## 당근 수집 속도 점검 (owner 질문)
+
+| 지표 | 값 |
+|---|---|
+| 신규 매물 1h | 2,331 |
+| 신규 매물 24h | 33,346 |
+| 검색 sweep 1h (중복포함) | 1,373,211 |
+| last_seen 갱신 1h | 14,264 |
+
+→ 수집 정상 (오히려 활발). 느리지 않음. Medium 업글 + lifecycle 부활로 전체 파이프라인(수집→score→ready) 처리 속도만 빨라진 것. owner 직감("lifecycle 병목 해결로 일 잘하는 건가") 정확.
 
 ## 권장
 
