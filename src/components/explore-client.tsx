@@ -804,7 +804,7 @@ function FeedMembershipUpsellCard({
                     >
                       {requestState === "submitting"
                         ? "수락 처리 중"
-                        : "제안 수락하고 계좌 보기"}
+                        : "제안 수락하기"}
                     </button>
                   </div>
                 ) : (
