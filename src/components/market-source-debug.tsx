@@ -520,23 +520,39 @@ export function MarketSourceDebug({
 
                   {/* 비교 매물 */}
                   <div>
-                    {/* Wave 1220 (2026-06-07, owner A안): 시세 근거 요약 — "왜 이 중앙값?"을 한 줄로.
-                        화면 비교매물 = 시세 계산 근거임을 명시. 낮은 실거래도 아래 리스트에 포함됨. */}
-                    {data.marketDailyStats?.blendedMedian != null && (
-                      <div className="mb-2 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2 dark:border-emerald-900/50 dark:bg-emerald-950/20">
-                        <div className="text-[11px] font-bold text-emerald-800 dark:text-emerald-200">
-                          💡 시세 근거: 실거래 {data.marketDailyStats.soldCount ?? 0}건 · 중앙값 {krw(data.marketDailyStats.blendedMedian)}
-                          {data.marketDailyStats.p25 != null && data.marketDailyStats.p75 != null && (
-                            <span className="font-semibold text-emerald-700/85 dark:text-emerald-300/85">
-                              {" "}· 대부분 {krw(data.marketDailyStats.p25)}~{krw(data.marketDailyStats.p75)}
-                            </span>
-                          )}
+                    {/* Wave 1220/1221 (2026-06-07, owner): 시세 근거 요약 + 판매완료(sold) 표본 기반 신뢰 경고.
+                        sold ≥3 = 정상(emerald), 1~2 = 신뢰낮음(amber), 0 = 호가 기준 추정 경고(amber).
+                        deep-sweep 결과 시세의 다수가 sold 0건(호가만)이라 과대평가 위험 — §12b 정직 표시. display-only. */}
+                    {(() => {
+                      const mds = data.marketDailyStats;
+                      if (!mds || mds.blendedMedian == null) return null;
+                      const soldN = mds.soldCount ?? 0;
+                      const healthy = soldN >= 3;
+                      const boxCls = healthy
+                        ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900/50 dark:bg-emerald-950/20"
+                        : "border-amber-300 bg-amber-50 dark:border-amber-700/50 dark:bg-amber-950/25";
+                      const headCls = healthy ? "text-emerald-800 dark:text-emerald-200" : "text-amber-800 dark:text-amber-200";
+                      const subCls = healthy ? "text-emerald-700/70 dark:text-emerald-400/70" : "text-amber-700/85 dark:text-amber-300/85";
+                      return (
+                        <div className={`mb-2 rounded-md border px-2.5 py-2 ${boxCls}`}>
+                          <div className={`text-[11px] font-bold ${headCls}`}>
+                            {healthy ? "💡" : soldN === 0 ? "🚨" : "⚠️"} 시세 근거: 실거래(판매완료) {soldN}건 · 중앙값 {krw(mds.blendedMedian)}
+                            {mds.p25 != null && mds.p75 != null && (
+                              <span className="font-semibold opacity-90">
+                                {" "}· 대부분 {krw(mds.p25)}~{krw(mds.p75)}
+                              </span>
+                            )}
+                          </div>
+                          <div className={`mt-0.5 text-[10px] ${subCls}`}>
+                            {healthy
+                              ? "아래 비교 매물엔 중앙값을 만든 낮은 실거래도 포함돼요 (높은 호가만 보이지 않게)."
+                              : soldN === 0
+                                ? "판매완료 기록이 없어요 — 이 시세는 현재 '판매중(호가)' 기준 추정이에요. 실제 거래가는 더 낮을 수 있어요."
+                                : `판매완료가 ${soldN}건뿐이라 신뢰도가 낮아요 — 호가 위주라 실제 거래가와 다를 수 있어요.`}
+                          </div>
                         </div>
-                        <div className="mt-0.5 text-[10px] text-emerald-700/70 dark:text-emerald-400/70">
-                          아래 비교 매물엔 중앙값을 만든 낮은 실거래도 포함돼요 (높은 호가만 보이지 않게).
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                     <div className="mb-2 font-semibold text-zinc-700 dark:text-zinc-200">
                       📋 비교 매물 {data.comparables.length}건 · 출처 = {data.comparableSource}
                       <span className="ml-2 font-normal text-zinc-500">(판매완료 우선 · 같은 상태 기준)</span>
