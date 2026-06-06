@@ -232,7 +232,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v73";  // Wave 1150: earphone essential-parts-only ("이어폰만"/충전케이스 없음) hard pool block
+export const PARSER_VERSION = "option-parser-v74";  // Wave 1194 (2026-06-06): 배터리 health 추출 보강 — "베터리"오타/70%미만/"용량"+조사 못 잡던 것 fix → 전자기기·시계 reparse (fashion 자체 버전이라 영향 0)
 
 // Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
 //   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
@@ -904,10 +904,20 @@ function parseLgGramChipFromModelNumber(text: string) {
 
 function parseBatteryHealth(text: string) {
   const lower = normalize(text).toLowerCase();
+  // Wave 1194 (2026-06-06): 배터리 health 추출 대폭 보강.
+  //   owner 발견: 애플워치 "베터리 용량 ... 64%" 가 안 잡혀 88% 양호 매물과 같은 시세군(worn)으로 묶임.
+  //   기존 결함 3종: ① 숫자 7[0-9]~100 = 70% 미만(열화 심한 케이스) 못 잡음
+  //                  ② "효율|성능"만 = "용량/헬스/수명" 누락 + 조사("성능은") 못 건넘
+  //                  ③ "배터리"만 = "베터리/밧데리" 오타 누락
+  //   fix: ① 숫자 [1-9][0-9]~100 (10~100%, (?!\d)로 256gb 같은 저장용량 trap 차단)
+  //        ② 키워드 효율/성능/헬스/health/수명 + 조사 허용 (용량/상태는 저장용량 충돌로 제외)
+  //        ③ 오타 베터리/밧데리/빳데리/바테리
+  //        ④ 자연어 fallback: 배터리류 키워드 20자 내 NN% (단 "충전/남음/정도" 잔량 표현 배제)
   const match = firstMatch(lower, [
-    /(?:배터리\s*)?(?:효율|성능)\s*[:：]?\s*(100|9[0-9]|8[0-9]|7[0-9])\s*%?/,
-    /(?:배효)\s*[:：]?\s*(100|9[0-9]|8[0-9]|7[0-9])\s*%?/,
-    /신품\s*대비\s*(100|9[0-9]|8[0-9]|7[0-9])\s*%?/,
+    /(?:배터리|베터리|밧데리|빳데리|바테리)?\s*(?:효율|성능|헬스|health|수명)\s*(?:은|는|이|가)?\s*[:：]?\s*(100|[1-9][0-9])(?!\d)\s*%?/,
+    /(?:배효)\s*[:：]?\s*(100|[1-9][0-9])(?!\d)\s*%?/,
+    /신품\s*대비\s*(100|[1-9][0-9])(?!\d)\s*%?/,
+    /(?:배터리|베터리|밧데리|빳데리|바테리)[^.!?\n]{0,20}?(100|[1-9][0-9])(?!\d)\s*%(?!\s*(?:충전|남|정도))/,
   ]);
   return match ? Number(match[1]) : null;
 }
