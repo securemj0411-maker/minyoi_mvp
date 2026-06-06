@@ -580,11 +580,9 @@ function FeedMembershipUpsellCard({
     reservation?.applicationId,
   ]);
 
-  useEffect(() => {
-    if (!approvalToast) return;
-    const id = window.setTimeout(() => setApprovalToast(null), 5200);
-    return () => window.clearTimeout(id);
-  }, [approvalToast]);
+  // Wave 1226 (2026-06-07): 승인 완료 자동소멸(5.2초 setTimeout) 제거.
+  //   사용자가 한눈 팔면 토스트가 사라져 승인된 줄 모르던 문제 → 완료 모달의 '확인했습니다'
+  //   버튼으로만 닫는다(아래 approvalToast 렌더 = 확인 버튼 있는 모달).
 
   const selectedTargetLabel = selectedPlan
     ? upgradeTargetLabel(selectedPlan)
@@ -636,25 +634,39 @@ function FeedMembershipUpsellCard({
           ? `단 ${membershipKrw(selectedPlan.priceKrw)}으로 ${upgradeTargetLabel(selectedPlan)}으로 업그레이드돼요.`
           : "1시간 한정 업그레이드 조건이에요.";
 
+  // Wave 1226 (2026-06-07): 승인 완료 = 자동소멸 토스트 → '확인했습니다' 버튼 있는 완료 모달.
+  //   backdrop 로 화면을 덮고, 사용자가 버튼을 눌러야 닫힌다(승인을 확실히 인지).
   if (approvalToast) {
     return (
-      <div className="fixed left-1/2 top-1/2 z-[120] flex w-[calc(100vw-32px)] max-w-[430px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[24px] border border-emerald-200 bg-white px-5 py-5 text-center shadow-[0_24px_80px_rgba(4,120,87,0.28)] dark:border-emerald-400/25 dark:bg-zinc-950">
-        <div>
-          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-[22px] font-black text-white">
+      <div className="fixed inset-0 z-[9995] flex items-center justify-center bg-black/62 px-4 py-8 backdrop-blur-sm">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="멤버십 연장 완료"
+          className="w-full max-w-[420px] rounded-[24px] border border-emerald-200 bg-white px-6 py-7 text-center shadow-[0_24px_80px_rgba(4,120,87,0.28)] dark:border-emerald-400/25 dark:bg-zinc-950"
+        >
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-[28px] font-black text-white">
             ✓
           </div>
-          <div className="mt-3 break-keep text-[18px] font-black text-zinc-950 dark:text-white">
+          <div className="mt-4 break-keep text-[20px] font-black leading-7 text-zinc-950 dark:text-white">
             {approvalToast}
           </div>
-          <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+          <div className="mt-1.5 break-keep text-[13px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
             연장 기간이 멤버십에 반영됐어요.
           </div>
+          <button
+            type="button"
+            onClick={() => setApprovalToast(null)}
+            className="mt-6 h-12 w-full rounded-2xl bg-emerald-600 text-[15px] font-black text-white transition hover:bg-emerald-700 active:scale-[0.99]"
+          >
+            확인했습니다
+          </button>
         </div>
       </div>
     );
   }
 
-  // Wave 1224 (2026-06-07): 결제 플로우 진행 중(모달 열림 또는 예약→입금→승인대기)에는 오퍼 타이머가
+  // Wave 1225 (2026-06-07): 결제 플로우 진행 중(모달 열림 또는 예약→입금→승인대기)에는 오퍼 타이머가
   //   만료(expired)되거나 offerPlans 가 비어도 카드를 숨기지 않는다. 숨기면 열려 있는 입금 모달·5분
   //   카운트다운이 통째로 사라진다(부모 shouldShowFeedUpsell 마운트 유지와 짝이 되는 카드 내부 게이트).
   //   완료 토스트(approvalToast)는 위에서 먼저 렌더되므로 영향 없음. 승인 완료(approved) 후엔 다시 숨김.
@@ -3335,7 +3347,7 @@ export default function ExploreClient({
     scrapOnly,
   ]);
 
-  // Wave 1224 (2026-06-07): renewal 결제 플로우가 진행 중(pending)이거나 막 완료(approved)되면
+  // Wave 1225 (2026-06-07): renewal 결제 플로우가 진행 중(pending)이거나 막 완료(approved)되면
   //   오퍼 타이머(feedUpsellRemainingSec)가 0이어도 카드를 계속 마운트한다.
   //   버그: '입금했어요' 직후 카드의 첫 status 폴링이 onMembershipStatusChange 로 membershipStatus 를
   //   renewal/pending 으로 갱신 → feedUpsellRemainingSec=0 → shouldShowFeedUpsell=false → 카드(+모달
