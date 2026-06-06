@@ -59,8 +59,13 @@ import { openTossSend } from "@/lib/toss-deeplink";
 // 현재 정책은 승인형 멤버십 게이트이므로 기본 free limit 은 0이다.
 const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 0;
 const INITIAL_FEED_PAGE_SIZE = 6;
-const BACKGROUND_FEED_PAGE_SIZE = 30;
-const DAANGN_BACKGROUND_FEED_PAGE_SIZE = 30;
+// Wave 1192 (2026-06-06): 무한스크롤 — 근처 매물 천장 제거.
+//   배경: continuation 1회 30개 교체 후 멈춰서 (initialRemainderRequestedRef 가드) 근처 130개여도 30개 천장.
+//   피드 유료 전용 (membership_required) 이라 "공짜 카탈로그" 우려 없음 → 다 보여줌.
+//   서버가 근처 ready 를 넉넉히 (150) snapshot 에 담고 → client 가 INFINITE_SCROLL_STEP 씩 점진 렌더.
+const BACKGROUND_FEED_PAGE_SIZE = 150;
+const DAANGN_BACKGROUND_FEED_PAGE_SIZE = 150;
+const INFINITE_SCROLL_STEP = 24; // 무한스크롤 한 번에 더 그리는 카드 수 (DOM 점진 렌더)
 
 type PoolItem = {
   pid: number;
@@ -2435,6 +2440,9 @@ export default function ExploreClient({
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [continuationLoading, setContinuationLoading] = useState(false);
+  // Wave 1192 (2026-06-06): 무한스크롤 — DOM 점진 렌더용 visibleCount + sentinel.
+  const [visibleCount, setVisibleCount] = useState(INFINITE_SCROLL_STEP);
+  const infiniteScrollSentinelRef = useRef<HTMLDivElement | null>(null);
   const [velocityHelpOpen, setVelocityHelpOpen] = useState(false);
   const [detailAccessSnapshot, setDetailAccessSnapshot] =
     useState<DetailAccessSnapshot>(() =>
@@ -3336,6 +3344,36 @@ export default function ExploreClient({
     sort,
     source,
   ]);
+
+  // Wave 1192 (2026-06-06): 무한스크롤 — displayItems 를 visibleCount 까지만 DOM 에 그림.
+  //   서버가 근처 ready 를 150 까지 담아주고, client 가 스크롤하면 INFINITE_SCROLL_STEP 씩 더 그림.
+  //   130개 카드를 한 번에 DOM 에 안 박아서 모바일도 안 버벅임.
+  const visibleItems = useMemo(
+    () => displayItems.slice(0, visibleCount),
+    [displayItems, visibleCount],
+  );
+  // 필터/정렬/출처/예산/스크랩 전환 시 처음부터 다시 (visibleCount 리셋).
+  useEffect(() => {
+    setVisibleCount(INFINITE_SCROLL_STEP);
+  }, [selectedCategories, source, sort, budgetFilter, scrapOnly]);
+  // sentinel 이 화면에 들어오면 더 그림. 800px 앞당겨 미리 로드 → 끊김 없음.
+  useEffect(() => {
+    if (visibleCount >= displayItems.length) return;
+    const el = infiniteScrollSentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setVisibleCount((current) =>
+            Math.min(current + INFINITE_SCROLL_STEP, displayItems.length),
+          );
+        }
+      },
+      { rootMargin: "800px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [visibleCount, displayItems.length]);
 
   const currentServerSourceFilter = source !== "all" ? source : null;
   useEffect(() => {
@@ -4729,7 +4767,7 @@ export default function ExploreClient({
         // 데스크탑 sm+ 2열 (좁은 화면 1열은 너무 비어보임).
         // Wave 353: items → displayItems (클라이언트 카테고리 필터 적용).
         <div className="-mx-3 divide-y divide-zinc-100 dark:divide-zinc-800 sm:mx-0 sm:grid sm:grid-cols-2 sm:divide-y-0 sm:gap-3 lg:grid-cols-3">
-          {displayItems.map((item) => {
+          {visibleItems.map((item) => {
             const pct = profitPct(item);
             const isJoongna = item.marketplaceSource === "joongna";
             const isDaangn = isDaangnMarketplaceSource(item.marketplaceSource);
@@ -5033,6 +5071,14 @@ export default function ExploreClient({
                 ),
               )}
             </>
+          ) : null}
+          {/* Wave 1192: 무한스크롤 sentinel — 화면 끝 근처 오면 visibleCount 늘려 더 그림. */}
+          {visibleCount < displayItems.length ? (
+            <div
+              ref={infiniteScrollSentinelRef}
+              className="h-12 sm:col-span-2 lg:col-span-3"
+              aria-hidden
+            />
           ) : null}
         </div>
       )}
