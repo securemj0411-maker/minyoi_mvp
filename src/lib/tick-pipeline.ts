@@ -338,6 +338,7 @@ type MarketKeyInvalidationRow = {
   priority: number;
   event_count: number;
   last_event_at?: string | null;
+  last_recomputed_at?: string | null;
   affected_pid?: number | null;
   affected_source?: string | null;
   claim_lane?: "priority" | "stale" | null;
@@ -3576,7 +3577,7 @@ async function loadPendingMarketInvalidations(limit = DEFAULT_MARKET_INVALIDATIO
       claimLimit,
     );
     const priorityClaimLimit = Math.max(0, claimLimit - staleLaneLimit);
-    const columns = "comparable_key,reason,priority,event_count,last_event_at,affected_pid";
+    const columns = "comparable_key,reason,priority,event_count,last_event_at,last_recomputed_at,affected_pid";
     const fetchPendingRows = async (orderBy: string, fetchLimit: number): Promise<MarketKeyInvalidationRow[]> => {
       if (fetchLimit <= 0) return [];
       const rows: MarketKeyInvalidationRow[] = [];
@@ -3590,9 +3591,19 @@ async function loadPendingMarketInvalidations(limit = DEFAULT_MARKET_INVALIDATIO
       }
       return rows;
     };
+    // Wave 1219 (2026-06-07): stale lane 정렬 last_event_at → last_recomputed_at.
+    //   배경: stale lane이 last_event_at.asc(이벤트 오래된 순)였음 → "이벤트가 끊긴 죽은 키"를 빼냄.
+    //   반대로 버즈3프로처럼 가격이 매일 바뀌는 활성 키(event_count 1657)는 last_event_at이 항상 최신이라
+    //   priority tier 안에서 뒤로 밀리고(priority lane도 last_event_at.asc) stale lane에서도 탈락 →
+    //   양쪽에서 starvation, 시세 재계산 4일+ 멈춤. freshness 지표는 "마지막 재계산 시각"이므로
+    //   last_recomputed_at.asc.nullslast 로 변경: 한 번 계산됐다가 가장 오래 묵은 키부터 drain
+    //   (버즈3프로 같은 활성 stale 키가 정확히 타깃). never-computed(null)은 nullslast로 뒤로 —
+    //   처리 불가(표본 부족)인 키가 markDone에서 last_recomputed_at 갱신을 못 받아 lane을 churn하며
+    //   다시 starvation 시키는 것 방지. 신규 처리가능 키는 priority lane(이벤트/우선순위)이 흡수.
+    //   공식(blend/outlier)은 무관 — claim 순서만 변경.
     const [priorityRows, staleRows] = await Promise.all([
       fetchPendingRows("priority.desc,last_event_at.asc", priorityWindow),
-      fetchPendingRows("last_event_at.asc", staleLaneLimit),
+      fetchPendingRows("last_recomputed_at.asc.nullslast", staleLaneLimit),
     ]);
     const affectedSources = await loadAffectedSourcesForInvalidations([...priorityRows, ...staleRows]).catch((err) => {
       console.error("load invalidation affected sources failed (non-fatal)", err);
@@ -3604,9 +3615,11 @@ async function loadPendingMarketInvalidations(limit = DEFAULT_MARKET_INVALIDATIO
       claim_lane: claimLane,
     }));
     const priorityEnriched = enrich(priorityRows, "priority").sort(compareMarketInvalidations);
+    // Wave 1219: 서버 정렬(last_recomputed_at.asc.nullslast)과 일치 — 클라 재정렬이 event 기준으로
+    //   덮어쓰면 fix가 무효화됨. null/invalid → MAX_SAFE_INTEGER로 뒤(nullslast).
     const staleEnriched = enrich(staleRows, "stale").sort((a, b) => {
-      const parsedATime = Date.parse(a.last_event_at ?? "");
-      const parsedBTime = Date.parse(b.last_event_at ?? "");
+      const parsedATime = Date.parse(a.last_recomputed_at ?? "");
+      const parsedBTime = Date.parse(b.last_recomputed_at ?? "");
       const aTime = Number.isFinite(parsedATime) ? parsedATime : Number.MAX_SAFE_INTEGER;
       const bTime = Number.isFinite(parsedBTime) ? parsedBTime : Number.MAX_SAFE_INTEGER;
       if (aTime !== bTime) return aTime - bTime;
