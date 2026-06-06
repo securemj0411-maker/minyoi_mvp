@@ -75,9 +75,15 @@ const INITIAL_READY_OVERFETCH = intEnv("FEED_INITIAL_READY_OVERFETCH", 600, 100,
 const DAANGN_SOURCE_READY_OVERFETCH = intEnv("DAANGN_FEED_SOURCE_READY_OVERFETCH", 600, READY_SLOTS, FETCH_POOL_OVERFETCH);
 const DAANGN_POOL_LIFECYCLE_FRESH_MS = intEnv(
   "DAANGN_POOL_LIFECYCLE_FRESH_MS",
-  5 * 60_000,
+  15 * 60_000,
   0,
-  30 * 60_000,
+  60 * 60_000,
+);
+const DAANGN_POOL_LIFECYCLE_LOOKBACK_BUFFER_MS = intEnv(
+  "DAANGN_POOL_LIFECYCLE_LOOKBACK_BUFFER_MS",
+  10 * 60_000,
+  0,
+  60 * 60_000,
 );
 const DAANGN_LIFECYCLE_FRESHNESS_CACHE_TTL_MS = intEnv("DAANGN_LIFECYCLE_FRESHNESS_CACHE_TTL_MS", 30_000, 0, 5 * 60_000);
 const DAANGN_LIFECYCLE_WORKER_PATHS = [
@@ -364,13 +370,15 @@ async function loadDaangnLifecycleFreshness(headers: Record<string, string>): Pr
     return daangnLifecycleFreshnessCache.value;
   }
 
-  const sinceIso = new Date(now - DAANGN_POOL_LIFECYCLE_FRESH_MS).toISOString();
+  const lookupSinceIso = new Date(
+    now - DAANGN_POOL_LIFECYCLE_FRESH_MS - DAANGN_POOL_LIFECYCLE_LOOKBACK_BUFFER_MS,
+  ).toISOString();
   try {
     const rows = await Promise.all(
       DAANGN_LIFECYCLE_WORKER_PATHS.map(async (path) => {
         const requestPathFilter = encodeURIComponent(`like.${path}*`);
         const res = await restFetch(
-          `${tableUrl("mvp_collect_runs")}?select=finished_at,started_at&request_path=${requestPathFilter}&status=eq.succeeded&started_at=gte.${encodeURIComponent(sinceIso)}&order=started_at.desc&limit=1`,
+          `${tableUrl("mvp_collect_runs")}?select=finished_at,started_at&request_path=${requestPathFilter}&status=eq.succeeded&started_at=gte.${encodeURIComponent(lookupSinceIso)}&order=started_at.desc&limit=1`,
           { headers },
         );
         if (!res.ok) throw new Error(`collect_runs_${path}_${res.status}`);
@@ -2124,10 +2132,24 @@ export async function GET(req: Request) {
     // A quick page can still hit the deep fallback when the nearby scan is slow.
     // If the client asked for a small first page and we filled it, keep the
     // contract as "partial" so the client hydrates the rest instead of stopping
-    // at the first 6 rows.
+    // at the first 6 rows. Same for interrupted local scans: zero rows after a
+    // timeout means "scan pending", not "there are no nearby candidates".
     const quickPageFilled = quickPage && !refresh && responseItems.length >= responsePageSize;
+    const nearbyDaangnScanIncomplete =
+      quickPage &&
+      !refresh &&
+      isDaangnLocalRequest &&
+      nearbyDaangnStatsForResponse.enabled &&
+      [
+        "raw_fetch_interrupted",
+        "pool_fetch_interrupted",
+        "budget_exhausted",
+        "timeout_fallback",
+        "failed",
+      ].includes(nearbyDaangnStatsForResponse.reason ?? "");
+    const quickPageShouldContinue = quickPageFilled || nearbyDaangnScanIncomplete;
     const feedPhase: PoolFeedState["phase"] =
-      quickPageFilled ? "quick" : deepFallbackUsed || refresh || !quickPage ? "full" : "quick";
+      quickPageShouldContinue ? "quick" : deepFallbackUsed || refresh || !quickPage ? "full" : "quick";
     const feedStatus: PoolFeedState["status"] =
       responseItems.length > 0
         ? feedPhase === "quick"
