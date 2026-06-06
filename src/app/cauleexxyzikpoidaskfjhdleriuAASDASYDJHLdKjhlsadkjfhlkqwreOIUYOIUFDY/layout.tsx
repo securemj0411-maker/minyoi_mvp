@@ -14,7 +14,7 @@ import { OPS_ADMIN_BASE_PATH } from "@/lib/admin-routes";
 import { isAdminUser } from "@/lib/auth-users";
 import { requireSupabaseUserFromCookies } from "@/lib/supabase-server-auth";
 
-import AdminTopBar from "./admin-top-bar";
+import { AdminShell } from "./_ui/shell/AdminShell";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -40,9 +40,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     // cau 운영자 페이지는 강제 다크로 고정한다. 운영 화면은 dense 하되 terminal 톤 대신 제품 운영 대시보드 톤으로 유지.
+    // Wave 1225: AdminTopBar → AdminShell(좌측 사이드바 + 슬림 상단바). children 은 prop 으로 넘겨 서버페이지 서버렌더 유지.
     <div className="dark min-h-screen bg-zinc-950 text-zinc-200">
-      <AdminTopBar />
-      {children}
+      <AdminShell>{children}</AdminShell>
     </div>
   );
 }
