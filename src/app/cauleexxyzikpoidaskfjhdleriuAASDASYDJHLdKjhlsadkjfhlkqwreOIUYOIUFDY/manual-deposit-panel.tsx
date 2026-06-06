@@ -1,10 +1,15 @@
 "use client";
 
-// Wave launch-97: cau admin page 의 충전 신청 panel.
-//   pending list + 승인/거절 buttons. 텔레그램 link 외에 운영자가 직접 이 페이지에서도 처리 가능.
-//   5초마다 polling — 새 신청 + 다른 운영자 (또는 텔레그램) 변경 반영.
+// Wave launch-97 / launch-101 / Wave 1225: 수동 충전 신청 패널 — pending list + 승인/거절.
+//   5초 폴링(새 신청 + 텔레그램/타 운영자 변경 반영). 공용 _ui 컴포넌트로 — 라이트 배지/notice 누출 제거.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+
+import { fmtCountdown, fmtKrwSign, fmtKst, fmtNum } from "./_ui/format";
+import { useCountdown, usePolling } from "./_ui/hooks";
+import { Badge, Button, EmptyState, Notice, Spinner, StatusBadge } from "./_ui/primitives";
+import { Table, TBody, TD, TH, THead, TR, ResponsiveTable } from "./_ui/Table";
+import { cn, FONT, INK, SURFACE, TONE, type Tone } from "./_ui/tokens";
 
 type DepositRequest = {
   id: number;
@@ -21,46 +26,28 @@ type DepositRequest = {
   created_at: string;
 };
 
-const KST_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
-  timeZone: "Asia/Seoul",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-  hour12: false,
-});
-function fmt(value: string | null): string {
-  if (!value) return "—";
-  try {
-    return KST_FORMATTER.format(new Date(value));
-  } catch {
-    return value.slice(0, 16);
+function statusMeta(status: string): { tone: Tone; label: string } {
+  switch (status) {
+    case "approved":
+      return { tone: "blue", label: "운영자 승인" };
+    case "auto_approved":
+      return { tone: "violet", label: "자동 지급" };
+    case "rejected":
+      return { tone: "rose", label: "거절" };
+    default:
+      return { tone: "amber", label: "대기 중" };
   }
 }
 
-function secondsUntil(iso: string): number {
-  return Math.max(0, Math.floor((new Date(iso).getTime() - Date.now()) / 1000));
+function Countdown({ iso }: { iso: string }) {
+  const sec = useCountdown(iso);
+  return <span className="font-black tabular-nums text-amber-300">{fmtCountdown(sec)}</span>;
 }
-function formatCountdown(seconds: number): string {
-  const safe = Math.max(0, Math.floor(seconds));
-  const m = Math.floor(safe / 60);
-  const s = safe % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
-  pending: { label: "대기 중", cls: "bg-amber-100 text-amber-800" },
-  approved: { label: "운영자 승인", cls: "bg-blue-100 text-blue-700" },
-  auto_approved: { label: "자동 지급", cls: "bg-sky-100 text-sky-700" },
-  rejected: { label: "거절", cls: "bg-rose-100 text-rose-700" },
-};
 
 export default function ManualDepositPanel() {
   const [rows, setRows] = useState<DepositRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingIds, setPendingIds] = useState<Set<number>>(new Set());
-  const [tick, setTick] = useState(0); // countdown re-render
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,18 +68,7 @@ export default function ManualDepositPanel() {
     }
   }, []);
 
-  useEffect(() => {
-    void refresh();
-    const interval = window.setInterval(refresh, 5000);
-    return () => window.clearInterval(interval);
-  }, [refresh]);
-
-  // 카운트다운 재렌더 1초마다.
-  useEffect(() => {
-    const interval = window.setInterval(() => setTick((t) => t + 1), 1000);
-    return () => window.clearInterval(interval);
-  }, []);
-  void tick;
+  usePolling(refresh, 5000);
 
   async function decide(id: number, decision: "approve" | "reject") {
     if (pendingIds.has(id)) return;
@@ -108,7 +84,6 @@ export default function ManualDepositPanel() {
         cache: "no-store",
         headers: { "x-minyoi-admin-action": "1" },
       });
-      // decide endpoint 는 HTML 응답. status 만 확인.
       if (!res.ok) {
         setError(`${action} 실패 (${res.status})`);
         return;
@@ -128,173 +103,165 @@ export default function ManualDepositPanel() {
 
   const pending = rows.filter((r) => r.status === "pending");
   const recent = rows.filter((r) => r.status !== "pending").slice(0, 10);
+  const empty = !loading && pending.length === 0 && recent.length === 0;
 
-  // Wave launch-101: bloomberg 터미널 톤.
   return (
-    <section className="mt-6 font-mono">
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-400">▌DEPOSIT QUEUE (24H)</h2>
-        <button
-          type="button"
-          onClick={() => void refresh()}
-          className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
-        >
-          REFRESH
-        </button>
+    <section>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className={cn(FONT.h3, "font-black", INK.primary)}>
+          입금 대기열 <span className={cn(FONT.meta, "font-bold", INK.muted)}>최근 24시간</span>
+        </h2>
+        <Button variant="subtle" size="sm" onClick={() => void refresh()}>
+          새로고침
+        </Button>
       </div>
 
       {notice ? (
-        <div className="mb-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-300">
+        <Notice tone="blue" className="mb-3">
           {notice}
-        </div>
+        </Notice>
       ) : null}
       {error ? (
-        <div className="mb-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300">
+        <Notice tone="rose" className="mb-3">
           {error}
-        </div>
+        </Notice>
       ) : null}
 
-      {/* Wave launch-110: 모바일 카드 layout (md 미만). desktop 은 기존 테이블 (md 이상). */}
-      <div className="space-y-2 md:hidden">
-        {loading && rows.length === 0 ? (
-          <div className="rounded-sm border border-zinc-800 bg-zinc-950 px-3 py-6 text-center text-[10px] uppercase text-zinc-600">불러오는 중…</div>
-        ) : pending.length === 0 && recent.length === 0 ? (
-          <div className="rounded-sm border border-zinc-800 bg-zinc-950 px-3 py-6 text-center text-[10px] uppercase text-zinc-600">최근 24시간 신청 없음</div>
-        ) : (
-          <>
-            {pending.map((r) => {
-              const remaining = secondsUntil(r.scheduled_auto_approve_at);
-              const inProgress = pendingIds.has(r.id);
-              const badge = STATUS_BADGE[r.status] ?? STATUS_BADGE.pending;
-              return (
-                <div key={`m-${r.id}`} className="rounded-sm border border-amber-900/40 bg-amber-950/15 p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-mono text-[10px] text-zinc-500">#{r.id}</span>
-                      <span className="text-[13px] font-bold text-amber-300">{r.depositor_name}</span>
+      {loading && rows.length === 0 ? (
+        <div className="py-6">
+          <Spinner label="불러오는 중…" />
+        </div>
+      ) : empty ? (
+        <EmptyState icon="🧾">최근 24시간 신청이 없어요</EmptyState>
+      ) : (
+        <ResponsiveTable
+          mobile={
+            <>
+              {pending.map((r) => {
+                const inProgress = pendingIds.has(r.id);
+                return (
+                  <div key={`m-${r.id}`} className={cn("rounded-lg border p-3", TONE.amber.border, TONE.amber.soft)}>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-baseline gap-2">
+                        <Badge tone="slate">#{r.id}</Badge>
+                        <span className={cn(FONT.body, "font-bold", INK.primary)}>{r.depositor_name}</span>
+                      </div>
+                      <StatusBadge tone="amber">대기 중</StatusBadge>
                     </div>
-                    <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${badge.cls}`}>{badge.label}</span>
-                  </div>
-                  <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
-                    <div><span className="text-zinc-500">패키지:</span> <span className="font-bold text-zinc-200">{r.amount.toLocaleString("ko-KR")} 크레딧</span></div>
-                    <div><span className="text-zinc-500">금액:</span> <span className="font-mono font-bold text-zinc-200">₩{r.price_krw.toLocaleString("ko-KR")}</span></div>
-                    <div className="col-span-2"><span className="text-zinc-500">남은 시간:</span> <span className="font-mono font-black text-amber-300">{formatCountdown(remaining)}</span></div>
-                    <div className="col-span-2"><span className="text-zinc-500">신청:</span> <span className="font-mono text-[10px] text-zinc-500">{fmt(r.created_at)}</span></div>
-                  </div>
-                  <div className="mt-2 flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => void decide(r.id, "approve")}
-                      disabled={inProgress}
-                      className="flex-1 rounded-sm border border-blue-700/60 bg-blue-900/40 py-2 text-[12px] font-black text-blue-300 hover:bg-blue-900/60 disabled:opacity-40"
-                    >{inProgress ? "..." : "✓ 승인"}</button>
-                    <button
-                      type="button"
-                      onClick={() => void decide(r.id, "reject")}
-                      disabled={inProgress}
-                      className="flex-1 rounded-sm border border-rose-700/60 bg-rose-900/40 py-2 text-[12px] font-black text-rose-300 hover:bg-rose-900/60 disabled:opacity-40"
-                    >{inProgress ? "..." : "✕ 거절"}</button>
-                  </div>
-                </div>
-              );
-            })}
-            {recent.map((r) => {
-              const badge = STATUS_BADGE[r.status] ?? STATUS_BADGE.pending;
-              return (
-                <div key={`m-${r.id}`} className="rounded-sm border border-zinc-900 bg-zinc-950 px-3 py-2 opacity-75">
-                  <div className="flex items-center justify-between gap-2 text-[11px]">
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-mono text-[10px] text-zinc-600">#{r.id}</span>
-                      <span className="font-semibold text-zinc-400">{r.depositor_name}</span>
-                      <span className="font-mono text-[10px] text-zinc-500">₩{r.price_krw.toLocaleString("ko-KR")}</span>
+                    <div className={cn("mt-2 grid grid-cols-2 gap-x-3 gap-y-1", FONT.meta)}>
+                      <div>
+                        <span className={INK.muted}>패키지 </span>
+                        <span className={cn("font-bold", INK.secondary)}>{fmtNum(r.amount)} 크레딧</span>
+                      </div>
+                      <div>
+                        <span className={INK.muted}>금액 </span>
+                        <span className={cn("font-bold tabular-nums", INK.secondary)}>{fmtKrwSign(r.price_krw)}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className={INK.muted}>남은 시간 </span>
+                        <Countdown iso={r.scheduled_auto_approve_at} />
+                      </div>
+                      <div className="col-span-2">
+                        <span className={INK.muted}>신청 </span>
+                        <span className={cn("tabular-nums", INK.muted)}>{fmtKst(r.created_at)}</span>
+                      </div>
                     </div>
-                    <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${badge.cls}`}>{badge.label}</span>
+                    <div className="mt-2 flex gap-2">
+                      <Button variant="primary" size="sm" className="flex-1" disabled={inProgress} onClick={() => void decide(r.id, "approve")}>
+                        {inProgress ? "처리 중…" : "✓ 승인"}
+                      </Button>
+                      <Button variant="danger" size="sm" className="flex-1" disabled={inProgress} onClick={() => void decide(r.id, "reject")}>
+                        {inProgress ? "처리 중…" : "✕ 거절"}
+                      </Button>
+                    </div>
                   </div>
-                  <div className="mt-0.5 text-[10px] text-zinc-600">{fmt(r.decided_at ?? r.created_at)} · 처리됨</div>
-                </div>
-              );
-            })}
-          </>
-        )}
-      </div>
-
-      <div className="hidden overflow-x-auto rounded-sm border border-zinc-800 bg-zinc-950 md:block">
-        <table className="w-full min-w-[900px] text-[11px]">
-          <thead className="bg-zinc-900/80">
-            <tr className="border-b border-zinc-800 text-left text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">
-              <th className="px-3 py-2">ID</th>
-              <th className="px-3 py-2">입금자명</th>
-              <th className="px-3 py-2">패키지</th>
-              <th className="px-3 py-2">금액</th>
-              <th className="px-3 py-2">상태</th>
-              <th className="px-3 py-2">남은 시간</th>
-              <th className="px-3 py-2">신청 시각</th>
-              <th className="px-3 py-2 text-right">작업</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && rows.length === 0 ? (
-              <tr><td colSpan={8} className="px-3 py-6 text-center text-xs text-gray-500">불러오는 중…</td></tr>
-            ) : pending.length === 0 && recent.length === 0 ? (
-              <tr><td colSpan={8} className="px-3 py-6 text-center text-xs text-gray-500">최근 24시간 신청 없음</td></tr>
-            ) : (
-              <>
+                );
+              })}
+              {recent.map((r) => {
+                const m = statusMeta(r.status);
+                return (
+                  <div key={`m-${r.id}`} className={cn("rounded-lg border px-3 py-2 opacity-80", SURFACE.line, SURFACE.card)}>
+                    <div className={cn("flex items-center justify-between gap-2", FONT.meta)}>
+                      <div className="flex items-baseline gap-2">
+                        <Badge tone="slate">#{r.id}</Badge>
+                        <span className={cn("font-semibold", INK.secondary)}>{r.depositor_name}</span>
+                        <span className={cn("tabular-nums", INK.muted)}>{fmtKrwSign(r.price_krw)}</span>
+                      </div>
+                      <StatusBadge tone={m.tone}>{m.label}</StatusBadge>
+                    </div>
+                    <div className={cn("mt-0.5", FONT.meta, INK.muted)}>{fmtKst(r.decided_at ?? r.created_at)} · 처리됨</div>
+                  </div>
+                );
+              })}
+            </>
+          }
+          desktop={
+            <Table minWidth={900}>
+              <THead>
+                <TR>
+                  <TH>ID</TH>
+                  <TH>입금자명</TH>
+                  <TH>패키지</TH>
+                  <TH>금액</TH>
+                  <TH>상태</TH>
+                  <TH>남은 시간</TH>
+                  <TH>신청 시각</TH>
+                  <TH align="right">작업</TH>
+                </TR>
+              </THead>
+              <TBody>
                 {pending.map((r) => {
-                  const remaining = secondsUntil(r.scheduled_auto_approve_at);
                   const inProgress = pendingIds.has(r.id);
-                  const badge = STATUS_BADGE[r.status] ?? STATUS_BADGE.pending;
                   return (
-                    <tr key={r.id} className="border-b border-amber-900/40 bg-amber-950/15">
-                      <td className="px-3 py-2 font-mono text-xs">{r.id}</td>
-                      <td className="px-3 py-2 font-semibold">{r.depositor_name}</td>
-                      <td className="px-3 py-2 text-xs">{r.amount.toLocaleString("ko-KR")} 크레딧</td>
-                      <td className="px-3 py-2 font-mono text-xs">₩{r.price_krw.toLocaleString("ko-KR")}</td>
-                      <td className="px-3 py-2"><span className={`rounded px-1.5 py-0.5 text-[11px] font-bold ${badge.cls}`}>{badge.label}</span></td>
-                      <td className="px-3 py-2 font-mono text-xs font-bold text-amber-700 dark:text-amber-300">{formatCountdown(remaining)}</td>
-                      <td className="px-3 py-2 font-mono text-[10px] text-gray-500">{fmt(r.created_at)}</td>
-                      <td className="px-3 py-2">
+                    <TR key={r.id} className={TONE.amber.soft}>
+                      <TD className="tabular-nums">{r.id}</TD>
+                      <TD className={cn("font-semibold", INK.primary)}>{r.depositor_name}</TD>
+                      <TD>{fmtNum(r.amount)} 크레딧</TD>
+                      <TD className="tabular-nums">{fmtKrwSign(r.price_krw)}</TD>
+                      <TD>
+                        <StatusBadge tone="amber">대기 중</StatusBadge>
+                      </TD>
+                      <TD>
+                        <Countdown iso={r.scheduled_auto_approve_at} />
+                      </TD>
+                      <TD className={cn("tabular-nums", INK.muted)}>{fmtKst(r.created_at)}</TD>
+                      <TD align="right">
                         <div className="flex justify-end gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => void decide(r.id, "approve")}
-                            disabled={inProgress}
-                            className="inline-flex h-7 items-center rounded-md bg-blue-600 px-2.5 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
-                          >
-                            {inProgress ? "..." : "✓ 승인"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void decide(r.id, "reject")}
-                            disabled={inProgress}
-                            className="inline-flex h-7 items-center rounded-md bg-rose-600 px-2.5 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-50"
-                          >
-                            {inProgress ? "..." : "✕ 거절"}
-                          </button>
+                          <Button variant="primary" size="sm" disabled={inProgress} onClick={() => void decide(r.id, "approve")}>
+                            {inProgress ? "…" : "✓ 승인"}
+                          </Button>
+                          <Button variant="danger" size="sm" disabled={inProgress} onClick={() => void decide(r.id, "reject")}>
+                            {inProgress ? "…" : "✕ 거절"}
+                          </Button>
                         </div>
-                      </td>
-                    </tr>
+                      </TD>
+                    </TR>
                   );
                 })}
                 {recent.map((r) => {
-                  const badge = STATUS_BADGE[r.status] ?? STATUS_BADGE.pending;
+                  const m = statusMeta(r.status);
                   return (
-                    <tr key={r.id} className="border-b border-zinc-900">
-                      <td className="px-3 py-2 font-mono text-xs">{r.id}</td>
-                      <td className="px-3 py-2 font-semibold text-gray-600 dark:text-gray-400">{r.depositor_name}</td>
-                      <td className="px-3 py-2 text-xs">{r.amount.toLocaleString("ko-KR")} 크레딧</td>
-                      <td className="px-3 py-2 font-mono text-xs">₩{r.price_krw.toLocaleString("ko-KR")}</td>
-                      <td className="px-3 py-2"><span className={`rounded px-1.5 py-0.5 text-[11px] font-bold ${badge.cls}`}>{badge.label}</span></td>
-                      <td className="px-3 py-2 text-[10px] text-gray-400">—</td>
-                      <td className="px-3 py-2 font-mono text-[10px] text-gray-500">{fmt(r.decided_at ?? r.created_at)}</td>
-                      <td className="px-3 py-2 text-right text-[10px] text-gray-400">처리됨</td>
-                    </tr>
+                    <TR key={r.id} className="opacity-80">
+                      <TD className="tabular-nums">{r.id}</TD>
+                      <TD className={INK.secondary}>{r.depositor_name}</TD>
+                      <TD>{fmtNum(r.amount)} 크레딧</TD>
+                      <TD className="tabular-nums">{fmtKrwSign(r.price_krw)}</TD>
+                      <TD>
+                        <StatusBadge tone={m.tone}>{m.label}</StatusBadge>
+                      </TD>
+                      <TD className={INK.muted}>—</TD>
+                      <TD className={cn("tabular-nums", INK.muted)}>{fmtKst(r.decided_at ?? r.created_at)}</TD>
+                      <TD align="right" className={INK.muted}>
+                        처리됨
+                      </TD>
+                    </TR>
                   );
                 })}
-              </>
-            )}
-          </tbody>
-        </table>
-      </div>
+              </TBody>
+            </Table>
+          }
+        />
+      )}
     </section>
   );
 }
