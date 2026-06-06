@@ -19,7 +19,6 @@ import {
   KbankPaymentLogo,
   TossPaymentLogo,
 } from "@/components/payment-brand-logo";
-import { HeadsetIcon } from "@/components/icons";
 import PaymentTrustCard from "@/components/payment-trust-card";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { openTossSend } from "@/lib/toss-deeplink";
@@ -238,10 +237,6 @@ export default function MembershipApplicationClient({
     } catch {
       setCopyOk(false);
     }
-  }
-
-  function openPaymentSupport() {
-    window.dispatchEvent(new CustomEvent("minyoi:open-support-chat"));
   }
 
   async function submitApplication(plan: MembershipPlan) {
@@ -543,15 +538,9 @@ export default function MembershipApplicationClient({
             >
               ×
             </button>
-            <button
-              type="button"
-              onClick={openPaymentSupport}
-              className="absolute right-14 top-3 z-10 flex h-9 items-center gap-1.5 rounded-full bg-emerald-600 px-3 text-[12px] font-black text-white shadow-lg ring-1 ring-emerald-300/30 transition hover:bg-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
-              aria-label="결제 문의하기"
-            >
-              <HeadsetIcon className="h-4 w-4" />
-              <span>문의</span>
-            </button>
+            {/* Wave 1195 (2026-06-06): 모달 자체 "문의" pill 제거. 하단 글로벌 고객센터(SiteHelpFaq)와
+                동일 기능(둘 다 minyoi:open-support-chat 이벤트)이라 중복 + 카운트다운 카드("자리 예약 만료까지")를 가렸음.
+                결제 중 문의는 하단 floating 🎧(모달 위 z-10020)으로 그대로 가능. */}
             <div className="max-h-[calc(100dvh-32px)] overflow-y-auto rounded-[24px] border border-blue-100 bg-white text-zinc-950 shadow-[0_24px_80px_rgba(15,23,42,0.35)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
           <div className="relative border-b border-blue-100 bg-[#f5f8ff] px-4 py-4 dark:border-zinc-800 dark:bg-white/6 sm:px-7 sm:py-5">
             <div className="relative flex items-start justify-between gap-4">
