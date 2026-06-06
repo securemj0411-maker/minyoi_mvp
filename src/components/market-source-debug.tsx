@@ -520,9 +520,26 @@ export function MarketSourceDebug({
 
                   {/* 비교 매물 */}
                   <div>
+                    {/* Wave 1220 (2026-06-07, owner A안): 시세 근거 요약 — "왜 이 중앙값?"을 한 줄로.
+                        화면 비교매물 = 시세 계산 근거임을 명시. 낮은 실거래도 아래 리스트에 포함됨. */}
+                    {data.marketDailyStats?.blendedMedian != null && (
+                      <div className="mb-2 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-2 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+                        <div className="text-[11px] font-bold text-emerald-800 dark:text-emerald-200">
+                          💡 시세 근거: 실거래 {data.marketDailyStats.soldCount ?? 0}건 · 중앙값 {krw(data.marketDailyStats.blendedMedian)}
+                          {data.marketDailyStats.p25 != null && data.marketDailyStats.p75 != null && (
+                            <span className="font-semibold text-emerald-700/85 dark:text-emerald-300/85">
+                              {" "}· 대부분 {krw(data.marketDailyStats.p25)}~{krw(data.marketDailyStats.p75)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-0.5 text-[10px] text-emerald-700/70 dark:text-emerald-400/70">
+                          아래 비교 매물엔 중앙값을 만든 낮은 실거래도 포함돼요 (높은 호가만 보이지 않게).
+                        </div>
+                      </div>
+                    )}
                     <div className="mb-2 font-semibold text-zinc-700 dark:text-zinc-200">
                       📋 비교 매물 {data.comparables.length}건 · 출처 = {data.comparableSource}
-                      <span className="ml-2 font-normal text-zinc-500">(가격 낮은 순 / 우리보다 싼 매물 강조)</span>
+                      <span className="ml-2 font-normal text-zinc-500">(판매완료 우선 · 같은 상태 기준)</span>
                     </div>
                     {/* Wave 251.4 (2026-05-19): clothing product_type 필터 표시 — 사용자 신뢰. */}
                     {data.ourListing.productType && data.ourListing.productType !== "type_unknown" && (

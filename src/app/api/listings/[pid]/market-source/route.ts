@@ -121,15 +121,17 @@ function trimComparableDisplayRows(
     return madRows;
   }
 
-  // Display is for user trust, not for recomputing market price. If the daily market row already has
-  // a trusted middle band, show that band first so stale/aspirational high asks do not look like
-  // the basis of the estimate.
+  // Display is for user trust, not for recomputing market price.
+  // Wave 1220 (2026-06-07, owner A안): 화면 비교매물 = 시세 계산 근거가 되도록 정직 표시.
+  //   기존엔 [중앙값×0.9 ~ 중앙값×1.15] 가운데-띠만 남겨 **낮은 실거래(sold)를 화면에서 가렸다**.
+  //   → 보이는 sold 는 다 15만인데 시세(전체 154건 중앙값)는 13만 = "따로 노는 것처럼" 보이는 근본 원인.
+  //   낮은 실거래는 시세 중앙값을 만든 진짜 근거이므로 **하한 제거**(다 보여줌).
+  //   상한(anchorUpper)은 유지 — 비현실적 고가 "호가"가 근거처럼 위로 튀는 것만 차단. madTrim 도 극단 outlier 제거.
   const hasMedian = Number.isFinite(median) && median > 0;
-  const anchorLower = hasMedian ? Math.min(p25, median * 0.9) : p25;
   const anchorUpper = hasMedian ? Math.max(p75, median * 1.15) : p75;
   const middleBandRows = madRows.filter((row) => {
     const price = Number(row.price ?? 0);
-    return Number.isFinite(price) && price >= anchorLower && price <= anchorUpper;
+    return Number.isFinite(price) && price > 0 && price <= anchorUpper;
   });
   if (middleBandRows.length >= Math.min(5, madRows.length)) return middleBandRows;
 
