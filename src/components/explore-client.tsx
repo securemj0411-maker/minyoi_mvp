@@ -60,7 +60,7 @@ import { openTossSend } from "@/lib/toss-deeplink";
 const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 0;
 const INITIAL_FEED_PAGE_SIZE = 6;
 const BACKGROUND_FEED_PAGE_SIZE = 30;
-const DAANGN_BACKGROUND_FEED_PAGE_SIZE = 500;
+const DAANGN_BACKGROUND_FEED_PAGE_SIZE = 30;
 
 type PoolItem = {
   pid: number;
@@ -2415,6 +2415,9 @@ export default function ExploreClient({
   const itemsRef = useRef<PoolItem[]>([]);
   const poolFetchSeqRef = useRef(0);
   const continuationFetchSeqRef = useRef(0);
+  const loadPoolRef = useRef<
+    ((refresh: boolean, options?: LoadPoolOptions) => Promise<void>) | null
+  >(null);
   const emptyContinuationRequestedRef = useRef<string | null>(null);
   const initialRemainderRequestedRef = useRef(false);
   useEffect(() => {
@@ -3098,6 +3101,11 @@ export default function ExploreClient({
               const incomingFresh = data.items.filter(
                 (it) => !existingPids.has(it.pid),
               );
+              const shouldContinueSilentHydration =
+                inlineContinuation &&
+                requestLimit != null &&
+                data.items.length >= requestLimit &&
+                incomingFresh.length > 0;
               setFeedExhausted(
                 incomingFresh.length === 0 &&
                   data.feedState?.shouldRequestContinuation !== true,
@@ -3111,10 +3119,35 @@ export default function ExploreClient({
                 if (fresh.length > 0 && options?.autoScrollNew !== false)
                   setScrollTargetPid(fresh[0].pid);
                 const nextItems = [...prev, ...fresh];
+                itemsRef.current = nextItems;
                 writeFeedSnapshot(storageScope, snapshotOptions, nextItems);
                 return nextItems;
               });
+              if (shouldContinueSilentHydration) {
+                setFeedState((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        status: "partial",
+                        hasMore: true,
+                        shouldRequestContinuation: true,
+                      }
+                    : data.feedState ?? null,
+                );
+                window.setTimeout(() => {
+                  if (requestSeq !== poolFetchSeqRef.current) return;
+                  void loadPoolRef.current?.(true, {
+                    autoScrollNew: false,
+                    limit: requestLimit,
+                    serverSource,
+                    serverSort,
+                    silent: true,
+                    extendedMarketplaces: options?.extendedMarketplaces,
+                  });
+                }, 120);
+              }
             } else {
+              itemsRef.current = data.items;
               setItems(data.items);
               writeFeedSnapshot(storageScope, snapshotOptions, data.items);
               setFeedExhausted(
@@ -3145,6 +3178,8 @@ export default function ExploreClient({
             );
             setFeedState(null);
             setFeedExhausted(true);
+          } else if (inlineContinuation) {
+            initialRemainderRequestedRef.current = false;
           }
         }
       } catch (e) {
@@ -3158,6 +3193,8 @@ export default function ExploreClient({
           );
           setFeedState(null);
           setFeedExhausted(true);
+        } else if (inlineContinuation) {
+          initialRemainderRequestedRef.current = false;
         }
       } finally {
         if (
@@ -3182,6 +3219,9 @@ export default function ExploreClient({
       // 통계 실패는 무시
     }
   }, []);
+  useEffect(() => {
+    loadPoolRef.current = loadPool;
+  }, [loadPool]);
 
   // 초기 1회 통계 fetch. 서버 예산/성향 게이트 제거 상태를 유지한다.
   useEffect(() => {

@@ -1359,6 +1359,21 @@ async function loadPool(
     });
     return !evidence.hardBlockCandidates.includes("essential_parts_missing");
   };
+  // Wave 1185 (2026-06-06): stale ready row 방어.
+  // Game-title parser가 완구/차량 모형을 차단해도 이미 ready로 들어간 row가 피드에 남을 수 있다.
+  // "사이버 픽업 트럭 멜로디"처럼 게임 카트리지/디스크가 아닌 장난감이 Cyberpunk 시세로 노출되지 않게 응답 직전 차단한다.
+  const gameTitleToyVehiclePass = (row: PoolRow & { soldOut: boolean }) => {
+    if (row.category !== "game_console") return true;
+    if (!row.comparable_key?.startsWith("game_console|")) return true;
+    const raw = rawByPid.get(row.pid);
+    const text = `${raw?.name ?? ""}\n${rawDescriptionByPid.get(row.pid) ?? ""}`.toLowerCase();
+    const toyVehicleNoise =
+      /(장난감|완구|미니카|모형|다이캐스트|픽업\s*트럭|픽업트럭|사이버\s*트럭|사이버트럭|cyber\s*truck|cybertruck|트럭|멜로디)/i.test(text);
+    if (!toyVehicleNoise) return true;
+    const physicalGameCarrierSignal =
+      /(ps4|ps5|플스|플레이스테이션|xbox|닌텐도|switch|스위치|게임\s*(?:칩|팩|타이틀|카드|디스크)|게임타이틀|게임팩|타이틀|카트리지|디스크|알칩|곽팩|한글판|정발)/i.test(text);
+    return physicalGameCarrierSignal;
+  };
   // Wave 795 (2026-05-27): sold_out 필터 추가 — invalidated 매물 중 진짜 sold 만 keep.
   //   DB sweep 발견: invalidated 1,073건 중 73.5% (789건) 가 active+SELLING 매물 (catalog 변경/시세 변동/AI reject 등 invalidation 사유).
   //   "방금 거래된 상품" 라벨이 73% 거짓 정보 → 사용자 신뢰 직격.
@@ -1369,8 +1384,8 @@ async function loadPool(
   };
   // Wave launch-40: source + budget 통합 필터. 다양화 전.
   // Wave 895 (당근 거리 필터) + Wave 795 (진짜 sold 만) 통합.
-  const readyFiltered = readyRowsRaw.filter((r) => sourcePass(r) && budgetPass(r) && daangnDistancePass(r) && essentialEarphonePartsPass(r));
-  const soldOutFiltered = soldOutRowsRaw.filter((r) => sourcePass(r) && budgetPass(r) && daangnDistancePass(r) && essentialEarphonePartsPass(r) && realSoldPass(r));
+  const readyFiltered = readyRowsRaw.filter((r) => sourcePass(r) && budgetPass(r) && daangnDistancePass(r) && essentialEarphonePartsPass(r) && gameTitleToyVehiclePass(r));
+  const soldOutFiltered = soldOutRowsRaw.filter((r) => sourcePass(r) && budgetPass(r) && daangnDistancePass(r) && essentialEarphonePartsPass(r) && gameTitleToyVehiclePass(r) && realSoldPass(r));
 
   // Wave 346: 카테고리 다양화 — budget filter 통과 매물 안에서만.
   // Wave 886.3 (2026-05-27): source 다양화 추가.

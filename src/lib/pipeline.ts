@@ -692,6 +692,14 @@ function categoryScopedNoise(title: string, desc: string, price: number, sku: Sk
   }
 
   if (sku.category === "game_console") {
+    const gameTitleToyMerchNoise =
+      /(장난감|완구|미니카|모형|다이캐스트|픽업\s*트럭|픽업트럭|사이버\s*트럭|사이버트럭|cyber\s*truck|cybertruck|트럭|멜로디)/i.test(textN);
+    const physicalGameCarrierSignal =
+      /(ps4|ps5|플스|플레이스테이션|xbox|닌텐도|switch|스위치|게임\s*(?:칩|팩|타이틀|카드|디스크)|게임타이틀|게임팩|타이틀|카트리지|디스크|알칩|곽팩|한글판|정발)/i.test(textN);
+    if (sku.isGameTitle && gameTitleToyMerchNoise && !physicalGameCarrierSignal) {
+      return "accessory";
+    }
+
     const game = parseGameConsoleListing(title, desc, price);
     // Wave 760 (2026-05-24): isGameTitle=true SKU는 game_title 정상 분류 (downgrade 차단).
     //   기본은 game_title 패턴이 본체 SKU 에 오염되는 거 막기 위해 accessory 로 downgrade.
