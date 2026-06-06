@@ -229,10 +229,11 @@ export function expectedProfitAverage(item: ListingCandidate) {
   return Math.round((expectedProfitMin(item) + expectedProfitMax(item)) / 2);
 }
 
-// Wave 1206 (2026-06-06, audit P0): pool 진입 최소 순익 (모든 비용 차감 후). owner 조정 가능.
-//   기존 1원은 profitMin=0/profitMax=1 매물이 avg=round(0.5)=1로 통과 → 수수료·배송·버퍼 다 뺀
-//   순익 0~수백원 매물이 추천돼 "득템" 무의미. owner Wave 885 "band 폐기·작은차익 OK" 정신은 유지.
-const MIN_MEANINGFUL_PROFIT_KRW = 1_000;
+// Wave 1206→1215 (2026-06-06): pool 진입 최소 순익 (모든 비용 차감 후). owner 조정 가능.
+//   Wave 1206: 1원→1000원 (순익 0~수백원 "득템" 무의미 차단).
+//   Wave 1215 (owner): 1000→5000. 200원·1천원·3천원 차익은 배송비·수수료 빼면 애매 → 5천 미만 차단.
+//   영향(실측): 5천 미만 827개(18.7%) 제외 → 풀 4,430→3,607, 평균 차익 33,816→41,110원(피드 품질↑).
+const MIN_MEANINGFUL_PROFIT_KRW = 5_000;
 
 export function bandFromProfit(profitMin: number, profitMax: number, _category?: string | null): 1 | 2 | 3 | null {
   // Wave 885 (2026-05-26 사용자 결정): band 시스템 폐기 — pool 진입 gate.

@@ -35,10 +35,10 @@ export function bandFromProfit(profitMin, profitMax, _category) {
   const avg = Math.round((profitMin + profitMax) / 2);
   if (avg >= 70_000) return 3;
   if (avg >= 40_000) return 2;
-  // Wave 1206 (2026-06-06, audit P0): avg 반올림(0.5→1) 대신 profitMax(최선 순익) 기준.
-  //   기존 avg>=1은 profitMin=0/profitMax=1 매물이 round(0.5)=1로 통과 → 순익 0~수백원 추천(무의미).
-  //   owner 의도(주석 위: "990원 패키지보다 큰 차익")와 일치하게 최소 1000원. profit.ts와 sync.
-  if (profitMax >= 1_000) return 1;
+  // Wave 1206→1215: avg 반올림(0.5→1) 대신 profitMax(최선 순익) 기준.
+  //   Wave 1215 (owner): 최소 1000→5000. 200원·1천원 차익은 배송·수수료 후 애매 → 5천 미만 차단.
+  //   영향: 5천 미만 827개(18.7%) 제외, 평균 차익 ↑. profit.ts MIN_MEANINGFUL_PROFIT_KRW와 sync.
+  if (profitMax >= 5_000) return 1;
   return null;
 }
 

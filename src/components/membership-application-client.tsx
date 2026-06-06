@@ -906,7 +906,7 @@ export default function MembershipApplicationClient({
             {!renewalMode ? (
               <div className="mb-3 rounded-[14px] border border-emerald-400/22 bg-emerald-500/8 px-3 py-2.5 text-center">
                 <div className="break-keep text-[12px] font-black text-emerald-200 sm:text-[13px]">
-                  💰 한 매물당 평균 차익 <span className="text-emerald-100">약 3만원</span> · 매물 1~2건만 거래해도 멤버십값 회수
+                  💰 한 매물당 평균 차익 <span className="text-emerald-100">약 4만원</span> · 매물 1~2건만 거래해도 멤버십값 회수
                 </div>
                 <div className="mt-1 break-keep text-[9.5px] font-bold leading-tight text-emerald-400/65 sm:text-[10px]">
                   차익은 시세−매물가 기준 추정값이에요. 실제 거래·수익은 보장되지 않으며 개인차가 있습니다.
