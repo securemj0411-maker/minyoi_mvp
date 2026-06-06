@@ -6818,7 +6818,9 @@ export const CATALOG: Sku[] = [
       ["갤럭시 버즈", "갤버즈", "galaxy buds"],
       [" 3 ", "버즈3", "버즈 3", "buds3", "buds 3"],
     ],
-    mustNotContain: ["프로", "pro", " 4 ", "버즈4", "buds4", " 2 ", "버즈2", "buds2", "라이브", "live", "1세대", "2세대"],
+    // Wave 1218 (2026-06-07): "fe" 추가 — 버즈3FE/버즈3fe 가 buds-3 (일반)에 누수(시세 오염)되던 것 차단.
+    //   buds-3-pro 는 이미 fe 차단(누수는 tokenHit glued 버그였고 Wave 1218에서 fix). buds-3 일반도 동일 정책.
+    mustNotContain: ["프로", "pro", " 4 ", "버즈4", "buds4", " 2 ", "버즈2", "buds2", "fe", "라이브", "live", "1세대", "2세대"],
     msrpKrw: 219000,
     released: 2024,
     confusionNote: "Buds 3 일반 (오픈형, msrp ₩219K). Buds 3 Pro (인이어 + ANC, msrp ₩319K)와 별도 — ~₩100K 차이.",
@@ -14285,6 +14287,15 @@ function tokenHit(normalizedText: string, token: string): boolean {
   // Wave 463: bare Korean substring matching made "판매입니다" look like "매입".
   // Treat 매입 as an actual word/service phrase, not a cross-syllable fragment.
   if (n === "매입") return /(?:^|[^가-힣])매입(?:$|[^가-힣]|하|합|문|상|가|진|약|제|글|도|을|은|원)/.test(normalizedText);
+  // Wave 1218 (2026-06-07): "fe" (삼성 Fan Edition)는 모델번호에 붙어 표기되는 경우가 흔하다
+  //   ("버즈3fe", "s23fe", "탭s9fe"). normalize()는 한글-숫자 경계만 공백 분리하고 숫자-영문은
+  //   분리하지 않으므로 "3fe"/"s23fe"처럼 fe가 숫자에 붙어버린다. 아래 generic short-latin 경로는
+  //   " fe " 처럼 양옆 공백을 요구해 glued fe를 놓친다 → 결과적으로:
+  //     (1) FE 매물이 non-FE SKU(galaxy_buds_3_pro / s23_self 등 mustNotContain "fe")에 누수 = 시세 오염
+  //     (2) FE SKU(galaxy_tab_s9_fe 등 mustContain "fe")가 glued FE 매물을 못 잡음 = recall 손실
+  //   둘 다 정확도 손해. 숫자/공백 등 비영문 경계 뒤의 fe는 매칭하되, life/safe/perfect/feature 처럼
+  //   영문 단어 내부의 fe(앞 또는 뒤에 영문)는 제외해 precision 보존. (측정: scripts/_tmp_fe_verify.ts)
+  if (n === "fe") return /(?:^|[^a-z])fe(?![a-z])/.test(normalizedText);
   if (/^\s|\s$/.test(token)) return normalizedText.includes(normalizedToken);
   if (/^\d+$/.test(n)) return normalizedText.includes(` ${n} `);
   // Short latin tokens such as "lv", "nb", "ps", "se" should not hit inside

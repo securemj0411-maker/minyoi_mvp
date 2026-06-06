@@ -1287,9 +1287,13 @@ function conditionFromText(
   //   셀러가 "미개봉" 박았는데 배터리/사이클 measure 명시 = 거짓 미개봉.
   //   → 자연어 new 신호 무시 (객관적 measurement 가 자연어 false positive 차단).
   const hasMeasuredUsage = (batteryHealth != null && batteryHealth > 0) || (cycles != null && cycles > 0);
+  // Wave 1218 (2026-06-07): "비닐채/비닐째/비닐 그대로" (still sealed in plastic) 추가.
+  //   발견: "갤럭시 버즈3 프로 언박싱 새상품" (desc "비닐채새상품") 이 normal 로 분류 — 미개봉 신호 누락.
+  //   "비닐채" 는 봉인 미개봉의 강한 신호 (cf. 폐기된 bare "새상품"/"언박싱" 은 false positive 多 — 유지 안 함).
+  //   "비닐 케이스"(악세서리) 는 채/째/그대로 가 아니라 매칭 안 됨 → false positive 차단.
   const explicitNewSignal = !newSignalNegativePattern
     && !hasMeasuredUsage
-    && /미개봉|미\s*개봉|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*(?:미개봉|새상품)|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯/.test(lower);
+    && /미개봉|미\s*개봉|단순개봉|미사용\s*(?:신|새|상품|제품)|박스\s*(?:미개봉|새상품)|포장\s*(?:미개봉|안\s*뜯|안뜯)|개봉\s*안\s*함|개봉\s*안함|뜯지\s*않은|언박싱\s*전|brand\s*new|미\s*뜯|안\s*뜯|비닐\s*(?:채|째|그대로)|비닐포장\s*그대로/.test(lower);
   if (explicitNewSignal) add("new_or_open_box", 0.15);
   // 2026-05-16 (사용자 코멘트 id 82/115 pid 403851792/334403685): batteryHealth=100 단독 unopened 마킹 제거.
   //   기존 정책 (Wave 91): Apple 100% = 새제품 가정. 시세 sample 평균 끌어올림 차단 의도.
