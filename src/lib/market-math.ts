@@ -116,7 +116,10 @@ export function madTrim(values: number[]) {
   }
   const threshold = 3 * 1.4826 * mad;
   const trimmed = values.filter((value) => Math.abs(value - medianValue) <= threshold);
-  if (trimmed.length < Math.max(5, Math.ceil(values.length * 0.5))) {
+  // Wave 1209 (2026-06-06, audit P1): floor 5 → 4. 정확히 5표본일 때 outlier 1개 trim하면 4 survivor인데
+  //   기존 max(5,...)는 5를 요구해 trim이 통째 취소 → outlier가 median에 잔존(특히 표본 적은 fashion/game).
+  //   4로 낮추면 5표본 outlier 1개는 제거, 2개 이상(3 survivor)은 여전히 차단 → over-trim(Wave 798c 50% cutoff) 유지.
+  if (trimmed.length < Math.max(4, Math.ceil(values.length * 0.5))) {
     return { values, medianValue, mad, removed: 0 };
   }
   return { values: trimmed, medianValue, mad, removed: values.length - trimmed.length };
