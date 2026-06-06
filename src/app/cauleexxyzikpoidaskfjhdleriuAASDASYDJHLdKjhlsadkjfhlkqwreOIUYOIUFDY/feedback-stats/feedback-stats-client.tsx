@@ -5,6 +5,8 @@
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 
+import { Notice, Spinner, StatCard } from "../_ui/primitives";
+
 type CategoryRow = {
   key: string;
   label: string;
@@ -83,9 +85,9 @@ const CATEGORY_COLOR: Record<string, { bg: string; text: string; bar: string }> 
     bar: "bg-purple-500/80 dark:bg-purple-500/70",
   },
   other: {
-    bg: "bg-sky-50 dark:bg-sky-950/30",
-    text: "text-sky-800 dark:text-sky-200",
-    bar: "bg-sky-500/80 dark:bg-sky-500/70",
+    bg: "bg-blue-50 dark:bg-blue-950/30",
+    text: "text-blue-800 dark:text-blue-200",
+    bar: "bg-blue-500/80 dark:bg-blue-500/70",
   },
   unknown: {
     bg: "bg-zinc-50 dark:bg-zinc-900",
@@ -121,10 +123,14 @@ export default function FeedbackStatsClient() {
   useEffect(() => { void fetchStats(); }, [fetchStats]);
 
   if (loading) {
-    return <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900">불러오는 중...</div>;
+    return (
+      <div className="py-8">
+        <Spinner label="불러오는 중…" />
+      </div>
+    );
   }
   if (error || !data) {
-    return <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-bold text-rose-800">에러: {error ?? "데이터 없음"}</div>;
+    return <Notice tone="rose">에러: {error ?? "데이터 없음"}</Notice>;
   }
 
   const stats = period === "thisWeek" ? data.thisWeek : period === "thisMonth" ? data.thisMonth : data.allTime;
@@ -148,17 +154,17 @@ export default function FeedbackStatsClient() {
             {p === "thisWeek" ? "최근 7일" : p === "thisMonth" ? "이번 달" : "전체"}
           </button>
         ))}
-        <span className="ml-auto text-[11px] text-zinc-500 dark:text-zinc-400">
+        <span className="ml-auto text-xs text-zinc-500 dark:text-zinc-400">
           sample {data.sampleSize}건 (최대 5,000건)
         </span>
       </div>
 
       {/* 총합 KPI 카드 */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <KpiCard label="총 신고" value={stats.total} accent="amber" />
-        <KpiCard label="✅ 승인 완료" value={stats.byStatus.resolved} accent="emerald" sub={`승인률 ${stats.resolveRate}%`} />
-        <KpiCard label="⏳ 검토 대기" value={stats.byStatus.pending} accent="rose" sub={`응답률 ${stats.responseRate}%`} />
-        <KpiCard label="🪙 토큰 지급" value={stats.totalTokens} accent="sky" />
+        <StatCard label="총 신고" value={stats.total.toLocaleString()} tone="amber" />
+        <StatCard label="✅ 승인 완료" value={stats.byStatus.resolved.toLocaleString()} tone="emerald" sub={`승인률 ${stats.resolveRate}%`} />
+        <StatCard label="⏳ 검토 대기" value={stats.byStatus.pending.toLocaleString()} tone="rose" sub={`응답률 ${stats.responseRate}%`} />
+        <StatCard label="🪙 토큰 지급" value={stats.totalTokens.toLocaleString()} tone="blue" />
       </div>
 
       {/* 카테고리별 분포 */}
@@ -180,7 +186,7 @@ export default function FeedbackStatsClient() {
                   <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-white/60 dark:bg-zinc-900/40">
                     <div className={`h-full ${color.bar}`} style={{ width: `${width}%` }} />
                   </div>
-                  <div className="mt-1 flex gap-3 text-[10px] text-zinc-600 dark:text-zinc-400">
+                  <div className="mt-1 flex gap-3 text-xs text-zinc-600 dark:text-zinc-400">
                     <span>⏳ 대기 <b>{row.pending}</b></span>
                     <span>✅ 보정 <b>{row.resolved}</b></span>
                     <span>❌ 기각 <b>{row.dismissed}</b></span>
@@ -195,7 +201,7 @@ export default function FeedbackStatsClient() {
       {/* Top 자주 신고 받는 매물 */}
       <section className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <h2 className="mb-1 text-sm font-black text-zinc-900 dark:text-zinc-100">🚨 자주 신고 받는 매물 (2회+)</h2>
-        <p className="mb-3 text-[11px] text-zinc-500 dark:text-zinc-400">
+        <p className="mb-3 text-xs text-zinc-500 dark:text-zinc-400">
           여러 사용자가 같은 매물을 신고하면 systemic issue 가능성 — 시세/parser 보정 우선순위.
         </p>
         {data.topPids.length === 0 ? (
@@ -215,7 +221,7 @@ export default function FeedbackStatsClient() {
                       <div className="line-clamp-1 text-sm font-black text-zinc-900 dark:text-zinc-100">
                         {row.listing?.name ?? `pid ${row.pid}`}
                       </div>
-                      <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
                         <span className="font-mono">pid {row.pid}</span>
                         {row.listing?.price != null && <> · 매입 {krw(row.listing.price)}</>}
                         <> · 최근 신고 {relAge(row.latestAt)}</>
@@ -230,7 +236,7 @@ export default function FeedbackStatsClient() {
                       const meta = data.categoryMeta.find((c) => c.key === cat);
                       const color = CATEGORY_COLOR[cat] ?? CATEGORY_COLOR.unknown;
                       return (
-                        <span key={cat} className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${color.bg} ${color.text}`}>
+                        <span key={cat} className={`rounded-full px-1.5 py-0.5 text-xs font-bold ${color.bg} ${color.text}`}>
                           {meta?.label ?? cat}
                         </span>
                       );
@@ -240,7 +246,7 @@ export default function FeedbackStatsClient() {
                     href={`https://m.bunjang.co.kr/products/${row.pid}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1.5 inline-block text-[10px] font-semibold text-blue-700 hover:underline dark:text-blue-400"
+                    className="mt-1.5 inline-block text-xs font-semibold text-blue-700 hover:underline dark:text-blue-400"
                   >
                     🔗 번장 열기
                   </a>
@@ -251,26 +257,10 @@ export default function FeedbackStatsClient() {
         )}
       </section>
 
-      <div className="text-[10px] text-zinc-400">
+      <div className="text-xs text-zinc-400">
         💡 카테고리는 사용자 신고 시 박힌 note prefix (`[라벨]`) 에서 추출.
         sample 5,000건 이상 누적되면 sliding window 검토 권장.
       </div>
-    </div>
-  );
-}
-
-function KpiCard({ label, value, accent, sub }: { label: string; value: number; accent: "amber" | "emerald" | "rose" | "sky"; sub?: string }) {
-  const styles: Record<typeof accent, string> = {
-    amber: "border-amber-200 bg-amber-50/60 dark:border-amber-900/40 dark:bg-amber-950/20",
-    emerald: "border-blue-200 bg-blue-50/60 dark:border-blue-900/40 dark:bg-blue-950/20",
-    rose: "border-rose-200 bg-rose-50/60 dark:border-rose-900/40 dark:bg-rose-950/20",
-    sky: "border-sky-200 bg-sky-50/60 dark:border-sky-900/40 dark:bg-sky-950/20",
-  };
-  return (
-    <div className={`rounded-xl border p-3 ${styles[accent]}`}>
-      <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{label}</div>
-      <div className="mt-1 text-xl font-black text-zinc-900 dark:text-zinc-100">{value.toLocaleString()}</div>
-      {sub ? <div className="mt-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">{sub}</div> : null}
     </div>
   );
 }

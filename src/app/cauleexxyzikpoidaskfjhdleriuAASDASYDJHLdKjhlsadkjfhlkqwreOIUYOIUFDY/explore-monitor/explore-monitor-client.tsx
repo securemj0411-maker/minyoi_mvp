@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { Button, Notice } from "../_ui/primitives";
+import { cn, FONT, INK, SURFACE } from "../_ui/tokens";
+
 // Wave 340: /explore 운영자 모니터링 페이지.
 // 매물 풀 상태 + 사용자 활동 + 카테고리/profit_band 분포 시각화.
 
@@ -80,26 +83,21 @@ export default function ExploreMonitorClient() {
             매물 풀 상태 + 사용자 활동 + 카테고리 분포
           </p>
         </div>
-        <button
-          type="button"
-          onClick={load}
-          disabled={loading}
-          className="rounded-xl bg-blue-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
-        >
-          {loading ? "로딩..." : "새로고침"}
-        </button>
+        <Button variant="primary" onClick={load} disabled={loading}>
+          {loading ? "로딩…" : "새로고침"}
+        </Button>
       </div>
 
       {error ? (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200">
+        <Notice tone="rose" className="mb-4">
           {error}
-        </div>
+        </Notice>
       ) : null}
 
       {data ? (
         <>
           {/* 매물 풀 상태 */}
-          <section className="mb-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900/40">
+          <section className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
             <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">매물 풀 상태</h2>
             <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
               <Stat label="Ready 총합" value={data.poolStatus.readyTotal} tone="info" />
@@ -108,13 +106,13 @@ export default function ExploreMonitorClient() {
               <Stat label="오늘 잡힘 (invalidated)" value={data.poolStatus.invalidatedToday} tone="rose" />
               <Stat label="오늘 spent" value={data.poolStatus.spentToday} tone="zinc" />
             </div>
-            <div className="mt-3 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+            <div className="mt-3 text-xs font-medium text-zinc-500 dark:text-zinc-400">
               6h 임계 = 무료/구독자 차등. 6h+ 비율이 너무 낮으면 무료 사용자 체험 약함.
             </div>
           </section>
 
           {/* 사용자 활동 */}
-          <section className="mb-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900/40">
+          <section className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
             <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">사용자 활동 (오늘)</h2>
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
               <Stat label="오늘 /explore refresh한 사용자" value={data.userActivity.browseUsersToday} tone="emerald" />
@@ -122,7 +120,7 @@ export default function ExploreMonitorClient() {
           </section>
 
           {/* 카테고리 분포 */}
-          <section className="mb-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900/40">
+          <section className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
             <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">카테고리 분포 (ready 풀)</h2>
             <div className="mt-3 space-y-1.5">
               {data.categoryDistribution.map((row) => {
@@ -149,7 +147,7 @@ export default function ExploreMonitorClient() {
           </section>
 
           {/* profit_band 분포 */}
-          <section className="mb-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900/40">
+          <section className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
             <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">차익 등급 (profit_band) 분포</h2>
             <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Stat label="3등급 (7만+)" value={data.bandDistribution["3"] ?? 0} tone="emerald" />
@@ -159,7 +157,7 @@ export default function ExploreMonitorClient() {
             </div>
           </section>
 
-          <div className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
+          <div className="text-xs font-medium text-zinc-400 dark:text-zinc-500">
             생성: {data.generatedAt}
           </div>
         </>
@@ -174,24 +172,19 @@ function Stat({ label, value, sub, tone }: {
   sub?: string;
   tone?: "good" | "info" | "emerald" | "rose" | "zinc";
 }) {
-  const valueColor = tone === "good" || tone === "emerald"
-    ? "text-blue-600 dark:text-blue-300"
-    : tone === "rose"
-      ? "text-rose-600 dark:text-rose-300"
-      : "text-zinc-900 dark:text-zinc-100";
+  const valueColor =
+    tone === "good" || tone === "emerald"
+      ? "text-emerald-300"
+      : tone === "rose"
+        ? "text-rose-300"
+        : tone === "info"
+          ? "text-blue-200"
+          : INK.primary;
   return (
-    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/60">
-      <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-        {label}
-      </div>
-      <div className={`mt-1 text-2xl font-bold tabular-nums ${valueColor}`}>
-        {value.toLocaleString("ko-KR")}
-      </div>
-      {sub ? (
-        <div className="mt-0.5 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-          {sub}
-        </div>
-      ) : null}
+    <div className={cn("rounded-lg border p-3", SURFACE.line, SURFACE.inset)}>
+      <div className={cn("font-bold uppercase tracking-wide", FONT.meta, INK.muted)}>{label}</div>
+      <div className={cn("mt-1 text-2xl font-black tabular-nums", valueColor)}>{value.toLocaleString("ko-KR")}</div>
+      {sub ? <div className={cn("mt-0.5 font-medium", FONT.meta, INK.muted)}>{sub}</div> : null}
     </div>
   );
 }
