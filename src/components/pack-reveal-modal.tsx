@@ -2398,8 +2398,19 @@ function marketActivityDisplay(card: RevealCard) {
   let tone: "good" | "info" | "warn";
 
   if (demandLevel == null && supplyLevel == null) {
-    value = "데이터 부족";
-    tone = "warn";
+    // active sample 없이 판매완료/판매감지만 들어온 SKU가 있다.
+    // 이 경우 판매속도 타일에는 최근 판매가 보이는데 수요·공급 타일만 숨겨져
+    // 상단 지표가 3개에서 2개로 줄어드는 불일치가 생긴다.
+    if (soldRecent >= 5) {
+      value = "최근 판매감지 활발";
+      tone = "good";
+    } else if (soldRecent > 0) {
+      value = "최근 판매감지 누적 중";
+      tone = "info";
+    } else {
+      value = "데이터 부족";
+      tone = "warn";
+    }
   } else if (demandLevel === "active") {
     value = supplyLevel === "low" ? "최근 판매감지 활발 · 공급 부족" : "최근 판매감지 활발";
     tone = "good";
