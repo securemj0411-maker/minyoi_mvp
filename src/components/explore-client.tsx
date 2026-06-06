@@ -1448,6 +1448,48 @@ function writeBudgetFilterOption(
   }
 }
 
+function FeedContinuationSkeleton() {
+  return (
+    <div className="mt-3 rounded-2xl border border-zinc-200 bg-white/85 px-3 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70">
+      <div className="mb-2.5 flex items-center justify-between gap-3">
+        <div>
+          <div className="text-[12px] font-black text-zinc-900 dark:text-zinc-100">
+            후보를 더 고르는 중이에요
+          </div>
+          <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+            조건을 통과한 매물만 아래에 이어서 붙어요
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500" />
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500 [animation-delay:120ms]" />
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500 [animation-delay:240ms]" />
+        </div>
+      </div>
+      <div className="divide-y divide-zinc-100 dark:divide-zinc-800 sm:grid sm:grid-cols-2 sm:gap-3 sm:divide-y-0 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, idx) => (
+          <div
+            key={idx}
+            className="grid grid-cols-[86px_minmax(0,1fr)] gap-3 py-3 sm:rounded-xl sm:border sm:border-zinc-200 sm:p-3 dark:sm:border-zinc-800"
+            aria-hidden="true"
+          >
+            <div className="aspect-square animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-800" />
+            <div className="min-w-0 space-y-2.5 py-1">
+              <div className="h-3.5 w-4/5 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800" />
+              <div className="h-5 w-24 animate-pulse rounded-full bg-emerald-100 dark:bg-emerald-950/50" />
+              <div className="h-3 w-36 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800" />
+              <div className="flex gap-1.5">
+                <div className="h-5 w-14 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800" />
+                <div className="h-5 w-20 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function defaultDetailAccessSnapshot(): DetailAccessSnapshot {
   return {
     creditBalance: null,
@@ -2326,6 +2368,7 @@ export default function ExploreClient({
   // Wave 391: loadPool에서 items deps에 박으면 infinite loop. ref로 fresh 접근.
   const itemsRef = useRef<PoolItem[]>([]);
   const poolFetchSeqRef = useRef(0);
+  const continuationFetchSeqRef = useRef(0);
   const initialRemainderRequestedRef = useRef(false);
   useEffect(() => {
     itemsRef.current = items;
@@ -2340,6 +2383,7 @@ export default function ExploreClient({
   const [homeRegion, setHomeRegion] = useState<HomeRegionSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [continuationLoading, setContinuationLoading] = useState(false);
   const [velocityHelpOpen, setVelocityHelpOpen] = useState(false);
   const [detailAccessSnapshot, setDetailAccessSnapshot] =
     useState<DetailAccessSnapshot>(() =>
@@ -2895,6 +2939,10 @@ export default function ExploreClient({
       const requestSeq = ++poolFetchSeqRef.current;
       const isLatestRequest = () => requestSeq === poolFetchSeqRef.current;
       const silent = options?.silent === true;
+      const inlineContinuation = refresh && silent;
+      const continuationSeq = inlineContinuation
+        ? ++continuationFetchSeqRef.current
+        : 0;
       const requestLimit = options?.limit ?? (!refresh ? INITIAL_FEED_PAGE_SIZE : null);
       const serverSource = options?.serverSource ?? sourceRef.current;
       const serverSort =
@@ -2913,9 +2961,11 @@ export default function ExploreClient({
       };
       if (refresh) {
         if (!silent) setRefreshing(true);
+        if (inlineContinuation) setContinuationLoading(true);
       }
       else {
         initialRemainderRequestedRef.current = false;
+        setContinuationLoading(false);
         const cachedItems = readFeedSnapshot(storageScope, snapshotOptions);
         if (cachedItems?.length) {
           itemsRef.current = cachedItems;
@@ -3019,6 +3069,12 @@ export default function ExploreClient({
           setFeedExhausted(true);
         }
       } finally {
+        if (
+          inlineContinuation &&
+          continuationSeq === continuationFetchSeqRef.current
+        ) {
+          setContinuationLoading(false);
+        }
         if (!isLatestRequest()) return;
         if (!silent) setRefreshing(false);
         setLoading(false);
@@ -3159,7 +3215,7 @@ export default function ExploreClient({
     const backgroundSort = sortRef.current;
     const isDaangnFocusedBackground =
       backgroundSource === "daangn" || backgroundSort === "distance";
-    const hydrationDelayMs = isDaangnFocusedBackground ? 900 : 250;
+    const hydrationDelayMs = isDaangnFocusedBackground ? 250 : 180;
     const timeoutId = window.setTimeout(() => {
       void loadPool(true, {
         autoScrollNew: false,
@@ -3176,6 +3232,12 @@ export default function ExploreClient({
 
   const shouldShowFeedUpsell =
     !loading && !scrapOnly && displayItems.length > 0 && feedUpsellRemainingSec > 0;
+  const shouldShowContinuationSkeleton =
+    !loading &&
+    !scrapOnly &&
+    items.length > 0 &&
+    detailAccessLoadingPid == null &&
+    (continuationLoading || refreshing);
   const currentViewFilterLabel = useMemo(() => {
     if (scrapOnly) return "스크랩";
     const labels: string[] = [];
@@ -3787,7 +3849,7 @@ export default function ExploreClient({
     setSource("daangn");
     setSort("distance");
     setScrapOnly(false);
-    void loadPool(false, {
+    void loadPool(true, {
       serverSource: "daangn",
       serverSort: "distance",
     });
@@ -4702,6 +4764,8 @@ export default function ExploreClient({
         </div>
       )}
 
+      {shouldShowContinuationSkeleton ? <FeedContinuationSkeleton /> : null}
+
       {shouldShowFeedUpsell ? (
         <div className="mt-4">
           <FeedMembershipUpsellCard
@@ -5072,7 +5136,7 @@ export default function ExploreClient({
             - dots 흰색 + drop-shadow 로 다크 배경에서도 또렷 */}
       {/* Wave 746 (2026-05-24): 카톡 공유 토스트 BalanceToast (layout) 로 이동 — universal 통합. */}
 
-      {refreshing && detailAccessLoadingPid == null ? (
+      {refreshing && detailAccessLoadingPid == null && items.length === 0 ? (
         <div
           className="fixed inset-0 z-[93] flex items-center justify-center bg-black/50 backdrop-blur-[1px]"
           aria-live="polite"
