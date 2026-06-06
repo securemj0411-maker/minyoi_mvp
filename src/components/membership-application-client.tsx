@@ -767,7 +767,7 @@ export default function MembershipApplicationClient({
                   <>
                     <span className="text-[17px] font-black leading-none">입금했어요</span>
                     <span className="text-[11px] font-bold leading-none opacity-80">
-                      입금 완료 후 눌러주세요 · 5분 내 자동 반영
+                      입금 완료 후 눌러주세요 · 최대 5분 내 자동 {renewalMode ? "연장" : "승인"}
                     </span>
                   </>
                 )}
