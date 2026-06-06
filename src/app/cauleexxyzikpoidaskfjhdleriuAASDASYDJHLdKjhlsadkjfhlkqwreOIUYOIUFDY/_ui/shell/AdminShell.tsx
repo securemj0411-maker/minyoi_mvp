@@ -8,9 +8,11 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { Drawer } from "../Drawer";
+import { usePolling } from "../hooks";
 import { ToastProvider } from "../Toast";
 import { cn, FOCUS, SURFACE } from "../tokens";
 import { Breadcrumb } from "./Breadcrumb";
+import { type NavCounts } from "./nav";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 
@@ -22,6 +24,17 @@ export function AdminShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
+
+  // Wave 1227: 사이드바 대기-건수 뱃지 (입금확인/수동입금/상담/신고) 30초 폴링.
+  const [navCounts, setNavCounts] = useState<NavCounts>({});
+  usePolling(async () => {
+    try {
+      const res = await fetch("/api/admin/nav-counts", { cache: "no-store" });
+      if (res.ok) setNavCounts((await res.json()) as NavCounts);
+    } catch {
+      // silent — 다음 tick 재시도
+    }
+  }, 30_000);
 
   return (
     <ToastProvider>
@@ -41,7 +54,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
         <div className="flex min-h-0 flex-1">
           <div className={cn("hidden w-60 shrink-0 overflow-y-auto border-r md:block", SURFACE.line, SURFACE.page)}>
-            <Sidebar pathname={pathname} />
+            <Sidebar pathname={pathname} counts={navCounts} />
           </div>
 
           <div id="admin-content" tabIndex={-1} className="min-w-0 flex-1 overflow-y-auto outline-none">
@@ -51,7 +64,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
 
         <Drawer open={mobileOpen} onClose={() => setMobileOpen(false)} side="left" title="운영자 메뉴" widthClass="max-w-xs">
-          <Sidebar pathname={pathname} onNavigate={() => setMobileOpen(false)} />
+          <Sidebar pathname={pathname} onNavigate={() => setMobileOpen(false)} counts={navCounts} />
         </Drawer>
       </div>
     </ToastProvider>

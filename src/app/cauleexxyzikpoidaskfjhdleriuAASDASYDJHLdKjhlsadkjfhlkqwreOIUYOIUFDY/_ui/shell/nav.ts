@@ -13,6 +13,10 @@ import {
   OPS_ADMIN_REVEAL_ANALYTICS_PATH,
 } from "@/lib/admin-routes";
 
+/** 사이드바 대기-건수 뱃지 키 — /api/admin/nav-counts 응답과 매핑. */
+export type NavBadgeKey = "depositRequests" | "manualDeposits" | "openSupport" | "pendingFeedback";
+export type NavCounts = Partial<Record<NavBadgeKey, number>>;
+
 export type NavItem = {
   label: string;
   href: string;
@@ -23,6 +27,8 @@ export type NavItem = {
   external?: boolean;
   /** 정확히 일치할 때만 active (BASE 처럼 모든 하위의 접두사인 경우). */
   exact?: boolean;
+  /** 대기 건수 뱃지(>0 일 때만 표시). */
+  badge?: NavBadgeKey;
 };
 
 export type NavGroup = { label: string; items: NavItem[] };
@@ -37,21 +43,21 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "결제 · 입금",
     items: [
-      { label: "멤버십 입금 확인", href: `${A}#membership-payments`, icon: "💳", anchor: true },
-      { label: "수동 입금 승인", href: OPS_ADMIN_MANUAL_DEPOSIT_PATH, icon: "🧾" },
+      { label: "멤버십 입금 확인", href: `${A}#membership-payments`, icon: "💳", anchor: true, badge: "depositRequests" },
+      { label: "수동 입금 승인", href: OPS_ADMIN_MANUAL_DEPOSIT_PATH, icon: "🧾", badge: "manualDeposits" },
     ],
   },
   {
     label: "사용자",
     items: [
       { label: "회원 관리", href: `${A}#member-management`, icon: "👤", anchor: true },
-      { label: "고객 상담", href: `${A}#customer-support`, icon: "💬", anchor: true },
+      { label: "고객 상담", href: `${A}#customer-support`, icon: "💬", anchor: true, badge: "openSupport" },
     ],
   },
   {
     label: "품질 · 신고",
     items: [
-      { label: "손해 신고", href: OPS_ADMIN_LOSS_REPORTS_PATH, icon: "🚩" },
+      { label: "손해 신고", href: OPS_ADMIN_LOSS_REPORTS_PATH, icon: "🚩", badge: "pendingFeedback" },
       { label: "신고 통계", href: OPS_ADMIN_FEEDBACK_STATS_PATH, icon: "📈" },
     ],
   },
