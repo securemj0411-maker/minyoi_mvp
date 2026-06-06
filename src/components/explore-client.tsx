@@ -3339,10 +3339,12 @@ export default function ExploreClient({
   const continuationSkeletonCounts = useMemo(() => {
     const tabletRemainder = displayItems.length % 2;
     const desktopRemainder = displayItems.length % 3;
+    const tabletFillCurrentRow = tabletRemainder === 0 ? 0 : 2 - tabletRemainder;
+    const desktopFillCurrentRow = desktopRemainder === 0 ? 0 : 3 - desktopRemainder;
     return {
-      mobile: 2,
-      tablet: tabletRemainder === 0 ? 2 : 2 - tabletRemainder,
-      desktop: desktopRemainder === 0 ? 3 : 3 - desktopRemainder,
+      mobile: 3,
+      tablet: tabletFillCurrentRow + 2,
+      desktop: desktopFillCurrentRow + 3,
     };
   }, [displayItems.length]);
   const emptyContinuationKey = [
