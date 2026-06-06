@@ -58,7 +58,10 @@ import { openTossSend } from "@/lib/toss-deeplink";
 // detail-access.ts FREE_DETAIL_ACCESS_LIMIT 와 동기화.
 // 현재 정책은 승인형 멤버십 게이트이므로 기본 free limit 은 0이다.
 const DEFAULT_FREE_DETAIL_ACCESS_LIMIT = 0;
-const INITIAL_FEED_PAGE_SIZE = 6;
+// Wave 1192b (2026-06-06): 첫 화면을 무한스크롤 step(24)과 같게 맞춤.
+//   배경: 6개만 빠르게 보여주고 곧 나머지로 바뀌니 "6개 → 갑자기 늘어남" 점프가 보여 어수선.
+//   24개로 첫 화면 채우면 처음부터 안정적으로 뜨고, 나머지는 스크롤해야 나와 점프 0.
+const INITIAL_FEED_PAGE_SIZE = 24;
 // Wave 1192 (2026-06-06): 무한스크롤 — 근처 매물 천장 제거.
 //   배경: continuation 1회 30개 교체 후 멈춰서 (initialRemainderRequestedRef 가드) 근처 130개여도 30개 천장.
 //   피드 유료 전용 (membership_required) 이라 "공짜 카탈로그" 우려 없음 → 다 보여줌.
