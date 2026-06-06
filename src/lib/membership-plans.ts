@@ -35,7 +35,8 @@ export const MEMBERSHIP_PLANS: MembershipPlan[] = [
     monthlyLabel: "49,000원",
     badge: "체험",
     valueNote: "먼저 감 잡는 짧은 신청",
-    paybackNote: "목표: 1건만 잡아도 비용 회수",
+    // Wave 1213: 평균 차익 33,816원이라 1건(33,816 < 49,000)으론 회수 부족 → "1~2건"으로 정확화(배너와 일관).
+    paybackNote: "매물 1~2건이면 비용 회수",
   },
   {
     key: "limited_300_3mo",
