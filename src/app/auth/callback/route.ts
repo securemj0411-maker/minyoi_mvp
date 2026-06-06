@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { classifyOAuthCallbackError } from "@/lib/auth-error-messages";
 import { createReferralAndGrantSignupBonus, ensureReferralCode } from "@/lib/referral";
 import { userRefForAuthUser } from "@/lib/user-ref";
+import { getProStatus, hasMembershipAccess } from "@/lib/user-subscription";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -119,11 +120,23 @@ export async function GET(request: Request) {
     }
   }
 
+  // Wave 1212 (2026-06-06, audit P2): next가 기본 피드 착지(/me)인데 비멤버면 → /plans로 직접 보내
+  //   이중 점프(로그인 → /me 잠깐 → /plans) 깜빡임 제거. (멤버나 명시적 next는 그대로.)
+  let finalNext = next;
+  if (next === "/me" && authUser?.id) {
+    try {
+      const membership = await getProStatus(authUser, userRefForAuthUser(authUser.id));
+      if (!hasMembershipAccess(membership)) finalNext = "/plans";
+    } catch {
+      // 멤버십 조회 실패 시 기본 next 유지 (/me가 다시 게이트로 처리).
+    }
+  }
+
   const forwardedHost = request.headers.get("x-forwarded-host");
   const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
   if (process.env.NODE_ENV !== "development" && forwardedHost) {
-    return NextResponse.redirect(`${forwardedProto}://${forwardedHost}${next}`);
+    return NextResponse.redirect(`${forwardedProto}://${forwardedHost}${finalNext}`);
   }
 
-  return NextResponse.redirect(`${origin}${next}`);
+  return NextResponse.redirect(`${origin}${finalNext}`);
 }
