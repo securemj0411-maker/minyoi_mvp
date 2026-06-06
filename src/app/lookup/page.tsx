@@ -18,7 +18,9 @@ export const metadata = {
 export default async function LookupPage() {
   const auth = await requireSupabaseUserFromCookies();
   if (!auth.ok) {
-    redirect("/login?next=/plans");
+    // Wave 1210 (audit P2): next=/plans면 로그인 후 원래 가려던 /lookup으로 안 돌아옴.
+    //   next=/lookup이면 멤버는 로그인 후 시세조회로 복귀, 비멤버는 /lookup이 다시 /plans로 보냄(의미 보존).
+    redirect("/login?next=/lookup");
   }
   const membership = await getProStatus(auth.user, userRefForAuthUser(auth.user.id));
   if (!hasMembershipAccess(membership)) {

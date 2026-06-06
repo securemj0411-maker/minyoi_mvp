@@ -55,9 +55,12 @@ export default function TelegramConnectPanel() {
 
   useEffect(() => {
     void refresh();
-    const t = setInterval(refresh, 5000); // 연결 진행 중 polling
+    // Wave 1210 (audit P2): 연결 완료 후에도 5초 폴링이 영구 지속 → 불필요한 서버 호출.
+    //   connected면 폴링 안 검 (status 변경 시 effect 재실행돼 자동 종료).
+    if (status?.connected) return;
+    const t = setInterval(refresh, 5000); // 연결 진행 중에만 polling
     return () => clearInterval(t);
-  }, [refresh]);
+  }, [refresh, status?.connected]);
 
   async function startVerify() {
     setActionLoading(true);

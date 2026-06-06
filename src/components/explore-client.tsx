@@ -2691,10 +2691,11 @@ export default function ExploreClient({
 
   const closeRefreshModal = useCallback(() => {
     setRefreshModalAnimating(false);
-    const t = setTimeout(() => {
+    // Wave 1210 (audit P2): useCallback 반환값은 cleanup으로 안 불림(onClick 핸들러가 버림) → clearTimeout 무의미했음.
+    //   250ms 단발이라 영향 미미하나 setState-on-unmounted 경고 소지 → 반환 제거.
+    window.setTimeout(() => {
       setRefreshModalOpen(false);
     }, 250);
-    return () => clearTimeout(t);
   }, []);
 
   // Wave launch-17 #3: 모바일 뒤로가기 (swipe-back / 안드로이드 hardware back) → 모달 닫기.
@@ -2751,6 +2752,15 @@ export default function ExploreClient({
     () => searchParams.get("view") === "scrap",
   );
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  // Wave 1210 (audit P2): 모바일 필터 시트 popstate — 뒤로가기 시 시트만 닫고 피드 이탈 방지.
+  //   기존엔 popstate 핸들러가 없어 시트 열린 채 뒤로가기 누르면 피드 페이지를 통째로 나갔음. (새로고침 모달과 동일 패턴.)
+  useEffect(() => {
+    if (!mobileFilterOpen) return;
+    window.history.pushState({ minyoi_mobile_filter: true }, "");
+    const handlePopState = () => setMobileFilterOpen(false);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [mobileFilterOpen]);
   const categoryScrollRef = useRef<HTMLDivElement | null>(null);
   const [canScrollCategoriesPrev, setCanScrollCategoriesPrev] = useState(false);
   const [canScrollCategoriesNext, setCanScrollCategoriesNext] = useState(false);
