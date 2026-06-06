@@ -39,6 +39,7 @@ import {
   toParsedListingRow,
 } from "@/lib/option-parser";
 import { conditionFallbackChain, pickByConditionFallback } from "@/lib/condition-fallback";
+import { POOL_BLOCK_NOTES } from "@/lib/condition-policy";
 import {
   aiHasHardRisk,
   aiSecondOpinionDecision,
@@ -4783,6 +4784,11 @@ async function upsertMarketPriceDaily(rows: ScorableRawRow[], parsedByPid: Map<n
     // accessory_bundle/multi_device_bundle은 condition_class와 별도 — bundle 자체가 noise.
     if (conditionNotes.includes("accessory_bundle")) continue;
     if (conditionNotes.includes("multi_device_bundle")) continue;
+    // Wave 1217 (2026-06-06): 화면 비교매물 lane(POOL_BLOCK_NOTES)과 시세 lane 일치.
+    //   기존엔 flawed class(4774)+bundle 2종만 제외 → normal로 남은 POOL_BLOCK 신호(단품/한쪽/기능결함/
+    //   구함/교환/리퍼 등)가 시세 집계에만 새어듦(측정: 전체 19,906 중 9건이 normal로 누수).
+    //   화면 비교매물은 이미 제외하므로, 시세도 동일 제외해 "화면=시세 근거" 일치.
+    if (conditionNotes.some((n) => (POOL_BLOCK_NOTES as readonly string[]).includes(n))) continue;
 
     // 2026-05-15 (사용자 코멘트 pid 404436811 / 404643880 / 401500642):
     // missing_suspect 매물이 6시간+ 안 보이면 사실상 사라진 상태. lifecycle worker가
