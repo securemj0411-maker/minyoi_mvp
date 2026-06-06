@@ -108,6 +108,9 @@ function pageSizeParam(raw: string | null) {
 // Daangn is local-first. The profit-ordered pool query can miss nearby dong rows,
 // so we prefetch ready candidates by nearby Daangn region ids before diversification.
 const DAANGN_NEARBY_REGION_LIMIT = intEnv("DAANGN_NEARBY_FEED_REGION_LIMIT", 96, 20, 900);
+// Wave 1192f (2026-06-06): "더 넓은 범위 찾기" 옵션 — 기본 96 region (≈6km) → 확장 500 (10km 안 전체).
+//   RPC(candidate_pool 기준)라 region 늘려도 0.2초 유지. 사용자가 버튼으로 선택.
+const DAANGN_NEARBY_REGION_LIMIT_EXPANDED = intEnv("DAANGN_NEARBY_FEED_REGION_LIMIT_EXPANDED", 500, 96, 900);
 const DAANGN_NEARBY_RADIUS_KM = intEnv("DAANGN_NEARBY_FEED_RADIUS_KM", 10, 1, 30);
 const DAANGN_NEARBY_RAW_LOOKUP_LIMIT = intEnv("DAANGN_NEARBY_FEED_RAW_LOOKUP_LIMIT", 5000, 100, 6000);
 const DAANGN_NEARBY_REGION_BATCH_SIZE = intEnv("DAANGN_NEARBY_FEED_REGION_BATCH_SIZE", 24, 8, 260);
@@ -898,6 +901,7 @@ async function loadNearbyDaangnReadyRows(
     extendedMarketplaces?: boolean;
     readyCandidateLimit?: number;
     quickPage?: boolean;
+    daangnExpandedRange?: boolean;
   },
 ): Promise<NearbyDaangnPrefetchResult> {
   const startedAt = Date.now();
@@ -921,7 +925,9 @@ async function loadNearbyDaangnReadyRows(
   const regionIds = nearbyDaangnRegionIds(
     options.userHomeDaangnFullPath,
     DAANGN_NEARBY_RADIUS_KM,
-    DAANGN_NEARBY_REGION_LIMIT,
+    options.daangnExpandedRange
+      ? DAANGN_NEARBY_REGION_LIMIT_EXPANDED
+      : DAANGN_NEARBY_REGION_LIMIT,
   );
   const localFirstPrefetch = options.source === "daangn" || options.sort === "distance";
   const quickTarget = Math.max(READY_SLOTS, options.readyCandidateLimit ?? READY_SLOTS);
@@ -960,7 +966,8 @@ async function loadNearbyDaangnReadyRows(
     options.sort ?? "profit_desc",
     options.priceMax ?? "all",
     DAANGN_NEARBY_RADIUS_KM,
-    DAANGN_NEARBY_REGION_LIMIT,
+    // Wave 1192f: 실제 region 수로 캐시 구분 (6km 96 vs 확장 10km 412 섞임 방지).
+    regionIds.length,
     regionBatchSize,
     targetReady,
     returnLimit,
@@ -1221,6 +1228,7 @@ async function loadPool(
     userHomeDaangnFullPath?: string | null;
     extendedMarketplaces?: boolean;
     quickPage?: boolean;
+    daangnExpandedRange?: boolean;
   } = {},
 ): Promise<{
   pool: (PoolRow & { soldOut: boolean })[];
@@ -1283,6 +1291,7 @@ async function loadPool(
         extendedMarketplaces: options.extendedMarketplaces,
         readyCandidateLimit: options.readyCandidateLimit,
         quickPage: options.quickPage,
+        daangnExpandedRange: options.daangnExpandedRange,
       }),
       nearbyDaangnTimeoutMs,
       "nearby_daangn_prefetch",
@@ -1909,6 +1918,8 @@ export async function GET(req: Request) {
         ? normalizeMarketplaceSource(sourceParam)
         : null;
     const extendedMarketplaces = url.searchParams.get("marketplaces") === "extended";
+    // Wave 1192f (2026-06-06): "더 넓은 범위 찾기" — expandRange=1 이면 6km → 10km (region 96 → 500).
+    const daangnExpandedRange = url.searchParams.get("expandRange") === "1";
 
     // Wave 391: 클라이언트가 이미 본 pids 제외 — refresh 시 새 매물 보장.
     const excludePidsParam = url.searchParams.get("excludePids");
@@ -1963,7 +1974,8 @@ export async function GET(req: Request) {
       extendedMarketplaces,
       pageSize: responsePageSize,
     };
-    const feedSnapshotAllowed = canUseFeedSnapshot({
+    // Wave 1192f: "더 넓은 범위" 확장 모드는 snapshot 안 씀 (RPC 0.2초라 직접, 6km snapshot 과 안 섞이게).
+    const feedSnapshotAllowed = !daangnExpandedRange && canUseFeedSnapshot({
       refresh,
       excludePids: excludeAllPids,
       regionKey: userHomeRegion?.daangn_full_path ?? null,
@@ -2068,6 +2080,7 @@ export async function GET(req: Request) {
       userHomeDaangnFullPath: userHomeRegion?.daangn_full_path ?? null,
       extendedMarketplaces,
       quickPage,
+      daangnExpandedRange,
     });
     const deduped = dedupeSameSellerProducts(pool, raws, metas);
     const skuImageMap = await loadSkuImageMap();
@@ -2091,6 +2104,7 @@ export async function GET(req: Request) {
         userHomeDaangnFullPath: userHomeRegion?.daangn_full_path ?? null,
         extendedMarketplaces,
         quickPage: false,
+        daangnExpandedRange,
       });
       const fallbackDeduped = dedupeSameSellerProducts(
         fallbackPool.pool,

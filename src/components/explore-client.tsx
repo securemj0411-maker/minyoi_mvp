@@ -2446,6 +2446,9 @@ export default function ExploreClient({
   // Wave 1192 (2026-06-06): 무한스크롤 — DOM 점진 렌더용 visibleCount + sentinel.
   const [visibleCount, setVisibleCount] = useState(INFINITE_SCROLL_STEP);
   const infiniteScrollSentinelRef = useRef<HTMLDivElement | null>(null);
+  // Wave 1192f (2026-06-06): "더 넓은 범위 찾기" (6km → 10km). ref 로 즉시 반영 (setState 비동기 회피).
+  const [daangnExpandedRange, setDaangnExpandedRange] = useState(false);
+  const daangnExpandedRangeRef = useRef(false);
   const [velocityHelpOpen, setVelocityHelpOpen] = useState(false);
   const [detailAccessSnapshot, setDetailAccessSnapshot] =
     useState<DetailAccessSnapshot>(() =>
@@ -3077,6 +3080,8 @@ export default function ExploreClient({
         if (serverSource !== "all") params.set("source", serverSource);
         if (options?.extendedMarketplaces) params.set("marketplaces", "extended");
         if (serverSort === "distance") params.set("sort", "distance");
+        // Wave 1192f: "더 넓은 범위 찾기" 활성 시 서버에 10km 요청.
+        if (daangnExpandedRangeRef.current) params.set("expandRange", "1");
         const budgetParam = budgetApiParam(budgetFilter);
         if (budgetParam) params.set("budget", budgetParam);
         // Wave 391: refresh 시 이미 본 pids 전달 → 백엔드가 제외하고 다른 매물 fetch.
@@ -5092,6 +5097,44 @@ export default function ExploreClient({
           ) : null}
         </div>
       )}
+
+      {/* Wave 1192f (2026-06-06): "더 넓은 범위 찾기" — 당근 거리뷰에서 가까운 매물 다 봤으면 10km 확장. */}
+      {isDaangnFocusedView && !scrapOnly && displayItems.length > 0 && visibleCount >= displayItems.length ? (
+        <div className="mt-5 flex flex-col items-center gap-2">
+          {!daangnExpandedRange ? (
+            <>
+              <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                이 근처(약 6km)는 여기까지예요
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  daangnExpandedRangeRef.current = true;
+                  setDaangnExpandedRange(true);
+                  void loadPool(false);
+                }}
+                disabled={loading || refreshing || continuationLoading}
+                className="inline-flex h-11 items-center justify-center gap-1.5 rounded-full border border-[#3182f6] bg-blue-50 px-5 text-[13px] font-black text-[#3182f6] transition hover:bg-blue-100 disabled:opacity-60 dark:border-blue-500 dark:bg-blue-950/40 dark:text-blue-300"
+              >
+                🔍 더 넓은 범위에서 찾기 (10km)
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                daangnExpandedRangeRef.current = false;
+                setDaangnExpandedRange(false);
+                void loadPool(false);
+              }}
+              disabled={loading || refreshing || continuationLoading}
+              className="inline-flex h-9 items-center justify-center rounded-full border border-zinc-300 px-4 text-xs font-bold text-zinc-600 transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            >
+              가까운 동네만 보기 (6km)
+            </button>
+          )}
+        </div>
+      ) : null}
 
       {shouldShowFeedUpsell ? (
         <div className="mt-4">
