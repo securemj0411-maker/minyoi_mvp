@@ -28,7 +28,8 @@ export default async function HomeRegionOnboardingPage({
   }
   const params = await searchParams;
   const editMode = params?.edit === "1";
-  const existing = await loadUserHomeRegion(auth.user.id);
+  // Wave 1202 (audit P1): region만 추출. 에러면 region=null이라 온보딩 유지(사용자가 설정 시도 가능, 무한루프 없음).
+  const { region: existing } = await loadUserHomeRegion(auth.user.id);
   if (existing && !editMode) {
     redirect("/me");
   }

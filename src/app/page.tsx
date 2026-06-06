@@ -62,8 +62,11 @@ export default async function Home() {
 
   // Wave 773 (2026-05-27): 로그인 후 첫 진입 — 거주 동네 미설정이면 onboarding 페이지로 redirect.
   //   멤버십이 없는 사용자는 먼저 신청 페이지로 보낸다. 추천 피드는 승인된 계정만 접근 가능.
-  const homeRegion = await loadUserHomeRegion(auth.user.id);
-  if (!homeRegion) {
+  // Wave 1202 (audit P1): DB 조회 에러(errored)면 redirect 보류 — 에러를 "미설정"으로 오인해
+  //   정상 멤버를 온보딩으로 튕기던 버그 fix. 진짜 미설정(!region && !errored)일 때만 온보딩.
+  const { region: homeRegion, errored: homeRegionErrored } =
+    await loadUserHomeRegion(auth.user.id);
+  if (!homeRegion && !homeRegionErrored) {
     redirect("/onboarding/home-region");
   }
 

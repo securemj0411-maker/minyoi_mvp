@@ -1888,7 +1888,7 @@ export async function GET(req: Request) {
     const userRef = userRefForAuthUser(auth.user.id);
     // Wave 773 (2026-05-27): 사용자 거주 동네 로드 — Daangn 매물 거리 필터링용.
     //   set X → redirect to /onboarding/home-region (강제). API는 데이터 그대로 반환하되 클라이언트 측에서 redirect.
-    const userHomeRegion = await loadUserHomeRegion(auth.user.id);
+    const { region: userHomeRegion } = await loadUserHomeRegion(auth.user.id);
     const url = new URL(req.url);
     const refresh = url.searchParams.get("refresh") === "1";
     const responsePageSize = pageSizeParam(url.searchParams.get("limit"));

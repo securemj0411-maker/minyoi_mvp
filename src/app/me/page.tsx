@@ -21,8 +21,10 @@ export default async function MePage() {
     if (!hasMembershipAccess(membership)) {
       redirect("/plans?from=me");
     }
-    const homeRegion = await loadUserHomeRegion(auth.user.id);
-    if (!homeRegion) {
+    // Wave 1202 (audit P1): DB 조회 에러면 redirect 보류 (정상 멤버 온보딩 튕김 방지).
+    const { region: homeRegion, errored: homeRegionErrored } =
+      await loadUserHomeRegion(auth.user.id);
+    if (!homeRegion && !homeRegionErrored) {
       redirect("/onboarding/home-region");
     }
   }
