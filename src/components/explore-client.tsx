@@ -1480,6 +1480,26 @@ function writeBudgetFilterOption(
   }
 }
 
+function FeedContinuationSkeletonCard({ className = "" }: { className?: string }) {
+  return (
+    <div
+      className={`grid grid-cols-[120px_minmax(0,1fr)] gap-3 px-3 py-4 sm:rounded-xl sm:border sm:border-zinc-200 sm:bg-white sm:p-3 dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40 ${className}`}
+      aria-hidden="true"
+    >
+      <div className="aspect-square animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-800" />
+      <div className="min-w-0 space-y-2.5 py-1">
+        <div className="h-3.5 w-4/5 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800" />
+        <div className="h-5 w-24 animate-pulse rounded-full bg-emerald-100 dark:bg-emerald-950/50" />
+        <div className="h-3 w-36 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800" />
+        <div className="flex gap-1.5">
+          <div className="h-5 w-14 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800" />
+          <div className="h-5 w-20 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function FeedContinuationSkeleton() {
   return (
     <div className="mt-3 rounded-2xl border border-zinc-200 bg-white/85 px-3 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70">
@@ -1500,22 +1520,10 @@ function FeedContinuationSkeleton() {
       </div>
       <div className="divide-y divide-zinc-100 dark:divide-zinc-800 sm:grid sm:grid-cols-2 sm:gap-3 sm:divide-y-0 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, idx) => (
-          <div
+          <FeedContinuationSkeletonCard
             key={idx}
-            className="grid grid-cols-[86px_minmax(0,1fr)] gap-3 py-3 sm:rounded-xl sm:border sm:border-zinc-200 sm:p-3 dark:sm:border-zinc-800"
-            aria-hidden="true"
-          >
-            <div className="aspect-square animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-800" />
-            <div className="min-w-0 space-y-2.5 py-1">
-              <div className="h-3.5 w-4/5 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800" />
-              <div className="h-5 w-24 animate-pulse rounded-full bg-emerald-100 dark:bg-emerald-950/50" />
-              <div className="h-3 w-36 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800" />
-              <div className="flex gap-1.5">
-                <div className="h-5 w-14 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800" />
-                <div className="h-5 w-20 animate-pulse rounded-full bg-zinc-100 dark:bg-zinc-800" />
-              </div>
-            </div>
-          </div>
+            className="py-3 sm:p-3"
+          />
         ))}
       </div>
     </div>
@@ -3328,6 +3336,15 @@ export default function ExploreClient({
     items.length > 0 &&
     detailAccessLoadingPid == null &&
     (continuationLoading || refreshing);
+  const continuationSkeletonCounts = useMemo(() => {
+    const tabletRemainder = displayItems.length % 2;
+    const desktopRemainder = displayItems.length % 3;
+    return {
+      mobile: 2,
+      tablet: tabletRemainder === 0 ? 2 : 2 - tabletRemainder,
+      desktop: desktopRemainder === 0 ? 3 : 3 - desktopRemainder,
+    };
+  }, [displayItems.length]);
   const emptyContinuationKey = [
     budgetFilter,
     source,
@@ -4947,10 +4964,36 @@ export default function ExploreClient({
               </button>
             );
           })}
+          {shouldShowContinuationSkeleton ? (
+            <>
+              {Array.from({ length: continuationSkeletonCounts.mobile }).map(
+                (_, idx) => (
+                  <FeedContinuationSkeletonCard
+                    key={`continuation-mobile-${idx}`}
+                    className="sm:hidden"
+                  />
+                ),
+              )}
+              {Array.from({ length: continuationSkeletonCounts.tablet }).map(
+                (_, idx) => (
+                  <FeedContinuationSkeletonCard
+                    key={`continuation-tablet-${idx}`}
+                    className="hidden sm:grid lg:hidden"
+                  />
+                ),
+              )}
+              {Array.from({ length: continuationSkeletonCounts.desktop }).map(
+                (_, idx) => (
+                  <FeedContinuationSkeletonCard
+                    key={`continuation-desktop-${idx}`}
+                    className="hidden lg:grid"
+                  />
+                ),
+              )}
+            </>
+          ) : null}
         </div>
       )}
-
-      {shouldShowContinuationSkeleton ? <FeedContinuationSkeleton /> : null}
 
       {shouldShowFeedUpsell ? (
         <div className="mt-4">
