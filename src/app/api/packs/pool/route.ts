@@ -131,9 +131,11 @@ const DAANGN_NEARBY_LOCAL_RETURN_LIMIT = intEnv(
 const DAANGN_NEARBY_CACHE_TTL_MS = intEnv("DAANGN_NEARBY_FEED_CACHE_TTL_MS", 45_000, 0, 300_000);
 const DAANGN_NEARBY_SLOW_LOG_MS = intEnv("DAANGN_NEARBY_FEED_SLOW_LOG_MS", 1_200, 100, 10_000);
 const DAANGN_NEARBY_PREFETCH_BUDGET_MS = intEnv("DAANGN_NEARBY_FEED_PREFETCH_BUDGET_MS", 8_000, 500, 30_000);
+// Wave 1192c (2026-06-06): quick 이 근처 96 region 한 batch 처리하도록 budget 상향 (1.2s → 2.8s).
+//   Medium warm 으로 96 region 쿼리 ~1초라 여유 확보. 첫 화면에 충분한 매물 + snapshot 제대로 담김.
 const DAANGN_NEARBY_QUICK_PREFETCH_BUDGET_MS = intEnv(
   "DAANGN_NEARBY_FEED_QUICK_PREFETCH_BUDGET_MS",
-  1_200,
+  2_800,
   300,
   DAANGN_NEARBY_PREFETCH_BUDGET_MS,
 );
@@ -935,9 +937,12 @@ async function loadNearbyDaangnReadyRows(
       ? Math.min(DAANGN_NEARBY_LOCAL_RETURN_LIMIT, Math.max(DAANGN_NEARBY_BOOST_LIMIT, quickTarget))
       : DAANGN_NEARBY_LOCAL_RETURN_LIMIT
     : DAANGN_NEARBY_BOOST_LIMIT;
+  // Wave 1192c (2026-06-06): quick page 가 가까운 4개 region 만 봐서 ready 1개 → snapshot 1개 캐시.
+  //   Medium warm 으로 근처 96 region 한 쿼리가 ~1초라, quick 도 근처 전체를 한 batch 로 처리.
+  //   → 첫 응답에 충분한 매물 + snapshot 에 제대로 담김 (owner: "snapshot 인데 왜 1개씩 단계적").
   const regionBatchSize = localFirstPrefetch
     ? options.quickPage
-      ? Math.max(1, Math.min(DAANGN_NEARBY_LOCAL_REGION_BATCH_SIZE, 4))
+      ? Math.max(1, Math.min(regionIds.length, DAANGN_NEARBY_LOCAL_RETURN_LIMIT))
       : DAANGN_NEARBY_LOCAL_REGION_BATCH_SIZE
     : DAANGN_NEARBY_REGION_BATCH_SIZE;
   if (regionIds.length === 0) {
