@@ -266,6 +266,24 @@ const EMPTY_NEARBY_DAANGN_STATS: NearbyDaangnPrefetchStats = {
   stoppedEarly: false,
 };
 
+const NEARBY_DAANGN_INCOMPLETE_REASONS = new Set([
+  "raw_fetch_interrupted",
+  "pool_fetch_interrupted",
+  "budget_exhausted",
+  "timeout_fallback",
+  "failed",
+]);
+
+function isNearbyDaangnScanIncomplete(
+  stats: NearbyDaangnPrefetchStats | null | undefined,
+) {
+  return Boolean(
+    stats?.enabled &&
+      stats.reason &&
+      NEARBY_DAANGN_INCOMPLETE_REASONS.has(stats.reason),
+  );
+}
+
 function feedSnapshotAgeMs(updatedAt: string | null | undefined) {
   if (!updatedAt) return null;
   const parsed = Date.parse(updatedAt);
@@ -951,16 +969,20 @@ async function loadNearbyDaangnReadyRows(
   const canUseCache = exclude.size === 0 && DAANGN_NEARBY_CACHE_TTL_MS > 0;
   const cached = canUseCache ? NEARBY_DAANGN_READY_CACHE.get(cacheKey) : null;
   if (cached && cached.expiresAt > Date.now()) {
-    const rows = cached.rows.slice(0, returnLimit);
-    return {
-      rows,
-      stats: {
-        ...cached.stats,
-        cacheHit: true,
-        elapsedMs: Date.now() - startedAt,
-        returnedRows: rows.length,
-      },
-    };
+    if (isNearbyDaangnScanIncomplete(cached.stats)) {
+      NEARBY_DAANGN_READY_CACHE.delete(cacheKey);
+    } else {
+      const rows = cached.rows.slice(0, returnLimit);
+      return {
+        rows,
+        stats: {
+          ...cached.stats,
+          cacheHit: true,
+          elapsedMs: Date.now() - startedAt,
+          returnedRows: rows.length,
+        },
+      };
+    }
   }
 
   try {
@@ -1107,7 +1129,7 @@ async function loadNearbyDaangnReadyRows(
       stoppedEarly: readyByPid.size >= targetReady,
       reason: stopReason,
     };
-    if (canUseCache) {
+    if (canUseCache && !isNearbyDaangnScanIncomplete(stats)) {
       NEARBY_DAANGN_READY_CACHE.set(cacheKey, {
         expiresAt: Date.now() + DAANGN_NEARBY_CACHE_TTL_MS,
         rows,
@@ -2048,7 +2070,14 @@ export async function GET(req: Request) {
     items = buildItems(deduped.pool, deduped.raws, deduped.metas, marketBands, sourceMarketBands, v7SiblingPresence, velocitySignals, userHomeRegion, parsedGradingRows, skuImageMap);
     let nearbyDaangnStatsForResponse = nearbyDaangnStats;
     let deepFallbackUsed = false;
-    if (items.length === 0 && quickPage && (priceMax != null || isDaangnLocalRequest)) {
+    const initialNearbyDaangnScanIncomplete =
+      isDaangnLocalRequest && isNearbyDaangnScanIncomplete(nearbyDaangnStats);
+    if (
+      items.length === 0 &&
+      quickPage &&
+      (priceMax != null || isDaangnLocalRequest) &&
+      !initialNearbyDaangnScanIncomplete
+    ) {
       const fallbackPool = await loadPool(headers, {
         sort,
         source,
@@ -2139,14 +2168,7 @@ export async function GET(req: Request) {
       quickPage &&
       !refresh &&
       isDaangnLocalRequest &&
-      nearbyDaangnStatsForResponse.enabled &&
-      [
-        "raw_fetch_interrupted",
-        "pool_fetch_interrupted",
-        "budget_exhausted",
-        "timeout_fallback",
-        "failed",
-      ].includes(nearbyDaangnStatsForResponse.reason ?? "");
+      isNearbyDaangnScanIncomplete(nearbyDaangnStatsForResponse);
     const quickPageShouldContinue = quickPageFilled || nearbyDaangnScanIncomplete;
     const feedPhase: PoolFeedState["phase"] =
       quickPageShouldContinue ? "quick" : deepFallbackUsed || refresh || !quickPage ? "full" : "quick";
