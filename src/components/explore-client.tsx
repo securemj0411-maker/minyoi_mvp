@@ -4571,11 +4571,14 @@ export default function ExploreClient({
             ) : null}
           </div>
           <div className="-mx-3 divide-y divide-zinc-100 dark:divide-zinc-800 sm:mx-0 sm:grid sm:grid-cols-2 sm:divide-y-0 sm:gap-3 lg:grid-cols-3">
-            {/* Wave 370: 6 → 3 (모바일 viewport 잔해 줄임, 빠른 fade-in 체감) */}
-            {Array.from({ length: 3 }).map((_, i) => (
+            {/* Wave 1192h (2026-06-06): 스켈레톤 반응형 — 모바일 3 / 태블릿 6 / 데스크탑 9 (각 3줄 꽉).
+                기존 3개 하드코딩은 데스크탑 3열에서 1줄만 떠서 배너 아래가 휑함. */}
+            {Array.from({ length: 9 }).map((_, i) => (
               <div
                 key={i}
-                className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 px-3 py-4 sm:rounded-xl sm:border sm:border-zinc-200 sm:bg-white sm:p-3 dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40"
+                className={`${
+                  i >= 6 ? "hidden lg:grid" : i >= 3 ? "hidden sm:grid" : "grid"
+                } grid-cols-[120px_minmax(0,1fr)] gap-3 px-3 py-4 sm:rounded-xl sm:border sm:border-zinc-200 sm:bg-white sm:p-3 dark:sm:border-zinc-800 dark:sm:bg-zinc-900/40`}
               >
                 <div className="aspect-square animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800" />
                 <div className="min-w-0 space-y-2">
