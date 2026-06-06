@@ -129,6 +129,37 @@ type ScrappedPoolItem = PoolItem & {
   savedAt: string;
 };
 
+type PoolFeedState = {
+  source: "client_snapshot" | "server_snapshot" | "live";
+  phase: "cached" | "quick" | "full";
+  status: "partial" | "ready" | "empty";
+  emptyReason:
+    | "none"
+    | "no_candidates_after_full_scan"
+    | "quick_scan_pending"
+    | null;
+  hasMore: boolean;
+  shouldRequestContinuation: boolean;
+  request: {
+    refresh: boolean;
+    quickPage: boolean;
+    responsePageSize: number;
+    readyCandidateLimit: number;
+    appliedBudget: "150k" | "300k" | "500k" | "unlimited";
+    source: "bunjang" | "joongna" | "daangn" | null;
+    sort: "profit_desc" | "latest" | "price_asc" | "distance";
+    regionKey: string | null;
+    extendedMarketplaces: boolean;
+  };
+  result: {
+    returnedItems: number;
+    elapsedMs: number;
+    deepFallbackUsed: boolean;
+    feedSnapshotHit: boolean;
+    snapshotAgeMs: number | null;
+  };
+};
+
 type PoolResponse = {
   items: PoolItem[];
   cooldown: {
@@ -148,6 +179,7 @@ type PoolResponse = {
   total: number;
   pageSize: number;
   freshLagHours: number;
+  feedState?: PoolFeedState;
   message?: string;
 };
 
@@ -1580,11 +1612,17 @@ function nextBudgetFilterOption(
   return null;
 }
 
-function budgetApiParam(value: BudgetFilterOption) {
+function budgetApiParam(value: BudgetFilterOption): "150k" | "300k" | "500k" | null {
   if (value === "150000") return "150k";
   if (value === "300000") return "300k";
   if (value === "500000") return "500k";
   return null;
+}
+
+function budgetFeedStateKey(
+  value: BudgetFilterOption,
+): PoolFeedState["request"]["appliedBudget"] {
+  return budgetApiParam(value) ?? "unlimited";
 }
 
 function sourceOptionLabel(value: SourceOption) {
@@ -2369,7 +2407,7 @@ export default function ExploreClient({
   const itemsRef = useRef<PoolItem[]>([]);
   const poolFetchSeqRef = useRef(0);
   const continuationFetchSeqRef = useRef(0);
-  const emptyDeepRefreshRequestedRef = useRef<string | null>(null);
+  const emptyContinuationRequestedRef = useRef<string | null>(null);
   const initialRemainderRequestedRef = useRef(false);
   useEffect(() => {
     itemsRef.current = items;
@@ -2380,6 +2418,7 @@ export default function ExploreClient({
   const [cooldown, setCooldown] = useState<PoolResponse["cooldown"] | null>(
     null,
   );
+  const [feedState, setFeedState] = useState<PoolFeedState | null>(null);
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [homeRegion, setHomeRegion] = useState<HomeRegionSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
@@ -2967,10 +3006,43 @@ export default function ExploreClient({
       else {
         initialRemainderRequestedRef.current = false;
         setContinuationLoading(false);
+        setFeedState(null);
         const cachedItems = readFeedSnapshot(storageScope, snapshotOptions);
         if (cachedItems?.length) {
           itemsRef.current = cachedItems;
           setItems(cachedItems);
+          setFeedState({
+            source: "client_snapshot",
+            phase: "cached",
+            status: "partial",
+            emptyReason: "none",
+            hasMore: true,
+            shouldRequestContinuation: true,
+            request: {
+              refresh: false,
+              quickPage: true,
+              responsePageSize: requestLimit ?? INITIAL_FEED_PAGE_SIZE,
+              readyCandidateLimit: Math.max(
+                INITIAL_FEED_PAGE_SIZE,
+                (requestLimit ?? INITIAL_FEED_PAGE_SIZE) * 4,
+              ),
+              appliedBudget: budgetFeedStateKey(budgetFilter),
+              source:
+                serverSource == null || serverSource === "all"
+                  ? null
+                  : serverSource,
+              sort: serverSort ?? sortRef.current,
+              regionKey,
+              extendedMarketplaces: options?.extendedMarketplaces === true,
+            },
+            result: {
+              returnedItems: cachedItems.length,
+              elapsedMs: 0,
+              deepFallbackUsed: false,
+              feedSnapshotHit: true,
+              snapshotAgeMs: null,
+            },
+          });
         }
         setLoading(true);
         setFeedExhausted(false);
@@ -3006,6 +3078,7 @@ export default function ExploreClient({
         const data = (await res.json()) as PoolResponse;
         if (!isLatestRequest()) return;
         if (res.ok) {
+          setFeedState(data.feedState ?? null);
           if (data.items != null) {
             // Wave 371: refresh = append + pid dedupe (기존 매물 유지하면서 새 매물 추가).
             // 사용자 의도 — 더 둘러보고 싶어서 "다른 매물 찾기" 누르는데 기존이 사라지면 X.
@@ -3017,7 +3090,10 @@ export default function ExploreClient({
               const incomingFresh = data.items.filter(
                 (it) => !existingPids.has(it.pid),
               );
-              setFeedExhausted(incomingFresh.length === 0);
+              setFeedExhausted(
+                incomingFresh.length === 0 &&
+                  data.feedState?.shouldRequestContinuation !== true,
+              );
               setItems((prev) => {
                 const latestExistingPids = new Set(prev.map((it) => it.pid));
                 const fresh = data.items!.filter(
@@ -3033,7 +3109,11 @@ export default function ExploreClient({
             } else {
               setItems(data.items);
               writeFeedSnapshot(storageScope, snapshotOptions, data.items);
-              setFeedExhausted(data.items.length === 0);
+              setFeedExhausted(
+                data.feedState?.status === "empty" ||
+                  (data.items.length === 0 &&
+                    data.feedState?.shouldRequestContinuation !== true),
+              );
             }
           }
           setCooldown(data.cooldown);
@@ -3055,6 +3135,7 @@ export default function ExploreClient({
               data.message ??
                 "매물을 잠시 못 가져왔어요. 잠시 후 다시 시도해주세요.",
             );
+            setFeedState(null);
             setFeedExhausted(true);
           }
         }
@@ -3067,6 +3148,7 @@ export default function ExploreClient({
               ? e.message
               : "네트워크가 잠시 불안정해요. 잠시 후 다시 시도해주세요.",
           );
+          setFeedState(null);
           setFeedExhausted(true);
         }
       } finally {
@@ -3210,6 +3292,7 @@ export default function ExploreClient({
   const currentServerSourceFilter = source !== "all" ? source : null;
   useEffect(() => {
     if (loading || scrapOnly || items.length === 0) return;
+    if (feedState?.shouldRequestContinuation !== true) return;
     if (initialRemainderRequestedRef.current) return;
     initialRemainderRequestedRef.current = true;
     const backgroundSource = sourceRef.current;
@@ -3229,7 +3312,13 @@ export default function ExploreClient({
       });
     }, hydrationDelayMs);
     return () => window.clearTimeout(timeoutId);
-  }, [items.length, loadPool, loading, scrapOnly]);
+  }, [
+    feedState?.shouldRequestContinuation,
+    items.length,
+    loadPool,
+    loading,
+    scrapOnly,
+  ]);
 
   const shouldShowFeedUpsell =
     !loading && !scrapOnly && displayItems.length > 0 && feedUpsellRemainingSec > 0;
@@ -3239,7 +3328,7 @@ export default function ExploreClient({
     items.length > 0 &&
     detailAccessLoadingPid == null &&
     (continuationLoading || refreshing);
-  const emptyDeepRefreshKey = [
+  const emptyContinuationKey = [
     budgetFilter,
     source,
     sort,
@@ -3260,6 +3349,10 @@ export default function ExploreClient({
     source,
   ]);
   const isDaangnFocusedView = source === "daangn" || sort === "distance";
+  const emptyContinuationPending =
+    !scrapOnly &&
+    items.length === 0 &&
+    feedState?.shouldRequestContinuation === true;
   const locationFilterValue: LocationFilterOption = isDaangnFocusedView ? "nearby" : "all";
   const homeRegionLabel = useMemo(
     () => compactHomeRegionLabel(homeRegion),
@@ -3288,15 +3381,15 @@ export default function ExploreClient({
   useEffect(() => {
     if (loading || refreshing || continuationLoading || scrapOnly || error) return;
     if (items.length > 0) {
-      if (emptyDeepRefreshRequestedRef.current === emptyDeepRefreshKey) {
-        emptyDeepRefreshRequestedRef.current = null;
+      if (emptyContinuationRequestedRef.current === emptyContinuationKey) {
+        emptyContinuationRequestedRef.current = null;
       }
       return;
     }
-    if (emptyDeepRefreshRequestedRef.current === emptyDeepRefreshKey) return;
-    if (budgetFilter === "all" && !isDaangnFocusedView) return;
+    if (emptyContinuationRequestedRef.current === emptyContinuationKey) return;
+    if (feedState?.shouldRequestContinuation !== true) return;
 
-    emptyDeepRefreshRequestedRef.current = emptyDeepRefreshKey;
+    emptyContinuationRequestedRef.current = emptyContinuationKey;
     setFeedExhausted(false);
     void loadPool(true, {
       autoScrollNew: false,
@@ -3308,10 +3401,10 @@ export default function ExploreClient({
       silent: true,
     });
   }, [
-    budgetFilter,
     continuationLoading,
-    emptyDeepRefreshKey,
+    emptyContinuationKey,
     error,
+    feedState?.shouldRequestContinuation,
     isDaangnFocusedView,
     items.length,
     loadPool,
@@ -3893,7 +3986,7 @@ export default function ExploreClient({
     setSort("distance");
     setScrapOnly(false);
     setFeedExhausted(false);
-    emptyDeepRefreshRequestedRef.current = null;
+    emptyContinuationRequestedRef.current = null;
     void loadPool(true, {
       serverSource: "daangn",
       serverSort: "distance",
@@ -3902,7 +3995,7 @@ export default function ExploreClient({
 
   function refreshCurrentFeed() {
     setFeedExhausted(false);
-    emptyDeepRefreshRequestedRef.current = null;
+    emptyContinuationRequestedRef.current = null;
     if (isDaangnFocusedView) {
       refreshNearbyDaangnFeed();
       return;
@@ -4416,20 +4509,20 @@ export default function ExploreClient({
         <div className="rounded-2xl border border-amber-200 bg-amber-50/60 px-5 py-8 text-center dark:border-amber-900/40 dark:bg-amber-950/20">
           <HourglassIcon className="mx-auto h-8 w-8 text-amber-600 dark:text-amber-300" />
           <p className="mt-3 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-            {continuationLoading || refreshing
+            {continuationLoading || refreshing || emptyContinuationPending
               ? "조건에 맞는 후보를 더 확인하는 중이에요"
               : budgetFilter !== "all"
               ? `${budgetOption.label} 조건은 아직 후보가 적어요`
               : "잠시 후 다시 와주세요"}
           </p>
           <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            {continuationLoading || refreshing
+            {continuationLoading || refreshing || emptyContinuationPending
               ? "처음 빠른 조회에서 안 잡힌 가까운 당근 후보까지 다시 훑고 있어요."
               : budgetFilter !== "all"
               ? "수익, 시세, 상태 조건을 통과한 매물만 보여주다 보니 오늘은 아직 이 가격대 후보가 부족해요."
               : "오늘 잡은 매물이 충분치 않아요. 잠시 후 새로고침하면 새 매물이 보일 수 있어요."}
           </p>
-          {continuationLoading || refreshing ? (
+          {continuationLoading || refreshing || emptyContinuationPending ? (
             <div className="mt-4">
               <FeedContinuationSkeleton />
             </div>

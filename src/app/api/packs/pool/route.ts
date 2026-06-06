@@ -215,6 +215,37 @@ type NearbyDaangnPrefetchResult = {
   stats: NearbyDaangnPrefetchStats;
 };
 
+type PoolFeedState = {
+  source: "server_snapshot" | "live";
+  phase: "cached" | "quick" | "full";
+  status: "partial" | "ready" | "empty";
+  emptyReason:
+    | "none"
+    | "no_candidates_after_full_scan"
+    | "quick_scan_pending"
+    | null;
+  hasMore: boolean;
+  shouldRequestContinuation: boolean;
+  request: {
+    refresh: boolean;
+    quickPage: boolean;
+    responsePageSize: number;
+    readyCandidateLimit: number;
+    appliedBudget: "150k" | "300k" | "500k" | "unlimited";
+    source: "bunjang" | "joongna" | "daangn" | null;
+    sort: "profit_desc" | "latest" | "price_asc" | "distance";
+    regionKey: string | null;
+    extendedMarketplaces: boolean;
+  };
+  result: {
+    returnedItems: number;
+    elapsedMs: number;
+    deepFallbackUsed: boolean;
+    feedSnapshotHit: boolean;
+    snapshotAgeMs: number | null;
+  };
+};
+
 const EMPTY_NEARBY_DAANGN_STATS: NearbyDaangnPrefetchStats = {
   enabled: false,
   cacheHit: false,
@@ -228,6 +259,67 @@ const EMPTY_NEARBY_DAANGN_STATS: NearbyDaangnPrefetchStats = {
   targetReady: 0,
   stoppedEarly: false,
 };
+
+function feedSnapshotAgeMs(updatedAt: string | null | undefined) {
+  if (!updatedAt) return null;
+  const parsed = Date.parse(updatedAt);
+  if (!Number.isFinite(parsed)) return null;
+  return Math.max(0, Date.now() - parsed);
+}
+
+function buildPoolFeedState(args: {
+  source: PoolFeedState["source"];
+  phase: PoolFeedState["phase"];
+  status: PoolFeedState["status"];
+  emptyReason?: PoolFeedState["emptyReason"];
+  hasMore?: boolean;
+  shouldRequestContinuation?: boolean;
+  refresh: boolean;
+  quickPage: boolean;
+  responsePageSize: number;
+  readyCandidateLimit: number;
+  appliedBudget: PoolFeedState["request"]["appliedBudget"];
+  sourceFilter: PoolFeedState["request"]["source"];
+  sort: PoolFeedState["request"]["sort"];
+  regionKey: string | null;
+  extendedMarketplaces: boolean;
+  returnedItems: number;
+  elapsedMs: number;
+  deepFallbackUsed: boolean;
+  feedSnapshotHit: boolean;
+  snapshotAgeMs?: number | null;
+}): PoolFeedState {
+  const shouldRequestContinuation =
+    args.shouldRequestContinuation ?? args.status === "partial";
+  return {
+    source: args.source,
+    phase: args.phase,
+    status: args.status,
+    emptyReason:
+      args.emptyReason ??
+      (args.status === "empty" ? "no_candidates_after_full_scan" : "none"),
+    hasMore: args.hasMore ?? shouldRequestContinuation,
+    shouldRequestContinuation,
+    request: {
+      refresh: args.refresh,
+      quickPage: args.quickPage,
+      responsePageSize: args.responsePageSize,
+      readyCandidateLimit: args.readyCandidateLimit,
+      appliedBudget: args.appliedBudget,
+      source: args.sourceFilter,
+      sort: args.sort,
+      regionKey: args.regionKey,
+      extendedMarketplaces: args.extendedMarketplaces,
+    },
+    result: {
+      returnedItems: args.returnedItems,
+      elapsedMs: args.elapsedMs,
+      deepFallbackUsed: args.deepFallbackUsed,
+      feedSnapshotHit: args.feedSnapshotHit,
+      snapshotAgeMs: args.snapshotAgeMs ?? null,
+    },
+  };
+}
 
 const NEARBY_DAANGN_READY_CACHE = new Map<string, {
   expiresAt: number;
@@ -1849,6 +1941,28 @@ export async function GET(req: Request) {
           }
         } else if (liveCachedItems.length > 0) {
           const responseElapsedMs = Date.now() - requestStartedAt;
+          const feedState = buildPoolFeedState({
+            source: "server_snapshot",
+            phase: "cached",
+            status: "partial",
+            emptyReason: "none",
+            hasMore: true,
+            shouldRequestContinuation: true,
+            refresh,
+            quickPage,
+            responsePageSize,
+            readyCandidateLimit,
+            appliedBudget,
+            sourceFilter: source,
+            sort,
+            regionKey: userHomeRegion?.daangn_full_path ?? null,
+            extendedMarketplaces,
+            returnedItems: liveCachedItems.length,
+            elapsedMs: responseElapsedMs,
+            deepFallbackUsed: false,
+            feedSnapshotHit: true,
+            snapshotAgeMs: feedSnapshotAgeMs(cached.updatedAt),
+          });
           if (responseElapsedMs >= 1_200 || process.env.FEED_DEBUG_LOG === "1") {
             console.info("[pool] response", {
               elapsedMs: responseElapsedMs,
@@ -1862,6 +1976,7 @@ export async function GET(req: Request) {
               feedSnapshotHit: true,
               feedSnapshotUpdatedAt: cached.updatedAt,
               feedSnapshotDroppedItems: droppedCachedItemCount,
+              feedState,
             });
           }
           return NextResponse.json({
@@ -1873,6 +1988,7 @@ export async function GET(req: Request) {
             total: liveCachedItems.length,
             pageSize: responsePageSize,
             freshLagHours: FRESH_LAG_HOURS,
+            feedState,
             debug: isAdminUser(auth.user) ? {
               feedSnapshot: {
                 hit: true,
@@ -1990,6 +2106,42 @@ export async function GET(req: Request) {
       });
     }
     const responseElapsedMs = Date.now() - requestStartedAt;
+    const feedPhase: PoolFeedState["phase"] =
+      deepFallbackUsed || refresh || !quickPage ? "full" : "quick";
+    const feedStatus: PoolFeedState["status"] =
+      responseItems.length > 0
+        ? feedPhase === "quick"
+          ? "partial"
+          : "ready"
+        : feedPhase === "quick"
+          ? "partial"
+          : "empty";
+    const feedState = buildPoolFeedState({
+      source: "live",
+      phase: feedPhase,
+      status: feedStatus,
+      emptyReason:
+        feedStatus === "empty"
+          ? "no_candidates_after_full_scan"
+          : feedStatus === "partial" && responseItems.length === 0
+            ? "quick_scan_pending"
+            : "none",
+      hasMore: feedStatus === "partial",
+      shouldRequestContinuation: feedStatus === "partial",
+      refresh,
+      quickPage,
+      responsePageSize,
+      readyCandidateLimit,
+      appliedBudget,
+      sourceFilter: source,
+      sort,
+      regionKey: userHomeRegion?.daangn_full_path ?? null,
+      extendedMarketplaces,
+      returnedItems: responseItems.length,
+      elapsedMs: responseElapsedMs,
+      deepFallbackUsed,
+      feedSnapshotHit: false,
+    });
     if (responseElapsedMs >= 1_200 || process.env.FEED_DEBUG_LOG === "1") {
       console.info("[pool] response", {
         elapsedMs: responseElapsedMs,
@@ -2004,6 +2156,7 @@ export async function GET(req: Request) {
         deepFallbackUsed,
         feedSnapshotHit: false,
         feedSnapshotWrite,
+        feedState,
         nearbyDaangn: nearbyDaangnStatsForResponse,
       });
     }
@@ -2017,6 +2170,7 @@ export async function GET(req: Request) {
       total: responseItems.length,
       pageSize: responsePageSize,
       freshLagHours: FRESH_LAG_HOURS,
+      feedState,
       debug: isAdminUser(auth.user) ? {
         deepFallbackUsed,
         nearbyDaangn: nearbyDaangnStatsForResponse,
