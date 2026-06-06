@@ -14,7 +14,7 @@ import { isDaangnMarketplaceSource, listingUrlForSource, marketplaceSourceLabel,
 import { decodePoolAccessToken } from "@/lib/pool-access-token";
 import { localizeProductLineLabel } from "@/lib/product-line-display";
 import { expectedProfitFromMarketPrice } from "@/lib/profit";
-import { restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
+import { jsonBody, restFetch, rpcUrl, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { requireSupabaseUser } from "@/lib/supabase-server-auth";
 import { userRefForAuthUser } from "@/lib/user-ref";
 import { getDetailAccessSnapshot } from "@/lib/detail-access";
@@ -935,11 +935,10 @@ async function loadNearbyDaangnReadyRows(
       ? Math.min(DAANGN_NEARBY_LOCAL_RETURN_LIMIT, Math.max(DAANGN_NEARBY_BOOST_LIMIT, quickTarget))
       : DAANGN_NEARBY_LOCAL_RETURN_LIMIT
     : DAANGN_NEARBY_BOOST_LIMIT;
-  const regionBatchSize = localFirstPrefetch
-    ? options.quickPage
-      ? Math.max(1, Math.min(DAANGN_NEARBY_LOCAL_REGION_BATCH_SIZE, 4))
-      : DAANGN_NEARBY_LOCAL_REGION_BATCH_SIZE
-    : DAANGN_NEARBY_REGION_BATCH_SIZE;
+  // Wave 1192e (2026-06-06): candidate_pool 기준 RPC (103ms) 로 한 번에 처리 → region batch 분할 불필요.
+  //   기존: raw_listings(3.5GB) 거대 쿼리를 동네 batch 로 나눠 돌며 candidate 매칭 (cold 31초 + quick/remainder 2단계).
+  //   이제: 전체 근처 region 을 한 batch 로 RPC 호출 → ready 매물 거리 필터 한 번에.
+  const regionBatchSize = Math.max(1, regionIds.length);
   if (regionIds.length === 0) {
     return {
       rows: [],
@@ -1008,8 +1007,6 @@ async function loadNearbyDaangnReadyRows(
         stopReason = "raw_limit";
         break;
       }
-      const regionCsv = batch.map((id) => encodeURIComponent(id)).join(",");
-      const priceClause = options.priceMax != null ? `&price=lte.${options.priceMax}` : "";
       const limit = localFirstPrefetch
         ? Math.min(
             POOL_PAGE_SIZE,
@@ -1022,18 +1019,25 @@ async function loadNearbyDaangnReadyRows(
           );
       let sourceRows: NearbyDaangnSourceRow[];
       try {
+        // Wave 1192e (2026-06-06): raw_listings(3.5GB) 거대 쿼리 (cold 31초) → candidate_pool 기준 RPC (103ms).
+        //   ready 매물만 (이미 계산됨) join → 거리 필터. region 전체 한 batch 라 loop 1회.
         const sourceRes = await withTimeout(
-          restFetch(
-            `${tableUrl("mvp_raw_listings")}?select=pid,source,price,daangn_region_id,daangn_region_name,listing_state,last_seen_at&source=eq.daangn&listing_state=eq.active&detail_status=eq.done&daangn_region_id=in.(${regionCsv})${priceClause}&order=last_seen_at.desc&limit=${limit}`,
-            { headers },
-          ),
+          restFetch(rpcUrl("nearby_daangn_ready_feed"), {
+            method: "POST",
+            headers,
+            body: jsonBody({
+              p_region_ids: batch,
+              p_price_max: options.priceMax ?? null,
+              p_limit: Math.max(1, Math.min(limit, 500)),
+            }),
+          }),
           rawRemainingMs,
-          "nearby_daangn_raw_fetch",
+          "nearby_daangn_ready_rpc",
         );
         sourceRows = (await sourceRes.json()) as NearbyDaangnSourceRow[];
       } catch (err) {
-        stopReason = "raw_fetch_interrupted";
-        console.warn("[pool] nearby daangn raw fetch interrupted", err instanceof Error ? err.message : String(err));
+        stopReason = "rpc_interrupted";
+        console.warn("[pool] nearby daangn ready rpc interrupted", err instanceof Error ? err.message : String(err));
         break;
       }
       usedBatches += 1;
