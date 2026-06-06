@@ -522,8 +522,10 @@ export default function MembershipApplicationClient({
           </div>
         </div>
       ) : null}
+      {/* Wave 1198 (2026-06-06): 모바일 items-start → items-center (짧은 단계가 위로 붙어 아래 공백 컸음).
+          모달 내부 max-h+자체 overflow라 긴 단계도 위 잘림 없이 가운데 OK. */}
       {hasReservation && paymentModalOpen ? (
-        <div className="fixed inset-0 z-[9990] flex items-start justify-center overflow-y-auto bg-black/62 px-3 pb-4 pt-[calc(env(safe-area-inset-top)+16px)] backdrop-blur-sm sm:items-center sm:py-8">
+        <div className="fixed inset-0 z-[9990] flex items-center justify-center overflow-y-auto bg-black/62 px-3 py-[calc(env(safe-area-inset-top)+16px)] backdrop-blur-sm sm:py-8">
           <div
             role="dialog"
             aria-modal="true"
@@ -719,15 +721,6 @@ export default function MembershipApplicationClient({
                     토스가 안 열리면 계좌송금으로 변경
                   </button>
                 ) : null}
-                {depositNotifyState !== "sent" ? (
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod(null)}
-                    className="h-9 text-[11px] font-black text-zinc-400 transition hover:text-zinc-700 dark:hover:text-zinc-200"
-                  >
-                    송금 방법 다시 선택
-                  </button>
-                ) : null}
               </div>
             )}
             {showDepositCountdown ? (
@@ -788,6 +781,17 @@ export default function MembershipApplicationClient({
                   ✓ 미승인 시 전액 환불
                 </span>
               </div>
+            ) : null}
+            {/* Wave 1198 (2026-06-06): 송금 방법 다시 선택 — 입금했어요(primary) + 배지 아래로 이동.
+                보조 액션(거의 안 누름)이라 위계상 필수 CTA보다 밑이 맞음. */}
+            {showPaymentDetails && depositNotifyState !== "sent" ? (
+              <button
+                type="button"
+                onClick={() => setSelectedPaymentMethod(null)}
+                className="mt-1.5 h-9 w-full text-[12px] font-black text-zinc-400 transition hover:text-zinc-600 dark:hover:text-zinc-200"
+              >
+                송금 방법 다시 선택
+              </button>
             ) : null}
             {depositNotifyMessage ? (
               <p
