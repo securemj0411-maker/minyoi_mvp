@@ -6,6 +6,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import { OPS_ADMIN_REVEAL_ANALYTICS_PATH } from "@/lib/admin-routes";
 
+import { Notice } from "../_ui/primitives";
+
 type Bucket = { key: string; label: string; count: number };
 type RevealRow = {
   id: number;
@@ -95,15 +97,15 @@ function BreakdownPanel({ title, rows }: { title: string; rows: Bucket[] }) {
   const max = Math.max(...rows.map((row) => row.count), 0);
   return (
     <section className="rounded-sm border border-zinc-800 bg-zinc-950">
-      <div className="border-b border-zinc-900 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400">
+      <div className="border-b border-zinc-900 px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-zinc-400">
         {title}
       </div>
       <div className="space-y-2 p-3">
         {rows.length === 0 ? (
-          <div className="py-6 text-center text-[10px] uppercase tracking-wide text-zinc-600">no data</div>
+          <div className="py-6 text-center text-xs uppercase tracking-wide text-zinc-400">no data</div>
         ) : rows.map((row) => (
           <div key={row.key}>
-            <div className="mb-1 flex items-center justify-between gap-2 text-[11px]">
+            <div className="mb-1 flex items-center justify-between gap-2 text-xs">
               <span className="truncate font-bold text-zinc-200">{row.label}</span>
               <span className="tabular-nums text-emerald-300">{row.count}</span>
             </div>
@@ -120,9 +122,9 @@ function BreakdownPanel({ title, rows }: { title: string; rows: Bucket[] }) {
 function Kpi({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="rounded-sm border border-zinc-800 bg-zinc-950 px-3 py-3">
-      <div className="text-[9px] font-black uppercase tracking-[0.18em] text-zinc-500">{label}</div>
+      <div className="text-xs font-black uppercase tracking-[0.18em] text-zinc-500">{label}</div>
       <div className="mt-1 text-2xl font-black tabular-nums text-emerald-300">{value}</div>
-      {sub ? <div className="mt-1 text-[10px] uppercase tracking-wide text-zinc-600">{sub}</div> : null}
+      {sub ? <div className="mt-1 text-xs uppercase tracking-wide text-zinc-400">{sub}</div> : null}
     </div>
   );
 }
@@ -178,7 +180,7 @@ export default function RevealAnalyticsClient() {
         <select
           value={days}
           onChange={(e) => setDays(Number(e.target.value))}
-          className="h-8 rounded-sm border border-zinc-800 bg-zinc-900 px-2 text-[11px] font-bold text-zinc-200"
+          className="h-8 rounded-sm border border-zinc-800 bg-zinc-900 px-2 text-xs font-bold text-zinc-200"
         >
           <option value={1}>1D</option>
           <option value={7}>7D</option>
@@ -189,26 +191,26 @@ export default function RevealAnalyticsClient() {
           value={userRef}
           onChange={(e) => setUserRef(e.target.value)}
           placeholder="filter user_ref"
-          className="h-8 min-w-[260px] flex-1 rounded-sm border border-zinc-800 bg-zinc-900 px-2 text-[11px] text-zinc-200 placeholder:text-zinc-600"
+          className="h-8 min-w-[260px] flex-1 rounded-sm border border-zinc-800 bg-zinc-900 px-2 text-xs text-zinc-200 placeholder:text-zinc-400"
         />
         {userRef ? (
           <Link
             href={OPS_ADMIN_REVEAL_ANALYTICS_PATH}
             onClick={() => setUserRef("")}
-            className="rounded-sm border border-zinc-800 bg-zinc-900 px-2.5 py-2 text-[10px] font-black uppercase tracking-wide text-zinc-400 hover:text-zinc-200"
+            className="rounded-sm border border-zinc-800 bg-zinc-900 px-2.5 py-2 text-xs font-black uppercase tracking-wide text-zinc-400 hover:text-zinc-200"
           >
             CLEAR USER
           </Link>
         ) : null}
-        <div className="ml-auto text-[10px] uppercase tracking-wide text-zinc-600">
+        <div className="ml-auto text-xs uppercase tracking-wide text-zinc-400">
           {loading ? "loading..." : data ? `computed ${fmt(data.summary.computedAt)}` : "—"}
         </div>
       </div>
 
       {error ? (
-        <div className="mb-4 rounded-sm border border-rose-900 bg-rose-950/30 px-3 py-2 text-[11px] font-bold text-rose-300">
+        <Notice tone="rose" className="mb-4">
           {error}
-        </div>
+        </Notice>
       ) : null}
 
       <div className="mb-4 grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8">
@@ -222,7 +224,7 @@ export default function RevealAnalyticsClient() {
         <Kpi label="hidden" value={data ? data.summary.hidden.toLocaleString("ko-KR") : "—"} />
       </div>
 
-      <nav className="mb-4 flex gap-1 overflow-x-auto text-[10px] uppercase tracking-[0.16em]">
+      <nav className="mb-4 flex gap-1 overflow-x-auto text-xs uppercase tracking-[0.16em]">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -272,12 +274,12 @@ export default function RevealAnalyticsClient() {
 function RevealTable({ rows, mode }: { rows: RevealRow[]; mode: "product" | "user" | "ledger" }) {
   return (
     <div className="overflow-hidden rounded-sm border border-zinc-800 bg-zinc-950">
-      <div className="border-b border-zinc-900 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400">
+      <div className="border-b border-zinc-900 px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-zinc-400">
         {mode === "ledger" ? "LATEST REVEALS" : "REVEAL ROWS"}
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px] text-[11px]">
-          <thead className="bg-zinc-900/80 text-left text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">
+        <table className="w-full min-w-[980px] text-xs">
+          <thead className="bg-zinc-900/80 text-left text-xs font-black uppercase tracking-[0.14em] text-zinc-500">
             <tr>
               <th className="px-3 py-2">TIME</th>
               <th className="px-3 py-2">PRODUCT</th>
@@ -291,15 +293,15 @@ function RevealTable({ rows, mode }: { rows: RevealRow[]; mode: "product" | "use
           </thead>
           <tbody>
             {rows.length === 0 ? (
-              <tr><td colSpan={8} className="px-3 py-8 text-center text-[10px] uppercase tracking-wide text-zinc-600">no reveal rows</td></tr>
+              <tr><td colSpan={8} className="px-3 py-8 text-center text-xs uppercase tracking-wide text-zinc-400">no reveal rows</td></tr>
             ) : rows.map((row) => (
               <tr key={row.id} className="border-t border-zinc-900 align-top hover:bg-zinc-900/35">
                 <td className="whitespace-nowrap px-3 py-2 tabular-nums text-zinc-500">{fmt(row.revealedAt)}</td>
                 <td className="max-w-[320px] px-3 py-2">
                   <div className="truncate font-bold text-zinc-100">{row.title}</div>
-                  <div className="mt-0.5 truncate text-[9px] text-zinc-600">{row.sku}</div>
+                  <div className="mt-0.5 truncate text-xs text-zinc-400">{row.sku}</div>
                   {row.url ? (
-                    <a href={row.url} target="_blank" rel="noreferrer" className="mt-1 inline-flex text-[9px] font-black uppercase tracking-wide text-blue-300 hover:text-blue-200">
+                    <a href={row.url} target="_blank" rel="noreferrer" className="mt-1 inline-flex text-xs font-black uppercase tracking-wide text-blue-300 hover:text-blue-200">
                       original ↗
                     </a>
                   ) : null}
@@ -308,7 +310,7 @@ function RevealTable({ rows, mode }: { rows: RevealRow[]; mode: "product" | "use
                   <div className="truncate font-bold text-zinc-300">{userLabel(row)}</div>
                   <Link
                     href={`${OPS_ADMIN_REVEAL_ANALYTICS_PATH}?userRef=${encodeURIComponent(row.userRef)}`}
-                    className="mt-0.5 block truncate text-[9px] text-emerald-400 hover:text-emerald-300"
+                    className="mt-0.5 block truncate text-xs text-emerald-400 hover:text-emerald-300"
                   >
                     {row.userRef}
                   </Link>
@@ -342,5 +344,5 @@ function Chip({ children, tone }: { children: React.ReactNode; tone: "blue" | "a
     emerald: "border-emerald-800 bg-emerald-950/35 text-emerald-300",
     rose: "border-rose-800 bg-rose-950/35 text-rose-300",
   }[tone];
-  return <span className={`rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide ${classes}`}>{children}</span>;
+  return <span className={`rounded-sm border px-1.5 py-0.5 text-xs font-black uppercase tracking-wide ${classes}`}>{children}</span>;
 }
