@@ -4494,7 +4494,14 @@ export default function ExploreClient({
       ) : null}
 
       {/* 로딩 / 에러 / 매물 grid */}
-      {loading && items.length === 0 ? (
+      {/* Wave 1192d (2026-06-06): "매물 없어요" 가 로딩 중 떴다가 팍 나타나는 버그 fix.
+          quick 응답 와서 loading=false 됐지만 나머지(remainder) 대기 중이면 items 0 일 때
+          스켈레톤 유지 — 진짜 다 불러왔는데 0개일 때만 empty 표시. */}
+      {items.length === 0 &&
+      (loading ||
+        continuationLoading ||
+        refreshing ||
+        feedState?.shouldRequestContinuation === true) ? (
         <div className="space-y-3">
           <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 shadow-sm dark:border-blue-900/40 dark:bg-zinc-950/70">
             <div className="flex items-center gap-3">
