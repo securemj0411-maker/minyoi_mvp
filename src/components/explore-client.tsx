@@ -26,10 +26,9 @@ import {
 import { CategoryWatermark } from "@/components/category-watermark";
 import { MarketplaceSourceBadge } from "@/components/market-brand-logo";
 import {
-  KbankPaymentLogo,
-  TossPaymentLogo,
-} from "@/components/payment-brand-logo";
-import PaymentTrustCard from "@/components/payment-trust-card";
+  MembershipCheckoutBody,
+  UrgencyCountdownCard,
+} from "@/components/membership-checkout";
 import { categoryFromComparableKey } from "@/lib/category-readiness";
 import { detectBrandDepth } from "@/lib/category-brand-depth";
 import type { DetailEventType } from "@/lib/detail-analytics";
@@ -41,11 +40,7 @@ import {
   type MembershipPlan,
   type MembershipPlanKey,
 } from "@/lib/membership-plans";
-import {
-  PAYMENT_ACCOUNT_HOLDER,
-  PAYMENT_ACCOUNT_NUMBER,
-  PAYMENT_BANK_NAME,
-} from "@/lib/payment-account";
+import { PAYMENT_ACCOUNT_NUMBER } from "@/lib/payment-account";
 import type { RevealCard, RevealListingDetail } from "@/lib/pack-open";
 import { expectedProfitFromMarketPrice } from "@/lib/profit";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -315,14 +310,6 @@ function formatCooldown(sec: number): string {
   return `0:${String(sec).padStart(2, "0")}`;
 }
 
-function countdownLabel(ms: number) {
-  const safeMs = Math.max(0, ms);
-  const totalSec = Math.ceil(safeMs / 1000);
-  const minutes = Math.floor(totalSec / 60);
-  const seconds = totalSec % 60;
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
-}
-
 function upgradeTargetLabel(plan: MembershipPlan) {
   const targetMonths = plan.upgradeTargetMonths ?? plan.months;
   return targetMonths >= 12
@@ -414,6 +401,7 @@ function FeedMembershipUpsellCard({
     useState<FeedRenewalPaymentMethod | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [approvalToast, setApprovalToast] = useState<string | null>(null);
+  const [copyOk, setCopyOk] = useState(false);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const selectedPlan = selectedKey
     ? getMembershipPlan(selectedKey)
@@ -438,6 +426,18 @@ function FeedMembershipUpsellCard({
       ? await supabase.auth.getSession()
       : { data: null };
     return data?.session?.access_token ?? null;
+  }
+
+  async function copyAccountNumber() {
+    try {
+      await navigator.clipboard.writeText(
+        PAYMENT_ACCOUNT_NUMBER.replaceAll("-", ""),
+      );
+      setCopyOk(true);
+      window.setTimeout(() => setCopyOk(false), 1800);
+    } catch {
+      setCopyOk(false);
+    }
   }
 
   async function reserveOffer(plan: MembershipPlan) {
@@ -605,6 +605,33 @@ function FeedMembershipUpsellCard({
       : 5 * 60_000;
   const showDepositCountdown = requestState === "deposit_sent";
   const showPaymentDetails = showDepositCountdown || paymentMethod !== null;
+  // Wave 1218: 피드 1시간 특가 오퍼도 가입/연장 모달과 동일한 결제 UI(MembershipCheckoutBody)를 쓴다.
+  //   requestState(피드 단일 union) → depositState(공유 컴포넌트 3단계)로 매핑. 헤더 카피는 canonical 연장 모달 흐름을 따른다.
+  const feedDepositState =
+    requestState === "deposit_sent"
+      ? "sent"
+      : requestState === "depositing"
+        ? "sending"
+        : "idle";
+  const feedModalBadge = reservation ? "연장 예약 완료" : "1시간 한정 특가";
+  const feedModalTitle = showDepositCountdown
+    ? "연장 승인 중"
+    : showPaymentDetails
+      ? "연장 입금 확인"
+      : reservation
+        ? "연장 입금 방법 선택"
+        : selectedPlan
+          ? `${upgradeTargetLabel(selectedPlan)} 업그레이드`
+          : "멤버십 업그레이드";
+  const feedModalSubtitle = showDepositCountdown
+    ? "입금 확인 요청을 받았어요. 승인되면 기존 만료일 뒤에 기간이 붙습니다."
+    : showPaymentDetails
+      ? "선택한 방법으로 송금한 뒤 입금 확인을 진행해 주세요."
+      : reservation
+        ? "토스 또는 계좌송금 중 편한 방법을 먼저 골라주세요."
+        : selectedPlan
+          ? `단 ${membershipKrw(selectedPlan.priceKrw)}으로 ${upgradeTargetLabel(selectedPlan)}으로 업그레이드돼요.`
+          : "1시간 한정 업그레이드 조건이에요.";
 
   if (approvalToast) {
     return (
@@ -706,236 +733,108 @@ function FeedMembershipUpsellCard({
         ) : null}
       </div>
       {offerModalOpen && selectedPlan ? (
-        <div className="fixed inset-0 z-[9990] flex items-end justify-center bg-black/55 px-3 py-4 backdrop-blur-sm sm:items-center">
-          <div className="w-full max-w-[460px] overflow-hidden rounded-[20px] border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
-            <div className="bg-gradient-to-r from-amber-500 to-zinc-950 px-4 py-4 text-white">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-50">
-                    1시간 전환 제안
-                  </div>
-                  <div className="mt-1 break-keep text-[20px] font-black leading-tight">
-                    {upgradeTargetLabel(selectedPlan)} 업그레이드
-                  </div>
-                  <div className="mt-1 text-[12px] font-bold text-white/80">
-                    남은 시간 {formatCooldown(clamped)}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setOfferModalOpen(false)}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/12 text-[18px] font-black text-white transition hover:bg-white/20"
-                  aria-label="닫기"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-            <div className="grid gap-3 px-4 py-4">
-              <div className="rounded-[14px] border border-amber-100 bg-amber-50 px-3 py-3 dark:border-amber-950/70 dark:bg-amber-950/20">
-                <div className="text-[11px] font-black text-amber-700 dark:text-amber-300">
-                  오늘 업그레이드 금액
-                </div>
-                <div className="mt-1 text-[26px] font-black text-zinc-950 dark:text-zinc-50">
-                  {membershipKrw(selectedPlan.priceKrw)}
-                </div>
-                <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-black">
-                  <span className="text-zinc-400 line-through">
-                    정가{" "}
-                    {membershipKrw(upgradeSavings(selectedPlan).regularPrice)}
-                  </span>
-                  <span className="rounded-full bg-white px-2 py-0.5 text-amber-700 ring-1 ring-amber-100 dark:bg-zinc-950 dark:text-amber-300 dark:ring-amber-900">
-                    {membershipKrw(upgradeSavings(selectedPlan).savedKrw)} 절약
-                  </span>
-                </div>
-                <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
-                  단 {membershipKrw(selectedPlan.priceKrw)}으로{" "}
-                  {upgradeTargetLabel(selectedPlan)}으로 업그레이드됩니다.
-                </div>
-              </div>
-              {!reservation ? (
-                <button
-                  type="button"
-                  onClick={() => void reserveOffer(selectedPlan)}
-                  disabled={requestState === "submitting" || expired}
-                  className="flex h-12 items-center justify-center rounded-xl bg-zinc-950 px-4 text-[14px] font-black text-white transition hover:bg-amber-700 disabled:cursor-default disabled:opacity-60 dark:bg-white dark:text-zinc-950"
-                >
-                  {requestState === "submitting"
-                    ? "수락 처리 중"
-                    : "제안 수락하고 계좌 보기"}
-                </button>
-              ) : (
-                <div className="grid gap-3 rounded-[14px] border border-emerald-200 bg-emerald-50 px-3 py-3 dark:border-emerald-900/70 dark:bg-emerald-950/20">
-                  <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">
-                    제안 수락 완료
-                  </div>
-                  {!showPaymentDetails ? (
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPaymentMethod("toss");
-                          openTossSend(reservation.plan.priceKrw);
-                        }}
-                        className="min-h-[118px] rounded-2xl bg-[#3182f6] p-3 text-left text-white shadow-[0_14px_34px_rgba(49,130,246,0.24)] transition hover:-translate-y-0.5"
-                      >
-                        <TossPaymentLogo className="h-10 w-[112px]" />
-                        <span className="mt-4 block break-keep text-[16px] font-black leading-tight">
-                          토스로 보내기
-                        </span>
-                        <span className="mt-1 block break-keep text-[10px] font-bold text-blue-50">
-                          앱에서 금액 확인
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod("bank")}
-                        className="min-h-[118px] rounded-2xl bg-zinc-950 p-3 text-left text-white shadow-[0_14px_34px_rgba(15,23,42,0.22)] transition hover:-translate-y-0.5 dark:bg-white dark:text-zinc-950"
-                      >
-                        <KbankPaymentLogo className="h-10 w-[112px]" />
-                        <span className="mt-4 block break-keep text-[16px] font-black leading-tight">
-                          계좌송금 하기
-                        </span>
-                        <span className="mt-1 block break-keep text-[10px] font-bold text-zinc-300 dark:text-zinc-500">
-                          복사 후 송금
-                        </span>
-                      </button>
+        <div className="fixed inset-0 z-[9990] flex items-center justify-center overflow-y-auto bg-black/62 px-3 py-[calc(env(safe-area-inset-top)+16px)] backdrop-blur-sm sm:py-8">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="멤버십 업그레이드 입금"
+            className="relative w-full max-w-[520px]"
+          >
+            <button
+              type="button"
+              onClick={() => setOfferModalOpen(false)}
+              className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[18px] font-black text-zinc-500 shadow-lg ring-1 ring-zinc-200 transition hover:bg-zinc-50 dark:bg-zinc-950 dark:text-zinc-300 dark:ring-zinc-800"
+              aria-label="입금 안내 닫기"
+            >
+              ×
+            </button>
+            <div className="max-h-[calc(100dvh-32px)] overflow-y-auto rounded-[24px] border border-blue-100 bg-white text-zinc-950 shadow-[0_24px_80px_rgba(15,23,42,0.35)] dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
+              <div className="relative border-b border-blue-100 bg-[#f5f8ff] px-4 py-4 dark:border-zinc-800 dark:bg-white/6 sm:px-7 sm:py-5">
+                <div className="relative flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="inline-flex rounded-full bg-white px-3 py-1 text-[11px] font-black tracking-[0.04em] text-[#3182f6] ring-1 ring-blue-100 dark:bg-zinc-950 dark:ring-zinc-800">
+                      {feedModalBadge}
                     </div>
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-between gap-3 rounded-[14px] bg-white px-3 py-3 ring-1 ring-emerald-200 dark:bg-zinc-950 dark:ring-emerald-900/70">
-                        <div>
-                          <div className="text-[10px] font-black text-zinc-400">
-                            입금 금액
-                          </div>
-                          <div className="mt-1 text-[22px] font-black text-zinc-950 dark:text-white">
-                            {membershipKrw(reservation.plan.priceKrw)}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-[10px] font-black text-zinc-400">
-                            선택 기간
-                          </div>
-                          <div className="mt-1 text-[14px] font-black text-zinc-700 dark:text-zinc-200">
-                            {reservation.plan.label}
-                          </div>
-                        </div>
+                    <h2 className="mt-3 break-keep text-[25px] font-black leading-tight tracking-tight sm:text-[34px]">
+                      {feedModalTitle}
+                    </h2>
+                    <p className="mt-2 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+                      {feedModalSubtitle}
+                    </p>
+                  </div>
+                  <UrgencyCountdownCard
+                    label="남은 시간"
+                    value={formatCooldown(clamped)}
+                    caption="1시간 한정 조건이에요"
+                  />
+                </div>
+              </div>
+              <div className="px-3 py-3 sm:px-5 sm:py-4">
+                {!reservation ? (
+                  <div className="grid gap-3">
+                    <div className="rounded-[18px] bg-[#f5f8ff] px-3 py-3 ring-1 ring-blue-100 dark:bg-white/8 dark:ring-white/10">
+                      <div className="text-[11px] font-black text-zinc-400">
+                        오늘 업그레이드 금액
                       </div>
-                      {paymentMethod === "toss" && !showDepositCountdown ? (
-                        <div className="rounded-xl bg-white px-3 py-3 ring-1 ring-emerald-200 dark:bg-zinc-950 dark:ring-emerald-900/70">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="flex min-w-0 items-center gap-2">
-                              <TossPaymentLogo className="h-9 w-[96px] shrink-0 rounded-xl" />
-                              <span className="min-w-0">
-                                <span className="block text-[12px] font-black text-zinc-950 dark:text-white">
-                                  토스 송금창을 열었어요
-                                </span>
-                                <span className="mt-0.5 block break-keep text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
-                                  송금 후 입금했어요를 눌러주세요.
-                                </span>
-                              </span>
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                openTossSend(reservation.plan.priceKrw)
-                              }
-                              className="h-8 shrink-0 rounded-lg bg-[#3182f6] px-2.5 text-[10px] font-black text-white"
-                            >
-                              다시 열기
-                            </button>
-                          </div>
-                        </div>
-                      ) : null}
-                      {(paymentMethod === "bank" ||
-                        (showDepositCountdown && !paymentMethod)) ? (
-                        <div className="rounded-lg bg-white px-3 py-3 text-[12px] font-bold leading-5 text-zinc-700 dark:bg-zinc-950 dark:text-zinc-200">
-                          <div className="mb-2 flex items-center gap-2">
-                            <KbankPaymentLogo className="h-9 w-[96px] shrink-0 rounded-xl" />
-                            <b className="font-black text-zinc-950 dark:text-zinc-50">
-                              계좌송금 정보
-                            </b>
-                          </div>
-                          {PAYMENT_BANK_NAME}{" "}
-                          <b className="font-black">
-                            {PAYMENT_ACCOUNT_NUMBER}
-                          </b>
-                          <br />
-                          예금주 {PAYMENT_ACCOUNT_HOLDER}
-                        </div>
-                      ) : null}
-                      {paymentMethod === "toss" && !showDepositCountdown ? (
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod("bank")}
-                          className="h-9 rounded-xl border border-emerald-200 bg-white text-[11px] font-black text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-900/70 dark:bg-zinc-950 dark:text-emerald-300"
-                        >
-                          토스가 안 열리면 계좌송금으로 변경
-                        </button>
-                      ) : null}
-                      {requestState !== "deposit_sent" ? (
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod(null)}
-                          className="h-8 text-[10px] font-black text-emerald-700/70 dark:text-emerald-300/80"
-                        >
-                          송금 방법 다시 선택
-                        </button>
-                      ) : null}
-                    </>
-                  )}
-                  {showPaymentDetails ? (
+                      <div className="mt-1 text-[26px] font-black tabular-nums text-zinc-950 dark:text-zinc-50">
+                        {membershipKrw(selectedPlan.priceKrw)}
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-black">
+                        <span className="text-zinc-400 line-through">
+                          정가{" "}
+                          {membershipKrw(
+                            upgradeSavings(selectedPlan).regularPrice,
+                          )}
+                        </span>
+                        <span className="rounded-full bg-[#ebf2ff] px-2 py-0.5 text-[#3182f6] ring-1 ring-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:ring-blue-900">
+                          {membershipKrw(upgradeSavings(selectedPlan).savedKrw)}{" "}
+                          절약
+                        </span>
+                      </div>
+                      <div className="mt-1.5 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
+                        단 {membershipKrw(selectedPlan.priceKrw)}으로{" "}
+                        {upgradeTargetLabel(selectedPlan)}으로 업그레이드됩니다.
+                      </div>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => void notifyDepositDone()}
-                      disabled={
-                        requestState === "depositing" ||
-                        requestState === "deposit_sent"
-                      }
-                      className="flex h-11 items-center justify-center rounded-xl bg-emerald-700 px-4 text-[13px] font-black text-white transition hover:bg-emerald-800 disabled:cursor-default disabled:opacity-60"
+                      onClick={() => void reserveOffer(selectedPlan)}
+                      disabled={requestState === "submitting" || expired}
+                      className="flex h-12 w-full items-center justify-center rounded-xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-60"
                     >
-                      {requestState === "depositing"
-                        ? "요청 중"
-                        : requestState === "deposit_sent"
-                          ? "입금 확인 요청 완료"
-                          : "입금했어요"}
+                      {requestState === "submitting"
+                        ? "수락 처리 중"
+                        : "제안 수락하고 계좌 보기"}
                     </button>
-                  ) : null}
-                  {showPaymentDetails && requestState !== "deposit_sent" ? (
-                    <p className="break-keep text-[11px] font-bold leading-4 text-emerald-800 dark:text-emerald-200">
-                      입금 후 입금했어요 버튼을 누르면 5분 내로 멤버십에
-                      자동 반영됩니다.
-                    </p>
-                  ) : null}
-                  {showDepositCountdown ? (
-                    <div className="rounded-[12px] border border-emerald-200 bg-white px-3 py-3 dark:border-emerald-900/70 dark:bg-zinc-950">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">
-                            자동 승인 대기 중
-                          </div>
-                          <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-600 dark:text-zinc-300">
-                            5분 내로 멤버십에 자동 반영됩니다.
-                          </div>
-                        </div>
-                        <div className="shrink-0 rounded-[10px] bg-emerald-50 px-3 py-2 text-[22px] font-black tabular-nums text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900">
-                          {autoApproveMsLeft > 0
-                            ? countdownLabel(autoApproveMsLeft)
-                            : "0:00"}
-                        </div>
-                      </div>
-                    </div>
-                  ) : null}
-                  {showPaymentDetails ? <PaymentTrustCard /> : null}
-                </div>
-              )}
-              {message ? (
-                <p
-                  className={`break-keep text-[11px] font-bold leading-4 ${requestState === "error" ? "text-red-500" : "text-emerald-700 dark:text-emerald-300"}`}
-                >
-                  {message}
-                </p>
-              ) : null}
+                  </div>
+                ) : (
+                  <MembershipCheckoutBody
+                    planLabel={reservation.plan.label}
+                    priceKrw={reservation.plan.priceKrw}
+                    intent="renewal"
+                    paymentMethod={paymentMethod}
+                    depositState={feedDepositState}
+                    autoApproveMsLeft={autoApproveMsLeft}
+                    copyOk={copyOk}
+                    busy={
+                      requestState === "submitting" ||
+                      requestState === "depositing"
+                    }
+                    onChooseToss={() => {
+                      setPaymentMethod("toss");
+                      openTossSend(reservation.plan.priceKrw);
+                    }}
+                    onChooseBank={() => setPaymentMethod("bank")}
+                    onReopenToss={() => openTossSend(reservation.plan.priceKrw)}
+                    onSwitchToBank={() => setPaymentMethod("bank")}
+                    onResetMethod={() => setPaymentMethod(null)}
+                    onCopyAccount={() => void copyAccountNumber()}
+                    onNotifyDeposit={() => void notifyDepositDone()}
+                    note={message}
+                    noteTone={requestState === "error" ? "error" : "info"}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>
