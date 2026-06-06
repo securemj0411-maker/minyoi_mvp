@@ -35,7 +35,10 @@ export function bandFromProfit(profitMin, profitMax, _category) {
   const avg = Math.round((profitMin + profitMax) / 2);
   if (avg >= 70_000) return 3;
   if (avg >= 40_000) return 2;
-  if (avg >= 1) return 1;  // Wave 885: 10_000 → 1 (band 폐기 결정).
+  // Wave 1206 (2026-06-06, audit P0): avg 반올림(0.5→1) 대신 profitMax(최선 순익) 기준.
+  //   기존 avg>=1은 profitMin=0/profitMax=1 매물이 round(0.5)=1로 통과 → 순익 0~수백원 추천(무의미).
+  //   owner 의도(주석 위: "990원 패키지보다 큰 차익")와 일치하게 최소 1000원. profit.ts와 sync.
+  if (profitMax >= 1_000) return 1;
   return null;
 }
 

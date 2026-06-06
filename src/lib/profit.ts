@@ -229,14 +229,20 @@ export function expectedProfitAverage(item: ListingCandidate) {
   return Math.round((expectedProfitMin(item) + expectedProfitMax(item)) / 2);
 }
 
+// Wave 1206 (2026-06-06, audit P0): pool 진입 최소 순익 (모든 비용 차감 후). owner 조정 가능.
+//   기존 1원은 profitMin=0/profitMax=1 매물이 avg=round(0.5)=1로 통과 → 수수료·배송·버퍼 다 뺀
+//   순익 0~수백원 매물이 추천돼 "득템" 무의미. owner Wave 885 "band 폐기·작은차익 OK" 정신은 유지.
+const MIN_MEANINGFUL_PROFIT_KRW = 1_000;
+
 export function bandFromProfit(profitMin: number, profitMax: number, _category?: string | null): 1 | 2 | 3 | null {
-  // Wave 885 (2026-05-26 사용자 결정): band 시스템 폐기 — pool 진입 gate threshold 1원.
+  // Wave 885 (2026-05-26 사용자 결정): band 시스템 폐기 — pool 진입 gate.
   //   사용자 코멘트: "band 개념 없앤 지 오래됐는데. 15만/30만/50만 이하 필터링 피드에서 직접 함."
-  //   pool-policy.mjs 와 sync (Wave 755 패턴). 자세한 사유는 pool-policy.mjs 의 comment 참조.
+  //   pool-policy.mjs 와 sync (Wave 755 패턴).
   const avg = Math.round((profitMin + profitMax) / 2);
   if (avg >= 70_000) return 3;
   if (avg >= 40_000) return 2;
-  if (avg >= 1) return 1;  // Wave 885: 10_000 → 1 (band 폐기 결정).
+  // Wave 1206: avg 반올림(0.5→1) 대신 profitMax(최선 순익) 기준 — 최선이 1000원도 안 되면 차단.
+  if (profitMax >= MIN_MEANINGFUL_PROFIT_KRW) return 1;
   return null;
 }
 
