@@ -2121,8 +2121,13 @@ export async function GET(req: Request) {
       });
     }
     const responseElapsedMs = Date.now() - requestStartedAt;
+    // A quick page can still hit the deep fallback when the nearby scan is slow.
+    // If the client asked for a small first page and we filled it, keep the
+    // contract as "partial" so the client hydrates the rest instead of stopping
+    // at the first 6 rows.
+    const quickPageFilled = quickPage && !refresh && responseItems.length >= responsePageSize;
     const feedPhase: PoolFeedState["phase"] =
-      deepFallbackUsed || refresh || !quickPage ? "full" : "quick";
+      quickPageFilled ? "quick" : deepFallbackUsed || refresh || !quickPage ? "full" : "quick";
     const feedStatus: PoolFeedState["status"] =
       responseItems.length > 0
         ? feedPhase === "quick"
