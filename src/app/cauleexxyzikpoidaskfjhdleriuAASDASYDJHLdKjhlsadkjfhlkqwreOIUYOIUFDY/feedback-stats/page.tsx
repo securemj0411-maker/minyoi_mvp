@@ -10,9 +10,9 @@ export default function FeedbackStatsAdminPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 pb-10 pt-4 sm:px-6">
       <header className="mb-4 border-b border-zinc-800 pb-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-400">▌FEEDBACK STATS</p>
+        <p className="text-xs font-black uppercase tracking-[0.22em] text-amber-400">▌FEEDBACK STATS</p>
         <h1 className="mt-1 text-xl font-black tracking-tight text-zinc-100">category · trend · systemic offender</h1>
-        <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-zinc-500">
+        <p className="mt-1 text-xs uppercase tracking-[0.14em] text-zinc-500">
           which category dominates · which listings repeatedly flagged
         </p>
       </header>

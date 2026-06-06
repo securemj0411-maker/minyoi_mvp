@@ -193,9 +193,9 @@ export default async function DetailEventsAdminPage() {
   return (
     <main className="mx-auto max-w-7xl px-4 pb-10 pt-4 sm:px-6">
       <header className="mb-4 border-b border-zinc-800 pb-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-400">▌DETAIL EVENTS</p>
+        <p className="text-xs font-black uppercase tracking-[0.22em] text-amber-400">▌DETAIL EVENTS</p>
         <h1 className="mt-1 text-xl font-black tracking-tight text-zinc-100">funnel · session · CTR breakdown</h1>
-        <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-zinc-500">
+        <p className="mt-1 text-xs uppercase tracking-[0.14em] text-zinc-500">
           last 500 events — detail open · easy mode · numeric report · original click
         </p>
       </header>
@@ -206,7 +206,7 @@ export default async function DetailEventsAdminPage() {
         {error ? (
           <section className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-bold text-rose-900 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-100">
             상세 행동 테이블을 아직 읽지 못했어요. Supabase migration 적용 후 다시 확인하세요.
-            <div className="mt-2 break-all text-[11px] font-medium opacity-75">{error}</div>
+            <div className="mt-2 break-all text-xs font-medium opacity-75">{error}</div>
           </section>
         ) : null}
 
@@ -228,7 +228,7 @@ export default async function DetailEventsAdminPage() {
               {eventCounts(rows).map(([type, value]) => (
                 <div key={type} className="flex items-center justify-between gap-3 rounded-xl bg-[#f8f2e8] px-3 py-2 text-xs dark:bg-zinc-950/60">
                   <span className="font-bold text-[#354239] dark:text-zinc-200">{detailEventLabel(type)}</span>
-                  <span className="font-black text-sky-700 dark:text-sky-300">{value}</span>
+                  <span className="font-black text-blue-700 dark:text-blue-300">{value}</span>
                 </div>
               ))}
               {rows.length === 0 ? (
@@ -243,7 +243,7 @@ export default async function DetailEventsAdminPage() {
             <h2 className="text-sm font-black text-[#223127] dark:text-white">최근 세션 흐름</h2>
             <div className="mt-3 overflow-x-auto">
               <table className="min-w-[820px] text-left text-xs">
-                <thead className="text-[10px] uppercase tracking-wider text-[#7b8378] dark:text-zinc-500">
+                <thead className="text-xs uppercase tracking-wider text-[#7b8378] dark:text-zinc-500">
                   <tr className="border-b border-[#e2d9cb] dark:border-zinc-800">
                     <th className="py-2 pr-3">시간</th>
                     <th className="py-2 pr-3">사용자</th>
@@ -254,13 +254,13 @@ export default async function DetailEventsAdminPage() {
                 <tbody className="divide-y divide-[#eee5d7] dark:divide-zinc-800">
                   {sessions.map((session) => (
                     <tr key={session.sessionId} className="align-top">
-                      <td className="py-2 pr-3 font-mono text-[11px] text-[#687366] dark:text-zinc-400">{kstTime(session.newest.created_at)}</td>
-                      <td className="py-2 pr-3 font-mono text-[11px] text-[#354239] dark:text-zinc-300">{session.newest.user_ref}</td>
+                      <td className="py-2 pr-3 font-mono text-xs text-[#687366] dark:text-zinc-400">{kstTime(session.newest.created_at)}</td>
+                      <td className="py-2 pr-3 font-mono text-xs text-[#354239] dark:text-zinc-300">{session.newest.user_ref}</td>
                       <td className="py-2 pr-3">
                         <div className="max-w-[240px] truncate font-black text-[#223127] dark:text-zinc-100">
                           {session.listing?.name ?? `PID ${session.newest.pid}`}
                         </div>
-                        <div className="mt-0.5 text-[11px] text-[#7b8378] dark:text-zinc-500">
+                        <div className="mt-0.5 text-xs text-[#7b8378] dark:text-zinc-500">
                           PID {session.newest.pid} · {session.listing?.source ?? "-"} · {money(session.listing?.price ?? null)}
                         </div>
                       </td>
@@ -279,7 +279,7 @@ export default async function DetailEventsAdminPage() {
           <h2 className="text-sm font-black text-[#223127] dark:text-white">최근 이벤트 원장</h2>
           <div className="mt-3 overflow-x-auto">
             <table className="min-w-[1120px] text-left text-xs">
-              <thead className="text-[10px] uppercase tracking-wider text-[#7b8378] dark:text-zinc-500">
+              <thead className="text-xs uppercase tracking-wider text-[#7b8378] dark:text-zinc-500">
                 <tr className="border-b border-[#e2d9cb] dark:border-zinc-800">
                   <th className="py-2 pr-3">시간</th>
                   <th className="py-2 pr-3">이벤트</th>
@@ -294,29 +294,29 @@ export default async function DetailEventsAdminPage() {
                   const listing = listings.get(row.pid);
                   return (
                     <tr key={row.id} className="align-top">
-                      <td className="py-2 pr-3 font-mono text-[11px] text-[#687366] dark:text-zinc-400">{kstTime(row.created_at)}</td>
+                      <td className="py-2 pr-3 font-mono text-xs text-[#687366] dark:text-zinc-400">{kstTime(row.created_at)}</td>
                       <td className="py-2 pr-3">
-                        <span className="inline-flex rounded-full bg-sky-50 px-2 py-1 font-black text-sky-800 ring-1 ring-sky-100 dark:bg-sky-950/30 dark:text-sky-200 dark:ring-sky-900/50">
+                        <span className="inline-flex rounded-full bg-blue-50 px-2 py-1 font-black text-blue-800 ring-1 ring-blue-100 dark:bg-blue-950/30 dark:text-blue-200 dark:ring-blue-900/50">
                           {detailEventLabel(row.event_type)}
                         </span>
-                        <div className="mt-1 font-mono text-[10px] text-[#8b917f] dark:text-zinc-500">{row.session_id ?? "-"}</div>
+                        <div className="mt-1 font-mono text-xs text-[#8b917f] dark:text-zinc-500">{row.session_id ?? "-"}</div>
                       </td>
                       <td className="py-2 pr-3">
                         <div className="max-w-[300px] truncate font-black text-[#223127] dark:text-zinc-100">
                           {listing?.name ?? `PID ${row.pid}`}
                         </div>
-                        <div className="mt-0.5 text-[11px] text-[#7b8378] dark:text-zinc-500">
+                        <div className="mt-0.5 text-xs text-[#7b8378] dark:text-zinc-500">
                           PID {row.pid} · {listing?.skuName || "-"} · {listing?.source ?? "-"}
                         </div>
                       </td>
                       <td className="py-2 pr-3">
                         <div className="font-black text-blue-700 dark:text-blue-300">{money(listing?.price ?? null)}</div>
-                        <div className="mt-0.5 text-[11px] text-[#7b8378] dark:text-zinc-500">{listing?.sellerReview ?? "-"}</div>
+                        <div className="mt-0.5 text-xs text-[#7b8378] dark:text-zinc-500">{listing?.sellerReview ?? "-"}</div>
                       </td>
-                      <td className="py-2 pr-3 font-mono text-[11px] text-[#354239] dark:text-zinc-300">
+                      <td className="py-2 pr-3 font-mono text-xs text-[#354239] dark:text-zinc-300">
                         {row.step_index != null ? `${row.step_index + 1}/${row.step_total ?? "?"}` : "-"}
                       </td>
-                      <td className="max-w-[300px] break-all py-2 pr-3 font-mono text-[10px] leading-4 text-[#687366] dark:text-zinc-400">
+                      <td className="max-w-[300px] break-all py-2 pr-3 font-mono text-xs leading-4 text-[#687366] dark:text-zinc-400">
                         {metadataPreview(row.metadata)}
                       </td>
                     </tr>
@@ -333,10 +333,10 @@ export default async function DetailEventsAdminPage() {
 
 function KpiCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="rounded-2xl border border-sky-100 bg-white/82 p-3 shadow-sm dark:border-sky-950/50 dark:bg-zinc-900/70">
-      <div className="text-[10px] font-black uppercase tracking-wider text-[#7b8378] dark:text-zinc-500">{label}</div>
+    <div className="rounded-2xl border border-blue-100 bg-white/82 p-3 shadow-sm dark:border-blue-950/50 dark:bg-zinc-900/70">
+      <div className="text-xs font-black uppercase tracking-wider text-[#7b8378] dark:text-zinc-500">{label}</div>
       <div className="mt-1 text-xl font-black text-[#223127] dark:text-white">{value}</div>
-      {sub ? <div className="mt-0.5 text-[10px] font-bold text-[#687366] dark:text-zinc-400">{sub}</div> : null}
+      {sub ? <div className="mt-0.5 text-xs font-bold text-[#687366] dark:text-zinc-400">{sub}</div> : null}
     </div>
   );
 }
