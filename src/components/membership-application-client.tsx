@@ -773,6 +773,22 @@ export default function MembershipApplicationClient({
                 )}
               </button>
             ) : null}
+            {/* Wave 1197 (2026-06-06): 계좌입금 공포 차단 — 신뢰 배지 상시 노출.
+                기존엔 사업자/실명/환불이 PaymentTrustCard <details> 안에 접혀 입금 직전(공포 최고조)에 안 보였음.
+                "미승인 시 전액 환불"은 환불정책 1조(입금 후 미활성화 시 전액 환불)에 근거 — 과장 아님. */}
+            {showPaymentDetails && depositNotifyState !== "sent" ? (
+              <div className="mt-2.5 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[10.5px] font-black text-zinc-500 dark:text-zinc-400">
+                <span>
+                  <span className="text-emerald-500">✓</span> 사업자 등록업체
+                </span>
+                <span>
+                  <span className="text-emerald-500">✓</span> 예금주 실명 일치
+                </span>
+                <span className="text-emerald-600 dark:text-emerald-400">
+                  ✓ 미승인 시 전액 환불
+                </span>
+              </div>
+            ) : null}
             {depositNotifyMessage ? (
               <p
                 className={`mt-2 break-keep text-[11px] font-bold leading-4 ${depositNotifyState === "error" ? "text-red-500" : "text-zinc-500 dark:text-zinc-400"}`}
