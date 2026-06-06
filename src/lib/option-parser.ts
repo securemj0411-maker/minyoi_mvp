@@ -232,7 +232,7 @@ export function resolveConditionClass(
 // Wave 531 (2026-05-22) v55: exchange-only + explicit accessory/parts-only title blocks.
 //   Recent operator comments: iPhone exchange posts, Dyson Airwrap accessory-only,
 //   DJI Osmo Pocket Type-C base were polluting full-unit comparable samples.
-export const PARSER_VERSION = "option-parser-v74";  // Wave 1194 (2026-06-06): 배터리 health 추출 보강 — "베터리"오타/70%미만/"용량"+조사 못 잡던 것 fix → 전자기기·시계 reparse (fashion 자체 버전이라 영향 0)
+export const PARSER_VERSION = "option-parser-v75";  // Wave 1194b (2026-06-06): v74 배터리 정규식 결함 재수정 (normalize % 제거로 죽은 코드 + "성능 NN" FP). 전자기기·시계 재reparse (fashion 영향 0)
 
 // Wave 760d (2026-05-24): game_console / sport_golf 만 ConditionClass → 5-tier (S/A/B/C/reject) 매핑.
 //   의류/신발/가방: fashion parser 가 자체 parseConditionTier() 사용 (옷 사이즈/실착 횟수 등 정밀 추출).
@@ -904,20 +904,17 @@ function parseLgGramChipFromModelNumber(text: string) {
 
 function parseBatteryHealth(text: string) {
   const lower = normalize(text).toLowerCase();
-  // Wave 1194 (2026-06-06): 배터리 health 추출 대폭 보강.
-  //   owner 발견: 애플워치 "베터리 용량 ... 64%" 가 안 잡혀 88% 양호 매물과 같은 시세군(worn)으로 묶임.
-  //   기존 결함 3종: ① 숫자 7[0-9]~100 = 70% 미만(열화 심한 케이스) 못 잡음
-  //                  ② "효율|성능"만 = "용량/헬스/수명" 누락 + 조사("성능은") 못 건넘
-  //                  ③ "배터리"만 = "베터리/밧데리" 오타 누락
-  //   fix: ① 숫자 [1-9][0-9]~100 (10~100%, (?!\d)로 256gb 같은 저장용량 trap 차단)
-  //        ② 키워드 효율/성능/헬스/health/수명 + 조사 허용 (용량/상태는 저장용량 충돌로 제외)
-  //        ③ 오타 베터리/밧데리/빳데리/바테리
-  //        ④ 자연어 fallback: 배터리류 키워드 20자 내 NN% (단 "충전/남음/정도" 잔량 표현 배제)
+  // Wave 1194b (2026-06-06): Wave 1194 결함 재수정 (audit P0 발견).
+  //   ① normalize()(:477)가 정규식 실행 전에 %를 제거 → % 의존 패턴이 죽은 코드였음 → owner 케이스
+  //      "베터리 64%"가 여전히 null (Wave 1194 목표 미달성).
+  //   ② 키워드 optional + %? 라 "성능 60"/"수명 95점"/"발열 성능 30" 등 비-배터리 숫자를 FP로 잡아
+  //      정상 전자기기를 low_batt 시세군으로 오분류.
+  //   재설계: %없이(normalize 후 기준) 매칭 + 배터리류 키워드 "필수"로 FP 차단 + 단위(기가/원/회 등)·충전잔량 trap 배제.
+  //   normalize 거친 15케이스 테스트 통과(owner 2케이스 잡고 성능/수명/발열/가성비 FP·충전·저장용량 전부 차단).
   const match = firstMatch(lower, [
-    /(?:배터리|베터리|밧데리|빳데리|바테리)?\s*(?:효율|성능|헬스|health|수명)\s*(?:은|는|이|가)?\s*[:：]?\s*(100|[1-9][0-9])(?!\d)\s*%?/,
-    /(?:배효)\s*[:：]?\s*(100|[1-9][0-9])(?!\d)\s*%?/,
-    /신품\s*대비\s*(100|[1-9][0-9])(?!\d)\s*%?/,
-    /(?:배터리|베터리|밧데리|빳데리|바테리)[^.!?\n]{0,20}?(100|[1-9][0-9])(?!\d)\s*%(?!\s*(?:충전|남|정도))/,
+    /(?:배터리|베터리|밧데리|빳데리|바테리)[^.!?\n]{0,20}?(100|[1-9][0-9])(?!\d)(?!\s*(?:충전|남|정도|기가|gb|메가|인치|만|원|개|회))/,
+    /배효\s*[:：]?\s*(100|[1-9][0-9])(?!\d)/,
+    /신품\s*대비\s*(100|[1-9][0-9])(?!\d)/,
   ]);
   return match ? Number(match[1]) : null;
 }
