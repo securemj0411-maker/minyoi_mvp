@@ -4,10 +4,12 @@
 //   주요 column 만 (닉네임/이메일/크레딧/상태) — 가입일/마지막 로그인 + grant/revoke/block 다 drawer 안.
 //   페이지네이션 (50/페이지 기본). 검색 + plan filter 그대로 keep.
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
 import { OPS_ADMIN_REVEAL_ANALYTICS_PATH } from "@/lib/admin-routes";
+
+import { useDialogA11y } from "./_ui/hooks";
 
 export type MemberRow = {
   authUserId: string;
@@ -183,7 +185,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
       {/* header bar */}
       <div className="flex flex-wrap items-center gap-3 border-b border-zinc-800 bg-zinc-900/70 px-5 py-4">
         <div>
-          <div className="text-[11px] font-black uppercase tracking-[0.16em] text-violet-300">회원 관리</div>
+          <div className="text-xs font-black uppercase tracking-[0.16em] text-violet-300">회원 관리</div>
           <h2 className="mt-1 text-2xl font-black text-white">회원별 결제·신청·상담 흐름</h2>
         </div>
         <input
@@ -191,7 +193,7 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
           placeholder="이메일 / 닉네임 / auth id 검색"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-          className="ml-auto h-11 w-full rounded-2xl border border-zinc-700 bg-zinc-950 px-4 text-sm font-bold text-zinc-100 placeholder:text-zinc-600 focus:border-violet-400 focus:outline-none sm:w-[360px]"
+          className="ml-auto h-11 w-full rounded-2xl border border-zinc-700 bg-zinc-950 px-4 text-sm font-bold text-zinc-100 placeholder:text-zinc-400 focus:border-violet-400 focus:outline-none sm:w-[360px]"
         />
         {selectedIds.size > 0 ? (
           <button
@@ -219,15 +221,23 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
       {/* Wave launch-110: 모바일 카드 layout (md 미만). desktop 테이블은 md 이상. */}
       <div className="space-y-2 p-4 md:hidden">
         {pageRows.length === 0 ? (
-          <div className="rounded-sm border border-zinc-800 bg-zinc-950 px-3 py-6 text-center text-[10px] uppercase text-zinc-600">no results</div>
+          <div className="rounded-sm border border-zinc-800 bg-zinc-950 px-3 py-6 text-center text-xs uppercase text-zinc-400">no results</div>
         ) : pageRows.map((row) => {
           const isBlocked = Boolean(row.blockedAt);
           const isSelected = selectedIds.has(row.authUserId);
           return (
             <div
               key={`m-${row.authUserId}`}
+              role="button"
+              tabIndex={0}
               onClick={() => setDrawerId(row.authUserId)}
-              className={`rounded-sm border p-3 transition ${isSelected ? "border-amber-700/60 bg-amber-950/20" : "border-zinc-800 bg-zinc-950"} ${isBlocked ? "opacity-70" : ""}`}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setDrawerId(row.authUserId);
+                }
+              }}
+              className={`rounded-sm border p-3 outline-none transition focus-visible:ring-2 focus-visible:ring-blue-400/70 ${isSelected ? "border-amber-700/60 bg-amber-950/20" : "border-zinc-800 bg-zinc-950"} ${isBlocked ? "opacity-70" : ""}`}
             >
               <div className="flex items-center justify-between gap-2">
                 {/* Wave 748 (2026-05-24): 부모 onClick + input onChange 둘 다 toggleSelect 호출하면
@@ -245,13 +255,13 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                 </div>
                 <div className="flex items-center gap-1.5">
                   {isBlocked ? (
-                    <span className="rounded-sm border border-rose-800/60 bg-rose-950/40 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-rose-300">BLOCKED</span>
+                    <span className="rounded-sm border border-rose-800/60 bg-rose-950/40 px-1.5 py-0.5 text-xs font-black uppercase tracking-wide text-rose-300">BLOCKED</span>
                   ) : null}
                   <span className="font-bold text-violet-200">{memberPlanLabel(row)}</span>
                 </div>
               </div>
-              <div className="mt-1 truncate font-mono text-[11px] text-zinc-400">{row.email ?? "—"}</div>
-              <div className="mt-0.5 flex items-center justify-between gap-2 text-[10px] uppercase text-zinc-600">
+              <div className="mt-1 truncate font-mono text-xs text-zinc-400">{row.email ?? "—"}</div>
+              <div className="mt-0.5 flex items-center justify-between gap-2 text-xs uppercase text-zinc-400">
                 <span>{row.provider ?? "—"} · 결제 {krw(row.totalPaidKrw)}</span>
                 <Link
                   href={`${OPS_ADMIN_REVEAL_ANALYTICS_PATH}?userRef=${encodeURIComponent(row.userRef)}`}
@@ -268,9 +278,9 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
 
       <div className="hidden overflow-x-auto px-5 py-5 md:block">
         <div className="overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950">
-        <table className="w-full text-[11px]">
+        <table className="w-full text-xs">
           <thead className="bg-zinc-900/80">
-            <tr className="border-b border-zinc-800 text-left text-[11px] font-black text-zinc-500">
+            <tr className="border-b border-zinc-800 text-left text-xs font-black text-zinc-500">
               <th className="w-9 px-3 py-2">
                 <input
                   type="checkbox"
@@ -297,15 +307,23 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
           </thead>
           <tbody>
             {pageRows.length === 0 ? (
-              <tr><td colSpan={8} className="px-3 py-8 text-center text-sm font-bold text-zinc-600">검색 결과가 없습니다.</td></tr>
+              <tr><td colSpan={8} className="px-3 py-8 text-center text-sm font-bold text-zinc-400">검색 결과가 없습니다.</td></tr>
             ) : pageRows.map((row) => {
               const isBlocked = Boolean(row.blockedAt);
               const isSelected = selectedIds.has(row.authUserId);
               return (
                 <tr
                   key={row.authUserId}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setDrawerId(row.authUserId)}
-                  className={`cursor-pointer border-b border-zinc-900 transition hover:bg-zinc-900/40 ${isSelected ? "bg-amber-950/20" : ""} ${isBlocked ? "opacity-70" : ""}`}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setDrawerId(row.authUserId);
+                    }
+                  }}
+                  className={`cursor-pointer border-b border-zinc-900 outline-none transition hover:bg-zinc-900/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400/70 ${isSelected ? "bg-amber-950/20" : ""} ${isBlocked ? "opacity-70" : ""}`}
                 >
                   {/* Wave 748: 부모 td onClick + input onChange 둘 다 toggle → 두 번 = 0 버그 fix. */}
                   <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
@@ -326,30 +344,30 @@ export default function MembersTable({ initialRows }: { initialRows: MemberRow[]
                   <td className="px-3 py-2 text-zinc-400">{row.email ?? "—"}</td>
                   <td className="px-3 py-2 text-right">
                     <div className="font-black text-violet-200">{memberPlanLabel(row)}</div>
-                    <div className="text-[10px] font-bold text-zinc-600">{fmt(row.planEndAt ?? row.proUntil)}</div>
+                    <div className="text-xs font-bold text-zinc-400">{fmt(row.planEndAt ?? row.proUntil)}</div>
                   </td>
                   <td className="px-3 py-2 text-right font-black tabular-nums text-zinc-100">
                     {krw(row.totalPaidKrw)}
                   </td>
                   <td className="px-3 py-2">
                     <div className="text-xs font-black text-zinc-200">{applicationStatusLabel(row.lastApplicationStatus)}</div>
-                    <div className="mt-0.5 text-[10px] font-bold text-zinc-600">
+                    <div className="mt-0.5 text-xs font-bold text-zinc-400">
                       {row.lastApplicationId ? `#${row.lastApplicationId} · ${fmt(row.lastApplicationAt)}` : "신청 없음"}
                     </div>
                   </td>
                   <td className="px-3 py-2">
                     {row.supportConversationId ? (
-                      <a href="#customer-support" className="inline-flex rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-black text-emerald-100">
+                      <a href="#customer-support" className="inline-flex rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-black text-emerald-100">
                         {row.supportAdminUnreadCount > 0 ? `새 상담 ${row.supportAdminUnreadCount}` : row.supportStatus === "open" ? "상담 진행" : "상담 기록"}
                       </a>
                     ) : (
-                      <span className="text-[10px] font-bold text-zinc-700">상담 없음</span>
+                      <span className="text-xs font-bold text-zinc-500">상담 없음</span>
                     )}
                   </td>
                   <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>
                     <Link
                       href={`${OPS_ADMIN_REVEAL_ANALYTICS_PATH}?userRef=${encodeURIComponent(row.userRef)}`}
-                      className="inline-flex rounded-sm border border-emerald-800 bg-emerald-950/35 px-2 py-1 text-[9px] font-black uppercase tracking-wide text-emerald-300 transition hover:border-emerald-600 hover:bg-emerald-950/60"
+                      className="inline-flex rounded-sm border border-emerald-800 bg-emerald-950/35 px-2 py-1 text-xs font-black uppercase tracking-wide text-emerald-300 transition hover:border-emerald-600 hover:bg-emerald-950/60"
                     >
                       보기
                     </Link>
@@ -400,7 +418,7 @@ function ProfileThumb({ row, onOpen }: { row: MemberRow; onOpen: () => void }) {
   if (!row.profileImageUrl) {
     return (
       <span
-        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900 text-[10px] font-black text-zinc-500"
+        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900 text-xs font-black text-zinc-500"
         aria-label={label}
         title={label}
       >
@@ -435,17 +453,22 @@ function MemberDrawer({
   onOpenPhoto: () => void;
 }) {
   const isBlocked = Boolean(row.blockedAt);
+  const panelRef = useRef<HTMLElement>(null);
+  useDialogA11y(true, onClose, panelRef);
 
   return (
     <div
       role="dialog"
       aria-modal="true"
+      aria-label={`${row.nickname || row.email || "회원"} 상세`}
       onClick={onClose}
       className="fixed inset-0 z-[80] flex justify-end bg-black/55 backdrop-blur-sm"
     >
       <aside
+        ref={panelRef}
         onClick={(e) => e.stopPropagation()}
-        className="flex h-full w-full max-w-[460px] flex-col overflow-y-auto border-l border-zinc-800 bg-zinc-950 px-5 py-6 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
+        tabIndex={-1}
+        className="flex h-full w-full max-w-[460px] flex-col overflow-y-auto border-l border-zinc-800 bg-zinc-950 px-5 py-6 shadow-[0_0_0_1px_rgba(0,0,0,0.35)] outline-none"
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 items-start gap-3">
@@ -458,29 +481,29 @@ function MemberDrawer({
                 title="프로필 사진 크게 보기"
               >
                 <img src={row.profileImageUrl} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
-                <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-center text-[8px] font-black uppercase tracking-wide text-zinc-100 opacity-0 transition group-hover:opacity-100">
+                <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-center text-xs font-black uppercase tracking-wide text-zinc-100 opacity-0 transition group-hover:opacity-100">
                   VIEW
                 </span>
               </button>
             ) : (
-              <div className="mt-0.5 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900 text-xl font-black text-zinc-600">
+              <div className="mt-0.5 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900 text-xl font-black text-zinc-400">
                 {profileInitial(row)}
               </div>
             )}
             <div className="min-w-0">
-              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-violet-300">회원 상세</div>
+              <div className="text-xs font-black uppercase tracking-[0.16em] text-violet-300">회원 상세</div>
               <div className="mt-1 truncate text-lg font-black text-zinc-50">{row.nickname || "—"}</div>
-              <div className="mt-0.5 truncate text-[11px] text-zinc-500">{row.email ?? "—"}</div>
+              <div className="mt-0.5 truncate text-xs text-zinc-500">{row.email ?? "—"}</div>
               {row.profileImageUrl ? (
                 <button
                   type="button"
                   onClick={onOpenPhoto}
-                  className="mt-2 rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-[9px] font-black uppercase tracking-wide text-blue-300 transition hover:border-blue-700 hover:bg-blue-950/30"
+                  className="mt-2 rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-xs font-black uppercase tracking-wide text-blue-300 transition hover:border-blue-700 hover:bg-blue-950/30"
                 >
                   프로필 사진
                 </button>
               ) : (
-                <div className="mt-2 text-[11px] font-bold text-zinc-700">프로필 사진 없음</div>
+                <div className="mt-2 text-xs font-bold text-zinc-500">프로필 사진 없음</div>
               )}
             </div>
           </div>
@@ -512,19 +535,19 @@ function MemberDrawer({
           <dt className="font-bold text-zinc-500">멤버십</dt>
           <dd>
             <div className="font-black text-violet-200">{memberPlanLabel(row)}</div>
-            <div className="mt-0.5 text-xs font-bold text-zinc-600">
+            <div className="mt-0.5 text-xs font-bold text-zinc-400">
               {row.planStatus ?? "상태 없음"} · 만료 {fmt(row.planEndAt ?? row.proUntil)}
             </div>
           </dd>
           <dt className="font-bold text-zinc-500">누적 결제</dt>
           <dd>
             <div className="font-black tabular-nums text-zinc-100">{krw(row.totalPaidKrw)}</div>
-            <div className="mt-0.5 text-xs font-bold text-zinc-600">멤버십 신청 {row.applicationCount}건</div>
+            <div className="mt-0.5 text-xs font-bold text-zinc-400">멤버십 신청 {row.applicationCount}건</div>
           </dd>
           <dt className="font-bold text-zinc-500">최근 신청</dt>
           <dd>
             <div className="font-black text-zinc-200">{applicationStatusLabel(row.lastApplicationStatus)}</div>
-            <div className="mt-0.5 text-xs font-bold text-zinc-600">
+            <div className="mt-0.5 text-xs font-bold text-zinc-400">
               {row.lastApplicationId ? `#${row.lastApplicationId} · ${row.lastApplicationKind === "renewal" ? "연장" : "신규"} · ${fmt(row.lastApplicationAt)}` : "기록 없음"}
             </div>
           </dd>
@@ -553,7 +576,7 @@ function MemberDrawer({
             </>
           ) : null}
           <dt className="font-bold text-zinc-500">Auth ID</dt>
-          <dd className="break-all font-mono text-[10px] text-zinc-600">{row.authUserId}</dd>
+          <dd className="break-all font-mono text-xs text-zinc-400">{row.authUserId}</dd>
         </dl>
 
         {/* actions */}
@@ -588,12 +611,15 @@ function MemberDrawer({
 }
 
 function ProfilePhotoModal({ row, onClose }: { row: MemberRow; onClose: () => void }) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  useDialogA11y(true, onClose, panelRef);
   if (!row.profileImageUrl) return null;
 
   return (
     <div
       role="dialog"
       aria-modal="true"
+      aria-label="프로필 사진"
       onClick={(event) => {
         event.stopPropagation();
         onClose();
@@ -601,18 +627,20 @@ function ProfilePhotoModal({ row, onClose }: { row: MemberRow; onClose: () => vo
       className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-4 font-mono backdrop-blur-sm"
     >
       <div
+        ref={panelRef}
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-[520px] overflow-hidden rounded-sm border border-zinc-800 bg-zinc-950 shadow-2xl"
+        tabIndex={-1}
+        className="w-full max-w-[520px] overflow-hidden rounded-sm border border-zinc-800 bg-zinc-950 shadow-2xl outline-none"
       >
         <div className="flex items-center justify-between border-b border-zinc-800 px-3 py-2">
           <div className="min-w-0">
-            <div className="truncate text-[11px] font-black text-zinc-100">{row.nickname || row.email || "—"}</div>
-            <div className="truncate text-[9px] text-zinc-600">{row.profileImageUrl}</div>
+            <div className="truncate text-xs font-black text-zinc-100">{row.nickname || row.email || "—"}</div>
+            <div className="truncate text-xs text-zinc-400">{row.profileImageUrl}</div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="ml-3 rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-400 hover:text-zinc-200"
+            className="ml-3 rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-xs font-bold uppercase tracking-wide text-zinc-400 hover:text-zinc-200"
           >
             CLOSE
           </button>
@@ -630,7 +658,7 @@ function ProfilePhotoModal({ row, onClose }: { row: MemberRow; onClose: () => vo
             href={row.profileImageUrl}
             target="_blank"
             rel="noreferrer"
-            className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-blue-300 hover:border-blue-700"
+            className="rounded-sm border border-zinc-800 bg-zinc-900 px-2 py-1 text-xs font-black uppercase tracking-wide text-blue-300 hover:border-blue-700"
           >
             OPEN ORIGINAL
           </a>
