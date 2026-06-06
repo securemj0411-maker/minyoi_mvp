@@ -1035,7 +1035,12 @@ async function loadNearbyDaangnReadyRows(
             body: jsonBody({
               p_region_ids: batch,
               p_price_max: options.priceMax ?? null,
-              p_limit: Math.max(1, Math.min(limit, 500)),
+              // Wave 1208 (2026-06-06, audit P0): 무한스크롤 150 천장 fix. RPC는 excludePids를
+              //   안 받고 route가 결과를 받은 뒤 exclude(이미 본 pid)로 거른다(1063). p_limit이 고정이면
+              //   다음 페이지에 똑같은 최근접 N개가 와서 전부 걸러져 0 → 연쇄 종료(천장). 이미 본 개수만큼
+              //   더 가져오게 limit += exclude.size (RPC 상한 500). 당근 6km 내 ready 매물이 500 넘는
+              //   동네는 사실상 없어 실질 무한 스크롤.
+              p_limit: Math.max(1, Math.min(limit + exclude.size, 500)),
             }),
           }),
           rawRemainingMs,
