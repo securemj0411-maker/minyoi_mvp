@@ -3,12 +3,10 @@
 // Wave launch-108 (2026-05-24): layout.tsx 가 admin auth + AdminTopBar (sticky nav + KPI ticker) 공유.
 //   이 페이지는 본문만 (헤더 / nav / KPI 다 layout 으로 위임). 페이지 전환 시 sticky bar 유지.
 
-import Link from "next/link";
-
-import { OPS_ADMIN_REVEAL_ANALYTICS_PATH } from "@/lib/admin-routes";
 import { approveMembershipApplication } from "@/lib/membership-application-approval";
 import { jsonBody, restFetch, serviceHeaders, tableUrl } from "@/lib/supabase-rest";
 import { userRefForAuthUser } from "@/lib/user-ref";
+import { StatCard } from "./_ui/primitives";
 import MembersTable, { type MemberRow } from "./members-table";
 import FeedbackPanel from "./feedback-panel";
 import MembershipApplicationsPanel, { type MembershipApplicationRow } from "./membership-applications-panel";
@@ -363,87 +361,46 @@ export default async function MembersPage() {
 
   return (
     <main className="mx-auto w-full max-w-[1560px] px-4 pb-10 pt-5 sm:px-6">
-      <header className="mb-5 overflow-hidden rounded-[28px] border border-zinc-800 bg-[radial-gradient(circle_at_top_right,rgba(49,130,246,0.22),transparent_36%),linear-gradient(135deg,#111827,#020617)] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-blue-300">운영 대시보드</div>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">
-              멤버십·입금·상담을 한눈에 봅니다
-            </h1>
-            <p className="mt-2 max-w-2xl break-keep text-sm font-bold leading-6 text-zinc-300">
-              입금 확인 요청, 자동승인 보정, 고객상담, 회원별 결제 흐름을 분리해서 운영자가 바로 처리할 수 있게 정리했습니다.
-            </p>
-          </div>
-          <Link
-            href={OPS_ADMIN_REVEAL_ANALYTICS_PATH}
-            className="inline-flex h-11 items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-4 text-sm font-black text-emerald-200 transition hover:bg-emerald-400/20"
-          >
-            전체 통계 보기
-            <span>↗</span>
-          </Link>
-        </div>
-
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <OpsMetricCard label="입금 확인 요청" value={`${depositRequestedCount}건`} tone="blue" caption="입금했어요를 누른 신청" />
-          <OpsMetricCard
-            label="입금 전 예약"
-            value={`${unpaidReservationCount}건`}
-            tone="amber"
-            caption={`신규 ${unpaidNewReservationCount}건 7분 만료 · 연장 ${unpaidRenewalReservationCount}건 유지`}
-          />
-          <OpsMetricCard label="열린 상담" value={`${openSupportCount}건`} tone="emerald" caption={supportUnreadCount > 0 ? `새 메시지 ${supportUnreadCount}개` : "미확인 메시지 없음"} />
-          <OpsMetricCard label="활성 멤버" value={`${paidMemberCount}명`} tone="violet" caption={`전체 계정 ${rows.length}명`} />
-          <OpsMetricCard label="누적 결제" value={`${totalMembershipRevenue.toLocaleString("ko-KR")}원`} tone="slate" caption="승인된 멤버십 신청 기준" />
-        </div>
-
-        <nav className="mt-5 flex flex-wrap gap-2 text-sm font-black">
-          <a href="#membership-payments" className="rounded-full bg-white px-4 py-2 text-zinc-950">입금 확인</a>
-          <a href="#customer-support" className="rounded-full border border-white/15 px-4 py-2 text-white hover:bg-white/10">고객상담</a>
-          <a href="#member-management" className="rounded-full border border-white/15 px-4 py-2 text-white hover:bg-white/10">회원 관리</a>
-          <a href="#feedback-review" className="rounded-full border border-white/15 px-4 py-2 text-white hover:bg-white/10">오류 신고</a>
-        </nav>
+      <header className="mb-5 overflow-hidden rounded-2xl border border-zinc-800 bg-[radial-gradient(circle_at_top_right,rgba(49,130,246,0.20),transparent_38%),linear-gradient(135deg,#111827,#020617)] p-5">
+        <div className="text-xs font-black uppercase tracking-[0.18em] text-blue-300">운영 오버뷰</div>
+        <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">멤버십·입금·상담을 한눈에</h1>
+        <p className="mt-2 max-w-2xl break-keep text-sm font-medium leading-6 text-zinc-300">
+          입금 확인 요청, 자동승인 보정, 고객상담, 회원별 결제 흐름을 한 화면에서 바로 처리합니다.
+        </p>
       </header>
 
-      <section id="membership-payments" className="scroll-mt-28">
-        <MembershipApplicationsPanel initialRows={applications} />
-      </section>
-      <section id="customer-support" className="scroll-mt-28">
-        <SupportChatPanel />
-      </section>
-      <section id="member-management" className="scroll-mt-28">
-        <MembersTable initialRows={rows} />
-      </section>
-      <section id="feedback-review" className="scroll-mt-28">
-        <FeedbackPanel />
-      </section>
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <StatCard label="입금 확인 요청" value={`${depositRequestedCount}건`} tone="blue" sub="입금했어요를 누른 신청" />
+        <StatCard
+          label="입금 전 예약"
+          value={`${unpaidReservationCount}건`}
+          tone="amber"
+          sub={`신규 ${unpaidNewReservationCount}건 7분 만료 · 연장 ${unpaidRenewalReservationCount}건 유지`}
+        />
+        <StatCard
+          label="열린 상담"
+          value={`${openSupportCount}건`}
+          tone="emerald"
+          sub={supportUnreadCount > 0 ? `새 메시지 ${supportUnreadCount}개` : "미확인 메시지 없음"}
+        />
+        <StatCard label="활성 멤버" value={`${paidMemberCount}명`} tone="violet" sub={`전체 계정 ${rows.length}명`} />
+        <StatCard label="누적 결제" value={`${totalMembershipRevenue.toLocaleString("ko-KR")}원`} tone="slate" sub="승인된 멤버십 신청 기준" />
+      </div>
+
+      <div className="space-y-6">
+        <section id="membership-payments" className="scroll-mt-4">
+          <MembershipApplicationsPanel initialRows={applications} />
+        </section>
+        <section id="customer-support" className="scroll-mt-4">
+          <SupportChatPanel />
+        </section>
+        <section id="member-management" className="scroll-mt-4">
+          <MembersTable initialRows={rows} />
+        </section>
+        <section id="feedback-review" className="scroll-mt-4">
+          <FeedbackPanel />
+        </section>
+      </div>
     </main>
-  );
-}
-
-function OpsMetricCard({
-  label,
-  value,
-  caption,
-  tone,
-}: {
-  label: string;
-  value: string;
-  caption: string;
-  tone: "blue" | "amber" | "emerald" | "violet" | "slate";
-}) {
-  const toneClass = {
-    blue: "from-blue-500/24 to-blue-400/5 text-blue-100",
-    amber: "from-amber-500/24 to-amber-400/5 text-amber-100",
-    emerald: "from-emerald-500/24 to-emerald-400/5 text-emerald-100",
-    violet: "from-violet-500/24 to-violet-400/5 text-violet-100",
-    slate: "from-slate-400/18 to-white/5 text-zinc-100",
-  }[tone];
-
-  return (
-    <div className={`rounded-2xl border border-white/10 bg-gradient-to-br ${toneClass} p-4`}>
-      <div className="text-[12px] font-black text-white/62">{label}</div>
-      <div className="mt-2 text-2xl font-black tabular-nums text-white">{value}</div>
-      <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-white/58">{caption}</div>
-    </div>
   );
 }
