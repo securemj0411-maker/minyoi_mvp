@@ -152,7 +152,12 @@ async function ingestJoongna(externalIdOrKey: string): Promise<LiveIngestResult>
     : parseJoongnaProductExternalId(externalIdOrKey);
   if (!externalId) return { ok: false, reason: "not_a_product" };
   const url = `https://web.joongna.com/product/${externalId}`;
-  const detail = await fetchJoongnaDetail(url);
+  // Wave 1207 (2026-06-06, audit P0): fetchJoongnaDetail이 timeout/네트워크 시 throw → 404 대신 500으로 샜음.
+  //   번개(bunjang try/catch)·당근(daangn .catch(null))은 null 반환인데 중나만 누락 → .catch(null)로 동일 계약.
+  const detail = await fetchJoongnaDetail(url).catch(() => null);
+  if (!detail) {
+    return { ok: false, reason: "fetch_failed" };
+  }
   if (!detail.ok) {
     if (detail.blockSignal.blocked) {
       return { ok: false, reason: "blocked", detail: detail.blockSignal.reason ?? undefined };

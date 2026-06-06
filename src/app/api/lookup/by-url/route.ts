@@ -26,6 +26,10 @@ import { liveIngestFromParsedUrl, type LiveIngestSource } from "@/lib/live-inges
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// Wave 1207 (2026-06-06, audit P0): maxDuration 미설정 → DB/스크레이퍼 느릴 때 무한 로딩.
+//   restFetch가 호출당 90초(30s×3)인데 다단계 순차 호출이라 함수가 길게 매달릴 수 있음.
+//   60초 상한으로 끊어 SSE가 종료되고 클라가 에러 안내를 받게 한다.
+export const maxDuration = 60;
 
 type RawListing = {
   pid: number;
