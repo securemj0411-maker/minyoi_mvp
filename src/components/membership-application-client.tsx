@@ -320,9 +320,20 @@ export default function MembershipApplicationClient({
     }).catch(() => null);
 
     if (!res?.ok) {
+      // Wave 1200 (2026-06-06): 404(no_pending_application) = 예약 7분 만료/취소됨.
+      //   기존엔 모든 실패를 "잠시 후 다시 눌러주세요"로 뭉뚱그려 → row가 영구 rejected라
+      //   재시도 무한 실패 (송금 마치고 7분 넘겨 누른 사용자가 돈 나간 채 갇힘).
+      //   만료는 별도 안내 + 재예약(기간/금액 변경) + 송금했으면 고객센터 유도.
+      if (res?.status === 404) {
+        setDepositNotifyState("error");
+        setDepositNotifyMessage(
+          "예약 시간이 만료됐어요. 아래 ‘기간/금액 변경’으로 다시 예약해주세요. 이미 송금하셨다면 고객센터(🎧)로 알려주시면 바로 확인해 드려요.",
+        );
+        return;
+      }
       setDepositNotifyState("error");
       setDepositNotifyMessage(
-        "입금 확인 요청을 보내지 못했어요. 잠시 후 다시 눌러주세요.",
+        "입금 확인 요청을 보내지 못했어요. 네트워크 확인 후 다시 눌러주세요.",
       );
       return;
     }
