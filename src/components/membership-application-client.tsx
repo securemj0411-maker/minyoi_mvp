@@ -751,22 +751,27 @@ export default function MembershipApplicationClient({
                 </div>
               </div>
             ) : null}
+            {/* Wave 1196 (2026-06-06): 입금했어요 = primary CTA 강조. owner: 필수 버튼인데
+                송금방법 다시선택과 위계가 비슷했음. h-12→h-14 키우고 버튼 안 2줄(제목 + 안내
+                서브텍스트)로 통합. 기존 별도 안내 문단은 버튼으로 흡수. */}
             {showPaymentDetails && depositNotifyState !== "sent" ? (
               <button
                 type="button"
                 onClick={() => void notifyDepositDone()}
                 disabled={isBusy || depositNotifyState === "sending"}
-                className="mt-2 flex h-12 w-full items-center justify-center rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[14px] font-black text-[var(--brand-cream)] shadow-[0_10px_22px_rgba(49,130,246,0.22)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
+                className="mt-3 flex h-14 w-full flex-col items-center justify-center gap-0.5 rounded-2xl bg-[var(--brand-accent-strong)] px-4 text-[var(--brand-cream)] shadow-[0_14px_30px_rgba(49,130,246,0.30)] transition hover:opacity-90 disabled:cursor-default disabled:opacity-70"
               >
-                {depositNotifyState === "sending" ? "확인 중" : "입금했어요"}
+                {depositNotifyState === "sending" ? (
+                  <span className="text-[16px] font-black leading-none">확인 중</span>
+                ) : (
+                  <>
+                    <span className="text-[17px] font-black leading-none">입금했어요</span>
+                    <span className="text-[11px] font-bold leading-none opacity-80">
+                      입금 완료 후 눌러주세요 · 5분 내 자동 반영
+                    </span>
+                  </>
+                )}
               </button>
-            ) : null}
-            {showPaymentDetails && depositNotifyState === "idle" ? (
-              <p className="mt-2 break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400">
-                {renewalMode
-                  ? "입금 후 입금했어요 버튼을 누르면 5분 내로 연장 기간이 자동 반영됩니다."
-                  : "입금 후 입금했어요 버튼을 누르면 5분 내로 멤버십에 자동 반영됩니다."}
-              </p>
             ) : null}
             {depositNotifyMessage ? (
               <p
