@@ -14,7 +14,7 @@ import {
 } from "@/lib/admin-routes";
 
 /** 사이드바 대기-건수 뱃지 키 — /api/admin/nav-counts 응답과 매핑. */
-export type NavBadgeKey = "depositRequests" | "manualDeposits" | "openSupport" | "pendingFeedback";
+export type NavBadgeKey = "depositRequests" | "manualDeposits" | "unreadSupport" | "pendingFeedback";
 export type NavCounts = Partial<Record<NavBadgeKey, number>>;
 
 export type NavItem = {
@@ -51,7 +51,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "사용자",
     items: [
       { label: "회원 관리", href: `${A}#member-management`, icon: "👤", anchor: true },
-      { label: "고객 상담", href: `${A}#customer-support`, icon: "💬", anchor: true, badge: "openSupport" },
+      { label: "고객 상담", href: `${A}#customer-support`, icon: "💬", anchor: true, badge: "unreadSupport" },
     ],
   },
   {

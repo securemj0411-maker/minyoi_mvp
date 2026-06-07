@@ -25,13 +25,13 @@ export async function GET(req: NextRequest) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   if (!isAdminUser(auth.user)) return NextResponse.json({ error: "admin only" }, { status: 403 });
 
-  const [depositRequests, manualDeposits, openSupport, pendingFeedback] = await Promise.all([
+  const [depositRequests, manualDeposits, unreadSupport, pendingFeedback] = await Promise.all([
     // 입금했어요를 누른(입금확인 요청) 멤버십 신청
     countRows("mvp_membership_applications", "status=eq.pending&deposit_confirmed_at=not.is.null"),
     // 대기 중 수동 충전 신청
     countRows("mvp_manual_deposit_requests", "status=eq.pending"),
-    // 열린 상담
-    countRows("mvp_support_conversations", "status=eq.open"),
+    // 안 읽은 메시지가 있는 상담 (운영자가 읽으면 admin_unread_count=0 → 뱃지에서 빠짐). status=open 은 닫기 전까지 안 줄어 알림용으로 부적합.
+    countRows("mvp_support_conversations", "admin_unread_count=gt.0"),
     // 대기 중 사용자 신고
     countRows("mvp_user_feedback", "status=eq.pending"),
   ]);
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     depositRequests,
     manualDeposits,
-    openSupport,
+    unreadSupport,
     pendingFeedback,
     computedAt: new Date().toISOString(),
   });
