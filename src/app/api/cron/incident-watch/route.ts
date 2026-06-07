@@ -90,42 +90,47 @@ function yesterdayDate(): string {
   return d.toISOString().slice(0, 10);
 }
 
-function eightDaysAgo(): string {
-  const d = new Date();
-  d.setUTCDate(d.getUTCDate() - 8);
-  return d.toISOString().slice(0, 10);
+async function marketDayRowCount(date: string): Promise<number> {
+  const res = await restFetch(
+    `${tableUrl("mvp_market_price_daily")}?select=date&date=eq.${date}&limit=1`,
+    { headers: { ...serviceHeaders(), Prefer: "count=exact" } },
+  );
+  return Number((res.headers.get("content-range") ?? "0-0/0").split("/")[1] ?? 0);
 }
 
 async function checkMarketHistoricalRows(): Promise<{ ok: boolean; detail: string; context?: Record<string, unknown> }> {
-  // 1. 어제 row 수
+  // Wave 1228g: 평균 → 중앙값(median). 일회성 대량 reparse 스파이크(예: 5/30~31 1.3만/9.6천)가
+  //   7일 평균을 부풀려 정상인 날(~3천)을 "50% 급감"으로 오탐하던 거짓경보 차단.
+  //   median 은 outlier robust → 스파이크 2일이 끼어도 베이스라인 안 흔들림.
   const yesterday = yesterdayDate();
-  const res1 = await restFetch(
-    `${tableUrl("mvp_market_price_daily")}?select=date&date=eq.${yesterday}&limit=1`,
-    { headers: { ...serviceHeaders(), Prefer: "count=exact" } },
-  );
-  const yesterdayCount = Number((res1.headers.get("content-range") ?? "0-0/0").split("/")[1] ?? 0);
+  const baselineDates: string[] = [];
+  for (let i = 2; i <= 8; i += 1) {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() - i);
+    baselineDates.push(d.toISOString().slice(0, 10));
+  }
 
-  // 2. 8일 전 ~ 2일 전 (7일 평균) row 수
-  const since = eightDaysAgo();
-  const res2 = await restFetch(
-    `${tableUrl("mvp_market_price_daily")}?select=date&date=gte.${since}&date=lt.${yesterday}&limit=1`,
-    { headers: { ...serviceHeaders(), Prefer: "count=exact" } },
-  );
-  const weekTotalCount = Number((res2.headers.get("content-range") ?? "0-0/0").split("/")[1] ?? 0);
-  const weekAvg = weekTotalCount / 7;
+  const [yesterdayCount, ...baselineCounts] = await Promise.all([
+    marketDayRowCount(yesterday),
+    ...baselineDates.map((d) => marketDayRowCount(d)),
+  ]);
 
-  if (weekAvg <= 0) {
+  const sorted = baselineCounts.filter((n) => n > 0).sort((a, b) => a - b);
+  if (sorted.length === 0) {
     return { ok: true, detail: "no_baseline" };
   }
-  const ratio = yesterdayCount / weekAvg;
+  const mid = Math.floor(sorted.length / 2);
+  const median = sorted.length % 2 === 1 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+
+  const ratio = median > 0 ? yesterdayCount / median : 1;
   if (ratio < MARKET_ROW_THRESHOLD_RATIO) {
     return {
       ok: false,
-      detail: `시세 historical row 급감 — 어제 ${yesterdayCount} / 7일 평균 ${Math.round(weekAvg)} (${Math.round(ratio * 100)}%)`,
-      context: { yesterdayCount, weekAvg: Math.round(weekAvg), ratio: ratio.toFixed(2), threshold: MARKET_ROW_THRESHOLD_RATIO },
+      detail: `시세 historical row 급감 — 어제 ${yesterdayCount} / 7일 중앙값 ${median} (${Math.round(ratio * 100)}%)`,
+      context: { yesterdayCount, median, baselineCounts, ratio: ratio.toFixed(2), threshold: MARKET_ROW_THRESHOLD_RATIO },
     };
   }
-  return { ok: true, detail: `시세 historical 정상 — 어제 ${yesterdayCount} (평균 대비 ${Math.round(ratio * 100)}%)` };
+  return { ok: true, detail: `시세 historical 정상 — 어제 ${yesterdayCount} (중앙값 ${median} 대비 ${Math.round(ratio * 100)}%)` };
 }
 
 async function checkDailyBackup(): Promise<{ ok: boolean; detail: string; context?: Record<string, unknown> }> {
