@@ -643,7 +643,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error: "membership_required",
-        message: "선공개 멤버십 승인 후 상세 리포트를 볼 수 있어요.",
+        message: "멤버십 승인 후 상세 리포트를 볼 수 있어요.",
         creditBalance: 0,
         freeUsed: 0,
         freeLimit: 0,

@@ -244,7 +244,7 @@ export async function POST(req: Request) {
     [
       isRenewal
         ? "[득템잡이] 멤버십 연장 예약 / 입금 대기"
-        : "[득템잡이] 선공개 300명 자리 예약 / 입금 대기",
+        : "[득템잡이] 300명 한정 자리 예약 / 입금 대기",
       `예약 ID: ${applicationId ?? "unknown"}`,
       `이름: ${String(name)}`,
       `이메일: ${email}`,
@@ -378,7 +378,7 @@ export async function DELETE(req: Request) {
       [
         application.application_kind === "renewal"
           ? "[득템잡이] 멤버십 연장 예약 취소"
-          : "[득템잡이] 선공개 300명 자리 예약 취소",
+          : "[득템잡이] 300명 한정 자리 예약 취소",
         `예약 ID: ${application.id}`,
         `이름: ${String(name)}`,
         `이메일: ${email}`,

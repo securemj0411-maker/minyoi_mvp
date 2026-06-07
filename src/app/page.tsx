@@ -17,6 +17,7 @@ import { userRefForAuthUser } from "@/lib/user-ref";
 import MeDashboardClient from "@/components/me-dashboard-client";
 import PreviewMaskedDashboardServer from "@/components/preview-masked-dashboard-server";
 import FeedScarcityBanner from "@/components/feed-scarcity-banner";
+import PlansSocialProofToasts from "@/components/plans-social-proof-toasts";
 import { loadSlotSnapshot } from "@/lib/membership-slots";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +56,7 @@ export default async function Home() {
         </header>
         <FeedScarcityBanner slot={slot} />
         <PreviewMaskedDashboardServer />
+        <PlansSocialProofToasts events={[]} />
       </>
     );
   }

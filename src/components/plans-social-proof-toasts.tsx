@@ -157,7 +157,7 @@ export default function PlansSocialProofToasts({
               {proofCopy(event)}
             </div>
             <div className="mt-1 text-[11.5px] font-black text-emerald-700 dark:text-emerald-200">
-              선공개 300명 멤버십 · 남은 티오 확인 중
+              300명 한정 멤버십 · 남은 티오 확인 중
             </div>
           </div>
         </div>
