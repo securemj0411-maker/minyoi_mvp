@@ -11,9 +11,9 @@ export default function FeedScarcityBanner({ slot }: { slot: SlotSnapshot }) {
   return (
     <div className="mx-auto w-full max-w-[680px] px-3 pt-2">
       <Link
-        href="/plans"
+        href="/login?next=/plans"
         prefetch={false}
-        aria-label={`300명 한정 지역별 선착순, 남은 ${remaining}자리 — 내 지역 자리 확인`}
+        aria-label={`300명 한정 지역별 선착순, 남은 ${remaining}자리 — 로그인하고 내 지역 자리 확인`}
         className="group flex items-center gap-2 rounded-xl border border-amber-200/90 bg-amber-50/70 px-3 py-2 transition hover:bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/20"
       >
         <span className="inline-flex shrink-0 items-center rounded-md bg-amber-500 px-1.5 py-[3px] text-[10px] font-black leading-none text-white">

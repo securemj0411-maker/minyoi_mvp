@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import PlansApplicationFlow from "@/components/plans-application-flow";
 import MembershipApplicationClient from "@/components/membership-application-client";
 import PlansSocialProofToasts, {
@@ -243,6 +244,10 @@ async function loadSocialProofEvents(): Promise<PlansSocialProofEvent[]> {
 
 export default async function PlansPage() {
   const auth = await requireSupabaseUserFromCookies();
+  // Wave 1228d: 비로그인은 지역 지도/자리 화면을 볼 수 없게 → 로그인으로. (랜딩 배너에서 바로 뚫리던 것 차단)
+  if (!auth.ok) {
+    redirect("/login?next=/plans");
+  }
   const membership = auth.ok
     ? await getProStatus(auth.user, userRefForAuthUser(auth.user.id))
     : null;
