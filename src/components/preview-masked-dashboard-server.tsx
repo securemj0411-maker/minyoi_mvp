@@ -158,15 +158,6 @@ export default async function PreviewMaskedDashboardServer() {
         </section>
 
         <section className="overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.06)] dark:border-zinc-800 dark:bg-zinc-900/40">
-          <div className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800 sm:px-5 sm:py-4">
-            <div className="text-[12px] font-black text-zinc-500 dark:text-zinc-400 sm:text-[13px]">
-              회전 속도 있는 매물 미리보기
-            </div>
-            <div className="mt-0.5 text-[11px] text-zinc-400 dark:text-zinc-500 sm:text-[12px]">
-              평균 판매 속도 기준
-            </div>
-          </div>
-
           <div className="px-3 py-3 sm:px-4">
             {items.length === 0 ? (
               <div className="rounded-2xl border border-zinc-200 bg-white/80 p-6 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/50 dark:text-zinc-400">
