@@ -16,6 +16,8 @@ import { getProStatus, hasMembershipAccess } from "@/lib/user-subscription";
 import { userRefForAuthUser } from "@/lib/user-ref";
 import MeDashboardClient from "@/components/me-dashboard-client";
 import PreviewMaskedDashboardServer from "@/components/preview-masked-dashboard-server";
+import FeedScarcityBanner from "@/components/feed-scarcity-banner";
+import { loadSlotSnapshot } from "@/lib/membership-slots";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +29,7 @@ export default async function Home() {
   //   기존엔 MeDashboardClient (client) → 안에서 client side fetch → 첫 paint 깜빡임.
   //   이제 server component 가 직접 fetch + HTML 박아 응답. 첫 paint 즉시 + SEO 강함.
   if (!isLoggedIn) {
+    const slot = loadSlotSnapshot();
     return (
       <>
         {/* SEO server-rendered content — 비로그인 한정. sr-only (시각 숨김, 크롤러만 읽음). */}
@@ -50,6 +53,7 @@ export default async function Home() {
           </p>
           <p>면책: 본 서비스는 시세 비교 정보를 제공할 뿐, 매물 진위·거래 결과를 보장하지 않습니다. 최종 판단은 이용자가 합니다.</p>
         </header>
+        <FeedScarcityBanner slot={slot} />
         <PreviewMaskedDashboardServer />
       </>
     );
