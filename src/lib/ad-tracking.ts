@@ -34,6 +34,12 @@ export async function logAdVisitIfPresent(searchParams: SearchParams, landingPat
     if (!source && !clickId) return;
 
     const headerStore = await headers();
+    const userAgent = headerStore.get("user-agent") ?? "";
+    // Wave 1230b: 봇 제외 — 구글 크롤러/AdsBot 이 Final URL 검증하느라 들어옴(진짜 사람 아님).
+    //   진짜 광고 클릭은 모바일/데스크탑 브라우저 UA. 봇 UA면 기록 안 함 → count(*)=진짜 사람.
+    if (/bot|crawl|spider|slurp|mediapartners|headless|facebookexternalhit|lighthouse|monitor|preview|google-|googleother|googleweblight/i.test(userAgent)) {
+      return;
+    }
     const row = {
       source,
       medium: first(searchParams.utm_medium),
@@ -44,7 +50,7 @@ export async function logAdVisitIfPresent(searchParams: SearchParams, landingPat
       click_id_type: clickIdType,
       landing_path: landingPath,
       referer: (headerStore.get("referer") ?? "").slice(0, 500) || null,
-      user_agent: (headerStore.get("user-agent") ?? "").slice(0, 400) || null,
+      user_agent: userAgent.slice(0, 400) || null,
     };
 
     await restFetch(tableUrl("mvp_ad_visits"), {
