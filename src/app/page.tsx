@@ -16,14 +16,24 @@ import { getProStatus, hasMembershipAccess } from "@/lib/user-subscription";
 import { userRefForAuthUser } from "@/lib/user-ref";
 import MeDashboardClient from "@/components/me-dashboard-client";
 import PreviewMaskedDashboardServer from "@/components/preview-masked-dashboard-server";
-import FeedScarcityBanner from "@/components/feed-scarcity-banner";
 import PlansSocialProofToasts from "@/components/plans-social-proof-toasts";
 import { loadSlotSnapshot } from "@/lib/membership-slots";
+import { logAdVisitIfPresent } from "@/lib/ad-tracking";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
-  const auth = await requireSupabaseUserFromCookies();
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  // Wave 1230: 광고 유입 추적 — ?src=/utm_*/gclid 등 광고 신호 있으면 mvp_ad_visits 기록.
+  //   auth 조회와 병렬(Promise.all) → 광고 방문에도 추가 지연 없음. 일반 방문은 no-op.
+  const sp = searchParams ? await searchParams : {};
+  const [, auth] = await Promise.all([
+    logAdVisitIfPresent(sp, "/"),
+    requireSupabaseUserFromCookies(),
+  ]);
   const isLoggedIn = auth.ok;
 
   // Wave launch-115 (2026-05-24): 비로그인 분기 SSR.
@@ -54,8 +64,7 @@ export default async function Home() {
           </p>
           <p>면책: 본 서비스는 시세 비교 정보를 제공할 뿐, 매물 진위·거래 결과를 보장하지 않습니다. 최종 판단은 이용자가 합니다.</p>
         </header>
-        <FeedScarcityBanner slot={slot} />
-        <PreviewMaskedDashboardServer />
+        <PreviewMaskedDashboardServer slot={slot} />
         <PlansSocialProofToasts events={[]} />
       </>
     );

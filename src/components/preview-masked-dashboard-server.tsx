@@ -3,16 +3,18 @@
 //   useEffect fetch 후에야 카드 보임 (깜빡임).
 //   해결: server component 가 fetch 후 곧장 HTML 박아서 응답. 첫 paint 즉시 + SEO 강함.
 //
-// UI 정정 (사용자 정정): rose 톤 제거, 사진 배지 + grayscale 제거, 카드 아래 fine print 한 줄만.
-//
 // Wave 1229 (2026-06-08): 비회원 전환율 — "샘플 다 보여서 봤다고 느끼고 나감" 해결.
-//   호기심 갭(curiosity gap): 공개 카드 3개(증거)만 두고, 나머지는 블러+페이드+잠금 게이트.
-//   payoff = "어디서 사는지(원본 링크)". 증거는 남기되 살 수 있는 것/출처는 잠금.
+//   호기심 갭: 공개 카드 3개(증거)만, 나머지는 블러+페이드+잠금 게이트. payoff=원본 링크.
+// Wave 1229b (2026-06-08): CTA 과잉 정리 (owner — "버튼이 너무 많아 혼란"). 광고 5만원 46클릭 0가입.
+//   - 상단 선착순 배너 버튼 제거 → 히어로 스카시 칩(비-버튼)으로 통합 (slot prop 으로 받음)
+//   - 샘플 카드 클릭 해제(증거 전용) → 유일 행동 = 히어로 "지금 시작하기" + 잠금 게이트
+//   - "서비스 소개" 버튼 → 텍스트 링크 강등, 하단 중복 CTA 바 제거
 
 import Link from "next/link";
 import { headers } from "next/headers";
 
-import { PackageIcon, SearchIcon, UnlockIcon } from "@/components/icons";
+import { PackageIcon, UnlockIcon } from "@/components/icons";
+import { type SlotSnapshot } from "@/lib/membership-slots";
 
 type PreviewItem = {
   slot: number;
@@ -121,17 +123,14 @@ async function fetchPreviewItems(): Promise<PreviewItem[]> {
   }
 }
 
-// Wave 1229: 공개 카드 + 블러 카드 공용. (블러 쪽은 부모가 pointer-events-none + aria-hidden 처리)
+// Wave 1229b: 증거용 카드 — 비클릭(div). 공개/블러 양쪽 공용. 유일 행동은 히어로 CTA + 잠금 게이트.
 function PreviewCard({ item }: { item: PreviewItem }) {
   const signal = previewSignal(item);
   const budgetLabel = priceBandLabel(item.price);
   const priceSignalLabel = normalizePriceSignalLabel(item.priceSignalLabel ?? "시세 비교 완료");
   const imageUrl = item.thumbnailUrl ?? item.blurredImage;
   return (
-    <Link
-      href="/login?next=/plans"
-      className="group block rounded-2xl border border-zinc-200 bg-white px-3.5 py-3 transition hover:border-blue-200 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-blue-900"
-    >
+    <div className="rounded-2xl border border-zinc-200 bg-white px-3.5 py-3 dark:border-zinc-800 dark:bg-zinc-950/50">
       <div className="flex items-center gap-3">
         <div className="relative flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 sm:h-[104px] sm:w-[104px]">
           {imageUrl ? (
@@ -186,26 +185,27 @@ function PreviewCard({ item }: { item: PreviewItem }) {
           <div className="text-[11px] font-black text-zinc-400 dark:text-zinc-500">{budgetLabel}</div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
-export default async function PreviewMaskedDashboardServer() {
+export default async function PreviewMaskedDashboardServer({ slot }: { slot: SlotSnapshot }) {
   const items = await fetchPreviewItems();
   // Wave 1229: 공개(증거) 3개 + 잠금 티저 3개.
   const visible = items.slice(0, 3);
   const locked = items.slice(3, 6);
+  const remaining = Math.max(0, slot.capacity - slot.filled);
 
   // Wave launch-121 (2026-05-24): 옛 베이지 #fbfaf7 → toss 회색 #f5f7fb (root themeColor 와 통일).
   return (
     <main className="min-h-screen bg-[#f5f7fb] dark:bg-zinc-950">
       <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-4 px-4 py-3 sm:gap-6 sm:px-6 sm:py-8 lg:grid lg:grid-cols-[minmax(0,0.88fr)_minmax(420px,1fr)] lg:items-start lg:gap-8">
         <section className="pt-0 lg:sticky lg:top-24 lg:pt-8">
-          {/* Wave launch-120c (2026-05-24): hero 의 brand mark 중복 제거 (nav 에 이미 있음 — 사용자 정정). */}
-          <div className="hidden items-center gap-2 rounded-full border border-[#d9d1c4] bg-white/70 px-3 py-1.5 text-[11px] font-black text-[#526055] shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-300 sm:inline-flex">
-            빨리 사라지는 중고 매물
+          {/* Wave 1229b: 상단 선착순 배너 버튼 제거 → 히어로 안 스카시 칩(비-버튼). */}
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-black text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+            🔥 지금 300명 한정 · <span className="tabular-nums">{remaining}</span>자리 남음
           </div>
-          <h1 className="mt-1 break-keep text-[28px] font-black leading-[1.05] tracking-tight text-[var(--rd-ink)] dark:text-zinc-50 sm:mt-5 sm:text-[44px] lg:text-[52px]">
+          <h1 className="mt-3 break-keep text-[28px] font-black leading-[1.05] tracking-tight text-[var(--rd-ink)] dark:text-zinc-50 sm:mt-4 sm:text-[44px] lg:text-[52px]">
             시세보다 평균{" "}
             <span className="whitespace-nowrap text-emerald-600 dark:text-emerald-400">3만원+</span>
             <br />
@@ -218,19 +218,21 @@ export default async function PreviewMaskedDashboardServer() {
             로그인 후 승인된 멤버만 지금 진행 중인 추천 매물과 원본 링크를 볼 수 있어요.
           </p>
 
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:flex sm:flex-row sm:gap-2.5">
+          <div className="mt-4 sm:mt-6">
             <Link
               href="/login?next=/plans"
-              className="inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl bg-[#111816] px-4 text-[13px] font-black text-white shadow-[0_16px_36px_rgba(17,24,22,0.16)] transition hover:bg-[#26312c] dark:bg-white dark:text-zinc-950 sm:h-12 sm:gap-2 sm:px-5 sm:text-[15px]"
+              className="inline-flex h-12 w-full max-w-[340px] items-center justify-center gap-2 rounded-2xl bg-[#111816] px-5 text-[15px] font-black text-white shadow-[0_16px_36px_rgba(17,24,22,0.16)] transition hover:bg-[#26312c] dark:bg-white dark:text-zinc-950"
             >
-              <UnlockIcon width={16} height={16} /> 지금 시작하기
+              <UnlockIcon width={17} height={17} /> 지금 시작하기
             </Link>
-            <Link
-              href="/intro"
-              className="inline-flex h-11 items-center justify-center rounded-2xl border border-zinc-200 bg-white/80 px-4 text-[13px] font-black text-zinc-900 transition hover:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 sm:h-12 sm:px-5 sm:text-[15px]"
-            >
-              서비스 소개
-            </Link>
+            <div className="mt-2.5">
+              <Link
+                href="/intro"
+                className="text-[12.5px] font-bold text-zinc-500 underline decoration-zinc-300 underline-offset-2 transition hover:text-zinc-800 dark:text-zinc-400 dark:decoration-zinc-600 dark:hover:text-zinc-200"
+              >
+                어떤 서비스인지 먼저 볼래요 →
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -284,24 +286,6 @@ export default async function PreviewMaskedDashboardServer() {
                 ) : null}
               </div>
             )}
-          </div>
-
-          <div className="border-t border-zinc-200 bg-white/55 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/30 sm:px-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2">
-                <SearchIcon width={18} height={18} className="text-[#3182f6]" />
-                <div>
-                  <div className="text-[14px] font-black text-[var(--rd-ink)] dark:text-zinc-50">진행 중인 매물까지 열어볼까요?</div>
-                  <div className="mt-0.5 text-[11px] font-bold text-zinc-500 dark:text-zinc-500">승인된 계정만 실시간 추천과 원본 링크를 볼 수 있어요.</div>
-                </div>
-              </div>
-              <Link
-                href="/login?next=/plans"
-                className="inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl bg-[#3182f6] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[#1c64dd]"
-              >
-                지금 시작하기
-              </Link>
-            </div>
           </div>
         </section>
       </div>
