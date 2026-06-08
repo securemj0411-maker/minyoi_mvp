@@ -73,11 +73,20 @@ function sourceLabel(source: string | null): string {
   return source;
 }
 
+// KR ISO-3166-2 지역 코드 → 한글 시·도 (Vercel edge geo 가 숫자 코드로 줌).
+const KR_REGION: Record<string, string> = {
+  "11": "서울", "26": "부산", "27": "대구", "28": "인천", "29": "광주", "30": "대전",
+  "31": "울산", "50": "세종", "41": "경기", "42": "강원", "43": "충북", "44": "충남",
+  "45": "전북", "46": "전남", "47": "경북", "48": "경남", "49": "제주", "51": "강원",
+};
+
 function geoLabel(row: AdVisitRow): string {
   if (!row.country && !row.city && !row.region) return "—";
-  const country = row.country === "KR" ? "🇰🇷 한국" : (row.country ?? "");
-  const local = [row.region, row.city].filter(Boolean).join(" ");
-  return local ? `${country} · ${local}` : country || "—";
+  const flag = row.country === "KR" ? "🇰🇷" : (row.country ?? "");
+  // 숫자 지역코드는 한글 시·도로 매핑(매핑 없으면 숨김). city(영문 구/동)는 그대로.
+  const regionName = row.country === "KR" && row.region ? (KR_REGION[row.region] ?? null) : null;
+  const place = [regionName, row.city].filter(Boolean).join(" · ");
+  return place ? `${flag} ${place}`.trim() : flag || "—";
 }
 
 function refererHost(referer: string | null): string {
