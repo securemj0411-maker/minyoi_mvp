@@ -4,6 +4,10 @@
 //   해결: server component 가 fetch 후 곧장 HTML 박아서 응답. 첫 paint 즉시 + SEO 강함.
 //
 // UI 정정 (사용자 정정): rose 톤 제거, 사진 배지 + grayscale 제거, 카드 아래 fine print 한 줄만.
+//
+// Wave 1229 (2026-06-08): 비회원 전환율 — "샘플 다 보여서 봤다고 느끼고 나감" 해결.
+//   호기심 갭(curiosity gap): 공개 카드 3개(증거)만 두고, 나머지는 블러+페이드+잠금 게이트.
+//   payoff = "어디서 사는지(원본 링크)". 증거는 남기되 살 수 있는 것/출처는 잠금.
 
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -117,8 +121,80 @@ async function fetchPreviewItems(): Promise<PreviewItem[]> {
   }
 }
 
+// Wave 1229: 공개 카드 + 블러 카드 공용. (블러 쪽은 부모가 pointer-events-none + aria-hidden 처리)
+function PreviewCard({ item }: { item: PreviewItem }) {
+  const signal = previewSignal(item);
+  const budgetLabel = priceBandLabel(item.price);
+  const priceSignalLabel = normalizePriceSignalLabel(item.priceSignalLabel ?? "시세 비교 완료");
+  const imageUrl = item.thumbnailUrl ?? item.blurredImage;
+  return (
+    <Link
+      href="/login?next=/plans"
+      className="group block rounded-2xl border border-zinc-200 bg-white px-3.5 py-3 transition hover:border-blue-200 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-blue-900"
+    >
+      <div className="flex items-center gap-3">
+        <div className="relative flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 sm:h-[104px] sm:w-[104px]">
+          {imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={imageUrl} alt={item.name ?? item.previewTitle ?? "추천 매물"} className="h-full w-full object-cover" />
+          ) : (
+            <PackageIcon width={36} height={36} />
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-black text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+              {conditionLabel(item.conditionClass)}
+            </span>
+            <span className="truncate text-[11px] font-bold text-zinc-400 dark:text-zinc-500">{signal.label}</span>
+          </div>
+
+          <div className="mt-2 line-clamp-2 text-[14px] font-black tracking-tight text-zinc-950 dark:text-zinc-100 sm:text-[16px]">
+            {item.name ?? item.previewTitle ?? item.maskedName}
+          </div>
+
+          <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
+            <span>매입 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krw(item.price)}</span></span>
+            {item.skuMedian && item.skuMedian > 0 ? (
+              <>
+                <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                <span>시세 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krw(item.skuMedian)}</span></span>
+              </>
+            ) : null}
+          </div>
+
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span className="text-[18px] font-black leading-none tabular-nums text-[#059669] dark:text-emerald-300">
+              {marketGapLabel(item.expectedProfitMin, item.expectedProfitMax)}
+            </span>
+            {(() => {
+              const pct = marketGapPctLabel(item.price, item.expectedProfitMin, item.expectedProfitMax);
+              return pct ? (
+                <span className="text-[11px] font-black text-zinc-500 dark:text-zinc-400">{pct}</span>
+              ) : null;
+            })()}
+            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-200">
+              {priceSignalLabel}
+            </span>
+          </div>
+
+          <div className="mt-2 text-[11px] font-black text-zinc-400 dark:text-zinc-500 sm:hidden">{budgetLabel}</div>
+        </div>
+
+        <div className="hidden shrink-0 text-right sm:block">
+          <div className="text-[11px] font-black text-zinc-400 dark:text-zinc-500">{budgetLabel}</div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 export default async function PreviewMaskedDashboardServer() {
   const items = await fetchPreviewItems();
+  // Wave 1229: 공개(증거) 3개 + 잠금 티저 3개.
+  const visible = items.slice(0, 3);
+  const locked = items.slice(3, 6);
 
   // Wave launch-121 (2026-05-24): 옛 베이지 #fbfaf7 → toss 회색 #f5f7fb (root themeColor 와 통일).
   return (
@@ -130,12 +206,13 @@ export default async function PreviewMaskedDashboardServer() {
             빨리 사라지는 중고 매물
           </div>
           <h1 className="mt-1 break-keep text-[28px] font-black leading-[1.05] tracking-tight text-[var(--rd-ink)] dark:text-zinc-50 sm:mt-5 sm:text-[44px] lg:text-[52px]">
-            돈 되는 중고 상품만
+            시세보다 평균{" "}
+            <span className="whitespace-nowrap text-emerald-600 dark:text-emerald-400">3만원+</span>
             <br />
-            추천해줍니다.
+            싼 중고만 모아드려요.
           </h1>
           <p className="mt-2 max-w-[460px] break-keep text-[13px] font-semibold leading-5 text-[#5f6a60] dark:text-zinc-300 sm:mt-4 sm:text-[15px] sm:leading-7">
-            득템잡이는 시세 차익과 판매 회전 속도를 같이 보고, 실제로 빨리 거래되는 상품군만 추려요.
+            번개장터·중고나라·당근에서 시세보다 싼 매물만 AI가 골라드려요. 매입가·시세·수만 원대 차익까지 자동 계산해서.
           </p>
           <p className="mt-1.5 max-w-[460px] break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400 sm:text-[12px]">
             로그인 후 승인된 멤버만 지금 진행 중인 추천 매물과 원본 링크를 볼 수 있어요.
@@ -146,7 +223,7 @@ export default async function PreviewMaskedDashboardServer() {
               href="/login?next=/plans"
               className="inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl bg-[#111816] px-4 text-[13px] font-black text-white shadow-[0_16px_36px_rgba(17,24,22,0.16)] transition hover:bg-[#26312c] dark:bg-white dark:text-zinc-950 sm:h-12 sm:gap-2 sm:px-5 sm:text-[15px]"
             >
-              <UnlockIcon width={16} height={16} /> 로그인하고 신청
+              <UnlockIcon width={16} height={16} /> 지금 시작하기
             </Link>
             <Link
               href="/intro"
@@ -165,77 +242,46 @@ export default async function PreviewMaskedDashboardServer() {
               </div>
             ) : (
               <div className="space-y-2">
-                {items.map((item) => {
-                  const signal = previewSignal(item);
-                  const budgetLabel = priceBandLabel(item.price);
-                  const priceSignalLabel = normalizePriceSignalLabel(item.priceSignalLabel ?? "시세 비교 완료");
-                  const imageUrl = item.thumbnailUrl ?? item.blurredImage;
-                  return (
-                    <Link
-                      href="/login?next=/plans"
-                      key={item.slot}
-                      className="group block rounded-2xl border border-zinc-200 bg-white px-3.5 py-3 transition hover:border-blue-200 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950/50 dark:hover:border-blue-900"
+                {visible.map((item) => (
+                  <PreviewCard key={item.slot} item={item} />
+                ))}
+
+                {/* Wave 1229: 잠금 티저 — 블러된 실제 카드 + 페이드 + 게이트. "빙산의 일각" 효과. */}
+                {locked.length > 0 ? (
+                  <div className="relative">
+                    <div
+                      className="pointer-events-none min-h-[240px] select-none space-y-2 blur-[5px] [filter:blur(5px)]"
+                      aria-hidden="true"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="relative flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 sm:h-[104px] sm:w-[104px]">
-                          {imageUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={imageUrl} alt={item.name ?? item.previewTitle ?? "추천 매물"} className="h-full w-full object-cover" />
-                          ) : (
-                            <PackageIcon width={36} height={36} />
-                          )}
+                      {locked.map((item) => (
+                        <PreviewCard key={item.slot} item={item} />
+                      ))}
+                    </div>
+
+                    <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-b from-transparent via-white/75 to-white px-2 dark:via-zinc-900/75 dark:to-zinc-900">
+                      <div className="mb-2 w-full max-w-[380px] rounded-2xl border border-zinc-200 bg-white/95 p-4 text-center shadow-[0_12px_34px_rgba(15,23,42,0.12)] backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95">
+                        <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <rect x="4" y="10" width="16" height="11" rx="2.5" />
+                            <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                          </svg>
                         </div>
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-black text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                              {conditionLabel(item.conditionClass)}
-                            </span>
-                            <span className="truncate text-[11px] font-bold text-zinc-400 dark:text-zinc-500">{signal.label}</span>
-                          </div>
-
-                          <div className="mt-2 line-clamp-2 text-[14px] font-black tracking-tight text-zinc-950 dark:text-zinc-100 sm:text-[16px]">
-                            {item.name ?? item.previewTitle ?? item.maskedName}
-                          </div>
-
-                          <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[12px] font-bold text-zinc-500 dark:text-zinc-400">
-                            <span>매입 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krw(item.price)}</span></span>
-                            {item.skuMedian && item.skuMedian > 0 ? (
-                              <>
-                                <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                                <span>시세 <span className="tabular-nums text-zinc-950 dark:text-zinc-100">{krw(item.skuMedian)}</span></span>
-                              </>
-                            ) : null}
-                          </div>
-
-                          <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                            <span className="text-[18px] font-black leading-none tabular-nums text-[#059669] dark:text-emerald-300">
-                              {marketGapLabel(item.expectedProfitMin, item.expectedProfitMax)}
-                            </span>
-                            {(() => {
-                              const pct = marketGapPctLabel(item.price, item.expectedProfitMin, item.expectedProfitMax);
-                              return pct ? (
-                                <span className="text-[11px] font-black text-zinc-500 dark:text-zinc-400">{pct}</span>
-                              ) : null;
-                            })()}
-                            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700 dark:bg-emerald-950/35 dark:text-emerald-200">
-                              {priceSignalLabel}
-                            </span>
-                          </div>
-
-                          <div className="mt-2 text-[11px] font-black text-zinc-400 dark:text-zinc-500 sm:hidden">{budgetLabel}</div>
+                        <div className="mt-2.5 break-keep text-[15px] font-black leading-snug text-zinc-950 dark:text-zinc-50">
+                          이런 차익 매물, 지금 수천 개가 더 있어요
                         </div>
-
-                        <div className="hidden shrink-0 text-right sm:block">
-                          <div className="text-[11px] font-black text-zinc-400 dark:text-zinc-500">{budgetLabel}</div>
+                        <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
+                          로그인하면 <span className="text-zinc-900 dark:text-zinc-100">전체 매물 + 어디서 사는지(원본 링크)</span>까지 공개돼요.
                         </div>
+                        <Link
+                          href="/login?next=/plans"
+                          className="mt-3 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-2xl bg-[#111816] px-4 text-[14px] font-black text-white transition hover:bg-[#26312c] dark:bg-white dark:text-zinc-950"
+                        >
+                          <UnlockIcon width={15} height={15} /> 잠금 풀고 전체 보기 →
+                        </Link>
                       </div>
-                    </Link>
-                  );
-                })}
-                <p className="px-1 pt-1 text-[10px] leading-4 text-zinc-400 dark:text-zinc-500">
-                  ※ 판매완료/종료된 미리보기 샘플입니다. 승인 후에는 지금 진행 중인 추천 매물과 원본 링크를 볼 수 있어요.
-                </p>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             )}
           </div>
@@ -253,7 +299,7 @@ export default async function PreviewMaskedDashboardServer() {
                 href="/login?next=/plans"
                 className="inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl bg-[#3182f6] px-5 text-sm font-black text-white shadow-sm transition hover:bg-[#1c64dd]"
               >
-                멤버십 신청
+                지금 시작하기
               </Link>
             </div>
           </div>
