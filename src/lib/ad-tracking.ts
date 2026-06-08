@@ -40,6 +40,12 @@ export async function logAdVisitIfPresent(searchParams: SearchParams, landingPat
     if (/bot|crawl|spider|slurp|mediapartners|headless|facebookexternalhit|lighthouse|monitor|preview|google-|googleother|googleweblight/i.test(userAgent)) {
       return;
     }
+    // Wave 1230c: IP + 지역(Vercel edge geo) 기록 — 관리자에서 기기/IP/지역 확인용.
+    const ip =
+      (headerStore.get("x-forwarded-for") ?? "").split(",")[0]?.trim() ||
+      headerStore.get("x-real-ip") ||
+      null;
+    const cityRaw = headerStore.get("x-vercel-ip-city");
     const row = {
       source,
       medium: first(searchParams.utm_medium),
@@ -49,6 +55,10 @@ export async function logAdVisitIfPresent(searchParams: SearchParams, landingPat
       click_id: clickId,
       click_id_type: clickIdType,
       landing_path: landingPath,
+      ip,
+      country: headerStore.get("x-vercel-ip-country") || null,
+      city: cityRaw ? decodeURIComponent(cityRaw) : null,
+      region: headerStore.get("x-vercel-ip-country-region") || null,
       referer: (headerStore.get("referer") ?? "").slice(0, 500) || null,
       user_agent: userAgent.slice(0, 400) || null,
     };

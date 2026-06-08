@@ -9,3 +9,5 @@ export const OPS_ADMIN_EXPLORE_MONITOR_PATH = `${OPS_ADMIN_BASE_PATH}/explore-mo
 export const OPS_ADMIN_POOL_PATH = `${OPS_ADMIN_BASE_PATH}/pool`;
 // Wave 1225: 수동 입금 승인 — 기존 고아(manual-deposit-panel) 를 nav 도달 가능한 라우트로.
 export const OPS_ADMIN_MANUAL_DEPOSIT_PATH = `${OPS_ADMIN_BASE_PATH}/manual-deposit`;
+// Wave 1230d: 광고 유입 모니터 — 구글애즈 등 유입 기록(mvp_ad_visits) 운영자 view.
+export const OPS_ADMIN_AD_TRAFFIC_PATH = `${OPS_ADMIN_BASE_PATH}/ad-traffic`;

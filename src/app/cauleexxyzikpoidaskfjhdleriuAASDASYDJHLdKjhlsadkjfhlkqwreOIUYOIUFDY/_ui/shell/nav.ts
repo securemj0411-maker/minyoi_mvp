@@ -3,6 +3,7 @@
 //   기존 2중구조(상단바 라우트 6 + 페이지내 앵커 4) → 직무별 그룹 1트리로 통합.
 
 import {
+  OPS_ADMIN_AD_TRAFFIC_PATH,
   OPS_ADMIN_BASE_PATH,
   OPS_ADMIN_DETAIL_EVENTS_PATH,
   OPS_ADMIN_EXPLORE_MONITOR_PATH,
@@ -64,6 +65,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "분석",
     items: [
+      { label: "광고 유입", href: OPS_ADMIN_AD_TRAFFIC_PATH, icon: "📣" },
       { label: "열람 통계", href: OPS_ADMIN_REVEAL_ANALYTICS_PATH, icon: "📊" },
       { label: "상세 이벤트", href: OPS_ADMIN_DETAIL_EVENTS_PATH, icon: "🔎" },
       { label: "탐색 모니터", href: OPS_ADMIN_EXPLORE_MONITOR_PATH, icon: "🧭" },
