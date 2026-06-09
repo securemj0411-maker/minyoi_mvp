@@ -14,17 +14,24 @@ declare global {
 
 export default function GtagSignupTracker() {
   useEffect(() => {
-    let url: URL;
+    // Wave 1233: 쿠키 ga_signup=1 (콜백이 신규가입 때 심음, redirect 생존) 또는 ?signup=new 감지 → 1회 발사.
+    const hasCookie = /(?:^|;\s*)ga_signup=1(?:;|$)/.test(document.cookie);
+    let url: URL | null = null;
+    let hasQuery = false;
     try {
       url = new URL(window.location.href);
+      hasQuery = url.searchParams.get("signup") === "new";
     } catch {
-      return;
+      url = null;
     }
-    if (url.searchParams.get("signup") !== "new") return;
+    if (!hasCookie && !hasQuery) return;
 
-    // URL 즉시 정리 — 새로고침/뒤로가기로 중복 발사 방지.
-    url.searchParams.delete("signup");
-    window.history.replaceState({}, "", url.toString());
+    // 중복 발사 방지 — 쿠키/쿼리 즉시 제거.
+    if (hasCookie) document.cookie = "ga_signup=; max-age=0; path=/";
+    if (hasQuery && url) {
+      url.searchParams.delete("signup");
+      window.history.replaceState({}, "", url.toString());
+    }
 
     // gtag 로드 대기 후 발사 (head 스크립트라 보통 즉시 준비됨, 안 되면 retry).
     let tries = 0;

@@ -132,19 +132,22 @@ export async function GET(request: Request) {
     }
   }
 
-  // Wave 1231 (2026-06-09): 신규 가입(=방금 생성된 계정)이면 ?signup=new 붙여 GA4 sign_up 이벤트 발사(광고 전환 측정).
-  //   기존 회원 로그인은 created_at 이 오래돼서 안 붙음. 2분 내 생성 = 신규로 판정.
+  // Wave 1231/1233 (2026-06-09): 신규 가입(방금 생성된 계정)이면 GA4 sign_up 발사용 쿠키 1개 심음.
+  //   created_at 2분 내 = 신규. 기존 회원 로그인은 created_at 오래돼서 안 심김 (로그인은 전환 X).
+  //   쿼리(?signup=new) 는 /me→/plans·/onboarding 서버 redirect 가 떨궈서 불안정 → 쿠키로(redirect 생존).
   const createdAtMs = authUser?.created_at ? new Date(authUser.created_at).getTime() : 0;
   const isNewSignup = createdAtMs > 0 && Date.now() - createdAtMs < 120_000;
-  if (isNewSignup) {
-    finalNext += finalNext.includes("?") ? "&signup=new" : "?signup=new";
-  }
 
   const forwardedHost = request.headers.get("x-forwarded-host");
   const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
-  if (process.env.NODE_ENV !== "development" && forwardedHost) {
-    return NextResponse.redirect(`${forwardedProto}://${forwardedHost}${finalNext}`);
+  const redirectUrl =
+    process.env.NODE_ENV !== "development" && forwardedHost
+      ? `${forwardedProto}://${forwardedHost}${finalNext}`
+      : `${origin}${finalNext}`;
+  const res = NextResponse.redirect(redirectUrl);
+  if (isNewSignup) {
+    // 클라이언트(GtagSignupTracker)가 읽고 sign_up 발사 후 삭제. httpOnly X (JS 가 읽어야 함).
+    res.cookies.set("ga_signup", "1", { maxAge: 300, path: "/", httpOnly: false, sameSite: "lax" });
   }
-
-  return NextResponse.redirect(`${origin}${finalNext}`);
+  return res;
 }
