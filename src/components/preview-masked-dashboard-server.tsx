@@ -60,7 +60,10 @@ function marketGapPctLabel(price: number, gapMin: number, gapMax: number): strin
 }
 
 function normalizePriceSignalLabel(label: string): string {
-  if (label.includes("시세보다") && label.includes("낮음")) return "차익 후보";
+  // Wave 1232: "차익"(리셀 수익으로 읽힐 어휘 — 광고 exaggerated-claims 리스크) → "시세 이하".
+  //   API 가 "차익 후보"를 직접 보내는 케이스 + "시세보다 N% 낮음" 케이스 둘 다 흡수.
+  if (label.includes("차익")) return "시세 이하";
+  if (label.includes("시세보다") && label.includes("낮음")) return "시세 이하";
   return label;
 }
 
@@ -212,7 +215,7 @@ export default async function PreviewMaskedDashboardServer({ slot }: { slot: Slo
             싼 중고만 모아드려요.
           </h1>
           <p className="mt-2 max-w-[460px] break-keep text-[13px] font-semibold leading-5 text-[#5f6a60] dark:text-zinc-300 sm:mt-4 sm:text-[15px] sm:leading-7">
-            번개장터·중고나라·당근에서 시세보다 싼 매물만 AI가 골라드려요. 매입가·시세·수만 원대 차익까지 자동 계산해서.
+            번개장터·중고나라·당근에서 시세보다 싼 매물만 AI가 골라드려요. 매입가와 시세를 자동으로 비교해드려요.
           </p>
           <p className="mt-1.5 max-w-[460px] break-keep text-[11px] font-bold leading-4 text-zinc-500 dark:text-zinc-400 sm:text-[12px]">
             로그인 후 승인된 멤버만 지금 진행 중인 추천 매물과 원본 링크를 볼 수 있어요.
@@ -269,7 +272,7 @@ export default async function PreviewMaskedDashboardServer({ slot }: { slot: Slo
                           </svg>
                         </div>
                         <div className="mt-2.5 break-keep text-[15px] font-black leading-snug text-zinc-950 dark:text-zinc-50">
-                          이런 차익 매물, 지금 수천 개가 더 있어요
+                          시세보다 싼 매물, 지금 수천 개가 더 있어요
                         </div>
                         <div className="mt-1 break-keep text-[12px] font-bold leading-5 text-zinc-500 dark:text-zinc-400">
                           로그인하면 <span className="text-zinc-900 dark:text-zinc-100">전체 매물 + 어디서 사는지(원본 링크)</span>까지 공개돼요.
