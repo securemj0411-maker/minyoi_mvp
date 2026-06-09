@@ -191,8 +191,15 @@ export default function AuthForm({ mode }: Props) {
       if (data.session) {
         // Wave 199: 즉시 session 있으면 (autoConfirm) consent insert.
         await flushPendingConsents();
-        // Wave 1231: 이메일 즉시가입(autoconfirm, 콜백 우회)도 GA4 sign_up 발사 (?signup=new).
-        window.location.href = nextPath + (nextPath.includes("?") ? "&" : "?") + "signup=new";
+        // Wave 1231c: GA4 sign_up 직접 발사.
+        //   ?signup=new flag 방식은 /me→/plans 서버 redirect 가 쿼리를 떨궈서 이메일 경로엔 안 먹힘.
+        //   여기는 클라이언트라 gtag 가 이미 로드돼 있으니 그 자리에서 바로 쏜다.
+        try {
+          (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "sign_up", { method: "email" });
+        } catch {
+          // 추적 실패는 가입 흐름에 영향 없음
+        }
+        window.location.href = nextPath;
         return;
       }
       // Wave 724: "Supabase 설정에 따라 자동 로그인" 같은 운영 내부 표현 제거. 사용자 행동만 안내.
