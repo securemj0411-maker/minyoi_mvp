@@ -132,6 +132,14 @@ export async function GET(request: Request) {
     }
   }
 
+  // Wave 1231 (2026-06-09): 신규 가입(=방금 생성된 계정)이면 ?signup=new 붙여 GA4 sign_up 이벤트 발사(광고 전환 측정).
+  //   기존 회원 로그인은 created_at 이 오래돼서 안 붙음. 2분 내 생성 = 신규로 판정.
+  const createdAtMs = authUser?.created_at ? new Date(authUser.created_at).getTime() : 0;
+  const isNewSignup = createdAtMs > 0 && Date.now() - createdAtMs < 120_000;
+  if (isNewSignup) {
+    finalNext += finalNext.includes("?") ? "&signup=new" : "?signup=new";
+  }
+
   const forwardedHost = request.headers.get("x-forwarded-host");
   const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
   if (process.env.NODE_ENV !== "development" && forwardedHost) {

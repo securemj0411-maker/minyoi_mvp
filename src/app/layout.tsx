@@ -3,6 +3,7 @@ import AppFooter from "@/components/app-footer";
 import AppNav from "@/components/app-nav";
 import BalanceToast from "@/components/balance-toast";
 import ConsentFlusher from "@/components/consent-flusher";
+import GtagSignupTracker from "@/components/gtag-signup-tracker";
 import ReferralCapture from "@/components/referral-capture";
 import SiteHelpFaq from "@/components/site-help-faq";
 import "./globals.css";
@@ -107,6 +108,14 @@ export default function RootLayout({
           crossOrigin="anonymous"
           async
         />
+        {/* Wave 1231 (2026-06-09): GA4 (G-Z2KRCXE0LK) — 구글애즈 회원가입 전환 측정용. */}
+        {/* eslint-disable-next-line @next/next/next-script-for-ga */}
+        <script src="https://www.googletagmanager.com/gtag/js?id=G-Z2KRCXE0LK" async />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Z2KRCXE0LK');`,
+          }}
+        />
         {/* Wave launch-114 (2026-05-24): SEO 강화 — WebSite + Organization JSON-LD.
             구글 rich snippet (사이트 검색 박스 + 브랜드 카드) 노출 가능. CTR +10~30%. */}
         <script
@@ -152,6 +161,8 @@ export default function RootLayout({
         <BalanceToast />
         {/* Wave 800 (2026-05-27): 카카오 OAuth 가입 시 telegram 알림 누락 fix — SIGNED_IN 감지 시 flushPendingConsents 자동 호출 */}
         <ConsentFlusher />
+        {/* Wave 1231: 신규 가입 완료 시 GA4 sign_up 이벤트 (광고 전환). */}
+        <GtagSignupTracker />
         <AppNav />
         {/* 2026-05-19: SafetyStatsMarquee 글로벌 제거 — /me 모바일 fold 잡아먹는 문제 해소.
             비로그인 메인(PreviewMaskedDashboard) + "더 찾아보기" 모달(seekMore)에만 노출.
