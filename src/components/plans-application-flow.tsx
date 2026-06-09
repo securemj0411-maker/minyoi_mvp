@@ -2308,6 +2308,10 @@ export default function PlansApplicationFlow({
                   autoOpenSelector
                   reservedRegionLabel={selectedRegionLabel}
                 />
+                {/* Wave 1234b: 결제 전 — 정품/판매가능성/수익 미보장 고지. */}
+                <p className="mt-3 break-keep text-center text-[11px] leading-5 text-zinc-400 dark:text-zinc-500">
+                  득템잡이는 매물의 정품 여부, 판매 가능성, 수익 발생을 보장하지 않습니다.
+                </p>
               </div>
             </div>
           ) : null}

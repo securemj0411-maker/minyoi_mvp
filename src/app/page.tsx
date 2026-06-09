@@ -16,7 +16,9 @@ import { getProStatus, hasMembershipAccess } from "@/lib/user-subscription";
 import { userRefForAuthUser } from "@/lib/user-ref";
 import MeDashboardClient from "@/components/me-dashboard-client";
 import PreviewMaskedDashboardServer from "@/components/preview-masked-dashboard-server";
+import IndependentServiceNotice from "@/components/independent-service-notice";
 import PlansSocialProofToasts from "@/components/plans-social-proof-toasts";
+import { DISCLAIMER_INDEPENDENT_ONE_LINE } from "@/lib/legal-disclaimers";
 import { loadSlotSnapshot } from "@/lib/membership-slots";
 import { logAdVisitIfPresent } from "@/lib/ad-tracking";
 
@@ -64,7 +66,13 @@ export default async function Home({
           </p>
           <p>면책: 본 서비스는 시세 비교 정보를 제공할 뿐, 매물 진위·거래 결과를 보장하지 않습니다. 최종 판단은 이용자가 합니다.</p>
         </header>
+        {/* Wave 1234b: 랜딩 첫 화면 슬림 비제휴 라인 (구글 심사가 첫 화면에서 바로 보게). */}
+        <p className="mx-auto w-full max-w-[1380px] px-4 pt-3 text-[11px] leading-snug text-zinc-400 dark:text-zinc-500 sm:px-6 lg:px-8">
+          {DISCLAIMER_INDEPENDENT_ONE_LINE}
+        </p>
         <PreviewMaskedDashboardServer slot={slot} />
+        {/* Wave 1234: 구글애즈 정지 대응 — 비제휴·독립 정보 서비스 가시 고지 (제휴/판매 오인 차단). */}
+        <IndependentServiceNotice />
         <PlansSocialProofToasts events={[]} />
       </>
     );

@@ -390,6 +390,10 @@ export default async function PlansPage() {
               입금 전에는 기간 변경이나 취소가 가능하고, 입금했어요 버튼을 누르면
               승인 확인이 진행됩니다.
             </p>
+            {/* Wave 1234b: 결제 전 — 정품/판매가능성/수익 미보장 고지. */}
+            <p className="mt-2 break-keep text-center text-[11px] leading-5 text-zinc-400 dark:text-zinc-500">
+              득템잡이는 매물의 정품 여부, 판매 가능성, 수익 발생을 보장하지 않습니다.
+            </p>
           </div>
         </div>
       </section>

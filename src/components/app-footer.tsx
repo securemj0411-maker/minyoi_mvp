@@ -4,10 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const legalLinks = [
+  { href: "/about", label: "회사소개" },
   { href: "/terms", label: "이용약관" },
   { href: "/privacy", label: "개인정보처리방침" },
   { href: "/refund-policy", label: "환불정책" },
   { href: "/youth-policy", label: "청소년보호정책" },
+  { href: "/contact", label: "문의" },
 ];
 
 // Wave 372: 모바일 친화 푸터 — 사업자 정보 collapse. 한국 전자상거래법은 "표시" 요건만,
@@ -75,8 +77,13 @@ export default function AppFooter() {
           </div>
         </details>
 
-        <div className="mt-4 text-[10px] leading-4 text-zinc-400 dark:text-zinc-500">
-          득템잡이는 중고거래 매물의 시세 차이·거래 리스크를 분석해 제공하는 정보 서비스이며, 실제 거래의 당사자가 아닙니다.
+        {/* Wave 1234 (2026-06-09): 구글애즈 'Unacceptable Business Practices' 정지 대응 —
+            비제휴·독립서비스·직접판매 안 함을 명시 (제휴 오인 + 전달불가 오인 차단). 10px→11px 가독성 ↑. */}
+        <div className="mt-4 text-[11px] leading-[1.65] text-zinc-500 dark:text-zinc-400">
+          득템잡이는 번개장터·중고나라·당근마켓 등 외부 플랫폼과 제휴 관계가 없는 독립 정보 서비스입니다.
+          중고 매물의 시세를 분석해 제공할 뿐 매물을 직접 판매·중개하지 않으며, 실제 거래의 당사자가 아닙니다.
+          제공 정보는 참고용이며 거래 결과·수익을 보장하지 않습니다.
+          득템잡이는 각 중고거래 플랫폼의 공식 파트너가 아니며, 해당 플랫폼의 상표와 매물 정보는 출처 식별 및 시세 분석 목적으로만 표시됩니다.
         </div>
       </div>
     </footer>

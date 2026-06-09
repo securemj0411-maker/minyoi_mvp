@@ -6726,6 +6726,10 @@ function FixedBunjangFooter({
           <span>{marketplaceLabel} 원본 매물 보기</span>
         </span>
       </button>
+      {/* Wave 1234b: 상품 상세 — 정품/판매가능성/수익 미보장 고지 (전달불가 오인 차단). */}
+      <p className="mt-2.5 break-keep px-1 text-center text-[11px] leading-[1.5] text-zinc-400 dark:text-zinc-500">
+        득템잡이는 매물의 정품 여부, 판매 가능성, 수익 발생을 보장하지 않습니다.
+      </p>
       {confirmOpen ? (
         <div
           data-bunjang-exit-confirm
